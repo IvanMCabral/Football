@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Football Manager</a> &gt; <a href="index.source.html" class="el_package">com.footballmanager.infrastructure.persistence</a> &gt; <span class="el_source">PlayerEntity.java</span></div><h1>PlayerEntity.java</h1><pre class="source lang-java linenums">package com.footballmanager.infrastructure.persistence;
+
+import com.footballmanager.domain.model.Player;
+import com.footballmanager.domain.model.PlayerId;
+import com.footballmanager.domain.model.PlayerAttributes;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
+
+<span class="nc bnc" id="L16" title="All 74 branches missed.">@Data</span>
+<span class="nc" id="L17">@NoArgsConstructor</span>
+<span class="nc" id="L18">@AllArgsConstructor</span>
+@Table(&quot;players&quot;)
+public class PlayerEntity {
+    @Id
+<span class="nc" id="L22">    private UUID id;</span>
+<span class="nc" id="L23">    private String name;</span>
+<span class="nc" id="L24">    private int age;</span>
+<span class="nc" id="L25">    private String position;</span>
+<span class="nc" id="L26">    private int attack;</span>
+<span class="nc" id="L27">    private int defense;</span>
+<span class="nc" id="L28">    private int technique;</span>
+<span class="nc" id="L29">    private int speed;</span>
+<span class="nc" id="L30">    private int stamina;</span>
+<span class="nc" id="L31">    private int mentality;</span>
+<span class="nc" id="L32">    private BigDecimal marketValue;</span>
+<span class="nc" id="L33">    private int energy;</span>
+<span class="nc" id="L34">    private boolean injured;</span>
+<span class="nc" id="L35">    private Instant createdAt;</span>
+<span class="nc" id="L36">    private Instant updatedAt;</span>
+
+    public static PlayerEntity fromDomain(Player player) {
+<span class="nc" id="L39">        PlayerAttributes attrs = player.getAttributes();</span>
+<span class="nc" id="L40">        return new PlayerEntity(</span>
+<span class="nc" id="L41">                player.getId().getValue(),</span>
+<span class="nc" id="L42">                player.getName(),</span>
+<span class="nc" id="L43">                player.getAge(),</span>
+<span class="nc" id="L44">                player.getPosition().name(),</span>
+<span class="nc" id="L45">                attrs.getAttack(),</span>
+<span class="nc" id="L46">                attrs.getDefense(),</span>
+<span class="nc" id="L47">                attrs.getTechnique(),</span>
+<span class="nc" id="L48">                attrs.getSpeed(),</span>
+<span class="nc" id="L49">                attrs.getStamina(),</span>
+<span class="nc" id="L50">                attrs.getMentality(),</span>
+<span class="nc" id="L51">                player.getMarketValue(),</span>
+<span class="nc" id="L52">                player.getEnergy(),</span>
+<span class="nc" id="L53">                player.isInjured(),</span>
+<span class="nc" id="L54">                player.getCreatedAt(),</span>
+<span class="nc" id="L55">                player.getUpdatedAt()</span>
+        );
+    }
+
+    public Player toDomain() {
+<span class="nc" id="L60">        PlayerAttributes attributes = PlayerAttributes.of(</span>
+                attack, defense, technique, speed, stamina, mentality
+        );
+<span class="nc" id="L63">        return Player.reconstruct(</span>
+<span class="nc" id="L64">                PlayerId.of(id),</span>
+                name,
+                age,
+<span class="nc" id="L67">                Player.Position.valueOf(position),</span>
+                attributes,
+                marketValue,
+                energy,
+                injured,
+                createdAt,
+                updatedAt
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerAttributes.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Football Manager</a> &gt; <a href="index.source.html" class="el_package">com.footballmanager.domain.model</a> &gt; <span class="el_source">PlayerAttributes.java</span></div><h1>PlayerAttributes.java</h1><pre class="source lang-java linenums">package com.footballmanager.domain.model;
+
+import java.util.Objects;
+
+public class PlayerAttributes {
+    private final int attack;
+    private final int defense;
+    private final int technique;
+    private final int speed;
+    private final int stamina;
+    private final int mentality;
+
+<span class="fc" id="L13">    private PlayerAttributes(int attack, int defense, int technique, int speed, int stamina, int mentality) {</span>
+<span class="fc" id="L14">        validateAttribute(attack, &quot;attack&quot;);</span>
+<span class="fc" id="L15">        validateAttribute(defense, &quot;defense&quot;);</span>
+<span class="fc" id="L16">        validateAttribute(technique, &quot;technique&quot;);</span>
+<span class="fc" id="L17">        validateAttribute(speed, &quot;speed&quot;);</span>
+<span class="fc" id="L18">        validateAttribute(stamina, &quot;stamina&quot;);</span>
+<span class="fc" id="L19">        validateAttribute(mentality, &quot;mentality&quot;);</span>
+
+<span class="fc" id="L21">        this.attack = attack;</span>
+<span class="fc" id="L22">        this.defense = defense;</span>
+<span class="fc" id="L23">        this.technique = technique;</span>
+<span class="fc" id="L24">        this.speed = speed;</span>
+<span class="fc" id="L25">        this.stamina = stamina;</span>
+<span class="fc" id="L26">        this.mentality = mentality;</span>
+<span class="fc" id="L27">    }</span>
+
+    public static PlayerAttributes of(int attack, int defense, int technique, int speed, int stamina, int mentality) {
+<span class="fc" id="L30">        return new PlayerAttributes(attack, defense, technique, speed, stamina, mentality);</span>
+    }
+
+    private void validateAttribute(int value, String name) {
+<span class="pc bpc" id="L34" title="2 of 4 branches missed.">        if (value &lt; 0 || value &gt; 100) {</span>
+<span class="nc" id="L35">            throw new IllegalArgumentException(name + &quot; must be between 0 and 100&quot;);</span>
+        }
+<span class="fc" id="L37">    }</span>
+
+    public int getAttack() {
+<span class="nc" id="L40">        return attack;</span>
+    }
+
+    public int getDefense() {
+<span class="nc" id="L44">        return defense;</span>
+    }
+
+    public int getTechnique() {
+<span class="nc" id="L48">        return technique;</span>
+    }
+
+    public int getSpeed() {
+<span class="nc" id="L52">        return speed;</span>
+    }
+
+    public int getStamina() {
+<span class="nc" id="L56">        return stamina;</span>
+    }
+
+    public int getMentality() {
+<span class="nc" id="L60">        return mentality;</span>
+    }
+
+    public int calculateOverall() {
+<span class="fc" id="L64">        return (attack + defense + technique + speed + stamina + mentality) / 6;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L70" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L71">        PlayerAttributes that = (PlayerAttributes) o;</span>
+<span class="nc bnc" id="L72" title="All 12 branches missed.">        return attack == that.attack &amp;&amp;</span>
+                defense == that.defense &amp;&amp;
+                technique == that.technique &amp;&amp;
+                speed == that.speed &amp;&amp;
+                stamina == that.stamina &amp;&amp;
+                mentality == that.mentality;
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L82">        return Objects.hash(attack, defense, technique, speed, stamina, mentality);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L87">        return String.format(&quot;PlayerAttributes{overall=%d, attack=%d, defense=%d, technique=%d, speed=%d, stamina=%d, mentality=%d}&quot;,</span>
+<span class="nc" id="L88">                calculateOverall(), attack, defense, technique, speed, stamina, mentality);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

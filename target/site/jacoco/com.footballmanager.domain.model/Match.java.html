@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Match.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Football Manager</a> &gt; <a href="index.source.html" class="el_package">com.footballmanager.domain.model</a> &gt; <span class="el_source">Match.java</span></div><h1>Match.java</h1><pre class="source lang-java linenums">package com.footballmanager.domain.model;
+
+import java.time.Instant;
+import java.util.Objects;
+
+public class Match {
+    private final MatchId id;
+    private final TeamId homeTeamId;
+    private final TeamId awayTeamId;
+    private final Instant scheduledAt;
+    private MatchStatus status;
+    private MatchResult result;
+    private final Instant createdAt;
+    private Instant simulatedAt;
+
+<span class="fc" id="L16">    public enum MatchStatus {</span>
+<span class="fc" id="L17">        SCHEDULED, SIMULATED, CANCELLED</span>
+    }
+
+    private Match(MatchId id, TeamId homeTeamId, TeamId awayTeamId, Instant scheduledAt,
+<span class="fc" id="L21">                 MatchStatus status, MatchResult result, Instant createdAt, Instant simulatedAt) {</span>
+<span class="fc" id="L22">        this.id = Objects.requireNonNull(id, &quot;MatchId cannot be null&quot;);</span>
+<span class="fc" id="L23">        this.homeTeamId = Objects.requireNonNull(homeTeamId, &quot;Home TeamId cannot be null&quot;);</span>
+<span class="fc" id="L24">        this.awayTeamId = Objects.requireNonNull(awayTeamId, &quot;Away TeamId cannot be null&quot;);</span>
+<span class="fc" id="L25">        this.scheduledAt = Objects.requireNonNull(scheduledAt, &quot;Scheduled time cannot be null&quot;);</span>
+        
+<span class="fc" id="L27">        validateTeams(homeTeamId, awayTeamId);</span>
+        
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        this.status = status != null ? status : MatchStatus.SCHEDULED;</span>
+<span class="fc" id="L30">        this.result = result;</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        this.createdAt = createdAt != null ? createdAt : Instant.now();</span>
+<span class="fc" id="L32">        this.simulatedAt = simulatedAt;</span>
+<span class="fc" id="L33">    }</span>
+
+    public static Match create(MatchId id, TeamId homeTeamId, TeamId awayTeamId, Instant scheduledAt) {
+<span class="fc" id="L36">        return new Match(id, homeTeamId, awayTeamId, scheduledAt, </span>
+<span class="fc" id="L37">                        MatchStatus.SCHEDULED, null, Instant.now(), null);</span>
+    }
+
+    public static Match reconstruct(MatchId id, TeamId homeTeamId, TeamId awayTeamId, Instant scheduledAt,
+                                   MatchStatus status, MatchResult result, Instant createdAt, Instant simulatedAt) {
+<span class="nc" id="L42">        return new Match(id, homeTeamId, awayTeamId, scheduledAt, </span>
+                        status, result, createdAt, simulatedAt);
+    }
+
+    private void validateTeams(TeamId homeTeamId, TeamId awayTeamId) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (homeTeamId.equals(awayTeamId)) {</span>
+<span class="fc" id="L48">            throw new IllegalArgumentException(&quot;Home team and away team cannot be the same&quot;);</span>
+        }
+<span class="fc" id="L50">    }</span>
+
+    public void simulate(MatchResult result) {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (this.status == MatchStatus.SIMULATED) {</span>
+<span class="fc" id="L54">            throw new IllegalStateException(&quot;Match has already been simulated&quot;);</span>
+        }
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (this.status == MatchStatus.CANCELLED) {</span>
+<span class="nc" id="L57">            throw new IllegalStateException(&quot;Cannot simulate a cancelled match&quot;);</span>
+        }
+        
+<span class="fc" id="L60">        this.result = Objects.requireNonNull(result, &quot;Match result cannot be null&quot;);</span>
+<span class="fc" id="L61">        this.status = MatchStatus.SIMULATED;</span>
+<span class="fc" id="L62">        this.simulatedAt = Instant.now();</span>
+<span class="fc" id="L63">    }</span>
+
+    public void cancel() {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (this.status == MatchStatus.SIMULATED) {</span>
+<span class="fc" id="L67">            throw new IllegalStateException(&quot;Cannot cancel a simulated match&quot;);</span>
+        }
+<span class="fc" id="L69">        this.status = MatchStatus.CANCELLED;</span>
+<span class="fc" id="L70">    }</span>
+
+    public boolean isSimulated() {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        return status == MatchStatus.SIMULATED;</span>
+    }
+
+    public boolean isCancelled() {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        return status == MatchStatus.CANCELLED;</span>
+    }
+
+    public boolean isScheduled() {
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        return status == MatchStatus.SCHEDULED;</span>
+    }
+
+    // Getters
+    public MatchId getId() {
+<span class="fc" id="L86">        return id;</span>
+    }
+
+    public TeamId getHomeTeamId() {
+<span class="fc" id="L90">        return homeTeamId;</span>
+    }
+
+    public TeamId getAwayTeamId() {
+<span class="fc" id="L94">        return awayTeamId;</span>
+    }
+
+    public Instant getScheduledAt() {
+<span class="nc" id="L98">        return scheduledAt;</span>
+    }
+
+    public MatchStatus getStatus() {
+<span class="fc" id="L102">        return status;</span>
+    }
+
+    public MatchResult getResult() {
+<span class="fc" id="L106">        return result;</span>
+    }
+
+    public Instant getCreatedAt() {
+<span class="nc" id="L110">        return createdAt;</span>
+    }
+
+    public Instant getSimulatedAt() {
+<span class="nc" id="L114">        return simulatedAt;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L120" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L121">        Match match = (Match) o;</span>
+<span class="nc" id="L122">        return Objects.equals(id, match.id);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L127">        return Objects.hash(id);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L132">        return String.format(&quot;Match{id=%s, home=%s vs away=%s, status=%s, scheduledAt=%s}&quot;,</span>
+                id, homeTeamId, awayTeamId, status, scheduledAt);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

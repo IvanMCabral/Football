@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LeagueEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Football Manager</a> &gt; <a href="index.source.html" class="el_package">com.footballmanager.infrastructure.persistence</a> &gt; <span class="el_source">LeagueEntity.java</span></div><h1>LeagueEntity.java</h1><pre class="source lang-java linenums">package com.footballmanager.infrastructure.persistence;
+
+import com.footballmanager.domain.model.League;
+import com.footballmanager.domain.model.LeagueId;
+import com.footballmanager.domain.model.TeamId;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.UUID;
+
+<span class="nc bnc" id="L17" title="All 46 branches missed.">@Data</span>
+<span class="nc" id="L18">@Builder</span>
+<span class="nc" id="L19">@NoArgsConstructor</span>
+<span class="nc" id="L20">@AllArgsConstructor</span>
+@Table(&quot;leagues&quot;)
+public class LeagueEntity {
+    
+    @Id
+<span class="nc" id="L25">    private UUID id;</span>
+    
+<span class="nc" id="L27">    private String name;</span>
+<span class="nc" id="L28">    private String country;</span>
+    
+<span class="nc" id="L30">    private Instant createdAt;</span>
+<span class="nc" id="L31">    private Instant updatedAt;</span>
+    
+    public static LeagueEntity fromDomain(League league) {
+<span class="nc" id="L34">        return LeagueEntity.builder()</span>
+<span class="nc" id="L35">            .id(league.getId().getValue())</span>
+<span class="nc" id="L36">            .name(league.getName())</span>
+<span class="nc" id="L37">            .country(league.getCountry())</span>
+<span class="nc" id="L38">            .createdAt(league.getCreatedAt())</span>
+<span class="nc" id="L39">            .updatedAt(league.getUpdatedAt())</span>
+<span class="nc" id="L40">            .build();</span>
+    }
+    
+    public League toDomain() {
+        // La relación league-teams se maneja en tabla separada league_teams
+        // Por ahora retornamos sin teamIds, se cargarían en un adapter diferente
+<span class="nc" id="L46">        return League.reconstruct(</span>
+<span class="nc" id="L47">            LeagueId.of(id),</span>
+            name,
+            country,
+            new HashSet&lt;&gt;(),
+            createdAt,
+            updatedAt
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

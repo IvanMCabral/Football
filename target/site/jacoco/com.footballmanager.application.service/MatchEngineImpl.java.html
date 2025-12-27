@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatchEngineImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Football Manager</a> &gt; <a href="index.source.html" class="el_package">com.footballmanager.application.service</a> &gt; <span class="el_source">MatchEngineImpl.java</span></div><h1>MatchEngineImpl.java</h1><pre class="source lang-java linenums">package com.footballmanager.application.service;
+
+import com.footballmanager.domain.model.*;
+import com.footballmanager.domain.ports.out.MatchEngine;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import java.util.*;
+
+@Component
+<span class="fc" id="L12">public class MatchEngineImpl implements MatchEngine {</span>
+
+    @Override
+    public Mono&lt;MatchResult&gt; simulate(Team homeTeam, Team awayTeam) {
+<span class="fc" id="L16">        return Mono.fromCallable(() -&gt; performSimulation(homeTeam, awayTeam))</span>
+<span class="fc" id="L17">                .subscribeOn(Schedulers.boundedElastic());</span>
+    }
+
+    private MatchResult performSimulation(Team homeTeam, Team awayTeam) {
+<span class="fc" id="L21">        Random random = new Random();</span>
+
+<span class="fc" id="L23">        int homeOverall = calculateTeamOverall(homeTeam);</span>
+<span class="fc" id="L24">        int awayOverall = calculateTeamOverall(awayTeam);</span>
+
+<span class="fc" id="L26">        int homePossession = calculatePossession(homeOverall, awayOverall, random);</span>
+<span class="fc" id="L27">        int awayPossession = 100 - homePossession;</span>
+
+<span class="fc" id="L29">        int homeShots = Math.max(3, (homePossession / 15) + random.nextInt(5));</span>
+<span class="fc" id="L30">        int awayShots = Math.max(3, (awayPossession / 15) + random.nextInt(5));</span>
+
+<span class="fc" id="L32">        double homeGoalProbability = (homeOverall / 100.0) * (homePossession / 100.0) * 3.5;</span>
+<span class="fc" id="L33">        double awayGoalProbability = (awayOverall / 100.0) * (awayPossession / 100.0) * 3.5;</span>
+
+<span class="fc" id="L35">        int homeGoals = generateGoals(homeGoalProbability, random);</span>
+<span class="fc" id="L36">        int awayGoals = generateGoals(awayGoalProbability, random);</span>
+
+<span class="fc" id="L38">        List&lt;MatchEvent&gt; events = generateEvents(homeGoals, awayGoals, random);</span>
+<span class="fc" id="L39">        String summary = generateSummary(homeTeam.getName(), awayTeam.getName(),</span>
+                                        homeGoals, awayGoals, homePossession);
+
+<span class="fc" id="L42">        return MatchResult.of(homeGoals, awayGoals, homePossession, awayPossession,</span>
+                            homeShots, awayShots, events, summary);
+    }
+
+    private int calculateTeamOverall(Team team) {
+        // Simple calculation: base 70 + squad bonus
+        // Each player adds a small amount, formation doesn't matter much here
+<span class="fc" id="L49">        return 70 + Math.min(20, team.getSquadSize() / 2);</span>
+    }
+
+    private int calculatePossession(int homeOverall, int awayOverall, Random random) {
+<span class="fc" id="L53">        double homeStrength = homeOverall / 100.0;</span>
+<span class="fc" id="L54">        double awayStrength = awayOverall / 100.0;</span>
+<span class="fc" id="L55">        double totalStrength = homeStrength + awayStrength;</span>
+
+<span class="fc" id="L57">        int basePossession = (int) ((homeStrength / totalStrength) * 100);</span>
+<span class="fc" id="L58">        int variance = random.nextInt(21) - 10;</span>
+
+<span class="fc" id="L60">        return Math.max(30, Math.min(70, basePossession + variance));</span>
+    }
+
+    private int generateGoals(double probability, Random random) {
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (probability &lt; 0.5) return 0;</span>
+<span class="fc bfc" id="L65" title="All 4 branches covered.">        if (probability &lt; 1.5) return random.nextDouble() &lt; 0.4 ? 1 : 0;</span>
+<span class="pc bpc" id="L66" title="4 of 6 branches missed.">        if (probability &lt; 2.5) return random.nextDouble() &lt; 0.6 ? 1 : (random.nextDouble() &lt; 0.2 ? 2 : 0);</span>
+<span class="nc" id="L67">        return Math.min(5, 2 + random.nextInt(3));</span>
+    }
+
+    private List&lt;MatchEvent&gt; generateEvents(int homeGoals, int awayGoals, Random random) {
+<span class="fc" id="L71">        List&lt;MatchEvent&gt; events = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        for (int i = 0; i &lt; homeGoals; i++) {</span>
+<span class="fc" id="L74">            int minute = 10 + random.nextInt(80);</span>
+<span class="fc" id="L75">            events.add(MatchEvent.of(MatchEvent.EventType.GOAL, minute,</span>
+                                    &quot;Home Team Scorer #&quot; + (i + 1),
+                                    &quot;Goal scored by home team&quot;));
+        }
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (int i = 0; i &lt; awayGoals; i++) {</span>
+<span class="fc" id="L81">            int minute = 10 + random.nextInt(80);</span>
+<span class="fc" id="L82">            events.add(MatchEvent.of(MatchEvent.EventType.GOAL, minute,</span>
+                                    &quot;Away Team Scorer #&quot; + (i + 1),
+                                    &quot;Goal scored by away team&quot;));
+        }
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (random.nextDouble() &lt; 0.3) {</span>
+<span class="fc" id="L88">            int cardMinute = 20 + random.nextInt(60);</span>
+<span class="fc" id="L89">            events.add(MatchEvent.of(MatchEvent.EventType.CARD, cardMinute,</span>
+                                    &quot;Player Name&quot;, &quot;Yellow card&quot;));
+        }
+
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (random.nextDouble() &lt; 0.2) {</span>
+<span class="fc" id="L94">            int injuryMinute = 30 + random.nextInt(50);</span>
+<span class="fc" id="L95">            events.add(MatchEvent.of(MatchEvent.EventType.INJURY, injuryMinute,</span>
+                                    &quot;Injured Player&quot;, &quot;Player injured&quot;));
+        }
+
+<span class="fc" id="L99">        events.sort(Comparator.comparingInt(MatchEvent::getMinute));</span>
+<span class="fc" id="L100">        return events;</span>
+    }
+
+    private String generateSummary(String homeTeam, String awayTeam, int homeGoals,
+                                   int awayGoals, int homePossession) {
+<span class="fc" id="L105">        return String.format(&quot;%s %d-%d %s | Possession: %d%%--%d%%&quot;,</span>
+<span class="fc" id="L106">                homeTeam, homeGoals, awayGoals, awayTeam, homePossession, 100 - homePossession);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,13 +1,26 @@
-# 🎉 PROYECTO COMPILADO EXITOSAMENTE
+# 🎉 PROYECTO COMPILADO EXITOSAMENTE - JAVA 21 LTS
 
 ## ✅ Estado Actual
 
 **¡Felicidades!** El proyecto Football Manager ahora:
+- ✅ **Actualizado a Java 21 LTS** (desde Java 17)
 - ✅ Compila sin errores (49 archivos Java)
+- ✅ Todos los tests pasan (26 tests)
 - ✅ Todos los adaptadores de repositorio creados
 - ✅ Spring Boot se inicia correctamente
 - ✅ Detecta 5 repositorios R2DBC
 - ✅ Flyway configurado y listo
+
+## 🔧 Requisitos
+
+### Java 21 LTS
+El proyecto ahora requiere **Java 21 LTS**. JDK instalado en: `C:\Users\ichu_\.jdk\jdk-21.0.8`
+
+Para compilar y ejecutar el proyecto con Java 21:
+```powershell
+$env:JAVA_HOME="C:\Users\ichu_\.jdk\jdk-21.0.8"
+$env:PATH="C:\Users\ichu_\.jdk\jdk-21.0.8\bin;$env:PATH"
+```
 
 ## 🐘 Falta PostgreSQL
 
@@ -51,6 +64,11 @@ CREATE DATABASE football_manager;
 ### Paso 3: Iniciar la Aplicación
 
 ```powershell
+# Configurar Java 21
+$env:JAVA_HOME="C:\Users\ichu_\.jdk\jdk-21.0.8"
+$env:PATH="C:\Users\ichu_\.jdk\jdk-21.0.8\bin;$env:PATH"
+
+# Ejecutar la aplicación
 mvn spring-boot:run
 ```
 
@@ -88,6 +106,11 @@ Deberías ver el contenedor `football-db` en estado "Up"
 ### Paso 4: Iniciar la Aplicación
 
 ```powershell
+# Configurar Java 21
+$env:JAVA_HOME="C:\Users\ichu_\.jdk\jdk-21.0.8"
+$env:PATH="C:\Users\ichu_\.jdk\jdk-21.0.8\bin;$env:PATH"
+
+# Ejecutar la aplicación
 mvn spring-boot:run
 ```
 
@@ -142,6 +165,11 @@ spring:
 ### 1. Iniciar la Aplicación
 
 ```powershell
+# Configurar Java 21
+$env:JAVA_HOME="C:\Users\ichu_\.jdk\jdk-21.0.8"
+$env:PATH="C:\Users\ichu_\.jdk\jdk-21.0.8\bin;$env:PATH"
+
+# Ejecutar la aplicación
 mvn spring-boot:run
 ```
 

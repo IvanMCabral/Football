@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TeamController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Football Manager</a> &gt; <a href="index.source.html" class="el_package">com.footballmanager.adapters.in.web</a> &gt; <span class="el_source">TeamController.java</span></div><h1>TeamController.java</h1><pre class="source lang-java linenums">package com.footballmanager.adapters.in.web;
+
+import com.footballmanager.application.service.TeamService;
+import com.footballmanager.domain.model.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+@RestController
+@RequestMapping(&quot;/api/v1/teams&quot;)
+<span class="nc" id="L18">@RequiredArgsConstructor</span>
+@CrossOrigin(origins = &quot;*&quot;, maxAge = 3600)
+public class TeamController {
+    private final TeamService teamService;
+
+    @PostMapping
+    public Mono&lt;ResponseEntity&lt;TeamDTO&gt;&gt; createTeam(
+            @RequestBody CreateTeamRequest request,
+            Authentication authentication) {
+<span class="nc" id="L27">        String userId = authentication.getName();</span>
+<span class="nc" id="L28">        return teamService.createTeam(</span>
+<span class="nc" id="L29">                        UserId.of(UUID.fromString(userId)),</span>
+<span class="nc" id="L30">                        request.name(),</span>
+<span class="nc" id="L31">                        request.country(),</span>
+<span class="nc" id="L32">                        request.initialBudget())</span>
+<span class="nc" id="L33">                .map(team -&gt; ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(team)))</span>
+<span class="nc" id="L34">                .onErrorResume(e -&gt; Mono.just(ResponseEntity.badRequest().build()));</span>
+    }
+
+    @GetMapping(&quot;/{teamId}&quot;)
+    public Mono&lt;ResponseEntity&lt;TeamDTO&gt;&gt; getTeam(@PathVariable String teamId) {
+<span class="nc" id="L39">        return teamService.getTeam(TeamId.of(UUID.fromString(teamId)))</span>
+<span class="nc" id="L40">                .map(team -&gt; ResponseEntity.ok(mapToDTO(team)))</span>
+<span class="nc" id="L41">                .defaultIfEmpty(ResponseEntity.notFound().build());</span>
+    }
+
+    @GetMapping
+    public Flux&lt;TeamDTO&gt; getUserTeams(Authentication authentication) {
+<span class="nc" id="L46">        String userId = authentication.getName();</span>
+<span class="nc" id="L47">        return teamService.getUserTeams(UserId.of(UUID.fromString(userId)))</span>
+<span class="nc" id="L48">                .map(this::mapToDTO);</span>
+    }
+
+    @GetMapping(&quot;/{teamId}/squad&quot;)
+    public Flux&lt;PlayerDTO&gt; getTeamSquad(@PathVariable String teamId) {
+<span class="nc" id="L53">        return teamService.getTeamSquad(TeamId.of(UUID.fromString(teamId)))</span>
+<span class="nc" id="L54">                .map(this::mapPlayerToDTO);</span>
+    }
+
+    @PostMapping(&quot;/{teamId}/players/{playerId}&quot;)
+    public Mono&lt;ResponseEntity&lt;TeamDTO&gt;&gt; addPlayer(
+            @PathVariable String teamId,
+            @PathVariable String playerId) {
+<span class="nc" id="L61">        return teamService.addPlayerToTeam(</span>
+<span class="nc" id="L62">                        TeamId.of(UUID.fromString(teamId)),</span>
+<span class="nc" id="L63">                        PlayerId.of(UUID.fromString(playerId)))</span>
+<span class="nc" id="L64">                .map(team -&gt; ResponseEntity.ok(mapToDTO(team)))</span>
+<span class="nc" id="L65">                .onErrorResume(e -&gt; Mono.just(ResponseEntity.badRequest().build()));</span>
+    }
+
+    @DeleteMapping(&quot;/{teamId}/players/{playerId}&quot;)
+    public Mono&lt;ResponseEntity&lt;Void&gt;&gt; removePlayer(
+            @PathVariable String teamId,
+            @PathVariable String playerId) {
+<span class="nc" id="L72">        return teamService.removePlayerFromTeam(</span>
+<span class="nc" id="L73">                        TeamId.of(UUID.fromString(teamId)),</span>
+<span class="nc" id="L74">                        PlayerId.of(UUID.fromString(playerId)))</span>
+<span class="nc" id="L75">                .then(Mono.just(ResponseEntity.noContent().&lt;Void&gt;build()))</span>
+<span class="nc" id="L76">                .onErrorResume(e -&gt; Mono.just(ResponseEntity.badRequest().build()));</span>
+    }
+
+    private TeamDTO mapToDTO(Team team) {
+<span class="nc" id="L80">        return new TeamDTO(</span>
+<span class="nc" id="L81">                team.getId().getValue().toString(),</span>
+<span class="nc" id="L82">                team.getManagerId().getValue().toString(),</span>
+<span class="nc" id="L83">                team.getName(),</span>
+<span class="nc" id="L84">                team.getCountry(),</span>
+<span class="nc" id="L85">                team.getBudget(),</span>
+<span class="nc" id="L86">                team.getFormation().name(),</span>
+<span class="nc" id="L87">                team.getSquadSize(),</span>
+<span class="nc" id="L88">                team.getCreatedAt(),</span>
+<span class="nc" id="L89">                team.getUpdatedAt()</span>
+        );
+    }
+
+    private PlayerDTO mapPlayerToDTO(Player player) {
+<span class="nc" id="L94">        return new PlayerDTO(</span>
+<span class="nc" id="L95">                player.getId().getValue().toString(),</span>
+<span class="nc" id="L96">                player.getName(),</span>
+<span class="nc" id="L97">                player.getAge(),</span>
+<span class="nc" id="L98">                player.getPosition().name(),</span>
+<span class="nc" id="L99">                player.calculateOverallRating(),</span>
+<span class="nc" id="L100">                player.getEnergy(),</span>
+<span class="nc" id="L101">                player.isInjured(),</span>
+<span class="nc" id="L102">                player.getMarketValue()</span>
+        );
+    }
+
+<span class="nc" id="L106">    public record CreateTeamRequest(</span>
+            String name,
+            String country,
+            BigDecimal initialBudget
+    ) {}
+
+<span class="nc" id="L112">    public record TeamDTO(</span>
+            String id,
+            String managerId,
+            String name,
+            String country,
+            BigDecimal budget,
+            String formation,
+            int squadSize,
+            java.time.Instant createdAt,
+            java.time.Instant updatedAt
+    ) {}
+
+<span class="nc" id="L124">    public record PlayerDTO(</span>
+            String id,
+            String name,
+            int age,
+            String position,
+            int overallRating,
+            int energy,
+            boolean injured,
+            BigDecimal marketValue
+    ) {}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

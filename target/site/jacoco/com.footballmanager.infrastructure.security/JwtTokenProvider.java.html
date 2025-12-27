@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtTokenProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Football Manager</a> &gt; <a href="index.source.html" class="el_package">com.footballmanager.infrastructure.security</a> &gt; <span class="el_source">JwtTokenProvider.java</span></div><h1>JwtTokenProvider.java</h1><pre class="source lang-java linenums">package com.footballmanager.infrastructure.security;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.time.Instant;
+import java.util.Date;
+
+@Component
+<span class="nc" id="L15">@RequiredArgsConstructor</span>
+public class JwtTokenProvider {
+
+    @Value(&quot;${jwt.secret}&quot;)
+    private String jwtSecret;
+
+    @Value(&quot;${jwt.expiration}&quot;)
+    private long jwtExpirationMs;
+
+    @Value(&quot;${jwt.refresh-expiration}&quot;)
+    private long refreshExpirationMs;
+
+    public String generateToken(String userId, String role) {
+<span class="nc" id="L28">        return createToken(userId, role, jwtExpirationMs);</span>
+    }
+
+    public String generateRefreshToken(String userId) {
+<span class="nc" id="L32">        return createToken(userId, &quot;ROLE_USER&quot;, refreshExpirationMs);</span>
+    }
+
+    private String createToken(String userId, String role, long expirationMs) {
+<span class="nc" id="L36">        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());</span>
+<span class="nc" id="L37">        Instant now = Instant.now();</span>
+<span class="nc" id="L38">        Instant expiryDate = now.plusMillis(expirationMs);</span>
+
+<span class="nc" id="L40">        return Jwts.builder()</span>
+<span class="nc" id="L41">                .setSubject(userId)</span>
+<span class="nc" id="L42">                .claim(&quot;role&quot;, role)</span>
+<span class="nc" id="L43">                .setIssuedAt(Date.from(now))</span>
+<span class="nc" id="L44">                .setExpiration(Date.from(expiryDate))</span>
+<span class="nc" id="L45">                .signWith(key, SignatureAlgorithm.HS512)</span>
+<span class="nc" id="L46">                .compact();</span>
+    }
+
+    public String getUserIdFromToken(String token) {
+<span class="nc" id="L50">        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());</span>
+<span class="nc" id="L51">        return Jwts.parserBuilder()</span>
+<span class="nc" id="L52">                .setSigningKey(key)</span>
+<span class="nc" id="L53">                .build()</span>
+<span class="nc" id="L54">                .parseClaimsJws(token)</span>
+<span class="nc" id="L55">                .getBody()</span>
+<span class="nc" id="L56">                .getSubject();</span>
+    }
+
+    public String getRoleFromToken(String token) {
+<span class="nc" id="L60">        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());</span>
+<span class="nc" id="L61">        return (String) Jwts.parserBuilder()</span>
+<span class="nc" id="L62">                .setSigningKey(key)</span>
+<span class="nc" id="L63">                .build()</span>
+<span class="nc" id="L64">                .parseClaimsJws(token)</span>
+<span class="nc" id="L65">                .getBody()</span>
+<span class="nc" id="L66">                .get(&quot;role&quot;);</span>
+    }
+
+    public boolean validateToken(String token) {
+        try {
+<span class="nc" id="L71">            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());</span>
+<span class="nc" id="L72">            Jwts.parserBuilder()</span>
+<span class="nc" id="L73">                    .setSigningKey(key)</span>
+<span class="nc" id="L74">                    .build()</span>
+<span class="nc" id="L75">                    .parseClaimsJws(token);</span>
+<span class="nc" id="L76">            return true;</span>
+<span class="nc" id="L77">        } catch (Exception e) {</span>
+<span class="nc" id="L78">            return false;</span>
+        }
+    }
+
+    public long getExpirationTime() {
+<span class="nc" id="L83">        return jwtExpirationMs / 1000;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
