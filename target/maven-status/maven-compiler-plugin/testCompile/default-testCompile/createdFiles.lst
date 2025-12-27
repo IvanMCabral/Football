@@ -1,0 +1,4 @@
+com\footballmanager\application\service\MatchEngineImplTest.class
+com\footballmanager\domain\model\PlayerTest.class
+com\footballmanager\domain\model\TeamTest.class
+com\footballmanager\domain\model\MatchTest.class
