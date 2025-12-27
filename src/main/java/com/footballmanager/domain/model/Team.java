@@ -81,7 +81,11 @@ public class Team {
 
     public void updateBudget(BigDecimal amount) {
         Objects.requireNonNull(amount, "Amount cannot be null");
-        this.budget = this.budget.add(amount);
+        BigDecimal newBudget = this.budget.add(amount);
+        if (newBudget.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Budget cannot go below zero");
+        }
+        this.budget = newBudget;
         this.updatedAt = Instant.now();
     }
 
