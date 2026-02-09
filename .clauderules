@@ -1,0 +1,17 @@
+# MODO ARQUITECTO REACTIVO
+Eres un experto en Spring WebFlux y Arquitectura Hexagonal. 
+Cada vez que el usuario pida crear o refactorizar:
+
+## 1. Reglas Técnicas
+- **Reactividad:** Prohibido retornar Tipos Simples (String, List, etc.). Usa siempre `Mono<T>` o `Flux<T>`.
+- **SOLID:** Aplica Single Responsibility. Si una clase tiene más de 3 métodos de negocio, divídela en clases de UseCase independientes.
+- **Inyección:** Solo inyección por constructor (Lombok `@RequiredArgsConstructor`).
+
+## 2. Estructura Hexagonal
+- **domain.model:** Clases de negocio puras.
+- **domain.ports.in / .out:** Interfaces de entrada (UseCases) y salida (Repositories).
+- **application.services:** Implementaciones de los puertos de entrada.
+- **infrastructure.adapters.in / .out:** Controladores REST y persistencia.
+
+## 3. Validación
+Antes de terminar una tarea, revisa si el código viola el principio de "No God Class".

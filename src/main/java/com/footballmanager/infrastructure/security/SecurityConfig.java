@@ -13,6 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Configuration
@@ -20,6 +23,21 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
+
+    public static void addCorsHeaders(ServerWebExchange exchange) {
+        ServerHttpRequest request = exchange.getRequest();
+        ServerHttpResponse response = exchange.getResponse();
+        String origin = request.getHeaders().getOrigin();
+
+        if (origin != null) {
+            response.getHeaders().set("Access-Control-Allow-Origin", origin);
+            response.getHeaders().set("Vary", "Origin");
+            response.getHeaders().set("Access-Control-Allow-Credentials", "true");
+            response.getHeaders().set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+            response.getHeaders().set("Access-Control-Allow-Headers", "Content-Type,Authorization");
+        }
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -29,19 +47,61 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
         return http
-                .csrf(csrf -> csrf.disable())
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/v1/auth/**").permitAll()
-                        .anyExchange().authenticated()
-                )
-                .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
-                .build();
+            .cors(cors -> cors.disable())
+            .csrf(csrf -> csrf.disable())
+            .httpBasic(basic -> basic.disable())
+            .formLogin(form -> form.disable())
+            .addFilterAt((exchange, chain) -> {
+                String path = exchange.getRequest().getPath().toString();
+                String method = exchange.getRequest().getMethod().name();
+                String origin = exchange.getRequest().getHeaders().getOrigin();
+                return chain.filter(exchange);
+            }, SecurityWebFiltersOrder.FIRST)
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((exchange, ex) -> {
+                    String path = exchange.getRequest().getPath().toString();
+                    String method = exchange.getRequest().getMethod().name();
+                    addCorsHeaders(exchange);
+                    exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
+                })
+                .accessDeniedHandler((exchange, ex) -> {
+                    String path = exchange.getRequest().getPath().toString();
+                    String method = exchange.getRequest().getMethod().name();
+                    addCorsHeaders(exchange);
+                    exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.FORBIDDEN);
+                    return exchange.getResponse().setComplete();
+                })
+            )
+            .authorizeExchange(exchanges -> exchanges
+                .pathMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                .pathMatchers("/api/v1/auth/**").permitAll()
+                .pathMatchers("/api/v1/health").permitAll()
+                .pathMatchers("/actuator/health").permitAll()
+                .pathMatchers("/api/v1/players", "/api/v1/players/**").permitAll()
+                .pathMatchers("/api/v1/matches", "/api/v1/matches/**").permitAll()
+                .pathMatchers("/api/v1/teams", "/api/v1/teams/**").permitAll()
+                .pathMatchers("/api/v1/career", "/api/v1/career/**").permitAll()
+                .pathMatchers("/api/v1/world", "/api/v1/world/**").permitAll()
+                .pathMatchers("/api/v1/leagues", "/api/v1/leagues/**").permitAll()
+                .pathMatchers("/api/v1/match-engine", "/api/v1/match-engine/**").permitAll()
+                .pathMatchers("/api/v1/fixtures", "/api/v1/fixtures/**").permitAll()
+                .pathMatchers("/api/v1/games", "/api/v1/games/**").permitAll()
+                .pathMatchers("/api/v1/dashboard/**").authenticated()
+                .anyExchange().authenticated()
+            )
+            .addFilterAt(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
     }
 
     @Bean
     public AuthenticationWebFilter jwtAuthenticationFilter() {
         AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(reactiveAuthenticationManager());
         authenticationFilter.setServerAuthenticationConverter(serverAuthenticationConverter());
+        authenticationFilter.setAuthenticationFailureHandler((webFilterExchange, exception) -> {
+            String path = webFilterExchange.getExchange().getRequest().getPath().toString();
+            return webFilterExchange.getExchange().getResponse().setComplete();
+        });
         return authenticationFilter;
     }
 
@@ -72,4 +132,5 @@ public class SecurityConfig {
     public ReactiveAuthenticationManager reactiveAuthenticationManager() {
         return authentication -> Mono.just(authentication);
     }
+
 }

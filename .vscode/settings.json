@@ -1,4 +1,61 @@
 {
+    // Java optimizations
     "java.compile.nullAnalysis.mode": "disabled",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m",
+    
+    // File watching optimizations
+    "files.watcherExclude": {
+        "**/target/**": true,
+        "**/node_modules/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/logs/**": true,
+        "**/*.log": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/.angular/**": true
+    },
+    
+    // Search exclusions to improve performance
+    "search.exclude": {
+        "**/target": true,
+        "**/node_modules": true,
+        "**/logs": true,
+        "**/*.log": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.angular": true,
+        "**/bower_components": true,
+        "**/.git": true
+    },
+    
+    // Files exclusions
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/.angular": true
+    },
+    
+    // TypeScript optimizations
+    "typescript.tsserver.maxTsServerMemory": 4096,
+    "typescript.disableAutomaticTypeAcquisition": false,
+    
+    // Editor optimizations
+    "editor.codeLens": false,
+    "editor.minimap.enabled": true,
+    "editor.minimap.maxColumn": 80,
+    "editor.renderWhitespace": "selection",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 2000,
+    
+    // Git optimizations
+    "git.enabled": true,
+    "git.autorefresh": false,
+    "git.autofetch": false,
+    
+    // Disable unused features
+    "telemetry.telemetryLevel": "off",
+    "workbench.enableExperiments": false
 }

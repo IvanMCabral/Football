@@ -1,0 +1,149 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Abrir terminal en carpeta local",
+			"type": "shell",
+			"command": "cd C:\\Users\\ichu_\\ciberfootbolt_local",
+			"group": "build"
+		},
+		{
+			"label": "Maven Clean Build and Run",
+			"type": "shell",
+			"command": "mvn clean install && mvn spring-boot:run"
+		},
+		{
+			"label": "Maven Clean",
+			"type": "shell",
+			"command": "mvn clean",
+			"group": "build"
+		},
+		{
+			"label": "Maven Build",
+			"type": "shell",
+			"command": "mvn install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Build (Full Log)",
+			"type": "shell",
+			"command": "mvn install -e",
+			"group": "build"
+		},
+		{
+			"label": "Maven Build (Debug Log)",
+			"type": "shell",
+			"command": "mvn install -X",
+			"group": "build"
+		},
+		{
+			"label": "Maven Spring Boot Run",
+			"type": "shell",
+			"command": "mvn spring-boot:run"
+		},
+		{
+			"label": "Maven Build (after interface add)",
+			"type": "shell",
+			"command": "mvn install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Build (after StandingService add)",
+			"type": "shell",
+			"command": "mvn install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Build (final check)",
+			"type": "shell",
+			"command": "mvn install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Spring Boot Run (final)",
+			"type": "shell",
+			"command": "mvn spring-boot:run"
+		},
+		{
+			"label": "Maven Spring Boot Run (debug)",
+			"type": "shell",
+			"command": "mvn spring-boot:run -X"
+		},
+		{
+			"label": "Maven Build (LeagueEntity status fix)",
+			"type": "shell",
+			"command": "mvn install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Spring Boot Run (final status fix)",
+			"type": "shell",
+			"command": "mvn spring-boot:run"
+		},
+		{
+			"label": "Maven Build (LeagueService fix)",
+			"type": "shell",
+			"command": "mvn install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Spring Boot Run (LeagueService fixed)",
+			"type": "shell",
+			"command": "mvn spring-boot:run"
+		},
+		{
+			"label": "Build and run Spring Boot app after LeagueTeamRepositoryAdapter fix",
+			"type": "shell",
+			"command": "mvn clean spring-boot:run"
+		},
+		{
+			"label": "Build and run Spring Boot app after League domain and SeasonRepository fixes",
+			"type": "shell",
+			"command": "mvn clean spring-boot:run"
+		},
+		{
+			"label": "Build and run Spring Boot app after StandingServiceAdapter fix",
+			"type": "shell",
+			"command": "mvn clean spring-boot:run"
+		},
+		{
+			"label": "Build and run Spring Boot app after MatchSimulationService type fixes",
+			"type": "shell",
+			"command": "mvn clean spring-boot:run"
+		},
+		{
+			"label": "Maven Clean Build and Run",
+			"type": "shell",
+			"command": "mvn clean install && mvn spring-boot:run"
+		},
+		{
+			"label": "Maven Clean",
+			"type": "shell",
+			"command": "mvn clean",
+			"group": "build"
+		},
+		{
+			"label": "Maven Build",
+			"type": "shell",
+			"command": "mvn install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Spring Boot Run",
+			"type": "shell",
+			"command": "mvn spring-boot:run"
+		},
+		{
+			"label": "Maven Build (generate events)",
+			"type": "shell",
+			"command": "mvn clean install",
+			"group": "build"
+		},
+		{
+			"label": "Maven Build (force resimulate)",
+			"type": "shell",
+			"command": "mvn clean install",
+			"group": "build"
+		}
+	]
+}

@@ -21,6 +21,21 @@ spring:
     password: ${DB_PASSWORD:postgres}
     locations: classpath:db/migration
     baseline-on-migrate: true
+  
+  # Redis (Career Save Game Storage)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 30000ms  # Aumentado a 30s para CareerSave grande
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: -1ms
+        shutdown-timeout: 100ms
 
   # Security
   security:
@@ -57,9 +72,9 @@ logging:
   level:
     root: INFO
     com.footballmanager: DEBUG
-    org.springframework.r2dbc: DEBUG
-    io.r2dbc.postgresql.QUERY: DEBUG
-    io.r2dbc.postgresql.PARAM: DEBUG
+    org.springframework.r2dbc: WARN
+    org.springframework.data.r2dbc: WARN
+    io.r2dbc.postgresql: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
