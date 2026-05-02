@@ -1504,8 +1504,11 @@ public final class V32TickEngine {
                 int passTarget = findForwardAttackerTarget(state, playerId);
                 if (passTarget != -1) {
                     state.forcedForwardPasses++;
+                    state.progressionTransfers++;
+                    state.lastFinalizationTransferTick[playerId] = (int)state.totalTicks;
                     // DEBUG: trace progression pass
                         if (playerId == 12 && state.totalTicks == 216006 && state.progressionTransfers == 8010) {
+                            boolean urgentSituation = (context == 2);
                             System.out.printf("[PROG] tick=%d playerId=%d passTarget=%d urgent=%s skipVelDamp=%s justKicked=%s%n",
                                 state.totalTicks, playerId, passTarget, urgentSituation, state.skipVelocityDamping, state.justKicked);
                         }
@@ -1515,6 +1518,8 @@ public final class V32TickEngine {
                 int fallbackTarget = findNearestForwardPlayer(state, playerId);
                 if (fallbackTarget != -1) {
                     state.forcedForwardPasses++;
+                    state.progressionTransfers++;
+                    state.lastFinalizationTransferTick[playerId] = (int)state.totalTicks;
                     return PlayerDecision.pass(playerId, fallbackTarget, 0.85f);
                 }
                 // No forward player available — dribble is not acceptable fallback here.
