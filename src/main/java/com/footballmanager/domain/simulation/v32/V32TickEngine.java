@@ -1506,6 +1506,11 @@ public final class V32TickEngine {
                     state.forcedForwardPasses++;
                     state.progressionTransfers++;
                     state.lastFinalizationTransferTick[playerId] = (int)state.totalTicks;
+                    // FIX: Mark ball as in-flight so handleCollisions clears ballController.
+                    // This prevents possession-pullback which would reclaim ball to sender.
+                    state.justKicked = true;
+                    // Set attacking anchor so receiver holds position after receiving pass.
+                    state.attackingAnchorTicks[passTarget] = 450;
                     // DEBUG: trace progression pass
                         if (playerId == 12 && state.totalTicks == 216006 && state.progressionTransfers == 8010) {
                             boolean urgentSituation = (context == 2);
@@ -1520,6 +1525,9 @@ public final class V32TickEngine {
                     state.forcedForwardPasses++;
                     state.progressionTransfers++;
                     state.lastFinalizationTransferTick[playerId] = (int)state.totalTicks;
+                    // FIX: Mark ball as in-flight so handleCollisions clears ballController.
+                    state.justKicked = true;
+                    state.attackingAnchorTicks[fallbackTarget] = 450;
                     return PlayerDecision.pass(playerId, fallbackTarget, 0.85f);
                 }
                 // No forward player available — dribble is not acceptable fallback here.
