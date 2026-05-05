@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 7, 8 completed
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `abbcb53` (Phase 6A style-aware lambda)
-**Tests:** 72 relevant tests, 0 failures
+**Current baseline commit:** `2eaa41a` (Phase 6B experimental style-aware simulation)
+**Tests:** 81 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `abbcb53`
-**Tests:** 72 relevant tests, 0 failures
+**Commit:** `2eaa41a`
+**Tests:** 81 relevant tests, 0 failures
 
 ### What exists
 
@@ -37,7 +37,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 | `MatchEngineImplEventConsistencyTest` | `test/.../MatchEngineImplEventConsistencyTest.java` | 8 tests: goal events match score; events sorted; summary coherent |
 | `MatchEngineImplRoleContributionTest` | `test/.../MatchEngineImplRoleContributionTest.java` | 7 tests: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
 | `V23SimulationQualityGateTest` | `test/.../V23SimulationQualityGateTest.java` | 8 tests: full regression gate |
-| Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation (Phase 6A: TeamStyle) |
+| Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation (Phase 6B: simulateWithStyle) |
 
 ### Current simulation path
 
@@ -388,7 +388,7 @@ Remove new class. Revert any service/endpoint changes.
 
 Introduce team tactical style that slightly modifies `totalLambda`, `homeShare`, or possession without breaking the validated Poisson distribution. E.g., `counter` team gets slightly higher `awayShare` or lower `totalLambda`.
 
-> **Phase 6A complete** � `TeamStyle` enum and style-aware `computeLambdas()` overload exist. `MatchEngineImpl` does not consume style. Phase 6B will decide integration path.
+> **Phase 6B complete** — Option B: experimental `simulateWithStyle()` overload in `MatchEngineImpl`. Normal simulation path unchanged. Phase 6C or Phase 10 next.
 
 ### Non-goals
 
@@ -651,36 +651,38 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 6B
+## Recommended Next Phase: Phase 6C, Phase 10, or Phase 11
 
-Phase 6A is complete:
+Phase 6A and Phase 6B are complete:
 - TeamStyle enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
 - MatchQualityComputer style-aware overload exists
-- MatchEngineImpl does NOT consume it � simulation behavior unchanged
-- Phase 6B will decide how/whether simulation should integrate style
-- MatchQualityMetrics value object exists
-- xG is exposed in fixture query DTOs
-- no Redis persistence
-- no MatchResultData change
-- no simulation behavior change
+- MatchEngineImpl has experimental `simulateWithStyle(Team, Team, TeamStyle, TeamStyle, long seed)`
+- Existing `simulate(Team, Team)` remains unchanged
+- Existing `simulate(Team, Team, long seed)` remains unchanged
+- MatchEngine port unchanged (only `simulate(Team, Team)` in interface)
+- No Team/SessionTeam/API/persistence/frontend changes
+- 81 tests pass
 
-Next available implementation phase:
-**Phase 6 — Tactics/Style Modifiers**
+**Phase 6C — User-configurable tactical styles**
+Make tactical style available to real career teams via SessionTeam/API/frontend.
+- Risk: MEDIUM because it touches Redis/API/frontend and production simulation integration
+- Requires: SessionTeam field, CareerSave migration, API endpoint, frontend UI
+- Do not start without separate audit/plan
 
-Goal:
-Add small tactical style modifiers to lambda/share/shot behavior while preserving the V23 quality gate.
+**Phase 10 — Improve Team OVR calculation**
+Replace `70 + min(20, squadSize/2)` with player-quality/formation-aware OVR.
+- Risk: MEDIUM/HIGH depending on available player data
+- Requires: full quality gate re-validation (all 81 tests)
 
-Risk:
-MEDIUM because it affects simulation balance.
-
-Requirement:
-Any Phase 6 implementation must pass the full regression gate.
+**Phase 11 — Frontend xG and tactic display**
+Expose already available xG fields and style experiments in UI.
+- Risk: LOW/MEDIUM depending on frontend scope
+- xG fields already in MatchInfo/LeagueMatchInfo DTOs (nullable)
 
 **Required regression gate for any simulation change:**
 ```
 mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
-
 ---
 
 ## Phase Implementation Order
@@ -697,7 +699,7 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 | **Phase 8** | Full Simulation Quality Gate | NONE | Done | Completed |
 | Phase 5B | MatchQualityMetrics API Exposure | LOW | 1 — Done | Completed |
 | Phase 6A | Style-aware computeLambdas | NONE | Done | Completed |
-| Phase 6B | Simulation integration (pending) | MEDIUM | 1 � Next | Pending |
+| Phase 6B | Experimental simulateWithStyle overload (Option B) | LOW | Done | Completed |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
 ---

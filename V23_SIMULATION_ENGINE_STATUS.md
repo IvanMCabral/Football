@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `abbcb53` (feat: add style-aware match quality lambda computation)
-**Status:** Phases 5A, 5B, 6A complete
-**Test status:** 72 relevant tests, 0 failures
+**Latest commit:** `2eaa41a` (feat: add experimental style-aware match simulation overload)
+**Status:** Phases 5A, 5B, 6A, and 6B complete
+**Test status:** 81 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -85,7 +85,7 @@ public final class MatchQualityComputer {
 
 | Test class | Tests | What it validates |
 |------------|-------|-------------------|
-| `MatchQualityComputerTest` | 6 | Unit: lambda values for equal/slight/strong OVR, clamp bounds, finite values |
+| `MatchQualityComputerTest` | 14 | Unit: 6 baseline + 8 style-aware lambda computation |
 | `MatchEngineImplMetricsValidationTest` | 6 | 10k matches × 3 scenarios: goals/xG ratios, 0-0 rate, 4+ rate, draw rate, no NaN/Infinity |
 | `MatchEngineImplPoissonValidationTest` | 6 | 1k matches × 3 scenarios: goals in range per scenario |
 | `MatchEngineImplDeterminismTest` | 7 | Phase 2: same seed → identical result; different seeds → diversity; zero/negative seeds |
@@ -96,7 +96,7 @@ public final class MatchQualityComputer {
 | `MatchEngineImplTest` | existing | Original behavior contract |
 | `DivisionTest` | 8 | Career division assignment logic (unrelated, pre-existing fix) |
 
-**Total: 72 tests, 0 failures**
+**Total: 81 tests, 0 failures**
 
 ---
 
@@ -265,19 +265,30 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 - `MatchEngineImpl` unchanged � no simulation behavior change
 - No persistence, API, or frontend changes
 
-## 16. Intentionally NOT Implemented Yet
+## 16. Phase 6B Deliveries (commit `2eaa41a`)
+
+- **`simulateWithStyle(Team, Team, TeamStyle, TeamStyle, long seed)`** — experimental style-aware overload in `MatchEngineImpl`
+- **`MatchEngineImplStyleSimulationTest`** — 9 tests validating style simulation
+- **Option B selected** — experimental overload only, no persistence/API/frontend changes
+- **BALANCED+BALANCED path** delegates to baseline `computeLambdas(int, int)` for guaranteed equivalence
+- **Null handling**: null style defaults to `TeamStyle.BALANCED`
+- **Port interface unchanged** — `MatchEngine` interface has only `simulate(Team, Team)`
+- **Existing `simulate(Team, Team, long seed)` unchanged** — same deterministic behavior
+- No Team, SessionTeam, WorldTeam, API, persistence, or frontend changes
+
+## 17. Intentionally NOT Implemented Yet
 
 - **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time without architecture change
 - **No PlayerRepository in simulation** — synthetic role labels used instead; roles are not squad-derived
 - **No xG fields in MatchResult** — `MatchResult` has no `homeXG`/`awayXG` fields; computed on-demand via `MatchQualityComputer`
 - **Frontend xG display** — xG is in API DTOs but frontend integration is a separate future task
-- **No tactical style consumption in simulation yet** — `TeamStyle` exists and `MatchQualityComputer` has style-aware overload, but production simulation still uses baseline `computeLambdas()`. Phase 6B pending.
+- **No tactical style user-configurable** — `TeamStyle` enum exists but no UI/API to set style; `simulateWithStyle()` is experimental only; Phase 6C or later could add user-facing style selection
 - **No shot location/inside-box data** — no per-shot xG, no position data, no distToGoal
 - **V32/V33 engine** — V32 is specification/documentation only, not runnable. V33 is on a separate experiment branch
 
 ---
 
-## 17. Remaining Risks and Limitations
+## 18. Remaining Risks and Limitations
 
 | Limitation | Impact | Mitigation |
 |-----------|--------|-----------|
@@ -289,7 +300,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 18. Phase 5C — Future Work (Deferred)
+## 19. Phase 5C — Future Work (Deferred)
 
 - **`goalsToXgRatio`** — optional future field for over/under-performance analysis; not in current scope
 - **Redis persistence of xG** — explicitly deferred due to schema migration complexity; no current plan
@@ -297,18 +308,29 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 19. Recommended Next Phase
+## 20. Recommended Next Phase
 
-**Phase 6A complete — style-aware lambda computation exists. Phase 6B is the next decision point.**
+**Phase 6B complete — Option B experimental overload implemented. Phase 6C or Phase 10/11 next.**
 
-**Phase 6B — Simulation Integration Decision**
-Decide whether `MatchEngineImpl` should consume `TeamStyle`:
-- Keep as analytics-only (no simulation change)
-- Add style to Team/SessionTeam (persistence/API impact)
-- Optional seeded overload for experiments only
-- Phase 6A already complete: `TeamStyle` enum + style-aware `computeLambdas()`
+**Phase 6C — User-Configurable Tactical Style**
+Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
+- Low-medium risk — SessionTeam is Redis JSON, backward-compatible addition
+- Requires: SessionTeam field, API endpoint, frontend UI
+- Not yet approved — decision point for future sprint
 
-**Phase 9 — Future Advanced Engine**
+**Phase 10 — Improve OVR Calculation**
+Replace squad-size-only OVR with player quality weighted calculation:
+- `calculateTeamOverall()` uses `70 + min(20, squadSize/2)` — formation and player quality not considered
+- Medium risk — requires validation of all 72+ tests
+- Would improve simulation fidelity significantly
+
+**Phase 11 — Frontend xG and Tactic Display**
+Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
+- Separate approval required for frontend work
+- Low technical risk — xG fields are already in API DTOs (nullable)
+
+**Phase 9 — Future Advanced Engine (V32/V33)**
+V32 is specification-only. V33 is on a separate experiment branch.
 Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
@@ -318,12 +340,13 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 
 ---
 
-## 20. Summary
+## 21. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 72 relevant tests pass. `MatchEngineImpl` uses baseline lambdas; Phase 6B pending for style integration. No changes to production API, persistence, or frontend.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 81 relevant tests pass. Experimental `simulateWithStyle()` method exists in `MatchEngineImpl` for style-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 6C (user-configurable style) and Phase 10 (OVR improvement) are the recommended next phases.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+2eaa41a — feat: add experimental style-aware match simulation overload (Phase 6B)
 abbcb53 — feat: add style-aware match quality lambda computation (Phase 6A)
 69b8e0e — feat: expose xG metrics in fixture query DTOs (Phase 5B)
 b5d286f — feat: add internal match quality metrics value object (Phase 5A)

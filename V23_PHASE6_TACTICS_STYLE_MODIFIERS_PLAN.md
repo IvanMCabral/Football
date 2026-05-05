@@ -1,9 +1,10 @@
 # V23 Phase 6: Tactics/Style Modifiers — Audit & Implementation Plan
 
-**Status:** PHASE 6A COMPLETED -- Phase 6B pending (simulation integration undecided)
+**Status:** PHASE 6B COMPLETED — Option B: experimental simulateWithStyle overload (simulation integration via experimental method; production normal path unchanged)
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-05
-**Phase 6A implemented:** 2026-05-05 (`abbcb53`)
+**Phase 6B implemented:** 2026-05-05 (`2eaa41a`)
+**Phase 6B commit:** Option B — `simulateWithStyle()` experimental overload in `MatchEngineImpl`
 
 ---
 
@@ -549,14 +550,18 @@ Phase 6A implemented as specified:
 - `MatchEngineImpl` unchanged
 - No API/persistence changes
 
-## Phase 6B — Pending
+## Phase 6B — Completed (Option B)
 
-**Decision required:** Should `MatchEngineImpl` consume `TeamStyle`?
+**Decision:** Option B — experimental `simulateWithStyle()` overload only.
 
-Options under evaluation:
-- **Keep as analytics-only** — Phase 6A utility for analysis, no simulation change
-- **Add to Team aggregate** — `Team.style` field, higher risk (persistence/API changes)
-- **Optional seeded overload** — `simulateWithStyle(Team, Team, TeamStyle, TeamStyle, seed)`
-- **Derive from Formation** — not recommended (risky hidden coupling)
+**Implemented:** `MatchEngineImpl.simulateWithStyle(Team, Team, TeamStyle, TeamStyle, long seed)` — commit `2eaa41a`
+- BALANCED+BALANCED delegates to baseline `computeLambdas(int, int)` for guaranteed equivalence
+- Null style defaults to BALANCED
+- Existing `simulate(Team, Team)` and `simulate(Team, Team, long seed)` unchanged
+- Port interface unchanged
+- No Team/SessionTeam/API/persistence/frontend changes
+- `MatchEngineImplStyleSimulationTest` (9 tests) validates all 25 style combinations
 
-*This document is the authoritative Phase 6 specification. Phase 6A implemented. Phase 6B requires separate approval.*
+**Not implemented:** style user-configurability (Phase 6C pending), Team/SessionTeam style field, frontend selector.
+
+*This document covers Phase 6A and Phase 6B. Phase 6C (user-configurable style) requires separate approval.*tative Phase 6 specification. Phase 6A implemented. Phase 6B requires separate approval.*
