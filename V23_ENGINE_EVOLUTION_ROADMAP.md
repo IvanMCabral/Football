@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4 completed
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 7 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `de13433` (Phase 3 shot model alignment)
-**Tests:** 41 relevant tests, 0 failures
+**Current baseline commit:** `d1c5c36` (Phase 7 role-based scorer attribution)
+**Tests:** 48 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `de13433`
-**Tests:** 41 relevant tests, 0 failures
+**Commit:** `d1c5c36`
+**Tests:** 48 relevant tests, 0 failures
 
 ### What exists
 
@@ -33,6 +33,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 | `MatchEngineImplPoissonValidationTest` | `test/.../MatchEngineImplPoissonValidationTest.java` | 1k-match per scenario goal range validation |
 | `MatchEngineImplDeterminismTest` | `test/.../MatchEngineImplDeterminismTest.java` | 7 tests: same seed = identical result; different seeds = diversity |
 | `MatchEngineImplEventConsistencyTest` | `test/.../MatchEngineImplEventConsistencyTest.java` | 8 tests: goal events match score; events sorted; summary coherent |
+| `MatchEngineImplRoleContributionTest` | `test/.../MatchEngineImplRoleContributionTest.java` | 7 tests: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
 | Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation |
 
 ### Current simulation path
@@ -47,13 +48,13 @@ simulate(Team home, Team away)
   → poissonSample((homeLambda+awayLambda)/0.20)  // Phase 3: total shots from lambda
   → homeShots = totalShots * homePossession/100; // Phase 3: possession split
   → homeShots = max(homeGoals, homeShots)        // Phase 3: goal floor
-  → generateEvents()           // goal/card/injury events sorted by minute
+  → generateEvents()           // Phase 7: goal events with synthetic role labels (HOME_ST_1, AWAY_RW_2), sorted by minute
   → MatchResult.of(homeGoals, awayGoals, possession, shots, events, summary)
 ```
 
 ### Known limitations
 
-1. **No role attribution** — scorers are generic "PlayerHome1", no attacker vs defender split
+1. **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time
 2. **No tactical style** — all teams use same lambda formula regardless of strategy
 3. **No shot location/inside-box** — no per-shot xG, no position data
 4. **`calculateTeamOverall` is squad-size based only** — no formation or player quality weighting
@@ -645,15 +646,15 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 7 (Player/Role Contribution)
+## Recommended Next Phase: Phase 8 (Full Simulation Quality Gate)
 
 **Rationale:**
 
-1. **Lowest risk** — event generation only, no gameplay mechanics affected
-2. **Immediate value** — goal scorers become realistic (ST/RW/LW/AM most likely; CB/DM rare; GK near-zero)
-3. **Small scope** — one helper method + 2-3 test cases
-4. **No goal model changes** — goals/match, xG, 0-0 rate all preserved
-5. **Prerequisite** — needed before Phase 8 (quality gate) for full realism
+1. **Test-only** — no production code changes, no behavior changes
+2. **Protects all completed work** — serves as the regression gate before Phase 5/6/tactics/API work
+3. **Comprehensive** — all scenario metrics, determinism, event consistency, role distribution, performance sanity in one suite
+4. **Required gate** — phases 5/6/any new simulation work should require Phase 8 to pass first
+5. **Low risk** — purely validation infrastructure, no gameplay mechanics affected
 
 ---
 
@@ -666,11 +667,11 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 | **Phase 2** | Deterministic Seeding | LOW | Done | Completed |
 | **Phase 3** | Shot Model Alignment | MEDIUM | Done | Completed |
 | **Phase 4** | Event Consistency | LOW | Done | Completed |
-| **Phase 7** | Player/Role Contribution | LOW | **1 — Next** | Available |
+| **Phase 7** | Player/Role Contribution | LOW | Done | Completed |
+| **Phase 8** | Full Simulation Quality Gate | NONE | **1 — Next** | Available |
 | Phase 5 | Match Quality Metrics in Production | LOW | 2 | Available |
 | Phase 6 | Tactics/Style Modifiers | MEDIUM | 3 | Available |
-| Phase 8 | Quality Gate | NONE | 4 | Available |
-| Phase 9 | Future Advanced Engine | HIGH | 5 | Deferred until V23 stable |
+| Phase 9 | Future Advanced Engine | HIGH | 4 | Deferred until V23 stable |
 
 ---
 

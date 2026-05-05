@@ -1,8 +1,8 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `de13433` (refactor: align V23 shot model with xG and goals)
-**Test status:** 41 relevant tests, 0 failures
+**Latest commit:** `d1c5c36` (feat: add role-based scorer attribution to V23 match events)
+**Test status:** 48 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -20,7 +20,7 @@ MatchEngineImpl.simulate(Team homeTeam, Team awayTeam)
       → poissonSample((homeLambda+awayLambda)/0.20) // Phase 3: total shots from lambda
       → homeShots = totalShots * homePossession/100, awayShots = totalShots - homeShots
       → homeShots = max(homeGoals, homeShots)        // Phase 3: goal floor
-      → generateEvents()                    // goal events per goals scored, ±card/injury
+      → generateEvents()           // Phase 7: goal events with synthetic role labels (HOME_ST_1, AWAY_RW_2, etc.), sorted by minute
       → MatchResult.of(homeGoals, awayGoals, possession, shots, events, summary)
 ```
 
@@ -89,10 +89,11 @@ public final class MatchQualityComputer {
 | `MatchEngineImplPoissonValidationTest` | 6 | 1k matches × 3 scenarios: goals in range per scenario |
 | `MatchEngineImplDeterminismTest` | 7 | Phase 2: same seed → identical result; different seeds → diversity; zero/negative seeds |
 | `MatchEngineImplEventConsistencyTest` | 8 | Phase 4: goal events match score; home/away attribution; events sorted; minutes valid; summary coherent |
+| `MatchEngineImplRoleContributionTest` | 7 | Phase 7: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
 | `MatchEngineImplTest` | existing | Original behavior contract |
 | `DivisionTest` | 8 | Career division assignment logic (unrelated, pre-existing fix) |
 
-**Total: 41 tests, 0 failures**
+**Total: 48 tests, 0 failures**
 
 ---
 
@@ -184,22 +185,41 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 11. Intentionally NOT Implemented Yet
+## 11. Phase 7 Deliveries (commit `d1c5c36`)
 
-- **xG fields in MatchResult** — `MatchResult` has no `homeXG`/`awayXG` fields. xG is computed on-demand via `MatchQualityComputer`.
+- **Synthetic role-based scorer labels** — goal events now use `HOME_ST_1`, `HOME_RW_2`, `AWAY_AM_1`, etc. instead of generic `PlayerHome1` / `PlayerAway1`
+- **`selectScorer()` helper method** — weighted random role selection using injected `Random` for determinism
+- **Role weights:** ST 35%, RW/LW 25%, AM 20%, CM 12%, DM 5%, DF 3%, GK 0%
+- **`MatchEngineImplRoleContributionTest`** — 7 tests validating:
+  - All scorer names match `^(HOME|AWAY)_(ST|RW|LW|AM|CM|DM|DF)_\\d+$`
+  - Goal event count equals score (unchanged)
+  - HOME/AWAY attribution correct (unchanged)
+  - Attacker roles (ST/RW/LW/AM) >= 70% of goals across 30k matches
+  - Defensive roles (DM/DF) <= 15% of goals across 30k matches
+  - GK goals == 0
+  - Seeded simulation produces identical scorer names
+- **No MatchEvent schema change** — role encoded in `playerName` field
+- **No API/persistence/frontend changes**
+- **Determinism preserved** — same seed produces identical scorer names
+
+---
+
+## 12. Intentionally NOT Implemented Yet
+
+- **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time without architecture change
+- **No PlayerRepository in simulation** — synthetic role labels used instead; roles are not squad-derived
+- **No xG fields in MatchResult** — `MatchResult` has no `homeXG`/`awayXG` fields; computed on-demand via `MatchQualityComputer`
 - **Frontend xG display** — no API surface for xG, no JSON fields on match result serialization
-- **No role-based scorer attribution** — goal events use generic "PlayerHome1" names, no ST/CB/GK distribution
 - **No tactical/style modifiers** — all teams use same lambda formula regardless of strategy
 - **No shot location/inside-box data** — no per-shot xG, no position data, no distToGoal
 - **V32/V33 engine** — V32 is specification/documentation only, not runnable. V33 is on a separate experiment branch
 
 ---
 
-## 12. Remaining Risks and Limitations
+## 13. Remaining Risks and Limitations
 
 | Limitation | Impact | Mitigation |
 |-----------|--------|-----------|
-| **Shots independent of role** | All shots attributed at team level; no attacker vs CB/DM split | Phase 7 (Player/Role Contribution) — improves realism without changing goals |
 | **xG is lambda-derived, not shot-location based** | xG ≈ team lambda; does not account for shot quality distribution | Phase 1 scope only — xG is instrumentation, not goal resolution |
 | **Possession formula is heuristic** | `basePossession = (homeStrength/totalStrength)*100 ±10` — not physics-based | Acceptable for current simulation fidelity |
 | **No tactical style** | All teams use same lambda formula regardless of strategy | Phase 6 (Tactics/Style Modifiers) — if needed |
@@ -207,16 +227,16 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 13. Recommended Next Phase
+## 14. Recommended Next Phase
 
-**Recommended: Phase 7 — Player/Role Contribution**
+**Recommended: Phase 8 — Full Simulation Quality Gate**
 
 Rationale:
-- **Lowest risk** — event generation only, no gameplay mechanics affected
-- **Immediate value** — goal scorers become realistic (ST/RW/LW/AM most likely, CB/DM rare, GK near-zero)
-- **Small scope** — one helper method + 2-3 test cases
-- **No goal model changes** — goals/match, xG, 0-0 rate all preserved
-- **Prerequisite** — needed before Phase 8 (quality gate) for full realism
+- **Test-only** — no production code changes, no behavior changes
+- **Protects all completed work** — serves as the regression gate before Phase 5/6/tactics/API work
+- **Comprehensive** — runs all scenario metrics, determinism, event consistency, role distribution, and performance sanity in one test suite
+- **Required gate** — phases 5/6/any new simulation work should require Phase 8 to pass first
+- **Low risk** — purely validation infrastructure, no gameplay mechanics affected
 
 **Alternative options also available:**
 - Phase 5 — Match Quality Metrics in Production (expose xG via API)
@@ -224,12 +244,13 @@ Rationale:
 
 ---
 
-## 14. Summary
+## 15. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, and 4 are complete. `MatchQualityComputer` is available as a shared utility. Shot model is now aligned with lambda/xG/goals. All 41 relevant tests pass. No changes to production API, persistence, or frontend.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, and 7 are complete. `MatchQualityComputer` is available as a shared utility. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. All 48 relevant tests pass. No changes to production API, persistence, or frontend.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+d1c5c36 — feat: add role-based scorer attribution to V23 match events (Phase 7)
 de13433 — refactor: align V23 shot model with xG and goals (Phase 3)
 b0cc191 — test: add deterministic seeding replay and determinism tests (Phase 2)
 a534627 — test: add V23 event consistency validation tests (Phase 4)
