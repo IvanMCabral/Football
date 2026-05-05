@@ -661,7 +661,7 @@ Phase 6A and Phase 6B are complete:
 - Existing `simulate(Team, Team, long seed)` remains unchanged
 - MatchEngine port unchanged (only `simulate(Team, Team)` in interface)
 - No Team/SessionTeam/API/persistence/frontend changes
-- 81 tests pass
+- 89 tests pass
 
 **Phase 6C — User-configurable tactical styles**
 Make tactical style available to real career teams via SessionTeam/API/frontend.
@@ -675,7 +675,7 @@ Use SessionPlayer.calculateOverall() to compute real OVR and pass to simulateWit
 - Risk: LOW — additive only, no existing behavior change
 - Requires: CareerTeamManager/CareerPlayerManager access for OVR computation
 
-**Phase 11 — Frontend xG and tactic display****Phase 11 — Frontend xG and tactic display**
+**Phase 11 — Frontend xG and tactic display**
 Expose already available xG fields and style experiments in UI.
 - Risk: LOW/MEDIUM depending on frontend scope
 - xG fields already in MatchInfo/LeagueMatchInfo DTOs (nullable)

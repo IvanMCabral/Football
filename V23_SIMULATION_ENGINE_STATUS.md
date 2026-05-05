@@ -345,12 +345,10 @@ Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend st
 - Requires: SessionTeam field, API endpoint, frontend UI
 - Not yet approved — decision point for future sprint
 
-**Phase 10 — Improve OVR Calculation**
-Replace squad-size-only OVR with player quality weighted calculation:
-- `calculateTeamOverall()` uses `70 + min(20, squadSize/2)` — formation and player quality not considered
-- Medium risk — requires validation of all 72+ tests
-- Would improve simulation fidelity significantly
-
+**Phase 10B — External TeamOverallCalculator / Real OVR Integration**
+Use SessionPlayer.calculateOverall() to compute real OVR and pass to simulateWithStrength():
+- Phase 10A added explicit OVR overload; Phase 10B adds TeamOverallCalculator service
+- Medium risk — requires validation of all 89 tests
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
 - Separate approval required for frontend work
@@ -372,7 +370,8 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 89 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10B (real OVR integration) and Phase 6C (user-configurable style) are the recommended next phases.
 
 **Commit history on `mvp-1-performance-cleanup`:**
-```
+```f75afe1 — feat: add experimental explicit OVR match simulation overload (Phase 10A)
+
 2eaa41a — feat: add experimental style-aware match simulation overload (Phase 6B)
 abbcb53 — feat: add style-aware match quality lambda computation (Phase 6A)
 69b8e0e — feat: expose xG metrics in fixture query DTOs (Phase 5B)
