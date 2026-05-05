@@ -112,14 +112,19 @@ public class MatchEngineImpl implements MatchEngine {
     private java.util.List<MatchEvent> generateEvents(int homeGoals, int awayGoals, Random random) {
         java.util.List<MatchEvent> events = new ArrayList<>();
 
+        java.util.Map<String, Integer> homeCounters = new java.util.HashMap<>();
+        java.util.Map<String, Integer> awayCounters = new java.util.HashMap<>();
+
         for (int i = 0; i < homeGoals; i++) {
             int minute = 10 + random.nextInt(80);
-            events.add(MatchEvent.of(MatchEvent.EventType.GOAL, minute, "PlayerHome" + (i + 1), "HOME"));
+            events.add(MatchEvent.of(MatchEvent.EventType.GOAL, minute,
+                    selectScorer(true, random, homeCounters), "HOME"));
         }
 
         for (int i = 0; i < awayGoals; i++) {
             int minute = 10 + random.nextInt(80);
-            events.add(MatchEvent.of(MatchEvent.EventType.GOAL, minute, "PlayerAway" + (i + 1), "AWAY"));
+            events.add(MatchEvent.of(MatchEvent.EventType.GOAL, minute,
+                    selectScorer(false, random, awayCounters), "AWAY"));
         }
 
         if (random.nextDouble() < 0.3) {
@@ -134,6 +139,34 @@ public class MatchEngineImpl implements MatchEngine {
 
         events.sort(java.util.Comparator.comparingInt(MatchEvent::getMinute));
         return events;
+    }
+
+    /**
+     * Selects a synthetic role-based scorer name.
+     * Role weights: ST 35%, RW/LW 25%, AM 20%, CM 12%, DM 5%, DF 3%, GK 0%
+     * Uses the same Random for determinism.
+     */
+    private String selectScorer(boolean isHome, Random random, java.util.Map<String, Integer> counters) {
+        double r = random.nextDouble();
+        String role;
+        if (r < 0.35) {
+            role = "ST";
+        } else if (r < 0.60) {
+            role = random.nextBoolean() ? "RW" : "LW";
+        } else if (r < 0.80) {
+            role = "AM";
+        } else if (r < 0.92) {
+            role = "CM";
+        } else if (r < 0.97) {
+            role = "DM";
+        } else {
+            role = "DF";
+        }
+
+        String prefix = isHome ? "HOME" : "AWAY";
+        int count = counters.getOrDefault(role, 0) + 1;
+        counters.put(role, count);
+        return prefix + "_" + role + "_" + count;
     }
 
     private String generateSummary(String homeTeam, String awayTeam, int homeGoals,
