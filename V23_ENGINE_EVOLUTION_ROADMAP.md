@@ -1,9 +1,10 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** PLANNING — No implementation until phase plan is approved
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `6f3eec7` (docs: document V23 simulation engine status)
-**Created:** 2026-05-04
+**Current baseline commit:** `de13433` (Phase 3 shot model alignment)
+**Tests:** 41 relevant tests, 0 failures
+**Date:** 2026-05-05
 
 ---
 
@@ -17,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `6f3eec7`
-**Tests:** 26 relevant tests, 0 failures
+**Commit:** `de13433`
+**Tests:** 41 relevant tests, 0 failures
 
 ### What exists
 
@@ -30,6 +31,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 | `MatchQualityComputerTest` | `test/.../MatchQualityComputerTest.java` | 6 unit tests for lambda formula correctness |
 | `MatchEngineImplMetricsValidationTest` | `test/.../MatchEngineImplMetricsValidationTest.java` | 10k-match validation asserting goals/xG/0-0/4+ within ranges |
 | `MatchEngineImplPoissonValidationTest` | `test/.../MatchEngineImplPoissonValidationTest.java` | 1k-match per scenario goal range validation |
+| `MatchEngineImplDeterminismTest` | `test/.../MatchEngineImplDeterminismTest.java` | 7 tests: same seed = identical result; different seeds = diversity |
+| `MatchEngineImplEventConsistencyTest` | `test/.../MatchEngineImplEventConsistencyTest.java` | 8 tests: goal events match score; events sorted; summary coherent |
 | Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation |
 
 ### Current simulation path
@@ -41,18 +44,19 @@ simulate(Team home, Team away)
   → computeLambdas()           // MatchQualityComputer — produces homeLambda, awayLambda
   → poissonSample(homeLambda)  // Knuth (lambda<30) or Normal approx (lambda>=30)
   → poissonSample(awayLambda)
+  → poissonSample((homeLambda+awayLambda)/0.20)  // Phase 3: total shots from lambda
+  → homeShots = totalShots * homePossession/100; // Phase 3: possession split
+  → homeShots = max(homeGoals, homeShots)        // Phase 3: goal floor
   → generateEvents()           // goal/card/injury events sorted by minute
   → MatchResult.of(homeGoals, awayGoals, possession, shots, events, summary)
 ```
 
 ### Known limitations
 
-1. **`new Random()` inside simulation** — non-deterministic, no replay capability
-2. **Shots independent of goals/xG** — `Math.max(3, possession/15 + random.nextInt(5))` — no correlation with lambda or team strength
-3. **No role attribution** — scorers are generic "PlayerHome1", no attacker vs defender split
-4. **Events generated independently of score** — no validation that GOAL events match actual goals scored
-5. **`calculateTeamOverall` is squad-size based only** — no formation or player quality weighting
-6. **No tactical style** — all teams use same lambda formula regardless of strategy
+1. **No role attribution** — scorers are generic "PlayerHome1", no attacker vs defender split
+2. **No tactical style** — all teams use same lambda formula regardless of strategy
+3. **No shot location/inside-box** — no per-shot xG, no position data
+4. **`calculateTeamOverall` is squad-size based only** — no formation or player quality weighting
 
 ---
 
@@ -641,31 +645,32 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 2 (Deterministic Seeding)
+## Recommended Next Phase: Phase 7 (Player/Role Contribution)
 
 **Rationale:**
 
-1. **Lowest risk** — additive overload, existing code unchanged, no distribution changes
-2. **Immediate value** — enables replay debugging, test reproducibility, deterministic CI
-3. **Small scope** — one new method overload + 2-3 test cases
-4. **Prerequisite** — Phase 8 (quality gate) needs deterministic seeds to test regression
-
-**Estimated implementation:** 1 new method, 1 private method refactor, 2 new test classes, ~100 lines of code.
+1. **Lowest risk** — event generation only, no gameplay mechanics affected
+2. **Immediate value** — goal scorers become realistic (ST/RW/LW/AM most likely; CB/DM rare; GK near-zero)
+3. **Small scope** — one helper method + 2-3 test cases
+4. **No goal model changes** — goals/match, xG, 0-0 rate all preserved
+5. **Prerequisite** — needed before Phase 8 (quality gate) for full realism
 
 ---
 
 ## Phase Implementation Order
 
-| Phase | Name | Risk | Priority | Notes |
-|-------|------|------|----------|-------|
-| **Phase 2** | Deterministic Seeding | LOW | **1 — Next** | Enables replay and quality gate |
-| Phase 4 | Event Consistency | LOW | 2 | Quick win, validates existing logic |
-| Phase 3 | Shot Model Alignment | MEDIUM | 3 | Affects shot/goal coherence |
-| Phase 5 | Match Quality Metrics in Production | LOW | 4 | Depends on Phase 1B work |
-| Phase 6 | Tactics/Style Modifiers | MEDIUM | 5 | Requires full re-validation |
-| Phase 7 | Player/Role Contribution | LOW | 6 | Event generation only |
-| Phase 8 | Quality Gate | NONE | 7 | Test infrastructure |
-| Phase 9 | Future Advanced Engine | HIGH | 8 | Deferred until V23 stable |
+| Phase | Name | Risk | Priority | Status |
+|-------|------|------|----------|--------|
+| **Phase 1A** | Metrics/xG Collector | NONE | Done | Completed |
+| **Phase 1B** | MatchQualityComputer | LOW | Done | Completed |
+| **Phase 2** | Deterministic Seeding | LOW | Done | Completed |
+| **Phase 3** | Shot Model Alignment | MEDIUM | Done | Completed |
+| **Phase 4** | Event Consistency | LOW | Done | Completed |
+| **Phase 7** | Player/Role Contribution | LOW | **1 — Next** | Available |
+| Phase 5 | Match Quality Metrics in Production | LOW | 2 | Available |
+| Phase 6 | Tactics/Style Modifiers | MEDIUM | 3 | Available |
+| Phase 8 | Quality Gate | NONE | 4 | Available |
+| Phase 9 | Future Advanced Engine | HIGH | 5 | Deferred until V23 stable |
 
 ---
 
