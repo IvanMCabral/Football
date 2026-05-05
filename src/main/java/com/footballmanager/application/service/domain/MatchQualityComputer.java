@@ -44,6 +44,75 @@ public final class MatchQualityComputer {
         return new MatchQualityLambdas(homeLambda, awayLambda, totalLambda, homeShare);
     }
 
+    /**
+     * Style-aware lambda computation.
+     *
+     * Applies small additive style adjustments before clamping.
+     * BALANCED+BALANCED is guaranteed to equal computeLambdas(homeOvr, awayOvr).
+     *
+     * Phase 6A: MatchEngineImpl does not consume this overload.
+     * This is an internal utility for analytics and future Phase 6B integration.
+     */
+    public static MatchQualityLambdas computeLambdas(int homeOvr, int awayOvr,
+                                                      TeamStyle homeStyle, TeamStyle awayStyle) {
+        int ovrDiff = homeOvr - awayOvr;
+
+        double baseTotalLambda = 2.60;
+        double imbalanceBoost = Math.abs(ovrDiff) * 0.012;
+        double totalLambda = baseTotalLambda + imbalanceBoost;
+
+        // Apply style adjustments before clamping
+        totalLambda += styleLambdaAdjust(homeStyle, awayStyle);
+        totalLambda = clamp(totalLambda, 2.3, 3.05);
+
+        double homeBaseShare = 0.52;
+        double strengthShift = ovrDiff / 220.0;
+        double homeShare = homeBaseShare + strengthShift;
+
+        // Apply style adjustments before clamping
+        homeShare += styleShareAdjust(homeStyle, awayStyle);
+        homeShare = clamp(homeShare, 0.25, 0.75);
+
+        double homeLambda = totalLambda * homeShare;
+        double awayLambda = totalLambda * (1.0 - homeShare);
+
+        return new MatchQualityLambdas(homeLambda, awayLambda, totalLambda, homeShare);
+    }
+
+    // Style adjustment helpers — small additive effects before clamping
+
+    private static double styleLambdaAdjust(TeamStyle home, TeamStyle away) {
+        return (lambdaStyleBonus(home) + lambdaStyleBonus(away)) / 2.0;
+    }
+
+    private static double styleShareAdjust(TeamStyle home, TeamStyle away) {
+        double homeAdj = switch (home) {
+            case ATTACKING   -> +0.03;
+            case DEFENSIVE   -> -0.02;
+            case POSSESSION  -> +0.02;
+            case COUNTER     -> -0.01;
+            case BALANCED    ->  0.0;
+        };
+        double awayAdj = switch (away) {
+            case ATTACKING   -> -0.03;
+            case DEFENSIVE   -> +0.02;
+            case POSSESSION  -> -0.02;
+            case COUNTER     -> +0.01;
+            case BALANCED    ->  0.0;
+        };
+        return homeAdj + awayAdj;
+    }
+
+    private static double lambdaStyleBonus(TeamStyle style) {
+        return switch (style) {
+            case ATTACKING  -> +0.10;
+            case DEFENSIVE  -> -0.10;
+            case COUNTER    -> -0.08;
+            case POSSESSION -> -0.05;
+            case BALANCED   ->  0.0;
+        };
+    }
+
     private static int calculateOvr(Team team) {
         return 70 + Math.min(20, team.getSquadSize() / 2);
     }
