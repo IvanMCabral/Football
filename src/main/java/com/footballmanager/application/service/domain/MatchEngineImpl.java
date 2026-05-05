@@ -15,12 +15,21 @@ public class MatchEngineImpl implements MatchEngine {
 
     @Override
     public Mono<MatchResult> simulate(Team homeTeam, Team awayTeam) {
-        return Mono.fromCallable(() -> performSimulation(homeTeam, awayTeam))
+        return Mono.fromCallable(() -> performSimulation(homeTeam, awayTeam, new Random()))
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
-    private MatchResult performSimulation(Team homeTeam, Team awayTeam) {
-        Random random = new Random();
+    /**
+     * Deterministic seeded simulation.
+     * Same teams + same seed → identical MatchResult (bytes identical).
+     * Different seed → statistically different results.
+     */
+    public Mono<MatchResult> simulate(Team homeTeam, Team awayTeam, long seed) {
+        return Mono.fromCallable(() -> performSimulation(homeTeam, awayTeam, new Random(seed)))
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private MatchResult performSimulation(Team homeTeam, Team awayTeam, Random random) {
 
         int homeOverall = calculateTeamOverall(homeTeam);
         int awayOverall = calculateTeamOverall(awayTeam);
