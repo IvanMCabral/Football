@@ -37,9 +37,6 @@ public class MatchEngineImpl implements MatchEngine {
         int homePossession = calculatePossession(homeOverall, awayOverall, random);
         int awayPossession = 100 - homePossession;
 
-        int homeShots = Math.max(3, (homePossession / 15) + random.nextInt(5));
-        int awayShots = Math.max(3, (awayPossession / 15) + random.nextInt(5));
-
         // V23 Poisson goal model — use MatchQualityComputer for lambda calculation
         MatchQualityComputer.MatchQualityLambdas lambdas =
                 MatchQualityComputer.computeLambdas(homeOverall, awayOverall);
@@ -48,6 +45,21 @@ public class MatchEngineImpl implements MatchEngine {
 
         int homeGoals = poissonSample(homeLambda, random);
         int awayGoals = poissonSample(awayLambda, random);
+
+        // V23 Phase 3: Hybrid Lambda + Possession Split with Goal Floor (Option D)
+        double avgXgPerShot = 0.20;
+        double expectedTotalShots = (homeLambda + awayLambda) / avgXgPerShot;
+        int totalShots = poissonSample(expectedTotalShots, random);
+        totalShots = Math.max(6, Math.min(totalShots, 18));
+
+        int homeShots = (int) (totalShots * homePossession / 100.0);
+        int awayShots = totalShots - homeShots;
+        homeShots = Math.max(3, homeShots);
+        awayShots = Math.max(3, awayShots);
+
+        // GOAL FLOOR: ensure each team's shots >= its goals (Problem A fix)
+        homeShots = Math.max(homeGoals, homeShots);
+        awayShots = Math.max(awayGoals, awayShots);
 
         java.util.List<MatchEvent> events = generateEvents(homeGoals, awayGoals, random);
         String summary = generateSummary(homeTeam.getName(), awayTeam.getName(),
