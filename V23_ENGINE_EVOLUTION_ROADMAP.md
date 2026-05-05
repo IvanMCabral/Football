@@ -649,19 +649,26 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 5B or Phase 6
+## Recommended Next Phase: Phase 6
 
-Phase 5A complete — `MatchQualityMetrics` value object established. Next available options:
+Phase 5A and Phase 5B are complete:
+- MatchQualityMetrics value object exists
+- xG is exposed in fixture query DTOs
+- no Redis persistence
+- no MatchResultData change
+- no simulation behavior change
 
+Next available implementation phase:
 **Phase 6 — Tactics/Style Modifiers**
-Add team tactical style that adjusts `totalLambda` (e.g., `MatchResultProcessor`, analytics logging).
-- Low risk — internal only, no API or persistence changes
-- Enables in-memory xG tracking without persistence
 
-**Phase 6 — Tactics/Style Modifiers**
-Add team tactical style that adjusts `totalLambda` or `homeShare`.
-- Medium risk — requires re-validation with full quality gate
-- Must pass `V23SimulationQualityGateTest` before merging
+Goal:
+Add small tactical style modifiers to lambda/share/shot behavior while preserving the V23 quality gate.
+
+Risk:
+MEDIUM because it affects simulation balance.
+
+Requirement:
+Any Phase 6 implementation must pass the full regression gate.
 
 **Required regression gate for any simulation change:**
 ```
@@ -682,9 +689,7 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 | **Phase 5A** | MatchQualityMetrics Value Object | NONE | Done | Completed |
 | **Phase 7** | Player/Role Contribution | LOW | Done | Completed |
 | **Phase 8** | Full Simulation Quality Gate | NONE | Done | Completed |
-| Phase 5B | MatchQualityMetrics API Exposure | LOW | **1 — Done** | Completed |
-| Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |
-| Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
+| Phase 5B | MatchQualityMetrics API Exposure | LOW | 1 — Done | Completed |
 | Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
