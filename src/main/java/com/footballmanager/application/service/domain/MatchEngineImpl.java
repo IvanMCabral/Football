@@ -31,11 +31,21 @@ public class MatchEngineImpl implements MatchEngine {
         int homeShots = Math.max(3, (homePossession / 15) + random.nextInt(5));
         int awayShots = Math.max(3, (awayPossession / 15) + random.nextInt(5));
 
-        double homeGoalProbability = (homeOverall / 100.0) * (homePossession / 100.0) * 3.5;
-        double awayGoalProbability = (awayOverall / 100.0) * (awayPossession / 100.0) * 3.5;
+        // V23 Poisson goal model
+        int ovrDiff = homeOverall - awayOverall;
+        double baseTotalLambda = 2.60;
+        double imbalanceBoost = Math.abs(ovrDiff) * 0.012;
+        double totalLambda = clamp(baseTotalLambda + imbalanceBoost, 2.3, 3.05);
 
-        int homeGoals = generateGoals(homeGoalProbability, random);
-        int awayGoals = generateGoals(awayGoalProbability, random);
+        double homeBaseShare = 0.52;
+        double strengthShift = ovrDiff / 220.0;
+        double homeShare = clamp(homeBaseShare + strengthShift, 0.25, 0.75);
+
+        double homeLambda = totalLambda * homeShare;
+        double awayLambda = totalLambda * (1.0 - homeShare);
+
+        int homeGoals = poissonSample(homeLambda, random);
+        int awayGoals = poissonSample(awayLambda, random);
 
         java.util.List<MatchEvent> events = generateEvents(homeGoals, awayGoals, random);
         String summary = generateSummary(homeTeam.getName(), awayTeam.getName(),
@@ -62,11 +72,27 @@ public class MatchEngineImpl implements MatchEngine {
         return Math.max(30, Math.min(70, basePossession + variance));
     }
 
-    private int generateGoals(double probability, Random random) {
-        if (probability < 0.5) return 0;
-        if (probability < 1.5) return random.nextDouble() < 0.4 ? 1 : 0;
-        if (probability < 2.5) return random.nextDouble() < 0.6 ? 1 : (random.nextDouble() < 0.2 ? 2 : 0);
-        return Math.min(5, 2 + random.nextInt(3));
+    private double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private int poissonSample(double lambda, Random random) {
+        if (lambda <= 0) return 0;
+        if (lambda < 30) {
+            double L = Math.exp(-lambda);
+            double p = 1.0;
+            int k = 0;
+            do {
+                k++;
+                p *= random.nextDouble();
+            } while (p > L);
+            return k - 1;
+        } else {
+            double mean = lambda + 0.5;
+            double variance = lambda;
+            double u = random.nextGaussian() * Math.sqrt(variance) + mean;
+            return Math.max(0, (int) Math.round(u));
+        }
     }
 
     private java.util.List<MatchEvent> generateEvents(int homeGoals, int awayGoals, Random random) {
