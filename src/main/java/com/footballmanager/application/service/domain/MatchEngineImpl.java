@@ -50,6 +50,24 @@ public class MatchEngineImpl implements MatchEngine {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
+    /**
+     * Strength-aware experimental simulation.
+     * Accepts explicit home/away OVR values instead of computing from squad size.
+     * Invalid OVRs (outside 1-100) fall back to calculateTeamOverall(team).
+     *
+     * Phase 10A: Does NOT change existing simulate() behavior.
+     */
+    public Mono<MatchResult> simulateWithStrength(
+            Team homeTeam,
+            Team awayTeam,
+            int homeOvr,
+            int awayOvr,
+            long seed) {
+        return Mono.fromCallable(() ->
+                performSimulationWithStrength(homeTeam, awayTeam, new Random(seed), homeOvr, awayOvr))
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
     private MatchResult performSimulation(Team homeTeam, Team awayTeam, Random random) {
         return performSimulation(homeTeam, awayTeam, random, TeamStyle.BALANCED, TeamStyle.BALANCED);
     }
@@ -99,6 +117,50 @@ public class MatchEngineImpl implements MatchEngine {
 
         return MatchResult.of(homeGoals, awayGoals, homePossession, awayPossession,
                             homeShots, awayShots, events, summary);
+    }
+
+    private MatchResult performSimulationWithStrength(
+            Team homeTeam, Team awayTeam, Random random,
+            int homeOvr, int awayOvr) {
+
+        int resolvedHomeOvr = isValidOvr(homeOvr) ? homeOvr : calculateTeamOverall(homeTeam);
+        int resolvedAwayOvr = isValidOvr(awayOvr) ? awayOvr : calculateTeamOverall(awayTeam);
+
+        int homePossession = calculatePossession(resolvedHomeOvr, resolvedAwayOvr, random);
+        int awayPossession = 100 - homePossession;
+
+        // V23 Poisson goal model — explicit OVR path
+        MatchQualityComputer.MatchQualityLambdas lambdas =
+                MatchQualityComputer.computeLambdas(resolvedHomeOvr, resolvedAwayOvr);
+        double homeLambda = lambdas.homeLambda();
+        double awayLambda = lambdas.awayLambda();
+
+        int homeGoals = poissonSample(homeLambda, random);
+        int awayGoals = poissonSample(awayLambda, random);
+
+        double avgXgPerShot = 0.20;
+        double expectedTotalShots = (homeLambda + awayLambda) / avgXgPerShot;
+        int totalShots = poissonSample(expectedTotalShots, random);
+        totalShots = Math.max(6, Math.min(totalShots, 18));
+
+        int homeShots = (int) (totalShots * homePossession / 100.0);
+        int awayShots = totalShots - homeShots;
+        homeShots = Math.max(3, homeShots);
+        awayShots = Math.max(3, awayShots);
+
+        homeShots = Math.max(homeGoals, homeShots);
+        awayShots = Math.max(awayGoals, awayShots);
+
+        java.util.List<MatchEvent> events = generateEvents(homeGoals, awayGoals, random);
+        String summary = generateSummary(homeTeam.getName(), awayTeam.getName(),
+                                        homeGoals, awayGoals, homePossession);
+
+        return MatchResult.of(homeGoals, awayGoals, homePossession, awayPossession,
+                            homeShots, awayShots, events, summary);
+    }
+
+    private boolean isValidOvr(int ovr) {
+        return ovr >= 1 && ovr <= 100;
     }
 
     private int calculateTeamOverall(Team team) {
