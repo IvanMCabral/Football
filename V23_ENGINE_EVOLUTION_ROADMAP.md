@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 7 completed
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 7, 8 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `d1c5c36` (Phase 7 role-based scorer attribution)
-**Tests:** 48 relevant tests, 0 failures
+**Current baseline commit:** `0abc001` (Phase 8 full simulation quality gate)
+**Tests:** 56 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `d1c5c36`
-**Tests:** 48 relevant tests, 0 failures
+**Commit:** `0abc001`
+**Tests:** 56 relevant tests, 0 failures
 
 ### What exists
 
@@ -34,6 +34,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 | `MatchEngineImplDeterminismTest` | `test/.../MatchEngineImplDeterminismTest.java` | 7 tests: same seed = identical result; different seeds = diversity |
 | `MatchEngineImplEventConsistencyTest` | `test/.../MatchEngineImplEventConsistencyTest.java` | 8 tests: goal events match score; events sorted; summary coherent |
 | `MatchEngineImplRoleContributionTest` | `test/.../MatchEngineImplRoleContributionTest.java` | 7 tests: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
+| `V23SimulationQualityGateTest` | `test/.../V23SimulationQualityGateTest.java` | 8 tests: full regression gate combining all phase guarantees |
 | Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation |
 
 ### Current simulation path
@@ -646,15 +647,24 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 8 (Full Simulation Quality Gate)
+## Recommended Next Phase: Phase 5 or Phase 6
 
-**Rationale:**
+Phase 8 complete — regression gate now established. Next available options:
 
-1. **Test-only** — no production code changes, no behavior changes
-2. **Protects all completed work** — serves as the regression gate before Phase 5/6/tactics/API work
-3. **Comprehensive** — all scenario metrics, determinism, event consistency, role distribution, performance sanity in one suite
-4. **Required gate** — phases 5/6/any new simulation work should require Phase 8 to pass first
-5. **Low risk** — purely validation infrastructure, no gameplay mechanics affected
+**Phase 5 — Match Quality Metrics in Production**
+Expose xG/match quality metrics via internal service or API DTO.
+- Low risk — additive only
+- Enables analytics and future frontend xG display
+
+**Phase 6 — Tactics/Style Modifiers**
+Add team tactical style that adjusts `totalLambda` or `homeShare`.
+- Medium risk — requires re-validation with full quality gate
+- Must pass `V23SimulationQualityGateTest` before merging
+
+**Required regression gate for any simulation change:**
+```
+mvn test -Dtest=V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+```
 
 ---
 
@@ -668,10 +678,10 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 | **Phase 3** | Shot Model Alignment | MEDIUM | Done | Completed |
 | **Phase 4** | Event Consistency | LOW | Done | Completed |
 | **Phase 7** | Player/Role Contribution | LOW | Done | Completed |
-| **Phase 8** | Full Simulation Quality Gate | NONE | **1 — Next** | Available |
-| Phase 5 | Match Quality Metrics in Production | LOW | 2 | Available |
-| Phase 6 | Tactics/Style Modifiers | MEDIUM | 3 | Available |
-| Phase 9 | Future Advanced Engine | HIGH | 4 | Deferred until V23 stable |
+| **Phase 8** | Full Simulation Quality Gate | NONE | Done | Completed |
+| Phase 5 | Match Quality Metrics in Production | LOW | **1 — Next** | Available |
+| Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |
+| Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
 ---
 

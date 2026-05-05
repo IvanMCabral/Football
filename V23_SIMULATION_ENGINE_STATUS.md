@@ -1,8 +1,8 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `d1c5c36` (feat: add role-based scorer attribution to V23 match events)
-**Test status:** 48 relevant tests, 0 failures
+**Latest commit:** `0abc001` (test: add V23 full simulation quality gate)
+**Test status:** 56 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -90,10 +90,11 @@ public final class MatchQualityComputer {
 | `MatchEngineImplDeterminismTest` | 7 | Phase 2: same seed → identical result; different seeds → diversity; zero/negative seeds |
 | `MatchEngineImplEventConsistencyTest` | 8 | Phase 4: goal events match score; home/away attribution; events sorted; minutes valid; summary coherent |
 | `MatchEngineImplRoleContributionTest` | 7 | Phase 7: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
+| `V23SimulationQualityGateTest` | 8 | Phase 8: full regression gate; all phase metrics; determinism; event consistency; role distribution; performance |
 | `MatchEngineImplTest` | existing | Original behavior contract |
 | `DivisionTest` | 8 | Career division assignment logic (unrelated, pre-existing fix) |
 
-**Total: 48 tests, 0 failures**
+**Total: 56 tests, 0 failures**
 
 ---
 
@@ -204,7 +205,31 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 12. Intentionally NOT Implemented Yet
+## 12. Phase 8 Deliveries (commit `0abc001`)
+
+- **`V23SimulationQualityGateTest`** — 8 comprehensive regression tests combining all Phase 1–7 guarantees:
+  - `qualityGate_equalOvrMetrics` — 10k seeded matches, all metrics within ranges
+  - `qualityGate_slightFavoriteMetrics` — 10k seeded matches, same assertions
+  - `qualityGate_strongFavoriteMetrics` — 10k seeded matches, same assertions
+  - `qualityGate_determinism` — seeded replay produces byte-identical MatchResult
+  - `qualityGate_eventConsistency` — 1k matches, event count/attribution/sort/minutes/summary
+  - `qualityGate_roleDistribution` — scorer pattern, attacker>=70%, defensive<=15%, GK=0
+  - `qualityGate_noImpossibleStats` — goals<=shots, possession=100, non-negative values
+  - `qualityGate_performanceSanity` — 10k matches under 30s threshold
+- **Required regression gate** — any future simulation change must pass this test suite
+- **Production code unchanged** — test-only addition
+
+**Quality gate metrics (validated ranges):**
+
+| Scenario | Goals/match | xG/match | Goals/xG | Shots/match | 0-0 rate | 4+ rate |
+|----------|------------|-----------|----------|-------------|----------|---------|
+| Equal (75-75) | ~2.58 | 2.60 | ~0.99 | ~12.9 | ~7.3% | ~25.4% |
+| Slight (80-70) | ~2.59 | 2.72 | ~0.95 | ~12.9 | ~7.5% | ~25.3% |
+| Strong (90-60) | ~2.60 | 2.96 | ~0.88 | ~12.9 | ~7.5% | ~25.9% |
+
+---
+
+## 13. Intentionally NOT Implemented Yet
 
 - **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time without architecture change
 - **No PlayerRepository in simulation** — synthetic role labels used instead; roles are not squad-derived
@@ -216,7 +241,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 13. Remaining Risks and Limitations
+## 14. Remaining Risks and Limitations
 
 | Limitation | Impact | Mitigation |
 |-----------|--------|-----------|
@@ -227,29 +252,37 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 14. Recommended Next Phase
+## 15. Recommended Next Phase
 
-**Recommended: Phase 8 — Full Simulation Quality Gate**
+**Phase 8 complete — regression gate now in place. Next options:**
 
-Rationale:
-- **Test-only** — no production code changes, no behavior changes
-- **Protects all completed work** — serves as the regression gate before Phase 5/6/tactics/API work
-- **Comprehensive** — runs all scenario metrics, determinism, event consistency, role distribution, and performance sanity in one test suite
-- **Required gate** — phases 5/6/any new simulation work should require Phase 8 to pass first
-- **Low risk** — purely validation infrastructure, no gameplay mechanics affected
+**Phase 5 — Match Quality Metrics in Production**
+Expose xG/match quality metrics via internal service or API DTO.
+- Low risk — additive only
+- Enables analytics and future frontend xG display
 
-**Alternative options also available:**
-- Phase 5 — Match Quality Metrics in Production (expose xG via API)
-- Phase 6 — Tactics/Style Modifiers (team-wide lambda adjustments)
+**Phase 6 — Tactics/Style Modifiers**
+Add team tactical style that adjusts `totalLambda` or `homeShare`.
+- Medium risk — requires re-validation of goals/match ranges
+- Must pass full quality gate before merging
+
+**Phase 9 — Future Advanced Engine**
+Only after sustained V23 stability (>30 days, quality gate passes consistently).
+
+**Required regression gate for any simulation change:**
+```
+mvn test -Dtest=V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+```
 
 ---
 
-## 15. Summary
+## 16. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, and 7 are complete. `MatchQualityComputer` is available as a shared utility. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. All 48 relevant tests pass. No changes to production API, persistence, or frontend.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 7, and 8 are complete. `MatchQualityComputer` is available as a shared utility. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. Comprehensive quality gate is established. All 56 relevant tests pass. No changes to production API, persistence, or frontend.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+0abc001 — test: add V23 full simulation quality gate (Phase 8)
 d1c5c36 — feat: add role-based scorer attribution to V23 match events (Phase 7)
 de13433 — refactor: align V23 shot model with xG and goals (Phase 3)
 b0cc191 — test: add deterministic seeding replay and determinism tests (Phase 2)
