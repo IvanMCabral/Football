@@ -2,8 +2,8 @@
 
 **Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 7, 8 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `69b8e0e` (Phase 5B xG in fixture DTOs)
-**Tests:** 64 relevant tests, 0 failures
+**Current baseline commit:** `abbcb53` (Phase 6A style-aware lambda)
+**Tests:** 72 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `69b8e0e`
-**Tests:** 64 relevant tests, 0 failures
+**Commit:** `abbcb53`
+**Tests:** 72 relevant tests, 0 failures
 
 ### What exists
 
@@ -29,15 +29,15 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 | `MatchQualityComputer` | `application/service/domain/MatchQualityComputer.java` | Static `computeLambdas(homeOvr, awayOvr)` and `fromTeams(Team, Team)` returning `MatchQualityLambdas` record |
 | `MatchQualityMetrics` | `domain/model/valueobject/MatchQualityMetrics.java` | Immutable record: homeXg, awayXg, totalXg, goalsToXgRatio, homeShare; factory methods fromLambdas, fromTeams, withGoals |
 | `MatchMetricsCollector` | `test/.../MatchMetricsCollector.java` | Test-only aggregate collector: goals, shots, xG, win/draw rates across 10k matches |
-| `MatchQualityComputerTest` | `test/.../MatchQualityComputerTest.java` | 6 unit tests for lambda formula correctness |
+| `MatchQualityComputerTest` | `test/.../MatchQualityComputerTest.java` | 14 unit tests (6 baseline + 8 style-aware) |
 | `MatchQualityMetricsTest` | `test/.../MatchQualityMetricsTest.java` | 8 unit tests for MatchQualityMetrics factories and validation |
 | `MatchEngineImplMetricsValidationTest` | `test/.../MatchEngineImplMetricsValidationTest.java` | 10k-match validation asserting goals/xG/0-0/4+ within ranges |
 | `MatchEngineImplPoissonValidationTest` | `test/.../MatchEngineImplPoissonValidationTest.java` | 1k-match per scenario goal range validation |
 | `MatchEngineImplDeterminismTest` | `test/.../MatchEngineImplDeterminismTest.java` | 7 tests: same seed = identical result; different seeds = diversity |
 | `MatchEngineImplEventConsistencyTest` | `test/.../MatchEngineImplEventConsistencyTest.java` | 8 tests: goal events match score; events sorted; summary coherent |
 | `MatchEngineImplRoleContributionTest` | `test/.../MatchEngineImplRoleContributionTest.java` | 7 tests: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
-| `V23SimulationQualityGateTest` | `test/.../V23SimulationQualityGateTest.java` | 8 tests: full regression gate combining all phase guarantees |
-| Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation (Phase 5B: xG in DTOs) |
+| `V23SimulationQualityGateTest` | `test/.../V23SimulationQualityGateTest.java` | 8 tests: full regression gate |
+| Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation (Phase 6A: TeamStyle) |
 
 ### Current simulation path
 
@@ -58,7 +58,7 @@ simulate(Team home, Team away)
 ### Known limitations
 
 1. **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time
-2. **No tactical style** — all teams use same lambda formula regardless of strategy
+2. **No tactical style in simulation** — `MatchEngineImpl` uses baseline lambdas; `TeamStyle` enum exists but is not consumed
 3. **No shot location/inside-box** — no per-shot xG, no position data
 4. **`calculateTeamOverall` is squad-size based only** — no formation or player quality weighting
 
@@ -388,6 +388,8 @@ Remove new class. Revert any service/endpoint changes.
 
 Introduce team tactical style that slightly modifies `totalLambda`, `homeShare`, or possession without breaking the validated Poisson distribution. E.g., `counter` team gets slightly higher `awayShare` or lower `totalLambda`.
 
+> **Phase 6A complete** � `TeamStyle` enum and style-aware `computeLambdas()` overload exist. `MatchEngineImpl` does not consume style. Phase 6B will decide integration path.
+
 ### Non-goals
 
 - Do NOT change the base Poisson formula
@@ -649,9 +651,13 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 6
+## Recommended Next Phase: Phase 6B
 
-Phase 5A and Phase 5B are complete:
+Phase 6A is complete:
+- TeamStyle enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
+- MatchQualityComputer style-aware overload exists
+- MatchEngineImpl does NOT consume it � simulation behavior unchanged
+- Phase 6B will decide how/whether simulation should integrate style
 - MatchQualityMetrics value object exists
 - xG is exposed in fixture query DTOs
 - no Redis persistence
@@ -690,7 +696,8 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 | **Phase 7** | Player/Role Contribution | LOW | Done | Completed |
 | **Phase 8** | Full Simulation Quality Gate | NONE | Done | Completed |
 | Phase 5B | MatchQualityMetrics API Exposure | LOW | 1 — Done | Completed |
-| Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |
+| Phase 6A | Style-aware computeLambdas | NONE | Done | Completed |
+| Phase 6B | Simulation integration (pending) | MEDIUM | 1 � Next | Pending |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
 ---

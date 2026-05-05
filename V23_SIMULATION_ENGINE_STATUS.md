@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `69b8e0e` (feat: expose xG metrics in fixture query DTOs)
-**Status:** Phases 5A and 5B complete
-**Test status:** 64 relevant tests, 0 failures
+**Latest commit:** `abbcb53` (feat: add style-aware match quality lambda computation)
+**Status:** Phases 5A, 5B, 6A complete
+**Test status:** 72 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -96,7 +96,7 @@ public final class MatchQualityComputer {
 | `MatchEngineImplTest` | existing | Original behavior contract |
 | `DivisionTest` | 8 | Career division assignment logic (unrelated, pre-existing fix) |
 
-**Total: 64 tests, 0 failures**
+**Total: 72 tests, 0 failures**
 
 ---
 
@@ -198,7 +198,6 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
   - Validation: rejects NaN/Infinity, rejects negative xG values
 - **`MatchQualityMetricsTest`** — 8 unit tests covering factory methods and validation
 - **Internal use only** — not persisted, not exposed via API
-- **Phase 5B pending** — service integration, API exposure, or frontend display not yet implemented
 
 ---
 
@@ -247,39 +246,50 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 14. Phase 5B Deliveries (commit `69b8e0e`)
 
-- **`MatchInfo`** DTO — `homeXG`, `awayXG`, `totalXG` as nullable `Double` fields
-- **`LeagueMatchInfo`** DTO — same xG fields
-- **`UserDivisionFixtureQueryService.getByRound()`** — xG computed on-demand via `MatchQualityComputer.computeLambdas()` + squad OVR from `CareerSave`
-- **`LeagueFixtureQueryService.buildLeagueDivisionFixtures()`** — same pattern for all divisions
-- **`FixtureQueryHelper`** — `toMatchInfo(MatchFixture, Map, CareerSave)` overload computes xG when career context is available
-- API change is additive only — all xG fields are nullable for backward compatibility
+- **`MatchInfo`** DTO � `homeXG`, `awayXG`, `totalXG` as nullable `Double` fields
+- **`LeagueMatchInfo`** DTO � same xG fields
+- **`UserDivisionFixtureQueryService.getByRound()`** � xG computed on-demand via `MatchQualityComputer.computeLambdas()` + squad OVR from `CareerSave`
+- **`LeagueFixtureQueryService.buildLeagueDivisionFixtures()`** � same pattern for all divisions
+- **`FixtureQueryHelper`** � `toMatchInfo(MatchFixture, Map, CareerSave)` overload computes xG when career context is available
+- API change is additive only � all xG fields are nullable for backward compatibility
 - No Redis/schema changes, no MatchResult/MatchResultData changes
 
-## 15. Intentionally NOT Implemented Yet
+## 15. Phase 6A Deliveries (commit `abbcb53`)
+
+- **`TeamStyle`** enum � BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION
+- **`MatchQualityComputer.computeLambdas(int, int, TeamStyle, TeamStyle)`** � style-aware lambda computation overload
+- **`MatchQualityComputerTest`** � 8 new tests for style-aware computation
+- BALANCED+BALANCED produces exactly the same result as existing `computeLambdas(int, int)`
+- All 25 style combinations clamped to [2.3, 3.05] totalLambda and [0.25, 0.75] homeShare
+- Style effects small: <10% totalLambda change, <15% per-team change vs baseline
+- `MatchEngineImpl` unchanged � no simulation behavior change
+- No persistence, API, or frontend changes
+
+## 16. Intentionally NOT Implemented Yet
 
 - **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time without architecture change
 - **No PlayerRepository in simulation** — synthetic role labels used instead; roles are not squad-derived
 - **No xG fields in MatchResult** — `MatchResult` has no `homeXG`/`awayXG` fields; computed on-demand via `MatchQualityComputer`
-- **Frontend xG display** — xG is now in API DTOs but frontend integration is a separate future task
-- **No tactical/style modifiers** — all teams use same lambda formula regardless of strategy
+- **Frontend xG display** — xG is in API DTOs but frontend integration is a separate future task
+- **No tactical style consumption in simulation yet** — `TeamStyle` exists and `MatchQualityComputer` has style-aware overload, but production simulation still uses baseline `computeLambdas()`. Phase 6B pending.
 - **No shot location/inside-box data** — no per-shot xG, no position data, no distToGoal
 - **V32/V33 engine** — V32 is specification/documentation only, not runnable. V33 is on a separate experiment branch
 
 ---
 
-## 16. Remaining Risks and Limitations
+## 17. Remaining Risks and Limitations
 
 | Limitation | Impact | Mitigation |
 |-----------|--------|-----------|
 | **xG is lambda-derived, not shot-location based** | xG ≈ team lambda; does not account for shot quality distribution | Phase 1 scope only — xG is instrumentation, not goal resolution |
 | **Possession formula is heuristic** | `basePossession = (homeStrength/totalStrength)*100 ±10` — not physics-based | Acceptable for current simulation fidelity |
-| **No tactical style** | All teams use same lambda formula regardless of strategy | Phase 6 (Tactics/Style Modifiers) — if needed |
+| **No tactical style in simulation** | MatchEngineImpl uses baseline lambdas; TeamStyle available but not consumed | Phase 6B decision pending |
 | **OVR calculation is squad-size based** | `70 + min(20, squadSize/2)` — no formation, player quality weighting | Sufficient for current V23 baseline |
 | **xG not persisted to Redis** | Computed on-demand only; past matches have no xG in saved career data | Phase 5C deferred — Redis schema migration required |
 
 ---
 
-## 17. Phase 5C — Future Work (Deferred)
+## 18. Phase 5C — Future Work (Deferred)
 
 - **`goalsToXgRatio`** — optional future field for over/under-performance analysis; not in current scope
 - **Redis persistence of xG** — explicitly deferred due to schema migration complexity; no current plan
@@ -287,14 +297,16 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 18. Recommended Next Phase
+## 19. Recommended Next Phase
 
-**Phase 5B complete — xG exposed in fixture API DTOs. Phase 6 is next.**
+**Phase 6A complete — style-aware lambda computation exists. Phase 6B is the next decision point.**
 
-**Phase 6 — Tactics/Style Modifiers**
-Add team tactical style that adjusts `totalLambda` or `homeShare`.
-- Medium risk — requires re-validation with full quality gate
-- Must pass full quality gate before merging
+**Phase 6B — Simulation Integration Decision**
+Decide whether `MatchEngineImpl` should consume `TeamStyle`:
+- Keep as analytics-only (no simulation change)
+- Add style to Team/SessionTeam (persistence/API impact)
+- Optional seeded overload for experiments only
+- Phase 6A already complete: `TeamStyle` enum + style-aware `computeLambdas()`
 
 **Phase 9 — Future Advanced Engine**
 Only after sustained V23 stability (>30 days, quality gate passes consistently).
@@ -306,12 +318,13 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 
 ---
 
-## 17. Summary
+## 20. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 64 relevant tests pass. No changes to production API, persistence, or frontend.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 72 relevant tests pass. `MatchEngineImpl` uses baseline lambdas; Phase 6B pending for style integration. No changes to production API, persistence, or frontend.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+abbcb53 — feat: add style-aware match quality lambda computation (Phase 6A)
 69b8e0e — feat: expose xG metrics in fixture query DTOs (Phase 5B)
 b5d286f — feat: add internal match quality metrics value object (Phase 5A)
 0abc001 — test: add V23 full simulation quality gate (Phase 8)
