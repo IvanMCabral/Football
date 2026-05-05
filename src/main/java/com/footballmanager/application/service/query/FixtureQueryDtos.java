@@ -19,7 +19,10 @@ public final class FixtureQueryDtos {
             Integer round,
             String status,
             Integer homeGoals,
-            Integer awayGoals
+            Integer awayGoals,
+            Double homeXG,
+            Double awayXG,
+            Double totalXG
     ) {}
 
     public record RoundInfo(
@@ -77,7 +80,10 @@ public final class FixtureQueryDtos {
             Integer round,
             String status,
             Integer homeGoals,
-            Integer awayGoals
+            Integer awayGoals,
+            Double homeXG,
+            Double awayXG,
+            Double totalXG
     ) {}
 
     public record LeagueDivisionFixtures(

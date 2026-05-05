@@ -2,8 +2,10 @@ package com.footballmanager.application.service.query;
 
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.Division;
+import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.MatchQualityMetrics;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -28,8 +30,44 @@ public class UserDivisionFixtureQueryService {
             List<MatchFixture> fixtures = tournamentState.getFixturesForRound(round);
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
 
-            return FixtureQueryHelper.toMatchInfoList(fixtures, teamNames);
+            return fixtures.stream().map(f -> {
+                int homeOvr = calculateSessionTeamOvr(career, f.getHomeTeamId());
+                int awayOvr = calculateSessionTeamOvr(career, f.getAwayTeamId());
+                var lambdas = com.footballmanager.application.service.domain.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
+                var metrics = com.footballmanager.domain.model.valueobject.MatchQualityMetrics.fromLambdas(lambdas);
+                return new MatchInfo(
+                        f.getMatchId(),
+                        f.getHomeTeamId(),
+                        teamNames.get(f.getHomeTeamId()),
+                        f.getAwayTeamId(),
+                        teamNames.get(f.getAwayTeamId()),
+                        f.getRound(),
+                        f.getStatus() != null ? f.getStatus().name() : "PENDING",
+                        f.getResult() != null ? f.getResult().getHomeGoals() : null,
+                        f.getResult() != null ? f.getResult().getAwayGoals() : null,
+                        metrics.homeXg(),
+                        metrics.awayXg(),
+                        metrics.totalXg()
+                );
+            }).toList();
         });
+    }
+
+    private int calculateSessionTeamOvr(CareerSave career, String teamId) {
+        java.util.List<String> playerIds = career.getSquadPlayerIds(teamId);
+        if (playerIds == null || playerIds.isEmpty()) {
+            return 70;
+        }
+        int totalOvr = 0;
+        int count = 0;
+        for (String playerId : playerIds) {
+            var player = career.getSessionPlayer(playerId);
+            if (player != null) {
+                totalOvr += player.calculateOverall();
+                count++;
+            }
+        }
+        return count > 0 ? totalOvr / count : 70;
     }
 
     public Mono<AllFixturesResponse> getAll(CareerSave career) {

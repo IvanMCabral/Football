@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.Division;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.MatchQualityMetrics;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -92,9 +93,26 @@ public class LeagueFixtureQueryService {
                 .filter(f -> divisionTeamIds.contains(f.getHomeTeamId()) && divisionTeamIds.contains(f.getAwayTeamId()))
                 .toList();
 
-        List<LeagueMatchInfo> matches = fixtures.stream()
-                .map(f -> FixtureQueryHelper.toLeagueMatchInfo(f, teamNames))
-                .toList();
+        List<LeagueMatchInfo> matches = fixtures.stream().map(f -> {
+            int homeOvr = calculateSessionTeamOvr(career, f.getHomeTeamId());
+            int awayOvr = calculateSessionTeamOvr(career, f.getAwayTeamId());
+            var lambdas = com.footballmanager.application.service.domain.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
+            var metrics = com.footballmanager.domain.model.valueobject.MatchQualityMetrics.fromLambdas(lambdas);
+            return new LeagueMatchInfo(
+                    f.getMatchId().toString(),
+                    f.getHomeTeamId(),
+                    teamNames.get(f.getHomeTeamId()),
+                    f.getAwayTeamId(),
+                    teamNames.get(f.getAwayTeamId()),
+                    f.getRound(),
+                    f.getStatus().name(),
+                    f.getResult() != null ? f.getResult().getHomeGoals() : null,
+                    f.getResult() != null ? f.getResult().getAwayGoals() : null,
+                    metrics.homeXg(),
+                    metrics.awayXg(),
+                    metrics.totalXg()
+            );
+        }).toList();
 
         return new LeagueDivisionFixtures(
                 division.getDivisionId().toString(),
@@ -103,5 +121,22 @@ public class LeagueFixtureQueryService {
                 matches,
                 division.hasByeInRound(targetRound)
         );
+    }
+
+    private int calculateSessionTeamOvr(CareerSave career, String teamId) {
+        java.util.List<String> playerIds = career.getSquadPlayerIds(teamId);
+        if (playerIds == null || playerIds.isEmpty()) {
+            return 70;
+        }
+        int totalOvr = 0;
+        int count = 0;
+        for (String playerId : playerIds) {
+            var player = career.getSessionPlayer(playerId);
+            if (player != null) {
+                totalOvr += player.calculateOverall();
+                count++;
+            }
+        }
+        return count > 0 ? totalOvr / count : 70;
     }
 }

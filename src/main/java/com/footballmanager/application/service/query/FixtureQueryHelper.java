@@ -39,8 +39,55 @@ public final class FixtureQueryHelper {
                 f.getRound(),
                 f.getStatus() != null ? f.getStatus().name() : "PENDING",
                 f.getResult() != null ? f.getResult().getHomeGoals() : null,
-                f.getResult() != null ? f.getResult().getAwayGoals() : null
+                f.getResult() != null ? f.getResult().getAwayGoals() : null,
+                null, null, null
         );
+    }
+
+    public static MatchInfo toMatchInfo(MatchFixture f, Map<String, String> teamNames, CareerSave career) {
+        if (career == null) {
+            return toMatchInfo(f, teamNames);
+        }
+        com.footballmanager.domain.model.entity.SessionTeam homeTeam = career.getSessionTeam(f.getHomeTeamId());
+        com.footballmanager.domain.model.entity.SessionTeam awayTeam = career.getSessionTeam(f.getAwayTeamId());
+        com.footballmanager.domain.model.valueobject.MatchQualityMetrics metrics = null;
+        if (homeTeam != null && awayTeam != null) {
+            int homeOvr = calculateSessionTeamOvr(career, f.getHomeTeamId());
+            int awayOvr = calculateSessionTeamOvr(career, f.getAwayTeamId());
+            var lambdas = com.footballmanager.application.service.domain.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
+            metrics = com.footballmanager.domain.model.valueobject.MatchQualityMetrics.fromLambdas(lambdas);
+        }
+        return new MatchInfo(
+                f.getMatchId(),
+                f.getHomeTeamId(),
+                getTeamName(teamNames, f.getHomeTeamId()),
+                f.getAwayTeamId(),
+                getTeamName(teamNames, f.getAwayTeamId()),
+                f.getRound(),
+                f.getStatus() != null ? f.getStatus().name() : "PENDING",
+                f.getResult() != null ? f.getResult().getHomeGoals() : null,
+                f.getResult() != null ? f.getResult().getAwayGoals() : null,
+                metrics != null ? metrics.homeXg() : null,
+                metrics != null ? metrics.awayXg() : null,
+                metrics != null ? metrics.totalXg() : null
+        );
+    }
+
+    private static int calculateSessionTeamOvr(CareerSave career, String teamId) {
+        java.util.List<String> playerIds = career.getSquadPlayerIds(teamId);
+        if (playerIds == null || playerIds.isEmpty()) {
+            return 70;
+        }
+        int totalOvr = 0;
+        int count = 0;
+        for (String playerId : playerIds) {
+            var player = career.getSessionPlayer(playerId);
+            if (player != null) {
+                totalOvr += player.calculateOverall();
+                count++;
+            }
+        }
+        return count > 0 ? totalOvr / count : 70;
     }
 
     public static LeagueMatchInfo toLeagueMatchInfo(MatchFixture f, Map<String, String> teamNames) {
@@ -53,7 +100,8 @@ public final class FixtureQueryHelper {
                 f.getRound(),
                 f.getStatus().name(),
                 f.getResult() != null ? f.getResult().getHomeGoals() : null,
-                f.getResult() != null ? f.getResult().getAwayGoals() : null
+                f.getResult() != null ? f.getResult().getAwayGoals() : null,
+                null, null, null
         );
     }
 
