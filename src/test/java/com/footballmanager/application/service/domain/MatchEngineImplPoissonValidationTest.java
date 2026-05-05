@@ -3,6 +3,8 @@ package com.footballmanager.application.service.domain;
 import com.footballmanager.domain.model.aggregate.*;
 import com.footballmanager.domain.model.entity.MatchResult;
 import com.footballmanager.domain.model.entity.MatchEvent;
+import com.footballmanager.domain.model.valueobject.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
@@ -124,7 +126,7 @@ class MatchEngineImplPoissonValidationTest {
 
         StepVerifier.create(matchEngine.simulate(homeTeam, awayTeam))
                 .expectSubscription()
-                .assertNext(result -> assertNotNull(result))
+                .assertNext(result -> Assertions.assertNotNull(result))
                 .expectComplete()
                 .verify(Duration.ofSeconds(5));
     }

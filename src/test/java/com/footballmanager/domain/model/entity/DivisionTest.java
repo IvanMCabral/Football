@@ -18,10 +18,10 @@ public class DivisionTest {
         career.assignTeamsToDivisions(4);
         
         assertEquals(2, career.getTotalDivisions());
-        assertEquals(2, career.getDivisions().size());
+        assertEquals(2, career.getSeasonManager().getDivisions().size());
         
-        assertEquals(4, career.getDivisions().get(0).getTeamCount()); // Primera
-        assertEquals(4, career.getDivisions().get(1).getTeamCount()); // Segunda
+        assertEquals(4, career.getSeasonManager().getDivisions().get(0).getTeamCount()); // Primera
+        assertEquals(4, career.getSeasonManager().getDivisions().get(1).getTeamCount()); // Segunda
     }
     
     @Test
@@ -31,11 +31,11 @@ public class DivisionTest {
         career.assignTeamsToDivisions(4);
         
         assertEquals(3, career.getTotalDivisions());
-        assertEquals(3, career.getDivisions().size());
+        assertEquals(3, career.getSeasonManager().getDivisions().size());
         
-        assertEquals(4, career.getDivisions().get(0).getTeamCount()); // Primera
-        assertEquals(4, career.getDivisions().get(1).getTeamCount()); // Segunda
-        assertEquals(2, career.getDivisions().get(2).getTeamCount()); // Tercera
+        assertEquals(4, career.getSeasonManager().getDivisions().get(0).getTeamCount()); // Primera
+        assertEquals(4, career.getSeasonManager().getDivisions().get(1).getTeamCount()); // Segunda
+        assertEquals(2, career.getSeasonManager().getDivisions().get(2).getTeamCount()); // Tercera
     }
     
     @Test
@@ -46,10 +46,10 @@ public class DivisionTest {
         
         // 9 equipos = 2 divisiones de 4 = 8 equipos, 1 queda fuera (menos de 2)
         assertEquals(2, career.getTotalDivisions());
-        assertEquals(2, career.getDivisions().size());
+        assertEquals(2, career.getSeasonManager().getDivisions().size());
         
-        assertEquals(4, career.getDivisions().get(0).getTeamCount());
-        assertEquals(4, career.getDivisions().get(1).getTeamCount());
+        assertEquals(4, career.getSeasonManager().getDivisions().get(0).getTeamCount());
+        assertEquals(4, career.getSeasonManager().getDivisions().get(1).getTeamCount());
     }
     
     @Test
@@ -59,11 +59,11 @@ public class DivisionTest {
         career.assignTeamsToDivisions(4);
         
         assertEquals(3, career.getTotalDivisions());
-        assertEquals(3, career.getDivisions().size());
+        assertEquals(3, career.getSeasonManager().getDivisions().size());
         
-        assertEquals(4, career.getDivisions().get(0).getTeamCount());
-        assertEquals(4, career.getDivisions().get(1).getTeamCount());
-        assertEquals(4, career.getDivisions().get(2).getTeamCount());
+        assertEquals(4, career.getSeasonManager().getDivisions().get(0).getTeamCount());
+        assertEquals(4, career.getSeasonManager().getDivisions().get(1).getTeamCount());
+        assertEquals(4, career.getSeasonManager().getDivisions().get(2).getTeamCount());
     }
     
     @Test
@@ -74,7 +74,7 @@ public class DivisionTest {
         
         // 5 equipos = 2 divisiones de 2 = 4 equipos, 1 queda fuera
         assertEquals(2, career.getTotalDivisions());
-        assertEquals(2, career.getDivisions().size());
+        assertEquals(2, career.getSeasonManager().getDivisions().size());
     }
     
     @Test
@@ -84,10 +84,10 @@ public class DivisionTest {
         career.assignTeamsToDivisions(3);
         
         assertEquals(2, career.getTotalDivisions());
-        assertEquals(2, career.getDivisions().size());
+        assertEquals(2, career.getSeasonManager().getDivisions().size());
         
-        assertEquals(3, career.getDivisions().get(0).getTeamCount());
-        assertEquals(3, career.getDivisions().get(1).getTeamCount());
+        assertEquals(3, career.getSeasonManager().getDivisions().get(0).getTeamCount());
+        assertEquals(3, career.getSeasonManager().getDivisions().get(1).getTeamCount());
     }
     
     @Test
@@ -97,7 +97,7 @@ public class DivisionTest {
         career.assignTeamsToDivisions(4);
         
         List<String> allTeamsInDivisions = new ArrayList<>();
-        for (Division division : career.getDivisions()) {
+        for (Division division : career.getSeasonManager().getDivisions()) {
             allTeamsInDivisions.addAll(division.getTeamIds());
         }
         
@@ -112,7 +112,7 @@ public class DivisionTest {
         career.assignTeamsToDivisions(4);
         
         Set<String> allTeamIds = new HashSet<>();
-        for (Division division : career.getDivisions()) {
+        for (Division division : career.getSeasonManager().getDivisions()) {
             for (String teamId : division.getTeamIds()) {
                 assertFalse(allTeamIds.contains(teamId), "Team duplicated across divisions");
                 allTeamIds.add(teamId);
@@ -132,6 +132,7 @@ public class DivisionTest {
             team.setSessionTeamId(UUID.randomUUID().toString());
             team.setName("Team " + i);
             team.setCountry("Test");
+            team.setBudget(new BigDecimal("10000000"));
             
             // Calcular OVR de los jugadores
             int baseOVR = 50 + (i * 5); // Teams 0-9 tienen OVR 50, 55, 60, 65, 70, etc.
