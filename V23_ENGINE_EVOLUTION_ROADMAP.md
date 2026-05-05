@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8 completed
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `2eaa41a` (Phase 6B experimental style-aware simulation)
-**Tests:** 81 relevant tests, 0 failures
+**Current baseline commit:** `f75afe1` (Phase 10A explicit OVR simulation)
+**Tests:** 89 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `2eaa41a`
-**Tests:** 81 relevant tests, 0 failures
+**Commit:** `f75afe1`
+**Tests:** 89 relevant tests, 0 failures
 
 ### What exists
 
@@ -651,7 +651,7 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 6C, Phase 10, or Phase 11
+## Recommended Next Phase: Phase 10B, Phase 6C, or Phase 11
 
 Phase 6A and Phase 6B are complete:
 - TeamStyle enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
@@ -669,12 +669,13 @@ Make tactical style available to real career teams via SessionTeam/API/frontend.
 - Requires: SessionTeam field, CareerSave migration, API endpoint, frontend UI
 - Do not start without separate audit/plan
 
-**Phase 10 — Improve Team OVR calculation**
-Replace `70 + min(20, squadSize/2)` with player-quality/formation-aware OVR.
-- Risk: MEDIUM/HIGH depending on available player data
-- Requires: full quality gate re-validation (all 81 tests)
+**Phase 10B — External TeamOverallCalculator / real OVR integration**
+Use SessionPlayer.calculateOverall() to compute real OVR and pass to simulateWithStrength().
+- Phase 10A added explicit OVR overload; Phase 10B adds TeamOverallCalculator service
+- Risk: LOW — additive only, no existing behavior change
+- Requires: CareerTeamManager/CareerPlayerManager access for OVR computation
 
-**Phase 11 — Frontend xG and tactic display**
+**Phase 11 — Frontend xG and tactic display****Phase 11 — Frontend xG and tactic display**
 Expose already available xG fields and style experiments in UI.
 - Risk: LOW/MEDIUM depending on frontend scope
 - xG fields already in MatchInfo/LeagueMatchInfo DTOs (nullable)
@@ -700,6 +701,7 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 | Phase 5B | MatchQualityMetrics API Exposure | LOW | 1 — Done | Completed |
 | Phase 6A | Style-aware computeLambdas | NONE | Done | Completed |
 | Phase 6B | Experimental simulateWithStyle overload (Option B) | LOW | Done | Completed |
+| Phase 10A | Experimental simulateWithStrength overload (Option D) | LOW | Done | Completed |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
 ---
