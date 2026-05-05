@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.domain;
 
 import com.footballmanager.domain.model.entity.MatchResult;
+import com.footballmanager.application.service.domain.MatchQualityComputer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -163,27 +164,12 @@ public class MatchMetricsCollector {
     private double round4(double v) { return Math.round(v * 10000.0) / 10000.0; }
 
     /**
-     * Reproduce the exact lambda formula from MatchEngineImpl.performSimulation().
-     * Duplication is acceptable in Phase 1A test-only code.
+     * Delegates to MatchQualityComputer.computeLambdas().
+     * Duplication removed — lambda formula is now in production code.
      */
     public static double[] computeLambdas(int homeOvr, int awayOvr) {
-        int ovrDiff = homeOvr - awayOvr;
-
-        double baseTotalLambda = 2.60;
-        double imbalanceBoost = Math.abs(ovrDiff) * 0.012;
-        double totalLambda = clamp(baseTotalLambda + imbalanceBoost, 2.3, 3.05);
-
-        double homeBaseShare = 0.52;
-        double strengthShift = ovrDiff / 220.0;
-        double homeShare = clamp(homeBaseShare + strengthShift, 0.25, 0.75);
-
-        double homeLambda = totalLambda * homeShare;
-        double awayLambda = totalLambda * (1.0 - homeShare);
-
-        return new double[] { homeLambda, awayLambda };
-    }
-
-    private static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
+        MatchQualityComputer.MatchQualityLambdas l =
+                MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
+        return new double[] { l.homeLambda(), l.awayLambda() };
     }
 }

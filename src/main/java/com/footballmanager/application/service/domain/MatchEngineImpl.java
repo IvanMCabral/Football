@@ -31,18 +31,11 @@ public class MatchEngineImpl implements MatchEngine {
         int homeShots = Math.max(3, (homePossession / 15) + random.nextInt(5));
         int awayShots = Math.max(3, (awayPossession / 15) + random.nextInt(5));
 
-        // V23 Poisson goal model
-        int ovrDiff = homeOverall - awayOverall;
-        double baseTotalLambda = 2.60;
-        double imbalanceBoost = Math.abs(ovrDiff) * 0.012;
-        double totalLambda = clamp(baseTotalLambda + imbalanceBoost, 2.3, 3.05);
-
-        double homeBaseShare = 0.52;
-        double strengthShift = ovrDiff / 220.0;
-        double homeShare = clamp(homeBaseShare + strengthShift, 0.25, 0.75);
-
-        double homeLambda = totalLambda * homeShare;
-        double awayLambda = totalLambda * (1.0 - homeShare);
+        // V23 Poisson goal model — use MatchQualityComputer for lambda calculation
+        MatchQualityComputer.MatchQualityLambdas lambdas =
+                MatchQualityComputer.computeLambdas(homeOverall, awayOverall);
+        double homeLambda = lambdas.homeLambda();
+        double awayLambda = lambdas.awayLambda();
 
         int homeGoals = poissonSample(homeLambda, random);
         int awayGoals = poissonSample(awayLambda, random);
