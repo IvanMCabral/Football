@@ -29,7 +29,34 @@ public class MatchEngineImpl implements MatchEngine {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
+    /**
+     * Style-aware experimental simulation.
+     * Uses MatchQualityComputer.computeLambdas(int, int, TeamStyle, TeamStyle).
+     * BALANCED+BALANCED produces identical results to simulate(Team, Team, long seed).
+     * Null style defaults to BALANCED.
+     *
+     * Phase 6B: Does NOT change existing simulate() behavior.
+     */
+    public Mono<MatchResult> simulateWithStyle(
+            Team homeTeam,
+            Team awayTeam,
+            TeamStyle homeStyle,
+            TeamStyle awayStyle,
+            long seed) {
+        TeamStyle hs = homeStyle != null ? homeStyle : TeamStyle.BALANCED;
+        TeamStyle as = awayStyle != null ? awayStyle : TeamStyle.BALANCED;
+        return Mono.fromCallable(() ->
+                performSimulation(homeTeam, awayTeam, new Random(seed), hs, as))
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
     private MatchResult performSimulation(Team homeTeam, Team awayTeam, Random random) {
+        return performSimulation(homeTeam, awayTeam, random, TeamStyle.BALANCED, TeamStyle.BALANCED);
+    }
+
+    private MatchResult performSimulation(
+            Team homeTeam, Team awayTeam, Random random,
+            TeamStyle homeStyle, TeamStyle awayStyle) {
 
         int homeOverall = calculateTeamOverall(homeTeam);
         int awayOverall = calculateTeamOverall(awayTeam);
@@ -37,9 +64,14 @@ public class MatchEngineImpl implements MatchEngine {
         int homePossession = calculatePossession(homeOverall, awayOverall, random);
         int awayPossession = 100 - homePossession;
 
-        // V23 Poisson goal model — use MatchQualityComputer for lambda calculation
-        MatchQualityComputer.MatchQualityLambdas lambdas =
-                MatchQualityComputer.computeLambdas(homeOverall, awayOverall);
+        // V23 Poisson goal model — style-aware lambda computation
+        MatchQualityComputer.MatchQualityLambdas lambdas;
+        if (homeStyle == TeamStyle.BALANCED && awayStyle == TeamStyle.BALANCED) {
+            // Use baseline formula for BALANCED+BALANCED (guaranteed equivalence)
+            lambdas = MatchQualityComputer.computeLambdas(homeOverall, awayOverall);
+        } else {
+            lambdas = MatchQualityComputer.computeLambdas(homeOverall, awayOverall, homeStyle, awayStyle);
+        }
         double homeLambda = lambdas.homeLambda();
         double awayLambda = lambdas.awayLambda();
 
