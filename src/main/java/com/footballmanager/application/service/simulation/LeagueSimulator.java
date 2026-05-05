@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation;
 
+import com.footballmanager.application.service.domain.TeamOverallCalculator;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
@@ -51,18 +52,16 @@ public class LeagueSimulator {
     }
 
     private int calculateTeamOVR(CareerSave career, String sessionTeamId) {
-        List<String> squadPlayerIds = career.getTeamManager().getTeamSquads().getOrDefault(sessionTeamId, List.of());
-        if (squadPlayerIds.isEmpty()) return 50;
-
-        int totalOVR = 0;
-        int count = 0;
-        for (String playerId : squadPlayerIds) {
-            var player = career.getSessionPlayer(playerId);
-            if (player != null) {
-                totalOVR += player.calculateOverall();
-                count++;
-            }
+        // Preserve legacy empty-squad behavior: old LeagueSimulator returned 50
+        List<String> squadPlayerIds = career.getTeamManager().getSquadPlayerIds(sessionTeamId);
+        if (squadPlayerIds == null || squadPlayerIds.isEmpty()) {
+            return 50;
         }
-        return count > 0 ? totalOVR / count : 50;
+        // Delegate to TeamOverallCalculator for non-empty squads
+        return TeamOverallCalculator.calculateFromSessionTeam(
+                sessionTeamId,
+                career.getTeamManager(),
+                career.getPlayerManager()
+        );
     }
 }
