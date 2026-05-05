@@ -1,8 +1,8 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `0abc001` (test: add V23 full simulation quality gate)
-**Test status:** 56 relevant tests, 0 failures
+**Latest commit:** `b5d286f` (feat: add internal match quality metrics value object)
+**Test status:** 64 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -91,10 +91,11 @@ public final class MatchQualityComputer {
 | `MatchEngineImplEventConsistencyTest` | 8 | Phase 4: goal events match score; home/away attribution; events sorted; minutes valid; summary coherent |
 | `MatchEngineImplRoleContributionTest` | 7 | Phase 7: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
 | `V23SimulationQualityGateTest` | 8 | Phase 8: full regression gate; all phase metrics; determinism; event consistency; role distribution; performance |
+| `MatchQualityMetricsTest` | 8 | Phase 5A: MatchQualityMetrics factories; validation; goals/xG ratio computation |
 | `MatchEngineImplTest` | existing | Original behavior contract |
 | `DivisionTest` | 8 | Career division assignment logic (unrelated, pre-existing fix) |
 
-**Total: 56 tests, 0 failures**
+**Total: 64 tests, 0 failures**
 
 ---
 
@@ -186,7 +187,21 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 11. Phase 7 Deliveries (commit `d1c5c36`)
+## 11. Phase 5A Deliveries (commit `b5d286f`)
+
+- **`MatchQualityMetrics`** — immutable value object record in `domain/model/valueobject/`:
+  - Fields: `homeXg`, `awayXg`, `totalXg`, `goalsToXgRatio`, `homeShare`
+  - `fromLambdas(MatchQualityLambdas)`: from pre-computed lambda values
+  - `fromTeams(Team, Team)`: delegates to `MatchQualityComputer.fromTeams()`
+  - `withGoals(int, int)`: computes goals/xG ratio from actual goals
+  - Validation: rejects NaN/Infinity, rejects negative xG values
+- **`MatchQualityMetricsTest`** — 8 unit tests covering factory methods and validation
+- **Internal use only** — not persisted, not exposed via API
+- **Phase 5B pending** — service integration, API exposure, or frontend display not yet implemented
+
+---
+
+## 12. Phase 7 Deliveries (commit `d1c5c36`)
 
 - **Synthetic role-based scorer labels** — goal events now use `HOME_ST_1`, `HOME_RW_2`, `AWAY_AM_1`, etc. instead of generic `PlayerHome1` / `PlayerAway1`
 - **`selectScorer()` helper method** — weighted random role selection using injected `Random` for determinism
@@ -205,7 +220,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 12. Phase 8 Deliveries (commit `0abc001`)
+## 13. Phase 8 Deliveries (commit `0abc001`)
 
 - **`V23SimulationQualityGateTest`** — 8 comprehensive regression tests combining all Phase 1–7 guarantees:
   - `qualityGate_equalOvrMetrics` — 10k seeded matches, all metrics within ranges
@@ -229,7 +244,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 13. Intentionally NOT Implemented Yet
+## 14. Intentionally NOT Implemented Yet
 
 - **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time without architecture change
 - **No PlayerRepository in simulation** — synthetic role labels used instead; roles are not squad-derived
@@ -241,7 +256,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 14. Remaining Risks and Limitations
+## 15. Remaining Risks and Limitations
 
 | Limitation | Impact | Mitigation |
 |-----------|--------|-----------|
@@ -252,7 +267,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 15. Recommended Next Phase
+## 16. Recommended Next Phase
 
 **Phase 8 complete — regression gate now in place. Next options:**
 
@@ -271,17 +286,18 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
 ---
 
-## 16. Summary
+## 17. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 7, and 8 are complete. `MatchQualityComputer` is available as a shared utility. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. Comprehensive quality gate is established. All 56 relevant tests pass. No changes to production API, persistence, or frontend.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. Comprehensive quality gate is established. All 64 relevant tests pass. No changes to production API, persistence, or frontend.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+b5d286f — feat: add internal match quality metrics value object (Phase 5A)
 0abc001 — test: add V23 full simulation quality gate (Phase 8)
 d1c5c36 — feat: add role-based scorer attribution to V23 match events (Phase 7)
 de13433 — refactor: align V23 shot model with xG and goals (Phase 3)

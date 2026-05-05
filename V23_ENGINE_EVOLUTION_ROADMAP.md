@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 7, 8 completed
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 7, 8 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `0abc001` (Phase 8 full simulation quality gate)
-**Tests:** 56 relevant tests, 0 failures
+**Current baseline commit:** `b5d286f` (Phase 5A match quality metrics)
+**Tests:** 64 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `0abc001`
-**Tests:** 56 relevant tests, 0 failures
+**Commit:** `b5d286f`
+**Tests:** 64 relevant tests, 0 failures
 
 ### What exists
 
@@ -27,8 +27,10 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 |-----------|----------|-------------|
 | Poisson goal model | `MatchEngineImpl.performSimulation()` | OVR-differential lambda splitting, `totalLambda ∈ [2.3, 3.05]`, `homeShare ∈ [0.25, 0.75]` |
 | `MatchQualityComputer` | `application/service/domain/MatchQualityComputer.java` | Static `computeLambdas(homeOvr, awayOvr)` and `fromTeams(Team, Team)` returning `MatchQualityLambdas` record |
+| `MatchQualityMetrics` | `domain/model/valueobject/MatchQualityMetrics.java` | Immutable record: homeXg, awayXg, totalXg, goalsToXgRatio, homeShare; factory methods fromLambdas, fromTeams, withGoals |
 | `MatchMetricsCollector` | `test/.../MatchMetricsCollector.java` | Test-only aggregate collector: goals, shots, xG, win/draw rates across 10k matches |
 | `MatchQualityComputerTest` | `test/.../MatchQualityComputerTest.java` | 6 unit tests for lambda formula correctness |
+| `MatchQualityMetricsTest` | `test/.../MatchQualityMetricsTest.java` | 8 unit tests for MatchQualityMetrics factories and validation |
 | `MatchEngineImplMetricsValidationTest` | `test/.../MatchEngineImplMetricsValidationTest.java` | 10k-match validation asserting goals/xG/0-0/4+ within ranges |
 | `MatchEngineImplPoissonValidationTest` | `test/.../MatchEngineImplPoissonValidationTest.java` | 1k-match per scenario goal range validation |
 | `MatchEngineImplDeterminismTest` | `test/.../MatchEngineImplDeterminismTest.java` | 7 tests: same seed = identical result; different seeds = diversity |
@@ -647,14 +649,14 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 5 or Phase 6
+## Recommended Next Phase: Phase 5B or Phase 6
 
-Phase 8 complete — regression gate now established. Next available options:
+Phase 5A complete — `MatchQualityMetrics` value object established. Next available options:
 
-**Phase 5 — Match Quality Metrics in Production**
-Expose xG/match quality metrics via internal service or API DTO.
-- Low risk — additive only
-- Enables analytics and future frontend xG display
+**Phase 5B — MatchQualityMetrics Service Integration**
+Use `MatchQualityMetrics` in internal services (e.g., `MatchResultProcessor`, analytics logging).
+- Low risk — internal only, no API or persistence changes
+- Enables in-memory xG tracking without persistence
 
 **Phase 6 — Tactics/Style Modifiers**
 Add team tactical style that adjusts `totalLambda` or `homeShare`.
@@ -663,7 +665,7 @@ Add team tactical style that adjusts `totalLambda` or `homeShare`.
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
 ---
@@ -677,9 +679,12 @@ mvn test -Dtest=V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest
 | **Phase 2** | Deterministic Seeding | LOW | Done | Completed |
 | **Phase 3** | Shot Model Alignment | MEDIUM | Done | Completed |
 | **Phase 4** | Event Consistency | LOW | Done | Completed |
+| **Phase 5A** | MatchQualityMetrics Value Object | NONE | Done | Completed |
 | **Phase 7** | Player/Role Contribution | LOW | Done | Completed |
 | **Phase 8** | Full Simulation Quality Gate | NONE | Done | Completed |
-| Phase 5 | Match Quality Metrics in Production | LOW | **1 — Next** | Available |
+| Phase 5B | MatchQualityMetrics Service Integration | LOW | **1 — Next** | Available |
+| Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |
+| Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 | Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
