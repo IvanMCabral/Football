@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `f75afe1` (feat: add experimental explicit OVR match simulation overload)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, and 10A complete
-**Test status:** 89 tests, 0 failures
+**Latest commit:** `8530935` (feat: add team overall calculator for real OVR computation)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, and 10B complete
+**Test status:** 99 tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -93,8 +93,9 @@ public final class MatchQualityComputer {
 | `MatchEngineImplRoleContributionTest` | 7 | Phase 7: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
 | `MatchEngineImplStrengthSimulationTest` | 8 | Phase 10A: explicit OVR equivalence, determinism, invalid fallback, bounded metrics, existing path preserved |
 | `V23SimulationQualityGateTest` | 8 | Phase 8: full regression gate; all phase metrics; determinism; event consistency; role distribution; performance |
+| `TeamOverallCalculatorTest` | 10 | Phase 10B: real OVR calculator; full squad, starting XI, fallback, missing players, clamping, deterministic |
 
-**Total: 89 tests, 0 failures**
+**Total: 99 tests, 0 failures**
 
 ---
 
@@ -303,7 +304,20 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 | `simulateWithStyleStillWorks` | `simulateWithStyle(...)` unchanged — BALANCED/BALANCED = baseline |
 | `asymmetricOvrScenariosValid` | Strong favorite home/away produces expected possession imbalance |
 
-## 18. Intentionally NOT Implemented Yet
+## 18. Phase 10B Deliveries (commit `8530935`)
+
+- **`TeamOverallCalculator`** — pure utility in `application/service/domain/` for real team OVR computation
+- **`TeamOverallCalculatorTest`** — 10 tests validating OVR calculation
+- **Pure utility, no side effects** — no repository injection, thread-safe
+- **`calculateFromSessionTeam(sessionTeamId, teamManager, playerManager)`** — delegates to `CareerTeamManager.calculateTeamOVR()`
+- **`calculateFromStartingXI(sessionTeamId, career)`** — uses starting XI, falls back to squad if empty
+- **`calculateFromPlayerIds(playerIds, playerProvider)`** — raw player ID list with lookup function
+- **`calculateFallbackFromSquadSize(squadSize)`** — returns `70 + min(20, squadSize/2)` matching `MatchEngineImpl.calculateTeamOverall()`
+- **Clamps to [1, 100]** — all methods return valid OVR
+- **No production integration** — `simulateWithStrength()` is NOT called from production flow yet
+- **Ready for Phase 10C** — caller with `CareerSave` context can call `TeamOverallCalculator` then `simulateWithStrength()`
+
+## 19. Intentionally NOT Implemented Yet
 
 - **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time without architecture change
 - **No PlayerRepository in simulation** — synthetic role labels used instead; roles are not squad-derived
@@ -315,7 +329,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 19. Remaining Risks and Limitations
+## 20. Remaining Risks and Limitations
 
 | Limitation | Impact | Mitigation |
 |-----------|--------|-----------|
@@ -327,7 +341,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 20. Phase 5C — Future Work (Deferred)
+## 21. Phase 5C — Future Work (Deferred)
 
 - **`goalsToXgRatio`** — optional future field for over/under-performance analysis; not in current scope
 - **Redis persistence of xG** — explicitly deferred due to schema migration complexity; no current plan
@@ -335,9 +349,9 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 21. Recommended Next Phase
+## 22. Recommended Next Phase
 
-**Phase 10A complete — explicit OVR overload implemented. Phase 10B or Phase 6C next.**
+**Phase 10A and 10B complete. Phase 10C next — integrate TeamOverallCalculator into career/league simulation.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -345,10 +359,13 @@ Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend st
 - Requires: SessionTeam field, API endpoint, frontend UI
 - Not yet approved — decision point for future sprint
 
-**Phase 10B — External TeamOverallCalculator / Real OVR Integration**
-Use SessionPlayer.calculateOverall() to compute real OVR and pass to simulateWithStrength():
-- Phase 10A added explicit OVR overload; Phase 10B adds TeamOverallCalculator service
-- Medium risk — requires validation of all 89 tests
+**Phase 10C — Integrate TeamOverallCalculator into Career/League Simulation**
+Choose a concrete production path with CareerSave context and call simulateWithStrength() using computed OVRs:
+- Phase 10A added simulateWithStrength()
+- Phase 10B added TeamOverallCalculator utility
+- Phase 10C integrates calculator into specific career/league simulation path
+- Medium risk — requires validation of all 99 tests
+- Do not start without separate audit/plan
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
 - Separate approval required for frontend work
@@ -365,12 +382,13 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 
 ---
 
-## 22. Summary
+## 23. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 89 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10B (real OVR integration) and Phase 6C (user-configurable style) are the recommended next phases.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 99 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C (career/league integration using TeamOverallCalculator) and Phase 6C (user-configurable style) are the recommended next phases.
 
 **Commit history on `mvp-1-performance-cleanup`:**
-```f75afe1 — feat: add experimental explicit OVR match simulation overload (Phase 10A)
+```8530935 — feat: add team overall calculator for real OVR computation (Phase 10B)
+f75afe1 — feat: add experimental explicit OVR match simulation overload (Phase 10A)
 
 2eaa41a — feat: add experimental style-aware match simulation overload (Phase 6B)
 abbcb53 — feat: add style-aware match quality lambda computation (Phase 6A)

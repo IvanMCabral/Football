@@ -1,8 +1,8 @@
 # V23 Phase 10: Team OVR Calculation Improvement — Audit & Decision
 
-**Status:** COMPLETED — Phase 10A implemented as Option D
+**Status:** COMPLETED — Phases 10A and 10B complete. Phase 10C pending.
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `f75afe1` (feat: add experimental explicit OVR match simulation overload)
+**Latest commit:** `8530935` (Phase 10B: TeamOverallCalculator utility)
 **Created:** 2026-05-05
 
 ---
@@ -352,9 +352,9 @@ These must hold regardless of which option is chosen:
 
 ## Decision Required
 
-**Phase 10A APPROVED and IMPLEMENTED as Option D.**
+**Phase 10A and 10B COMPLETED.**
 
-Option D selected and committed as `f75afe1`. Phase 10B (TeamOverallCalculator) next.
+Option D (Phase 10A) and Option A+B hybrid (Phase 10B) both implemented. Phase 10C next — integrate TeamOverallCalculator into career/league simulation and call simulateWithStrength().
 
 - **Option A** — Keep current OVR formula, document limitation (no implementation)
 - **Option B** — Improve the squad-size heuristic formula (not recommended — breaks quality gate)

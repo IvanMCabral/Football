@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A completed
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `f75afe1` (Phase 10A explicit OVR simulation)
-**Tests:** 89 relevant tests, 0 failures
+**Current baseline commit:** `8530935` (Phase 10B TeamOverallCalculator)
+**Tests:** 99 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +18,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `f75afe1`
-**Tests:** 89 relevant tests, 0 failures
+**Commit:** `8530935`
+**Tests:** 99 relevant tests, 0 failures
 
 ### What exists
 
@@ -651,7 +651,7 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 10B, Phase 6C, or Phase 11
+## Recommended Next Phase: Phase 10C, Phase 6C, or Phase 11
 
 Phase 6A and Phase 6B are complete:
 - TeamStyle enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
@@ -702,6 +702,7 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 | Phase 6A | Style-aware computeLambdas | NONE | Done | Completed |
 | Phase 6B | Experimental simulateWithStyle overload (Option B) | LOW | Done | Completed |
 | Phase 10A | Experimental simulateWithStrength overload (Option D) | LOW | Done | Completed |
+| Phase 10B | TeamOverallCalculator utility + Starting XI support | LOW | Done | Completed |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
 ---
