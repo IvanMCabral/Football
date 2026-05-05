@@ -1,8 +1,8 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 7, 8 completed
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 7, 8 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `b5d286f` (Phase 5A match quality metrics)
+**Current baseline commit:** `69b8e0e` (Phase 5B xG in fixture DTOs)
 **Tests:** 64 relevant tests, 0 failures
 **Date:** 2026-05-05
 
@@ -18,7 +18,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `b5d286f`
+**Commit:** `69b8e0e`
 **Tests:** 64 relevant tests, 0 failures
 
 ### What exists
@@ -37,7 +37,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 | `MatchEngineImplEventConsistencyTest` | `test/.../MatchEngineImplEventConsistencyTest.java` | 8 tests: goal events match score; events sorted; summary coherent |
 | `MatchEngineImplRoleContributionTest` | `test/.../MatchEngineImplRoleContributionTest.java` | 7 tests: synthetic role pattern; attacker >= 70%; defensive <= 15%; GK = 0; deterministic |
 | `V23SimulationQualityGateTest` | `test/.../V23SimulationQualityGateTest.java` | 8 tests: full regression gate combining all phase guarantees |
-| Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation |
+| Status document | `V23_SIMULATION_ENGINE_STATUS.md` | Full engine documentation (Phase 5B: xG in DTOs) |
 
 ### Current simulation path
 
@@ -653,8 +653,8 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 Phase 5A complete — `MatchQualityMetrics` value object established. Next available options:
 
-**Phase 5B — MatchQualityMetrics Service Integration**
-Use `MatchQualityMetrics` in internal services (e.g., `MatchResultProcessor`, analytics logging).
+**Phase 6 — Tactics/Style Modifiers**
+Add team tactical style that adjusts `totalLambda` (e.g., `MatchResultProcessor`, analytics logging).
 - Low risk — internal only, no API or persistence changes
 - Enables in-memory xG tracking without persistence
 
@@ -682,7 +682,7 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 | **Phase 5A** | MatchQualityMetrics Value Object | NONE | Done | Completed |
 | **Phase 7** | Player/Role Contribution | LOW | Done | Completed |
 | **Phase 8** | Full Simulation Quality Gate | NONE | Done | Completed |
-| Phase 5B | MatchQualityMetrics Service Integration | LOW | **1 — Next** | Available |
+| Phase 5B | MatchQualityMetrics API Exposure | LOW | **1 — Done** | Completed |
 | Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 | Phase 6 | Tactics/Style Modifiers | MEDIUM | 2 | Available |

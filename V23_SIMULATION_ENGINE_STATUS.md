@@ -1,7 +1,8 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `b5d286f` (feat: add internal match quality metrics value object)
+**Latest commit:** `69b8e0e` (feat: expose xG metrics in fixture query DTOs)
+**Status:** Phases 5A and 5B complete
 **Test status:** 64 relevant tests, 0 failures
 **Date:** 2026-05-05
 
@@ -244,19 +245,29 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ---
 
-## 14. Intentionally NOT Implemented Yet
+## 14. Phase 5B Deliveries (commit `69b8e0e`)
+
+- **`MatchInfo`** DTO — `homeXG`, `awayXG`, `totalXG` as nullable `Double` fields
+- **`LeagueMatchInfo`** DTO — same xG fields
+- **`UserDivisionFixtureQueryService.getByRound()`** — xG computed on-demand via `MatchQualityComputer.computeLambdas()` + squad OVR from `CareerSave`
+- **`LeagueFixtureQueryService.buildLeagueDivisionFixtures()`** — same pattern for all divisions
+- **`FixtureQueryHelper`** — `toMatchInfo(MatchFixture, Map, CareerSave)` overload computes xG when career context is available
+- API change is additive only — all xG fields are nullable for backward compatibility
+- No Redis/schema changes, no MatchResult/MatchResultData changes
+
+## 15. Intentionally NOT Implemented Yet
 
 - **No real player names** — `Team` stores only `Set<PlayerId>`; `Player` entity not accessible at simulation time without architecture change
 - **No PlayerRepository in simulation** — synthetic role labels used instead; roles are not squad-derived
 - **No xG fields in MatchResult** — `MatchResult` has no `homeXG`/`awayXG` fields; computed on-demand via `MatchQualityComputer`
-- **Frontend xG display** — no API surface for xG, no JSON fields on match result serialization
+- **Frontend xG display** — xG is now in API DTOs but frontend integration is a separate future task
 - **No tactical/style modifiers** — all teams use same lambda formula regardless of strategy
 - **No shot location/inside-box data** — no per-shot xG, no position data, no distToGoal
 - **V32/V33 engine** — V32 is specification/documentation only, not runnable. V33 is on a separate experiment branch
 
 ---
 
-## 15. Remaining Risks and Limitations
+## 16. Remaining Risks and Limitations
 
 | Limitation | Impact | Mitigation |
 |-----------|--------|-----------|
@@ -264,21 +275,25 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 | **Possession formula is heuristic** | `basePossession = (homeStrength/totalStrength)*100 ±10` — not physics-based | Acceptable for current simulation fidelity |
 | **No tactical style** | All teams use same lambda formula regardless of strategy | Phase 6 (Tactics/Style Modifiers) — if needed |
 | **OVR calculation is squad-size based** | `70 + min(20, squadSize/2)` — no formation, player quality weighting | Sufficient for current V23 baseline |
+| **xG not persisted to Redis** | Computed on-demand only; past matches have no xG in saved career data | Phase 5C deferred — Redis schema migration required |
 
 ---
 
-## 16. Recommended Next Phase
+## 17. Phase 5C — Future Work (Deferred)
 
-**Phase 8 complete — regression gate now in place. Next options:**
+- **`goalsToXgRatio`** — optional future field for over/under-performance analysis; not in current scope
+- **Redis persistence of xG** — explicitly deferred due to schema migration complexity; no current plan
+- **Frontend display** — separate approval required for frontend integration of xG fields
 
-**Phase 5 — Match Quality Metrics in Production**
-Expose xG/match quality metrics via internal service or API DTO.
-- Low risk — additive only
-- Enables analytics and future frontend xG display
+---
+
+## 18. Recommended Next Phase
+
+**Phase 5B complete — xG exposed in fixture API DTOs. Phase 6 is next.**
 
 **Phase 6 — Tactics/Style Modifiers**
 Add team tactical style that adjusts `totalLambda` or `homeShare`.
-- Medium risk — requires re-validation of goals/match ranges
+- Medium risk — requires re-validation with full quality gate
 - Must pass full quality gate before merging
 
 **Phase 9 — Future Advanced Engine**
@@ -293,10 +308,11 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 
 ## 17. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. Comprehensive quality gate is established. All 64 relevant tests pass. No changes to production API, persistence, or frontend.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 64 relevant tests pass. No changes to production API, persistence, or frontend.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+69b8e0e — feat: expose xG metrics in fixture query DTOs (Phase 5B)
 b5d286f — feat: add internal match quality metrics value object (Phase 5A)
 0abc001 — test: add V23 full simulation quality gate (Phase 8)
 d1c5c36 — feat: add role-based scorer attribution to V23 match events (Phase 7)
