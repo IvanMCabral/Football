@@ -1,8 +1,8 @@
 # V23 Phase 10C2 — V23 Engine Swap for League Simulation
 
-**Status:** AUDIT — No code implementation yet
+**Status:** COMPLETED — Option D implemented with useV23LeagueEngine feature flag
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `a5c0da4` (docs: align V23 docs with Phase 10C1 doc commit)
+**Latest commit:** `a430e96` (feat: add feature-flagged V23 league simulation path)
 **Created:** 2026-05-05
 
 ---

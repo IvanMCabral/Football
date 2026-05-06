@@ -1,9 +1,8 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1 completed
-**Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `e4d0856` (docs after Phase 10C1)
-**Tests:** 99 relevant tests, 0 failures
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2 completed
+**Current baseline commit:** `a430e96` (Phase 10C2: feature-flagged V23 league simulation path)
+**Tests:** 105 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -18,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `e4d0856`
-**Tests:** 99 relevant tests, 0 failures
+**Commit:** `a430e96`
+**Tests:** 105 relevant tests, 0 failures
 
 ### What exists
 
@@ -651,17 +650,17 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 10C2, Phase 6C, or Phase 11
+## Recommended Next Phase: Phase 10C3, Phase 6C, or Phase 11
 
-Phase 6A and Phase 6B are complete:
-- TeamStyle enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
+Phase 6A, Phase 6B, Phase 10C1, and Phase 10C2 are complete:
+- `TeamStyle` enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
 - MatchQualityComputer style-aware overload exists
-- MatchEngineImpl has experimental `simulateWithStyle(Team, Team, TeamStyle, TeamStyle, long seed)`
-- Existing `simulate(Team, Team)` remains unchanged
-- Existing `simulate(Team, Team, long seed)` remains unchanged
-- MatchEngine port unchanged (only `simulate(Team, Team)` in interface)
-- No Team/SessionTeam/API/persistence/frontend changes
-- 99 tests pass
+- `simulateWithStyle()` and `simulateWithStrength()` exist in `MatchEngineImpl`
+- LeagueSimulator has optional V23 engine path behind `useV23LeagueEngine` flag (default: `false`)
+- When flag is `false`: `DefaultMatchSimulator.simulateQuick()` unchanged
+- When flag is `true`: V23 engine with computed possession/shots from Poisson lambdas
+- `MatchResultDataAdapter` maps `MatchResult` to `MatchResultData` — events/summary discarded
+- 105 tests pass
 
 **Phase 6C — User-configurable tactical styles**
 Make tactical style available to real career teams via SessionTeam/API/frontend.
@@ -669,15 +668,18 @@ Make tactical style available to real career teams via SessionTeam/API/frontend.
 - Requires: SessionTeam field, CareerSave migration, API endpoint, frontend UI
 - Do not start without separate audit/plan
 
-**Phase 10C2 — Evaluate V23 engine swap for league simulation**
-Replace DefaultMatchSimulator.simulateQuick() with MatchEngineImpl.simulateWithStrength():
-- Phase 10C1 already integrated TeamOverallCalculator into LeagueSimulator OVR calculation
-- DefaultMatchSimulator.simulateQuick() is still used
-- simulateWithStrength() is still not called by production league flow
-- Phase 10C2 would evaluate replacing DefaultMatchSimulator with MatchEngineImpl.simulateWithStrength()
-- Requires MatchResult → MatchFixture.MatchResultData adapter
-- Medium risk because simulation behavior changes
-- Do not start without separate audit/plan
+**Phase 10C4 — Add LeagueSimulator integration tests**
+Add direct unit tests for LeagueSimulator with mock MatchSimulator and MatchEngineImpl:
+- Risk: LOW — test-only changes
+- No production code changes
+- Would cover both DefaultMatchSimulator and V23 engine paths
+
+**Phase 10C3 — Add configuration property for useV23LeagueEngine**
+Add an external configuration / property to control the `useV23LeagueEngine` flag for gradual rollout:
+- Risk: LOW — no simulation behavior change, only external control
+- No API/frontend changes
+- Could use Spring `@ConfigurationProperties` or similar
+- No test modifications required
 
 **Phase 11 — Frontend xG and tactic display**
 Expose already available xG fields and style experiments in UI.
@@ -686,7 +688,7 @@ Expose already available xG fields and style experiments in UI.
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 ---
 
@@ -708,6 +710,7 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 | Phase 10A | Experimental simulateWithStrength overload (Option D) | LOW | Done | Completed |
 | Phase 10B | TeamOverallCalculator utility + Starting XI support | LOW | Done | Completed |
 | Phase 10C1 | LeagueSimulator OVR refactor to TeamOverallCalculator | LOW | Done | Completed |
+| Phase 10C2 | V23 engine path behind useV23LeagueEngine flag (Option D) | LOW | Done | Completed |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
 ---
