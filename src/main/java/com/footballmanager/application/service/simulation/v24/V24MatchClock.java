@@ -20,7 +20,7 @@ public class V24MatchClock {
     public int currentMinute() { return currentMinute; }
     public int maxMinutes() { return maxMinutes; }
 
-    public boolean isRunning() { return currentMinute <= maxMinutes; }
+    public boolean isRunning() { return currentMinute < maxMinutes; }
 
     public void advance() {
         if (currentMinute < maxMinutes) {
