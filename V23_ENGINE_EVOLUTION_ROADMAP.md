@@ -1,8 +1,8 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2 completed
-**Current baseline commit:** `a430e96` (Phase 10C2: feature-flagged V23 league simulation path)
-**Tests:** 105 relevant tests, 0 failures
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, and 10C4 completed
+**Current baseline commit:** `b290ca6` (Phase 10C4: LeagueSimulator dual-path tests)
+**Tests:** 112 relevant tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -17,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `a430e96`
-**Tests:** 105 relevant tests, 0 failures
+**Commit:** `b290ca6`
+**Tests:** 112 relevant tests, 0 failures
 
 ### What exists
 
@@ -652,7 +652,7 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ## Recommended Next Phase: Phase 10C3, Phase 6C, or Phase 11
 
-Phase 6A, Phase 6B, Phase 10C1, and Phase 10C2 are complete:
+Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, and Phase 10C4 are complete:
 - `TeamStyle` enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
 - MatchQualityComputer style-aware overload exists
 - `simulateWithStyle()` and `simulateWithStrength()` exist in `MatchEngineImpl`
@@ -660,7 +660,8 @@ Phase 6A, Phase 6B, Phase 10C1, and Phase 10C2 are complete:
 - When flag is `false`: `DefaultMatchSimulator.simulateQuick()` unchanged
 - When flag is `true`: V23 engine with computed possession/shots from Poisson lambdas
 - `MatchResultDataAdapter` maps `MatchResult` to `MatchResultData` — events/summary discarded
-- 105 tests pass
+- `LeagueSimulatorTest` validates dual-path: default path, V23 path, determinism, fixture skipping
+- 112 tests pass
 
 **Phase 6C — User-configurable tactical styles**
 Make tactical style available to real career teams via SessionTeam/API/frontend.
@@ -668,11 +669,7 @@ Make tactical style available to real career teams via SessionTeam/API/frontend.
 - Requires: SessionTeam field, CareerSave migration, API endpoint, frontend UI
 - Do not start without separate audit/plan
 
-**Phase 10C4 — Add LeagueSimulator integration tests**
-Add direct unit tests for LeagueSimulator with mock MatchSimulator and MatchEngineImpl:
-- Risk: LOW — test-only changes
-- No production code changes
-- Would cover both DefaultMatchSimulator and V23 engine paths
+**Recommended next: Phase 10C3 or Phase 11**
 
 **Phase 10C3 — Add configuration property for useV23LeagueEngine**
 Add an external configuration / property to control the `useV23LeagueEngine` flag for gradual rollout:
@@ -688,7 +685,7 @@ Expose already available xG fields and style experiments in UI.
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 ---
 
@@ -711,6 +708,7 @@ mvn test -Dtest=MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngine
 | Phase 10B | TeamOverallCalculator utility + Starting XI support | LOW | Done | Completed |
 | Phase 10C1 | LeagueSimulator OVR refactor to TeamOverallCalculator | LOW | Done | Completed |
 | Phase 10C2 | V23 engine path behind useV23LeagueEngine flag (Option D) | LOW | Done | Completed |
+| Phase 10C4 | LeagueSimulator dual-path integration tests | LOW | Done | Completed |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 
 ---

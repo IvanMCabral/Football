@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `a430e96` (feat: add feature-flagged V23 league simulation path)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, and 10C2 complete
-**Test status:** 105 tests, 0 failures
+**Latest commit:** `b290ca6` (test: add LeagueSimulator dual-path coverage)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, and 10C4 complete
+**Test status:** 112 tests, 0 failures
 **Date:** 2026-05-05
 
 ---
@@ -95,8 +95,9 @@ public final class MatchQualityComputer {
 | `V23SimulationQualityGateTest` | 8 | Phase 8: full regression gate; all phase metrics; determinism; event consistency; role distribution; performance |
 | `TeamOverallCalculatorTest` | 10 | Phase 10B: real OVR calculator; full squad, starting XI, fallback, missing players, clamping, deterministic |
 | `MatchResultDataAdapterTest` | 6 | Phase 10C2: maps V23 MatchResult to MatchFixture.MatchResultData; discards events/summary; null handling |
+| `LeagueSimulatorTest` | 7 | Phase 10C4: dual-path league simulation coverage; default path, V23 path, deterministic seed, skipped fixtures, all fixtures in round |
 
-**Total: 105 tests, 0 failures**
+**Total: 112 tests, 0 failures**
 
 ---
 
@@ -352,7 +353,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, and 10C2 are complete. Recommended next: Phase 10C3, Phase 10C4, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, and 10C4 are complete. Recommended next: Phase 10C3, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -377,20 +378,22 @@ Option D selected — feature flag / strategy switch:
 - `MatchResultDataAdapter` maps `MatchResult` to `MatchResultData` — events and summary discarded
 - No behavior change unless flag is explicitly enabled
 - No API/frontend/persistence changes
-- 105 tests pass
+- 112 tests pass
 
-**Recommended next: Phase 10C3, Phase 10C4, Phase 6C, or Phase 11**
+**Phase 10C4 COMPLETED — LeagueSimulator dual-path tests**
+Add tests for default path and V23 path:
+- Validate DefaultMatchSimulator path remains default
+- Validate V23 path maps possession/shots correctly
+- Validate deterministic seed for same fixture
+- Validate completed/wrong-round fixtures are skipped
+- All 7 tests pass — no production behavior change
+
+**Recommended next: Phase 10C3, Phase 6C, or Phase 11**
 
 **Phase 10C3 — External configuration for V23 league engine flag**
 Expose `useV23LeagueEngine` through application configuration:
 - Keep default `false`
 - No API/frontend/persistence changes required
-- Requires separate approval
-
-**Phase 10C4 — LeagueSimulator integration tests**
-Add tests for default path and V23 path:
-- Validate DefaultMatchSimulator path remains default
-- Validate V23 path maps possession/shots correctly
 - Requires separate approval
 
 **Phase 11 — Frontend xG and Tactic Display**
@@ -404,17 +407,18 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
 ---
 
 ## 23. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, and 10C2 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 105 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C2 complete — V23 league engine path available behind feature flag. Phase 10C3 (config property) and Phase 6C (tactical styles) are the recommended next phases.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 112 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. Phase 10C3 (config property) and Phase 6C (tactical styles) are the recommended next phases.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+b290ca6 — test: add LeagueSimulator dual-path coverage (Phase 10C4)
 a430e96 — feat: add feature-flagged V23 league simulation path (Phase 10C2)
 e4d0856 — docs: update V23 engine docs after Phase 10C1
 8530935 — feat: add team overall calculator for real OVR computation (Phase 10B)
