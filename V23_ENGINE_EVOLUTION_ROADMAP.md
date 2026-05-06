@@ -2,7 +2,7 @@
 
 **Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1 completed
 **Branch:** `mvp-1-performance-cleanup`
-**Current baseline commit:** `05597ab` (Phase 10C1 LeagueSimulator OVR refactor)
+**Current baseline commit:** `e4d0856` (docs after Phase 10C1)
 **Tests:** 99 relevant tests, 0 failures
 **Date:** 2026-05-05
 
@@ -18,7 +18,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `8530935`
+**Commit:** `e4d0856`
 **Tests:** 99 relevant tests, 0 failures
 
 ### What exists

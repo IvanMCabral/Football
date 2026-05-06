@@ -1,7 +1,7 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `05597ab` (refactor: delegate league OVR calculation to TeamOverallCalculator)
+**Latest commit:** `e4d0856` (docs: update V23 engine docs after Phase 10C1)
 **Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, and 10C1 complete
 **Test status:** 99 tests, 0 failures
 **Date:** 2026-05-05
@@ -397,7 +397,9 @@ mvn test -Dtest=MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngine
 V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, and 8 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 99 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C (career/league integration using TeamOverallCalculator) and Phase 6C (user-configurable style) are the recommended next phases.
 
 **Commit history on `mvp-1-performance-cleanup`:**
-```8530935 — feat: add team overall calculator for real OVR computation (Phase 10B)
+```
+e4d0856 — docs: update V23 engine docs after Phase 10C1
+8530935 — feat: add team overall calculator for real OVR computation (Phase 10B)
 05597ab — refactor: delegate league OVR calculation to TeamOverallCalculator (Phase 10C1)
 f75afe1 — feat: add experimental explicit OVR match simulation overload (Phase 10A)
 
