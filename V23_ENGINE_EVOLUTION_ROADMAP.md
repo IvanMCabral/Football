@@ -1,7 +1,7 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, and 10C4 completed
-**Current baseline commit:** `b290ca6` (Phase 10C4: LeagueSimulator dual-path tests)
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed
+**Current baseline commit:** `268188f` (Phase 10C3: externalize V23 league engine flag)
 **Tests:** 112 relevant tests, 0 failures
 **Date:** 2026-05-05
 
@@ -17,7 +17,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `b290ca6`
+**Commit:** `268188f`
 **Tests:** 112 relevant tests, 0 failures
 
 ### What exists
@@ -650,9 +650,9 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 10C3, Phase 6C, or Phase 11
+## Recommended Next Phase: Phase 6C or Phase 11
 
-Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, and Phase 10C4 are complete:
+Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, Phase 10C3, and Phase 10C4 are complete:
 - `TeamStyle` enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
 - MatchQualityComputer style-aware overload exists
 - `simulateWithStyle()` and `simulateWithStrength()` exist in `MatchEngineImpl`
@@ -660,6 +660,9 @@ Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, and Phase 10C4 are complete:
 - When flag is `false`: `DefaultMatchSimulator.simulateQuick()` unchanged
 - When flag is `true`: V23 engine with computed possession/shots from Poisson lambdas
 - `MatchResultDataAdapter` maps `MatchResult` to `MatchResultData` — events/summary discarded
+- `SimulationConfig` creates `LeagueSimulator` bean via `@Bean` factory with property injection
+- `app.simulation.league.use-v23-engine: false` in `application.yaml`
+- `LeagueSimulator` no longer annotated `@Service`
 - `LeagueSimulatorTest` validates dual-path: default path, V23 path, determinism, fixture skipping
 - 112 tests pass
 
@@ -668,15 +671,6 @@ Make tactical style available to real career teams via SessionTeam/API/frontend.
 - Risk: MEDIUM because it touches Redis/API/frontend and production simulation integration
 - Requires: SessionTeam field, CareerSave migration, API endpoint, frontend UI
 - Do not start without separate audit/plan
-
-**Recommended next: Phase 10C3 or Phase 11**
-
-**Phase 10C3 — Add configuration property for useV23LeagueEngine**
-Add an external configuration / property to control the `useV23LeagueEngine` flag for gradual rollout:
-- Risk: LOW — no simulation behavior change, only external control
-- No API/frontend changes
-- Could use Spring `@ConfigurationProperties` or similar
-- No test modifications required
 
 **Phase 11 — Frontend xG and tactic display**
 Expose already available xG fields and style experiments in UI.
@@ -708,6 +702,7 @@ mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalcul
 | Phase 10B | TeamOverallCalculator utility + Starting XI support | LOW | Done | Completed |
 | Phase 10C1 | LeagueSimulator OVR refactor to TeamOverallCalculator | LOW | Done | Completed |
 | Phase 10C2 | V23 engine path behind useV23LeagueEngine flag (Option D) | LOW | Done | Completed |
+| Phase 10C3 | External configuration for useV23LeagueEngine via SimulationConfig | LOW | Done | Completed |
 | Phase 10C4 | LeagueSimulator dual-path integration tests | LOW | Done | Completed |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
 

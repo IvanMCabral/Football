@@ -1,8 +1,8 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `b290ca6` (test: add LeagueSimulator dual-path coverage)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, and 10C4 complete
+**Latest commit:** `268188f` (feat: externalize V23 league engine flag)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete
 **Test status:** 112 tests, 0 failures
 **Date:** 2026-05-05
 
@@ -353,7 +353,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, and 10C4 are complete. Recommended next: Phase 10C3, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. Recommended next: Phase 6C or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -380,6 +380,16 @@ Option D selected — feature flag / strategy switch:
 - No API/frontend/persistence changes
 - 112 tests pass
 
+**Phase 10C3 COMPLETED — External configuration for V23 league engine flag**
+Expose `useV23LeagueEngine` through Spring configuration:
+- `app.simulation.league.use-v23-engine: false` in `application.yaml`
+- `SimulationConfig` creates `LeagueSimulator` bean via `@Bean` factory
+- `LeagueSimulator` no longer annotated `@Service`
+- Default remains `false` — `DefaultMatchSimulator` path unchanged
+- V23 path only activates when property is explicitly `true`
+- No API/frontend/persistence changes
+- 112 tests pass
+
 **Phase 10C4 COMPLETED — LeagueSimulator dual-path tests**
 Add tests for default path and V23 path:
 - Validate DefaultMatchSimulator path remains default
@@ -388,13 +398,7 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: Phase 10C3, Phase 6C, or Phase 11**
-
-**Phase 10C3 — External configuration for V23 league engine flag**
-Expose `useV23LeagueEngine` through application configuration:
-- Keep default `false`
-- No API/frontend/persistence changes required
-- Requires separate approval
+**Recommended next: Phase 6C or Phase 11**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -414,10 +418,11 @@ mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalcul
 
 ## 23. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 112 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. Phase 10C3 (config property) and Phase 6C (tactical styles) are the recommended next phases.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 112 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C3 complete — `useV23LeagueEngine` externalized via `SimulationConfig`. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. Phase 6C (tactical styles) and Phase 11 (frontend xG display) are the recommended next phases.
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+268188f — feat: externalize V23 league engine flag (Phase 10C3)
 b290ca6 — test: add LeagueSimulator dual-path coverage (Phase 10C4)
 a430e96 — feat: add feature-flagged V23 league simulation path (Phase 10C2)
 e4d0856 — docs: update V23 engine docs after Phase 10C1
