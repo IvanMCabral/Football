@@ -1,8 +1,8 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `8530935` (feat: add team overall calculator for real OVR computation)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, and 10B complete
+**Latest commit:** `05597ab` (refactor: delegate league OVR calculation to TeamOverallCalculator)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, and 10C1 complete
 **Test status:** 99 tests, 0 failures
 **Date:** 2026-05-05
 
@@ -351,7 +351,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A and 10B complete. Phase 10C next — integrate TeamOverallCalculator into career/league simulation.**
+**Phase 10A, 10B, and 10C1 complete. Phase 10C2 next — evaluate V23 engine swap for league simulation.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -359,12 +359,22 @@ Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend st
 - Requires: SessionTeam field, API endpoint, frontend UI
 - Not yet approved — decision point for future sprint
 
-**Phase 10C — Integrate TeamOverallCalculator into Career/League Simulation**
-Choose a concrete production path with CareerSave context and call simulateWithStrength() using computed OVRs:
-- Phase 10A added simulateWithStrength()
-- Phase 10B added TeamOverallCalculator utility
-- Phase 10C integrates calculator into specific career/league simulation path
-- Medium risk — requires validation of all 99 tests
+**Phase 10C1 COMPLETED — LeagueSimulator OVR refactor**
+Refactor LeagueSimulator.calculateTeamOVR() to delegate to TeamOverallCalculator.
+- Option A selected: pure refactor, no simulation engine change
+- Legacy empty-squad behavior preserved (returns 50)
+- All OVR values match old implementation
+- DefaultMatchSimulator.simulateQuick() unchanged
+- No API/frontend/persistence changes
+
+**Phase 10C2 — Evaluate V23 engine swap for league simulation**
+Replace DefaultMatchSimulator.simulateQuick() with MatchEngineImpl.simulateWithStrength():
+- Phase 10C1 already delegates LeagueSimulator OVR calculation to TeamOverallCalculator
+- DefaultMatchSimulator.simulateQuick() is still used
+- simulateWithStrength() is still not called by production league flow
+- Phase 10C2 would evaluate replacing DefaultMatchSimulator with MatchEngineImpl.simulateWithStrength()
+- Requires adapter from MatchResult to MatchFixture.MatchResultData
+- Medium risk — changes simulation math/model and requires validation of all 99 tests
 - Do not start without separate audit/plan
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -388,6 +398,7 @@ V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```8530935 — feat: add team overall calculator for real OVR computation (Phase 10B)
+05597ab — refactor: delegate league OVR calculation to TeamOverallCalculator (Phase 10C1)
 f75afe1 — feat: add experimental explicit OVR match simulation overload (Phase 10A)
 
 2eaa41a — feat: add experimental style-aware match simulation overload (Phase 6B)
