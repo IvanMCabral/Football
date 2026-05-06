@@ -12,7 +12,6 @@ import com.footballmanager.domain.model.valueobject.TeamId;
 import com.footballmanager.domain.model.valueobject.UserId;
 import com.footballmanager.domain.service.MatchSimulator;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -29,7 +28,6 @@ import java.util.UUID;
  * computed OVRs from TeamOverallCalculator and in-memory Team objects.
  */
 @Slf4j
-@Service
 public class LeagueSimulator {
 
     private final MatchSimulator matchSimulator;

@@ -84,3 +84,6 @@ app:
   name: Football Manager
   version: 1.0.0
   description: Turn-based football team management and match simulation system
+  simulation:
+    league:
+      use-v23-engine: false   # Phase 10C3: set to true to enable V23 league engine path
