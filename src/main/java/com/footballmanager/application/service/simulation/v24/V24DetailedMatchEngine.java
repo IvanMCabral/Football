@@ -26,6 +26,7 @@ import java.util.Random;
 public class V24DetailedMatchEngine {
 
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
+    private final V24FatigueModel fatigueModel = new V24FatigueModel();
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -73,6 +74,10 @@ public class V24DetailedMatchEngine {
             // Accumulate possession
             possessor.addPossessionTick();
 
+            // V24C1: Per-minute base stamina drain for all on-pitch players
+            applyMinuteDrain(homeState, context.homeStyle());
+            applyMinuteDrain(awayState, context.awayStyle());
+
             // Style modifier for chance creation probability
             double chanceProbability = chanceProbability(possessor.style(), minute);
             if (random.nextDouble() < chanceProbability) {
@@ -84,16 +89,19 @@ public class V24DetailedMatchEngine {
             if (random.nextDouble() < chanceProbability * 0.6) {
                 var creator = selector.selectShooter(possessor.startingPlayers());
                 if (creator.isPresent()) {
+                    V24PlayerMatchState c = creator.get();
                     timeline.addEvent(new V24MatchEvent(
                             minute,
                             V24MatchEventType.CHANCE_CREATED,
                             teamRole,
-                            creator.get().sessionPlayerId(),
-                            creator.get().name(),
+                            c.sessionPlayerId(),
+                            c.name(),
                             null, null,
                             0.0,
                             "Chance created for " + possessor.name()
                     ));
+                    // V24C1: Action drain for chance involvement
+                    fatigueModel.applyDrain(c, 3);
                 }
             }
 
@@ -112,6 +120,9 @@ public class V24DetailedMatchEngine {
                             0.0,
                             "Foul by " + f.name()
                     ));
+
+                    // V24C1: Action drain for foul committed
+                    fatigueModel.applyDrain(f, 5);
 
                     if (random.nextDouble() < 0.45 && !f.redCard()) {
                         f.addYellowCard();
@@ -212,6 +223,10 @@ public class V24DetailedMatchEngine {
 
         V24PlayerMatchState shooter = shooterOpt.get();
 
+        // V24C1: Apply fatigue to shooter quality before xG calculation
+        double rawShooterQuality = selector.shooterQuality(shooter);
+        double shooterQuality = fatigueModel.applyFatigueToQuality(rawShooterQuality, shooter);
+
         // Determine shot location
         V24ShotLocation location = selectShotLocation(possessor.style(), random);
 
@@ -221,7 +236,6 @@ public class V24DetailedMatchEngine {
         String assistPlayerName = assistOpt.map(V24PlayerMatchState::name).orElse(null);
 
         // Build shot quality bundle
-        double shooterQuality = selector.shooterQuality(shooter);
         double assistQuality = assistOpt.map(selector::assistQuality).orElse(0.3);
         double defPressure = defensivePressure(opponent, random);
         double gkQuality = gkQuality(possessor.startingPlayers(), random); // simplified
@@ -237,6 +251,9 @@ public class V24DetailedMatchEngine {
 
         double xg = xgCalculator.calculateXg(quality);
         possessor.addXg(xg);
+
+        // V24C1: Action drain for shot attempt
+        fatigueModel.applyDrain(shooter, 8);
 
         // Resolve shot outcome (xG threshold + randomness)
         boolean onTarget = random.nextDouble() < (0.30 + (1 - xg) * 0.50);
@@ -428,6 +445,16 @@ public class V24DetailedMatchEngine {
             case DEFENSIVE -> 45.0;
             case BALANCED -> 50.0;
         };
+    }
+
+    // V24C1: Apply base stamina drain to all on-pitch players of a team
+    private void applyMinuteDrain(V24TeamMatchState team, TeamStyle style) {
+        int baseDrain = fatigueModel.baseDrainPerMinute(style);
+        for (V24PlayerMatchState p : team.startingPlayers()) {
+            if (p.onPitch() && !p.injured() && !p.redCard()) {
+                fatigueModel.applyDrain(p, baseDrain);
+            }
+        }
     }
 
     private V24DetailedMatchResult finalizeResult(
