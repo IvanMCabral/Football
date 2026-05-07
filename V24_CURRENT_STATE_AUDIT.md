@@ -167,4 +167,6 @@
 
 **V24A is now COMPLETED** (commits `fd35398`, `0214a74`, `4e2901a`). V24A delivered: 10 model classes, `V24DetailedMatchEngine` skeleton, `V24DetailedMatchResultAdapter`, 8 tests. V24 remains isolated from production flow.
 
-**Next: V24B** — minute-by-minute event timeline with real shot xG, possession per minute, player attribution, tactical modifiers.
+**V24B is now COMPLETED** (commit `b4735a8`). V24B extended the skeleton with minute-by-minute simulation: real shot/xG (multi-factor model), possession per minute (TeamStyle-weighted), real player attribution from SessionPlayer IDs, deterministic seed, stats consistency (goals=goalEvents, shots>=goals, possession=100). 22 new tests added. V24 remains isolated — no production wiring, no Redis/API/frontend changes.
+
+**Next: V24C** — fatigue, cards, injuries, and substitutions with real stamina drain.

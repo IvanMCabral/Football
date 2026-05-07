@@ -5,6 +5,8 @@
 **Created:** 2026-05-06
 **Completed:** 2026-05-06
 
+**V24B completed later** in commit `b4735a8` — the V24A skeleton was extended with real minute-by-minute simulation, xG per shot, and player attribution. The V24A foundation (models, context, clock, timeline, adapter) remains unchanged.
+
 ---
 
 ## Goal
