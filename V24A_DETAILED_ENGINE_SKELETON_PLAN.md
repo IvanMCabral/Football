@@ -1,8 +1,9 @@
 # V24A — Detailed Engine Skeleton Plan
 
-**Status:** PLANNING ONLY — No implementation
+**Status:** COMPLETED
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-06
+**Completed:** 2026-05-06
 
 ---
 
@@ -87,7 +88,7 @@ public class V24DetailedMatchEngine {
 mvn test -Dtest=V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-Current baseline: 112 tests, 0 failures. V24A adds 4 tests. Expected total after V24A: 116 tests, 0 failures.
+Current baseline: 112 tests, 0 failures. V24A adds 8 tests. Actual total after V24A: 120 tests, 0 failures.
 
 ---
 
@@ -100,6 +101,10 @@ Current baseline: 112 tests, 0 failures. V24A adds 4 tests. Expected total after
 **V24A3 (tests):** 4 test classes. Validates determinism, ordering, adapter, context validation.
 
 **Recommended: V24A1 → V24A2 → V24A3 as sequential commits** — each reviewable/testable independently.
+
+**V24MatchClock bug fixed during V24A3:** `isRunning()` originally used `currentMinute <= maxMinutes`, causing an infinite loop at minute 90 (when `currentMinute == maxMinutes == 90`, `isRunning()` was `true` but `advance()` did not increment). Fixed to `currentMinute < maxMinutes`.
+
+**Next: V24B** — detailed event timeline with real shot xG, possession per minute, player attribution, tactical modifiers, fatigue/cards/injuries/substitutions.
 
 ---
 

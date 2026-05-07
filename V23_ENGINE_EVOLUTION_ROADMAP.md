@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
 **Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed
-**Current baseline commit:** `268188f` (Phase 10C3: externalize V23 league engine flag)
-**Tests:** 112 relevant tests, 0 failures
-**Date:** 2026-05-05
+**Current baseline commit:** `4e2901a` (V24A3 + Phase 10C3 stable)
+**Tests:** 120 relevant tests, 0 failures
+**Date:** 2026-05-06
 
 ---
 
@@ -17,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `268188f`
-**Tests:** 112 relevant tests, 0 failures
+**Commit:** `4e2901a`
+**Tests:** 120 relevant tests, 0 failures
 
 ### What exists
 
@@ -650,7 +650,7 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ---
 
-## Recommended Next Phase: Phase 6C or Phase 11
+## Recommended Next Phase: Phase 6C, Phase 11, or V24B
 
 Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, Phase 10C3, and Phase 10C4 are complete:
 - `TeamStyle` enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
@@ -664,7 +664,7 @@ Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, Phase 10C3, and Phase 10C4 are compl
 - `app.simulation.league.use-v23-engine: false` in `application.yaml`
 - `LeagueSimulator` no longer annotated `@Service`
 - `LeagueSimulatorTest` validates dual-path: default path, V23 path, determinism, fixture skipping
-- 112 tests pass
+- 120 tests pass (112 V23 + 8 V24A)
 
 **Phase 6C — User-configurable tactical styles**
 Make tactical style available to real career teams via SessionTeam/API/frontend.
@@ -677,9 +677,15 @@ Expose already available xG fields and style experiments in UI.
 - Risk: LOW/MEDIUM depending on frontend scope
 - xG fields already in MatchInfo/LeagueMatchInfo DTOs (nullable)
 
+**V24B — Detailed event timeline with real xG (V24 line)**
+Continue V24 detailed engine development: real shot xG formula, possession per minute, player attribution from starting XI, tactical modifiers, fatigue/cards/injuries/substitutions.
+- Risk: LOW for V24B — isolated package, no production integration
+- Requires separate planning document
+- See `V24A_DETAILED_ENGINE_SKELETON_PLAN.md` for scope
+
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest
 ```
 ---
 
@@ -705,6 +711,19 @@ mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalcul
 | Phase 10C3 | External configuration for useV23LeagueEngine via SimulationConfig | LOW | Done | Completed |
 | Phase 10C4 | LeagueSimulator dual-path integration tests | LOW | Done | Completed |
 | Phase 9 | Future Advanced Engine | HIGH | 3 | Deferred until V23 stable |
+
+---
+
+## V24 — Parallel Detailed Match Engine
+
+V24 is a parallel evolution line to V23. It is **not** a replacement for the V23 quick simulation engine.
+
+| Phase | Name | Risk | Priority | Status |
+|-------|------|------|----------|--------|
+| V24A | Detailed engine model skeleton + deterministic engine | LOW | 1 | Completed |
+| V24B | Minute-by-minute event timeline with real xG and player attribution | LOW | 2 | Pending |
+
+*This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
 
 ---
 

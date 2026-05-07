@@ -1,10 +1,10 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `268188f` (feat: externalize V23 league engine flag)
+**Latest commit:** `4e2901a` (test: add V24 detailed engine skeleton coverage)
 **Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete
-**Test status:** 112 tests, 0 failures
-**Date:** 2026-05-05
+**Test status:** 120 tests, 0 failures (112 V23 + 8 V24A)
+**Date:** 2026-05-06
 
 ---
 
@@ -96,8 +96,12 @@ public final class MatchQualityComputer {
 | `TeamOverallCalculatorTest` | 10 | Phase 10B: real OVR calculator; full squad, starting XI, fallback, missing players, clamping, deterministic |
 | `MatchResultDataAdapterTest` | 6 | Phase 10C2: maps V23 MatchResult to MatchFixture.MatchResultData; discards events/summary; null handling |
 | `LeagueSimulatorTest` | 7 | Phase 10C4: dual-path league simulation coverage; default path, V23 path, deterministic seed, skipped fixtures, all fixtures in round |
+| `V24DetailedMatchEngineDeterminismTest` | 1 | V24A: deterministic skeleton engine; same seed produces identical detailed result |
+| `V24TimelineOrderingTest` | 1 | V24A: timeline events ordered and within valid match minutes |
+| `V24DetailedMatchResultAdapterTest` | 2 | V24A: maps detailed result to MatchResultData; validates null handling |
+| `V24MatchContextValidationTest` | 4 | V24A: validates match context, starting XI size, blank/null input |
 
-**Total: 112 tests, 0 failures**
+**Total: 120 tests, 0 failures**
 
 ---
 
@@ -353,7 +357,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. Recommended next: Phase 6C or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, and V24A are complete. Recommended next: V24B, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -398,12 +402,21 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: Phase 6C or Phase 11**
+**Recommended next: V24B, Phase 6C, or Phase 11**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
 - Separate approval required for frontend work
 - Low technical risk — xG fields are already in API DTOs (nullable)
+
+**V24B — Minute-by-minute event timeline with shots/goals/xG**
+Build on isolated V24A skeleton:
+- Real shot events with xG per shot
+- Possession per minute from TeamStyle
+- Real player attribution from V24PlayerMatchState
+- Tactical modifiers using TeamStyle
+- Still no production wiring unless separately approved
+- No Redis/API/frontend changes unless separately approved
 
 **Phase 9 — Future Advanced Engine (V32/V33)**
 V32 is specification-only. V33 is on a separate experiment branch.
@@ -411,17 +424,44 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest
 ```
 
 ---
 
 ## 23. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 112 relevant tests pass. Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C3 complete — `useV23LeagueEngine` externalized via `SimulationConfig`. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. Phase 6C (tactical styles) and Phase 11 (frontend xG display) are the recommended next phases.
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 120 relevant tests pass (112 V23 + 8 V24A). Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C3 complete — `useV23LeagueEngine` externalized via `SimulationConfig`. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. Phase 6C (tactical styles) and Phase 11 (frontend xG display) are the recommended next phases. V24A is also available as a parallel evolution line (see Section 24).
+
+## 24. V24 — Parallel Detailed Match Engine (Isolated)
+
+V24 is a **parallel evolution line** to V23. It is **not yet part of production simulation flow**.
+
+V24A (complete) provides an isolated detailed match engine skeleton:
+- **Package:** `application/service/simulation/v24/`
+- **Models:** V24MatchEventType, V24ShotLocation, V24ShotQuality, V24MatchClock, V24PlayerMatchState, V24TeamMatchState, V24MatchEvent, V24MatchTimeline, V24MatchContext, V24DetailedMatchResult
+- **Engine:** `V24DetailedMatchEngine` — deterministic, accepts `V24MatchContext + seed`, returns `V24DetailedMatchResult` with placeholder events
+- **Adapter:** `V24DetailedMatchResultAdapter` — maps to `MatchFixture.MatchResultData` (6 fields, discards timeline/xG/summary)
+- **Tests:** 8 tests covering determinism, timeline ordering, adapter, and context validation
+- **No production wiring** — V24 does not integrate with `LeagueSimulator`, `MatchEngineImpl`, or any production flow
+- **No persistence** — V24A has no Redis or database dependencies
+
+V24 is **NOT a replacement for V23**. V23 remains the production simulation engine. V24 will be developed in parallel and integrated only after separate approval.
+
+**V24B** (recommended next for V24 line): Minute-by-minute event timeline with real shot xG, possession, and player attribution.
+
+**Commit history on `mvp-1-performance-cleanup` for V24A:**
+```
+4e2901a — test: add V24 detailed engine skeleton coverage (V24A3)
+0214a74 — feat: add V24 detailed match engine skeleton (V24A2)
+fd35398 — feat: add V24 detailed match model skeleton (V24A1)
+```
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+4e2901a — test: add V24 detailed engine skeleton coverage (V24A3)
+0214a74 — feat: add V24 detailed match engine skeleton (V24A2)
+fd35398 — feat: add V24 detailed match model skeleton (V24A1)
 268188f — feat: externalize V23 league engine flag (Phase 10C3)
 b290ca6 — test: add LeagueSimulator dual-path coverage (Phase 10C4)
 a430e96 — feat: add feature-flagged V23 league simulation path (Phase 10C2)
