@@ -28,6 +28,7 @@ public class V24DetailedMatchEngine {
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
     private final V24FatigueModel fatigueModel = new V24FatigueModel();
     private final V24DisciplineModel disciplineModel = new V24DisciplineModel();
+    private final V24InjuryModel injuryModel = new V24InjuryModel();
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -159,11 +160,12 @@ public class V24DetailedMatchEngine {
                 }
             }
 
-            // Injury event (rare: ~0.5% per minute)
-            if (random.nextDouble() < 0.005) {
-                var injured = selector.selectShooter(possessor.startingPlayers());
-                if (injured.isPresent()) {
-                    V24PlayerMatchState p = injured.get();
+            // V24C3: Injury event using injury model
+            var potentialInjured = selector.selectShooter(possessor.startingPlayers());
+            if (potentialInjured.isPresent()) {
+                V24PlayerMatchState p = potentialInjured.get();
+                // highIntensityAction=false here; shots/fouls/chances already covered by their own drains
+                if (injuryModel.shouldInjure(p, possessor.style(), false, random)) {
                     p.injure();
                     timeline.addEvent(new V24MatchEvent(
                             minute,
@@ -173,7 +175,7 @@ public class V24DetailedMatchEngine {
                             p.name(),
                             null, null,
                             0.0,
-                            "Injury: " + p.name() + " is down"
+                            p.name() + " was injured"
                     ));
                 }
             }
