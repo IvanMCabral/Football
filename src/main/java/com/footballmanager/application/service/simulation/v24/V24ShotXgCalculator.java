@@ -1,0 +1,83 @@
+package com.footballmanager.application.service.simulation.v24;
+
+/**
+ * V24B: Computes expected goals (xG) for a shot using multi-factor model.
+ *
+ * <p>Factors:
+ * <ul>
+ *   <li>Shot location (distance from goal line, angle)</li>
+ *   <li>Shooter quality (attack attribute + form)</li>
+ *   <li>Assist quality (technique of passer)</li>
+ *   <li>Defensive pressure (opponent defense + mentality)</li>
+ *   <li>Goalkeeper quality</li>
+ *   <li>Team style modifier (attacking = higher, defensive = lower)</li>
+ * </ul>
+ *
+ * <p>Output clamped to [0.01, 0.80].
+ */
+public class V24ShotXgCalculator {
+
+    private static final double MIN_XG = 0.01;
+    private static final double MAX_XG = 0.80;
+
+    private static final double INSIDE_BOX_DISTANCE = 16.0; // meters from goal line
+    private static final double SIX_YARD_BOX_DISTANCE = 8.0;
+
+    public double calculateXg(V24ShotQuality quality) {
+        double xg = baseXg(quality.location())
+                * shooterMultiplier(quality.shooterQuality())
+                * assistMultiplier(quality.assistQuality())
+                * defensiveMultiplier(quality.defensivePressure())
+                * goalkeeperMultiplier(quality.goalkeeperQuality())
+                * styleMultiplier(quality.tacticModifier());
+
+        return clamp(xg);
+    }
+
+    private double baseXg(V24ShotLocation location) {
+        return switch (location) {
+            case SIX_YARD_BOX -> 0.38;
+            case PENALTY_AREA_CENTER -> 0.22;
+            case PENALTY_AREA_WIDE -> 0.16;
+            case OUTSIDE_BOX -> 0.08;
+            case LONG_RANGE -> 0.04;
+        };
+    }
+
+    private double shooterMultiplier(double shooterQuality) {
+        // shooterQuality is normalized [0, 1] from attack attribute (0-99) + form (0-100)
+        // Base: 0.95 at average quality, scale up/down
+        return 0.70 + (shooterQuality * 0.60);
+    }
+
+    private double assistMultiplier(double assistQuality) {
+        // assistQuality normalized [0, 1]
+        return 0.85 + (assistQuality * 0.30);
+    }
+
+    private double defensiveMultiplier(double defensivePressure) {
+        // defensivePressure normalized [0, 1]: 0 = no pressure, 1 = maximum pressure
+        // High pressure reduces xG significantly
+        return Math.max(0.30, 1.10 - (defensivePressure * 0.80));
+    }
+
+    private double goalkeeperMultiplier(double goalkeeperQuality) {
+        // goalkeeperQuality normalized [0, 1]
+        return Math.max(0.50, 1.05 - (goalkeeperQuality * 0.55));
+    }
+
+    private double styleMultiplier(double tacticModifier) {
+        // tacticModifier is [0.5, 1.5]
+        // Map to: DEFENSIVE=0.85, BALANCED=1.00, ATTACKING=1.15
+        // clamp to [0.5, 1.5]
+        double m = Math.max(0.5, Math.min(1.5, tacticModifier));
+        // Scale to meaningful multiplier range [0.85, 1.15]
+        return 0.85 + (m - 0.5) * 0.30;
+    }
+
+    private double clamp(double xg) {
+        if (xg < MIN_XG) return MIN_XG;
+        if (xg > MAX_XG) return MAX_XG;
+        return Math.round(xg * 1000.0) / 1000.0;
+    }
+}

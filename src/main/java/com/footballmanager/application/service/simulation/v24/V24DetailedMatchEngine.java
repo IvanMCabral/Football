@@ -3,19 +3,29 @@ package com.footballmanager.application.service.simulation.v24;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
- * V24A2: Deterministic skeleton engine.
- * Produces a plausible but placeholder match result from V24MatchContext.
+ * V24B: Minute-by-minute match simulation with real xG, possession, and player attribution.
  *
- * <p>No persistence, no Spring, no production wiring.
- * Deterministic: same context + same seed = identical result.
+ * <p>Replaces placeholder events from V24A2 with:
+ * <ul>
+ *   <li>Possession per minute (TeamStyle-influenced baseline)</li>
+ *   <li>Chance creation and shot selection (position + attribute weighted)</li>
+ *   <li>Real xG per shot (multi-factor model)</li>
+ *   <li>Goal resolution (xG threshold)</li>
+ *   <li>Player attribution from V24PlayerMatchState</li>
+ *   <li>Fatigue, cards, and substitution mechanics</li>
+ * </ul>
  *
- * <p>V24A2 behavior: generates placeholder events deterministically.
- * Real simulation logic (xG formula, possession, events) belongs to V24B+.
+ * <p>Deterministic: same context + same seed = identical result.
+ * No persistence, no Spring, no production wiring.
  */
 public class V24DetailedMatchEngine {
+
+    private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -24,7 +34,6 @@ public class V24DetailedMatchEngine {
 
         Random random = new Random(seed);
 
-        // Initialize team states from context
         V24TeamMatchState homeState = V24TeamMatchState.create(
                 context.homeTeam(), context.homeStartingPlayers(),
                 context.homeBenchPlayers(), context.homeStyle());
@@ -36,81 +45,207 @@ public class V24DetailedMatchEngine {
         V24MatchClock clock = new V24MatchClock(90);
         V24MatchTimeline timeline = new V24MatchTimeline();
 
-        // Style influence on possession baseline
-        double homePossessionBase = possessionBase(context.homeStyle());
-        double awayPossessionBase = possessionBase(context.awayStyle());
+        // Style-influenced possession baselines
+        double homePossBase = possessionBase(context.homeStyle());
+        double awayPossBase = possessionBase(context.awayStyle());
+        double homeShare = homePossBase / (homePossBase + awayPossBase);
 
-        // Simulate 90 minutes
+        // Player selector seeded by match
+        V24PlayerSelector homeSelector = new V24PlayerSelector(new Random(seed));
+        V24PlayerSelector awaySelector = new V24PlayerSelector(new Random(seed + 1));
+
+        // Match-level state
+        int subsRemainingHome = 3;
+        int subsRemainingAway = 3;
+
         while (clock.isRunning()) {
-            simulateMinute(homeState, awayState, clock, timeline, random, homePossessionBase, awayPossessionBase);
+            int minute = clock.currentMinute();
+
+            // Determine possession for this minute
+            double roll = random.nextDouble();
+            boolean homeHasPossession = roll < homeShare;
+
+            V24TeamMatchState possessor = homeHasPossession ? homeState : awayState;
+            V24TeamMatchState opponent = homeHasPossession ? awayState : homeState;
+            V24PlayerSelector selector = homeHasPossession ? homeSelector : awaySelector;
+            String teamRole = homeHasPossession ? "HOME" : "AWAY";
+
+            // Accumulate possession
+            possessor.addPossessionTick();
+
+            // Style modifier for chance creation probability
+            double chanceProbability = chanceProbability(possessor.style(), minute);
+            if (random.nextDouble() < chanceProbability) {
+                // Attempt a shot
+                attemptShot(possessor, opponent, selector, teamRole, minute, random, timeline);
+            }
+
+            // Chance created event (broader than shot)
+            if (random.nextDouble() < chanceProbability * 0.6) {
+                var creator = selector.selectShooter(possessor.startingPlayers());
+                if (creator.isPresent()) {
+                    timeline.addEvent(new V24MatchEvent(
+                            minute,
+                            V24MatchEventType.CHANCE_CREATED,
+                            teamRole,
+                            creator.get().sessionPlayerId(),
+                            creator.get().name(),
+                            null, null,
+                            0.0,
+                            "Chance created for " + possessor.name()
+                    ));
+                }
+            }
+
+            // Foul / yellow card
+            if (random.nextDouble() < 0.06) {
+                var fouler = selector.selectShooter(possessor.startingPlayers());
+                if (fouler.isPresent()) {
+                    V24PlayerMatchState f = fouler.get();
+                    timeline.addEvent(new V24MatchEvent(
+                            minute,
+                            V24MatchEventType.FOUL,
+                            teamRole,
+                            f.sessionPlayerId(),
+                            f.name(),
+                            null, null,
+                            0.0,
+                            "Foul by " + f.name()
+                    ));
+
+                    if (random.nextDouble() < 0.45 && !f.redCard()) {
+                        f.addYellowCard();
+                        timeline.addEvent(new V24MatchEvent(
+                                minute,
+                                V24MatchEventType.YELLOW_CARD,
+                                teamRole,
+                                f.sessionPlayerId(),
+                                f.name(),
+                                null, null,
+                                0.0,
+                                "Yellow card for " + f.name()
+                        ));
+                    }
+                }
+            }
+
+            // Injury event (rare: ~0.5% per minute)
+            if (random.nextDouble() < 0.005) {
+                var injured = selector.selectShooter(possessor.startingPlayers());
+                if (injured.isPresent()) {
+                    V24PlayerMatchState p = injured.get();
+                    p.injure();
+                    timeline.addEvent(new V24MatchEvent(
+                            minute,
+                            V24MatchEventType.INJURY,
+                            teamRole,
+                            p.sessionPlayerId(),
+                            p.name(),
+                            null, null,
+                            0.0,
+                            "Injury: " + p.name() + " is down"
+                    ));
+                }
+            }
+
+            // Corner (when possession is near goal but no shot)
+            if (random.nextDouble() < 0.035) {
+                var player = selector.selectShooter(possessor.startingPlayers());
+                if (player.isPresent()) {
+                    timeline.addEvent(new V24MatchEvent(
+                            minute,
+                            V24MatchEventType.CORNER,
+                            teamRole,
+                            player.get().sessionPlayerId(),
+                            player.get().name(),
+                            null, null,
+                            0.0,
+                            "Corner for " + possessor.name()
+                    ));
+                }
+            }
+
+            // Offside (when team is pushing forward)
+            if (random.nextDouble() < 0.04 && possessor.style() != TeamStyle.DEFENSIVE) {
+                var player = selector.selectShooter(possessor.startingPlayers());
+                if (player.isPresent()) {
+                    timeline.addEvent(new V24MatchEvent(
+                            minute,
+                            V24MatchEventType.OFFSIDE,
+                            teamRole,
+                            player.get().sessionPlayerId(),
+                            player.get().name(),
+                            null, null,
+                            0.0,
+                            "Offside"
+                    ));
+                }
+            }
+
+            // Substitutions (once per team, 3 max, after minute 60)
+            if (minute >= 60 && !homeState.startingPlayers().isEmpty() && subsRemainingHome > 0 && !homeHasPossession) {
+                attemptSubstitution(homeState, timeline, minute, "HOME");
+                subsRemainingHome--;
+            }
+            if (minute >= 60 && !awayState.startingPlayers().isEmpty() && subsRemainingAway > 0 && homeHasPossession) {
+                attemptSubstitution(awayState, timeline, minute, "AWAY");
+                subsRemainingAway--;
+            }
+
             clock.advance();
         }
 
         return finalizeResult(context, homeState, awayState, timeline);
     }
 
-    private void simulateMinute(
-            V24TeamMatchState home,
-            V24TeamMatchState away,
-            V24MatchClock clock,
-            V24MatchTimeline timeline,
+    private void attemptShot(
+            V24TeamMatchState possessor,
+            V24TeamMatchState opponent,
+            V24PlayerSelector selector,
+            String teamRole,
+            int minute,
             Random random,
-            double homePossBase,
-            double awayPossBase) {
+            V24MatchTimeline timeline) {
 
-        int minute = clock.currentMinute();
+        var shooterOpt = selector.selectShooter(possessor.startingPlayers());
+        if (shooterOpt.isEmpty()) return;
 
-        // Determine possession side for this minute (tick-level accumulation)
-        double roll = random.nextDouble();
-        double homeShare = homePossBase / (homePossBase + awayPossBase);
-        boolean homeHasPossession = roll < homeShare;
+        V24PlayerMatchState shooter = shooterOpt.get();
 
-        V24TeamMatchState possessor = homeHasPossession ? home : away;
-        V24TeamMatchState opponent = homeHasPossession ? away : home;
-        String teamRole = homeHasPossession ? "HOME" : "AWAY";
+        // Determine shot location
+        V24ShotLocation location = selectShotLocation(possessor.style(), random);
 
-        // Accumulate possession ticks
-        possessor.addPossessionTick();
+        // Get assist provider
+        var assistOpt = selector.selectAssistProvider(possessor.startingPlayers(), shooter);
+        String assistPlayerId = assistOpt.map(V24PlayerMatchState::sessionPlayerId).orElse(null);
+        String assistPlayerName = assistOpt.map(V24PlayerMatchState::name).orElse(null);
 
-        // Placeholder event generation — deterministic with seed
-        // Every ~9 minutes: CHANCE_CREATED event
-        if (minute % 9 == 0) {
-            V24PlayerMatchState actor = randomPlayerFrom(possessor, random);
-            timeline.addEvent(new V24MatchEvent(
-                    minute,
-                    V24MatchEventType.CHANCE_CREATED,
-                    teamRole,
-                    actor.sessionPlayerId(),
-                    actor.name(),
-                    null, null,
-                    0.0,
-                    "Chance created for " + possessor.name()
-            ));
-        }
+        // Build shot quality bundle
+        double shooterQuality = selector.shooterQuality(shooter);
+        double assistQuality = assistOpt.map(selector::assistQuality).orElse(0.3);
+        double defPressure = defensivePressure(opponent, random);
+        double gkQuality = gkQuality(possessor.startingPlayers(), random); // simplified
 
-        // Every ~7 minutes: SHOT or MISS
-        if (minute % 7 == 0) {
-            V24PlayerMatchState shooter = randomPlayerFrom(possessor, random);
-            boolean onTarget = random.nextDouble() > 0.35; // 65% on target placeholder
-            double xg = xgPlaceholder(random, onTarget);
+        V24ShotQuality quality = new V24ShotQuality(
+                location,
+                shooterQuality,
+                assistQuality,
+                defPressure,
+                gkQuality,
+                styleToModifier(possessor.style())
+        );
 
-            V24MatchEventType shotType = onTarget ? V24MatchEventType.SHOT_ON_TARGET : V24MatchEventType.SHOT;
-            possessor.addShot(onTarget);
-            possessor.addXg(xg);
+        double xg = xgCalculator.calculateXg(quality);
+        possessor.addXg(xg);
 
-            timeline.addEvent(new V24MatchEvent(
-                    minute,
-                    shotType,
-                    teamRole,
-                    shooter.sessionPlayerId(),
-                    shooter.name(),
-                    null, null,
-                    xg,
-                    onTarget ? "Shot on target" : "Shot missed"
-            ));
+        // Resolve shot outcome (xG threshold + randomness)
+        boolean onTarget = random.nextDouble() < (0.30 + (1 - xg) * 0.50);
+        boolean isGoal = false;
 
-            // Rare goal: ~2% per shot
-            if (random.nextDouble() < 0.02) {
+        if (onTarget) {
+            // Goal if xG > random threshold (higher xG = more likely to beat keeper)
+            isGoal = random.nextDouble() < (xg / 0.45); // scale: 0.45 xG = ~50% goal
+            if (isGoal) {
                 possessor.addGoal();
                 timeline.addEvent(new V24MatchEvent(
                         minute,
@@ -118,71 +253,171 @@ public class V24DetailedMatchEngine {
                         teamRole,
                         shooter.sessionPlayerId(),
                         shooter.name(),
-                        null, null,
-                        xg,
+                        assistPlayerId,
+                        assistPlayerName,
+                        Math.round(xg * 1000.0) / 1000.0,
                         "Goal! " + shooter.name() + " " + minute + "'"
                 ));
             }
         }
 
-        // Rare foul: ~5% per minute
-        if (random.nextDouble() < 0.05) {
-            V24PlayerMatchState fouler = randomPlayerFrom(possessor, random);
+        if (onTarget && !isGoal) {
             timeline.addEvent(new V24MatchEvent(
                     minute,
-                    V24MatchEventType.FOUL,
+                    V24MatchEventType.SHOT_ON_TARGET,
                     teamRole,
-                    fouler.sessionPlayerId(),
-                    fouler.name(),
-                    null, null,
-                    0.0,
-                    "Foul by " + fouler.name()
+                    shooter.sessionPlayerId(),
+                    shooter.name(),
+                    assistPlayerId,
+                    assistPlayerName,
+                    Math.round(xg * 1000.0) / 1000.0,
+                    "Shot saved"
             ));
+            possessor.addShot(true);
+        } else if (!onTarget) {
+            V24MatchEventType missType = random.nextDouble() < 0.3
+                    ? V24MatchEventType.BLOCK
+                    : V24MatchEventType.MISS;
+            timeline.addEvent(new V24MatchEvent(
+                    minute,
+                    missType,
+                    teamRole,
+                    shooter.sessionPlayerId(),
+                    shooter.name(),
+                    assistPlayerId,
+                    assistPlayerName,
+                    Math.round(xg * 1000.0) / 1000.0,
+                    "Shot missed"
+            ));
+            possessor.addShot(false);
+        }
+    }
 
-            // Small chance of yellow card
-            if (random.nextDouble() < 0.4) {
-                timeline.addEvent(new V24MatchEvent(
-                        minute,
-                        V24MatchEventType.YELLOW_CARD,
-                        teamRole,
-                        fouler.sessionPlayerId(),
-                        fouler.name(),
-                        null, null,
-                        0.0,
-                        "Yellow card for " + fouler.name()
-                ));
+    private V24ShotLocation selectShotLocation(TeamStyle style, Random random) {
+        double roll = random.nextDouble();
+        return switch (style) {
+            case ATTACKING -> {
+                // More inside-box attempts
+                if (roll < 0.40) yield V24ShotLocation.SIX_YARD_BOX;
+                if (roll < 0.70) yield V24ShotLocation.PENALTY_AREA_CENTER;
+                if (roll < 0.85) yield V24ShotLocation.PENALTY_AREA_WIDE;
+                if (roll < 0.95) yield V24ShotLocation.OUTSIDE_BOX;
+                yield V24ShotLocation.LONG_RANGE;
             }
-        }
+            case POSSESSION -> {
+                if (roll < 0.30) yield V24ShotLocation.SIX_YARD_BOX;
+                if (roll < 0.60) yield V24ShotLocation.PENALTY_AREA_CENTER;
+                if (roll < 0.78) yield V24ShotLocation.PENALTY_AREA_WIDE;
+                if (roll < 0.92) yield V24ShotLocation.OUTSIDE_BOX;
+                yield V24ShotLocation.LONG_RANGE;
+            }
+            case COUNTER -> {
+                // More long-range and outside-box (fast breaks)
+                if (roll < 0.18) yield V24ShotLocation.SIX_YARD_BOX;
+                if (roll < 0.40) yield V24ShotLocation.PENALTY_AREA_CENTER;
+                if (roll < 0.60) yield V24ShotLocation.PENALTY_AREA_WIDE;
+                if (roll < 0.82) yield V24ShotLocation.OUTSIDE_BOX;
+                yield V24ShotLocation.LONG_RANGE;
+            }
+            case DEFENSIVE -> {
+                // Prefer long-range and outside-box
+                if (roll < 0.10) yield V24ShotLocation.SIX_YARD_BOX;
+                if (roll < 0.25) yield V24ShotLocation.PENALTY_AREA_CENTER;
+                if (roll < 0.45) yield V24ShotLocation.PENALTY_AREA_WIDE;
+                if (roll < 0.72) yield V24ShotLocation.OUTSIDE_BOX;
+                yield V24ShotLocation.LONG_RANGE;
+            }
+            default -> { // BALANCED
+                if (roll < 0.25) yield V24ShotLocation.SIX_YARD_BOX;
+                if (roll < 0.52) yield V24ShotLocation.PENALTY_AREA_CENTER;
+                if (roll < 0.72) yield V24ShotLocation.PENALTY_AREA_WIDE;
+                if (roll < 0.90) yield V24ShotLocation.OUTSIDE_BOX;
+                yield V24ShotLocation.LONG_RANGE;
+            }
+        };
+    }
 
-        // Rare corner: ~4% per minute
-        if (random.nextDouble() < 0.04) {
-            V24PlayerMatchState player = randomPlayerFrom(possessor, random);
-            timeline.addEvent(new V24MatchEvent(
-                    minute,
-                    V24MatchEventType.CORNER,
-                    teamRole,
-                    player.sessionPlayerId(),
-                    player.name(),
-                    null, null,
-                    0.0,
-                    "Corner for " + possessor.name()
-            ));
-        }
+    private double defensivePressure(V24TeamMatchState opponent, Random random) {
+        double basePressure = 0.5;
+        // Count defenders currently on pitch
+        long defendersOnPitch = opponent.startingPlayers().stream()
+                .filter(p -> p.onPitch() && (p.position().equals("DEF") || p.position().equals("MID")))
+                .count();
+        double defMod = Math.min(0.9, defendersOnPitch / 11.0 * 1.2);
+        double randomFactor = 0.7 + random.nextDouble() * 0.6;
+        return Math.min(1.0, basePressure * defMod * randomFactor);
+    }
 
-        // Rare offside: ~3% per minute
-        if (random.nextDouble() < 0.03) {
-            V24PlayerMatchState player = randomPlayerFrom(possessor, random);
-            timeline.addEvent(new V24MatchEvent(
-                    minute,
-                    V24MatchEventType.OFFSIDE,
-                    teamRole,
-                    player.sessionPlayerId(),
-                    player.name(),
-                    null, null,
-                    0.0,
-                    "Offside"
-            ));
-        }
+    private double gkQuality(List<V24PlayerMatchState> players, Random random) {
+        // Simplified: average GK save quality from position
+        var gk = players.stream()
+                .filter(p -> p.position().equals("GK") && p.onPitch())
+                .findFirst();
+        if (gk.isEmpty()) return 0.5;
+        // GK quality from stamina + mentality (normalized)
+        return Math.round((gk.get().stamina() / 100.0 * 0.5 + gk.get().mentality() / 100.0 * 0.5) * 1000.0) / 1000.0;
+    }
+
+    private void attemptSubstitution(V24TeamMatchState team, V24MatchTimeline timeline, int minute, String teamRole) {
+        var onPitch = team.startingPlayers().stream()
+                .filter(p -> p.onPitch() && !p.injured())
+                .toList();
+        var bench = team.benchPlayers().stream()
+                .filter(p -> !p.injured())
+                .toList();
+        if (onPitch.isEmpty() || bench.isEmpty()) return;
+
+        // Substitute off a tired player (low stamina)
+        var substitutedOpt = onPitch.stream()
+                .filter(p -> p.currentStamina() < 60)
+                .findFirst();
+        if (substitutedOpt.isEmpty()) return;
+
+        V24PlayerMatchState subOff = substitutedOpt.get();
+        subOff.substituteOff();
+
+        V24PlayerMatchState subOn = bench.get(0);
+        subOn.setTeamId(team.teamId()); // ensure team context
+
+        timeline.addEvent(new V24MatchEvent(
+                minute,
+                V24MatchEventType.SUBSTITUTION,
+                teamRole,
+                subOff.sessionPlayerId(),
+                subOff.name(),
+                subOn.sessionPlayerId(),
+                subOn.name(),
+                0.0,
+                "Substitution: " + subOn.name() + " on for " + subOff.name()
+        ));
+    }
+
+    private double styleToModifier(TeamStyle style) {
+        return switch (style) {
+            case ATTACKING -> 1.15;
+            case POSSESSION -> 1.05;
+            case BALANCED -> 1.00;
+            case COUNTER -> 0.95;
+            case DEFENSIVE -> 0.85;
+        };
+    }
+
+    private double chanceProbability(TeamStyle style, int minute) {
+        // Base chance per minute: ~25-35% depending on style
+        double base = switch (style) {
+            case ATTACKING -> 0.32;
+            case POSSESSION -> 0.28;
+            case COUNTER -> 0.25;
+            case DEFENSIVE -> 0.20;
+            case BALANCED -> 0.26;
+        };
+
+        // Slight increase in second half (more open)
+        double secondHalf = (minute > 45) ? 1.15 : 1.0;
+        // Open play tends to increase toward end of match
+        double endGame = (minute > 75) ? 1.2 : 1.0;
+
+        return base * secondHalf * endGame;
     }
 
     private double possessionBase(TeamStyle style) {
@@ -193,22 +428,6 @@ public class V24DetailedMatchEngine {
             case DEFENSIVE -> 45.0;
             case BALANCED -> 50.0;
         };
-    }
-
-    private double xgPlaceholder(Random random, boolean onTarget) {
-        // Simple placeholder xG: shots miss more often when off-target
-        double base = onTarget ? 0.12 + random.nextDouble() * 0.20 : 0.03 + random.nextDouble() * 0.07;
-        return Math.round(base * 1000.0) / 1000.0;
-    }
-
-    private V24PlayerMatchState randomPlayerFrom(V24TeamMatchState team, Random random) {
-        var onPitch = team.startingPlayers().stream()
-                .filter(p -> p.onPitch() && !p.redCard() && !p.injured())
-                .toList();
-        if (onPitch.isEmpty()) {
-            return team.startingPlayers().get(0);
-        }
-        return onPitch.get(random.nextInt(onPitch.size()));
     }
 
     private V24DetailedMatchResult finalizeResult(
