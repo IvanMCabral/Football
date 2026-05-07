@@ -27,6 +27,7 @@ public class V24DetailedMatchEngine {
 
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
     private final V24FatigueModel fatigueModel = new V24FatigueModel();
+    private final V24DisciplineModel disciplineModel = new V24DisciplineModel();
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -105,11 +106,12 @@ public class V24DetailedMatchEngine {
                 }
             }
 
-            // Foul / yellow card
-            if (random.nextDouble() < 0.06) {
-                var fouler = selector.selectShooter(possessor.startingPlayers());
-                if (fouler.isPresent()) {
-                    V24PlayerMatchState f = fouler.get();
+            // V24C2: Foul / yellow card / red card using discipline model
+            var potentialFouler = selector.selectShooter(possessor.startingPlayers());
+            if (potentialFouler.isPresent()) {
+                V24PlayerMatchState f = potentialFouler.get();
+                boolean defending = !homeHasPossession; // fouler is on defending side when opponent has possession
+                if (disciplineModel.shouldCommitFoul(f, possessor.style(), defending, random)) {
                     timeline.addEvent(new V24MatchEvent(
                             minute,
                             V24MatchEventType.FOUL,
@@ -118,13 +120,14 @@ public class V24DetailedMatchEngine {
                             f.name(),
                             null, null,
                             0.0,
-                            "Foul by " + f.name()
+                            f.name() + " committed a foul"
                     ));
 
                     // V24C1: Action drain for foul committed
                     fatigueModel.applyDrain(f, 5);
 
-                    if (random.nextDouble() < 0.45 && !f.redCard()) {
+                    // V24C2: Yellow card check
+                    if (disciplineModel.shouldReceiveYellow(f, possessor.style(), random) && !f.redCard()) {
                         f.addYellowCard();
                         timeline.addEvent(new V24MatchEvent(
                                 minute,
@@ -134,8 +137,24 @@ public class V24DetailedMatchEngine {
                                 f.name(),
                                 null, null,
                                 0.0,
-                                "Yellow card for " + f.name()
+                                f.name() + " received a yellow card"
                         ));
+
+                        // V24C2: Second yellow → red card
+                        if (f.yellowCards() >= 2 && !f.redCard()) {
+                            f.giveRedCard();
+                            timeline.addEvent(new V24MatchEvent(
+                                    minute,
+                                    V24MatchEventType.RED_CARD,
+                                    teamRole,
+                                    f.sessionPlayerId(),
+                                    f.name(),
+                                    null, null,
+                                    0.0,
+                                    f.name() + " received a red card"
+                            ));
+                            // No substitution for red-carded player — team plays with one fewer
+                        }
                     }
                 }
             }
