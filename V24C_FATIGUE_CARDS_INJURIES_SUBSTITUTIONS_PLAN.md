@@ -1,10 +1,52 @@
 # V24C — Fatigue, Cards, Injuries, and Substitutions Plan
 
-**Status:** PLANNING — No code yet
+**Status:** COMPLETED
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-06
 **Latest baseline:** `b4735a8` (V24B complete, 142 tests)
-**Next:** `057551a` (docs update)
+**Latest implementation:** `23d1806` (V24C4 complete, 200 tests)
+**Completed:** 2026-05-08
+
+---
+
+## V24C Completion Summary
+
+All V24C subphases completed in sequence. Final commit: `23d1806` (V24C4).
+
+### Commit History
+
+| Commit | Subphase | Description |
+|--------|----------|-------------|
+| `03148d5` | V24C1 | feat: add V24 fatigue model |
+| `c4aba73` | V24C2 | feat: add V24 discipline model |
+| `ad72536` | V24C3 | feat: add V24 injury model |
+| `23d1806` | V24C4 | feat: add V24 substitution engine |
+
+### Test Summary
+
+| Test class | Tests | Coverage |
+|-----------|-------|----------|
+| `V24FatigueModelTest` | 13 | V24C1: stamina drain, action drain, fatigue factor, quality penalty |
+| `V24DisciplineModelTest` | 19 | V24C2: foul/yellow/red probabilities, second-yellow red, red-card state |
+| `V24InjuryModelTest` | 10 | V24C3: injury probability, stamina/action/style modifiers, injured state |
+| `V24SubstitutionEngineTest` | 14 | V24C4: substitution priority, max 5, position preference, duplicate prevention, red-card exclusion |
+
+**Dedicated V24C helper/model tests: 56**
+**Total V24C-related test increase: 58 tests** (56 dedicated + 2 integration/consistency tests added to existing V24 test classes)
+**Total test count after V24C: 200 tests, 0 failures**
+
+### V24C Delivered
+
+- **V24FatigueModel** — per-minute drain (style-based), action drain (shot+8, foul+5, chance+3), fatigue factor bands [0.50–1.00], xG/shooter quality penalty applied
+- **V24DisciplineModel** — modulated foul probability [0.005–0.12], modulated yellow card probability [0.10–0.80], second yellow → RED_CARD event + player off pitch; red-carded players never substituted
+- **V24InjuryModel** — modulated injury probability [0.0005–0.02], stamina-based risk, high-intensity action modifier, style modifiers
+- **V24SubstitutionEngine** — max 5 substitutions per team, priority: injured > very tired (stamina<30) > tired+yellow (stamina<50, yellowCards>=1), same-position preference with compatible fallback, duplicate prevention
+
+### Red Card Rule (Confirmed)
+
+Red-carded players leave the pitch and are **never substituted**. The team plays with one fewer player for the remainder of the match. V24SubstitutionEngine filters `redCard==true` from all candidate sets.
+
+### Recommended Next: V24D Planning
 
 ---
 
@@ -439,7 +481,7 @@ After all V24C subphases, the full validation command:
 mvn test -Dtest=V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-Expected: 162+ tests, 0 failures.
+Expected: 200 tests, 0 failures.
 
 ---
 

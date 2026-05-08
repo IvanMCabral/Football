@@ -2,7 +2,10 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24A COMPLETED — audit document kept for reference
+**Status:** V24C COMPLETED — V24A/V24B/V24C all delivered
+**Latest commit:** `23d1806` (V24C4 complete)
+**Tests:** 200 total (112 V23 + 8 V24A + 22 V24B + 58 V24C), 0 failures
+**Date:** 2026-05-08
 
 ---
 
@@ -169,4 +172,4 @@
 
 **V24B is now COMPLETED** (commit `b4735a8`). V24B extended the skeleton with minute-by-minute simulation: real shot/xG (multi-factor model), possession per minute (TeamStyle-weighted), real player attribution from SessionPlayer IDs, deterministic seed, stats consistency (goals=goalEvents, shots>=goals, possession=100). 22 new tests added. V24 remains isolated — no production wiring, no Redis/API/frontend changes.
 
-**Next: V24C** — fatigue, cards, injuries, and substitutions with real stamina drain.
+**Next: V24D** — persistence/API/UI integration planning or advanced match detail expansion.

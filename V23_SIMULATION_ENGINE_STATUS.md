@@ -1,10 +1,10 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `b4735a8` (feat: add V24 minute-by-minute event timeline)
+**Latest commit:** `23d1806` (feat: add V24 substitution engine)
 **Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete
-**Test status:** 142 tests, 0 failures (112 V23 + 22 V24B + 8 V24A)
-**Date:** 2026-05-06
+**Test status:** 200 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C)
+**Date:** 2026-05-08
 
 ---
 
@@ -104,8 +104,12 @@ public final class MatchQualityComputer {
 | `V24TimelineConsistencyTest` | 7 | V24B: validates timeline ordering, goal/shot/xG/stat consistency and possession totals |
 | `V24ShotXgModelTest` | 7 | V24B: validates xG clamp, location hierarchy, style/pressure/goalkeeper modifiers |
 | `V24PlayerAttributionTest` | 8 | V24B: validates real player IDs/names, no synthetic labels, goal/scorer attribution |
+| `V24FatigueModelTest` | 13 | V24C1: stamina drain, action drain, fatigue factor, quality penalty |
+| `V24DisciplineModelTest` | 19 | V24C2: foul/yellow/red probabilities, second-yellow red, red-card state |
+| `V24InjuryModelTest` | 10 | V24C3: injury probability, stamina/action/style modifiers, injured state |
+| `V24SubstitutionEngineTest` | 14 | V24C4: substitution priority, max 5, position preference, duplicate prevention, red-card exclusion |
 
-**Total: 142 tests, 0 failures**
+**Total: 200 tests, 0 failures** (V24C added 58 tests: 56 dedicated helper/model tests above, plus 2 integration/consistency tests added to existing V24 test classes)
 
 ---
 
@@ -361,7 +365,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, and V24B are complete. Recommended next: V24C, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, and V24C are complete. Recommended next: V24D planning, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -406,7 +410,7 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: V24C, Phase 6C, or Phase 11**
+**Recommended next: V24D planning, Phase 6C, or Phase 11**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -436,14 +440,15 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest
 ```
+Expected: 200 tests, 0 failures.
 
 ---
 
 ## 23. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 142 relevant tests pass (112 V23 + 8 V24A + 22 V24B). Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C3 complete — `useV23LeagueEngine` externalized via `SimulationConfig`. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. V24C (fatigue/cards/injuries/substitutions), Phase 6C (tactical styles), and Phase 11 (frontend xG display) are the recommended next phases. V24A is also available as a parallel evolution line (see Section 24).
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 200 relevant tests pass (112 V23 + 8 V24A + 22 V24B + 58 V24C). Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C3 complete — `useV23LeagueEngine` externalized via `SimulationConfig`. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. V24D planning, Phase 6C (tactical styles), and Phase 11 (frontend xG display) are the recommended next phases. V24A is also available as a parallel evolution line (see Section 24).
 
 ## 24. V24 — Parallel Detailed Match Engine (Isolated)
 
@@ -470,12 +475,20 @@ V24 is **NOT a replacement for V23**. V23 remains the production simulation engi
 - V24B tests: V24PlayerAttributionTest (8), V24ShotXgModelTest (7), V24TimelineConsistencyTest (7) — 22 new tests, all pass
 - V24 remains isolated — no production wiring, no LeagueSimulator integration, no Redis/API/frontend changes
 
-**V24C** (recommended next): fatigue, cards, injuries, and substitutions with real stamina drain.
-
-**V24 remains NOT a replacement for V23.** V23 remains the production simulation engine. V24 will be integrated only after separate approval.
+**V24C completed** — fatigue, cards, injuries, and substitutions (commits `03148d5`, `c4aba73`, `ad72536`, `23d1806`):
+- `V24FatigueModel` — per-minute drain (style-based 4-6/min), action drain (shot+8, foul+5, chance+3), fatigue factor bands [0.50–1.00]
+- `V24DisciplineModel` — modulated foul [0.005–0.12], modulated yellow card [0.10–0.80], second-yellow-red, red-carded off pitch, never substituted
+- `V24InjuryModel` — modulated injury probability [0.0005–0.02], stamina/style/high-intensity modifiers
+- `V24SubstitutionEngine` — max 5 subs/team, priority: injured > very tired (stamina<30) > tired+yellow (stamina<50, yellowCards>=1), same-position preference, duplicate prevention
+- V24C tests: 56 tests across 4 test classes, all passing
+- V24 remains isolated — no production wiring, no LeagueSimulator integration, no Redis/API/frontend changes
 
 **Commit history on `mvp-1-performance-cleanup` for V24:**
 ```
+23d1806 — feat: add V24 substitution engine (V24C4)
+ad72536 — feat: add V24 injury model (V24C3)
+c4aba73 — feat: add V24 discipline model (V24C2)
+03148d5 — feat: add V24 fatigue model (V24C1)
 b4735a8 — feat: add V24 minute-by-minute event timeline (V24B)
 4e2901a — test: add V24 detailed engine skeleton coverage (V24A3)
 0214a74 — feat: add V24 detailed match engine skeleton (V24A2)
@@ -484,6 +497,10 @@ fd35398 — feat: add V24 detailed match model skeleton (V24A1)
 
 **Commit history on `mvp-1-performance-cleanup`:**
 ```
+23d1806 — feat: add V24 substitution engine (V24C4)
+ad72536 — feat: add V24 injury model (V24C3)
+c4aba73 — feat: add V24 discipline model (V24C2)
+03148d5 — feat: add V24 fatigue model (V24C1)
 b4735a8 — feat: add V24 minute-by-minute event timeline (V24B)
 4e2901a — test: add V24 detailed engine skeleton coverage (V24A3)
 0214a74 — feat: add V24 detailed match engine skeleton (V24A2)

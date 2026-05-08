@@ -5,7 +5,8 @@
 **Created:** 2026-05-06
 **Completed:** 2026-05-06
 
-**V24B completed later** in commit `b4735a8` — the V24A skeleton was extended with real minute-by-minute simulation, xG per shot, and player attribution. The V24A foundation (models, context, clock, timeline, adapter) remains unchanged.
+**V24B completed** in commit `b4735a8` — minute-by-minute event timeline with real xG and player attribution.
+**V24C completed** in commits `03148d5`/`c4aba73`/`ad72536`/`23d1806` — fatigue, discipline, injury, and substitution systems added.
 
 ---
 
