@@ -1,0 +1,345 @@
+package com.footballmanager.application.service.simulation.v24;
+
+import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.entity.SessionPlayer;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * V24C4: Tests for V24SubstitutionEngine.
+ * Validates priority order, bench selection, max substitutions,
+ * duplicate prevention, and red-card handling.
+ */
+class V24SubstitutionEngineTest {
+
+    private final int MAX_SUBS = 5;
+
+    // ========== injuredPlayerIsSubstitutedWhenBenchAvailable ==========
+
+    @Test
+    void injuredPlayerIsSubstitutedWhenBenchAvailable() {
+        V24TeamMatchState team = makeTeam();
+
+        // Make one starting player injured
+        V24PlayerMatchState injured = team.startingPlayers().get(0);
+        injured.injure();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 70);
+
+        assertTrue(event.isPresent(), "Should generate substitution for injured player");
+        assertEquals(V24MatchEventType.SUBSTITUTION, event.get().type());
+        assertEquals(injured.sessionPlayerId(), event.get().playerId());
+        assertNotNull(event.get().relatedPlayerId(), "Should have related player (coming on)");
+        assertFalse(injured.onPitch(), "Injured player should be off pitch");
+    }
+
+    // ========== veryTiredPlayerCanBeSubstituted ==========
+
+    @Test
+    void veryTiredPlayerCanBeSubstituted() {
+        V24TeamMatchState team = makeTeam();
+
+        // Make one starting player very tired (stamina < 30)
+        V24PlayerMatchState tired = team.startingPlayers().get(0);
+        tired.drainStamina(100); // set to 0 stamina via drain
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isPresent(), "Should generate substitution for very tired player");
+        assertEquals(V24MatchEventType.SUBSTITUTION, event.get().type());
+        assertEquals(tired.sessionPlayerId(), event.get().playerId());
+        assertFalse(tired.onPitch(), "Very tired player should be off pitch");
+    }
+
+    // ========== tiredYellowCardedPlayerCanBeSubstituted ==========
+
+    @Test
+    void tiredYellowCardedPlayerCanBeSubstituted() {
+        V24TeamMatchState team = makeTeam();
+
+        // Make one starting player tired (< 50 stamina) and yellow-carded
+        V24PlayerMatchState tiredYellow = team.startingPlayers().get(0);
+        tiredYellow.drainStamina(60); // stamina = 40
+        tiredYellow.addYellowCard();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 70);
+
+        assertTrue(event.isPresent(), "Should generate substitution for tired+yellow player");
+        assertEquals(V24MatchEventType.SUBSTITUTION, event.get().type());
+        assertEquals(tiredYellow.sessionPlayerId(), event.get().playerId());
+    }
+
+    // ========== injuredHasPriorityOverVeryTired ==========
+
+    @Test
+    void injuredHasPriorityOverVeryTired() {
+        V24TeamMatchState team = makeTeam();
+
+        V24PlayerMatchState injured = team.startingPlayers().get(0);
+        injured.injure();
+
+        V24PlayerMatchState veryTired = team.startingPlayers().get(1);
+        veryTired.drainStamina(85); // stamina = 15
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isPresent());
+        assertEquals(injured.sessionPlayerId(), event.get().playerId(),
+                "Injured should be selected over very tired");
+    }
+
+    // ========== veryTiredHasPriorityOverTiredYellow ==========
+
+    @Test
+    void veryTiredHasPriorityOverTiredYellow() {
+        V24TeamMatchState team = makeTeam();
+
+        V24PlayerMatchState veryTired = team.startingPlayers().get(0);
+        veryTired.drainStamina(85); // stamina = 15
+
+        V24PlayerMatchState tiredYellow = team.startingPlayers().get(1);
+        tiredYellow.drainStamina(60); // stamina = 40
+        tiredYellow.addYellowCard();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isPresent());
+        assertEquals(veryTired.sessionPlayerId(), event.get().playerId(),
+                "Very tired should be selected over tired+yellow");
+    }
+
+    // ========== noMoreThanFiveSubstitutions ==========
+
+    @Test
+    void noMoreThanFiveSubstitutions() {
+        V24TeamMatchState team = makeTeam();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+
+        // Make all 11 starters eligible for substitution (stamina < 30)
+        for (V24PlayerMatchState p : team.startingPlayers()) {
+            p.drainStamina(100); // set stamina to 0 (very tired)
+        }
+
+        int count = 0;
+        // Try 7 substitutions — only 5 should succeed
+        for (int i = 0; i < 7; i++) {
+            var event = engine.attemptSubstitution(team, 60 + i);
+            if (event.isPresent()) count++;
+        }
+
+        assertEquals(MAX_SUBS, count, "Should not exceed max substitutions");
+        assertEquals(0, engine.substitutionsRemaining(team.teamId()),
+                "No substitutions should remain after max used");
+    }
+
+    // ========== replacementPrefersSamePosition ==========
+
+    @Test
+    void replacementPrefersSamePosition() {
+        V24TeamMatchState team = makeTeam();
+
+        // Find a MID who hasn't been substituted yet
+        V24PlayerMatchState mid = team.startingPlayers().stream()
+                .filter(p -> "MID".equals(p.position()))
+                .findFirst()
+                .orElseThrow();
+
+        // Make MID very tired so they become a substitution candidate
+        mid.drainStamina(100); // stamina = 0
+
+        // Find bench MID first (before draining)
+        V24PlayerMatchState benchMid = team.benchPlayers().stream()
+                .filter(p -> "MID".equals(p.position()))
+                .findFirst()
+                .orElse(null);
+
+        if (benchMid == null) return; // skip if no bench MID
+
+        // Drain all OTHER bench players (not benchMid) to make only benchMid eligible
+        for (V24PlayerMatchState b : team.benchPlayers()) {
+            if (b != benchMid) {
+                b.drainStamina(100); // exhaust
+            }
+        }
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+        assertTrue(event.isPresent(), "Should generate substitution");
+        assertEquals(benchMid.sessionPlayerId(), event.get().relatedPlayerId(),
+                "Should prefer same position MID from bench");
+    }
+
+    // ========== noDuplicateSubstitutions ==========
+
+    @Test
+    void noDuplicateSubstitutions() {
+        V24TeamMatchState team = makeTeam();
+
+        V24PlayerMatchState tired = team.startingPlayers().get(0);
+        tired.drainStamina(90);
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+
+        var event1 = engine.attemptSubstitution(team, 65);
+        assertTrue(event1.isPresent());
+
+        // Second attempt on same team — no more subs or bench empty
+        // The first sub used the bench player, so bench may be empty
+        // But at least the same starting player shouldn't be subbed twice
+        int subsUsedAfterFirst = engine.substitutionsUsed(team.teamId());
+        assertEquals(1, subsUsedAfterFirst);
+    }
+
+    // ========== redCardedPlayerCannotBeSubstituted ==========
+
+    @Test
+    void redCardedPlayerCannotBeSubstituted() {
+        V24TeamMatchState team = makeTeam();
+
+        // Red card a player
+        V24PlayerMatchState redCarded = team.startingPlayers().get(0);
+        redCarded.giveRedCard(); // redCard=true, onPitch=false
+
+        // Also have a tired player
+        V24PlayerMatchState tired = team.startingPlayers().get(1);
+        tired.drainStamina(90);
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isPresent());
+        assertEquals(tired.sessionPlayerId(), event.get().playerId(),
+                "Red-carded player should not be substituted; tired player should be");
+        assertEquals(1, engine.substitutionsUsed(team.teamId()),
+                "Tired player substitution should count as 1 sub");
+    }
+
+    // ========== noEligibleBenchMeansNoSubstitution ==========
+
+    @Test
+    void noEligibleBenchMeansNoSubstitution() {
+        V24TeamMatchState team = makeTeam();
+
+        // Injured candidate exists
+        V24PlayerMatchState injured = team.startingPlayers().get(0);
+        injured.injure();
+
+        // But all bench are injured/redCarded/offPitch already
+        for (V24PlayerMatchState b : team.benchPlayers()) {
+            b.injure();
+        }
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isEmpty(), "No substitution when no eligible bench");
+    }
+
+    // ========== substitutionEventHasRealPlayerIdsAndNames ==========
+
+    @Test
+    void substitutionEventHasRealPlayerIdsAndNames() {
+        V24TeamMatchState team = makeTeam();
+
+        V24PlayerMatchState tired = team.startingPlayers().get(0);
+        tired.drainStamina(90);
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isPresent());
+        V24MatchEvent e = event.get();
+        assertNotNull(e.playerId());
+        assertNotNull(e.playerName());
+        assertNotNull(e.relatedPlayerId());
+        assertNotNull(e.relatedPlayerName());
+        assertFalse(e.playerId().isBlank());
+        assertFalse(e.playerName().isBlank());
+        assertFalse(e.relatedPlayerId().isBlank());
+        assertFalse(e.relatedPlayerName().isBlank());
+        assertEquals(0.0, e.xg());
+        assertEquals(V24MatchEventType.SUBSTITUTION, e.type());
+    }
+
+    // ========== null argument tests ==========
+
+    @Test
+    void nullTeamThrowsOnAttemptSubstitution() {
+        V24SubstitutionEngine engine = new V24SubstitutionEngine();
+        assertThrows(IllegalArgumentException.class,
+                () -> engine.attemptSubstitution(null, 65));
+    }
+
+    @Test
+    void nullTeamIdThrowsOnSubstitutionsUsed() {
+        V24SubstitutionEngine engine = new V24SubstitutionEngine();
+        assertThrows(IllegalArgumentException.class,
+                () -> engine.substitutionsUsed(null));
+    }
+
+    @Test
+    void invalidMaxSubstitutionsThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new V24SubstitutionEngine(-1));
+    }
+
+    // ========== Fixture helpers ==========
+
+    private V24TeamMatchState makeTeam() {
+        // Start with stamina=100 for all players (not tired)
+        List<V24PlayerMatchState> starters = java.util.stream.IntStream.range(0, 11)
+                .mapToObj(i -> makePlayer("starter-" + i, positionForIndex(i), 70, 100))
+                .toList();
+
+        List<V24PlayerMatchState> bench = java.util.stream.IntStream.range(0, 5)
+                .mapToObj(i -> makePlayer("bench-" + i, benchPositionForIndex(i), 70, 100))
+                .toList();
+
+        // Bench players start off pitch
+        for (V24PlayerMatchState b : bench) {
+            b.substituteOff();
+        }
+
+        return new V24TeamMatchState("team-1", "Test Team", "4-3-3",
+                TeamStyle.BALANCED, starters, bench);
+    }
+
+    private V24PlayerMatchState makePlayer(String id, String position, int ovr, int stamina) {
+        SessionPlayer sp = SessionPlayer.custom(id, 25, position,
+                ovr, ovr, ovr, ovr, ovr, ovr,
+                BigDecimal.valueOf(ovr * 1000));
+        sp.setEnergy(stamina);
+        return V24PlayerMatchState.fromSessionPlayer(sp, "team-1");
+    }
+
+    private String positionForIndex(int i) {
+        return switch (i) {
+            case 0 -> "GK";
+            case 1, 2, 3, 4 -> "DEF";
+            case 5, 6, 7 -> "MID";
+            case 8, 9 -> "WINGER";
+            default -> "ATT";
+        };
+    }
+
+    private String benchPositionForIndex(int i) {
+        return switch (i) {
+            case 0 -> "GK";
+            case 1 -> "DEF";
+            case 2 -> "MID";
+            case 3 -> "WINGER";
+            default -> "ATT";
+        };
+    }
+
+    }

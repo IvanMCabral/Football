@@ -29,6 +29,7 @@ public class V24DetailedMatchEngine {
     private final V24FatigueModel fatigueModel = new V24FatigueModel();
     private final V24DisciplineModel disciplineModel = new V24DisciplineModel();
     private final V24InjuryModel injuryModel = new V24InjuryModel();
+    private final V24SubstitutionEngine substitutionEngine = new V24SubstitutionEngine();
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -56,10 +57,6 @@ public class V24DetailedMatchEngine {
         // Player selector seeded by match
         V24PlayerSelector homeSelector = new V24PlayerSelector(new Random(seed));
         V24PlayerSelector awaySelector = new V24PlayerSelector(new Random(seed + 1));
-
-        // Match-level state
-        int subsRemainingHome = 3;
-        int subsRemainingAway = 3;
 
         while (clock.isRunning()) {
             int minute = clock.currentMinute();
@@ -214,14 +211,16 @@ public class V24DetailedMatchEngine {
                 }
             }
 
-            // Substitutions (once per team, 3 max, after minute 60)
-            if (minute >= 60 && !homeState.startingPlayers().isEmpty() && subsRemainingHome > 0 && !homeHasPossession) {
-                attemptSubstitution(homeState, timeline, minute, "HOME");
-                subsRemainingHome--;
+            // V24C4: Substitutions using V24SubstitutionEngine (5 max, priority-based)
+            // Home team substitution after minute 60 when not in possession
+            if (minute >= 60 && !homeState.startingPlayers().isEmpty() && substitutionEngine.hasSubstitutionsRemaining("HOME") && !homeHasPossession) {
+                substitutionEngine.attemptSubstitution(homeState, minute)
+                        .ifPresent(e -> timeline.addEvent(e));
             }
-            if (minute >= 60 && !awayState.startingPlayers().isEmpty() && subsRemainingAway > 0 && homeHasPossession) {
-                attemptSubstitution(awayState, timeline, minute, "AWAY");
-                subsRemainingAway--;
+            // Away team substitution after minute 60 when in possession
+            if (minute >= 60 && !awayState.startingPlayers().isEmpty() && substitutionEngine.hasSubstitutionsRemaining("AWAY") && homeHasPossession) {
+                substitutionEngine.attemptSubstitution(awayState, minute)
+                        .ifPresent(e -> timeline.addEvent(e));
             }
 
             clock.advance();
@@ -394,40 +393,6 @@ public class V24DetailedMatchEngine {
         if (gk.isEmpty()) return 0.5;
         // GK quality from stamina + mentality (normalized)
         return Math.round((gk.get().stamina() / 100.0 * 0.5 + gk.get().mentality() / 100.0 * 0.5) * 1000.0) / 1000.0;
-    }
-
-    private void attemptSubstitution(V24TeamMatchState team, V24MatchTimeline timeline, int minute, String teamRole) {
-        var onPitch = team.startingPlayers().stream()
-                .filter(p -> p.onPitch() && !p.injured())
-                .toList();
-        var bench = team.benchPlayers().stream()
-                .filter(p -> !p.injured())
-                .toList();
-        if (onPitch.isEmpty() || bench.isEmpty()) return;
-
-        // Substitute off a tired player (low stamina)
-        var substitutedOpt = onPitch.stream()
-                .filter(p -> p.currentStamina() < 60)
-                .findFirst();
-        if (substitutedOpt.isEmpty()) return;
-
-        V24PlayerMatchState subOff = substitutedOpt.get();
-        subOff.substituteOff();
-
-        V24PlayerMatchState subOn = bench.get(0);
-        subOn.setTeamId(team.teamId()); // ensure team context
-
-        timeline.addEvent(new V24MatchEvent(
-                minute,
-                V24MatchEventType.SUBSTITUTION,
-                teamRole,
-                subOff.sessionPlayerId(),
-                subOff.name(),
-                subOn.sessionPlayerId(),
-                subOn.name(),
-                0.0,
-                "Substitution: " + subOn.name() + " on for " + subOff.name()
-        ));
     }
 
     private double styleToModifier(TeamStyle style) {

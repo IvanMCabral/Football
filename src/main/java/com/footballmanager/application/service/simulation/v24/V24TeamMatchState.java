@@ -45,6 +45,15 @@ public class V24TeamMatchState {
         this.possessionTicks = possessionTicks;
     }
 
+    // Package-private constructor for test subclassing
+    V24TeamMatchState(
+            String teamId, String name, String formation, TeamStyle style,
+            List<V24PlayerMatchState> startingPlayers,
+            List<V24PlayerMatchState> benchPlayers) {
+        this(teamId, name, formation, style, startingPlayers, benchPlayers,
+                0, 0.0, 0, 0, 0);
+    }
+
     public static V24TeamMatchState create(
             SessionTeam team,
             List<SessionPlayer> starting,
@@ -66,7 +75,9 @@ public class V24TeamMatchState {
 
         List<V24PlayerMatchState> benchState = new ArrayList<>();
         for (SessionPlayer p : bench) {
-            benchState.add(V24PlayerMatchState.fromSessionPlayer(p, tid));
+            V24PlayerMatchState bp = V24PlayerMatchState.fromSessionPlayer(p, tid);
+            bp.substituteOff(); // bench players start off pitch
+            benchState.add(bp);
         }
 
         return new V24TeamMatchState(

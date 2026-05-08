@@ -124,4 +124,8 @@ public class V24PlayerMatchState {
     public void substituteOff() {
         onPitch = false;
     }
+
+    public void substituteOn() {
+        onPitch = true;
+    }
 }
