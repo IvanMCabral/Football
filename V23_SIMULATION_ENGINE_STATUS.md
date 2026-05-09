@@ -1,10 +1,10 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `09b89b2` (feat: add V24 player rating model — V24D3B)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B complete.
-**Test status:** 285 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B)
-**Date:** 2026-05-08
+**Latest commit:** `3c653f1` (feat: add V24 detailed match data DTOs — V24D4A)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A complete.
+**Test status:** 309 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A)
+**Date:** 2026-05-09
 
 ---
 
@@ -112,8 +112,10 @@ public final class MatchQualityComputer {
 | `V24AssistModelTest` | 22 | V24D2: assist/key-pass selection, formation/style/stamina modifiers, eligibility, clamping, determinism |
 | `V24ShotCoordinateTest` | 17 | V24D3A: shot coordinate value object, deterministic generator, pitch bounds, distance/angle, insideBox |
 | `V24PlayerRatingModelTest` | 31 | V24D3B: rating helper, goals/assists/key passes/shots/cards/injuries/fouls/subs, clamping, determinism |
+| `V24DetailedMatchDataTest` | 10 | V24D4A: detailed match snapshot DTO, fromResult mapping, defensive copies, validation |
+| `V24PlayerMatchStatsModelTest` | 14 | V24D4A: player stat bundle derivation from timeline, ratings, substitutions, determinism |
 
-**Total: 285 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B)
+**Total: 309 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A)
 
 ---
 
@@ -369,7 +371,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, and V24D3B are complete. Recommended next: V24D3C optional schema enrichment, V24D4 storage/API design, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, and V24D4A are complete. Recommended next: V24D4B Redis adapter behind feature flag, V24D4C API endpoint, V24D3C optional schema enrichment, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -414,7 +416,7 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: V24D3C optional schema enrichment, V24D4 storage/API design, Phase 6C, or Phase 11**
+**Recommended next: V24D4B Redis adapter behind feature flag, V24D4C API endpoint, V24D3C optional schema enrichment, Phase 6C, or Phase 11**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -440,7 +442,7 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 Expected: 285 tests, 0 failures.
 

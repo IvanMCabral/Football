@@ -2,10 +2,10 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D3A/V24D3B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B all delivered
-**Latest commit:** `09b89b2` (feat: add V24 player rating model — V24D3B)
-**Tests:** 285 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures
-**Date:** 2026-05-08
+**Status:** V24D4A COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A all delivered
+**Latest commit:** `3c653f1` (feat: add V24 detailed match data DTOs — V24D4A)
+**Tests:** 309 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A), 0 failures
+**Date:** 2026-05-09
 
 ---
 
@@ -212,4 +212,16 @@
 - V24D3B did NOT modify: `V24DetailedMatchResult`, `V24PlayerMatchState`, `V24MatchEvent`, or SessionPlayer
 - V24D3B tests: 31 tests, all passing
 - V24 remains isolated — no production wiring, no Redis/API/frontend changes
-- Recommended next: V24D3C optional schema enrichment or V24D4 storage/API design
+- Recommended next: V24D4A DTO/storage design classes or V24D3C optional schema enrichment
+
+**V24D4A is now COMPLETED** (commit `3c653f1`). V24D4A added detailed match DTOs and storage port interface:
+- `V24DetailedMatchData` — immutable snapshot DTO with `fromResult()` factory, timeline DTOs, playerRatings DTOs, engineVersion/schemaVersion
+- `V24MatchEventDto` — event DTO with `fromEvent(V24MatchEvent)` converter; shotCoordinate nullable (V24MatchEvent schema unchanged)
+- `V24ShotCoordinateDto` — coordinate DTO with `fromCoordinate(V24ShotCoordinate)`
+- `V24PlayerMatchRatingDto` — player rating/stat bundle DTO, rating clamped [1.0, 10.0]
+- `V24DetailedMatchStoragePort` — interface only (`save`, `findByMatchId`, `deleteByCareerId`); no Redis adapter
+- `V24PlayerMatchStatsModel` — pure helper deriving stat bundles from timeline (goals, assists, keyPasses, shots, cards, injuries, fouls, subs) + rating integration
+- V24D4A did NOT modify: `V24MatchEvent`, `V24DetailedMatchResult`, `V24DetailedMatchEngine`, or any production wiring
+- V24D4A tests: 24 tests (10 `V24DetailedMatchDataTest` + 14 `V24PlayerMatchStatsModelTest`), all passing
+- V24 remains isolated — no Redis adapter, no API endpoint, no frontend
+- Recommended next: V24D4B Redis adapter behind feature flag, V24D4C API endpoint, or V24D3C optional schema enrichment

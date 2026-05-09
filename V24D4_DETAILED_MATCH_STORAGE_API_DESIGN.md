@@ -1,10 +1,11 @@
 # V24D4 — Detailed Match Storage/API Design
 
-**Status:** PLANNING ONLY — No code implementation until this document is reviewed and approved
+**Status:** V24D4A COMPLETED — DTO/storage port classes added; Redis/API/frontend deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `09b89b2` (feat: add V24 player rating model — V24D3B)
-**Tests:** 285 total, 0 failures (regression gate unchanged — V24D4 is docs only)
+**Latest implementation commit:** `3c653f1` (feat: add V24 detailed match data DTOs — V24D4A)
+**Tests:** 309 total, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A)
 **Created:** 2026-05-08
+**Last updated:** 2026-05-09
 
 ---
 
@@ -48,7 +49,7 @@ minute, type, playerId, playerName, relatedPlayerId, relatedPlayerName, xg, desc
 ### V24DetailedMatchResultAdapter
 Maps V24DetailedMatchResult → MatchResultData (discards all detail, keeps 6 fields only).
 
-### Current regression gate: 285 tests, 0 failures — unchanged by V24D4 (docs-only).
+### Current regression gate: 309 tests, 0 failures. V24D4A added 24 tests (V24DetailedMatchDataTest + V24PlayerMatchStatsModelTest) after the original V24D4 docs-only design.
 
 ---
 
@@ -164,7 +165,7 @@ PlayerMatchRatingDto:
   substitutedOut: int
 ```
 
-**Note:** V24PlayerRatingModel currently computes only `rating` from timeline. Full stat bundle (goals, assists, etc.) requires a separate `V24PlayerMatchStatsModel` helper — not yet implemented. Until then, `playerRatings` in storage will have `rating` populated but other fields may be zero or derived separately in a future step.
+**Note:** V24PlayerMatchStatsModel is implemented in V24D4A and derives player stat bundles from timeline. `V24PlayerRatingModel` computes the `rating` field; `V24PlayerMatchStatsModel` derives goals, assists, keyPasses, shots, cards, injuries, fouls, and substitution counts from the timeline. Together they fully populate `PlayerMatchRatingDto`.
 
 ---
 
@@ -250,29 +251,31 @@ PlayerMatchRatingDto:
 
 ## 12. Implementation Phases
 
-### Phase 1 — DTO/Storage Design (V24D4A) — NO WIRING
-- Add `V24MatchEventDto`, `V24ShotCoordinateDto`, `PlayerMatchRatingDto`, `V24DetailedMatchData`
-- Add `V24DetailedMatchStoragePort` interface (no implementation)
-- Add `V24PlayerMatchStatsModel` helper to derive stat bundle (goals, assists, etc.) from timeline
-- No Redis, no API, no feature flag wiring
-- Tests: new unit tests for DTOs/helpers only
+### Phase 1 — DTO/Storage Design (V24D4A) — COMPLETED, NO WIRING ✅
+- **Commit:** `3c653f1`
+- **Tests:** 24 new (`V24DetailedMatchDataTest` 10 + `V24PlayerMatchStatsModelTest` 14), 309 total, 0 failures
+- **Added:** `V24DetailedMatchData`, `V24MatchEventDto`, `V24ShotCoordinateDto`, `V24PlayerMatchRatingDto`, `V24DetailedMatchStoragePort` (interface only), `V24PlayerMatchStatsModel`
+- **No Redis adapter** — V24D4B deferred
+- **No API endpoint** — V24D4C deferred
+- **No frontend**
+- **No production wiring**
 - Risk: LOW — pure design classes
 
-### Phase 2 — Redis Adapter Behind Feature Flag (V24D4B)
+### Phase 2 — Redis Adapter Behind Feature Flag (V24D4B) — Pending
 - Implement `V24DetailedMatchRedisAdapter` implements `V24DetailedMatchStoragePort`
 - Add feature flags: `app.simulation.v24.persist-detail=false`
 - Store detail only when V24 engine enabled AND flag is true
 - Tests: adapter tests with embedded Redis
 
-### Phase 3 — Query Endpoint (V24D4C)
+### Phase 3 — Query Endpoint (V24D4C) — Pending
 - Add GET `/api/careers/{careerId}/matches/{matchId}/detail`
 - Feature-gated: `app.simulation.v24.expose-detail-api=false`
 - Returns detail if present, 404 if not
 
-### Phase 4 — Frontend Match Detail Page
+### Phase 4 — Frontend Match Detail Page — Pending
 - Separate from this document — requires frontend approval
 
-### Phase 5 — V24 Production Simulation Flag (V24D5)
+### Phase 5 — V24 Production Simulation Flag (V24D5) — Deferred
 - `app.simulation.league.use-v24-detailed-engine`
 - Only after Phase 1–4 validated
 - Separate from persistence flag
@@ -327,15 +330,16 @@ app.simulation.v24.expose-detail-api=false             # Expose detail via REST 
 - Add storage port interface: V24DetailedMatchStoragePort
 - Add stats helper: V24PlayerMatchStatsModel (derives stat bundle from timeline)
 - No Redis implementation, no API, no feature flag wiring
-- 285 tests remain regression gate
+- 309 tests remain regression gate
 
 ---
 
-## 16. Non-Goals (V24D4 is Documentation Only)
+## 16. Non-Goals — V24D4A Has No Wiring; V24D4B+ Requires Separate Approval
 
 - No production wiring
-- No Redis implementation
-- No API implementation
+- No Redis adapter (V24DetailedMatchStoragePort is interface only; V24D4B adds implementation)
+- No API implementation (GET /detail endpoint is V24D4C)
+- No feature flag wiring in this phase
 - No frontend implementation
 - No LeagueSimulator changes
 - No MatchEngineImpl changes
@@ -344,7 +348,6 @@ app.simulation.v24.expose-detail-api=false             # Expose detail via REST 
 - No V24DetailedMatchResult schema change
 - No SessionPlayer mutation
 - No SessionTeam mutation
-- No feature flag wiring in this phase
 
 ---
 
@@ -353,10 +356,45 @@ app.simulation.v24.expose-detail-api=false             # Expose detail via REST 
 After any V24D4 code changes, the full regression gate:
 
 ```
-mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-**Expected:** 285 tests, 0 failures (V24D4 adds tests only for new DTOs/helpers, regression gate unchanged until wiring phase).
+**Expected:** 309 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A).
+
+---
+
+## V24D4A Completion Record
+
+**Commit:** `3c653f1` — `feat: add V24 detailed match data DTOs`
+**Date:** 2026-05-09
+**Tests:** 24 new (10 `V24DetailedMatchDataTest` + 14 `V24PlayerMatchStatsModelTest`), 309 total, 0 failures
+**V24D4A delivered:**
+- `V24DetailedMatchData` — immutable snapshot DTO with `fromResult()` factory, timeline DTOs, playerRatings DTOs, engineVersion/schemaVersion
+- `V24MatchEventDto` — event DTO with `fromEvent(V24MatchEvent)` converter; shotCoordinate nullable (V24MatchEvent schema unchanged)
+- `V24ShotCoordinateDto` — coordinate DTO with `fromCoordinate(V24ShotCoordinate)`
+- `V24PlayerMatchRatingDto` — player rating/stat bundle DTO with rating [1.0, 10.0]
+- `V24DetailedMatchStoragePort` — interface only (`save`, `findByMatchId`, `deleteByCareerId`); no implementation
+- `V24PlayerMatchStatsModel` — pure helper deriving stat bundles from timeline (goals, assists, keyPasses, shots, cards, injuries, fouls, subs) + rating integration
+- **No Redis adapter** (V24D4B deferred)
+- **No API endpoint** (V24D4C deferred)
+- **No frontend**
+- **No V23 source changes**
+- **MatchFixture.MatchResultData unchanged**
+- **V24MatchEvent schema unchanged** — shotCoordinate stays null until V24D3C
+- Regression gate: 309 tests, 0 failures
+
+---
+
+## Implementation Phases (Updated)
+
+| Phase | Content | Risk | Status |
+|-------|---------|------|--------|
+| V24D4A | DTOs + storage port interface + V24PlayerMatchStatsModel (no wiring) | LOW | ✅ Completed |
+| V24D4B | Redis adapter behind feature flag | MEDIUM | Pending |
+| V24D4C | Query endpoint (GET /detail) | MEDIUM | Pending |
+| V24D5 | Production integration flag | HIGH | Deferred |
+
+**Recommended next:** V24D4B — Redis adapter behind feature flag, or V24D3C — optional schema enrichment if shot coordinates must be attached to events before storage.
 
 ---
 
