@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `55f7638` (feat: add V24 formation parser — V24D1)
+**Latest commit:** `1149c0b` (feat: add V24 assist model — V24D2)
 **Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete
-**Test status:** 215 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1)
+**Test status:** 237 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2)
 **Date:** 2026-05-08
 
 ---
@@ -109,8 +109,9 @@ public final class MatchQualityComputer {
 | `V24InjuryModelTest` | 10 | V24C3: injury probability, stamina/action/style modifiers, injured state |
 | `V24SubstitutionEngineTest` | 14 | V24C4: substitution priority, max 5, position preference, duplicate prevention, red-card exclusion |
 | `V24FormationParserTest` | 15 | V24D1: formation parsing, safe fallback, formation-aware shooter/assist selection |
+| `V24AssistModelTest` | 22 | V24D2: assist/key-pass selection, formation/style/stamina modifiers, eligibility, clamping, determinism |
 
-**Total: 215 tests, 0 failures** (V24D1 added 15 tests: 10 formation parsing + 5 shooter/assist selector behavior; 215 total: 112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1)
+**Total: 237 tests, 0 failures** (V24D2 added 22 tests: V24AssistModelTest; 237 total: 112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2)
 
 ---
 
@@ -441,9 +442,9 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,V24FormationParserTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,V24FormationParserTest,V24AssistModelTest
 ```
-Expected: 215 tests, 0 failures.
+Expected: 237 tests, 0 failures.
 
 ---
 
@@ -485,17 +486,29 @@ V24 is **NOT a replacement for V23**. V23 remains the production simulation engi
 - V24 remains isolated — no production wiring, no LeagueSimulator integration, no Redis/API/frontend changes
 
 **V24D1 COMPLETED — Formation parser and tactical role weighting (commit `55f7638`):**
-- `V24FormationParser` — parses formation strings into `V24Formation` inner class; supports "4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "5-4-1"
-- Safe fallback to "4-4-2" for null/blank/invalid formations
-- Rejects formations with != 10 outfield players
-- `V24PlayerSelector` — new `selectShooter(List, String)` and `selectShooter(List, V24Formation)` overloads with formation-aware weighting
+- `V24FormationParser` — parses formation strings; safe fallback to "4-4-2"; rejects != 10 outfield players
+- `V24PlayerSelector` — formation-aware `selectShooter(List, String)` and `selectShooter(List, V24Formation)` overloads
 - Original `selectShooter(List)` preserved for backward compatibility
-- V24D1 tests: 15 tests (`V24FormationParserTest`), all passing
-- V24 remains isolated — no production wiring, no LeagueSimulator integration, no Redis/API/frontend changes
+- V24D1 tests: 15 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
 - V24D1 did NOT modify: `V24MatchContext`, `SessionTeam`, `LeagueSimulator`, or any production flow
+
+**V24D2 COMPLETED — Assist and key-pass model + event richness (commit `1149c0b`):**
+- `V24AssistModel` — pure function assist/key-pass provider selection
+- `selectAssistProvider(candidates, shooter, formation, style, random)` — formation-aware weighted selection
+- `assistProbability(shooter, candidate, formation, style)` — clamped [0.10, 0.85]
+- Formation modifiers: 4-3-3 boosts WINGER, 4-2-3-1 boosts MID/WINGER, 3-5-2 boosts MID
+- Style modifiers: POSSESSION +0.08, ATTACKING +0.05, DEFENSIVE -0.05
+- Stamina penalty: currentStamina < 30 = -0.05
+- Real `relatedPlayerId`/`relatedPlayerName` on GOAL events
+- Integration: `V24DetailedMatchEngine` uses `assistModel.selectAssistProvider()` instead of `selector.selectAssistProvider()`
+- V24D2 did NOT modify: `V24MatchEvent`, `V24PlayerSelector`, `V24MatchContext`
+- V24D2 tests: 22 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
 
 **Commit history on `mvp-1-performance-cleanup` for V24:**
 ```
+1149c0b — feat: add V24 assist model (V24D2)
 55f7638 — feat: add V24 formation parser (V24D1)
 23d1806 — feat: add V24 substitution engine (V24C4)
 ad72536 — feat: add V24 injury model (V24C3)

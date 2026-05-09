@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D1 COMPLETED — V24A/V24B/V24C/V24D1 all delivered
-**Latest commit:** `55f7638` (feat: add V24 formation parser — V24D1)
-**Tests:** 215 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1), 0 failures
+**Status:** V24D2 COMPLETED — V24A/V24B/V24C/V24D1/V24D2 all delivered
+**Latest commit:** `1149c0b` (feat: add V24 assist model — V24D2)
+**Tests:** 237 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2), 0 failures
 **Date:** 2026-05-08
 
 ---
@@ -179,3 +179,17 @@
 - V24D1 tests: 15 tests, all passing
 - V24 remains isolated — no production wiring, no Redis/API/frontend changes
 - Recommended next: V24D2 — assist/key-pass model + event richness
+
+**V24D2 is now COMPLETED** (commit `1149c0b`). V24D2 added assist/key-pass model and event richness:
+- `V24AssistModel` — pure function assist/key-pass provider selection
+- `selectAssistProvider(candidates, shooter, formation, style, random)` — formation-aware weighted selection
+- `assistProbability(shooter, candidate, formation, style)` — clamped [0.10, 0.85]
+- Formation modifiers: 4-3-3 boosts WINGER, 4-2-3-1 boosts MID/WINGER, 3-5-2 boosts MID
+- Style modifiers: POSSESSION +0.08, ATTACKING +0.05, DEFENSIVE -0.05
+- Stamina penalty: currentStamina < 30 = -0.05
+- Real `relatedPlayerId`/`relatedPlayerName` attribution on GOAL events
+- GOAL description: "Goal by {shooter} assisted by {assist} {minute}'"
+- V24D2 did NOT modify: `V24MatchEvent`, `V24PlayerSelector`, `V24MatchContext`
+- V24D2 tests: 22 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
+- Recommended next: V24D3 — shot coordinates, player ratings, or storage/API design
