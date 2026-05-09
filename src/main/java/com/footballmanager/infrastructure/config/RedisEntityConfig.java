@@ -58,6 +58,13 @@ public class RedisEntityConfig {
         return createTemplate(connectionFactory, LeagueTeamEntity.class);
     }
 
+    @Bean
+    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.v24.V24DetailedMatchData> v24DetailedMatchDataRedisTemplate(
+            ReactiveRedisConnectionFactory connectionFactory) {
+        return createTemplate(connectionFactory,
+                com.footballmanager.application.service.simulation.v24.V24DetailedMatchData.class);
+    }
+
     private <T> ReactiveRedisTemplate<String, T> createTemplate(
             ReactiveRedisConnectionFactory connectionFactory, Class<T> entityClass) {
         StringRedisSerializer keySerializer = new StringRedisSerializer();
