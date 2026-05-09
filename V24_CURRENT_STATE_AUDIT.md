@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D5A COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A all delivered
-**Latest commit:** `8470779` (feat: add V24 match context factory — V24D5A)
-**Tests:** 354 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A), 0 failures
+**Status:** V24D5B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B all delivered; detail persistence still deferred
+**Latest commit:** `cca2f6e` (feat: add V24 LeagueSimulator path behind feature flag — V24D5B)
+**Tests:** 368 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B), 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -260,3 +260,16 @@
 - V24D5A tests: 20 tests (`V24MatchContextFactoryTest`), all passing
 - V24 remains isolated — no production simulation wiring, no frontend
 - Recommended next: V24D5B third LeagueSimulator path behind default-false flag, or V24D3C optional schema enrichment, or frontend match detail design, or Phase 6C / Phase 11
+
+**V24D5B is now COMPLETED** (commit `cca2f6e`). V24D5B added third LeagueSimulator path behind `use-v24-detailed-engine=false`:
+- `LeagueSimulator.simulateWithV24Engine()` — V24 path using `V24DetailedMatchEngine` when flag is true
+- `SimulationConfig` — injected `use-v24-detailed-engine` property alongside existing `use-v23-engine`
+- `application.yaml` — added `app.simulation.league.use-v24-detailed-engine: false` (default false)
+- Flag precedence: V24 > V23 > default
+- `V24MatchContextFactory.build()` called to build context from CareerSave + MatchFixture + SessionTeam home/away + seed
+- `V24DetailedMatchResultAdapter.toMatchResultData()` maps V24DetailedMatchResult to MatchFixture.MatchResultData (6 fields)
+- Context build failure falls back to default engine, round completes
+- V24D5B did NOT modify: V24DetailedMatchResult, V24MatchEvent, V24DetailedMatchEngine, or any production wiring
+- V24D5B tests: 11 tests (`V24LeagueSimulationPathTest`), all passing
+- V24 remains isolated — no Redis detail persistence, no API/controller/frontend changes
+- Recommended next: V24D5C detail persistence behind persist-detail flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11

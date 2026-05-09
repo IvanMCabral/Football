@@ -1,9 +1,9 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D5A COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A all delivered; production integration still deferred
+**Status:** V24D5B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B all delivered; detail persistence still deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `8470779` (feat: add V24 match context factory — V24D5A)
-**Tests:** 354 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A), 0 failures
+**Latest implementation commit:** `cca2f6e` (feat: add V24 LeagueSimulator path behind feature flag — V24D5B)
+**Tests:** 368 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B), 0 failures
 
 ---
 
@@ -14,7 +14,7 @@
 - **No API/frontend changes without separate approval**
 - **V23 remains production-stable** — V24 is parallel
 - **V24 remains isolated** under `application/service/simulation/v24/` until explicitly wired
-- **354 tests are the regression gate** — all must pass after any V24D change
+- **365 tests are the regression gate; full suite is 368 tests total** — all must pass after any V24D change
 - Red-carded players remain non-substitutable (V24C invariant, never removed)
 
 ---
@@ -53,7 +53,7 @@
 - ~~No assist/key-pass as first-class event logic~~
 - Shot coordinate helper exists (V24D3A) but no V24MatchEvent attachment and no UI shot map yet
 - Player rating helper exists (V24D3B) but no V24DetailedMatchResult field and no UI/frontend yet
-- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), and V24MatchContextFactory (V24D5A) exist but no LeagueSimulator V24 branch yet and no production simulation wiring
+- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), and V24MatchContextFactory (V24D5A) exist; LeagueSimulator V24 branch exists (V24D5B) but detail persistence is not implemented yet. No Redis save in simulation flow. No frontend.
 - No goalkeeper save quality detail beyond xG
 - No corner/free kick/penalty model beyond existing chance creation
 - No stoppage time or extra time
@@ -345,9 +345,31 @@ GET `/api/careers/{careerId}/matches/{matchId}/detail` behind feature flag.
 - Tests: `V24DetailedMatchQueryServiceTest` (12 tests)
 - **Status: COMPLETED** — commit `ab3c5fd`
 
-**V24D5 (Production Integration — Deferred)**
-Feature-flagged V24 path in LeagueSimulator, only after explicit approval and validation.
-- **Status: Deferred**
+**V24D5A (Context Factory — Completed)**
+- `V24MatchContextFactory` — factory building V24MatchContext from CareerSave, MatchFixture, SessionTeam, seed
+- `V24MatchContextFactoryTest` (20 tests)
+- No runtime behavior change — isolated, not wired to production
+- **Status: COMPLETED** — commit `8470779`
+
+**V24D5B (LeagueSimulator V24 Path — Completed)**
+- Third LeagueSimulator path behind `app.simulation.league.use-v24-detailed-engine=false` (default false)
+- Flag precedence: V24 > V23 > default
+- `simulateWithV24Engine()` calls `V24DetailedMatchEngine` via `V24MatchContextFactory`
+- `V24DetailedMatchResultAdapter.toMatchResultData()` maps to `MatchFixture.MatchResultData` (6 fields)
+- Context build failure falls back to default — round completes
+- `V24LeagueSimulationPathTest` (11 tests)
+- No Redis detail persistence — `V24DetailedMatchStoragePort.save(...)` not called
+- **Status: COMPLETED** — commit `cca2f6e`
+
+**V24D5C (Detail Persistence — Pending)**
+- Save `V24DetailedMatchData` to Redis behind `app.simulation.v24.persist-detail=false` (default false)
+- Best-effort Redis write — failure logs and round still completes
+- No frontend
+
+**V24D5D (End-to-End Integration Tests — Pending)**
+- All flag combinations validated end-to-end
+
+**V24D5E (Frontend Planning/Design — Deferred)**
 
 ---
 
@@ -439,10 +461,10 @@ git checkout HEAD~1 -- src/main/java/.../simulation/v24/V24PlayerSelector.java
 After any V24D change, the full regression gate:
 
 ```
-mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingModelTest,V24ShotCoordinateTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingModelTest,V24ShotCoordinateTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-Expected: **354 tests (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A), 0 failures**.
+Expected: **365 tests (regression gate), 0 failures; 368 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B)**.
 
 ---
 

@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `8470779` (feat: add V24 match context factory — V24D5A)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A complete.
-**Test status:** 354 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A)
+**Latest commit:** `cca2f6e` (feat: add V24 LeagueSimulator path behind feature flag — V24D5B)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B complete.
+**Test status:** 368 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B), 0 failures; regression gate 365 tests, 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -117,8 +117,9 @@ public final class MatchQualityComputer {
 | `V24DetailedMatchRedisAdapterTest` | 13 | V24D4B: Redis adapter save/find/delete, career isolation, serialization, key format, deletion |
 | `V24DetailedMatchQueryServiceTest` | 12 | V24D4C: feature-gated detail query service/controller, 404 disabled/missing, storage-only read |
 | `V24MatchContextFactoryTest` | 20 | V24D5A: context factory, starting XI resolution, bench derivation, style defaults, validation, canBuild |
+| `V24LeagueSimulationPathTest` | 11 | V24D5B: V24 LeagueSimulator path, flag precedence, result mapping, fallback, no persistence |
 
-**Total: 354 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A)
+**Total: 368 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B)
 
 ---
 
@@ -374,7 +375,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, V24D4A, V24D4B, V24D4C, and V24D5A are complete. Recommended next: V24D5B third LeagueSimulator path behind default-false flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, V24D4A, V24D4B, V24D4C, V24D5A, and V24D5B are complete. Recommended next: V24D5C detail persistence behind persist-detail flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -419,7 +420,7 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: V24D5B third LeagueSimulator path behind default-false flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11**
+**Recommended next: V24D5C detail persistence behind persist-detail flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -531,6 +532,11 @@ V24 is **NOT a replacement for V23**. V23 remains the production simulation engi
 
 **Commit history on `mvp-1-performance-cleanup` for V24:**
 ```
+cca2f6e — feat: add V24 LeagueSimulator path behind feature flag (V24D5B)
+8470779 — feat: add V24 match context factory (V24D5A)
+ab3c5fd — feat: add V24 detailed match query endpoint (V24D4C)
+ecea7d5 — feat: add V24 detailed match Redis adapter (V24D4B)
+3c653f1 — feat: add V24 detailed match DTOs (V24D4A)
 09b89b2 — feat: add V24 player rating model (V24D3B)
 9a632c4 — feat: add V24 shot coordinates (V24D3A)
 1149c0b — feat: add V24 assist model (V24D2)

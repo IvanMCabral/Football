@@ -1,8 +1,8 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A completed.
-**Current baseline commit:** `8470779` (V24D5A complete)
-**Tests:** 354 relevant tests, 0 failures
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B completed.
+**Current baseline commit:** `cca2f6e` (V24D5B complete)
+**Tests:** 368 full suite total; 365 regression gate, 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -17,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `8470779`
-**Tests:** 354 relevant tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A)
+**Commit:** `cca2f6e`
+**Tests:** 368 full suite total; 365 regression gate, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B)
 
 ### What exists
 
@@ -705,13 +705,13 @@ Assist and key-pass model + event richness for isolated V24:
 - V24D2 tests: 22 tests (`V24AssistModelTest`), all passing
 - Risk: LOW — isolated package, no production integration
 - Commit: `1149c0b`
-- Recommended next: V24D5 production integration planning, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11
+- Recommended next: V24D5C detail persistence, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,V24MatchContextFactoryTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest
 ```
-Expected: 354 tests, 0 failures.
+Expected: 365 tests (regression gate), 0 failures; 368 full suite total.
 ---
 
 ## Phase Implementation Order
@@ -757,9 +757,9 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D4B | Redis adapter behind feature flag | MEDIUM | 2 | Completed |
 | V24D4C | Detailed match query endpoint | MEDIUM | 2 | Completed |
 | V24D5A | V24MatchContextFactory only | LOW | 1 | Completed |
-| V24D5B | Third LeagueSimulator path behind default-false flag | MEDIUM | 2 | Pending |
-| V24D5C | Detail persistence during V24 simulation | MEDIUM | 3 | Pending |
-| V24D5D | End-to-end integration tests | MEDIUM | 3 | Pending |
+| V24D5B | Third LeagueSimulator path behind default-false flag | MEDIUM/HIGH | 2 | Completed |
+| V24D5C | Detail persistence during V24 simulation behind persist-detail flag | MEDIUM | 3 | Pending |
+| V24D5D | End-to-end integration tests | MEDIUM | 4 | Pending |
 | V24D5E | Frontend planning/design | MEDIUM | Separate | Deferred |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
