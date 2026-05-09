@@ -1,9 +1,9 @@
 # V24D4 — Detailed Match Storage/API Design
 
-**Status:** V24D4A COMPLETED — DTO/storage port classes added; Redis/API/frontend deferred
+**Status:** V24D4B COMPLETED — Redis adapter added; API/frontend/production wiring deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `3c653f1` (feat: add V24 detailed match data DTOs — V24D4A)
-**Tests:** 309 total, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A)
+**Latest implementation commit:** `ecea7d5` (feat: add V24 detailed match Redis adapter — V24D4B)
+**Tests:** 322 total, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B)
 **Created:** 2026-05-08
 **Last updated:** 2026-05-09
 
@@ -261,11 +261,19 @@ PlayerMatchRatingDto:
 - **No production wiring**
 - Risk: LOW — pure design classes
 
-### Phase 2 — Redis Adapter Behind Feature Flag (V24D4B) — Pending
-- Implement `V24DetailedMatchRedisAdapter` implements `V24DetailedMatchStoragePort`
-- Add feature flags: `app.simulation.v24.persist-detail=false`
-- Store detail only when V24 engine enabled AND flag is true
-- Tests: adapter tests with embedded Redis
+### Phase 2 — Redis Adapter Behind Feature Flag (V24D4B) — COMPLETED ✅
+- **Commit:** `ecea7d5`
+- **Tests:** 13 (`V24DetailedMatchRedisAdapterTest`), 322 total, 0 failures
+- **Added:** `V24DetailedMatchRedisAdapter` implements `V24DetailedMatchStoragePort`
+- **Added:** `v24DetailedMatchDataRedisTemplate` bean in `RedisEntityConfig` for Jackson2Json serialization
+- **Storage key:** `career:{careerId}:match-detail:{matchId}`
+- **Serialization:** Jackson2Json via ReactiveRedisTemplate (same pattern as existing RedisEntityConfig adapters)
+- **deleteByCareerId:** implemented via KEYS pattern + bulk DELETE
+- **No API endpoint** — V24D4C deferred
+- **No frontend**
+- **No production simulation wiring** — adapter is a bean but no production flow calls it
+- **No LeagueSimulator/SimulationConfig/MatchEngineImpl changes**
+- Risk: MEDIUM — Redis adapter, but isolated from production simulation
 
 ### Phase 3 — Query Endpoint (V24D4C) — Pending
 - Add GET `/api/careers/{careerId}/matches/{matchId}/detail`
@@ -359,7 +367,7 @@ After any V24D4 code changes, the full regression gate:
 mvn test -Dtest=V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-**Expected:** 309 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A).
+**Expected:** 322 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B).
 
 ---
 
@@ -385,16 +393,35 @@ mvn test -Dtest=V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoo
 
 ---
 
+## V24D4B Completion Record
+
+**Commit:** `ecea7d5` — `feat: add V24 detailed match Redis adapter`
+**Date:** 2026-05-09
+**Tests:** 13 new (`V24DetailedMatchRedisAdapterTest`), 322 total, 0 failures
+**V24D4B delivered:**
+- `V24DetailedMatchRedisAdapter` — implements `V24DetailedMatchStoragePort`, stores at `career:{careerId}:match-detail:{matchId}`
+- `RedisEntityConfig` — updated with `v24DetailedMatchDataRedisTemplate` bean for Jackson2Json serialization
+- **Serialization:** Jackson2Json via ReactiveRedisTemplate (same pattern as existing adapters)
+- **deleteByCareerId:** implemented via KEYS pattern + bulk DELETE
+- **No API endpoint** (V24D4C deferred)
+- **No frontend**
+- **No production simulation wiring** — adapter exists as a bean but no production flow calls it
+- **No LeagueSimulator/SimulationConfig/MatchEngineImpl/MatchFixture changes**
+- **V24DetailedMatchResult unchanged, V24MatchEvent unchanged, V24DetailedMatchStoragePort interface unchanged**
+- Regression gate: 322 tests, 0 failures
+
+---
+
 ## Implementation Phases (Updated)
 
 | Phase | Content | Risk | Status |
 |-------|---------|------|--------|
 | V24D4A | DTOs + storage port interface + V24PlayerMatchStatsModel (no wiring) | LOW | ✅ Completed |
-| V24D4B | Redis adapter behind feature flag | MEDIUM | Pending |
+| V24D4B | Redis adapter behind feature flag | MEDIUM | ✅ Completed |
 | V24D4C | Query endpoint (GET /detail) | MEDIUM | Pending |
 | V24D5 | Production integration flag | HIGH | Deferred |
 
-**Recommended next:** V24D4B — Redis adapter behind feature flag, or V24D3C — optional schema enrichment if shot coordinates must be attached to events before storage.
+**Recommended next:** V24D4C — query endpoint behind feature flag, or V24D3C — optional schema enrichment if shot coordinates must be attached to events before storage, or Phase 6C / Phase 11.
 
 ---
 

@@ -1,8 +1,8 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A completed.
-**Current baseline commit:** `3c653f1` (V24D4A complete)
-**Tests:** 309 relevant tests, 0 failures
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B completed.
+**Current baseline commit:** `ecea7d5` (V24D4B complete)
+**Tests:** 322 relevant tests, 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -17,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `3c653f1`
-**Tests:** 309 relevant tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A)
+**Commit:** `ecea7d5`
+**Tests:** 322 relevant tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B)
 
 ### What exists
 
@@ -754,7 +754,7 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D3B | Player ratings helper from timeline | LOW | 1 | Completed |
 | V24D3C | Optional event/result schema enrichment | MEDIUM | 2 | Deferred |
 | V24D4A | Detailed match DTOs + storage port interface | LOW | 1 | Completed |
-| V24D4B | Redis adapter behind feature flag | MEDIUM | 2 | Pending |
+| V24D4B | Redis adapter behind feature flag | MEDIUM | 2 | Completed |
 | V24D4C | Detailed match query endpoint | MEDIUM | 2 | Pending |
 | V24D5 | Production integration | HIGH | 3+ | Deferred |
 

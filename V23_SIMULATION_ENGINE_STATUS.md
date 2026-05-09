@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `3c653f1` (feat: add V24 detailed match data DTOs — V24D4A)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A complete.
-**Test status:** 309 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A)
+**Latest commit:** `ecea7d5` (feat: add V24 detailed match Redis adapter — V24D4B)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B complete.
+**Test status:** 322 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B)
 **Date:** 2026-05-09
 
 ---
@@ -114,8 +114,9 @@ public final class MatchQualityComputer {
 | `V24PlayerRatingModelTest` | 31 | V24D3B: rating helper, goals/assists/key passes/shots/cards/injuries/fouls/subs, clamping, determinism |
 | `V24DetailedMatchDataTest` | 10 | V24D4A: detailed match snapshot DTO, fromResult mapping, defensive copies, validation |
 | `V24PlayerMatchStatsModelTest` | 14 | V24D4A: player stat bundle derivation from timeline, ratings, substitutions, determinism |
+| `V24DetailedMatchRedisAdapterTest` | 13 | V24D4B: Redis adapter save/find/delete, career isolation, serialization, key format, deletion |
 
-**Total: 309 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A)
+**Total: 322 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B)
 
 ---
 

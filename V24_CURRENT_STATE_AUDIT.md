@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D4A COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A all delivered
-**Latest commit:** `3c653f1` (feat: add V24 detailed match data DTOs — V24D4A)
-**Tests:** 309 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A), 0 failures
+**Status:** V24D4B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B all delivered
+**Latest commit:** `ecea7d5` (feat: add V24 detailed match Redis adapter — V24D4B)
+**Tests:** 322 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B), 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -225,3 +225,14 @@
 - V24D4A tests: 24 tests (10 `V24DetailedMatchDataTest` + 14 `V24PlayerMatchStatsModelTest`), all passing
 - V24 remains isolated — no Redis adapter, no API endpoint, no frontend
 - Recommended next: V24D4B Redis adapter behind feature flag, V24D4C API endpoint, or V24D3C optional schema enrichment
+
+**V24D4B is now COMPLETED** (commit `ecea7d5`). V24D4B added Redis adapter for detailed match storage:
+- `V24DetailedMatchRedisAdapter` — implements `V24DetailedMatchStoragePort`, stores at `career:{careerId}:match-detail:{matchId}`
+- Storage key: `career:{careerId}:match-detail:{matchId}`
+- Serialization: Jackson2Json via ReactiveRedisTemplate (same pattern as existing RedisEntityConfig adapters)
+- `deleteByCareerId` implemented via KEYS pattern + bulk DELETE
+- `RedisEntityConfig` updated with `v24DetailedMatchDataRedisTemplate` bean
+- V24D4B did NOT modify: `V24DetailedMatchResult`, `V24MatchEvent`, `V24DetailedMatchEngine`, LeagueSimulator, SimulationConfig, MatchEngineImpl, or any production wiring
+- V24D4B tests: 13 tests (`V24DetailedMatchRedisAdapterTest`), all passing
+- V24 remains isolated — no API endpoint, no frontend, no production simulation wiring
+- Recommended next: V24D4C query endpoint behind feature flag, or V24D3C optional schema enrichment, or Phase 6C / Phase 11
