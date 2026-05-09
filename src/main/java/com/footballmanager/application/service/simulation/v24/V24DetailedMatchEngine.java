@@ -30,6 +30,7 @@ public class V24DetailedMatchEngine {
     private final V24DisciplineModel disciplineModel = new V24DisciplineModel();
     private final V24InjuryModel injuryModel = new V24InjuryModel();
     private final V24SubstitutionEngine substitutionEngine = new V24SubstitutionEngine();
+    private final V24AssistModel assistModel = new V24AssistModel();
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -250,8 +251,9 @@ public class V24DetailedMatchEngine {
         // Determine shot location
         V24ShotLocation location = selectShotLocation(possessor.style(), random);
 
-        // Get assist provider
-        var assistOpt = selector.selectAssistProvider(possessor.startingPlayers(), shooter);
+        // Get assist provider via V24AssistModel
+        var assistOpt = assistModel.selectAssistProvider(
+                possessor.startingPlayers(), shooter, null, possessor.style(), random);
         String assistPlayerId = assistOpt.map(V24PlayerMatchState::sessionPlayerId).orElse(null);
         String assistPlayerName = assistOpt.map(V24PlayerMatchState::name).orElse(null);
 
@@ -284,6 +286,9 @@ public class V24DetailedMatchEngine {
             isGoal = random.nextDouble() < (xg / 0.45); // scale: 0.45 xG = ~50% goal
             if (isGoal) {
                 possessor.addGoal();
+                String goalDesc = assistPlayerId != null
+                        ? "Goal by " + shooter.name() + " assisted by " + assistPlayerName + " " + minute + "'"
+                        : "Goal! " + shooter.name() + " " + minute + "'";
                 timeline.addEvent(new V24MatchEvent(
                         minute,
                         V24MatchEventType.GOAL,
@@ -293,7 +298,7 @@ public class V24DetailedMatchEngine {
                         assistPlayerId,
                         assistPlayerName,
                         Math.round(xg * 1000.0) / 1000.0,
-                        "Goal! " + shooter.name() + " " + minute + "'"
+                        goalDesc
                 ));
             }
         }
