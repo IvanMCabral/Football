@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `ab3c5fd` (feat: add V24 detailed match query endpoint — V24D4C)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C complete.
-**Test status:** 334 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C)
+**Latest commit:** `8470779` (feat: add V24 match context factory — V24D5A)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A complete.
+**Test status:** 354 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A)
 **Date:** 2026-05-09
 
 ---
@@ -116,8 +116,9 @@ public final class MatchQualityComputer {
 | `V24PlayerMatchStatsModelTest` | 14 | V24D4A: player stat bundle derivation from timeline, ratings, substitutions, determinism |
 | `V24DetailedMatchRedisAdapterTest` | 13 | V24D4B: Redis adapter save/find/delete, career isolation, serialization, key format, deletion |
 | `V24DetailedMatchQueryServiceTest` | 12 | V24D4C: feature-gated detail query service/controller, 404 disabled/missing, storage-only read |
+| `V24MatchContextFactoryTest` | 20 | V24D5A: context factory, starting XI resolution, bench derivation, style defaults, validation, canBuild |
 
-**Total: 334 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C)
+**Total: 354 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A)
 
 ---
 
@@ -373,7 +374,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, and V24D4A are complete. Recommended next: V24D4B Redis adapter behind feature flag, V24D4C API endpoint, V24D3C optional schema enrichment, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, V24D4A, V24D4B, V24D4C, and V24D5A are complete. Recommended next: V24D5B third LeagueSimulator path behind default-false flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -418,7 +419,7 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: V24D4B Redis adapter behind feature flag, V24D4C API endpoint, V24D3C optional schema enrichment, Phase 6C, or Phase 11**
+**Recommended next: V24D5B third LeagueSimulator path behind default-false flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:

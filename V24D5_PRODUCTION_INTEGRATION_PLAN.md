@@ -1,10 +1,10 @@
 # V24D5 — Production Integration Plan
 
-**Status:** PLANNING ONLY — No implementation until reviewed and approved
+**Status:** V24D5A COMPLETED — context factory added; production wiring still deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `ab3c5fd` (V24D4C complete)
-**Latest docs commit:** `d087b1d` (V24D4C docs updated)
-**Tests:** 334 total, 0 failures
+**Latest implementation commit:** `8470779` (V24D5A complete)
+**Latest docs commit:** `f1f5549` (V24D5 planning updated)
+**Tests:** 354 total, 0 failures
 **Created:** 2026-05-09
 
 ---
@@ -26,10 +26,11 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 
 | Item | Value |
 |------|-------|
-| Latest implementation commit | `ab3c5fd` (V24D4C complete) |
-| Latest docs commit | `d087b1d` |
-| Tests | 334 total, 0 failures |
+| Latest implementation commit | `8470779` (V24D5A complete) |
+| Latest docs commit | `f1f5549` |
+| Tests | 354 total, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — isolated, not called by production |
+| Context factory | `V24MatchContextFactory` — exists, not wired to production |
 | Redis adapter | `V24DetailedMatchRedisAdapter` — exists, not wired to simulation |
 | Storage port | `V24DetailedMatchStoragePort` — interface only |
 | Query service | `V24DetailedMatchQueryService` — read-only, feature-gated |
@@ -135,10 +136,10 @@ app:
 **Design questions:**
 | Question | Recommendation |
 |----------|----------------|
-| Missing lineup fallback? | Fall back to top-11 by OVR from player pool, log warning |
+| Missing lineup fallback? | V24D5A: missing lineup is invalid — build() throws IllegalArgumentException, canBuild() returns false. V24D5B: LeagueSimulator catches invalid context and falls back to V23/default path, log warning. Optional top-11 fallback considered later but not implemented in V24D5A. |
 | Missing bench? | Empty bench is acceptable for V24 |
 | Team style default? | `BALANCED` if not persisted |
-| Invalid context behavior? | Fall back to V23/default simulator, log warning |
+| Invalid context behavior? | V24D5A: build() throws IllegalArgumentException; canBuild() returns false. V24D5B: LeagueSimulator fallback to V23/default path, log warning. |
 
 ---
 
@@ -209,7 +210,7 @@ app:
 
 ### V24MatchContextFactoryTest
 - Builds context from valid career fixture
-- Missing lineup falls back to top-11 by OVR
+- Missing lineup is rejected by V24MatchContextFactory; build() throws IllegalArgumentException, canBuild() returns false
 - Invalid player IDs handled gracefully
 - Bench derivation excludes starters
 - Team style defaults to BALANCED
@@ -237,7 +238,7 @@ app:
 
 | Phase | Content | Risk | Dependency |
 |-------|---------|------|------------|
-| V24D5A | `V24MatchContextFactory` only — no LeagueSimulator wiring | LOW | V24D4C complete |
+| V24D5A | `V24MatchContextFactory` only — no LeagueSimulator wiring | LOW | V24D4C complete ✅ Completed |
 | V24D5B | Third LeagueSimulator path behind `use-v24-detailed-engine=false` | MEDIUM | V24D5A complete |
 | V24D5C | Detail persistence write behind `persist-detail=false` | MEDIUM | V24D5B complete |
 | V24D5D | End-to-end integration tests for all flag combinations | MEDIUM | V24D5C complete |
@@ -261,18 +262,46 @@ app:
 
 ---
 
+## V24D5A Completion Record
+
+**Commit:** `8470779` — `feat: add V24 match context factory`
+**Date:** 2026-05-09
+**Tests:** 20 new (`V24MatchContextFactoryTest`), 354 total, 0 failures
+**V24D5A delivered:**
+- `V24MatchContextFactory` — factory building `V24MatchContext` from `CareerSave`, `MatchFixture`, `SessionTeam` home/away, seed
+- `build(CareerSave, MatchFixture, SessionTeam, SessionTeam, long seed)` — primary API, styles default to `TeamStyle.BALANCED`
+- `buildWithStyles(CareerSave, MatchFixture, SessionTeam, SessionTeam, TeamStyle, TeamStyle, long seed)` — explicit styles overload
+- `canBuild(CareerSave, MatchFixture, SessionTeam, SessionTeam)` — returns false on validation failure, never throws
+- Starting XI resolved from `CareerSave.teamStarting11` keyed by `MatchFixture.homeTeamId`/`awayTeamId`
+- Each starter ID looked up via `CareerSave.getSessionPlayer(playerId)`
+- Bench derived from `CareerSave.getTeamSquad(teamId)` minus 11 starter IDs (may be empty)
+- Missing lineup does NOT fallback inside factory — build() throws IllegalArgumentException, canBuild() returns false
+- Invalid context throws in build()
+- Invalid context returns false in canBuild()
+- Production fallback to V23/default is deferred to V24D5B LeagueSimulator path
+- **No LeagueSimulator/SimulationConfig/MatchEngineImpl changes** — factory is isolated
+- **No API/controller/Redis adapter changes**
+- **No persistence writes** — read-only factory
+- **No runtime behavior change** — not called from production simulation
+- **V24MatchContext unchanged** — no field additions needed
+- **MatchFixture.MatchResultData unchanged**
+- **CareerSave schema unchanged**
+- **SessionPlayer/SessionTeam not mutated**
+- Regression gate: 354 tests, 0 failures
+
+---
+
 ## 14. Recommended Next Step
 
-**V24D5A — V24MatchContextFactory only, no production wiring.**
+**V24D5B — Third LeagueSimulator path behind `use-v24-detailed-engine=false` flag.**
 
 **Why:**
-- It is the missing safe bridge between existing `CareerSave` data and `V24DetailedMatchEngine`.
-- It can be **fully tested in isolation** without changing runtime behavior.
-- It does not activate V24 in any simulation path.
-- It prepares V24D5B but does not commit to it.
-- Its rollback is trivial — revert the commit, nothing changes in production.
+- V24D5A delivered the safe bridge (`V24MatchContextFactory`) — now wired as a third path.
+- V24D5B is the natural continuation — adds the flag and branch without enabling V24.
+- Production wiring is still behind a default-false flag — no accidental activation.
+- V24D5B enables isolated V24 simulation in dev for the first time.
 
-**V24D5A deliverable:** `V24MatchContextFactory` with comprehensive unit tests. No LeagueSimulator changes, no feature flag wiring, no API changes.
+**V24D5B deliverable:** LeagueSimulator branch with `use-v24-detailed-engine=false`, `V24MatchContextFactory.build(...)` call path, same `MatchResultDataAdapter.toMatchResultData()` for standings, no Redis persistence. Comprehensive path tests.
 
 ---
 
@@ -281,11 +310,11 @@ app:
 After any V24 change, the full regression gate:
 
 ```
-mvn test -Dtest=V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-**Expected:** 334 tests, 0 failures.
+**Expected:** 354 tests, 0 failures.
 
 ---
 
-*This document is the authoritative V24D5 production integration planning specification. No implementation begins until this document is reviewed and a specific V24D5 phase is approved.*
+*This document is the authoritative V24D5 production integration planning specification. V24D5A is complete. V24D5B implementation begins after approval.*

@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D4C COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C all delivered
-**Latest commit:** `ab3c5fd` (feat: add V24 detailed match query endpoint — V24D4C)
-**Tests:** 334 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C), 0 failures
+**Status:** V24D5A COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A all delivered
+**Latest commit:** `8470779` (feat: add V24 match context factory — V24D5A)
+**Tests:** 354 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A), 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -248,3 +248,15 @@
 - V24D4C tests: 12 tests (`V24DetailedMatchQueryServiceTest`), all passing
 - V24 remains isolated — no frontend, no production simulation wiring
 - Recommended next: V24D5 production integration planning, or V24D3C optional schema enrichment, or frontend match detail design, or Phase 6C / Phase 11
+
+**V24D5A is now COMPLETED** (commit `8470779`). V24D5A added V24MatchContextFactory:
+- `V24MatchContextFactory` — factory building `V24MatchContext` from `CareerSave`, `MatchFixture`, `SessionTeam` home/away, seed
+- `build(...)` — primary API, styles default to `TeamStyle.BALANCED`
+- `buildWithStyles(...)` — explicit TeamStyle overload
+- `canBuild(...)` — returns false on validation failure, never throws
+- Starting XI resolved from `CareerSave.teamStarting11` keyed by `MatchFixture.homeTeamId`/`awayTeamId`
+- Bench derived from `CareerSave.getTeamSquad(teamId)` minus starter IDs
+- V24D5A did NOT modify: LeagueSimulator, SimulationConfig, MatchEngineImpl, MatchFixture, CareerSave, SessionPlayer, SessionTeam, or any production wiring
+- V24D5A tests: 20 tests (`V24MatchContextFactoryTest`), all passing
+- V24 remains isolated — no production simulation wiring, no frontend
+- Recommended next: V24D5B third LeagueSimulator path behind default-false flag, or V24D3C optional schema enrichment, or frontend match detail design, or Phase 6C / Phase 11
