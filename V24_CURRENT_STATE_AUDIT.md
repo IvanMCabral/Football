@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24C COMPLETED — V24A/V24B/V24C all delivered
-**Latest commit:** `23d1806` (V24C4 complete)
-**Tests:** 200 total (112 V23 + 8 V24A + 22 V24B + 58 V24C), 0 failures
+**Status:** V24D1 COMPLETED — V24A/V24B/V24C/V24D1 all delivered
+**Latest commit:** `55f7638` (feat: add V24 formation parser — V24D1)
+**Tests:** 215 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1), 0 failures
 **Date:** 2026-05-08
 
 ---
@@ -172,4 +172,10 @@
 
 **V24B is now COMPLETED** (commit `b4735a8`). V24B extended the skeleton with minute-by-minute simulation: real shot/xG (multi-factor model), possession per minute (TeamStyle-weighted), real player attribution from SessionPlayer IDs, deterministic seed, stats consistency (goals=goalEvents, shots>=goals, possession=100). 22 new tests added. V24 remains isolated — no production wiring, no Redis/API/frontend changes.
 
-**Next: V24D** — persistence/API/UI integration planning or advanced match detail expansion.
+**V24D1 is now COMPLETED** (commit `55f7638`). V24D1 added formation parser and formation-aware shooter/assist selection:
+- `V24FormationParser` — parses formation strings, safe fallback to 4-4-2, rejects != 10 outfield players
+- `V24PlayerSelector` — new `selectShooter(List, String)` and `selectShooter(List, V24Formation)` overloads
+- V24D1 did NOT modify: `V24MatchContext`, `SessionTeam`, `LeagueSimulator`, or any production flow
+- V24D1 tests: 15 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
+- Recommended next: V24D2 — assist/key-pass model + event richness

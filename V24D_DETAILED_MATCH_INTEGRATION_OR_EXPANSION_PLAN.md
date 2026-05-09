@@ -1,9 +1,9 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** PLANNING — No code yet
+**Status:** V24D1 COMPLETED — V24A/V24B/V24C/V24D1 all delivered
 **Branch:** `mvp-1-performance-cleanup`
-**Created:** 2026-05-08
-**Latest baseline:** `f7cea50` (V24C docs complete, 200 tests)
+**Latest commit:** `55f7638` (feat: add V24 formation parser — V24D1)
+**Tests:** 215 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1), 0 failures
 
 ---
 
@@ -14,7 +14,7 @@
 - **No API/frontend changes without separate approval**
 - **V23 remains production-stable** — V24 is parallel
 - **V24 remains isolated** under `application/service/simulation/v24/` until explicitly wired
-- **200 tests are the regression gate** — all must pass after any V24D change
+- **215 tests are the regression gate** — all must pass after any V24D change
 - Red-carded players remain non-substitutable (V24C invariant, never removed)
 
 ---
@@ -30,8 +30,11 @@
 ### Complete (V24C)
 `V24FatigueModel` (per-minute drain + action drain + fatigue factor), `V24DisciplineModel` (modulated foul/yellow/red), `V24InjuryModel` (modulated injury probability), `V24SubstitutionEngine` (priority-based, max 5, same-position preference, duplicate prevention).
 
+### Complete (V24D1)
+`V24FormationParser` (formation parsing, safe fallback to 4-4-2), `V24PlayerSelector` formation-aware selection, `V24FormationParserTest` (15 tests). All 215 regression tests pass.
+
 ### Still Limited
-- No formation parsing or tactical role weighting beyond `TeamStyle` enum
+- Formation parsing and tactical role weighting are now available from V24D1; remaining realism gaps are assist/key-pass logic, shot coordinates, richer event chains, player ratings, set pieces, stoppage time, and persistence/API integration.
 - No assist/key-pass as first-class event logic
 - No shot coordinates/shot map
 - No goalkeeper save quality detail beyond xG
@@ -141,12 +144,11 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 ## 7. Formation/Tactics Gap
 
 - `TeamStyle` is consumed (ATTACKING, DEFENSIVE, COUNTER, POSSESSION, BALANCED)
-- Formation is a `String` (e.g., "4-3-3", "3-5-2") — no parser
-- No position mapping: GK/DEF/MID/WINGER/ATT roles only
-- No tactical instructions: pressing intensity, build-up speed, risk appetite
-- No width/height/lineheight settings
-
-**Potential isolated improvement:** Formation parser that maps "4-3-3" to position slots and weights shooter selection by role.
+- Formation strings are now parsed by `V24FormationParser` (V24D1).
+- `V24PlayerSelector` now has formation-aware shooter/assist selection.
+- V24D1 does not persist formation or team style; it only consumes existing formation strings.
+- No pressing intensity, build-up speed, risk appetite, width/height/line settings.
+- Formation affects selection weights, but not yet full tactical behavior or possession-chain logic.
 
 ---
 
@@ -172,23 +174,23 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 ### Option A — Keep V24 Isolated, Improve Realism
 
-**Description:** Add formation parser, tactical role weighting, assist/key-pass events, shot coordinates, player ratings, and event richness — all inside the isolated package.
+**Description:** Continue isolated V24 realism after V24D1: assist/key-pass events, shot coordinates, player ratings, set-piece detail, event richness, and possession-chain improvements — all inside the isolated package.
 
-**Files:** `V24FormationParser.java`, `V24AssistModel.java`, `V24ShotCoordinates.java`, `V24PlayerRatings.java`
+**Files:** `V24AssistModel.java`, `V24ShotCoordinates.java`, `V24PlayerRatings.java`
 
 **Risk:** LOW — no production touch
 
-**Pros:** Improves V24 quality without any integration risk; can be validated with 200-test regression gate; no career/API/Redis decisions needed.
+**Pros:** Improves V24 quality without any integration risk; can be validated with 215-test regression gate; no career/API/Redis decisions needed.
 
 **Cons:** Results remain accessible only via test or direct engine call.
 
-**Tests:** New unit tests for each helper; existing 200 remain regression gate.
+**Tests:** New unit tests for each helper; existing 215 remain regression gate.
 
 **Rollback:** `git checkout HEAD~1 -- src/main/java/.../simulation/v24/`
 
 **Production touch:** No. **Redis/API/Frontend:** No.
 
-**Recommendation:** YES — recommended path for V24D1.
+**Recommendation:** YES — recommended path for V24D2 and later isolated V24 expansion.
 
 ---
 
@@ -270,25 +272,25 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 ## 10. Recommended V24D Path
 
-**V24D is a planning-only phase.** No production wiring yet.
-
 ### Recommended Sequence
 
-**V24D1 (Isolated Expansion — Implementation)**
+**V24D1 (Isolated Expansion — Completed)**
 Formation parser + tactical role weighting inside isolated V24.
-- Add `V24FormationParser` — parses "4-3-3" into position slots
+- Add `V24FormationParser` — parses formation strings into position slots
 - Add role-weighted shooter selection by formation slot
-- Tests: `V24FormationParserTest`, existing 200 as regression gate
+- Tests: `V24FormationParserTest` (15 tests)
 - Risk: LOW
 - Files: `V24FormationParser.java`, `V24PlayerSelector` update
+- **Status: COMPLETED** — commit `55f7638`
 
-**V24D2 (Isolated Expansion — Implementation)**
+**V24D2 (Isolated Expansion — Next)**
 Assist and key-pass model + event richness.
 - Add `V24AssistModel` — first-class assist probability after shot
 - Add shot coordinates to V24MatchEvent
 - Add player ratings (per-match score) to V24PlayerMatchState
 - Tests: `V24AssistModelTest`, `V24PlayerRatingsTest`
 - Risk: LOW
+- Recommended next step
 
 **V24D3 (Storage/API Design — Docs Only)**
 Detailed result storage design and API/frontend DTO design.
@@ -302,20 +304,47 @@ Feature-flagged V24 path in LeagueSimulator, only after storage design is approv
 
 ---
 
-## 11. V24D1 Specification (Next Implementation)
+## 11. V24D1 Completion Record
+
+**Commit:** `55f7638` — feat: add V24 formation parser (V24D1)
+**Date:** 2026-05-08
+**Tests:** 15 new (`V24FormationParserTest`), 215 total, 0 failures
+**V24D1 delivered:**
+- `V24FormationParser` — parses "4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "5-4-1"
+- Safe fallback to "4-4-2" for null/blank/invalid input
+- Rejects formations with != 10 outfield players
+- `V24PlayerSelector` — formation-aware `selectShooter(List, String)` and `selectShooter(List, V24Formation)` overloads
+- Original `selectShooter(List)` preserved for backward compatibility
+- **No V24MatchContext modification**
+- **No persisted team style added**
+- **No SessionTeam modification**
+- **No production wiring**
+- **No Redis/API/frontend changes**
+- Regression gate: 215 tests, 0 failures
+
+**V24D1 did NOT add:**
+- No production integration (LeagueSimulator unchanged)
+- No Redis schema changes
+- No V24MatchContext modification
+- No SessionTeam.style field
+- No API/frontend changes
+
+---
+
+## 12. V24D1 Specification (Archive)
 
 **Goal:** Formation parser + tactical role weighting for isolated V24.
 
 **Files Likely Affected:**
 - New: `V24FormationParser.java`
 - Modify: `V24PlayerSelector.java` (role-weighted selection)
-- New: `V24FormationTest.java`
+- New: `V24FormationParserTest.java`
 
 **Non-Goals:** No production wiring, no Redis, no API, no frontend. V24D1 must not add a persisted team style field or modify `SessionTeam.style`.
 
 **Risk:** LOW — isolated, additive, test-covered.
 
-**Tests:** `V24FormationParserTest` (~5 tests), 200 existing as regression gate.
+**Tests:** `V24FormationParserTest` (15 tests), 215 total regression gate.
 
 **Rollback:**
 ```bash
@@ -325,15 +354,15 @@ git checkout HEAD~1 -- src/main/java/.../simulation/v24/V24PlayerSelector.java
 
 ---
 
-## 12. Regression Command
+## 13. Regression Command
 
 After any V24D change, the full regression gate:
 
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,V24FormationParserTest
 ```
 
-Expected: **200 tests, 0 failures**.
+Expected: **215 tests, 0 failures**.
 
 ---
 

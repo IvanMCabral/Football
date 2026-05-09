@@ -1,8 +1,8 @@
 # V23 Engine Evolution Roadmap
 
 **Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed
-**Current baseline commit:** `23d1806` (V24C complete)
-**Tests:** 200 relevant tests, 0 failures
+**Current baseline commit:** `55f7638` (V24D1 complete)
+**Tests:** 215 relevant tests, 0 failures
 **Date:** 2026-05-08
 
 ---
@@ -17,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `23d1806`
-**Tests:** 200 relevant tests, 0 failures
+**Commit:** `55f7638`
+**Tests:** 215 relevant tests, 0 failures
 
 ### What exists
 
@@ -652,14 +652,15 @@ If Phase 9 is approved in the future, it should start with a separate planning d
 
 ## Recommended Next Phase: V24D Planning, Phase 6C, or Phase 11
 
-Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, Phase 10C3, Phase 10C4, V24A, V24B, and V24C are complete:
+Phase 6A, Phase 6B, Phase 10C1, Phase 10C2, Phase 10C3, Phase 10C4, V24A, V24B, V24C, and V24D1 are complete:
 - `TeamStyle` enum exists (BALANCED, ATTACKING, DEFENSIVE, COUNTER, POSSESSION)
 - MatchQualityComputer style-aware overload exists
 - `simulateWithStyle()` and `simulateWithStrength()` exist in `MatchEngineImpl`
 - LeagueSimulator has optional V23 engine path behind `useV23LeagueEngine` flag (default: `false`)
 - V24C completed: fatigue, cards, injuries, substitutions (commits `03148d5`/`c4aba73`/`ad72536`/`23d1806`)
-- `V24FatigueModel`, `V24DisciplineModel`, `V24InjuryModel`, `V24SubstitutionEngine` all delivered and tested
-- 200 tests pass (112 V23 + 8 V24A + 22 V24B + 58 V24C)
+- V24FatigueModel, V24DisciplineModel, V24InjuryModel, V24SubstitutionEngine all delivered and tested
+- V24D1 completed: formation parser + tactical role weighting (commit `55f7638`)
+- 215 tests pass (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1)
 
 **Phase 6C — User-configurable tactical styles**
 Make tactical style available to real career teams via SessionTeam/API/frontend.
@@ -682,14 +683,28 @@ Continue V24 detailed engine development after V24B:
 - Risk: LOW/MEDIUM for V24C — still isolated package, no production integration
 - Commits: `03148d5`/`c4aba73`/`ad72536`/`23d1806`
 
-**V24D — Persistence/API/UI integration planning or advanced match detail expansion**
-Plan next steps for V24 after V24C completion.
+**V24D1 — Formation parser and tactical role weighting (Completed)**
+Formation parser + tactical role weighting for isolated V24:
+- V24FormationParser: parses "4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "5-4-1", safe fallback to "4-4-2"
+- V24PlayerSelector: formation-aware `selectShooter(List, String)` and `selectShooter(List, V24Formation)` overloads
+- Original `selectShooter(List)` preserved for backward compatibility
+- V24FormationParserTest: 15 tests
+- Risk: LOW — isolated package, no production integration
+- Commit: `55f7638`
+- Did NOT modify: V24MatchContext, SessionTeam, LeagueSimulator, or any production flow
+
+**V24D2 — Assist and key-pass model + event richness (Recommended next)**
+- Add `V24AssistModel` — first-class assist probability after shot
+- Add shot coordinates to V24MatchEvent
+- Add player ratings (per-match score) to V24PlayerMatchState
+- Tests: `V24AssistModelTest`, `V24PlayerRatingsTest`
+- Risk: LOW
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest
+mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,V24FormationParserTest
 ```
-Expected: 200 tests, 0 failures.
+Expected: 215 tests, 0 failures.
 ---
 
 ## Phase Implementation Order
@@ -726,7 +741,7 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24A | Detailed engine model skeleton + deterministic engine | LOW | 1 | Completed |
 | V24B | Minute-by-minute event timeline with real xG and player attribution | LOW | 2 | Completed |
 | V24C | Fatigue, cards, injuries, and substitutions | LOW/MEDIUM | 3 | Completed |
-| V24D | Persistence/API/UI integration planning or advanced match detail expansion | MEDIUM | 4 | Pending |
+| V24D | Persistence/API/UI integration planning or advanced match detail expansion | MEDIUM | 4 | Active — V24D1 done, V24D2 next |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
 
