@@ -1,9 +1,9 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D2 COMPLETED — V24A/V24B/V24C/V24D1/V24D2 all delivered
+**Status:** V24D3A/V24D3B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B all delivered
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `1149c0b` (feat: add V24 assist model — V24D2)
-**Tests:** 237 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2), 0 failures
+**Latest implementation commit:** `09b89b2` (feat: add V24 player rating model — V24D3B)
+**Tests:** 285 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures
 
 ---
 
@@ -14,7 +14,7 @@
 - **No API/frontend changes without separate approval**
 - **V23 remains production-stable** — V24 is parallel
 - **V24 remains isolated** under `application/service/simulation/v24/` until explicitly wired
-- **237 tests are the regression gate** — all must pass after any V24D change
+- **285 tests are the regression gate** — all must pass after any V24D change
 - Red-carded players remain non-substitutable (V24C invariant, never removed)
 
 ---
@@ -31,20 +31,26 @@
 `V24FatigueModel` (per-minute drain + action drain + fatigue factor), `V24DisciplineModel` (modulated foul/yellow/red), `V24InjuryModel` (modulated injury probability), `V24SubstitutionEngine` (priority-based, max 5, same-position preference, duplicate prevention).
 
 ### Complete (V24D1)
-`V24FormationParser` (formation parsing, safe fallback to 4-4-2), `V24PlayerSelector` formation-aware selection, `V24FormationParserTest` (15 tests). All 237 regression tests pass.
+`V24FormationParser` (formation parsing, safe fallback to 4-4-2), `V24PlayerSelector` formation-aware selection, `V24FormationParserTest` (15 tests). All 285 regression tests pass.
 
 ### Complete (V24D2)
 `V24AssistModel` — pure function assist/key-pass provider selection with formation/style/stamina modifiers.
 
+### Complete (V24D3A)
+`V24ShotCoordinate` (immutable value object), `V24ShotCoordinateGenerator` (deterministic, uses passed Random), `V24ShotCoordinateTest` (17 tests). Coordinate system with pitch bounds, distance/angle to goal, insideBox flag. No event/result schema change. No xG recalibration.
+
+### Complete (V24D3B)
+`V24PlayerRatingModel` (pure helper), `V24PlayerRatingModelTest` (31 tests). Rating from timeline: base 6.0, goal +0.8, assist +0.5, key-pass +0.30, shot +0.10 (high-xg +0.05), cards -0.3/-1.5, injury -0.2, foul -0.05, substitution-in +0.05. Clamped [1.0, 10.0]. Helper-only, no result schema change.
+
 ### Still Limited
-- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; remaining realism gaps are shot coordinates, richer event chains, player ratings, set pieces, stoppage time, and persistence/API integration.
+- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates are now available from V24D3A (helper only, no event attachment); player ratings are now available from V24D3B (helper only, no result field); remaining realism gaps are event-level coordinate attachment, result-level ratings attachment, set pieces, stoppage time, and persistence/API integration.
 - ~~No assist/key-pass as first-class event logic~~
-- No shot coordinates/shot map
+- Shot coordinate helper exists (V24D3A) but no V24MatchEvent attachment and no UI shot map yet
+- Player rating helper exists (V24D3B) but no V24DetailedMatchResult field and no API/frontend yet
 - No goalkeeper save quality detail beyond xG
 - No corner/free kick/penalty model beyond existing chance creation
 - No stoppage time or extra time
 - No team morale or player form post-match
-- No detailed player ratings
 - No ball possession chains, pass/cross/dribble/turnover
 - No weather/home advantage/referee profile
 - `V24PlayerMatchState` stores only OVR-derived fields; no actual SessionPlayer mutation (correct for isolated design)
@@ -183,17 +189,17 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 **Risk:** LOW — no production touch
 
-**Pros:** Improves V24 quality without any integration risk; can be validated with 237-test regression gate; no career/API/Redis decisions needed.
+**Pros:** Improves V24 quality without any integration risk; can be validated with 285-test regression gate; no career/API/Redis decisions needed.
 
 **Cons:** Results remain accessible only via test or direct engine call.
 
-**Tests:** New unit tests for each helper; existing 237 remain regression gate.
+**Tests:** New unit tests for each helper; existing 285 remain regression gate.
 
 **Rollback:** `git checkout HEAD~1 -- src/main/java/.../simulation/v24/`
 
 **Production touch:** No. **Redis/API/Frontend:** No.
 
-**Recommendation:** YES — recommended path for V24D2 and later isolated V24 expansion.
+**Recommendation:** YES — recommended path for V24D3C optional schema enrichment and later isolated V24 expansion.
 
 ---
 
@@ -298,13 +304,8 @@ Assist and key-pass model + event richness.
 - Risk: LOW
 - **Status: COMPLETED** — commit `1149c0b`
 
-**V24D3 (Isolated Expansion — Recommended next)**
-Shot coordinates, player ratings, or storage/API design.
-- Add shot coordinates to V24MatchEvent
-- Add player ratings (per-match score) to V24PlayerMatchState
-- Or storage/API design documentation (Option B/D from V24D plan)
-- Risk: LOW
-- Recommended next step
+**V24D3 (Isolated Expansion — ✅ COMPLETED)**
+Shot coordinates (V24D3A) and player ratings helper (V24D3B) delivered. Both remain helper-only — no event/result schema change. V24D3C (optional schema enrichment) deferred. Recommended next: V24D4 (Storage/API design) or Phase 6C.
 
 **V24D4 (Storage/API Design — Docs Only)**
 Detailed result storage design and API/frontend DTO design.
@@ -349,7 +350,7 @@ Feature-flagged V24 path in LeagueSimulator, only after storage/API design is ap
 
 **Commit:** `1149c0b` — feat: add V24 assist model (V24D2)
 **Date:** 2026-05-08
-**Tests:** 22 new (`V24AssistModelTest`), 237 total, 0 failures
+**Tests:** 22 new (`V24AssistModelTest`), 237 total at V24D2 completion, 0 failures
 **V24D2 delivered:**
 - `V24AssistModel` — pure function assist/key-pass provider selection
 - `selectAssistProvider(candidates, shooter, formation, style, random)` — formation-aware weighted selection
@@ -366,7 +367,7 @@ Feature-flagged V24 path in LeagueSimulator, only after storage/API design is ap
 - **V24MatchContext unchanged**
 - **No production wiring**
 - **No Redis/API/frontend changes**
-- Regression gate: 237 tests, 0 failures
+- Regression gate at V24D2 completion: 237 tests, 0 failures
 
 **V24D2 did NOT add:**
 - No production integration (LeagueSimulator unchanged)
@@ -406,10 +407,10 @@ git checkout HEAD~1 -- src/main/java/.../simulation/v24/V24PlayerSelector.java
 After any V24D change, the full regression gate:
 
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,V24FormationParserTest,V24AssistModelTest
+mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-Expected: **237 tests, 0 failures**.
+Expected: **285 tests (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures**.
 
 ---
 
@@ -430,7 +431,7 @@ Expected: **237 tests, 0 failures**.
 
 **Risk:** LOW — isolated, additive, test-covered.
 
-**Tests:** `V24AssistModelTest` (22 tests), 237 total regression gate.
+**Tests:** `V24AssistModelTest` (22 tests), 237 total regression gate at V24D2 completion.
 
 **Rollback:**
 ```bash

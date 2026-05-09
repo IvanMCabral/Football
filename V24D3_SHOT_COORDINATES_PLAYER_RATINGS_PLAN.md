@@ -1,10 +1,15 @@
 # V24D3 — Shot Coordinates + Player Ratings Planning
 
-**Status:** PLANNING ONLY — No code implementation until plan is reviewed and approved
+**Status:** V24D3A/V24D3B COMPLETED — schema enrichment deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-08
 **Parent commit:** `72c40d7` (docs: update engine docs after V24D2 completion)
-**Tests:** 237 baseline, 0 failures
+**Latest implementation commit:** `09b89b2` (feat: add V24 player rating model)
+**Tests:** 285 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures
+
+---
+
+> **Note:** This document now serves as both the original V24D3 plan and the completion record for V24D3A/V24D3B. Sections describing pre-implementation limitations are retained as historical planning context unless explicitly marked as current.
 
 ---
 
@@ -80,16 +85,16 @@ String summary;
 
 ## 2. Current Limitations
 
-| Gap | Impact |
-|-----|--------|
-| No x/y coordinates | No shot map UI possible |
-| V24ShotLocation is categorical | Cannot compute distance/angle to goal |
-| No shot angle/distance | xG cannot use physical proximity modifier |
-| No goalkeeper save event quality | Saves are binary per xG threshold |
-| No per-match player rating | Cannot rank player performance post-match |
-| No rating contribution tracking | No assist/goal/skill contribution scoring |
-| No per-player stat summary | No Map<playerId, statBundle> in result |
-| V24DetailedMatchResult is summary-only | Ratings would need new result field or helper |
+| Gap | Impact | Status |
+|-----|--------|--------|
+| No x/y coordinates | No shot map UI possible | **Helper exists (V24D3A) — not attached to event, no UI yet** |
+| V24ShotLocation is categorical | Cannot compute distance/angle to goal | **Distance/angle computed by V24ShotCoordinate — not used for xG recalibration** |
+| No shot angle/distance | xG cannot use physical proximity modifier | **Distance/angle available via V24ShotCoordinate — xG unchanged per plan** |
+| No goalkeeper save event quality | Saves are binary per xG threshold | Still limited |
+| No per-match player rating | Cannot rank player performance post-match | **Helper exists (V24D3B) — not attached to result, no API/frontend yet** |
+| No rating contribution tracking | No assist/goal/skill contribution scoring | **Logic exists in V24PlayerRatingModel — no result map persisted** |
+| No per-player stat summary | No Map<playerId, statBundle> in result | Still limited |
+| V24DetailedMatchResult is summary-only | Ratings would need new result field or helper | Still limited — schema enrichment deferred to V24D3C |
 
 ---
 
@@ -216,7 +221,7 @@ Coordinates are descriptive metadata only. Existing xG formula unchanged.
 double distMod = 1.0 - (distanceToGoal / 100.0) * 0.15; // up to -15% for long shots
 double xgModified = xg * distMod;
 ```
-**Risk:** MEDIUM — changes xG distribution. Requires revalidation against 237 tests.
+**Risk:** MEDIUM — changes xG distribution. Requires revalidation against 285 tests.
 
 **Recommendation:** Use X1 for V24D3A. Coordinate modifier can be explored in V24D3B if time permits.
 
@@ -319,7 +324,7 @@ private final Map<String, Double> playerRatings; // playerId → rating
 - `shotsContributeSmallBonus`: shots without goals add small value
 
 ### Integration Tests
-- `V24DetailedMatchEngineStillDeterministic`: existing 237-test regression gate must pass
+- `V24DetailedMatchEngineStillDeterministic`: existing 285-test regression gate must pass
 - `V24TimelineConsistencyTestStillPasses`: no stat consistency regressions
 
 ---
@@ -340,26 +345,27 @@ private final Map<String, Double> playerRatings; // playerId → rating
 
 ## 11. Recommended V24D3 Split
 
-### V24D3A — Shot Coordinates (Isolated, Low Risk)
+### V24D3A — Shot Coordinates (Isolated, Low Risk) ✅ COMPLETED
 - `V24ShotCoordinate` value object
 - `V24ShotCoordinateGenerator` (uses passed Random)
 - Coordinates stay internal to engine or attach to `V24ShotQuality` only
 - Do NOT change `V24MatchEvent` schema yet
-- 10 new tests (`V24ShotCoordinateTest`)
+- 17 new tests (`V24ShotCoordinateTest`) — commit `9a632c4`
 
-### V24D3B — Player Ratings Helper (Isolated, Low Risk)
+### V24D3B — Player Ratings Helper (Isolated, Low Risk) ✅ COMPLETED
 - `V24PlayerRatingModel` helper
 - Rating computation from `V24MatchTimeline`
 - Helper only — no result schema change
-- 12 new tests (`V24PlayerRatingModelTest`)
+- 31 new tests (`V24PlayerRatingModelTest`) — commit `09b89b2`
 
-### V24D3C — Event/Result Schema Enrichment (Optional, Medium Risk)
+### V24D3C — Event/Result Schema Enrichment (Optional, Medium Risk) ⏸ Deferred
 - If V24D3A proves safe: add optional `shotCoordinate` to `V24MatchEvent`
 - If V24D3B proves valuable: add optional `playerRatings` to `V24DetailedMatchResult`
 - Requires careful test updates
 - Document decision at V24D3A/B completion
+- Recommended only if schema enrichment proves clearly beneficial
 
-### V24D3D — Documentation Update
+### V24D3D — Documentation Update ✅ COMPLETED (this update)
 - Update V24D plan to reflect V24D3A/B completion
 - Mark recommended next: V24D4 (Storage/API design) or Phase 6C
 
@@ -376,27 +382,27 @@ private final Map<String, Double> playerRatings; // playerId → rating
 - **No SessionTeam mutation**
 - **No V24MatchContext modification**
 - **V24MatchEvent schema change only if V24D3A/B explicitly decides it is safe**
-- **Existing 237 tests are the regression gate** — all must pass after any V24D3 change
+- **Existing 285 tests are the regression gate** — all must pass after any V24D3 change
 
 ---
 
 ## 13. Required Regression Command
 
 ```
-mvn test -Dtest=V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
 
-**Expected:** 237 tests + new V24D3A/B tests, 0 failures total.
+**Expected:** 285 tests (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures.
 
 ---
 
-## 14. Decision Points Before Code Implementation
+## 14. Decision Points (Historical — V24D3A/V24D3B Completed)
 
-1. **V24MatchEvent schema change?** — Decide before V24D3A coding begins. Safe default: no change until V24D3C.
-2. **V24DetailedMatchResult playerRatings field?** — Decide before V24D3B coding begins. Safe default: helper-only (R1) until V24D3C.
-3. **Coordinate attachment point?** — Options: internal-only (SA-2), V24ShotQuality metadata, or V24MatchEvent optional field (EV-1).
-4. **xG coordinate modifier?** — Defer to V24D3B or V24D3C if at all. Safe default: X1 (no formula change).
-5. **V24D3C needed?** — Only if V24D3A/B reveal that schema enrichment is clearly beneficial.
+1. **V24MatchEvent schema change?** — Decided: no change. V24D3A kept coordinates helper-only. V24D3B kept ratings helper-only. V24D3C may revisit if schema enrichment proves clearly beneficial.
+2. **V24DetailedMatchResult playerRatings field?** — Decided: no change. Helper-only (R1) confirmed by V24D3B. V24D3C may revisit.
+3. **Coordinate attachment point?** — Decided: internal-only for V24D3A. V24D3C may promote to EV-1 if beneficial.
+4. **xG coordinate modifier?** — Decided: X1 (no formula change). V24ShotCoordinate exists as metadata only. xG unchanged.
+5. **V24D3C needed?** — Deferred. Only if V24D3A/B reveal that schema enrichment is clearly beneficial. V24D3C is Optional/Deferred.
 
 ---
 
@@ -414,6 +420,54 @@ mvn test -Dtest=V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineT
 | `V24PlayerRatingModelTest.java` | New — 12 tests | NONE |
 
 **Non-Goals:** No V24PlayerMatchState mutation, no SessionPlayer mutation, no SessionTeam changes.
+
+---
+
+## V24D3A Completion Record
+
+**Commit:** `9a632c4` — `feat: add V24 shot coordinates`
+**Date:** 2026-05-08
+**Tests:** 17 new (`V24ShotCoordinateTest`), 254 total (before V24D3B), 0 failures
+**V24D3A delivered:**
+- `V24ShotCoordinate` — immutable value object (x, y, location, distanceToGoal, angleToGoal, insideBox)
+- `V24ShotCoordinateGenerator` — deterministic generator using passed Random
+- Coordinate ranges per V24ShotLocation: SIX_YARD_BOX, PENALTY_AREA_CENTER, PENALTY_AREA_WIDE, OUTSIDE_BOX, LONG_RANGE
+- Pitch coordinate system: x ∈ [0,100], y ∈ [0,100], goal center at (100, 50)
+- `penalty(Random)` method for penalty kick coordinates
+- All derived values computed on construction (no external state, no randomness)
+- **No V24MatchEvent schema change**
+- **No V24DetailedMatchResult schema change**
+- **No xG formula change**
+- Regression gate: 254 tests, 0 failures
+
+---
+
+## V24D3B Completion Record
+
+**Commit:** `09b89b2` — `feat: add V24 player rating model`
+**Date:** 2026-05-08
+**Tests:** 31 new (`V24PlayerRatingModelTest`), 285 total, 0 failures
+**V24D3B delivered:**
+- `V24PlayerRatingModel` — pure helper, no mutable state, no Random
+- `computePlayerRating(playerId, timeline)` → double
+- `computeRatings(playerIds, timeline)` → Map<String, Double>
+- `clampRating(double)` → [1.0, 10.0]
+- Base rating: 6.0
+- Goal bonus: +0.8 (scorer via playerId on GOAL)
+- Assist bonus: +0.5 (provider via relatedPlayerId on GOAL)
+- Key-pass bonus: +0.30 (provider via relatedPlayerId on SHOT)
+- Shot bonus: +0.10 per SHOT; +0.05 extra if xG >= 0.30
+- Yellow card: -0.3 per YELLOW_CARD
+- Red card: -1.5 per RED_CARD
+- Injury: -0.2 per INJURY
+- Foul: -0.05 per FOUL
+- Substitution incoming: +0.05 (relatedPlayerId on SUBSTITUTION)
+- Deterministic from same timeline — no randomness
+- **No V24DetailedMatchResult schema change**
+- **No V24PlayerMatchState rating field**
+- **No V24MatchEvent schema change**
+- **No SessionPlayer mutation**
+- Regression gate: 285 tests, 0 failures
 
 ---
 

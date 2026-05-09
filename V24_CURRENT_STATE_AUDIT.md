@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D2 COMPLETED — V24A/V24B/V24C/V24D1/V24D2 all delivered
-**Latest commit:** `1149c0b` (feat: add V24 assist model — V24D2)
-**Tests:** 237 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2), 0 failures
+**Status:** V24D3A/V24D3B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B all delivered
+**Latest commit:** `09b89b2` (feat: add V24 player rating model — V24D3B)
+**Tests:** 285 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures
 **Date:** 2026-05-08
 
 ---
@@ -192,4 +192,24 @@
 - V24D2 did NOT modify: `V24MatchEvent`, `V24PlayerSelector`, `V24MatchContext`
 - V24D2 tests: 22 tests, all passing
 - V24 remains isolated — no production wiring, no Redis/API/frontend changes
-- Recommended next: V24D3 — shot coordinates, player ratings, or storage/API design
+- Recommended next: V24D3A/V24D3B — shot coordinates and player ratings helpers
+
+**V24D3A is now COMPLETED** (commit `9a632c4`). V24D3A added shot coordinate helpers:
+- `V24ShotCoordinate` — immutable value object (x, y, location, distanceToGoal, angleToGoal, insideBox)
+- `V24ShotCoordinateGenerator` — deterministic generator using passed Random
+- Coordinate ranges per V24ShotLocation: SIX_YARD_BOX, PENALTY_AREA_CENTER, PENALTY_AREA_WIDE, OUTSIDE_BOX, LONG_RANGE
+- Pitch coordinate system: x ∈ [0,100], y ∈ [0,100], goal center at (100, 50)
+- `penalty(Random)` method for penalty kick coordinates
+- V24D3A did NOT modify: `V24MatchEvent`, `V24DetailedMatchResult`, or xG formula
+- V24D3A tests: 17 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
+
+**V24D3B is now COMPLETED** (commit `09b89b2`). V24D3B added player rating helper:
+- `V24PlayerRatingModel` — pure helper, no mutable state, no Random
+- `computePlayerRating(playerId, timeline)` → double; `computeRatings(Collection, timeline)` → Map
+- `clampRating(double)` → [1.0, 10.0]
+- Rating rules: base 6.0, goal +0.8, assist +0.5, key-pass +0.30, shot +0.10 (high-xg +0.05), yellow -0.3, red -1.5, injury -0.2, foul -0.05, substitution-in +0.05
+- V24D3B did NOT modify: `V24DetailedMatchResult`, `V24PlayerMatchState`, `V24MatchEvent`, or SessionPlayer
+- V24D3B tests: 31 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
+- Recommended next: V24D3C optional schema enrichment or V24D4 storage/API design

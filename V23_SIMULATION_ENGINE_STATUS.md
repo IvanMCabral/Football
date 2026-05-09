@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `1149c0b` (feat: add V24 assist model — V24D2)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete
-**Test status:** 237 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2)
+**Latest commit:** `09b89b2` (feat: add V24 player rating model — V24D3B)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B complete.
+**Test status:** 285 tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B)
 **Date:** 2026-05-08
 
 ---
@@ -110,8 +110,10 @@ public final class MatchQualityComputer {
 | `V24SubstitutionEngineTest` | 14 | V24C4: substitution priority, max 5, position preference, duplicate prevention, red-card exclusion |
 | `V24FormationParserTest` | 15 | V24D1: formation parsing, safe fallback, formation-aware shooter/assist selection |
 | `V24AssistModelTest` | 22 | V24D2: assist/key-pass selection, formation/style/stamina modifiers, eligibility, clamping, determinism |
+| `V24ShotCoordinateTest` | 17 | V24D3A: shot coordinate value object, deterministic generator, pitch bounds, distance/angle, insideBox |
+| `V24PlayerRatingModelTest` | 31 | V24D3B: rating helper, goals/assists/key passes/shots/cards/injuries/fouls/subs, clamping, determinism |
 
-**Total: 237 tests, 0 failures** (V24D2 added 22 tests: V24AssistModelTest; 237 total: 112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2)
+**Total: 285 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B)
 
 ---
 
@@ -367,7 +369,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, and V24D1 are complete. Recommended next: V24D2, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, and V24D3B are complete. Recommended next: V24D3C optional schema enrichment, V24D4 storage/API design, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -412,7 +414,7 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: V24D2, Phase 6C, or Phase 11**
+**Recommended next: V24D3C optional schema enrichment, V24D4 storage/API design, Phase 6C, or Phase 11**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -428,13 +430,9 @@ Built on isolated V24A skeleton (commit `b4735a8`):
 - No production wiring
 - No Redis/API/frontend changes
 
-**V24C — Fatigue, cards, injuries, and substitutions**
-Build on V24B timeline (isolated, no production wiring unless separately approved):
-- Stamina drain affecting player performance
-- Yellow/red card events
-- Injury events
-- Substitution logic for tired/injured/carded players
-- No Redis/API/frontend changes unless separately approved
+**V24C — Fatigue, cards, injuries, and substitutions** ✅ COMPLETED (commits `03148d5`, `c4aba73`, `ad72536`, `23d1806`)
+
+See Section 15 for the completed V24C delivery record. V24C is not future work — it has been implemented and tested.
 
 **Phase 9 — Future Advanced Engine (V32/V33)**
 V32 is specification-only. V33 is on a separate experiment branch.
@@ -442,15 +440,15 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,V24FormationParserTest,V24AssistModelTest
+mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
-Expected: 237 tests, 0 failures.
+Expected: 285 tests, 0 failures.
 
 ---
 
 ## 23. Summary
 
-V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 215 relevant tests pass (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1). Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C3 complete — `useV23LeagueEngine` externalized via `SimulationConfig`. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. V24D planning, Phase 6C (tactical styles), and Phase 11 (frontend xG display) are the recommended next phases. V24A is also available as a parallel evolution line (see Section 24).
+V23 simulation engine is **implemented, tested, and stable**. Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 are complete. `MatchQualityComputer` and `MatchQualityMetrics` are available as shared utilities. `TeamStyle` enum exists for tactical style computation. Shot model is aligned with lambda/xG/goals. Role-based scorer attribution is in place. xG is now exposed in fixture API DTOs (MatchInfo, LeagueMatchInfo) as nullable fields. Comprehensive quality gate is established. All 285 relevant tests pass (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B). Experimental `simulateWithStyle()` and `simulateWithStrength()` methods exist in `MatchEngineImpl` for style-aware and strength-aware simulation; normal simulation path unchanged. No changes to production API, persistence, or frontend. Phase 10C3 complete — `useV23LeagueEngine` externalized via `SimulationConfig`. Phase 10C4 complete — LeagueSimulator dual-path tests validate default and V23 paths. V24D3A/V24D3B complete — shot coordinates (V24D3A) and player ratings helper (V24D3B) delivered. V24D3C (optional schema enrichment) and V24D4 (storage/API design) are the recommended next phases. V24A is also available as a parallel evolution line (see Section 24).
 
 ## 24. V24 — Parallel Detailed Match Engine (Isolated)
 
@@ -506,8 +504,30 @@ V24 is **NOT a replacement for V23**. V23 remains the production simulation engi
 - V24D2 tests: 22 tests, all passing
 - V24 remains isolated — no production wiring, no Redis/API/frontend changes
 
+**V24D3A is now COMPLETED** (commit `9a632c4`). V24D3A added shot coordinate helpers:
+- `V24ShotCoordinate` — immutable value object (x, y, location, distanceToGoal, angleToGoal, insideBox)
+- `V24ShotCoordinateGenerator` — deterministic generator using passed Random
+- Coordinate ranges per V24ShotLocation: SIX_YARD_BOX, PENALTY_AREA_CENTER, PENALTY_AREA_WIDE, OUTSIDE_BOX, LONG_RANGE
+- Pitch coordinate system: x ∈ [0,100], y ∈ [0,100], goal center at (100, 50)
+- `penalty(Random)` method for penalty kick coordinates
+- V24D3A did NOT modify: `V24MatchEvent`, `V24DetailedMatchResult`, or xG formula
+- V24D3A tests: 17 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
+
+**V24D3B is now COMPLETED** (commit `09b89b2`). V24D3B added player rating helper:
+- `V24PlayerRatingModel` — pure helper, no mutable state, no Random
+- `computePlayerRating(playerId, timeline)` → double; `computeRatings(Collection, timeline)` → Map
+- `clampRating(double)` → [1.0, 10.0]
+- Rating rules: base 6.0, goal +0.8, assist +0.5, key-pass +0.30, shot +0.10 (high-xg +0.05), yellow -0.3, red -1.5, injury -0.2, foul -0.05, substitution-in +0.05
+- V24D3B did NOT modify: `V24DetailedMatchResult`, `V24PlayerMatchState`, `V24MatchEvent`, or SessionPlayer
+- V24D3B tests: 31 tests, all passing
+- V24 remains isolated — no production wiring, no Redis/API/frontend changes
+- Recommended next: V24D3C optional schema enrichment, V24D4 storage/API design, Phase 6C, or Phase 11
+
 **Commit history on `mvp-1-performance-cleanup` for V24:**
 ```
+09b89b2 — feat: add V24 player rating model (V24D3B)
+9a632c4 — feat: add V24 shot coordinates (V24D3A)
 1149c0b — feat: add V24 assist model (V24D2)
 55f7638 — feat: add V24 formation parser (V24D1)
 23d1806 — feat: add V24 substitution engine (V24C4)

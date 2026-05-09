@@ -1,8 +1,8 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed
-**Current baseline commit:** `1149c0b` (V24D2 complete)
-**Tests:** 237 relevant tests, 0 failures
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B completed.
+**Current baseline commit:** `09b89b2` (V24D3B complete)
+**Tests:** 285 relevant tests, 0 failures
 **Date:** 2026-05-08
 
 ---
@@ -17,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `1149c0b`
-**Tests:** 237 relevant tests, 0 failures
+**Commit:** `09b89b2`
+**Tests:** 285 relevant tests, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B)
 
 ### What exists
 
@@ -709,9 +709,9 @@ Assist and key-pass model + event richness for isolated V24:
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,V24FatigueModelTest,V24DisciplineModelTest,V24InjuryModelTest,V24SubstitutionEngineTest,V24FormationParserTest,V24AssistModelTest
+mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
 ```
-Expected: 237 tests, 0 failures.
+Expected: 285 tests, 0 failures.
 ---
 
 ## Phase Implementation Order
@@ -750,6 +750,10 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24C | Fatigue, cards, injuries, and substitutions | LOW/MEDIUM | 3 | Completed |
 | V24D1 | Formation parser and tactical role weighting | LOW | 4 | Completed |
 | V24D2 | Assist/key-pass model and event richness | LOW | 2 | Completed |
+| V24D3A | Shot coordinates helper and generator | LOW | 1 | Completed |
+| V24D3B | Player ratings helper from timeline | LOW | 1 | Completed |
+| V24D3C | Optional event/result schema enrichment | MEDIUM | 2 | Deferred |
+| V24D4 | Storage/API design (docs only) | LOW | 2 | Pending |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
 
