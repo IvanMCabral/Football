@@ -2,10 +2,16 @@ package com.footballmanager.application.service.simulation;
 
 import com.footballmanager.application.service.domain.MatchEngineImpl;
 import com.footballmanager.application.service.domain.TeamOverallCalculator;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResultAdapter;
+import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchResult;
 import com.footballmanager.domain.model.entity.TournamentState;
+import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.Formation;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.model.valueobject.TeamId;
@@ -26,6 +32,11 @@ import java.util.UUID;
  * Default is false — existing DefaultMatchSimulator path is used.
  * When flag is true, MatchEngineImpl.simulateWithStrength() is used with
  * computed OVRs from TeamOverallCalculator and in-memory Team objects.
+ *
+ * <p>V24D5B: Optional V24 detailed engine path behind useV24DetailedEngine flag.
+ * Default is false. When flag is true, V24DetailedMatchEngine.simulate() is used
+ * via V24MatchContextFactory. Aggregate result is mapped to MatchResultData.
+ * If context build fails, falls back to default/V23 path — round must complete.
  */
 @Slf4j
 public class LeagueSimulator {
@@ -33,25 +44,42 @@ public class LeagueSimulator {
     private final MatchSimulator matchSimulator;
     private final MatchEngineImpl matchEngine;
     private final boolean useV23LeagueEngine;
+    private final boolean useV24DetailedEngine;
+    private final V24MatchContextFactory v24ContextFactory;
+    private final V24DetailedMatchEngine v24Engine;
 
     /**
-     * Primary constructor — useV23LeagueEngine defaults to false.
+     * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
      * Maintains existing Spring wiring compatibility.
      */
     public LeagueSimulator(MatchSimulator matchSimulator) {
-        this(matchSimulator, null, false);
+        this(matchSimulator, null, false, false);
     }
 
     /**
-     * Full constructor with optional V23 engine and flag.
-     * @param matchSimulator  the existing domain service for DefaultMatchSimulator path
-     * @param matchEngine      optional MatchEngineImpl for V23 path (can be null if flag is false)
-     * @param useV23LeagueEngine if true, V23 engine path is used; if false, DefaultMatchSimulator path
+     * Three-argument constructor for backward compatibility with existing tests.
+     * useV24DetailedEngine defaults to false.
      */
-    public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine, boolean useV23LeagueEngine) {
+    public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
+                          boolean useV23LeagueEngine) {
+        this(matchSimulator, matchEngine, useV23LeagueEngine, false);
+    }
+
+    /**
+     * Full constructor with optional V23 engine and flags.
+     * @param matchSimulator      the existing domain service for DefaultMatchSimulator path
+     * @param matchEngine         optional MatchEngineImpl for V23 path (can be null if flag is false)
+     * @param useV23LeagueEngine  if true, V23 engine path is used; if false, DefaultMatchSimulator path
+     * @param useV24DetailedEngine if true, V24 detailed engine path is attempted
+     */
+    public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
+                          boolean useV23LeagueEngine, boolean useV24DetailedEngine) {
         this.matchSimulator = matchSimulator;
         this.matchEngine = matchEngine;
         this.useV23LeagueEngine = useV23LeagueEngine;
+        this.useV24DetailedEngine = useV24DetailedEngine;
+        this.v24ContextFactory = new V24MatchContextFactory();
+        this.v24Engine = new V24DetailedMatchEngine();
     }
 
     /**
@@ -70,7 +98,9 @@ public class LeagueSimulator {
             int homeOvr = calculateTeamOVR(career, fixture.getHomeTeamId());
             int awayOvr = calculateTeamOVR(career, fixture.getAwayTeamId());
 
-            if (useV23LeagueEngine) {
+            if (useV24DetailedEngine) {
+                simulateWithV24Engine(career, fixture, homeOvr, awayOvr, tournamentState);
+            } else if (useV23LeagueEngine) {
                 simulateWithV23Engine(fixture, homeOvr, awayOvr, tournamentState);
             } else {
                 simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
@@ -117,6 +147,47 @@ public class LeagueSimulator {
         // Map to MatchResultData — events and summary are discarded
         MatchFixture.MatchResultData resultData = MatchResultDataAdapter.fromMatchResult(result);
         tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
+    }
+
+    // ========== V24 Detailed Engine Path (V24D5B, behind flag) ==========
+
+    /**
+     * Attempts V24 detailed engine simulation for a fixture.
+     * If context build fails, falls back to default engine — round must complete.
+     */
+    private void simulateWithV24Engine(CareerSave career, MatchFixture fixture,
+                                        int homeOvr, int awayOvr, TournamentState tournamentState) {
+        long seed = deriveSeed(fixture);
+        SessionTeam homeTeam = career.getSessionTeam(fixture.getHomeTeamId());
+        SessionTeam awayTeam = career.getSessionTeam(fixture.getAwayTeamId());
+
+        if (homeTeam == null || awayTeam == null) {
+            log.warn("[V24D5B] Cannot simulate fixture {} with V24: missing team data, falling back to default",
+                    fixture.getMatchId());
+            simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
+            return;
+        }
+
+        try {
+            V24MatchContext context = v24ContextFactory.build(
+                    career, fixture, homeTeam, awayTeam, seed);
+
+            V24DetailedMatchResult v24Result = v24Engine.simulate(context, seed);
+            MatchFixture.MatchResultData resultData = V24DetailedMatchResultAdapter.toMatchResultData(v24Result);
+            tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
+
+            log.debug("[V24D5B] Fixture {} simulated with V24 engine: {} - {}",
+                    fixture.getMatchId(), resultData.homeGoals, resultData.awayGoals);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("[V24D5B] V24 context build failed for fixture {}: {}, falling back to default",
+                    fixture.getMatchId(), e.getMessage());
+            simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
+        } catch (Exception e) {
+            log.warn("[V24D5B] V24 simulation failed for fixture {}: {}, falling back to default",
+                    fixture.getMatchId(), e.getMessage());
+            simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
+        }
     }
 
     /**

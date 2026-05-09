@@ -22,8 +22,11 @@ public class SimulationConfig {
     @Value("${app.simulation.league.use-v23-engine:false}")
     private boolean useV23Engine;
 
+    @Value("${app.simulation.league.use-v24-detailed-engine:false}")
+    private boolean useV24DetailedEngine;
+
     @Bean
     public LeagueSimulator leagueSimulator(MatchSimulator matchSimulator) {
-        return new LeagueSimulator(matchSimulator, null, useV23Engine);
+        return new LeagueSimulator(matchSimulator, null, useV23Engine, useV24DetailedEngine);
     }
 }
