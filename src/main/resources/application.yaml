@@ -87,3 +87,6 @@ app:
   simulation:
     league:
       use-v23-engine: false   # Phase 10C3: set to true to enable V23 league engine path
+    v24:
+      persist-detail: false   # V24D4B: store V24DetailedMatchData in Redis
+      expose-detail-api: false  # V24D4C: expose GET /api/careers/{careerId}/matches/{matchId}/detail
