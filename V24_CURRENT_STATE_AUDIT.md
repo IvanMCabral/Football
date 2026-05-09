@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D4B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B all delivered
-**Latest commit:** `ecea7d5` (feat: add V24 detailed match Redis adapter — V24D4B)
-**Tests:** 322 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B), 0 failures
+**Status:** V24D4C COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C all delivered
+**Latest commit:** `ab3c5fd` (feat: add V24 detailed match query endpoint — V24D4C)
+**Tests:** 334 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C), 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -236,3 +236,15 @@
 - V24D4B tests: 13 tests (`V24DetailedMatchRedisAdapterTest`), all passing
 - V24 remains isolated — no API endpoint, no frontend, no production simulation wiring
 - Recommended next: V24D4C query endpoint behind feature flag, or V24D3C optional schema enrichment, or Phase 6C / Phase 11
+
+**V24D4C is now COMPLETED** (commit `ab3c5fd`). V24D4C added query endpoint for detailed match data:
+- `V24DetailedMatchQueryService` — reads from `V24DetailedMatchStoragePort`, feature-gated
+- `V24DetailedMatchController` — REST controller at `GET /api/careers/{careerId}/matches/{matchId}/detail`
+- `V24SimulationConfig` — `@ConfigurationProperties` for `app.simulation.v24.*`
+- Feature flag: `app.simulation.v24.expose-detail-api=false` (default false)
+- Disabled/missing detail: returns 404
+- Reads only from storage port — no V24 engine call, no production simulation wiring, no writes
+- V24D4C did NOT modify: `V24DetailedMatchResult`, `V24MatchEvent`, `V24DetailedMatchEngine`, LeagueSimulator, SimulationConfig, MatchEngineImpl, MatchFixture, or any production wiring
+- V24D4C tests: 12 tests (`V24DetailedMatchQueryServiceTest`), all passing
+- V24 remains isolated — no frontend, no production simulation wiring
+- Recommended next: V24D5 production integration planning, or V24D3C optional schema enrichment, or frontend match detail design, or Phase 6C / Phase 11
