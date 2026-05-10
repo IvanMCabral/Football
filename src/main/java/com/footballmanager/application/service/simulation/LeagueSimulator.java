@@ -2,11 +2,14 @@ package com.footballmanager.application.service.simulation;
 
 import com.footballmanager.application.service.domain.MatchEngineImpl;
 import com.footballmanager.application.service.domain.TeamOverallCalculator;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResultAdapter;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchResult;
@@ -45,15 +48,17 @@ public class LeagueSimulator {
     private final MatchEngineImpl matchEngine;
     private final boolean useV23LeagueEngine;
     private final boolean useV24DetailedEngine;
+    private final boolean persistDetail;
     private final V24MatchContextFactory v24ContextFactory;
     private final V24DetailedMatchEngine v24Engine;
+    private final V24DetailedMatchStoragePort storagePort;
 
     /**
      * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
      * Maintains existing Spring wiring compatibility.
      */
     public LeagueSimulator(MatchSimulator matchSimulator) {
-        this(matchSimulator, null, false, false);
+        this(matchSimulator, null, false, false, false, null);
     }
 
     /**
@@ -62,7 +67,16 @@ public class LeagueSimulator {
      */
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
                           boolean useV23LeagueEngine) {
-        this(matchSimulator, matchEngine, useV23LeagueEngine, false);
+        this(matchSimulator, matchEngine, useV23LeagueEngine, false, false, null);
+    }
+
+    /**
+     * Four-argument constructor for backward compatibility with existing tests.
+     * persistDetail defaults to false.
+     */
+    public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
+                          boolean useV23LeagueEngine, boolean useV24DetailedEngine) {
+        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine, false, null);
     }
 
     /**
@@ -71,13 +85,18 @@ public class LeagueSimulator {
      * @param matchEngine         optional MatchEngineImpl for V23 path (can be null if flag is false)
      * @param useV23LeagueEngine  if true, V23 engine path is used; if false, DefaultMatchSimulator path
      * @param useV24DetailedEngine if true, V24 detailed engine path is attempted
+     * @param persistDetail       if true, V24 detail snapshot is saved to Redis after simulation
+     * @param storagePort         V24DetailedMatchStoragePort for persistence (can be null if persistDetail is false)
      */
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
-                          boolean useV23LeagueEngine, boolean useV24DetailedEngine) {
+                          boolean useV23LeagueEngine, boolean useV24DetailedEngine,
+                          boolean persistDetail, V24DetailedMatchStoragePort storagePort) {
         this.matchSimulator = matchSimulator;
         this.matchEngine = matchEngine;
         this.useV23LeagueEngine = useV23LeagueEngine;
         this.useV24DetailedEngine = useV24DetailedEngine;
+        this.persistDetail = persistDetail;
+        this.storagePort = storagePort;
         this.v24ContextFactory = new V24MatchContextFactory();
         this.v24Engine = new V24DetailedMatchEngine();
     }
@@ -179,6 +198,11 @@ public class LeagueSimulator {
             log.debug("[V24D5B] Fixture {} simulated with V24 engine: {} - {}",
                     fixture.getMatchId(), resultData.homeGoals, resultData.awayGoals);
 
+            // V24D5C: persist detail if flag is enabled
+            if (persistDetail && storagePort != null) {
+                persistV24Detail(career, fixture, homeTeam.getName(), awayTeam.getName(), v24Result);
+            }
+
         } catch (IllegalArgumentException e) {
             log.warn("[V24D5B] V24 context build failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
@@ -187,6 +211,44 @@ public class LeagueSimulator {
             log.warn("[V24D5B] V24 simulation failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
+        }
+    }
+
+    /**
+     * V24D5C: Persist V24DetailedMatchData snapshot to Redis via storage port.
+     * Best-effort: failures are logged and do not fail the match/round.
+     *
+     * <p>playerRatings is left empty for this phase — per-player ratings require
+     * V24PlayerMatchState which is not available from V24MatchContext.
+     * This will be added in a future phase.
+     */
+    private void persistV24Detail(CareerSave career, MatchFixture fixture,
+                                   String homeTeamName, String awayTeamName,
+                                   V24DetailedMatchResult v24Result) {
+        try {
+            String careerId = career.getData().getCareerId();
+            Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
+            Integer round = fixture.getRound();
+
+            // Empty playerRatings for V24D5C — per-player ratings deferred to future phase
+            List<V24PlayerMatchRatingDto> playerRatings = List.of();
+
+            V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
+                    careerId,
+                    seasonNumber,
+                    round,
+                    homeTeamName,
+                    awayTeamName,
+                    v24Result,
+                    playerRatings
+            );
+
+            storagePort.save(careerId, detail);
+            log.debug("[V24D5C] Detail saved for fixture {} in career {}", fixture.getMatchId(), careerId);
+
+        } catch (Exception e) {
+            log.warn("[V24D5C] Failed to persist detail for fixture {}: {}, continuing round",
+                    fixture.getMatchId(), e.getMessage());
         }
     }
 
