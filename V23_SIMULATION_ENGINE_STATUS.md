@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `cca2f6e` (feat: add V24 LeagueSimulator path behind feature flag — V24D5B)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B complete.
-**Test status:** 368 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B), 0 failures; regression gate 365 tests, 0 failures
+**Latest commit:** `d6b3661` (feat: persist V24 detailed match data behind feature flag — V24D5C)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C complete.
+**Test status:** 377 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C), 0 failures; regression gate 374 tests, 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -118,8 +118,9 @@ public final class MatchQualityComputer {
 | `V24DetailedMatchQueryServiceTest` | 12 | V24D4C: feature-gated detail query service/controller, 404 disabled/missing, storage-only read |
 | `V24MatchContextFactoryTest` | 20 | V24D5A: context factory, starting XI resolution, bench derivation, style defaults, validation, canBuild |
 | `V24LeagueSimulationPathTest` | 11 | V24D5B: V24 LeagueSimulator path, flag precedence, result mapping, fallback, no persistence |
+| `V24LeagueDetailPersistenceTest` | 9 | V24D5C: detail persistence behind persist-detail flag, no-save when disabled, best-effort failure, context fallback skip |
 
-**Total: 368 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B)
+**Total: 377 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C)
 
 ---
 
@@ -375,7 +376,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, V24D4A, V24D4B, V24D4C, V24D5A, and V24D5B are complete. Recommended next: V24D5C detail persistence behind persist-detail flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, V24D4A, V24D4B, V24D4C, V24D5A, V24D5B, and V24D5C are complete. Recommended next: V24D5D end-to-end flag integration tests, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -420,7 +421,22 @@ Add tests for default path and V23 path:
 - Validate completed/wrong-round fixtures are skipped
 - All 7 tests pass — no production behavior change
 
-**Recommended next: V24D5C detail persistence behind persist-detail flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11**
+**V24D5C COMPLETED — Detail persistence write (commit `d6b3661`):**
+- `LeagueSimulator` — added `persistDetail` flag and `V24DetailedMatchStoragePort` dependency; `persistV24Detail()` called after V24 result when `persistDetail=true`
+- `SimulationConfig` — wires `app.simulation.v24.persist-detail` property to `LeagueSimulator`
+- `V24LeagueDetailPersistenceTest` — 9 tests covering save/no-save/failure/fallback/no-API behavior
+- `V24DetailedMatchData.fromResult(...)` used to build snapshot
+- `V24DetailedMatchStoragePort.save(...)` called only when: `use-v24-detailed-engine=true` AND `persist-detail=true` AND V24 simulation succeeds
+- save failure is best-effort: `catch (Exception)` logs warning and round completes
+- context build failure skips persistence and falls back safely
+- empty `playerRatings` list passed — per-player rating persistence deferred
+- No API/controller/frontend changes, no schema changes
+- V24 remains isolated — no frontend
+- Recommended next: V24D5D end-to-end flag integration tests
+
+**V24D5D Pending — End-to-end integration tests**
+
+**V24D5E Deferred — Frontend planning/design**
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -446,9 +462,9 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest
 ```
-Expected: 285 tests, 0 failures.
+Expected: 374 tests (regression gate), 0 failures; 377 full suite total.
 
 ---
 
@@ -532,6 +548,7 @@ V24 is **NOT a replacement for V23**. V23 remains the production simulation engi
 
 **Commit history on `mvp-1-performance-cleanup` for V24:**
 ```
+d6b3661 — feat: persist V24 detailed match data behind feature flag (V24D5C)
 cca2f6e — feat: add V24 LeagueSimulator path behind feature flag (V24D5B)
 8470779 — feat: add V24 match context factory (V24D5A)
 ab3c5fd — feat: add V24 detailed match query endpoint (V24D4C)

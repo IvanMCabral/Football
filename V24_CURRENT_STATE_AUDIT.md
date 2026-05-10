@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D5B COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B all delivered; detail persistence still deferred
-**Latest commit:** `cca2f6e` (feat: add V24 LeagueSimulator path behind feature flag — V24D5B)
-**Tests:** 368 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B), 0 failures
+**Status:** V24D5C COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C all delivered; frontend still deferred
+**Latest commit:** `d6b3661` (feat: persist V24 detailed match data behind feature flag — V24D5C)
+**Tests:** 377 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C), 0 failures; regression gate 374 tests, 0 failures
 **Date:** 2026-05-09
 
 ---
@@ -273,3 +273,20 @@
 - V24D5B tests: 11 tests (`V24LeagueSimulationPathTest`), all passing
 - V24 remains isolated — no Redis detail persistence, no API/controller/frontend changes
 - Recommended next: V24D5C detail persistence behind persist-detail flag, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11
+
+**V24D5C is now COMPLETED** (commit `d6b3661`). V24D5C added V24 detail persistence during simulation:
+- `LeagueSimulator` — added `persistDetail` flag and `V24DetailedMatchStoragePort` dependency; `persistV24Detail()` called after V24 result when `persistDetail=true` and `storagePort != null`
+- `SimulationConfig` — wires `app.simulation.v24.persist-detail` property to `LeagueSimulator`; `V24DetailedMatchStoragePort` bean injected
+- `application.yaml` — `app.simulation.v24.persist-detail: false` remains default false
+- `V24LeagueDetailPersistenceTest` — 9 tests covering: save not called when `persistDetail=false`, save called when `persistDetail=true`, snapshot has expected fields, save failure does not fail round, context build failure skips persistence, `persistDetail=true` without V24 flag does not persist, `exposeDetailApi` flag does not trigger persistence, aggregate MatchResultData still written to fixture, MatchResultData schema still 6 fields
+- `V24DetailedMatchData.fromResult(careerId, seasonNumber, round, homeName, awayName, v24Result, playerRatings)` used to build immutable snapshot
+- `V24DetailedMatchStoragePort.save(careerId, detail)` called only when: `use-v24-detailed-engine=true` AND `persist-detail=true` AND V24 simulation succeeds
+- save failure is best-effort: `catch (Exception)` logs warning and round completes
+- context build failure skips persistence and falls back safely to default engine
+- `persist-detail=true` without V24 flag does not persist — flags are independent
+- `expose-detail-api=true` does not trigger persistence — flags are independent
+- empty `playerRatings` list currently passed — per-player rating persistence deferred to future phase
+- V24D5C did NOT modify: V24DetailedMatchResult, V24MatchEvent, V24DetailedMatchEngine, MatchFixture.MatchResultData, CareerSave, SessionPlayer, SessionTeam, or any production wiring
+- V24D5C tests: 9 tests (`V24LeagueDetailPersistenceTest`), all passing
+- V24 remains isolated — no frontend
+- Recommended next: V24D5D end-to-end flag integration tests, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11
