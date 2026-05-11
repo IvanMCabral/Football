@@ -401,18 +401,25 @@ app:
 
 ## 14. Recommended Next Step
 
-**V24D5E — Frontend match detail planning/design.**
+**V24D5E3 — Read-only Match Detail Page.**
 
 **Why:**
-- V24D5D delivered end-to-end flag integration tests — all flag combinations validated.
+- V24D5E planning document is complete.
+- V24D5E2 frontend API client and TypeScript types are complete (frontend repo commit `050ab57`).
 - V24 simulation path, persistence, and query endpoint all exist and are tested.
-- Frontend match detail UI is the remaining gap — needed to display V24 persisted data to users.
-- V24D5E is a planning/design task only — no implementation yet.
+- Frontend match detail page is the next step to display V24 persisted data to users.
+- V24D5E2 API client exists at `front-ciber/project/src/app/features/match-detail/services/MatchDetailApiService.ts`.
+
+**Frontend implementation (separate repo):**
+- `front-ciber/project` / Football-angular / `mvp-1` branch
+- Commit `050ab57` — V24D5E2 API client + types complete
+- No backend changes required — endpoint contract unchanged
+- No route/page/UI yet — V24D5E3 is next
 
 **Alternative next steps (in priority order):**
-1. V24D5D end-to-end flag integration tests (this document)
+1. V24D5E3 read-only match detail page (frontend)
 2. V24D3C optional schema enrichment (attach shot coordinates to V24MatchEvent)
-3. Frontend match detail design (V24D5E, deferred)
+3. Player ratings persistence phase (backend, enables V24D5E4)
 4. Phase 6C — User-configurable tactical styles
 5. Phase 11 — Frontend xG and tactic display
 

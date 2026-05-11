@@ -309,4 +309,21 @@
 - V24D5D tests: 12 tests (`V24EndToEndFlagIntegrationTest`), all passing
 - Only tests changed — no production code
 - Regression gate: 386 tests, 0 failures; 389 full suite total
-- Recommended next: V24D5E frontend match detail planning/design, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Recommended next: V24D5E3 read-only match detail page, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+
+**V24D5E (Frontend) — Completed through V24D5E2 in separate frontend repo:**
+
+V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
+
+V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on branch `mvp-1`)
+- Frontend repo: `front-ciber/project` / Football-angular
+- `MatchDetailApiService.getMatchDetail(careerId, matchId): Observable<MatchDetail | null>`
+- TypeScript interfaces: `MatchDetail`, `MatchEvent`, `MatchEventType`, `ShotCoordinate`, `ShotLocation`, `PlayerMatchRating`
+- 200 → MatchDetail; 404 → null; 500+ → propagates
+- URL-encoded `careerId` and `matchId`
+- Empty `playerRatings` list handled; nullable `shotCoordinate` and `relatedPlayerId/relatedPlayerName` handled
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- No route/page/UI yet — V24D5E3 is next
+
+Root/backend repo is unchanged by V24D5E2 frontend implementation.
+Backend tests unchanged: 389 full suite, 386 regression gate.

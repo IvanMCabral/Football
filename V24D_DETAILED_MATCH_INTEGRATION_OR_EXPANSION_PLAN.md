@@ -396,7 +396,15 @@ GET `/api/careers/{careerId}/matches/{matchId}/detail` behind feature flag.
 **V24D5D (End-to-End Integration Tests — Completed)**
 - All flag combinations validated end-to-end (commit `3995d3d`, 12 tests)
 
-**V24D5E (Frontend Planning/Design — Deferred)**
+**V24D5E (Frontend Planning/Design — Partial: E1+E2 done, E3+ pending)**
+
+V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
+V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1`)
+V24D5E3 Read-only Match Detail Page — PENDING
+V24D5E4 Player Ratings UI — Deferred (playerRatings backend persistence needed)
+V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed)
+
+Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 
 ---
 

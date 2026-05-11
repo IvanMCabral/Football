@@ -705,7 +705,7 @@ Assist and key-pass model + event richness for isolated V24:
 - V24D2 tests: 22 tests (`V24AssistModelTest`), all passing
 - Risk: LOW — isolated package, no production integration
 - Commit: `1149c0b`
-- Recommended next: V24D5E frontend match detail planning/design, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Recommended next: V24D5E3 read-only match detail page, V24D3C optional schema enrichment, Phase 6C, or Phase 11
 
 **Required regression gate for any simulation change:**
 ```

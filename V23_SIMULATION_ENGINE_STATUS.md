@@ -377,7 +377,7 @@ All within Phase 1/3 acceptable ranges. Goals/xG ratio ≈ 1.00 (improved from ~
 
 ## 22. Recommended Next Phase
 
-**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, V24D4A, V24D4B, V24D4C, V24D5A, V24D5B, V24D5C, and V24D5D are complete. Recommended next: V24D5E frontend match detail planning/design, V24D3C optional schema enrichment, Phase 6C, or Phase 11.**
+**Phase 10A, 10B, 10C1, 10C2, 10C3, 10C4, V24A, V24B, V24C, V24D1, V24D2, V24D3A, V24D3B, V24D4A, V24D4B, V24D4C, V24D5A, V24D5B, V24D5C, and V24D5D are complete. Recommended next: V24D5E3 read-only match detail page, V24D3C optional schema enrichment, Phase 6C, or Phase 11.**
 
 **Phase 6C — User-Configurable Tactical Style**
 Add `TeamStyle` to `SessionTeam` (Redis), expose via career API, add frontend style selector:
@@ -433,11 +433,18 @@ Add tests for default path and V23 path:
 - empty `playerRatings` list passed — per-player rating persistence deferred
 - No API/controller/frontend changes, no schema changes
 - V24 remains isolated — no frontend
-- Recommended next: V24D5E frontend match detail planning/design, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Recommended next: V24D5E3 read-only match detail page, V24D3C optional schema enrichment, Phase 6C, or Phase 11
 
-**V24D5D COMPLETED — End-to-end flag integration tests (commit `3995d3d`)**
+**V24D5E COMPLETED (partial) — Frontend planning/design + API client/types done; page/UI still pending**
 
-**V24D5E Deferred — Frontend planning/design**
+**V24D5E status:**
+- V24D5E1 Design Document — COMPLETED (commit `e64c2d9`)
+- V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1` branch)
+- V24D5E3 Read-only Match Detail Page — PENDING
+- V24D5E4 Player Ratings UI — Deferred (backend per-player rating persistence needed first)
+- V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed first)
+
+Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:

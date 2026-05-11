@@ -1,8 +1,10 @@
 # V24D5E — Frontend Match Detail Planning/Design
 
-**Status:** V24D5E PLANNING ONLY — no implementation until approved
-**Branch:** `mvp-1-performance-cleanup`
-**Type:** Frontend design and integration planning — no code
+**Status:** V24D5E2 COMPLETED — frontend API client and TypeScript types added in separate frontend repo; route/page/UI still deferred
+**Frontend repo:** `front-ciber/project` / Football-angular
+**Frontend branch:** `mvp-1`
+**Frontend commit:** `050ab57` (feat: add V24D5E2 match detail API client and TypeScript types)
+**Type:** Frontend design and integration planning
 **Date:** 2026-05-11
 
 ---
@@ -366,19 +368,25 @@ frontend.features.matchDetailV24=false
 
 ## 11. Implementation Phases
 
-### V24D5E1 — Design Document (THIS DOCUMENT)
+### V24D5E1 — Design Document — COMPLETED
 - No code
 - Establishes UI/UX direction
-- **Status: DONE when approved**
+- **Status: COMPLETED** — committed as `e64c2d9`
 
-### V24D5E2 — Frontend API Client + Types
+### V24D5E2 — Frontend API Client + Types — COMPLETED
+**Commit:** `050ab57` (frontend repo `mvp-1`)
 - TypeScript interfaces from Section 8
-- `getMatchDetail()` API client
+- `getMatchDetail(careerId, matchId): Observable<MatchDetail | null>` API client
 - Error handling (200/404/500)
+- URL-encoded `careerId` and `matchId` via `encodeURIComponent()`
+- 200 → returns `MatchDetail`; 404 → returns `null`; 500+ → propagates
+- Empty `playerRatings` list handled
+- Nullable `shotCoordinate` and `relatedPlayerId/relatedPlayerName` handled
 - No UI route yet
-- Unit tests for client behavior
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- **Status: COMPLETED**
 
-### V24D5E3 — Read-only Match Detail Page
+### V24D5E3 — Read-only Match Detail Page — PENDING
 - Route: `/careers/:careerId/matches/:matchId/detail`
 - Header + score + V24 badge
 - Summary tab with xG/shots/possession cards
@@ -547,17 +555,23 @@ app.simulation.v24.expose-detail-api=true
 
 ## 16. Recommended Next Step
 
-**V24D5E2 — Frontend API Client + TypeScript Types**
+**V24D5E3 — Read-only Match Detail Page**
 
-After this document is approved, the next implementation step is:
-1. Add TypeScript interfaces from Section 8
-2. Implement `getMatchDetail()` client with proper 200/404/500 handling
-3. Add unit tests for client
-4. No UI route yet — client and types are shared foundation
+The next implementation step is using the existing `MatchDetailApiService` (from V24D5E2, commit `050ab57`) to build the read-only match detail page.
 
-**Prerequisite before V24D5E2:** Real example JSON from backend (Section 13) to confirm exact field names and types.
+**V24D5E3 deliverable:**
+- Route: `/careers/:careerId/matches/:matchId/detail`
+- Header + score + V24 badge
+- Summary tab with xG/shots/possession cards
+- Timeline tab with event list
+- Stats comparison tab
+- Loading skeletons, 404 fallback with aggregate display, 500 retry UI
 
-**Alternative if player ratings are priority:** Backend per-player rating persistence (separate phase) before V24D5E4.
+**Prerequisite:** None — V24D5E2 API client exists and is validated.
+
+**Alternative if shot map is priority:** V24D3C first (backend shot coordinate attachment to events).
+
+**Alternative if player ratings tab is priority:** Backend per-player rating persistence (separate phase) before V24D5E4.
 
 **Alternative if shot map is priority:** V24D3C shot coordinate event attachment (separate phase) before V24D5E5.
 
