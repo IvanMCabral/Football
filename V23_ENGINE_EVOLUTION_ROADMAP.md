@@ -760,10 +760,11 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D5B | Third LeagueSimulator path behind default-false flag | MEDIUM/HIGH | 2 | Completed |
 | V24D5C | Detail persistence during V24 simulation behind persist-detail flag | MEDIUM | 3 | Completed |
 | V24D5D | End-to-end integration tests | MEDIUM | 4 | Completed |
-| V24D5E | Frontend planning/design/impl (E1+E2+E3 complete; E4+E5 deferred) | MEDIUM | Separate | Completed |
+| V24D5E | Frontend planning/design/impl (E1+E2+E3+E3B complete; E4+E5 deferred) | MEDIUM | Separate | Completed |
 | V24D5E1 | Design Document — COMPLETED | — | Done | Completed |
 | V24D5E2 | Frontend API Client + Types — COMPLETED | — | Done | Completed |
 | V24D5E3 | Read-only Match Detail Page — COMPLETED | LOW | Done | Completed |
+| V24D5E3B | Fixture/List Entry Point — COMPLETED | LOW | Done | Completed |
 | V24D5E4 | Player Ratings UI — Deferred | — | — | Deferred |
 | V24D5E5 | Shot Map UI — Deferred | — | — | Deferred |
 

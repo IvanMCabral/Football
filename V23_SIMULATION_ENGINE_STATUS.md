@@ -433,21 +433,23 @@ Add tests for default path and V23 path:
 - empty `playerRatings` list passed — per-player rating persistence deferred
 - No API/controller/frontend changes, no schema changes
 - V24 remains isolated — no frontend
-- Recommended next: V24D5E3 read-only match detail page, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Recommended next: V24D5E3 (now complete), V24D5E3B (now complete), playerRatings persistence backend, V24D3C, or Phase 11
 
-**V24D5E COMPLETED (E1+E2+E3 done; E4+E5 deferred) — Frontend planning, API client, and read-only match detail page all complete in separate frontend repo**
+**V24D5E COMPLETED (E1+E2+E3+E3B done; E4+E5 deferred) — Frontend planning, API client, match detail page, and fixture entry point all complete in separate frontend repo**
 
 **V24D5E status:**
 - V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
 - V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1` branch)
 - V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1` branch)
+- V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1` branch)
 - V24D5E4 Player Ratings UI — Deferred (backend per-player rating persistence needed first)
 - V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed first)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 Frontend route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
+Dashboard fixture modal links completed matches to detail page via "📊 Detalle" button.
 Frontend validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
-Root/backend repo (`mvp-1-performance-cleanup`) unchanged by frontend V24D5E3 implementation.
+Root/backend repo (`mvp-1-performance-cleanup`) unchanged by frontend V24D5E/V24D5E3B implementation.
 Backend tests: 389 full suite, 386 regression gate, 0 failures — unchanged.
 
 **Phase 11 — Frontend xG and Tactic Display**

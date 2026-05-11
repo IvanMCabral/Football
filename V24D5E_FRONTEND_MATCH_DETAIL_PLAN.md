@@ -1,11 +1,12 @@
 # V24D5E — Frontend Match Detail Planning/Design
 
-**Status:** V24D5E3 COMPLETED — read-only match detail page added in separate frontend repo; player ratings UI and shot map still deferred
+**Status:** V24D5E3B COMPLETED — read-only match detail page and fixture modal entry point added in separate frontend repo; player ratings UI and shot map still deferred
 **Frontend repo:** `front-ciber/project` / Football-angular
 **Frontend branch:** `mvp-1`
 **Frontend commits:**
 - `050ab57` — feat: add V24D5E2 match detail API client and TypeScript types
 - `0ba2305` — feat: add V24D5E3 read-only match detail page
+- `d244097` — feat: add match detail entry point from fixture modal
 **Type:** Frontend design and integration planning
 **Date:** 2026-05-11
 
@@ -405,6 +406,19 @@ frontend.features.matchDetailV24=false
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - **Status: COMPLETED**
 
+### V24D5E3B — Fixture/List Entry Point — COMPLETED
+**Commit:** `d244097` (frontend repo `mvp-1`)
+- Dashboard fixture modal (`DashboardFixtureModalComponent`) updated with "📊 Detalle" link
+- Link visible only for matches with `status === 'COMPLETED'`
+- Link hidden when `careerId` is unavailable (fetched via `CareerService.getCareerStatus()`)
+- Link hidden for pending/in-progress matches
+- Route target: `/careers/:careerId/matches/:matchId/detail`
+- Fixture modal does NOT call detail endpoint (no pre-fetch, no polling)
+- Match detail page (`V24MatchDetailPageComponent`) unchanged
+- No backend/API/Redis changes, no player ratings UI, no shot map
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- **Status: COMPLETED**
+
 ### V24D5E4 — Player Ratings UI — Deferred
 - Only after `playerRatings` is populated by backend (separate backend phase)
 - Players tab with per-player stat cards
@@ -577,10 +591,10 @@ app.simulation.v24.expose-detail-api=true
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - No backend/API/Redis changes, no fixture/list UI modified
 
-**What was explicitly NOT added:**
+**What was explicitly NOT added (V24D5E3 only; fixture entry point added in V24D5E3B):**
 - No player ratings full UI
 - No shot map implementation
-- No fixture/list entry point integration
+- No fixture/list entry point integration (added in V24D5E3B — dashboard fixture modal "📊 Detalle" link)
 - No backend changes
 
 **V24D5E2 delivered (frontend repo commit `050ab57`):**
@@ -591,9 +605,9 @@ app.simulation.v24.expose-detail-api=true
 - Empty `playerRatings` list handled; nullable `shotCoordinate` and `relatedPlayerId/relatedPlayerName` handled
 
 **Next recommended steps (in priority order):**
-1. Add safe entry point/link from existing fixture UI to the match detail route (for usability)
-2. V24D5E4 only after playerRatings persistence is implemented (backend)
-3. V24D5E5 only after V24D3C attaches shot coordinates to events (backend)
+1. V24D5E4 only after playerRatings persistence is implemented (backend)
+2. V24D5E5 only after V24D3C attaches shot coordinates to events (backend)
+3. Frontend QA/polish pass on match detail page
 
 ---
 

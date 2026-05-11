@@ -1,6 +1,6 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D all delivered; V24D5E1/V24D5E2/V24D5E3 frontend planning/API/page are completed in separate frontend repo; fixture entry point, player ratings UI, and shot map remain deferred
+**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B frontend planning/API/page/entry-point are completed in separate frontend repo; player ratings UI and shot map remain deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
 **Tests:** 389 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D), 0 failures
@@ -76,7 +76,7 @@ Regression gate: 386 tests, 0 failures; full suite: 389 tests.
 - ~~No assist/key-pass as first-class event logic~~
 - Shot coordinate helper exists (V24D3A) but no V24MatchEvent attachment and no UI shot map yet
 - Player rating helper exists (V24D3B) but no V24DetailedMatchResult field and no UI/frontend yet
-- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), V24MatchContextFactory (V24D5A), LeagueSimulator V24 branch (V24D5B), V24 detail persistence (V24D5C), and end-to-end flag tests (V24D5D) all exist and are tested. playerRatings currently uses empty list (per-player rating persistence deferred). V24D3C optional shot coordinate attachment still deferred. Read-only frontend match detail page exists in the separate frontend repo at `/careers/:careerId/matches/:matchId/detail`. Remaining frontend gaps: fixture/list entry point, full player ratings UI, and shot map. playerRatings currently empty; shotCoordinate nullable until V24D3C.
+- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), V24MatchContextFactory (V24D5A), LeagueSimulator V24 branch (V24D5B), V24 detail persistence (V24D5C), and end-to-end flag tests (V24D5D) all exist and are tested. playerRatings currently uses empty list (per-player rating persistence deferred). V24D3C optional shot coordinate attachment still deferred. Read-only frontend match detail page and fixture modal entry point exist in the separate frontend repo. Remaining frontend gaps: full player ratings UI and shot map. playerRatings currently empty; shotCoordinate nullable until V24D3C.
 - No goalkeeper save quality detail beyond xG
 - No corner/free kick/penalty model beyond existing chance creation
 - No stoppage time or extra time
@@ -396,20 +396,20 @@ GET `/api/careers/{careerId}/matches/{matchId}/detail` behind feature flag.
 **V24D5D (End-to-End Integration Tests — Completed)**
 - All flag combinations validated end-to-end (commit `3995d3d`, 12 tests)
 
-**V24D5E (Frontend Planning/Design/Implementation — Completed: E1+E2+E3 done, E4+E5 deferred)**
+**V24D5E (Frontend Planning/Design/Implementation — Completed: E1+E2+E3+E3B done, E4+E5 deferred)**
 
 V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
 V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1`)
 V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1`)
+V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1`)
 V24D5E4 Player Ratings UI — Deferred (playerRatings backend persistence needed first)
 V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed first)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 Frontend route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
+Dashboard fixture modal now links completed matches to detail page via "📊 Detalle" button.
 Frontend validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 Root/backend repo unchanged by V24D5E frontend implementation.
-
-No fixture/list entry point integration yet — recommended next step after V24D5E3.
 
 ---
 

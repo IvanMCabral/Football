@@ -1,6 +1,6 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5D COMPLETED — end-to-end flag integration tests added; read-only frontend match detail page exists in the separate frontend repo; fixture entry point, player ratings UI, shot map, and career-state mutation remain deferred
+**Status:** V24D5D COMPLETED — end-to-end flag integration tests added; read-only frontend match detail page and fixture modal entry point exist in separate frontend repo; player ratings UI, shot map, and career-state mutation remain deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
 **Latest docs commit:** `f1f5549` (V24D5 planning updated)
@@ -40,7 +40,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | LeagueSimulator V24 path | Exists behind `app.simulation.league.use-v24-detailed-engine=false` |
 | Flag precedence | V24 > V23 > default |
 | Detail persistence | Implemented in V24D5C behind `app.simulation.v24.persist-detail=false`; default false — saves only when V24 path succeeds and flag is true |
-| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; read-only frontend match detail page exists in the separate frontend repo; fixture entry point, player ratings UI, shot map, and career-state mutation remain deferred |
+| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; read-only frontend match detail page and fixture modal entry point exist in the separate frontend repo; player ratings UI, shot map, and career-state mutation remain deferred |
 
 **Persistence behavior (V24D5C):**
 - V24 detail persistence exists and is wired to `LeagueSimulator.persistV24Detail()`
@@ -395,11 +395,12 @@ app:
 
 ## V24D5E Completion Record
 
-**Status:** V24D5E1 + V24D5E2 + V24D5E3 COMPLETED — frontend planning, API client, and read-only match detail page all complete in separate frontend repo
+**Status:** V24D5E1 + V24D5E2 + V24D5E3 + V24D5E3B COMPLETED — all frontend planning, API client, page, and fixture entry point complete in separate frontend repo
 
 **Frontend V24D5E commits:**
 - `050ab57` — feat: add V24D5E2 match detail API client and TypeScript types
 - `0ba2305` — feat: add V24D5E3 read-only match detail page
+- `d244097` — feat: add match detail entry point from fixture modal
 
 **Frontend V24D5E3 completion summary:**
 - `V24MatchDetailPageComponent` — standalone Angular component at `src/app/features/match-detail/pages/v24-match-detail-page.component.ts`
@@ -411,7 +412,14 @@ app:
 - 404/null friendly unavailable state, 500/error retry state
 - Empty playerRatings state, shot map deferred state
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
-- No backend/API/Redis changes, no fixture/list UI modified
+
+**Frontend V24D5E3B completion summary:**
+- Dashboard fixture modal (`DashboardFixtureModalComponent`) updated with "📊 Detalle" link
+- Link visible only for matches with `status === 'COMPLETED'`
+- Link hidden when `careerId` unavailable or match not completed
+- Route target: `/careers/:careerId/matches/:matchId/detail`
+- Fixture modal does NOT call detail endpoint
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 
 **V24D5E4/V24D5E5 deferred:** playerRatings UI needs backend persistence; shot map UI needs V24D3C shot coordinate attachment.
 
@@ -438,9 +446,9 @@ app:
 **Backend unchanged:** root repo has no changes from V24D5E frontend work. No API schema changes, no Redis schema changes.
 
 **Next recommended steps (in priority order):**
-1. Add safe entry point/link from existing fixture UI to match detail route
-2. V24D5E4 only after playerRatings persistence is implemented (backend)
-3. V24D5E5 only after V24D3C attaches shot coordinates (backend)
+1. V24D5E4 only after playerRatings persistence is implemented (backend)
+2. V24D5E5 only after V24D3C attaches shot coordinates (backend)
+3. Frontend QA/polish pass on match detail page
 
 ---
 
