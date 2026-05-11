@@ -10,6 +10,7 @@ import com.footballmanager.application.service.simulation.v24.V24DetailedMatchSt
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.v24.V24PlayerRatingsAssembler;
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchResult;
@@ -52,6 +53,7 @@ public class LeagueSimulator {
     private final V24MatchContextFactory v24ContextFactory;
     private final V24DetailedMatchEngine v24Engine;
     private final V24DetailedMatchStoragePort storagePort;
+    private final V24PlayerRatingsAssembler v24PlayerRatingsAssembler;
 
     /**
      * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
@@ -99,6 +101,7 @@ public class LeagueSimulator {
         this.storagePort = storagePort;
         this.v24ContextFactory = new V24MatchContextFactory();
         this.v24Engine = new V24DetailedMatchEngine();
+        this.v24PlayerRatingsAssembler = new V24PlayerRatingsAssembler();
     }
 
     /**
@@ -217,10 +220,9 @@ public class LeagueSimulator {
     /**
      * V24D5C: Persist V24DetailedMatchData snapshot to Redis via storage port.
      * Best-effort: failures are logged and do not fail the match/round.
-     *
-     * <p>playerRatings is left empty for this phase — per-player ratings require
-     * V24PlayerMatchState which is not available from V24MatchContext.
-     * This will be added in a future phase.
+    /**
+     * V24D5F: Persist V24 detailed match data including per-player ratings.
+     * Player ratings are derived from CareerSave starting XI + match timeline.
      */
     private void persistV24Detail(CareerSave career, MatchFixture fixture,
                                    String homeTeamName, String awayTeamName,
@@ -230,8 +232,9 @@ public class LeagueSimulator {
             Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
             Integer round = fixture.getRound();
 
-            // Empty playerRatings for V24D5C — per-player ratings deferred to future phase
-            List<V24PlayerMatchRatingDto> playerRatings = List.of();
+            // V24D5F: derive per-player ratings from starting XI + timeline
+            List<V24PlayerMatchRatingDto> playerRatings =
+                    v24PlayerRatingsAssembler.assemblePlayerRatings(career, fixture, v24Result);
 
             V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
                     careerId,
@@ -244,10 +247,10 @@ public class LeagueSimulator {
             );
 
             storagePort.save(careerId, detail);
-            log.debug("[V24D5C] Detail saved for fixture {} in career {}", fixture.getMatchId(), careerId);
+            log.debug("[V24D5F] Detail saved for fixture {} in career {}", fixture.getMatchId(), careerId);
 
         } catch (Exception e) {
-            log.warn("[V24D5C] Failed to persist detail for fixture {}: {}, continuing round",
+            log.warn("[V24D5F] Failed to persist detail for fixture {}: {}, continuing round",
                     fixture.getMatchId(), e.getMessage());
         }
     }
