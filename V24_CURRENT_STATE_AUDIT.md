@@ -2,7 +2,7 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D all delivered; frontend still deferred
+**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D all delivered; V24D5E1/V24D5E2/V24D5E3 completed in separate frontend repo; V24D5E4/V24D5E5 deferred
 **Latest commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
 **Tests:** 389 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D), 0 failures; regression gate 386 tests, 0 failures
 **Date:** 2026-05-11
@@ -309,9 +309,9 @@
 - V24D5D tests: 12 tests (`V24EndToEndFlagIntegrationTest`), all passing
 - Only tests changed — no production code
 - Regression gate: 386 tests, 0 failures; 389 full suite total
-- Recommended next: V24D5E3 read-only match detail page, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Recommended next: V24D5E3 read-only match detail page (now complete), add fixture entry point, V24D3C optional schema enrichment, Phase 6C, or Phase 11
 
-**V24D5E (Frontend) — Completed through V24D5E2 in separate frontend repo:**
+**V24D5E (Frontend) — Completed through V24D5E3 in separate frontend repo:**
 
 V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
 
@@ -323,7 +323,18 @@ V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on br
 - URL-encoded `careerId` and `matchId`
 - Empty `playerRatings` list handled; nullable `shotCoordinate` and `relatedPlayerId/relatedPlayerName` handled
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
-- No route/page/UI yet — V24D5E3 is next
 
-Root/backend repo is unchanged by V24D5E2 frontend implementation.
-Backend tests unchanged: 389 full suite, 386 regression gate.
+V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on branch `mvp-1`)
+- `V24MatchDetailPageComponent` — standalone Angular component at `src/app/features/match-detail/pages/v24-match-detail-page.component.ts`
+- Route: `/careers/:careerId/matches/:matchId/detail`
+- Header with score, round, season, V24 badge
+- Summary cards: xG, shots, possession, goals
+- Timeline (minute-sorted events), stats comparison table
+- 404/null friendly unavailable state, 500/error retry state
+- Empty playerRatings state, shot map deferred state
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- No backend/API/Redis changes, no fixture/list UI modified
+- V24D5E4/V24D5E5 deferred (playerRatings needs backend persistence; shot map needs V24D3C)
+
+Root/backend repo (`mvp-1-performance-cleanup`) is unchanged by V24D5E3 frontend implementation.
+Backend tests unchanged: 389 full suite, 386 regression gate, 0 failures.

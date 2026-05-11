@@ -1,9 +1,11 @@
 # V24D5E — Frontend Match Detail Planning/Design
 
-**Status:** V24D5E2 COMPLETED — frontend API client and TypeScript types added in separate frontend repo; route/page/UI still deferred
+**Status:** V24D5E3 COMPLETED — read-only match detail page added in separate frontend repo; player ratings UI and shot map still deferred
 **Frontend repo:** `front-ciber/project` / Football-angular
 **Frontend branch:** `mvp-1`
-**Frontend commit:** `050ab57` (feat: add V24D5E2 match detail API client and TypeScript types)
+**Frontend commits:**
+- `050ab57` — feat: add V24D5E2 match detail API client and TypeScript types
+- `0ba2305` — feat: add V24D5E3 read-only match detail page
 **Type:** Frontend design and integration planning
 **Date:** 2026-05-11
 
@@ -386,22 +388,29 @@ frontend.features.matchDetailV24=false
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - **Status: COMPLETED**
 
-### V24D5E3 — Read-only Match Detail Page — PENDING
+### V24D5E3 — Read-only Match Detail Page — COMPLETED
+**Commit:** `0ba2305` (frontend repo `mvp-1`)
 - Route: `/careers/:careerId/matches/:matchId/detail`
-- Header + score + V24 badge
-- Summary tab with xG/shots/possession cards
-- Timeline tab with event list
-- Stats comparison tab
-- Loading skeletons
-- 404 fallback with aggregate display
-- 500 retry UI
+- `V24MatchDetailPageComponent` — standalone Angular component with inline template/styles
+- Uses `MatchDetailApiService.getMatchDetail(careerId, matchId)` from V24D5E2
+- Header + score + round/season + V24 badge
+- Summary cards: xG, shots, possession, goals
+- Timeline tab: event list sorted by minute ascending
+- Stats comparison table
+- Loading state, 404/null unavailable state, 500/error retry state
+- Empty `playerRatings` state: "Player ratings are not available yet."
+- Shot map deferred state: "Shot map will be available in a future update."
+- No player ratings full UI, no shot map implementation
+- No fixture/list UI modified, no backend/API/Redis changes
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- **Status: COMPLETED**
 
-### V24D5E4 — Player Ratings UI
+### V24D5E4 — Player Ratings UI — Deferred
 - Only after `playerRatings` is populated by backend (separate backend phase)
 - Players tab with per-player stat cards
 - Empty state until then
 
-### V24D5E5 — Shot Map UI
+### V24D5E5 — Shot Map UI — Deferred
 - Only after V24D3C attaches shot coordinates to events (separate backend phase)
 - Shot map visualization
 - Empty/hidden state until then
@@ -555,25 +564,36 @@ app.simulation.v24.expose-detail-api=true
 
 ## 16. Recommended Next Step
 
-**V24D5E3 — Read-only Match Detail Page**
+**V24D5E3 — Read-only Match Detail Page** — COMPLETED in frontend repo commit `0ba2305`.
 
-The next implementation step is using the existing `MatchDetailApiService` (from V24D5E2, commit `050ab57`) to build the read-only match detail page.
+**V24D5E3 completion summary:**
+- Route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
+- Uses `MatchDetailApiService.getMatchDetail(careerId, matchId)` from V24D5E2 (commit `050ab57`)
+- Header with score, round, season, V24 badge
+- Summary cards (xG, shots, possession, goals)
+- Timeline (minute-sorted events), stats comparison table
+- 404/null friendly unavailable state, 500/error retry state
+- Empty playerRatings state, shot map deferred state
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- No backend/API/Redis changes, no fixture/list UI modified
 
-**V24D5E3 deliverable:**
-- Route: `/careers/:careerId/matches/:matchId/detail`
-- Header + score + V24 badge
-- Summary tab with xG/shots/possession cards
-- Timeline tab with event list
-- Stats comparison tab
-- Loading skeletons, 404 fallback with aggregate display, 500 retry UI
+**What was explicitly NOT added:**
+- No player ratings full UI
+- No shot map implementation
+- No fixture/list entry point integration
+- No backend changes
 
-**Prerequisite:** None — V24D5E2 API client exists and is validated.
+**V24D5E2 delivered (frontend repo commit `050ab57`):**
+- TypeScript interfaces: `MatchDetail`, `MatchEvent`, `MatchEventType`, `ShotCoordinate`, `ShotLocation`, `PlayerMatchRating`
+- `MatchDetailApiService.getMatchDetail(careerId, matchId): Observable<MatchDetail | null>`
+- 200 → MatchDetail; 404 → null; 500+ → propagates
+- URL-encoded `careerId` and `matchId`
+- Empty `playerRatings` list handled; nullable `shotCoordinate` and `relatedPlayerId/relatedPlayerName` handled
 
-**Alternative if shot map is priority:** V24D3C first (backend shot coordinate attachment to events).
-
-**Alternative if player ratings tab is priority:** Backend per-player rating persistence (separate phase) before V24D5E4.
-
-**Alternative if shot map is priority:** V24D3C shot coordinate event attachment (separate phase) before V24D5E5.
+**Next recommended steps (in priority order):**
+1. Add safe entry point/link from existing fixture UI to the match detail route (for usability)
+2. V24D5E4 only after playerRatings persistence is implemented (backend)
+3. V24D5E5 only after V24D3C attaches shot coordinates to events (backend)
 
 ---
 

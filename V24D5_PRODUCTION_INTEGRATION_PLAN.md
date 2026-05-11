@@ -1,6 +1,6 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5D COMPLETED — end-to-end flag integration tests added; frontend still deferred
+**Status:** V24D5D COMPLETED — end-to-end flag integration tests added; read-only frontend match detail page exists in the separate frontend repo; fixture entry point, player ratings UI, shot map, and career-state mutation remain deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
 **Latest docs commit:** `f1f5549` (V24D5 planning updated)
@@ -40,7 +40,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | LeagueSimulator V24 path | Exists behind `app.simulation.league.use-v24-detailed-engine=false` |
 | Flag precedence | V24 > V23 > default |
 | Detail persistence | Implemented in V24D5C behind `app.simulation.v24.persist-detail=false`; default false — saves only when V24 path succeeds and flag is true |
-| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; frontend and career-state mutation remain deferred |
+| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; read-only frontend match detail page exists in the separate frontend repo; fixture entry point, player ratings UI, shot map, and career-state mutation remain deferred |
 
 **Persistence behavior (V24D5C):**
 - V24 detail persistence exists and is wired to `LeagueSimulator.persistV24Detail()`
@@ -393,35 +393,54 @@ app:
 - Only tests changed — no production code
 - Regression gate: 386 tests, 0 failures
 
-## V24D5E Completion Record (Deferred)
+## V24D5E Completion Record
 
-**Status:** Deferred — frontend planning/design. No implementation.
+**Status:** V24D5E1 + V24D5E2 + V24D5E3 COMPLETED — frontend planning, API client, and read-only match detail page all complete in separate frontend repo
+
+**Frontend V24D5E commits:**
+- `050ab57` — feat: add V24D5E2 match detail API client and TypeScript types
+- `0ba2305` — feat: add V24D5E3 read-only match detail page
+
+**Frontend V24D5E3 completion summary:**
+- `V24MatchDetailPageComponent` — standalone Angular component at `src/app/features/match-detail/pages/v24-match-detail-page.component.ts`
+- Route: `/careers/:careerId/matches/:matchId/detail`
+- Uses `MatchDetailApiService.getMatchDetail(careerId, matchId)`
+- Header with score, round, season, V24 badge
+- Summary cards: xG, shots, possession, goals
+- Timeline (minute-sorted events), stats comparison table
+- 404/null friendly unavailable state, 500/error retry state
+- Empty playerRatings state, shot map deferred state
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- No backend/API/Redis changes, no fixture/list UI modified
+
+**V24D5E4/V24D5E5 deferred:** playerRatings UI needs backend persistence; shot map UI needs V24D3C shot coordinate attachment.
+
+**Backend unchanged by frontend implementation:** root repo branch `mvp-1-performance-cleanup` has no changes from V24D5E frontend work.
 
 ---
 
 ## 14. Recommended Next Step
 
-**V24D5E3 — Read-only Match Detail Page.**
+**V24D5E3 — Read-only Match Detail Page — COMPLETED** in separate frontend repo (commit `0ba2305`).
 
-**Why:**
-- V24D5E planning document is complete.
-- V24D5E2 frontend API client and TypeScript types are complete (frontend repo commit `050ab57`).
-- V24 simulation path, persistence, and query endpoint all exist and are tested.
-- Frontend match detail page is the next step to display V24 persisted data to users.
-- V24D5E2 API client exists at `front-ciber/project/src/app/features/match-detail/services/MatchDetailApiService.ts`.
+**V24D5E2 frontend API client** is complete (frontend repo commit `050ab57`).
 
-**Frontend implementation (separate repo):**
-- `front-ciber/project` / Football-angular / `mvp-1` branch
-- Commit `050ab57` — V24D5E2 API client + types complete
-- No backend changes required — endpoint contract unchanged
-- No route/page/UI yet — V24D5E3 is next
+**V24D5E3 delivered:**
+- Route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
+- Uses `MatchDetailApiService.getMatchDetail(careerId, matchId)`
+- Header with score, round, season, V24 badge
+- Summary cards (xG, shots, possession, goals)
+- Timeline (minute-sorted events), stats comparison table
+- 404/null friendly unavailable state, 500/error retry state
+- Empty playerRatings state, shot map deferred state
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 
-**Alternative next steps (in priority order):**
-1. V24D5E3 read-only match detail page (frontend)
-2. V24D3C optional schema enrichment (attach shot coordinates to V24MatchEvent)
-3. Player ratings persistence phase (backend, enables V24D5E4)
-4. Phase 6C — User-configurable tactical styles
-5. Phase 11 — Frontend xG and tactic display
+**Backend unchanged:** root repo has no changes from V24D5E frontend work. No API schema changes, no Redis schema changes.
+
+**Next recommended steps (in priority order):**
+1. Add safe entry point/link from existing fixture UI to match detail route
+2. V24D5E4 only after playerRatings persistence is implemented (backend)
+3. V24D5E5 only after V24D3C attaches shot coordinates (backend)
 
 ---
 

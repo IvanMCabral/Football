@@ -705,7 +705,7 @@ Assist and key-pass model + event richness for isolated V24:
 - V24D2 tests: 22 tests (`V24AssistModelTest`), all passing
 - Risk: LOW — isolated package, no production integration
 - Commit: `1149c0b`
-- Recommended next: V24D5E3 read-only match detail page, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Recommended next: V24D5E3 (now complete), V24D3C optional schema enrichment, Phase 6C, or Phase 11
 
 **Required regression gate for any simulation change:**
 ```
@@ -760,7 +760,12 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D5B | Third LeagueSimulator path behind default-false flag | MEDIUM/HIGH | 2 | Completed |
 | V24D5C | Detail persistence during V24 simulation behind persist-detail flag | MEDIUM | 3 | Completed |
 | V24D5D | End-to-end integration tests | MEDIUM | 4 | Completed |
-| V24D5E | Frontend planning/design | MEDIUM | Separate | Deferred |
+| V24D5E | Frontend planning/design/impl (E1+E2+E3 complete; E4+E5 deferred) | MEDIUM | Separate | Completed |
+| V24D5E1 | Design Document — COMPLETED | — | Done | Completed |
+| V24D5E2 | Frontend API Client + Types — COMPLETED | — | Done | Completed |
+| V24D5E3 | Read-only Match Detail Page — COMPLETED | LOW | Done | Completed |
+| V24D5E4 | Player Ratings UI — Deferred | — | — | Deferred |
+| V24D5E5 | Shot Map UI — Deferred | — | — | Deferred |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
 
