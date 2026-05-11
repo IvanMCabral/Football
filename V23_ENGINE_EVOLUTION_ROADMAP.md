@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C completed.
-**Current baseline commit:** `d6b3661` (V24D5C complete)
-**Tests:** 377 full suite total; 374 regression gate, 0 failures
-**Date:** 2026-05-09
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D completed.
+**Current baseline commit:** `3995d3d` (V24D5D complete)
+**Tests:** 389 full suite total; 386 regression gate, 0 failures
+**Date:** 2026-05-11
 
 ---
 
@@ -17,8 +17,8 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ## Phase 0 — Current Completed Baseline
 
-**Commit:** `d6b3661`
-**Tests:** 377 full suite total; 374 regression gate, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C)
+**Commit:** `3995d3d`
+**Tests:** 389 full suite total; 386 regression gate, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D)
 
 ### What exists
 
@@ -705,7 +705,7 @@ Assist and key-pass model + event richness for isolated V24:
 - V24D2 tests: 22 tests (`V24AssistModelTest`), all passing
 - Risk: LOW — isolated package, no production integration
 - Commit: `1149c0b`
-- Recommended next: V24D5D end-to-end flag integration tests, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11
+- Recommended next: V24D5E frontend match detail planning/design, V24D3C optional schema enrichment, Phase 6C, or Phase 11
 
 **Required regression gate for any simulation change:**
 ```
@@ -759,7 +759,7 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D5A | V24MatchContextFactory only | LOW | 1 | Completed |
 | V24D5B | Third LeagueSimulator path behind default-false flag | MEDIUM/HIGH | 2 | Completed |
 | V24D5C | Detail persistence during V24 simulation behind persist-detail flag | MEDIUM | 3 | Completed |
-| V24D5D | End-to-end integration tests | MEDIUM | 4 | Pending |
+| V24D5D | End-to-end integration tests | MEDIUM | 4 | Completed |
 | V24D5E | Frontend planning/design | MEDIUM | Separate | Deferred |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*

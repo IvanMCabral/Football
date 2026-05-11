@@ -1,9 +1,9 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D5C COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C all delivered; frontend still deferred
+**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D all delivered; frontend still deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `d6b3661` (feat: persist V24 detailed match data behind feature flag — V24D5C)
-**Tests:** 377 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C), 0 failures
+**Latest implementation commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
+**Tests:** 389 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D), 0 failures
 
 ---
 
@@ -14,7 +14,7 @@
 - **No API/frontend changes without separate approval**
 - **V23 remains production-stable** — V24 is parallel
 - **V24 remains isolated** under `application/service/simulation/v24/` until explicitly wired
-- **374 tests are the regression gate; full suite is 377 tests total** — all must pass after any V24D change
+- **386 tests are the regression gate; full suite is 389 tests total** — all must pass after any V24D change
 - Red-carded players remain non-substitutable (V24C invariant, never removed)
 
 ---
@@ -62,12 +62,21 @@ No Redis key format change.
 `V24DetailedMatchResult`/`V24MatchEvent` unchanged.
 Player ratings are currently persisted as an empty list; per-player rating persistence is deferred.
 
+### Complete (V24D5D)
+`V24EndToEndFlagIntegrationTest` — end-to-end flag integration tests for all flag combinations.
+12 tests covering: all flags false (default path), V24 enabled + persist disabled (aggregate only), V24 enabled + persist enabled (saves detail), V24 disabled + persist enabled (no persistence — flags independent), expose-detail-api alone (no simulation/persistence effect), all flags true (round completes + saves detail), context build failure (fallback + no persistence), save failure (best-effort, round completes), V24 > V23 precedence, default flags safe, MatchResultData schema (6 fields), no career state mutation.
+`V24EndToEndFlagIntegrationTest` added 12 tests.
+No production code changes.
+No API/controller/frontend changes.
+No Redis key format change.
+Regression gate: 386 tests, 0 failures; full suite: 389 tests.
+
 ### Still Limited
 - Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates are now available from V24D3A (helper only, no event attachment); player ratings are now available from V24D3B (helper only, no result field); DTO/snapshot classes and storage port interface now available from V24D4A; Redis adapter exists from V24D4B and query endpoint exists from V24D4C but no frontend and no production simulation wiring; remaining realism gaps are event-level coordinate attachment, result-level ratings attachment, frontend match detail, set pieces, stoppage time, and full persistence/API integration.
 - ~~No assist/key-pass as first-class event logic~~
 - Shot coordinate helper exists (V24D3A) but no V24MatchEvent attachment and no UI shot map yet
 - Player rating helper exists (V24D3B) but no V24DetailedMatchResult field and no UI/frontend yet
-- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), V24MatchContextFactory (V24D5A), and LeagueSimulator V24 branch (V24D5B) all exist; V24 detail persistence is now implemented (V24D5C) but playerRatings currently uses empty list (per-player rating persistence deferred); V24D5D end-to-end flag tests remain pending; no frontend yet.
+- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), V24MatchContextFactory (V24D5A), LeagueSimulator V24 branch (V24D5B), V24 detail persistence (V24D5C), and end-to-end flag tests (V24D5D) all exist and are tested. playerRatings currently uses empty list (per-player rating persistence deferred). V24D3C optional shot coordinate attachment still deferred. Frontend match detail UI still missing.
 - No goalkeeper save quality detail beyond xG
 - No corner/free kick/penalty model beyond existing chance creation
 - No stoppage time or extra time
@@ -384,8 +393,8 @@ GET `/api/careers/{careerId}/matches/{matchId}/detail` behind feature flag.
 - No frontend, no API/controller changes
 - **Status: COMPLETED** — commit `d6b3661`
 
-**V24D5D (End-to-End Integration Tests — Pending)**
-- All flag combinations validated end-to-end
+**V24D5D (End-to-End Integration Tests — Completed)**
+- All flag combinations validated end-to-end (commit `3995d3d`, 12 tests)
 
 **V24D5E (Frontend Planning/Design — Deferred)**
 

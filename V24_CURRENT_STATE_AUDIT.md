@@ -2,10 +2,10 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D5C COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C all delivered; frontend still deferred
-**Latest commit:** `d6b3661` (feat: persist V24 detailed match data behind feature flag — V24D5C)
-**Tests:** 377 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C), 0 failures; regression gate 374 tests, 0 failures
-**Date:** 2026-05-09
+**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D all delivered; frontend still deferred
+**Latest commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
+**Tests:** 389 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D), 0 failures; regression gate 386 tests, 0 failures
+**Date:** 2026-05-11
 
 ---
 
@@ -289,4 +289,24 @@
 - V24D5C did NOT modify: V24DetailedMatchResult, V24MatchEvent, V24DetailedMatchEngine, MatchFixture.MatchResultData, CareerSave, SessionPlayer, SessionTeam, or any production wiring
 - V24D5C tests: 9 tests (`V24LeagueDetailPersistenceTest`), all passing
 - V24 remains isolated — no frontend
-- Recommended next: V24D5D end-to-end flag integration tests, V24D3C optional schema enrichment, frontend match detail design, Phase 6C, or Phase 11
+- Recommended next: V24D5E frontend match detail planning/design, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+
+**V24D5D is now COMPLETED** (commit `3995d3d`). V24D5D added end-to-end flag integration tests:
+- `V24EndToEndFlagIntegrationTest` — 12 tests covering all flag combination scenarios
+- allFlagsFalseUsesDefaultPath — default path used, no V24, no persistence
+- v24EnabledPersistDisabledProducesAggregateOnly — V24 path without persistence
+- v24EnabledPersistEnabledSavesDetail — V24 path with persistence via storagePort.save
+- v24DisabledPersistEnabledDoesNotPersist — flags independent, no V24 = no persistence
+- exposeDetailApiEnabledDoesNotTriggerSimulationOrPersistence — read-only flag has no simulation effect
+- allFlagsTrueCompletesRoundAndPersistsDetail — all three flags together, round completes
+- v24ContextFailureFallsBackAndDoesNotPersist — missing starting XI fallback, no save
+- detailSaveFailureDoesNotFailRound — storagePort throws, round completes
+- v24TakesPrecedenceOverV23WhenBothEnabled — V24 wins over V23 flag
+- defaultFlagsRemainSafe — all flags default false, safe
+- matchResultDataSchemaStillSixFields — MatchResultData unchanged
+- noCareerStateMutationAfterV24Simulation — no energy/formation mutation
+- V24D5D did NOT modify: V24DetailedMatchResult, V24MatchEvent, V24DetailedMatchEngine, MatchFixture.MatchResultData, CareerSave, SessionPlayer, SessionTeam, or any production wiring
+- V24D5D tests: 12 tests (`V24EndToEndFlagIntegrationTest`), all passing
+- Only tests changed — no production code
+- Regression gate: 386 tests, 0 failures; 389 full suite total
+- Recommended next: V24D5E frontend match detail planning/design, V24D3C optional schema enrichment, Phase 6C, or Phase 11

@@ -1,10 +1,10 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5C COMPLETED — detail persistence added behind persist-detail=false; frontend still deferred
+**Status:** V24D5D COMPLETED — end-to-end flag integration tests added; frontend still deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `d6b3661` (feat: persist V24 detailed match data behind feature flag — V24D5C)
+**Latest implementation commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
 **Latest docs commit:** `f1f5549` (V24D5 planning updated)
-**Tests:** 377 full suite total (374 regression gate + 3 extra), 0 failures
+**Tests:** 389 full suite total (386 regression gate + 3 extra), 0 failures
 **Created:** 2026-05-09
 
 ---
@@ -26,9 +26,9 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 
 | Item | Value |
 |------|-------|
-| Latest implementation commit | `d6b3661` (V24D5C complete) |
+| Latest implementation commit | `3995d3d` (V24D5D complete) |
 | Latest docs commit | `f1f5549` |
-| Tests | 377 full suite total; 374 regression gate, 0 failures |
+| Tests | 389 full suite total; 386 regression gate, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |
 | Redis adapter | `V24DetailedMatchRedisAdapter` — used through `V24DetailedMatchStoragePort.save(...)` only when V24 path succeeds and `app.simulation.v24.persist-detail=true` |
@@ -271,7 +271,7 @@ app:
 | V24D5A | `V24MatchContextFactory` only — no LeagueSimulator wiring | LOW | V24D4C complete ✅ Completed |
 | V24D5B | Third LeagueSimulator path behind `use-v24-detailed-engine=false` | MEDIUM | V24D5A complete | **Completed** |
 | V24D5C | Detail persistence write behind `persist-detail=false` | MEDIUM | V24D5B complete | **Completed** |
-| V24D5D | End-to-end integration tests for all flag combinations | MEDIUM | V24D5C complete |
+| V24D5D | End-to-end integration tests for all flag combinations | MEDIUM | V24D5C complete | **Completed** |
 | V24D5E | Frontend planning/design — no implementation | — | Separate approval |
 
 **V24D5A is the recommended first step** — no runtime behavior change, fully testable in isolation, prepares V24D5B without activating it.
@@ -367,15 +367,31 @@ app:
 - **CareerSave schema unchanged**
 - **SessionPlayer/SessionTeam not mutated**
 - **V24DetailedMatchResult/V24MatchEvent unchanged**
-- Regression gate: 374 tests, 0 failures; 377 full suite total
+- Regression gate: 386 tests, 0 failures; 389 full suite total
 
 ---
 
-## V24D5D Completion Record (Pending)
+## V24D5D Completion Record
 
-**Status:** Pending — end-to-end integration tests for all flag combinations.
+**Commit:** `3995d3d` — `test: add V24D5D end-to-end flag integration tests`
+**Date:** 2026-05-11
+**Tests:** 12 new (`V24EndToEndFlagIntegrationTest`), 389 full suite total, 0 failures
 
----
+**V24D5D delivered:**
+- `V24EndToEndFlagIntegrationTest` — 12 end-to-end flag combination tests
+- All flag combinations tested independently and together
+- V24 disabled + persist enabled does not persist (flags independent)
+- expose-detail-api alone does not trigger simulation/persistence
+- All flags true saves detail and completes round
+- Context build failure falls back and skips persistence
+- Save failure is best-effort (round completes)
+- V24 > V23 > default precedence remains valid
+- Default flags remain safe
+- MatchFixture.MatchResultData still 6 fields
+- CareerSave schema unchanged, SessionPlayer/SessionTeam not mutated
+- No API/controller/frontend changes, no Redis key format change
+- Only tests changed — no production code
+- Regression gate: 386 tests, 0 failures
 
 ## V24D5E Completion Record (Deferred)
 
@@ -385,16 +401,13 @@ app:
 
 ## 14. Recommended Next Step
 
-**V24D5D — End-to-end integration tests for all flag combinations.**
+**V24D5E — Frontend match detail planning/design.**
 
 **Why:**
-- V24D5C delivered detail persistence behind `persist-detail=false`.
-- The three flags (`use-v24-detailed-engine`, `persist-detail`, `expose-detail-api`) are independent and need end-to-end validation in combination.
-- V24D5D is low-risk: tests only, no production code changes.
-- V24D5D ensures the flag combinations work correctly before any frontend work begins.
-
-**V24D5D deliverable:**
-End-to-end tests validating all flag combination paths: (V24 off/default), (V24 on, persist off), (V24 on, persist on, API off), (V24 on, persist on, API on), and error/timeout scenarios.
+- V24D5D delivered end-to-end flag integration tests — all flag combinations validated.
+- V24 simulation path, persistence, and query endpoint all exist and are tested.
+- Frontend match detail UI is the remaining gap — needed to display V24 persisted data to users.
+- V24D5E is a planning/design task only — no implementation yet.
 
 **Alternative next steps (in priority order):**
 1. V24D5D end-to-end flag integration tests (this document)
