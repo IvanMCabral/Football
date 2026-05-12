@@ -1,11 +1,12 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F COMPLETED — playerRatings now populated in V24DetailedMatchData; player ratings UI still deferred; read-only frontend match detail page and fixture modal entry point exist in separate frontend repo
+**Status:** V24D5F COMPLETED — playerRatings now populated in V24DetailedMatchData; player ratings UI now complete in separate frontend repo; shot map deferred until V24D3C
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `0c4d62b` (feat: persist V24 player ratings in detailed match data)
-**Latest docs commit:** `f1f5549`
+**Latest docs commit:** `58d35c6` (previous docs baseline before V24D5E4 documentation update)
 **Tests:** 398 full suite total; 398 regression gate, 0 failures
 **Created:** 2026-05-09
+**Updated:** 2026-05-11
 
 ---
 
@@ -27,7 +28,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | Item | Value |
 |------|-------|
 | Latest implementation commit | `0c4d62b` (V24D5F complete) |
-| Latest docs commit | `f1f5549` |
+| Latest docs commit | `58d35c6` |
 | Tests | 398 full suite total; 398 regression gate, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |
@@ -40,7 +41,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | LeagueSimulator V24 path | Exists behind `app.simulation.league.use-v24-detailed-engine=false` |
 | Flag precedence | V24 > V23 > default |
 | Detail persistence | Implemented in V24D5C behind `app.simulation.v24.persist-detail=false`; default false — saves only when V24 path succeeds and flag is true |
-| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; read-only frontend match detail page and fixture modal entry point exist in the separate frontend repo; player ratings UI, shot map, and career-state mutation remain deferred |
+| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; read-only frontend match detail page, fixture modal entry point, and player ratings UI all exist in the separate frontend repo; shot map and career-state mutation remain deferred |
 
 **Persistence behavior (V24D5F):**
 - V24 detail persistence is wired to `LeagueSimulator.persistV24Detail()`
@@ -400,12 +401,13 @@ app:
 
 ## V24D5E Completion Record
 
-**Status:** V24D5E1 + V24D5E2 + V24D5E3 + V24D5E3B COMPLETED — all frontend planning, API client, page, and fixture entry point complete in separate frontend repo
+**Status:** V24D5E1 + V24D5E2 + V24D5E3 + V24D5E3B + V24D5E4 COMPLETED — all frontend planning, API client, page, entry point, and player ratings UI complete in separate frontend repo
 
 **Frontend V24D5E commits:**
 - `050ab57` — feat: add V24D5E2 match detail API client and TypeScript types
 - `0ba2305` — feat: add V24D5E3 read-only match detail page
 - `d244097` — feat: add match detail entry point from fixture modal
+- `958af1e` — feat: add V24D5E4 player ratings UI
 
 **Frontend V24D5E3 completion summary:**
 - `V24MatchDetailPageComponent` — standalone Angular component at `src/app/features/match-detail/pages/v24-match-detail-page.component.ts`
@@ -426,7 +428,7 @@ app:
 - Fixture modal does NOT call detail endpoint
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 
-**V24D5E4/V24D5E5 deferred:** playerRatings UI needs backend persistence; shot map UI needs V24D3C shot coordinate attachment.
+**V24D5E4/V24D5E5 deferred:** shot map UI depends on V24D3C shot coordinate attachment.
 
 **Backend unchanged by frontend implementation:** root repo branch `mvp-1-performance-cleanup` has no changes from V24D5E frontend work.
 
@@ -451,8 +453,8 @@ app:
 **Backend unchanged:** root repo has no changes from V24D5E frontend work. No API schema changes, no Redis schema changes.
 
 **Next recommended steps (in priority order):**
-1. V24D5E4 only after playerRatings persistence is implemented — now unblocked by V24D5F backend completion
-2. V24D5E5 only after V24D3C attaches shot coordinates (backend)
+1. V24D3C — attach shot coordinates to events (backend)
+2. V24D5E5 — shot map UI (after V24D3C)
 3. Frontend QA/polish pass on match detail page
 
 ---

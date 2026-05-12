@@ -1,12 +1,13 @@
 # V24D5E — Frontend Match Detail Planning/Design
 
-**Status:** V24D5F COMPLETED — playerRatings backend persistence now delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B completed in separate frontend repo; V24D5E4 (player ratings UI) now unblocked from backend side; V24D5E5 (shot map) deferred
+**Status:** V24D5F COMPLETED — playerRatings backend persistence now delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 (shot map) deferred until V24D3C
 **Frontend repo:** `front-ciber/project` / Football-angular
 **Frontend branch:** `mvp-1`
 **Frontend commits:**
 - `050ab57` — feat: add V24D5E2 match detail API client and TypeScript types
 - `0ba2305` — feat: add V24D5E3 read-only match detail page
 - `d244097` — feat: add match detail entry point from fixture modal
+- `958af1e` — feat: add V24D5E4 player ratings UI
 **Type:** Frontend design and integration planning
 **Date:** 2026-05-11
 
@@ -14,7 +15,7 @@
 
 ## 1. Executive Summary
 
-V24D5E is **planning and design only**. No frontend implementation begins until this document is approved.
+V24D5E is **now a completion record**. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 are completed; V24D5E5 shot map remains deferred until V24D3C. No frontend implementation begins until this document was approved — all phases are now complete.
 
 V24 detailed match data (stored in Redis, queryable via existing endpoint) is **additive enrichment** — it must never be required for career progress. The existing aggregate match result remains the source of truth for standings. If detail is unavailable (older matches, disabled flags, or missing data), the UI must gracefully fall back to the existing fixture display.
 
@@ -117,7 +118,7 @@ PlayerMatchRatingDto:
 **Current known limitations:**
 - `shotCoordinate` is **nullable** — shot coordinates require V24D3C event attachment
 - UI must handle both fields gracefully (empty/hidden, not error)
-- `playerRatings` are now populated for newly persisted V24 details after V24D5F (backend complete); may be empty for older matches or missing data; full player ratings UI still deferred until V24D5E4
+- `playerRatings` are now populated for newly persisted V24 details after V24D5F (backend complete, V24D5F commit `0c4d62b`); may be empty for older matches or missing data; player ratings UI is now complete (V24D5E4, frontend repo commit `958af1e`)
 
 ---
 
@@ -186,8 +187,8 @@ Route: /careers/:careerId/matches/:matchId/detail
 │  xG            1.80 ─ 1.20                        │
 │  Goals           2 ─── 1                           │
 │                                                     │
-│  PLAYERS TAB (hidden until playerRatings populated)│
-│  "Player ratings are not available yet."          │
+│  PLAYERS TAB (renders when playerRatings non-empty;  │
+│  empty state fallback for old matches/missing data)  │
 │                                                     │
 │  SHOTS TAB (hidden until shotCoordinate exists)    │
 │  "Shot map will be available in a future update." │
@@ -196,7 +197,7 @@ Route: /careers/:careerId/matches/:matchId/detail
 
 **Tab behavior:**
 - Summary, Timeline, Stats always visible (data exists from V24 simulation)
-- Players tab: shows empty state until `playerRatings` list is non-empty
+- Players tab: renders grouped/sorted player ratings when `playerRatings` is non-empty; preserves empty state for old matches, missing data, disabled persistence, or null/empty `playerRatings`
 - Shots tab: shows empty state until `shotCoordinate` is non-null on events
 
 ---
@@ -420,10 +421,20 @@ frontend.features.matchDetailV24=false
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - **Status: COMPLETED**
 
-### V24D5E4 — Player Ratings UI — Pending
-- Backend `playerRatings` persistence is now complete (V24D5F, commit `0c4d62b`); V24D5E4 frontend UI is now unblocked from backend side
-- Players tab with per-player stat cards
-- Empty state only for older matches or missing data
+### V24D5E4 — Player Ratings UI — COMPLETED
+**Commit:** `958af1e` (frontend repo `mvp-1`)
+- `V24MatchDetailPageComponent` — `hasPlayerRatings()`, `playerRatingsByTeam()`, `getTopRatedOverallIndex()` methods added
+- Players section now renders full table when `playerRatings` is non-empty; empty state preserved for null/undefined/empty
+- Table columns: playerName, position, rating (1 decimal), goals, assists, keyPasses, shots, cards, injuries, substitutions
+- Rating color coding: top-rated green, high >=7.0 blue, low <6.0 red
+- Top-rated player highlighted (green background)
+- Card badges: yellow for 1 card, red for 2+
+- Players grouped by team (Home first, Away second), sorted by rating descending
+- Uses existing `MatchDetail.playerRatings` from V24D5F backend persistence
+- No new endpoint calls, no route changes, no API client/type changes
+- No backend/API/Redis changes, no shot map implementation
+- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+- **Status: COMPLETED**
 
 ### V24D5E5 — Shot Map UI — Deferred
 - Only after V24D3C attaches shot coordinates to events (separate backend phase)
@@ -568,7 +579,7 @@ app.simulation.v24.expose-detail-api=true
 |------|-----------|--------|------------|
 | Detail unavailable for older matches | High | Low | Fallback to aggregate; users understand "not available" |
 | Endpoint disabled in production | Low | Medium | 404 graceful fallback; user-friendly message |
-| `playerRatings` empty for older matches or missing detail | Medium | Low | Empty state; V24D5E4 renders ratings once available; players tab hidden |
+| `playerRatings` empty for older matches or missing detail | Low | Low | Empty state handled; player ratings UI now complete (V24D5E4); players tab shows only when `playerRatings` is non-empty |
 | `shotCoordinate` null blocks shot map | High | Low | Shots tab hidden; future update message |
 | Large timeline payload (90+ events) | Low | Medium | Pagination/virtualization later; not in V24D5E3 scope |
 | UI overcomplication | Medium | Medium | Progressive tabs; V24D5E3 = minimal viable detail |
@@ -606,8 +617,8 @@ app.simulation.v24.expose-detail-api=true
 - Empty `playerRatings` list handled; nullable `shotCoordinate` and `relatedPlayerId/relatedPlayerName` handled
 
 **Next recommended steps (in priority order):**
-1. V24D5E4 — player ratings UI (now unblocked from backend side after V24D5F)
-2. V24D5E5 only after V24D3C attaches shot coordinates (backend)
+1. V24D3C — attach shot coordinates to events (backend)
+2. V24D5E5 — shot map UI (after V24D3C)
 3. Frontend QA/polish pass on match detail page
 
 ---

@@ -447,24 +447,24 @@ Add tests for default path and V23 path:
 - **No API/Redis/frontend/schema changes**
 - **No CareerSave/SessionPlayer/SessionTeam mutation**
 - 12 new tests (`V24PlayerRatingsPersistenceTest`)
-- Recommended next: V24D5E4 player ratings UI (now unblocked from backend side), V24D3C, or Phase 11
+- Recommended next: V24D3C attach shot coordinates to events, V24D5E5 shot map UI, or Phase 11
 
-**V24D5E COMPLETED (E1+E2+E3+E3B done; E4+E5 deferred) — Frontend planning, API client, match detail page, and fixture entry point all complete in separate frontend repo**
+**V24D5E COMPLETED (E1+E2+E3+E3B+E4 done; E5 deferred) — Frontend planning, API client, match detail page, entry point, and player ratings UI all complete in separate frontend repo**
 
 **V24D5E status:**
 - V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
 - V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1` branch)
 - V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1` branch)
 - V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1` branch)
-- V24D5E4 Player Ratings UI — Deferred (backend playerRatings persistence now complete in V24D5F; UI now unblocked from backend side)
+- V24D5E4 Player Ratings UI — COMPLETED (frontend repo `958af1e` on `mvp-1` branch)
 - V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed first)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 Frontend route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
 Dashboard fixture modal links completed matches to detail page via "📊 Detalle" button.
 Frontend validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
-Root/backend repo (`mvp-1-performance-cleanup`) unchanged by frontend V24D5E/V24D5E3B implementation.
-Backend tests: 389 full suite, 386 regression gate, 0 failures — unchanged.
+Root/backend repo (`mvp-1-performance-cleanup`) unchanged by V24D5E frontend implementation.
+Backend tests unchanged: 398 full suite, 398 regression gate, 0 failures.
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:

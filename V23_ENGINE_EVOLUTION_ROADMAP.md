@@ -761,12 +761,12 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D5C | Detail persistence during V24 simulation behind persist-detail flag | MEDIUM | 3 | Completed |
 | V24D5D | End-to-end integration tests | MEDIUM | 4 | Completed |
 | V24D5F | Persist playerRatings in V24DetailedMatchData | LOW | 4 | Completed |
-| V24D5E | Frontend planning/design/impl (E1+E2+E3+E3B complete; E4+E5 deferred) | MEDIUM | Separate | Completed |
+| V24D5E | Frontend planning/design/impl (E1+E2+E3+E3B+E4 complete; E5 deferred) | MEDIUM | Separate | Completed |
 | V24D5E1 | Design Document — COMPLETED | — | Done | Completed |
 | V24D5E2 | Frontend API Client + Types — COMPLETED | — | Done | Completed |
 | V24D5E3 | Read-only Match Detail Page — COMPLETED | LOW | Done | Completed |
 | V24D5E3B | Fixture/List Entry Point — COMPLETED | LOW | Done | Completed |
-| V24D5E4 | Player Ratings UI — Deferred (backend now unblocked by V24D5F) | MEDIUM | — | Pending |
+| V24D5E4 | Player Ratings UI — Completed in separate frontend repo | MEDIUM | Done | Completed |
 | V24D5E5 | Shot Map UI — Deferred until V24D3C | MEDIUM | — | Deferred |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*

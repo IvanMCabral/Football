@@ -1,6 +1,6 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D5F COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B frontend planning/API/page/entry-point are completed in separate frontend repo; player ratings UI and shot map remain deferred
+**Status:** V24D5F COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 shot map deferred until V24D3C
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `0c4d62b` (feat: persist V24 player ratings in detailed match data)
 **Tests:** 398 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures
@@ -84,11 +84,11 @@ No CareerSave/SessionPlayer/SessionTeam mutation.
 Regression gate: 398 tests, 0 failures; full suite: 398 tests.
 
 ### Still Limited
-- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates are now available from V24D3A (helper only, no event attachment); player ratings backend persistence is now available from V24D5F; DTO/snapshot classes and storage port interface now available from V24D4A; Redis adapter (V24D4B), query endpoint (V24D4C), LeagueSimulator V24 path (V24D5B), detail persistence (V24D5C), end-to-end flag tests (V24D5D), frontend read-only page/entry point (V24D5E1/E2/E3/E3B), and playerRatings backend persistence (V24D5F) all exist. Remaining gaps are event-level shotCoordinate attachment (V24D3C), full player ratings UI (V24D5E4), shot map UI (V24D5E5), set pieces, stoppage time, and career-state mutation decisions.
+- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates are now available from V24D3A (helper only, no event attachment); player ratings backend persistence is now available from V24D5F; DTO/snapshot classes and storage port interface now available from V24D4A; Redis adapter (V24D4B), query endpoint (V24D4C), LeagueSimulator V24 path (V24D5B), detail persistence (V24D5C), end-to-end flag tests (V24D5D), frontend read-only page/entry point/player ratings UI (V24D5E1/E2/E3/E3B/E4), and playerRatings backend persistence (V24D5F) all exist. Remaining gaps are event-level shotCoordinate attachment (V24D3C), shot map UI (V24D5E5), set pieces, stoppage time, and career-state mutation decisions.
 - ~~No assist/key-pass as first-class event logic~~
 - Shot coordinate helper exists (V24D3A) but no V24MatchEvent attachment and no UI shot map yet
-- Player rating helper exists (V24D3B) and backend persistence now exists (V24D5F), but full player ratings UI still deferred (V24D5E4 pending)
-- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), V24MatchContextFactory (V24D5A), LeagueSimulator V24 branch (V24D5B), V24 detail persistence (V24D5C), end-to-end flag tests (V24D5D), and playerRatings backend persistence (V24D5F) all exist and are tested. playerRatings backend persistence now exists (V24D5F) but full player ratings UI is still deferred (V24D5E4). shotCoordinate nullable until V24D3C.
+- Player rating helper exists (V24D3B) and backend persistence now exists (V24D5F); player ratings UI now complete (V24D5E4) in separate frontend repo
+- DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), V24MatchContextFactory (V24D5A), LeagueSimulator V24 branch (V24D5B), V24 detail persistence (V24D5C), end-to-end flag tests (V24D5D), and playerRatings backend persistence (V24D5F) all exist and are tested. Player ratings UI now complete in separate frontend repo (V24D5E4). shotCoordinate nullable until V24D3C.
 - No goalkeeper save quality detail beyond xG
 - No corner/free kick/penalty model beyond existing chance creation
 - No stoppage time or extra time
@@ -420,13 +420,13 @@ GET `/api/careers/{careerId}/matches/{matchId}/detail` behind feature flag.
 - No CareerSave/SessionPlayer/SessionTeam mutation
 - **Status: COMPLETED** — commit `0c4d62b`
 
-**V24D5E (Frontend Planning/Design/Implementation — Completed: E1+E2+E3+E3B done, E4+E5 deferred)**
+**V24D5E (Frontend Planning/Design/Implementation — Completed: E1+E2+E3+E3B+E4 done, E5 deferred)**
 
 V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
 V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1`)
 V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1`)
 V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1`)
-V24D5E4 Player Ratings UI — Deferred (playerRatings backend persistence now complete in V24D5F; UI is now unblocked from backend side)
+V24D5E4 Player Ratings UI — COMPLETED (frontend repo `958af1e` on `mvp-1`)
 V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed first)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
