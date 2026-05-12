@@ -50,6 +50,10 @@ public final class V24MatchEventDto {
 
     public static V24MatchEventDto fromEvent(V24MatchEvent event) {
         Objects.requireNonNull(event, "event must not be null");
+        V24ShotCoordinateDto coordDto = null;
+        if (event.shotCoordinate() != null) {
+            coordDto = V24ShotCoordinateDto.fromCoordinate(event.shotCoordinate());
+        }
         return new V24MatchEventDto(
                 event.minute(),
                 event.type().name(),
@@ -60,7 +64,7 @@ public final class V24MatchEventDto {
                 event.relatedPlayerName(),
                 event.xg(),
                 event.description(),
-                null // shotCoordinate not attached to V24MatchEvent yet — V24D3C would add it
+                coordDto
         );
     }
 

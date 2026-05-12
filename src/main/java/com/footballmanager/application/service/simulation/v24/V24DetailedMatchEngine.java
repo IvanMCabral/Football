@@ -31,6 +31,7 @@ public class V24DetailedMatchEngine {
     private final V24InjuryModel injuryModel = new V24InjuryModel();
     private final V24SubstitutionEngine substitutionEngine = new V24SubstitutionEngine();
     private final V24AssistModel assistModel = new V24AssistModel();
+    private final V24ShotCoordinateGenerator coordGenerator = new V24ShotCoordinateGenerator();
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -277,6 +278,9 @@ public class V24DetailedMatchEngine {
         // V24C1: Action drain for shot attempt
         fatigueModel.applyDrain(shooter, 8);
 
+        // V24D3C: Generate shot coordinate for this attempt
+        V24ShotCoordinate shotCoord = coordGenerator.generate(location, random);
+
         // Resolve shot outcome (xG threshold + randomness)
         boolean onTarget = random.nextDouble() < (0.30 + (1 - xg) * 0.50);
         boolean isGoal = false;
@@ -299,7 +303,7 @@ public class V24DetailedMatchEngine {
                         assistPlayerName,
                         Math.round(xg * 1000.0) / 1000.0,
                         goalDesc
-                ));
+                ).withShotCoordinate(shotCoord));
             }
         }
 
@@ -314,7 +318,7 @@ public class V24DetailedMatchEngine {
                     assistPlayerName,
                     Math.round(xg * 1000.0) / 1000.0,
                     "Shot saved"
-            ));
+            ).withShotCoordinate(shotCoord));
             possessor.addShot(true);
         } else if (!onTarget) {
             V24MatchEventType missType = random.nextDouble() < 0.3
@@ -330,7 +334,7 @@ public class V24DetailedMatchEngine {
                     assistPlayerName,
                     Math.round(xg * 1000.0) / 1000.0,
                     "Shot missed"
-            ));
+            ).withShotCoordinate(shotCoord));
             possessor.addShot(false);
         }
     }
