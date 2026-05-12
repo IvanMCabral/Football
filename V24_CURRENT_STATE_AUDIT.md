@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B completed in separate frontend repo; V24D5E4/V24D5E5 deferred
-**Latest commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
-**Tests:** 389 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D), 0 failures; regression gate 386 tests, 0 failures
+**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B completed in separate frontend repo; V24D5E4/V24D5E5 deferred
+**Latest commit:** `0c4d62b` (feat: persist V24 player ratings in detailed match data)
+**Tests:** 398 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 398 tests, 0 failures
 **Date:** 2026-05-11
 
 ---
@@ -308,8 +308,24 @@
 - V24D5D did NOT modify: V24DetailedMatchResult, V24MatchEvent, V24DetailedMatchEngine, MatchFixture.MatchResultData, CareerSave, SessionPlayer, SessionTeam, or any production wiring
 - V24D5D tests: 12 tests (`V24EndToEndFlagIntegrationTest`), all passing
 - Only tests changed — no production code
-- Regression gate: 386 tests, 0 failures; 389 full suite total
-- Recommended next: V24D5E3 read-only match detail page (now complete), add fixture entry point, V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Regression gate: 398 tests, 0 failures; 398 full suite total
+- Recommended next: V24D5E4 player ratings UI (now unblocked), V24D3C optional schema enrichment, Phase 6C, or Phase 11
+
+**V24D5F — Player Ratings Persistence — COMPLETED (commit `0c4d62b`):**
+
+`V24PlayerRatingsAssembler` — pure helper that resolves starting XI from `CareerSave.teamStarting11`, converts `SessionPlayer` → `V24PlayerMatchState` via `fromSessionPlayer()`, and delegates to `V24PlayerMatchStatsModel.computeRatings()` for deterministic stat/rating derivation from timeline.
+- `LeagueSimulator.persistV24Detail()` now calls `v24PlayerRatingsAssembler.assemblePlayerRatings()` instead of passing `List.of()`
+- `V24DetailedMatchData.fromResult(...)` now receives populated `playerRatings` when detail is persisted
+- Ratings derived deterministically from match timeline (goals, assists, shots, cards, fouls, injuries, substitutions)
+- `playerRatings` populated only when: `use-v24-detailed-engine=true` AND `persist-detail=true` AND V24 simulation succeeds
+- `persist-detail=false` does NOT compute or persist ratings — flags are independent
+- Save failure remains best-effort
+- **No API schema changes, no Redis key format changes, no frontend changes**
+- **No SessionPlayer/SessionTeam mutation**
+- **No MatchFixture.MatchResultData change**
+- **No CareerSave schema change**
+- `V24PlayerRatingsPersistenceTest` — 12 new tests, all passing
+- Regression gate: 398 tests, 0 failures; 398 full suite total
 
 **V24D5E (Frontend) — Completed through V24D5E3 in separate frontend repo:**
 

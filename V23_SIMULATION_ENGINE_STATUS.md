@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `3995d3d` (test: add V24D5D end-to-end flag integration tests)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D complete.
-**Test status:** 389 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D), 0 failures; regression gate 386 tests, 0 failures
+**Latest commit:** `0c4d62b` (feat: persist V24 player ratings in detailed match data)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete.
+**Test status:** 398 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 398 tests, 0 failures
 **Date:** 2026-05-11
 
 ---
@@ -120,8 +120,9 @@ public final class MatchQualityComputer {
 | `V24LeagueSimulationPathTest` | 11 | V24D5B: V24 LeagueSimulator path, flag precedence, result mapping, fallback, no persistence |
 | `V24LeagueDetailPersistenceTest` | 9 | V24D5C: detail persistence behind persist-detail flag, no-save when disabled, best-effort failure, context fallback skip |
 | `V24EndToEndFlagIntegrationTest` | 12 | V24D5D: end-to-end flag combinations, precedence, persistence/no-persistence, fallback, best-effort save, schema safety |
+| `V24PlayerRatingsPersistenceTest` | 12 | V24D5F: playerRatings persistence in V24DetailedMatchData, assembler, no mutation, best-effort persistence |
 
-**Total: 389 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D)
+**Total: 398 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F)
 
 ---
 
@@ -435,6 +436,19 @@ Add tests for default path and V23 path:
 - V24 remains isolated — no frontend
 - Recommended next: V24D5E3 (now complete), V24D5E3B (now complete), playerRatings persistence backend, V24D3C, or Phase 11
 
+**V24D5F COMPLETED — Player Ratings Persistence (commit `0c4d62b`):**
+- `V24PlayerRatingsAssembler` — pure helper resolving starting XI from `CareerSave.teamStarting11`, converting `SessionPlayer` → `V24PlayerMatchState` via `fromSessionPlayer()`, delegating to `V24PlayerMatchStatsModel.computeRatings()`
+- `LeagueSimulator.persistV24Detail()` now calls `v24PlayerRatingsAssembler.assemblePlayerRatings()` instead of `List.of()`
+- `V24DetailedMatchData.fromResult(...)` now receives populated `playerRatings` (not empty list)
+- Ratings derived deterministically from match timeline (goals, assists, shots, cards, fouls, injuries, substitutions)
+- `playerRatings` populated only when: `use-v24-detailed-engine=true` AND `persist-detail=true` AND V24 simulation succeeds
+- `persist-detail=false` does NOT compute or persist ratings
+- Save failure remains best-effort
+- **No API/Redis/frontend/schema changes**
+- **No CareerSave/SessionPlayer/SessionTeam mutation**
+- 12 new tests (`V24PlayerRatingsPersistenceTest`)
+- Recommended next: V24D5E4 player ratings UI (now unblocked from backend side), V24D3C, or Phase 11
+
 **V24D5E COMPLETED (E1+E2+E3+E3B done; E4+E5 deferred) — Frontend planning, API client, match detail page, and fixture entry point all complete in separate frontend repo**
 
 **V24D5E status:**
@@ -442,7 +456,7 @@ Add tests for default path and V23 path:
 - V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1` branch)
 - V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1` branch)
 - V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1` branch)
-- V24D5E4 Player Ratings UI — Deferred (backend per-player rating persistence needed first)
+- V24D5E4 Player Ratings UI — Deferred (backend playerRatings persistence now complete in V24D5F; UI now unblocked from backend side)
 - V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed first)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
@@ -476,9 +490,9 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest
+mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest
 ```
-Expected: 386 tests (regression gate), 0 failures; 389 full suite total.
+Expected: 398 tests (regression gate), 0 failures; 398 full suite total.
 
 ---
 
@@ -562,6 +576,7 @@ V24 is **NOT a replacement for V23**. V23 remains the production simulation engi
 
 **Commit history on `mvp-1-performance-cleanup` for V24:**
 ```
+0c4d62b — feat: persist V24 player ratings in detailed match data (V24D5F)
 3995d3d — test: add V24D5D end-to-end flag integration tests (V24D5D)
 d6b3661 — feat: persist V24 detailed match data behind feature flag (V24D5C)
 cca2f6e — feat: add V24 LeagueSimulator path behind feature flag (V24D5B)
