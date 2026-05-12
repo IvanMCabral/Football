@@ -1,6 +1,6 @@
 # V24D5E — Frontend Match Detail Planning/Design
 
-**Status:** V24D5F COMPLETED — playerRatings backend persistence now delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 (shot map) deferred until V24D3C
+**Status:** V24D5F+V24D3C COMPLETED — playerRatings backend persistence delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 (shot map) unblocked by V24D3C — pending, not yet implemented
 **Frontend repo:** `front-ciber/project` / Football-angular
 **Frontend branch:** `mvp-1`
 **Frontend commits:**
@@ -15,7 +15,7 @@
 
 ## 1. Executive Summary
 
-V24D5E is **now a completion record**. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 are completed; V24D5E5 shot map remains deferred until V24D3C. No frontend implementation begins until this document was approved — all phases are now complete.
+V24D5E is **now a completion record**. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 are completed; V24D5E5 shot map is unblocked by V24D3C (commit `94b4962`) but is not implemented yet. V24D5E5 is the only remaining frontend phase.
 
 V24 detailed match data (stored in Redis, queryable via existing endpoint) is **additive enrichment** — it must never be required for career progress. The existing aggregate match result remains the source of truth for standings. If detail is unavailable (older matches, disabled flags, or missing data), the UI must gracefully fall back to the existing fixture display.
 
@@ -43,7 +43,7 @@ The backend already exposes V24 detailed match data. Frontend only needs to cons
 | All flags default | false — detail is fully opt-in |
 | playerRatings backend | **Populated since V24D5F** (commit `0c4d62b`) — `V24PlayerRatingsAssembler` resolves starting XI + timeline → ratings |
 
-Full suite: 398 tests | Regression gate: 398 tests | 0 failures
+Full suite: 406 tests | Regression gate: 406 tests | 0 failures
 
 ---
 
@@ -87,7 +87,7 @@ V24MatchEventDto:
   relatedPlayerName String  ← nullable
   xg               Double   ← nullable (for SHOT/GOAL)
   description      String
-  shotCoordinate   V24ShotCoordinateDto  ← nullable currently
+  shotCoordinate   V24ShotCoordinateDto  ← populated on GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events (V24D3C)
 ```
 
 ```
@@ -116,8 +116,7 @@ PlayerMatchRatingDto:
 ```
 
 **Current known limitations:**
-- `shotCoordinate` is **nullable** — shot coordinates require V24D3C event attachment
-- UI must handle both fields gracefully (empty/hidden, not error)
+- `shotCoordinate` is **populated** on GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events (V24D3C complete, commit `94b4962`); nullable for non-shot events
 - `playerRatings` are now populated for newly persisted V24 details after V24D5F (backend complete, V24D5F commit `0c4d62b`); may be empty for older matches or missing data; player ratings UI is now complete (V24D5E4, frontend repo commit `958af1e`)
 
 ---
@@ -198,7 +197,7 @@ Route: /careers/:careerId/matches/:matchId/detail
 **Tab behavior:**
 - Summary, Timeline, Stats always visible (data exists from V24 simulation)
 - Players tab: renders grouped/sorted player ratings when `playerRatings` is non-empty; preserves empty state for old matches, missing data, disabled persistence, or null/empty `playerRatings`
-- Shots tab: shows empty state until `shotCoordinate` is non-null on events
+- Shots tab: renders shot map when `shotCoordinate` is non-null on shot events (V24D3C complete)
 
 ---
 
@@ -286,7 +285,7 @@ interface MatchEvent {
   relatedPlayerName?: string; // nullable
   xg?: number;                // nullable
   description: string;
-  shotCoordinate?: ShotCoordinate;  // nullable currently
+  shotCoordinate?: ShotCoordinate;  // populated on shot events (V24D3C)
 }
 
 interface ShotCoordinate {
@@ -358,7 +357,7 @@ frontend.features.matchDetailV24=false
 - Require V24 detail for career progress or standings
 - Block round simulation
 - Assume `playerRatings` is non-empty
-- Assume `shotCoordinate` is non-null on any event
+- Assume `shotCoordinate` is non-null on GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events (V24D3C)
 - Assume `timeline` is non-empty
 - Mutate any backend state
 - Change fixture result model
@@ -454,8 +453,8 @@ Before V24D5E4 (player ratings):
 2. V24D5E4 frontend player ratings UI is now unblocked from backend side
 
 Before V24D5E5 (shot map):
-1. V24D3C must attach shot coordinates to events (separate approval)
-2. `shotCoordinate` must be non-null on SHOT/GOAL events
+1. V24D3C complete (commit `94b4962`) — shot coordinates now attached to events
+2. `shotCoordinate` is non-null on GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events
 
 **Dev/test enablement (requires separate ops action):**
 ```
@@ -548,7 +547,7 @@ app.simulation.v24.expose-detail-api=true
 }
 ```
 
-**Note:** `playerRatings` may be empty for older matches (before V24D5F) but is populated for newly persisted V24 details after V24D5F. `shotCoordinate` is absent from all events until V24D3C. Both must be handled as empty/nullable.
+**Note:** `playerRatings` may be empty for older matches (before V24D5F) but is populated for newly persisted V24 details after V24D5F. `shotCoordinate` is populated on shot events after V24D3C (commit `94b4962`). Both must be handled as empty/nullable for backward compatibility.
 
 ---
 
@@ -567,8 +566,8 @@ app.simulation.v24.expose-detail-api=true
 - Absent `shotCoordinate` hides shot map
 
 ### Backend regression gate (unchanged by V24D5E frontend work)
-- Keep: 398 regression tests, 0 failures
-- Full suite: 398 tests, 0 failures
+- Keep: 406 regression tests, 0 failures
+- Full suite: 406 tests, 0 failures
 - V24D5E adds **no backend tests** — no production code changes in frontend repo
 
 ---
@@ -580,7 +579,7 @@ app.simulation.v24.expose-detail-api=true
 | Detail unavailable for older matches | High | Low | Fallback to aggregate; users understand "not available" |
 | Endpoint disabled in production | Low | Medium | 404 graceful fallback; user-friendly message |
 | `playerRatings` empty for older matches or missing detail | Low | Low | Empty state handled; player ratings UI now complete (V24D5E4); players tab shows only when `playerRatings` is non-empty |
-| `shotCoordinate` null blocks shot map | High | Low | Shots tab hidden; future update message |
+| `shotCoordinate` populated on shot events (V24D3C complete) | Low | Low | Shot map now possible; non-shot events still null |
 | Large timeline payload (90+ events) | Low | Medium | Pagination/virtualization later; not in V24D5E3 scope |
 | UI overcomplication | Medium | Medium | Progressive tabs; V24D5E3 = minimal viable detail |
 | Detail/aggregate inconsistency | Low | Low | Aggregate drives standings; detail is enrichment only |

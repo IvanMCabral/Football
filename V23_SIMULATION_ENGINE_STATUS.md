@@ -1,9 +1,9 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `0c4d62b` (feat: persist V24 player ratings in detailed match data)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete.
-**Test status:** 398 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 398 tests, 0 failures
+**Latest commit:** `94b4962` (feat: attach V24 shot coordinates to match events)
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete.
+**Test status:** 406 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 406 tests, 0 failures
 **Date:** 2026-05-11
 
 ---
@@ -112,6 +112,7 @@ public final class MatchQualityComputer {
 | `V24AssistModelTest` | 22 | V24D2: assist/key-pass selection, formation/style/stamina modifiers, eligibility, clamping, determinism |
 | `V24ShotCoordinateTest` | 17 | V24D3A: shot coordinate value object, deterministic generator, pitch bounds, distance/angle, insideBox |
 | `V24PlayerRatingModelTest` | 31 | V24D3B: rating helper, goals/assists/key passes/shots/cards/injuries/fouls/subs, clamping, determinism |
+| `V24ShotCoordinateAttachmentTest` | 8 | V24D3C: shotCoordinate attached to GOAL/SHOT_ON_TARGET/BLOCK/MISS, null for non-shot events, deterministic, DTO/snapshot mapping |
 | `V24DetailedMatchDataTest` | 10 | V24D4A: detailed match snapshot DTO, fromResult mapping, defensive copies, validation |
 | `V24PlayerMatchStatsModelTest` | 14 | V24D4A: player stat bundle derivation from timeline, ratings, substitutions, determinism |
 | `V24DetailedMatchRedisAdapterTest` | 13 | V24D4B: Redis adapter save/find/delete, career isolation, serialization, key format, deletion |
@@ -122,7 +123,7 @@ public final class MatchQualityComputer {
 | `V24EndToEndFlagIntegrationTest` | 12 | V24D5D: end-to-end flag combinations, precedence, persistence/no-persistence, fallback, best-effort save, schema safety |
 | `V24PlayerRatingsPersistenceTest` | 12 | V24D5F: playerRatings persistence in V24DetailedMatchData, assembler, no mutation, best-effort persistence |
 
-**Total: 398 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F)
+**Total: 406 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F)
 
 ---
 
@@ -457,7 +458,7 @@ Add tests for default path and V23 path:
 - V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1` branch)
 - V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1` branch)
 - V24D5E4 Player Ratings UI — COMPLETED (frontend repo `958af1e` on `mvp-1` branch)
-- V24D5E5 Shot Map UI — Deferred (V24D3C shot coordinate attachment needed first)
+- V24D5E5 Shot Map UI — Pending (backend now unblocked by V24D3C; UI still not implemented)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 Frontend route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
@@ -490,9 +491,9 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 
 **Required regression gate for any simulation change:**
 ```
-mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest
+mvn test -Dtest=V24ShotCoordinateAttachmentTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingsPersistenceTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24MatchContextFactoryTest
 ```
-Expected: 398 tests (regression gate), 0 failures; 398 full suite total.
+Expected: 406 tests (regression gate), 0 failures; 406 full suite total.
 
 ---
 

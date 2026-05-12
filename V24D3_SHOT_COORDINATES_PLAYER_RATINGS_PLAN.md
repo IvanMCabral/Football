@@ -1,15 +1,15 @@
 # V24D3 — Shot Coordinates + Player Ratings Planning
 
-**Status:** V24D3A/V24D3B COMPLETED — schema enrichment deferred
+**Status:** V24D3A/V24D3B/V24D3C COMPLETED
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-08
 **Parent commit:** `72c40d7` (docs: update engine docs after V24D2 completion)
-**Latest implementation commit:** `09b89b2` (feat: add V24 player rating model)
-**Tests:** 285 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures
+**Latest implementation commit:** `94b4962` (feat: attach V24 shot coordinates to match events)
+**Tests:** 406 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures
 
 ---
 
-> **Note:** This document now serves as both the original V24D3 plan and the completion record for V24D3A/V24D3B. Sections describing pre-implementation limitations are retained as historical planning context unless explicitly marked as current.
+> **Note:** This document now serves as both the original V24D3 plan and the completion record for V24D3A/V24D3B/V24D3C. Sections describing pre-implementation limitations are retained as historical planning context unless explicitly marked as current.
 
 ---
 
@@ -44,6 +44,23 @@ String description;
 ```
 
 **No shot coordinate fields. No player rating fields.**
+
+### Current V24MatchEvent Fields (after V24D3C)
+
+```java
+int minute;
+V24MatchEventType type;
+String teamId;
+String playerId;          // real from SessionPlayer
+String playerName;        // real from SessionPlayer
+String relatedPlayerId;  // assist provider (may be null)
+String relatedPlayerName;
+double xg;
+String description;
+V24ShotCoordinate shotCoordinate; // nullable — V24D3C
+```
+
+**shotCoordinate is nullable. Non-shot events have null. Shot-result events have non-null after V24D3C.**
 
 ### Current V24ShotLocation (Categorical Only)
 
@@ -87,7 +104,7 @@ String summary;
 
 | Gap | Impact | Status |
 |-----|--------|--------|
-| No x/y coordinates | No shot map UI possible | **Helper exists (V24D3A) — not attached to event, no UI yet** |
+| No x/y coordinates | No shot map UI possible | **Attached to shot-result events since V24D3C commit 94b4962; shot map UI still needs frontend** |
 | V24ShotLocation is categorical | Cannot compute distance/angle to goal | **Distance/angle computed by V24ShotCoordinate — not used for xG recalibration** |
 | No shot angle/distance | xG cannot use physical proximity modifier | **Distance/angle available via V24ShotCoordinate — xG unchanged per plan** |
 | No goalkeeper save event quality | Saves are binary per xG threshold | Still limited |
@@ -358,12 +375,11 @@ private final Map<String, Double> playerRatings; // playerId → rating
 - Helper only — no result schema change
 - 31 new tests (`V24PlayerRatingModelTest`) — commit `09b89b2`
 
-### V24D3C — Event/Result Schema Enrichment (Optional, Medium Risk) ⏸ Deferred
-- If V24D3A proves safe: add optional `shotCoordinate` to `V24MatchEvent`
-- If V24D3B proves valuable: add optional `playerRatings` to `V24DetailedMatchResult`
-- Requires careful test updates
-- Document decision at V24D3A/B completion
-- Recommended only if schema enrichment proves clearly beneficial
+### V24D3C — Event/Result Schema Enrichment (Optional, Medium Risk) ✅ COMPLETED
+- Optional `shotCoordinate` added to `V24MatchEvent` via constructor overload — nullable, backward-compatible
+- Attached to GOAL/SHOT_ON_TARGET/BLOCK/MISS events via `withShotCoordinate()`
+- Non-shot events remain null
+- 8 new tests (`V24ShotCoordinateAttachmentTest`) — commit `94b4962`
 
 ### V24D3D — Documentation Update ✅ COMPLETED (this update)
 - Update V24D plan to reflect V24D3A/B completion
@@ -396,13 +412,13 @@ mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTes
 
 ---
 
-## 14. Decision Points (Historical — V24D3A/V24D3B Completed)
+## 14. Decision Points (V24D3A/V24D3B/V24D3C Completed)
 
-1. **V24MatchEvent schema change?** — Decided: no change. V24D3A kept coordinates helper-only. V24D3B kept ratings helper-only. V24D3C may revisit if schema enrichment proves clearly beneficial.
-2. **V24DetailedMatchResult playerRatings field?** — Decided: no change. Helper-only (R1) confirmed by V24D3B. V24D3C may revisit.
-3. **Coordinate attachment point?** — Decided: internal-only for V24D3A. V24D3C may promote to EV-1 if beneficial.
-4. **xG coordinate modifier?** — Decided: X1 (no formula change). V24ShotCoordinate exists as metadata only. xG unchanged.
-5. **V24D3C needed?** — Deferred. Only if V24D3A/B reveal that schema enrichment is clearly beneficial. V24D3C is Optional/Deferred.
+1. **V24MatchEvent schema change?** — Decided: EV-1 adopted in V24D3C. Optional `shotCoordinate` added via constructor overload. Existing call sites backward-compatible.
+2. **V24DetailedMatchResult playerRatings field?** — Decided: no change. Helper-only (R1) confirmed by V24D3B. V24D5F added persistence via separate assembler.
+3. **Coordinate attachment point?** — Decided: attached to GOAL/SHOT_ON_TARGET/BLOCK/MISS in V24DetailedMatchEngine.attemptShot() before goal resolution.
+4. **xG coordinate modifier?** — Decided: X1 (no formula change). V24ShotCoordinate is metadata only. xG unchanged.
+5. **V24D3C needed?** — Completed. Schema enrichment proved beneficial for shot map readiness.
 
 ---
 
@@ -468,6 +484,31 @@ mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTes
 - **No V24MatchEvent schema change**
 - **No SessionPlayer mutation**
 - Regression gate: 285 tests, 0 failures
+
+---
+
+## V24D3C Completion Record
+
+**Commit:** `94b4962` — `feat: attach V24 shot coordinates to match events`
+**Date:** 2026-05-11
+**Tests:** 8 new (`V24ShotCoordinateAttachmentTest`), 406 total, 0 failures
+**V24D3C delivered:**
+- `V24MatchEvent` — added nullable `shotCoordinate` field via constructor overload; existing 9-arg constructor remains backward-compatible
+- `V24MatchEvent.withShotCoordinate(V24ShotCoordinate)` — immutable coordinate attachment method
+- `V24MatchEvent.shotCoordinate()` — returns attached coordinate or null
+- `shotCoordinate` included in `equals`/`hashCode`/`toString`
+- `V24MatchEventDto.fromEvent()` — maps `shotCoordinate` via `V24ShotCoordinateDto.fromCoordinate()` when present (was hardcoded null)
+- `V24DetailedMatchEngine` — generates coordinate before goal resolution using the same deterministic Random, attaches via `.withShotCoordinate()` to GOAL/SHOT_ON_TARGET/BLOCK/MISS events
+- Coordinates attached to: GOAL, SHOT_ON_TARGET, BLOCK, MISS
+- Non-shot events (FOUL/YELLOW_CARD/RED_CARD/INJURY/SUBSTITUTION/OFFSIDE/CORNER/CHANCE_CREATED) have null `shotCoordinate`
+- `V24DetailedMatchData.fromResult()` timeline conversion preserves coordinate DTOs via `V24MatchEventDto.fromEvent()`
+- Deterministic same seed → identical shotCoordinate values
+- **No xG formula change**
+- **No Redis key format change**
+- **No MatchFixture.MatchResultData change**
+- **No frontend changes**
+- **No CareerSave/SessionPlayer/SessionTeam mutation**
+- Regression gate: 406 tests, 0 failures
 
 ---
 

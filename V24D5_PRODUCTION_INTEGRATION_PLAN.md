@@ -1,10 +1,10 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F COMPLETED — playerRatings now populated in V24DetailedMatchData; player ratings UI now complete in separate frontend repo; shot map deferred until V24D3C
+**Status:** V24D5F+V24D3C COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI complete in separate frontend repo; shot coordinates now attached to events (V24D3C); V24D5E5 shot map now possible
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `0c4d62b` (feat: persist V24 player ratings in detailed match data)
+**Latest implementation commit:** `94b4962` (feat: attach shotCoordinates to V24 match events)
 **Latest docs commit:** `58d35c6` (previous docs baseline before V24D5E4 documentation update)
-**Tests:** 398 full suite total; 398 regression gate, 0 failures
+**Tests:** 406 full suite total; 406 regression gate, 0 failures
 **Created:** 2026-05-09
 **Updated:** 2026-05-11
 
@@ -27,9 +27,9 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 
 | Item | Value |
 |------|-------|
-| Latest implementation commit | `0c4d62b` (V24D5F complete) |
+| Latest implementation commit | `94b4962` (V24D3C complete, shot coordinates attached to events) |
 | Latest docs commit | `58d35c6` |
-| Tests | 398 full suite total; 398 regression gate, 0 failures |
+| Tests | 406 full suite total; 406 regression gate, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |
 | Redis adapter | `V24DetailedMatchRedisAdapter` — used through `V24DetailedMatchStoragePort.save(...)` only when V24 path succeeds and `app.simulation.v24.persist-detail=true` |
@@ -54,6 +54,16 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 - Save failure is **best-effort**: `catch (Exception)` logs warning and the round still completes
 - Context build failure **skips persistence** and falls back to default engine — round completes normally
 - Flags are **independent**: `persist-detail=true` without V24 flag does not persist; `expose-detail-api=true` does not trigger persistence
+
+**V24D3C (Shot Coordinate Event Attachment — Completed):**
+- `V24MatchEvent` now carries optional `shotCoordinate` field (via `withShotCoordinate()` builder)
+- GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events attach `V24ShotCoordinate`; non-shot events remain null
+- `V24MatchEventDto.fromEvent()` maps coordinates through `V24ShotCoordinateDto.fromCoordinate()`
+- Generated in `V24DetailedMatchEngine.attemptShot()` before goal resolution using passed Random (deterministic)
+- No xG formula change, no Redis key format change, no MatchFixture schema change, no CareerSave mutation
+- V24D3C is the final prerequisite for V24D5E5 shot map UI
+- 8 new tests in `V24ShotCoordinateAttachmentTest`; regression gate: 406 tests, 0 failures
+- **Commit:** `94b4962`
 
 ---
 
@@ -181,7 +191,7 @@ app:
 | `V24PlayerMatchStatsModel` | Derives `playerRatings` stat bundle from timeline |
 | `V24PlayerRatingModel` | Computes per-player rating from timeline |
 
-**Note on shot coordinates:** `V24MatchEvent.shotCoordinate` remains null until V24D3C optional schema enrichment attaches coordinates to events. Without V24D3C, shot map tab cannot be fully populated but no critical functionality is blocked.
+**Note on shot coordinates:** `V24MatchEvent.shotCoordinate` is now populated for GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events after V24D3C. Non-shot events, old persisted details, or missing detail may still have null shotCoordinate. V24D5E5 shot map UI is now unblocked from backend side but remains unimplemented.
 
 ---
 
@@ -216,7 +226,7 @@ app:
 | V24 performance slower than quick sim | MEDIUM | MEDIUM | Benchmark in dev before staging; async option for future |
 | Accidental production enablement | LOW | HIGH | All flags default false; manual opt-in required |
 | Career state side effects (injuries/fatigue) | LOW | MEDIUM | V24C does not mutate SessionPlayer — no side effects yet |
-| Frontend depends on null shotCoordinate | MEDIUM | LOW | V24D3C can attach later; frontend handles null gracefully |
+| Frontend depends on null shotCoordinate | MEDIUM | LOW | V24D3C now attaches shotCoordinate to shot-result events; frontend must still handle null for non-shot events, old persisted details, or missing data |
 
 ---
 
@@ -228,7 +238,7 @@ app:
 
 **V24D5C tests:** `V24LeagueDetailPersistenceTest` — 9 tests covering save/no-save/failure/fallback/no-API behavior.
 
-**V24D5D tests (pending):** End-to-end flag combination integration tests.
+**V24D5D tests:** `V24EndToEndFlagIntegrationTest` — 12 tests completed for all flag combinations.
 
 ### V24MatchContextFactoryTest (V24D5A — Complete)
 - Missing lineup is rejected by V24MatchContextFactory; build() throws IllegalArgumentException, canBuild() returns false
@@ -258,12 +268,18 @@ app:
 - MatchFixture.MatchResultData schema unchanged (6 fields)
 - these tests are in `V24LeagueDetailPersistenceTest` (9 tests)
 
-### V24ProductionIntegrationRegressionTest (V24D5D — Pending)
-- All fixtures complete when V24 enabled
-- Standings update correctly with V24 path
-- Deterministic seed produces identical V24 result
-- `MatchResultData` (6 fields) unchanged regardless of V24 enablement
-- End-to-end with all flag combinations
+### V24EndToEndFlagIntegrationTest (V24D5D — Complete)
+- all flags false (default path)
+- V24 enabled + persist disabled (aggregate only)
+- V24 enabled + persist enabled (saves detail)
+- V24 disabled + persist enabled (no persistence — flags independent)
+- expose-detail-api alone does not trigger simulation/persistence
+- all flags true saves detail and completes round
+- context failure falls back and skips persistence
+- save failure is best-effort
+- V24 > V23 > default precedence
+- MatchResultData (6 fields) unchanged
+- no career state mutation
 
 ---
 
@@ -276,7 +292,8 @@ app:
 | V24D5C | Detail persistence write behind `persist-detail=false` | MEDIUM | V24D5B complete | **Completed** |
 | V24D5D | End-to-end integration tests for all flag combinations | MEDIUM | V24D5C complete | **Completed** |
 | V24D5F | Player ratings persistence in V24DetailedMatchData | LOW | V24D5C complete | **Completed** |
-| V24D5E | Frontend planning/design — no implementation | — | Separate approval |
+| V24D3C | Shot coordinate event attachment (V24MatchEvent schema) | LOW | V24D3A complete | **Completed** |
+| V24D5E | Frontend match detail implementation in separate frontend repo: E1/E2/E3/E3B/E4 complete; E5 shot map pending | MEDIUM | V24D4C + V24D5F; V24D5E5 unblocked by V24D3C | E1/E2/E3/E3B/E4 Completed; E5 Pending |
 
 **V24D5A is the recommended first step** — no runtime behavior change, fully testable in isolation, prepares V24D5B without activating it.
 
@@ -284,8 +301,8 @@ app:
 
 ## 13. Non-Goals
 
-- No frontend implementation in V24D5
-- No V24D3C schema enrichment unless separately approved
+- No additional frontend implementation in this backend/root repo; frontend V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 are complete in the separate frontend repo, and V24D5E5 shot map UI remains pending.
+- No further V24 schema enrichment in V24D5; V24D3C shotCoordinate attachment is complete, and future schema work requires separate approval.
 - No `MatchFixture.MatchResultData` schema change
 - No `CareerSave` schema change unless separately planned
 - No `SessionPlayer` mutation for injuries/fatigue (V24 isolated design)
@@ -379,7 +396,7 @@ app:
 
 **Commit:** `0c4d62b` — `feat: persist V24 player ratings in detailed match data`
 **Date:** 2026-05-11
-**Tests:** 12 new (`V24PlayerRatingsPersistenceTest`), 398 full suite total, 398 regression gate, 0 failures
+**Tests:** 12 new (`V24PlayerRatingsPersistenceTest`), 406 full suite total (now includes V24D3C), 406 regression gate, 0 failures
 
 **V24D5F delivered:**
 - `V24PlayerRatingsAssembler` — pure helper that resolves starting XI from `CareerSave.teamStarting11`, converts `SessionPlayer` → `V24PlayerMatchState` via `fromSessionPlayer()`, and delegates to `V24PlayerMatchStatsModel.computeRatings()`
@@ -395,11 +412,29 @@ app:
 - **No SessionPlayer/SessionTeam mutation**
 - **No MatchFixture.MatchResultData change**
 - **No CareerSave schema change**
-- Regression gate: 398 tests, 0 failures
+- Regression gate: 406 tests, 0 failures
 
 ---
 
-## V24D5E Completion Record
+## V24D3C Completion Record
+
+**Commit:** `94b4962` — `feat: attach shotCoordinates to V24 match events`
+**Date:** 2026-05-11
+**Tests:** 8 new (`V24ShotCoordinateAttachmentTest`), 406 full suite total, 406 regression gate, 0 failures
+
+**V24D3C delivered:**
+- `V24MatchEvent` now carries optional `shotCoordinate` field (via `withShotCoordinate()` immutable builder pattern)
+- Constructor overload preserves backward compatibility — existing code that calls the 9-arg constructor gets null shotCoordinate
+- GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events attach `V24ShotCoordinate`; non-shot events (FOUL/YELLOW_CARD/RED_CARD/INJURY/SUBSTITUTION/OFFSIDE/CORNER/CHANCE_CREATED) have null
+- `V24MatchEventDto.fromEvent()` maps `shotCoordinate` through `V24ShotCoordinateDto.fromCoordinate()` when non-null
+- Generated in `V24DetailedMatchEngine.attemptShot()` before goal resolution using `V24ShotCoordinateGenerator.generate(location, random)` with passed Random for determinism
+- Coordinates attached before goal resolution — same seed always produces same coordinates
+- No xG formula change — coordinates generated after xG is computed and stored on the event
+- No Redis key format change
+- No MatchFixture.MatchResultData change
+- No CareerSave/SessionPlayer/SessionTeam mutation
+- **V24D3C is the final prerequisite for V24D5E5 shot map UI**
+- Regression gate: 406 tests, 0 failures
 
 **Status:** V24D5E1 + V24D5E2 + V24D5E3 + V24D5E3B + V24D5E4 COMPLETED — all frontend planning, API client, page, entry point, and player ratings UI complete in separate frontend repo
 
@@ -428,7 +463,7 @@ app:
 - Fixture modal does NOT call detail endpoint
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 
-**V24D5E4/V24D5E5 deferred:** shot map UI depends on V24D3C shot coordinate attachment.
+**V24D5E4 is complete. V24D5E5 shot map UI is pending and now unblocked by V24D3C shot coordinate attachment.**
 
 **Backend unchanged by frontend implementation:** root repo branch `mvp-1-performance-cleanup` has no changes from V24D5E frontend work.
 
@@ -453,9 +488,9 @@ app:
 **Backend unchanged:** root repo has no changes from V24D5E frontend work. No API schema changes, no Redis schema changes.
 
 **Next recommended steps (in priority order):**
-1. V24D3C — attach shot coordinates to events (backend)
-2. V24D5E5 — shot map UI (after V24D3C)
-3. Frontend QA/polish pass on match detail page
+1. V24D5E5 — frontend shot map UI
+2. Frontend QA/polish pass on match detail page
+3. Optional backend realism follow-ups: set pieces, stoppage time, goalkeeper save quality, career-state mutation decisions
 
 ---
 
@@ -464,11 +499,11 @@ app:
 After any V24 change, the full regression gate:
 
 ```
-mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest
+mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest,V24ShotCoordinateAttachmentTest
 ```
 
-**Expected:** 398 tests (regression gate), 0 failures; 398 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F).
+**Expected:** 406 tests (regression gate), 0 failures; 406 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F).
 
 ---
 
-*This document is the authoritative V24D5 production integration planning specification. V24D5A, V24D5B, and V24D5C are complete. V24D5D implementation begins after approval.*
+*This document is the authoritative V24D5 production integration planning specification. V24D5A, V24D5B, V24D5C, V24D5D, V24D5F, and V24D3C are complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 are complete in the separate frontend repo. V24D5E5 shot map UI is the next pending frontend phase.*

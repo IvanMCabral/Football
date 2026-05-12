@@ -2,9 +2,9 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D5D COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 deferred until V24D3C
-**Latest commit:** `0c4d62b` (feat: persist V24 player ratings in detailed match data)
-**Tests:** 398 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 398 tests, 0 failures
+**Status:** V24D3C COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 pending (backend unblocked by V24D3C)
+**Latest commit:** `94b4962` (feat: attach V24 shot coordinates to match events)
+**Tests:** 406 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 406 tests, 0 failures
 **Date:** 2026-05-11
 
 ---
@@ -308,8 +308,8 @@
 - V24D5D did NOT modify: V24DetailedMatchResult, V24MatchEvent, V24DetailedMatchEngine, MatchFixture.MatchResultData, CareerSave, SessionPlayer, SessionTeam, or any production wiring
 - V24D5D tests: 12 tests (`V24EndToEndFlagIntegrationTest`), all passing
 - Only tests changed — no production code
-- Regression gate: 398 tests, 0 failures; 398 full suite total
-- Recommended next: V24D5E4 player ratings UI (now unblocked), V24D3C optional schema enrichment, Phase 6C, or Phase 11
+- Regression gate: 406 tests, 0 failures; 406 full suite total
+- Recommended next: V24D5E5 shot map UI (now unblocked by V24D3C), Phase 6C, or Phase 11
 
 **V24D5F — Player Ratings Persistence — COMPLETED (commit `0c4d62b`):**
 
@@ -325,7 +325,7 @@
 - **No MatchFixture.MatchResultData change**
 - **No CareerSave schema change**
 - `V24PlayerRatingsPersistenceTest` — 12 new tests, all passing
-- Regression gate: 398 tests, 0 failures; 398 full suite total
+- Regression gate: 406 tests, 0 failures; 406 full suite total
 
 **V24D5E (Frontend) — Completed through V24D5E4 in separate frontend repo:**
 
@@ -350,7 +350,7 @@ V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on br
 - Empty playerRatings state, shot map deferred state
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - No backend/API/Redis changes, no fixture/list UI modified
-- V24D5E4 now complete, V24D5E5 deferred (shot map needs V24D3C)
+- V24D5E4 now complete, V24D5E5 pending (backend now unblocked by V24D3C commit 94b4962; UI still not implemented)
 
 V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on branch `mvp-1`)
 - Dashboard fixture modal (`DashboardFixtureModalComponent`) updated with "📊 Detalle" link
@@ -373,4 +373,4 @@ V24D5E4 Player Ratings UI — COMPLETED (frontend repo `958af1e` on branch `mvp-
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 
 Root/backend repo (`mvp-1-performance-cleanup`) is unchanged by V24D5E frontend implementation.
-Backend tests unchanged: 398 full suite, 398 regression gate, 0 failures.
+Backend tests: 406 full suite, 406 regression gate, 0 failures.
