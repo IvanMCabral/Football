@@ -1,6 +1,6 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed.
+**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 completed in separate frontend repo (commit `9b88739`).
 **Current baseline commit:** `94b4962` (V24D3C complete)
 **Tests:** 406 full suite total; 406 regression gate, 0 failures
 **Date:** 2026-05-11
@@ -767,7 +767,7 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D5E3 | Read-only Match Detail Page — COMPLETED | LOW | Done | Completed |
 | V24D5E3B | Fixture/List Entry Point — COMPLETED | LOW | Done | Completed |
 | V24D5E4 | Player Ratings UI — Completed in separate frontend repo | MEDIUM | Done | Completed |
-| V24D5E5 | Shot Map UI — Pending (backend now unblocked by V24D3C) | MEDIUM | — | Pending |
+| V24D5E5 | Shot Map UI — Completed in separate frontend repo (commit `9b88739`) | MEDIUM | Done | Completed |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
 

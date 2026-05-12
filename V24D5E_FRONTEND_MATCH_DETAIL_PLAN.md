@@ -1,6 +1,6 @@
 # V24D5E — Frontend Match Detail Planning/Design
 
-**Status:** V24D5F+V24D3C COMPLETED — playerRatings backend persistence delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 (shot map) unblocked by V24D3C — pending, not yet implemented
+**Status:** V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 all COMPLETED in separate frontend repo
 **Frontend repo:** `front-ciber/project` / Football-angular
 **Frontend branch:** `mvp-1`
 **Frontend commits:**
@@ -8,6 +8,7 @@
 - `0ba2305` — feat: add V24D5E3 read-only match detail page
 - `d244097` — feat: add match detail entry point from fixture modal
 - `958af1e` — feat: add V24D5E4 player ratings UI
+- `9b88739` — feat: add V24D5E5 shot map UI
 **Type:** Frontend design and integration planning
 **Date:** 2026-05-11
 
@@ -15,7 +16,7 @@
 
 ## 1. Executive Summary
 
-V24D5E is **now a completion record**. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 are completed; V24D5E5 shot map is unblocked by V24D3C (commit `94b4962`) but is not implemented yet. V24D5E5 is the only remaining frontend phase.
+V24D5E is **now a completion record**. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 are completed in the separate frontend repo. V24D5E5 delivered the shot map UI in commit `9b88739`, using existing `timeline[].shotCoordinate` data produced by V24D3C.
 
 V24 detailed match data (stored in Redis, queryable via existing endpoint) is **additive enrichment** — it must never be required for career progress. The existing aggregate match result remains the source of truth for standings. If detail is unavailable (older matches, disabled flags, or missing data), the UI must gracefully fall back to the existing fixture display.
 
@@ -118,6 +119,7 @@ PlayerMatchRatingDto:
 **Current known limitations:**
 - `shotCoordinate` is **populated** on GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events (V24D3C complete, commit `94b4962`); nullable for non-shot events
 - `playerRatings` are now populated for newly persisted V24 details after V24D5F (backend complete, V24D5F commit `0c4d62b`); may be empty for older matches or missing data; player ratings UI is now complete (V24D5E4, frontend repo commit `958af1e`)
+- Shot map UI is complete since V24D5E5 (frontend repo commit `9b88739`); the empty shot map state ("Shot map is not available for this match.") remains only for old matches, missing detail, or events without `shotCoordinate`
 
 ---
 
@@ -189,8 +191,10 @@ Route: /careers/:careerId/matches/:matchId/detail
 │  PLAYERS TAB (renders when playerRatings non-empty;  │
 │  empty state fallback for old matches/missing data)  │
 │                                                     │
-│  SHOTS TAB (hidden until shotCoordinate exists)    │
-│  "Shot map will be available in a future update." │
+│  SHOTS TAB:                                        │
+│  renders CSS-only shot map when shotCoordinate    │
+│  available; empty state for old matches/missing   │
+│  data: "Shot map is not available for this match."│
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -240,9 +244,9 @@ Route: /careers/:careerId/matches/:matchId/detail
 - Do not show empty table with headers — too confusing
 - Players tab becomes visible once `playerRatings` is non-empty (now the case for newly persisted matches after V24D5F)
 
-### Null shotCoordinate
-- Hide shots tab entirely
-- Or show: "Shot map will be available in a future update."
+### Null shotCoordinate (old matches / missing detail)
+- Shots tab shows empty state: "Shot map is not available for this match."
+- This is the expected state for matches persisted before V24D3C or when `persist-detail=false`
 
 ---
 
@@ -401,8 +405,8 @@ frontend.features.matchDetailV24=false
 - Stats comparison table
 - Loading state, 404/null unavailable state, 500/error retry state
 - Empty `playerRatings` state: "Player ratings are not available yet."
-- Shot map deferred state: "Shot map will be available in a future update."
-- No player ratings full UI, no shot map implementation
+- Shot map deferred state: "Shot map will be available in a future update." (later completed in V24D5E5, commit `9b88739`)
+- No player ratings full UI, no shot map implementation at V24D5E3 time
 - No fixture/list UI modified, no backend/API/Redis changes
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - **Status: COMPLETED**
@@ -435,10 +439,25 @@ frontend.features.matchDetailV24=false
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - **Status: COMPLETED**
 
-### V24D5E5 — Shot Map UI — Deferred
-- Only after V24D3C attaches shot coordinates to events (separate backend phase)
-- Shot map visualization
-- Empty/hidden state until then
+### V24D5E5 — Shot Map UI — COMPLETED
+
+**Commit:** `9b88739` — `feat: add V24D5E5 shot map UI`
+**Date:** 2026-05-12
+**Changed file:** `src/app/features/match-detail/pages/v24-match-detail-page.component.ts`
+**Validation:** `npx tsc --noEmit` BUILD SUCCESS; `npx ng build` BUILD SUCCESS
+
+**V24D5E5 delivered:**
+- Shot map UI in `V24MatchDetailPageComponent` replacing deferred placeholder
+- CSS-only pitch with green background, grid lines, penalty area, six-yard box, goal label
+- Shot dots positioned via `left: ${x}%`, `top: ${y}%` with coordinate clamping `Math.max(0, Math.min(100, value))`
+- Goals rendered as larger green dots (`#4caf50`)
+- Non-goals rendered as orange dots (`#ff9800`)
+- Tooltip on hover shows: minute, playerName, type, xG, location
+- Empty state preserved: "Shot map is not available for this match."
+- Uses existing `MatchDetail.timeline` and `MatchEvent.shotCoordinate`
+- No new endpoint calls, no API client/type changes, no route changes
+- No backend/root repo changes, no API/Redis schema changes
+- Player ratings UI preserved and not broken
 
 ---
 
@@ -452,9 +471,7 @@ Before V24D5E4 (player ratings):
 1. Backend playerRatings persistence is now complete (**V24D5F committed as `0c4d62b`**) — `playerRatings` list is now populated in persisted V24 details
 2. V24D5E4 frontend player ratings UI is now unblocked from backend side
 
-Before V24D5E5 (shot map):
-1. V24D3C complete (commit `94b4962`) — shot coordinates now attached to events
-2. `shotCoordinate` is non-null on GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events
+Before V24D5E5 (shot map): **COMPLETED — backend V24D3C commit `94b4962` attached shotCoordinates; frontend V24D5E5 commit `9b88739` rendered them**
 
 **Dev/test enablement (requires separate ops action):**
 ```
@@ -598,7 +615,7 @@ app.simulation.v24.expose-detail-api=true
 - Summary cards (xG, shots, possession, goals)
 - Timeline (minute-sorted events), stats comparison table
 - 404/null friendly unavailable state, 500/error retry state
-- Empty playerRatings state, shot map deferred state
+- Empty playerRatings state, shot map empty state for old matches/missing detail
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - No backend/API/Redis changes, no fixture/list UI modified
 

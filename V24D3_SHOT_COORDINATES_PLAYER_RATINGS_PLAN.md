@@ -104,14 +104,14 @@ String summary;
 
 | Gap | Impact | Status |
 |-----|--------|--------|
-| No x/y coordinates | No shot map UI possible | **Attached to shot-result events since V24D3C commit 94b4962; shot map UI still needs frontend** |
+| No x/y coordinates | No shot map UI possible | **Attached to shot-result events since V24D3C commit 94b4962; shot map UI now complete in frontend repo commit 9b88739** |
 | V24ShotLocation is categorical | Cannot compute distance/angle to goal | **Distance/angle computed by V24ShotCoordinate — not used for xG recalibration** |
 | No shot angle/distance | xG cannot use physical proximity modifier | **Distance/angle available via V24ShotCoordinate — xG unchanged per plan** |
 | No goalkeeper save event quality | Saves are binary per xG threshold | Still limited |
-| No per-match player rating | Cannot rank player performance post-match | **Helper exists (V24D3B) — not attached to result, no API/frontend yet** |
-| No rating contribution tracking | No assist/goal/skill contribution scoring | **Logic exists in V24PlayerRatingModel — no result map persisted** |
-| No per-player stat summary | No Map<playerId, statBundle> in result | Still limited |
-| V24DetailedMatchResult is summary-only | Ratings would need new result field or helper | Still limited — schema enrichment deferred to V24D3C |
+| Per-match player ratings | Player performance can now be ranked in persisted detail | Backend persistence complete via V24D5F (`V24PlayerRatingsAssembler` + `V24DetailedMatchData.playerRatings`); frontend player ratings UI complete via V24D5E4 commit `958af1e` |
+| Rating contribution tracking | Goals/assists/key passes/shots/cards/injuries/substitutions contribute to ratings | Logic exists in `V24PlayerRatingModel` / `V24PlayerMatchStatsModel`; persisted through V24D5F into detailed match snapshots |
+| Per-player stat summary | Player stat bundles available in detailed match snapshot | `PlayerMatchRatingDto` contains goals, assists, keyPasses, shots, cards, injuries, substitutions; old details may still have empty playerRatings |
+| V24DetailedMatchResult remains summary-only | Ratings are assembled at persistence/snapshot layer | No V24DetailedMatchResult schema change required; `V24PlayerRatingsAssembler` derives ratings from timeline during V24 detail persistence |
 
 ---
 
@@ -238,7 +238,7 @@ Coordinates are descriptive metadata only. Existing xG formula unchanged.
 double distMod = 1.0 - (distanceToGoal / 100.0) * 0.15; // up to -15% for long shots
 double xgModified = xg * distMod;
 ```
-**Risk:** MEDIUM — changes xG distribution. Requires revalidation against 285 tests.
+**Risk:** MEDIUM — changes xG distribution. Requires revalidation against 406 tests (current regression gate as of V24D3C/V24D5F completion).
 
 **Recommendation:** Use X1 for V24D3A. Coordinate modifier can be explored in V24D3B if time permits.
 
@@ -387,7 +387,9 @@ private final Map<String, Double> playerRatings; // playerId → rating
 
 ---
 
-## 12. Non-Negotiable Constraints
+## 12. V24D3 Scope Constraints
+
+These constraints applied to the original V24D3 isolated implementation scope; later V24D4/V24D5 phases intentionally added Redis, API, production wiring, and frontend work under separate approvals.
 
 - **No production wiring** — V24 stays isolated under `application/service/simulation/v24/`
 - **No Redis/API/frontend changes**
@@ -398,17 +400,17 @@ private final Map<String, Double> playerRatings; // playerId → rating
 - **No SessionTeam mutation**
 - **No V24MatchContext modification**
 - **V24MatchEvent schema change only if V24D3A/B explicitly decides it is safe**
-- **Existing 285 tests are the regression gate** — all must pass after any V24D3 change
+- **406 tests are the current regression gate** — all must pass after any V24D3/V24D/V24D5 change
 
 ---
 
 ## 13. Required Regression Command
 
 ```
-mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest
+mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest,V24ShotCoordinateAttachmentTest
 ```
 
-**Expected:** 285 tests (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B), 0 failures.
+**Expected:** 406 tests (regression gate), 0 failures; 406 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F).
 
 ---
 
@@ -483,7 +485,7 @@ mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTes
 - **No V24PlayerMatchState rating field**
 - **No V24MatchEvent schema change**
 - **No SessionPlayer mutation**
-- Regression gate: 285 tests, 0 failures
+- Regression gate at V24D3B completion: 285 tests, 0 failures
 
 ---
 
@@ -512,4 +514,4 @@ mvn test -Dtest=V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTes
 
 ---
 
-*This document is the authoritative V24D3 implementation specification. No code implementation begins until this document is reviewed and a specific V24D3 phase is approved.*
+*This document is the authoritative V24D3 implementation and completion record. V24D3A/V24D3B/V24D3C are complete; later frontend consumption through V24D5E5 shot map UI is also complete in the separate frontend repo.*

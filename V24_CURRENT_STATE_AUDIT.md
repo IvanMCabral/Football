@@ -2,7 +2,7 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D3C COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4 completed in separate frontend repo; V24D5E5 pending (backend unblocked by V24D3C)
+**Status:** V24D3C+V24D5E5 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 completed in separate frontend repo (commit `9b88739`)
 **Latest commit:** `94b4962` (feat: attach V24 shot coordinates to match events)
 **Tests:** 406 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 406 tests, 0 failures
 **Date:** 2026-05-11
@@ -350,7 +350,7 @@ V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on br
 - Empty playerRatings state, shot map deferred state
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 - No backend/API/Redis changes, no fixture/list UI modified
-- V24D5E4 now complete, V24D5E5 pending (backend now unblocked by V24D3C commit 94b4962; UI still not implemented)
+- V24D5E4 now complete, V24D5E5 shot map now complete (frontend repo commit `9b88739`)
 
 V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on branch `mvp-1`)
 - Dashboard fixture modal (`DashboardFixtureModalComponent`) updated with "📊 Detalle" link

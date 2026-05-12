@@ -2,7 +2,7 @@
 
 **Branch:** `mvp-1-performance-cleanup`
 **Latest commit:** `94b4962` (feat: attach V24 shot coordinates to match events)
-**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete.
+**Status:** Phases 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 complete. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 frontend shot map UI complete in separate frontend repo (commit `9b88739`).
 **Test status:** 406 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 406 tests, 0 failures
 **Date:** 2026-05-11
 
@@ -448,9 +448,9 @@ Add tests for default path and V23 path:
 - **No API/Redis/frontend/schema changes**
 - **No CareerSave/SessionPlayer/SessionTeam mutation**
 - 12 new tests (`V24PlayerRatingsPersistenceTest`)
-- Recommended next: V24D3C attach shot coordinates to events, V24D5E5 shot map UI, or Phase 11
+- Recommended next: V24D5E5 shot map UI (frontend), frontend QA/polish, or backend realism/career-state follow-ups (Phase 11)
 
-**V24D5E COMPLETED (E1+E2+E3+E3B+E4 done; E5 deferred) — Frontend planning, API client, match detail page, entry point, and player ratings UI all complete in separate frontend repo**
+**V24D5E COMPLETED (E1+E2+E3+E3B+E4+E5 all done) — Frontend planning, API client, match detail page, entry point, player ratings UI, and shot map UI all complete in separate frontend repo**
 
 **V24D5E status:**
 - V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
@@ -458,14 +458,14 @@ Add tests for default path and V23 path:
 - V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1` branch)
 - V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1` branch)
 - V24D5E4 Player Ratings UI — COMPLETED (frontend repo `958af1e` on `mvp-1` branch)
-- V24D5E5 Shot Map UI — Pending (backend now unblocked by V24D3C; UI still not implemented)
+- V24D5E5 Shot Map UI — COMPLETED (frontend repo `9b88739` on `mvp-1` branch)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 Frontend route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
 Dashboard fixture modal links completed matches to detail page via "📊 Detalle" button.
 Frontend validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 Root/backend repo (`mvp-1-performance-cleanup`) unchanged by V24D5E frontend implementation.
-Backend tests unchanged: 398 full suite, 398 regression gate, 0 failures.
+Backend tests: 406 full suite, 406 regression gate, 0 failures.
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
