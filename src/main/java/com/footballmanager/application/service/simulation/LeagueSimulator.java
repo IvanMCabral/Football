@@ -2,11 +2,15 @@ package com.footballmanager.application.service.simulation;
 
 import com.footballmanager.application.service.domain.MatchEngineImpl;
 import com.footballmanager.application.service.domain.TeamOverallCalculator;
+import com.footballmanager.application.service.simulation.v24.V24CareerMutationPolicy;
+import com.footballmanager.application.service.simulation.v24.V24CareerMutationResult;
+import com.footballmanager.application.service.simulation.v24.V24CareerMutationService;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResultAdapter;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.v24.V24InjuryMutationApplier;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
@@ -54,13 +58,15 @@ public class LeagueSimulator {
     private final V24DetailedMatchEngine v24Engine;
     private final V24DetailedMatchStoragePort storagePort;
     private final V24PlayerRatingsAssembler v24PlayerRatingsAssembler;
+    private final V24CareerMutationService v24MutationService;
+    private final V24CareerMutationPolicy v24MutationPolicy;
 
     /**
      * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
      * Maintains existing Spring wiring compatibility.
      */
     public LeagueSimulator(MatchSimulator matchSimulator) {
-        this(matchSimulator, null, false, false, false, null);
+        this(matchSimulator, null, false, false, false, null, false, false, false, false, false);
     }
 
     /**
@@ -69,7 +75,7 @@ public class LeagueSimulator {
      */
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
                           boolean useV23LeagueEngine) {
-        this(matchSimulator, matchEngine, useV23LeagueEngine, false, false, null);
+        this(matchSimulator, matchEngine, useV23LeagueEngine, false, false, null, false, false, false, false, false);
     }
 
     /**
@@ -78,21 +84,39 @@ public class LeagueSimulator {
      */
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
                           boolean useV23LeagueEngine, boolean useV24DetailedEngine) {
-        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine, false, null);
+        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine, false, null, false, false, false, false, false);
     }
 
     /**
-     * Full constructor with optional V23 engine and flags.
+     * Five-argument constructor for backward compatibility with existing tests.
+     */
+    public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
+                          boolean useV23LeagueEngine, boolean useV24DetailedEngine,
+                          boolean persistDetail, V24DetailedMatchStoragePort storagePort) {
+        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine,
+                persistDetail, storagePort, false, false, false, false, false);
+    }
+
+    /**
+     * Full constructor with optional V23 engine, V24 flags, and career mutation flags.
      * @param matchSimulator      the existing domain service for DefaultMatchSimulator path
      * @param matchEngine         optional MatchEngineImpl for V23 path (can be null if flag is false)
      * @param useV23LeagueEngine  if true, V23 engine path is used; if false, DefaultMatchSimulator path
      * @param useV24DetailedEngine if true, V24 detailed engine path is attempted
      * @param persistDetail       if true, V24 detail snapshot is saved to Redis after simulation
      * @param storagePort         V24DetailedMatchStoragePort for persistence (can be null if persistDetail is false)
+     * @param mutateCareerState  master gate for career mutation (all effects disabled if false)
+     * @param persistInjuries     if true, apply INJURY events from V24 timeline to SessionPlayer
+     * @param persistFatigue      if true, apply energy drain (not yet implemented)
+     * @param persistDiscipline  if true, apply card/suspension logic (not yet implemented)
+     * @param persistForm         if true, apply form updates (not yet implemented)
      */
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
                           boolean useV23LeagueEngine, boolean useV24DetailedEngine,
-                          boolean persistDetail, V24DetailedMatchStoragePort storagePort) {
+                          boolean persistDetail, V24DetailedMatchStoragePort storagePort,
+                          boolean mutateCareerState, boolean persistInjuries,
+                          boolean persistFatigue, boolean persistDiscipline,
+                          boolean persistForm) {
         this.matchSimulator = matchSimulator;
         this.matchEngine = matchEngine;
         this.useV23LeagueEngine = useV23LeagueEngine;
@@ -102,6 +126,10 @@ public class LeagueSimulator {
         this.v24ContextFactory = new V24MatchContextFactory();
         this.v24Engine = new V24DetailedMatchEngine();
         this.v24PlayerRatingsAssembler = new V24PlayerRatingsAssembler();
+        this.v24MutationPolicy = new V24CareerMutationPolicy(
+                mutateCareerState, persistInjuries, persistFatigue,
+                persistDiscipline, persistForm);
+        this.v24MutationService = new V24CareerMutationService(new V24InjuryMutationApplier());
     }
 
     /**
@@ -206,6 +234,9 @@ public class LeagueSimulator {
                 persistV24Detail(career, fixture, homeTeam.getName(), awayTeam.getName(), v24Result);
             }
 
+            // V24D6B3: apply career mutation if enabled
+            applyV24CareerMutation(career, v24Result);
+
         } catch (IllegalArgumentException e) {
             log.warn("[V24D5B] V24 context build failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
@@ -219,10 +250,9 @@ public class LeagueSimulator {
 
     /**
      * V24D5C: Persist V24DetailedMatchData snapshot to Redis via storage port.
-     * Best-effort: failures are logged and do not fail the match/round.
-    /**
      * V24D5F: Persist V24 detailed match data including per-player ratings.
      * Player ratings are derived from CareerSave starting XI + match timeline.
+     * Best-effort: failures are logged and do not fail the match/round.
      */
     private void persistV24Detail(CareerSave career, MatchFixture fixture,
                                    String homeTeamName, String awayTeamName,
@@ -252,6 +282,38 @@ public class LeagueSimulator {
         } catch (Exception e) {
             log.warn("[V24D5F] Failed to persist detail for fixture {}: {}, continuing round",
                     fixture.getMatchId(), e.getMessage());
+        }
+    }
+
+    /**
+     * V24D6B3: Apply career mutations from V24 match result to CareerSave SessionPlayers.
+     *
+     * <p>Called only after successful V24 simulation. Mutation is best-effort:
+     * failures are logged and do not fail the match/round.
+     *
+     * <p>Mutation is skipped if:
+     * - V24DetailedEngine path is not enabled
+     * - mutate-career-state master flag is false
+     * - all specific mutation flags (injury/fatigue/discipline/form) are false
+     */
+    private void applyV24CareerMutation(CareerSave career, V24DetailedMatchResult v24Result) {
+        try {
+            V24CareerMutationResult mutationResult =
+                    v24MutationService.applyMutations(career, v24Result, v24MutationPolicy);
+
+            if (!mutationResult.failures().isEmpty()) {
+                log.warn("[V24D6B3] Career mutation partial failures for career {}: {}",
+                        career.getData().getCareerId(), mutationResult.failures());
+            }
+
+            if (mutationResult.injuriesApplied() > 0) {
+                log.debug("[V24D6B3] Applied {} injury mutations for career {}",
+                        mutationResult.injuriesApplied(), career.getData().getCareerId());
+            }
+
+        } catch (Exception e) {
+            log.warn("[V24D6B3] Career mutation failed unexpectedly for career {}: {}, continuing round",
+                    career.getData().getCareerId(), e.getMessage());
         }
     }
 

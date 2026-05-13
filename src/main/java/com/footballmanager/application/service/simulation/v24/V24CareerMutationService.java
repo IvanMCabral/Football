@@ -10,7 +10,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
  * <p>This service is isolated — no Spring, no Redis, no IO.
  * It is not yet wired into LeagueSimulator; it exists as a standalone component.
  */
-public final class V24CareerMutationService {
+public class V24CareerMutationService {
 
     private final V24InjuryMutationApplier injuryMutationApplier;
 

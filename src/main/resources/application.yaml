@@ -89,5 +89,10 @@ app:
       use-v23-engine: false   # Phase 10C3: set to true to enable V23 league engine path
       use-v24-detailed-engine: false   # V24D5B: set to true to enable V24 detailed engine path
     v24:
+      mutate-career-state: false   # V24D6B3: master gate for career mutation (injury/fatigue/discipline/form)
+      persist-injuries: false     # V24D6B3: apply INJURY events from V24 timeline to SessionPlayer
+      persist-fatigue: false      # V24D6B3: apply energy drain to SessionPlayer (not yet implemented)
+      persist-discipline: false   # V24D6B3: apply yellow/red card accumulation (not yet implemented)
+      persist-form: false         # V24D6B3: apply form updates (not yet implemented)
       persist-detail: false   # V24D5C: set to true to persist V24DetailedMatchData to Redis after simulation
       expose-detail-api: false  # V24D4C: expose GET /api/careers/{careerId}/matches/{matchId}/detail
