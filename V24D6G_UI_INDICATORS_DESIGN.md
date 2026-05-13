@@ -1,0 +1,570 @@
+# V24D6G — UI Indicators for Injured and Tired Players
+
+**Status:** V24D6G1 — DESIGN ONLY
+**Branch:** `mvp-1-performance-cleanup`
+**Latest implementation commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
+**Latest docs commit:** `778a8a4` (docs: update engine docs after V24D6C fatigue mutation wiring)
+**Tests:** 506 full suite, 0 failures
+**Created:** 2026-05-13
+
+---
+
+## 1. Executive Summary
+
+V24D6B (injury persistence) and V24D6C (fatigue/energy persistence) introduced real career consequences into the simulation. After a match where V24D6 mutation is enabled, players can now be injured or tired — permanently affecting their availability and performance in subsequent matches.
+
+However, these career mutations are invisible to the user unless the UI surfaces them. Without visible indicators, users will encounter "unavailable players" with no explanation, feel the game is unfair, or be unable to make informed squad and lineup decisions.
+
+**Goal:** V24D6G1 is design-only. This document defines the UX surfaces, display states, visual language, and implementation phases needed to make injury and fatigue mutations visible and actionable in the frontend. No code is written in this phase.
+
+V24D6G2 (frontend DTO/data audit) must follow before any implementation, to verify which fields are currently exposed to the frontend.
+
+---
+
+## 2. Current Backend State
+
+| Item | Value |
+|------|-------|
+| Latest implementation commit | `0dc184a` — V24D6C3 complete |
+| Latest docs commit | `778a8a4` — docs updated after V24D6C |
+| Tests | 506, 0 failures |
+| Injury mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-injuries=true` |
+| Fatigue mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-fatigue=true` |
+| All mutation flags | Default false |
+| No API/Redis/frontend/schema changes in V24D6C | All mutation flags default false; cards/form not implemented |
+| Backend test count | 506 total (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3) |
+
+**Injury mutation target fields on `SessionPlayer`:**
+- `injured` (boolean)
+- `injuryType` (String)
+- `injuryRemainingMatches` (int)
+
+**Fatigue mutation target field on `SessionPlayer`:**
+- `energy` (int, 0–100, default 100)
+
+Cards and form are not implemented yet. The UI design for V24D6G covers only injury and fatigue indicators.
+
+---
+
+## 3. UX Problem
+
+### 3.1 The Visibility Gap
+
+After a round simulation with V24 mutation enabled, the backend modifies `SessionPlayer` state:
+- A player may become `injured=true` for N remaining matches
+- A player's `energy` may drop from 100 to 70–88 after a match
+
+If the frontend does not display these changes, users experience:
+1. **Confusion** — a player who "looked fine" last round is now unavailable with no explanation
+2. **Perceived unfairness** — the simulation "randomly" removes players without justification
+3. **Inability to plan** — no warning before the next round about tired or injured players
+4. **Baffled lineup construction** — injured or exhausted players can be selected without warning, producing unexpected match results
+
+### 3.2 Why Manager Games Need Transparent Player Condition
+
+Games like Football Manager, FIFA Career Mode, and NBA 2K MyGM all surface player condition before each match. Reasons:
+- Players need to feel real consequence from match events
+- Managers need to make informed rotation decisions
+- Squad depth becomes meaningful strategy
+- Transparency maintains trust in the simulation's fairness
+
+### 3.3 What the UI Must Explain
+
+Users must be able to answer at a glance:
+- Is this player injured? For how long?
+- Is this player tired? How much?
+- If I start this player, what is the risk?
+- How many of my players are unavailable before I simulate the next round?
+
+---
+
+## 4. Existing Data Available to Frontend
+
+The following `SessionPlayer` fields are the mutation targets and should be investigated in V24D6G2 to confirm frontend access:
+
+| Field | Type | Current Frontend Access | Notes |
+|-------|------|------------------------|-------|
+| `energy` | int (0–100, default 100) | Verify via existing API DTOs | Target of V24D6C fatigue mutation |
+| `injured` | boolean | Verify via existing API DTOs | Target of V24D6B injury mutation |
+| `injuryType` | String | Verify via existing API DTOs | e.g., "MATCH_INJURY" default from applier |
+| `injuryRemainingMatches` | int | Verify via existing API DTOs | Decremented per round |
+| `form` | int? | May or may not be exposed | Not mutated by V24D6C |
+| `position` | String (GK/DEF/MID/WINGER/ATT) | Should already be available | Used for lineup filtering |
+| `name` | String | Should already be available | Display label |
+| `overall` | int | May need calculation via `calculateOverall()` | OVR display |
+
+**Critical note for V24D6G2:** Before any UI implementation, verify whether the current API response (CareerSave serialization via Redis) exposes these fields to the frontend. If they are not currently serialized or sent to the frontend, the V24D6G implementation path splits:
+- Option A: fields exist but are not exposed in API → backend API change required before UI
+- Option B: fields do not exist in DTO → schema/API design needed
+
+No new backend fields are created by V24D6C. The fields already exist on `SessionPlayer`. V24D6G2 must confirm whether they traverse the API boundary.
+
+---
+
+## 5. Proposed Player Status Model
+
+All status categories are **display-only** frontend constructs. The backend simulation does not use these labels — they are derived from `energy`, `injured`, `injuryType`, and `injuryRemainingMatches` for UI purposes only.
+
+### 5.1 Injury Status
+
+Derived from `SessionPlayer.injured` and `SessionPlayer.injuryRemainingMatches`:
+
+| Condition | Label | Action |
+|----------|-------|--------|
+| `injured == true` AND `injuryRemainingMatches > 1` | **Injured** | Player unavailable |
+| `injured == true` AND `injuryRemainingMatches == 1` | **Returning Soon** | Player unavailable but nearly fit |
+| `injured == true` AND `injuryRemainingMatches == 0` | **Injured** | Treat as injured (edge case; log warning) |
+| `injured == false` | **Available** | Normal selection |
+
+### 5.2 Energy Status
+
+Derived from `SessionPlayer.energy` (0–100, default 100):
+
+| Energy Range | Label | Color Suggestion | Warning Level |
+|-------------|-------|------------------|---------------|
+| 80–100 | **Fresh** | Green | None |
+| 60–79 | **Good** | Light green | None |
+| 40–59 | **Tired** | Yellow/amber | Low |
+| 20–39 | **Very Tired** | Orange | Medium |
+| 0–19 | **Exhausted** | Red | High |
+
+These are recommended display thresholds only. Backend simulation uses raw `energy` value internally. Frontend thresholds can be adjusted based on UX testing.
+
+### 5.3 Combined Status
+
+When both injury and energy status could apply, injury takes priority:
+
+| Priority | Status | Reason |
+|----------|--------|--------|
+| 1 | **Injured** | Player cannot perform regardless of energy |
+| 2 | **Exhausted** | Energy so low performance is severely affected |
+| 3 | **Very Tired** | Energy significantly depleted |
+| 4 | **Tired** | Energy moderately depleted |
+| 5 | **Available/Fresh** | Normal state |
+
+The combined status displayed to the user is the highest applicable priority.
+
+---
+
+## 6. UI Surfaces to Update
+
+The following pages/views in the frontend require indicators. This document designs the UX intent; implementation is future work (V24D6G3–G7).
+
+### 6.1 Squad Management Page
+
+**What to show:**
+- Each player row/card displays an injury badge and/or energy badge
+- Injured badge: "Injured" label, injury type if available, remaining matches
+- Energy badge: energy level label + optional color-coded bar
+- Tooltip on hover/focus explaining the status
+
+**States:**
+- Injured players: show badge + greyed state + "Unfit" label
+- Healthy but tired players: show energy indicator with appropriate color
+- Fresh players: minimal or no indicator needed
+
+**Do not implement in V24D6G1:** Sorting/filtering by status. That is a later phase.
+
+### 6.2 Lineup Selection Page
+
+**What to show:**
+- Injury badges on players in the squad panel
+- Energy indicator near each selectable player
+- Clear visual distinction between selectable and unavailable players
+
+**States:**
+- **Injured players:** Strong warning or block — visually distinct (greyed + badge + warning text)
+- **Exhausted players:** Warning but still selectable — "This player is exhausted. Starting him may affect performance."
+- **Very tired players:** Low-priority warning — "This player is very tired."
+- **Tired players:** Informational — no blocking
+- **Available players:** No warning
+
+**Design note:** Blocking injured players from lineup is strongly recommended. Blocking exhausted players may be optional in V24D6G — test with warnings first, then add blocking if UX proves it necessary.
+
+### 6.3 Match Detail Page
+
+**What to show:**
+- Injury events are already in the match timeline (V24D5E3/E6)
+- Player ratings table (V24D5E4) could optionally show "played while injured" or "played while exhausted" annotations in the future
+- Post-match fatigue summary: optional panel showing energy drain for starting XI players
+
+**Current state:** Timeline already shows INJURY events. V24D6G does not need to add events — only surface existing event data more clearly if not already visible.
+
+**Future (V24D6G6):** Post-match condition summary panel could show energy change for starting XI.
+
+### 6.4 Dashboard / Next Match Preview
+
+**What to show:**
+- Squad health summary before simulating next round
+- "N players unavailable (injury)"
+- "N players very tired"
+- "N players tired"
+- Strong warning banner if key players are unavailable
+
+**Purpose:** Give the manager a heads-up before they commit to simulating the next round. If they have 3 injured and 4 exhausted players, they should see that before clicking "Simulate Round".
+
+---
+
+## 7. Recommended Visual Language
+
+### 7.1 Badge Design
+
+**Injury badges** should be prominent and immediately recognizable:
+
+| Badge | Content | Color |
+|-------|---------|-------|
+| "Injured" | "Injured" + match count e.g., "Out 2 matches" | Red/crimson |
+| "Returning Soon" | "Returning" + "1 match" | Orange/amber |
+
+**Energy badges** can be compact:
+
+| Badge | Content | Color |
+|-------|---------|-------|
+| Fresh | "Fresh" | Green |
+| Good | "Good" | Light green |
+| Tired | "Tired" | Yellow |
+| Very Tired | "Very Tired" | Orange |
+| Exhausted | "Exhausted" | Red |
+
+### 7.2 Icon Recommendations
+
+- **Injury:** 🩹 (medical cross) or ⚠️ (warning triangle)
+- **Energy:** ⚡ (lightning bolt) or 🔋 (battery)
+- **Fresh:** ✅ or 💪 (flexed bicep)
+
+Use icon + text, not text alone. Color-only badges are inaccessible to color-blind users.
+
+### 7.3 Accessibility
+
+- Never use color as the only differentiator — always pair color with text or icon
+- Energy color scale should have sufficient contrast in all states
+- Consider a legend or key for color codes
+- Screen reader labels must be descriptive: "Player João Silva: Injured, Out 2 matches" not just a red badge
+
+### 7.4 Tooltip Copy
+
+Tooltips should provide actionable information:
+
+| Status | Tooltip Copy |
+|--------|-------------|
+| Injured | "This player is injured and unavailable for {n} more match(es)." |
+| Returning Soon | "This player is close to returning. Remaining injury time: {n} match." |
+| Exhausted | "This player is exhausted and likely to underperform. Consider resting him." |
+| Very Tired | "This player is very tired. Starting him may affect performance or increase future fatigue." |
+| Tired | "This player has reduced energy. Performance may be slightly affected." |
+| Fresh | "This player is fully rested and ready to start." |
+
+Tooltip copy should be human-readable, not technical. Avoid exposing raw field names or internal simulation details.
+
+---
+
+## 8. Lineup Rules Recommendation
+
+### 8.1 Injured Players
+
+**Recommendation:** Injured players should be **blocked from being selected** in the starting XI.
+
+**Rationale:**
+- An injured player physically cannot play — this is a hard constraint
+- Blocking (not just warning) prevents user frustration from unknowingly fielding an unavailable player
+- The backend does not currently reject injured players in lineup selection (no validation exists), so this requires frontend AND potentially backend lineup validation
+
+**Implementation path:**
+- Frontend: prevent injured players from being added to starting XI
+- Future backend (V24D6F): add lineup validation rejecting injured players at persist time
+
+### 8.2 Exhausted Players
+
+**Recommendation:** Exhausted players should receive a **warning** but may remain selectable.
+
+**Rationale:**
+- Exhausted players can still play but performance will be degraded
+- Blocking immediately may feel too punishing (energy recovers in 1–2 rounds of rest)
+- Warning allows manager to make informed risk decisions
+
+**Future refinement:** After UX testing, if exhausted players always lose matches or always perform terribly, consider escalating to block.
+
+### 8.3 Very Tired Players
+
+**Recommendation:** Very tired players should receive a **low-priority warning** only.
+
+**Rationale:**
+- Performance degradation is mild-to-moderate
+- The manager should know but should not be forced to rest
+- Warning is sufficient for informed decision-making
+
+### 8.4 Tired Players
+
+**Recommendation:** Tired players should show an **informational indicator** with no warning dialog.
+
+**Rationale:**
+- Performance impact is minimal
+- Over-warning creates noise and desensitizes users to real warnings
+- Simply showing the energy level is enough for informed management
+
+### 8.5 Summary Table
+
+| Status | Blocking | Warning | Informational |
+|--------|----------|---------|---------------|
+| Injured | ✅ YES | — | Badge visible |
+| Exhausted | ❌ NO | ✅ YES | Energy badge |
+| Very Tired | ❌ NO | ✅ LOW | Energy badge |
+| Tired | ❌ NO | ❌ NO | Energy badge |
+| Fresh | ❌ NO | ❌ NO | None/minimal |
+
+---
+
+## 9. Tooltip Copy — Full Reference
+
+### 9.1 Injury Tooltips
+
+**Injured:**
+> "This player is injured and unavailable for {n} more match(es)."
+
+**Returning Soon:**
+> "This player is close to returning. Remaining injury time: {n} match."
+
+**Played Injured (future):**
+> "This player played while injured this match."
+
+### 9.2 Energy Tooltips
+
+**Exhausted:**
+> "This player is exhausted. Consider resting him."
+
+**Very Tired:**
+> "This player is very tired. Starting him may affect performance or future fatigue."
+
+**Tired:**
+> "This player has reduced energy. Starting him may affect performance."
+
+**Good:**
+> "This player is in good condition."
+
+**Fresh:**
+> "This player is fully rested and ready to start."
+
+### 9.3 Tooltip Implementation Notes
+
+- Tooltip copy is display text only — no backend logic
+- `{n}` is a placeholder for the actual remaining match count or energy value
+- Copy should be reviewed by a UX writer before implementation
+- Consider localization if the app is ever internationalized
+
+---
+
+## 10. API/DTO Considerations
+
+### 10.1 Data Availability Audit Required (V24D6G2)
+
+Before any implementation, V24D6G2 must answer:
+
+1. **Does the current CareerSave API response serialize `energy`, `injured`, `injuryType`, and `injuryRemainingMatches` to the frontend?**
+
+2. **Are these fields in the `SessionPlayer` DTO that the frontend receives?**
+
+3. **If they are not currently exposed, what is the path to exposure?**
+   - Redis schema may already have them — no migration needed
+   - API serialization may exclude them — may need backend change
+   - Frontend state management may need update
+
+### 10.2 No New Backend Fields Required
+
+V24D6G does not create new `SessionPlayer` fields. All fields needed for UI already exist:
+- `energy`
+- `injured`
+- `injuryType`
+- `injuryRemainingMatches`
+
+If these fields are confirmed available to the frontend, no backend schema, API, or Redis changes are needed for V24D6G UI implementation.
+
+### 10.3 Redis Schema
+
+No Redis schema changes. The mutation fields were designed to use existing `SessionPlayer` fields (V24D6B design principle: "no new schema"). V24D6G uses the same existing fields.
+
+### 10.4 Backend Validation
+
+V24D6G does not include backend lineup validation. Injured player blocking in lineup selection is a future phase (V24D6F or V24D6G extension). The UI can warn but the backend does not currently enforce.
+
+---
+
+## 11. Implementation Breakdown
+
+V24D6G is too large to implement in one phase. Recommended phased approach:
+
+| Phase | Content | Risk | Dependency |
+|-------|---------|------|------------|
+| **V24D6G1** | This design document | NONE | V24D6C3 complete |
+| **V24D6G2** | Frontend DTO/data availability audit — verify which mutation fields are accessible to frontend | LOW | V24D6G1 complete |
+| **V24D6G3** | Squad management injury + energy indicators | LOW | V24D6G2 complete |
+| **V24D6G4** | Lineup selection warnings/blocks for injured/exhausted players | MEDIUM | V24D6G3 complete |
+| **V24D6G5** | Dashboard next-match warnings | LOW | V24D6G4 complete |
+| **V24D6G6** | Match detail post-match condition summary | LOW | V24D6G5 complete |
+| **V24D6G7** | UX polish, responsive pass, accessibility audit | LOW | V24D6G6 complete |
+
+**V24D6G2 is the critical path blocker.** If V24D6G2 determines that the needed fields are not exposed in the API, V24D6G implementation must pause while a backend API phase is planned.
+
+---
+
+## 12. Testing Strategy
+
+Tests are future work for V24D6G3+. This section defines test intent for later implementation phases.
+
+### 12.1 Squad Indicators (V24D6G3)
+
+- Component renders injured badge when `injured=true`
+- Component renders energy badge when `energy < 80`
+- Missing `injuryRemainingMatches` defaults to "Injured" with no count
+- Missing `energy` defaults to 100 (fresh)
+- Mobile layout still usable at 375px width
+
+### 12.2 Lineup Warnings (V24D6G4)
+
+- Injured player cannot be added to starting XI when block is implemented
+- Exhausted player shows warning but remains selectable
+- Tired player shows informational badge only, no dialog
+- Warning dialog contains actionable copy
+- Warning can be dismissed without removing player from lineup
+
+### 12.3 Dashboard Warnings (V24D6G5)
+
+- Dashboard shows correct unavailable player count
+- Warning banner appears when key players are injured/exhausted
+- Warning banner does not appear when all players are fresh/available
+
+### 12.4 Graceful Degradation
+
+- When `energy` field is missing from API response: assume 100 (fresh), do not show energy indicator
+- When `injured` field is missing: assume false (available)
+- When both fields missing: all players show as "Available" with no indicators
+
+### 12.5 Accessibility
+
+- Screen reader announces player status on focus
+- Color is not the only indicator
+- Keyboard navigation works for injured/exhausted player selection
+
+---
+
+## 13. Risks
+
+### Risk 1: API Fields Not Exposed
+
+**Description:** The mutation fields (`energy`, `injured`, `injuryRemainingMatches`) may exist in Redis but not be serialized in the API response to the frontend.
+
+**Impact:** V24D6G UI cannot be implemented until a backend API phase adds these fields.
+
+**Mitigation:** V24D6G2 must audit frontend data availability before any implementation begins.
+
+### Risk 2: Blocking Injured Players Too Early Frustrates Users
+
+**Description:** If injured players are blocked from lineup selection before users understand why, support tickets may increase.
+
+**Impact:** MEDIUM — user confusion, perceived game unfairness.
+
+**Mitigation:** Use warning dialog with clear explanation before implementing hard block. Test with warning-only first (V24D6G4 without block), then add block only after UX validation.
+
+### Risk 3: Stale UI State After Simulating Round
+
+**Description:** If the UI does not refresh after a round simulation, the user may see outdated player condition.
+
+**Impact:** LOW/MEDIUM — user sees incorrect player condition before next lineup decision.
+
+**Mitigation:** Round simulation success handler must refresh squad/lineup state. Consider optimistic UI update or explicit refresh trigger.
+
+### Risk 4: Color-Only Indicators Are Inaccessible
+
+**Description:** Energy badges relying on color (green/yellow/red) without text or icon are inaccessible to color-blind users.
+
+**Impact:** MEDIUM — exclusion of color-blind users.
+
+**Mitigation:** Always pair color with text label and/or icon. Test with color-blind simulation tools (e.g., Chrome DevTools emulation).
+
+### Risk 5: User Confusion When Mutation Flags Are Disabled
+
+**Description:** If mutation flags (`mutate-career-state`, `persist-fatigue`, `persist-injuries`) are all false, players never become injured or tired. But the UI would still show energy indicators (always at 100) and no injury badges.
+
+**Impact:** LOW — the UI indicators would be meaningless noise if mutation is disabled.
+
+**Mitigation:** UI indicators should be data-driven: if `energy == 100` and `injured == false`, show nothing. The indicators only appear when there is actual reduced availability to report.
+
+### Risk 6: Mutation Enables Mid-Career Without UI Warning
+
+**Description:** If an operator enables `mutate-career-state=true` on an existing career that already has players with accumulated fatigue or injuries, the UI may suddenly change without the user expecting it.
+
+**Impact:** MEDIUM — unexpected sudden injury/fatigue displays.
+
+**Mitigation:** Consider a one-time notification when mutation is first enabled: "Player conditions will now affect match outcomes." This is a future backend/admin feature, not V24D6G scope.
+
+---
+
+## 14. Recommendation
+
+### 14.1 Immediate Next Step: V24D6G2 — Frontend DTO Audit
+
+Before any UI implementation, V24D6G2 must verify:
+1. Whether `energy`, `injured`, `injuryType`, `injuryRemainingMatches` are in the API response to the frontend
+2. What DTO shape the frontend uses for player data
+3. Whether any backend API change is required before UI work can begin
+
+If V24D6G2 finds fields are missing from the API, a backend API phase is needed before V24D6G3 can start.
+
+### 14.2 Phased Implementation Order
+
+1. **V24D6G2** — Audit frontend data availability (blocking)
+2. **V24D6G3** — Squad management indicators (injury badge + energy badge)
+3. **V24D6G4** — Lineup selection warnings (injured blocked, exhausted warned)
+4. **V24D6G5** — Dashboard next-match warnings
+5. **V24D6G6** — Match detail post-match condition summary
+6. **V24D6G7** — UX polish
+
+### 14.3 What NOT to Do Yet
+
+- Do **not** implement cards/suspensions UI until V24D6D exists (discipline model required first)
+- Do **not** implement form/morale UI until V24D6E exists
+- Do **not** add new backend fields unless V24D6G2 proves fields exist but are not serialized
+- Do **not** implement V24D6G4 lineup blocking until V24D6G3 indicators are validated with warnings first
+
+### 14.4 Future Backend Work (V24D6F)
+
+V24D6F (career mutation integration tests + rollback tests) is listed as HIGH priority in V24D6A design. V24D6F should be completed before V24D6G4 lineup blocking, to ensure the mutation pipeline is stable and the UI is not built on an unstable foundation.
+
+---
+
+## 15. Non-Goals
+
+V24D6G1 does NOT include:
+- **No frontend implementation** — design only
+- **No backend code** — no implementation
+- **No API changes** — no DTO modifications
+- **No Redis changes** — schema already exists
+- **No schema changes** — all needed fields already exist on `SessionPlayer`
+- **No cards/suspensions UI** — V24D6D discipline model required first
+- **No form/morale UI** — V24D6E not yet designed
+- **No production flag changes** — mutation flags remain default-false
+
+---
+
+## 16. Completion Criteria
+
+- [x] Document created
+- [x] UX problem clearly articulated — visibility gap between mutation and user knowledge
+- [x] Current backend state documented with correct commits and test count
+- [x] Display status categories defined (injury + energy)
+- [x] Combined status priority defined
+- [x] UI surfaces identified (squad management, lineup selection, match detail, dashboard)
+- [x] Visual language defined (badges, colors, icons, accessibility)
+- [x] Lineup rules recommendation defined (injured block, exhausted warn, tired info)
+- [x] Tooltip copy provided
+- [x] API/DTO considerations documented — V24D6G2 required before implementation
+- [x] Phased implementation plan defined (G1–G7)
+- [x] Testing strategy outlined for future phases
+- [x] Risks documented with mitigations
+- [x] Recommendation: V24D6G2 next, then V24D6G3 squad indicators
+- [x] Non-goals explicit
+- [x] V24D6D cards/suspensions deferred until discipline model exists
+- [x] V24D6E form/morale UI deferred
+
+---
+
+*This document is the authoritative V24D6G design specification. V24D6G1 is design-only. Implementation requires V24D6G2 data availability audit first.*
