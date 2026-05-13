@@ -314,6 +314,141 @@ class V24CareerMutationIntegrationTest {
         assertEquals(99, p.getInjuryRemainingMatches(), "Pre-existing duration should not be overwritten");
     }
 
+    // ========== Test 14: mutateCareerState=true + persistFatigue=true → energy reduced ==========
+
+    @Test
+    void masterFlagTrue_plus_persistFatigueTrue_reducesEnergy() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // All mutation flags false EXCEPT master + fatigue
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, true, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        p.setEnergy(100);
+        career.setTournamentState(makeTournamentState(makeFixture("m14", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        // With persistFatigue=true and master on, energy IS reduced (88) because
+        // V24DetailedMatchEngine produces non-substitution events
+        assertEquals(88, p.getEnergy(), "Energy should be reduced when persistFatigue=true");
+    }
+
+    // ========== Test 15: mutateCareerState=false + persistFatigue=true → no energy mutation ==========
+
+    @Test
+    void masterFlagFalse_plus_persistFatigueTrue_noMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // mutateCareerState=false, persistFatigue=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, false, true, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        p.setEnergy(100);
+        career.setTournamentState(makeTournamentState(makeFixture("m15", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertEquals(100, p.getEnergy(), "No energy change when master flag is false");
+    }
+
+    // ========== Test 16: persistFatigue=true alone does not apply injuries ==========
+
+    @Test
+    void persistFatigueTrueAlone_doesNotApplyInjuries() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // persistFatigue=true, persistInjuries=false
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, true, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        p.setEnergy(100);
+        career.setTournamentState(makeTournamentState(makeFixture("m16", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertFalse(p.getInjured(), "No injuries when persistInjuries is false");
+    }
+
+    // ========== Test 17: V24 disabled + fatigue flags true → no energy mutation ==========
+
+    @Test
+    void V24Disabled_withFatigueFlags_noMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // useV24DetailedEngine=false, mutation flags true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, false, false, fakeStorage,
+                true, false, true, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        p.setEnergy(100);
+        career.setTournamentState(makeTournamentState(makeFixture("m17", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertTrue(fakeSim.simulateQuickCalled, "Default path should be used");
+        assertEquals(100, p.getEnergy(), "No energy change when V24 is disabled");
+    }
+
+    // ========== Test 18: expose-detail-api=true alone does not reduce energy ==========
+
+    @Test
+    void exposeDetailApiAlone_doesNotReduceEnergy() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // expose-detail-api would be set at config level; here we test mutation flags independent
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, false, false, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        p.setEnergy(100);
+        career.setTournamentState(makeTournamentState(makeFixture("m18", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertEquals(100, p.getEnergy(), "No energy change when mutation flags are false");
+    }
+
+    // ========== Test 19: no cards/form mutation ==========
+
+    @Test
+    void noCardsOrFormMutation_integration() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, true, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        int originalForm = p.getForm();
+
+        career.setTournamentState(makeTournamentState(makeFixture("m19", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertEquals(originalForm, p.getForm(), "Form should not change in V24D6C3");
+    }
+
     // ========== Factory helpers ==========
 
     private static CareerSave makeCareer(String homeTeamId, String awayTeamId,

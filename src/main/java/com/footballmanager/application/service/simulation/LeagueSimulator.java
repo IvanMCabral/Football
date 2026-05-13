@@ -307,8 +307,13 @@ public class LeagueSimulator {
             }
 
             if (mutationResult.injuriesApplied() > 0) {
-                log.debug("[V24D6B3] Applied {} injury mutations for career {}",
+                log.debug("[V24D6C3] Applied {} injury mutations for career {}",
                         mutationResult.injuriesApplied(), career.getData().getCareerId());
+            }
+
+            if (mutationResult.fatigueApplied() > 0) {
+                log.debug("[V24D6C3] Applied {} fatigue mutations for career {}",
+                        mutationResult.fatigueApplied(), career.getData().getCareerId());
             }
 
         } catch (Exception e) {
