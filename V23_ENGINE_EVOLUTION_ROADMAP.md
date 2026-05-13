@@ -1,9 +1,9 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — Phases 1A, 1B, 2, 3, 4, 5A, 5B, 6A, 6B, 7, 8, 10A, 10B, 10C1, 10C2, 10C3, and 10C4 completed. V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo (commit `12d203d`).
-**Current baseline commit:** `94b4962` (V24D3C complete)
-**Tests:** 406 full suite total; 406 regression gate, 0 failures
-**Date:** 2026-05-11
+**Status:** ACTIVE — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo (commit `12d203d`). V24D6A/V24D6B1/V24D6B2/V24D6B3 injury mutation pipeline wired behind flags. Fatigue/cards/form deferred.
+**Current baseline commit:** `a11bc67` (V24D6B3 complete)
+**Tests:** 459 full suite total; 459 regression gate, 0 failures
+**Date:** 2026-05-13
 
 ---
 
@@ -15,7 +15,7 @@ This roadmap defines 9 phases to evolve V23 incrementally without big rewrites. 
 
 ---
 
-## Phase 0 — Current Completed Baseline
+## Phase 0 — Pre-V24D6 Baseline
 
 **Commit:** `94b4962`
 **Tests:** 406 full suite total; 406 regression gate, 0 failures (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F)

@@ -2,10 +2,10 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D3C+V24D5E5+V24D5E6 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo (commit `12d203d`)
-**Latest commit:** `94b4962` (feat: attach V24 shot coordinates to match events)
-**Tests:** 406 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures; regression gate 406 tests, 0 failures
-**Date:** 2026-05-11
+**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 complete in separate frontend repo. V24D6A design + V24D6B1/B2/B3 injury mutation pipeline wired behind default-false flags. Fatigue/cards/form mutation deferred.
+**Latest commit:** `a11bc67` (feat: wire V24D6B3 injury mutation behind flags)
+**Tests:** 459 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 19 V24D6B2 + 13 V24D6B3), 0 failures; regression gate 459 tests, 0 failures
+**Date:** 2026-05-13
 
 ---
 

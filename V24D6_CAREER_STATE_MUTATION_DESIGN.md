@@ -1,9 +1,10 @@
 # V24D6 — Career State Mutation Design
 
-**Status:** V24D6A — DESIGN ONLY — No code implementation
+**Status:** V24D6A DESIGN COMPLETE; V24D6B1/B2/B3 IMPLEMENTATION COMPLETE; fatigue/cards/form deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-12
-**Parent:** V24D5E6 completion (commit `30a1a4b`)
+**Latest implementation commit:** `a11bc67` (feat: wire V24D6B3 injury mutation behind flags)
+**Tests:** 459 regression gate, 0 failures
 
 ---
 
@@ -15,7 +16,7 @@ The next logical step is to move from **visualization to consequence**: V24 matc
 
 **Goal:** Design how V24 match outcomes (injuries, fatigue, cards, form) can safely mutate `CareerSave` persistent state after a simulated round — without breaking existing careers, without forcing adoption, and without compromising the V23/stable path.
 
-V24D6A is **design only**. No code implementation begins until this document is reviewed and V24D6B is explicitly approved.
+V24D6A began as design-only and is now complete. V24D6B1/B2/B3 are also complete: injury mutation applier, mutation service orchestration, and LeagueSimulator wiring behind default-false flags. Fatigue/cards/form remain deferred.
 
 ---
 
@@ -41,14 +42,14 @@ V24D6A is **design only**. No code implementation begins until this document is 
 | Aspect | Current Behavior |
 |--------|-----------------|
 | V24PlayerMatchState | Match-local only, reset each match |
-| SessionPlayer | **Not mutated** by V24 |
+| SessionPlayer | Mutated only when V24 path succeeds and `mutate-career-state=true` + `persist-injuries=true`; default false, so normal behavior remains unchanged |
 | SessionTeam | **Not mutated** by V24 |
 | CareerSave schema | Unchanged |
 | MatchFixture.MatchResultData | Unchanged (6 aggregate fields) |
 | V23/default path | Unaffected by V24 |
-| Backend tests | 406, 0 failures |
+| Backend tests | 459, 0 failures |
 
-**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings) that is discarded after each match. There is no path from V24 match outcomes to persistent career state.
+**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6B3, there is now a partial persistent career-state path for injuries only: INJURY events can update existing SessionPlayer injury fields when the V24 path succeeds and both `mutate-career-state=true` and `persist-injuries=true`. Fatigue, cards/suspensions, and form/morale remain match-local/deferred.
 
 ---
 
@@ -161,7 +162,7 @@ private int energy;  // 0-100, default 100
 | Phase | Description | Priority |
 |-------|-------------|----------|
 | **V24D6A** | Design — this document | DONE |
-| **V24D6B** | Injury persistence — SessionPlayer.injured/injuryType/injuryRemainingMatches | HIGH |
+| **V24D6B** | Injury persistence — B1 applier, B2 service orchestration, B3 LeagueSimulator wiring behind flags | DONE through B3 |
 | **V24D6C** | Fatigue/energy persistence — SessionPlayer.energy drain | HIGH |
 | **V24D6D** | Cards/suspensions design + persistence — new discipline model if approved | MEDIUM |
 | **V24D6E** | Form/morale updates — SessionPlayer.form or new field | LOW (defer) |
@@ -236,7 +237,9 @@ LeagueSimulator.simulateRound()
 └── persist CareerSave                               ← existing
 ```
 
-### V24CareerMutationService Interface (Design Only)
+`V24CareerMutationService`, `V24CareerMutationPolicy`, `V24CareerMutationResult`, and `V24InjuryMutationApplier` are implemented through V24D6B1/B2/B3. `V24FatigueMutationApplier`, `V24DisciplineMutationApplier`, and `V24FormMutationApplier` remain future work.
+
+### V24CareerMutationService — Implemented in V24D6B2
 
 ```java
 public interface V24CareerMutationService {
@@ -254,7 +257,7 @@ public interface V24CareerMutationService {
 }
 ```
 
-### V24CareerMutationResult (Design Only)
+### V24CareerMutationResult — Implemented in V24D6B2
 
 ```java
 public record V24CareerMutationResult(
@@ -389,17 +392,16 @@ Mutation should occur **after** detail persistence and **before** CareerSave per
 
 ## 11. Testing Strategy
 
-### Required Test Classes (Future Implementation)
+### Implemented and Future Test Classes
 
-| Test Class | Purpose |
-|------------|---------|
-| `V24CareerMutationServiceTest` | Unit test mutation service orchestration |
-| `V24InjuryMutationApplierTest` | Unit test injury → SessionPlayer mapping |
-| `V24FatigueMutationApplierTest` | Unit test energy drain calculation |
-| `V24CareerMutationPolicyTest` | Unit test flag evaluation |
-| `V24CareerMutationFlagTest` | Integration test flag combinations |
-| `V24CareerMutationIntegrationTest` | End-to-end mutation through LeagueSimulator |
-| `V24CareerMutationRollbackTest` | Verify fallback behavior under mutation failures |
+| Test Class | Status | Tests | Notes |
+|------------|--------|-------|-------|
+| `V24InjuryMutationApplierTest` | Implemented | 21 | V24D6B1 — policy flags, null guards, flag-disabled, unknown player, already injured, duplicate events |
+| `V24CareerMutationServiceTest` | Implemented | 19 | V24D6B2 — mutation service orchestration, null guards, flag combinations, exception handling, result object behavior |
+| `V24CareerMutationIntegrationTest` | Implemented | 13 | V24D6B3 — LeagueSimulator wiring, allFlagsFalse, masterFlagFalse, specificFlagFalse, V24DisabledWithMutationFlags, defaultPathNoMutation, roundCompletion |
+| `V24FatigueMutationApplierTest` | Future | — | V24D6C — not yet implemented |
+| `V24CareerMutationPolicyTest` | Optional | — | Future — only needed if policy grows complex |
+| `V24CareerMutationRollbackTest` | Future | — | Only needed if rollback behavior expands beyond current best-effort |
 
 ### Test Scenarios
 
@@ -524,24 +526,59 @@ V24D6A does NOT include:
 ## 15. Completion Criteria for V24D6A
 
 - [x] Document created
-- [ ] Phase breakdown approved (V24D6B through V24D6G)
-- [ ] Flags defined and approved
-- [ ] Architecture proposed and reviewed
-- [ ] Risks documented and mitigations listed
-- [ ] V24D6B implementation scope is clear
-- [ ] Non-goals explicit
-- [ ] Recommended order: V24D6B first, then V24D6C, then V24D6D
+- [x] Phase breakdown approved (V24D6B through V24D6G)
+- [x] Flags defined and approved
+- [x] Architecture proposed and reviewed
+- [x] Risks documented and mitigations listed
+- [x] V24D6B implementation scope is clear
+- [x] Non-goals explicit
+- [x] Recommended order: V24D6B first, then V24D6C, then V24D6D
+
+## 16. V24D6B Implementation Completion Record
+
+**V24D6B1 — Injury Mutation Applier** (commit `f3d863a`)
+- `V24CareerMutationPolicy` — immutable policy with flag evaluation
+- `V24InjuryMutationApplier` — applies INJURY events to SessionPlayer
+- `V24InjuryMutationApplierTest` — 21 tests
+- Default: `injuryType = "MATCH_INJURY"`, `injuryRemainingMatches = 2`
+- No new schema; uses existing SessionPlayer fields
+
+**V24D6B2 — Mutation Service Orchestration** (commit `2d25767`)
+- `V24CareerMutationResult` — immutable result with defensive copy
+- `V24CareerMutationService` — orchestrates appliers, catches exceptions
+- `V24CareerMutationServiceTest` — 19 tests
+- Service-level fatal failure → no mutation; per-player failure → skip and continue
+- V24InjuryMutationApplier: removed `final` for test subclassing
+
+**V24D6B3 — LeagueSimulator Wiring + Flags** (commit `a11bc67`)
+- 5 mutation flags added to `application.yaml` (all default false):
+  - `app.simulation.v24.mutate-career-state=false` (master gate)
+  - `app.simulation.v24.persist-injuries=false`
+  - `app.simulation.v24.persist-fatigue=false`
+  - `app.simulation.v24.persist-discipline=false`
+  - `app.simulation.v24.persist-form=false`
+- `SimulationConfig` injects mutation properties
+- `LeagueSimulator` applies mutation after V24 success and detail persistence
+- `V24CareerMutationIntegrationTest` — 13 tests
+- Regression gate: 459 tests, 0 failures
+
+**V24D6B3 behavior confirmed:**
+- `mutate-career-state` master gate required for all mutation
+- `persist-injuries` requires master gate true
+- V24 disabled → no mutation (even with flags true)
+- V23/default path → no mutation
+- `persist-detail` independent from mutation
+- `expose-detail-api` independent from mutation
+- Mutation failure best-effort, does not fail round
+- No fatigue/cards/form implementation
+- No schema/API/Redis/frontend changes
+
+## 17. Recommended Next Step
+
+**V24D6C — Fatigue/Energy Persistence Design** or **V24D6B4 — Documentation/Finalization** (if injury pipeline validation is the priority).
+
+V24D6D (cards/suspension discipline model) requires a new data model and UI indicators (V24D6G) before implementation.
 
 ---
 
-## 16. Open Questions for V24D6B Approval
-
-1. **Injury duration:** What should `injuryRemainingMatches` be set to? Fixed value (e.g., 2-3 matches) or variable based on injury type?
-2. **Injury cap per match:** Should there be a maximum number of injuries per team per match to prevent squad decimation?
-3. **Substitution replacement:** When a player is injured mid-match, does the substitute replace them in CareerSave energy tracking?
-4. **Injury on unused players:** Should bench players who don't play in the match have any injury risk?
-5. **Healing mechanism:** How do injured players recover? (manual rest, use-and-improve, time-based automatic?) This affects V24D6B design scope.
-
----
-
-*This document is the authoritative V24D6A design specification. V24D6B implementation must conform to this design. Update this document before implementing V24D6B if scope changes.*
+*This document is the authoritative V24D6 design specification. V24D6B1/B2/B3 implementation conforms to this design. Remaining phases (V24D6C/D/E/F/G) are deferred.*
