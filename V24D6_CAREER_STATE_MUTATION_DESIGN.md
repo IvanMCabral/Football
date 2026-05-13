@@ -1,10 +1,10 @@
 # V24D6 — Career State Mutation Design
 
-**Status:** V24D6A DESIGN COMPLETE; V24D6B1/B2/B3 IMPLEMENTATION COMPLETE; fatigue/cards/form deferred
+**Status:** V24D6A DESIGN COMPLETE; V24D6B1/B2/B3 IMPLEMENTATION COMPLETE; V24D6C1/C2/C3 FATIGUE MUTATION COMPLETE; cards/form deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-12
-**Latest implementation commit:** `a11bc67` (feat: wire V24D6B3 injury mutation behind flags)
-**Tests:** 459 regression gate, 0 failures
+**Latest implementation commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
+**Tests:** 506 regression gate (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3), 0 failures
 
 ---
 
@@ -16,7 +16,7 @@ The next logical step is to move from **visualization to consequence**: V24 matc
 
 **Goal:** Design how V24 match outcomes (injuries, fatigue, cards, form) can safely mutate `CareerSave` persistent state after a simulated round — without breaking existing careers, without forcing adoption, and without compromising the V23/stable path.
 
-V24D6A began as design-only and is now complete. V24D6B1/B2/B3 are also complete: injury mutation applier, mutation service orchestration, and LeagueSimulator wiring behind default-false flags. Fatigue/cards/form remain deferred.
+V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3 are also complete: injury mutation applier, mutation service orchestration, and LeagueSimulator wiring behind default-false flags, PLUS fatigue mutation applier, fatigue service orchestration, and fatigue LeagueSimulator wiring behind default-false flags. Injury and fatigue are complete through V24D6C3; cards/form remain deferred.
 
 ---
 
@@ -42,14 +42,14 @@ V24D6A began as design-only and is now complete. V24D6B1/B2/B3 are also complete
 | Aspect | Current Behavior |
 |--------|-----------------|
 | V24PlayerMatchState | Match-local only, reset each match |
-| SessionPlayer | Mutated only when V24 path succeeds and `mutate-career-state=true` + `persist-injuries=true`; default false, so normal behavior remains unchanged |
+| SessionPlayer | Mutated only when V24 path succeeds and `mutate-career-state=true` + `persist-injuries=true` (injury) or `persist-fatigue=true` (fatigue); default false, so normal behavior remains unchanged |
 | SessionTeam | **Not mutated** by V24 |
 | CareerSave schema | Unchanged |
 | MatchFixture.MatchResultData | Unchanged (6 aggregate fields) |
 | V23/default path | Unaffected by V24 |
-| Backend tests | 459, 0 failures |
+| Backend tests | 506, 0 failures |
 
-**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6B3, there is now a partial persistent career-state path for injuries only: INJURY events can update existing SessionPlayer injury fields when the V24 path succeeds and both `mutate-career-state=true` and `persist-injuries=true`. Fatigue, cards/suspensions, and form/morale remain match-local/deferred.
+**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6C3, there is now a persistent career-state path for injuries AND fatigue: INJURY events can update existing SessionPlayer injury fields, and energy drain can update SessionPlayer.energy, when the V24 path succeeds and both `mutate-career-state=true` and the respective effect flag is true. Cards/suspensions and form/morale remain match-local/deferred.
 
 ---
 
@@ -162,8 +162,8 @@ private int energy;  // 0-100, default 100
 | Phase | Description | Priority |
 |-------|-------------|----------|
 | **V24D6A** | Design — this document | DONE |
-| **V24D6B** | Injury persistence — B1 applier, B2 service orchestration, B3 LeagueSimulator wiring behind flags | DONE through B3 |
-| **V24D6C** | Fatigue/energy persistence — SessionPlayer.energy drain | HIGH |
+| **V24D6B** | Injury persistence — B1 applier, B2 service orchestration, B3 LeagueSimulator wiring behind flags | DONE |
+| **V24D6C** | Fatigue/energy persistence — C1 applier, C2 service orchestration, C3 LeagueSimulator wiring | DONE |
 | **V24D6D** | Cards/suspensions design + persistence — new discipline model if approved | MEDIUM |
 | **V24D6E** | Form/morale updates — SessionPlayer.form or new field | LOW (defer) |
 | **V24D6F** | Career mutation integration tests + rollback tests | HIGH |
@@ -237,7 +237,7 @@ LeagueSimulator.simulateRound()
 └── persist CareerSave                               ← existing
 ```
 
-`V24CareerMutationService`, `V24CareerMutationPolicy`, `V24CareerMutationResult`, and `V24InjuryMutationApplier` are implemented through V24D6B1/B2/B3. `V24FatigueMutationApplier`, `V24DisciplineMutationApplier`, and `V24FormMutationApplier` remain future work.
+`V24CareerMutationService`, `V24CareerMutationPolicy`, `V24CareerMutationResult`, `V24InjuryMutationApplier` are implemented through V24D6B1/B2/B3. `V24FatigueMutationApplier` is implemented in V24D6C1, with service orchestration in V24D6C2 and runtime wiring in V24D6C3. `V24DisciplineMutationApplier` and `V24FormMutationApplier` remain future work.
 
 ### V24CareerMutationService — Implemented in V24D6B2
 
@@ -397,9 +397,9 @@ Mutation should occur **after** detail persistence and **before** CareerSave per
 | Test Class | Status | Tests | Notes |
 |------------|--------|-------|-------|
 | `V24InjuryMutationApplierTest` | Implemented | 21 | V24D6B1 — policy flags, null guards, flag-disabled, unknown player, already injured, duplicate events |
-| `V24CareerMutationServiceTest` | Implemented | 19 | V24D6B2 — mutation service orchestration, null guards, flag combinations, exception handling, result object behavior |
-| `V24CareerMutationIntegrationTest` | Implemented | 13 | V24D6B3 — LeagueSimulator wiring, allFlagsFalse, masterFlagFalse, specificFlagFalse, V24DisabledWithMutationFlags, defaultPathNoMutation, roundCompletion |
-| `V24FatigueMutationApplierTest` | Future | — | V24D6C — not yet implemented |
+| `V24CareerMutationServiceTest` | Implemented | 33 | V24D6B2/C2 — mutation service orchestration, null guards, flag combinations, exception handling, result object behavior, fatigue orchestration |
+| `V24CareerMutationIntegrationTest` | Implemented | 19 | V24D6B3/C3 — LeagueSimulator wiring, allFlagsFalse, masterFlagFalse, specificFlagFalse, V24DisabledWithMutationFlags, defaultPathNoMutation, roundCompletion, fatigue flag combinations |
+| `V24FatigueMutationApplierTest` | Implemented | 27 | V24D6C1 — energy drain, null guards, flag combinations, floor at 0, unknown player skip, injured skip, substitute-only drain, custom drain values, null energy default |
 | `V24CareerMutationPolicyTest` | Optional | — | Future — only needed if policy grows complex |
 | `V24CareerMutationRollbackTest` | Future | — | Only needed if rollback behavior expands beyond current best-effort |
 
@@ -543,10 +543,10 @@ V24D6A does NOT include:
 - Default: `injuryType = "MATCH_INJURY"`, `injuryRemainingMatches = 2`
 - No new schema; uses existing SessionPlayer fields
 
-**V24D6B2 — Mutation Service Orchestration** (commit `2d25767`)
+**V24D6B2 — Mutation Service Orchestration** (commit `91e2f04`)
 - `V24CareerMutationResult` — immutable result with defensive copy
 - `V24CareerMutationService` — orchestrates appliers, catches exceptions
-- `V24CareerMutationServiceTest` — 19 tests
+- `V24CareerMutationServiceTest` — 19 tests (injury-only)
 - Service-level fatal failure → no mutation; per-player failure → skip and continue
 - V24InjuryMutationApplier: removed `final` for test subclassing
 
@@ -573,9 +573,47 @@ V24D6A does NOT include:
 - No fatigue/cards/form implementation
 - No schema/API/Redis/frontend changes
 
+## 16b. V24D6C Implementation Completion Record
+
+**V24D6C1 — Fatigue Mutation Applier** (commit `982293b`)
+- `V24FatigueMutationApplier` — pure helper for energy drain
+- `V24FatigueMutationApplierTest` — 27 tests
+- Constants: `DEFAULT_FULL_MATCH_DRAIN = 12`, `DEFAULT_SUBSTITUTE_DRAIN = 6`
+- Constructor accepts optional custom drain values
+- Algorithm: first pass collects SUBSTITUTION-only players; second pass removes players who appear in non-substitution events from substituteOnly set; drain based on which set the player is in
+- Uses `SessionPlayer.getEnergy()`/`setEnergy(Integer)`, skips injured players (Boolean.TRUE.equals(player.getInjured()))
+- Energy floors at 0
+- No new schema — uses existing SessionPlayer.energy field
+
+**V24D6C2 — Mutation Service Fatigue Orchestration** (commit `91e2f04`)
+- `V24CareerMutationService` — added two-arg constructor (injury + fatigue appliers); single-arg delegates with default fatigue applier
+- `V24CareerMutationResult` — added `failure(injuries, fatigue, failures, partial)` factory for preserving mutation counts on failure
+- `V24CareerMutationServiceTest` — 14 new fatigue orchestration tests (33 total now)
+- `applyFatigue()` called when `policy.isFatiguePersistenceEnabled()`
+- Service-level failure handling: `failure(injuries, fatigue, failures, atLeastOneSuccess)` preserves partial=true only when at least one mutation succeeded
+- Failures caught independently; partial success preserved
+
+**V24D6C3 — LeagueSimulator Fatigue Wiring** (commit `0dc184a`)
+- `LeagueSimulator.applyV24CareerMutation()` — now logs `fatigueApplied()` count alongside `injuriesApplied()`
+- `V24CareerMutationIntegrationTest` — 6 new integration tests (19 total now)
+- Test coverage: master+persistFatigue flag combos, V24 disabled, V23 path, persist-detail independence, no cards/form
+- V24D6C3 required no LeagueSimulator constructor change — V24D6C2's single-arg constructor already injected fatigue applier internally
+- Regression gate: 506 tests, 0 failures
+
+**V24D6C3 behavior confirmed:**
+- `mutate-career-state` master gate required for fatigue mutation
+- `persist-fatigue=true` requires `mutate-career-state=true` to have effect
+- V24 disabled → no fatigue mutation (even with flags true)
+- V23/default path → no fatigue mutation
+- Fatigue skips injured players (Boolean.TRUE.equals(player.getInjured()))
+- Substitute-only players (appear in SUBSTITUTION events, no other events) drain 6; full-match players drain 12
+- Energy floors at 0
+- Null energy defaults to 100 before drain
+- No cards/form implementation
+
 ## 17. Recommended Next Step
 
-**V24D6C — Fatigue/Energy Persistence Design** or **V24D6B4 — Documentation/Finalization** (if injury pipeline validation is the priority).
+**V24D6D — Cards/Suspensions Design** or **V24D6F — Extended Integration Tests**.
 
 V24D6D (cards/suspension discipline model) requires a new data model and UI indicators (V24D6G) before implementation.
 

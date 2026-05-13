@@ -1,9 +1,9 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo; V24D6A design + V24D6B1/B2/B3 injury mutation pipeline wired behind flags; fatigue/cards/form deferred
+**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo; V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind flags; cards/form deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `a11bc67` (feat: wire V24D6B3 injury mutation behind flags)
-**Tests:** 459 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 19 V24D6B2 + 13 V24D6B3), 0 failures
+**Latest implementation commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
+**Tests:** 506 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1), 0 failures
 
 ---
 
@@ -14,7 +14,7 @@
 - **No API/frontend changes without separate approval**
 - **V23 remains production-stable** — V24 is parallel
 - V24 implementation remains modular under `application/service/simulation/v24/`, but selected production wiring exists behind default-false flags.
-- **459 tests are the regression gate; full suite is 459 tests total** — all must pass after any V24D change
+- **506 tests are the regression gate; full suite is 506 tests total** — all must pass after any V24D change
 - Red-carded players remain non-substitutable (V24C invariant, never removed)
 
 ---
@@ -84,7 +84,7 @@ No CareerSave/SessionPlayer/SessionTeam mutation.
 Regression gate: 398 tests, 0 failures; full suite: 398 tests.
 
 ### Still Limited
-- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates now attached to events (V24D3C complete); player ratings backend persistence is now available from V24D5F; DTO/snapshot classes and storage port interface now available from V24D4A; Redis adapter (V24D4B), query endpoint (V24D4C), LeagueSimulator V24 path (V24D5B), detail persistence (V24D5C), end-to-end flag tests (V24D5D), and playerRatings backend persistence (V24D5F) all exist. Frontend read-only page/entry point/player ratings UI/shot map/polish (V24D5E1/E2/E3/E3B/E4/E5/E6) all completed in separate frontend repo (commit `12d203d`). Remaining gaps are fatigue/energy persistence, cards/suspensions, form/morale, UI indicators for unavailable/tired/suspended players, set pieces, stoppage time, and goalkeeper save quality detail. Injury mutation is already wired behind default-false flags via V24D6B3.
+- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates now attached to events (V24D3C complete); player ratings backend persistence is now available from V24D5F; DTO/snapshot classes and storage port interface now available from V24D4A; Redis adapter (V24D4B), query endpoint (V24D4C), LeagueSimulator V24 path (V24D5B), detail persistence (V24D5C), end-to-end flag tests (V24D5D), and playerRatings backend persistence (V24D5F) all exist. Frontend read-only page/entry point/player ratings UI/shot map/polish (V24D5E1/E2/E3/E3B/E4/E5/E6) all completed in separate frontend repo (commit `12d203d`). Remaining gaps are cards/suspensions, form/morale, UI indicators for unavailable/tired/suspended players, set pieces, stoppage time, and goalkeeper save quality detail. Injury mutation is already wired behind default-false flags via V24D6B3. Fatigue/energy mutation is wired behind default-false flags via V24D6C3.
 - ~~No assist/key-pass as first-class event logic~~
 - Shot coordinates now attached to GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events via V24D3C; shot map UI complete and polished (V24D5E5/E6, frontend commit `12d203d`)
 - Player rating helper exists (V24D3B) and backend persistence now exists (V24D5F); player ratings UI now complete (V24D5E4) in separate frontend repo
@@ -118,7 +118,7 @@ V24 could replace `MatchEngineImpl.simulateWithStrength()` for detailed matches:
 
 ### Remaining V24 Deferred Areas
 
-1. **Career impact gap partially addressed** — V24D6B1/B2/B3 injury mutation pipeline wired behind flags; injuries now persist to SessionPlayer when `mutate-career-state=true` and `persist-injuries=true`; fatigue/cards/form remain deferred (V24D6C/D/E)
+1. **Career impact gap partially addressed** — V24D6B1/B2/B3 injury mutation pipeline wired behind flags; V24D6C1/C2/C3 fatigue mutation pipeline wired behind flags; injuries now persist to SessionPlayer when `mutate-career-state=true` and `persist-injuries=true`; fatigue/energy now persists to SessionPlayer when `mutate-career-state=true` and `persist-fatigue=true`; cards/form remain deferred (V24D6D/E)
 2. **Feature flag wiring** — V24 path wired in LeagueSimulator behind `use-v24-detailed-engine=false`; mutation flags wired behind `mutate-career-state=false`
 3. **Storage/API exists but not exposed** — Redis adapter and query endpoint exist behind `app.simulation.v24.expose-detail-api=false`; API exposure requires separate approval.
 4. **Advanced realism gaps** — tactical instruction model, match weather/venue/referee, player form/chemistry/morale not in simulation context.
@@ -158,7 +158,7 @@ V24 detailed result storage now exists as an additive path:
 - Old matches or disabled persistence may still lack detailed snapshots and must fall back gracefully.
 
 Remaining storage-related decisions:
-- injury persistence now uses existing `SessionPlayer` injury fields via V24D6B3 and requires no new storage/schema. Fatigue/cards/form persistence decisions remain pending.
+- injury persistence now uses existing `SessionPlayer` injury fields via V24D6B3 and requires no new storage/schema. Fatigue/energy persistence now uses existing `SessionPlayer.energy` field via V24D6C3 and requires no new storage/schema. Cards/form persistence decisions remain pending.
 - future cleanup/indexing/pagination may need a separate plan if payloads grow.
 
 ---
@@ -183,12 +183,12 @@ Remaining API/frontend considerations:
 
 ## 6. Career Impact Gap
 
-V24C still mutates only `V24PlayerMatchState` during match simulation, but V24D6B3 adds an optional post-match injury mutation pipeline that can update `SessionPlayer` injury fields when explicitly enabled. Fatigue/cards/form are still not persisted. This means:
+V24C still mutates only `V24PlayerMatchState` during match simulation, but V24D6B3 adds an optional post-match injury mutation pipeline and V24D6C3 adds a fatigue mutation pipeline. This means:
 
 | Aspect | V24C Behavior | Production Expectation |
 |--------|---------------|----------------------|
 | Injuries | Set `injured=true` on V24PlayerMatchState only; V24D6B3 can persist INJURY events into `SessionPlayer` when `mutate-career-state=true` + `persist-injuries=true` | Implemented via V24D6B3 behind `mutate-career-state=true` + `persist-injuries=true` |
-| Fatigue | Drains `currentStamina` on V24PlayerMatchState only | Still pending — not persisted |
+| Fatigue | Drains `currentStamina` on V24PlayerMatchState only | Implemented via V24D6C3 behind `mutate-career-state=true` + `persist-fatigue=true` |
 | Yellow cards | Counted on V24PlayerMatchState only | Still pending — no competition disciplinary impact |
 | Substitutions | V24PlayerMatchState on/off pitch only | No SessionTeam starting XI change |
 
@@ -546,7 +546,7 @@ After any V24D change, the full regression gate:
 mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest,V24ShotCoordinateAttachmentTest
 ```
 
-Expected: **406 tests (regression gate), 0 failures; 406 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F)**.
+Expected: **506 tests (regression gate), 0 failures; 506 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1)**.
 
 ---
 

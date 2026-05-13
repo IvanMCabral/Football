@@ -1,10 +1,10 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3 COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI, shot map UI, and page polish complete in separate frontend repo (commit `12d203d`); V24D6B3 injury mutation wiring exists behind default-false flags; fatigue/cards/form deferred
+**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3 COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI, shot map UI, and page polish complete in separate frontend repo (commit `12d203d`); V24D6C1/C2/C3 fatigue mutation wired behind default-false flags; cards/form deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `a11bc67` (feat: wire V24D6B3 injury mutation behind flags)
-**Latest docs commit:** `30a1a4b` (docs: update engine docs after V24D5E6 match detail polish)
-**Tests:** 459 full suite total; 459 regression gate, 0 failures
+**Latest implementation commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
+**Latest docs commit:** `11594a6` (docs after V24D6B3 injury mutation wiring)
+**Tests:** 506 full suite total; 506 regression gate, 0 failures
 **Created:** 2026-05-09
 **Updated:** 2026-05-13
 
@@ -35,8 +35,8 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 
 | Item | Value |
 |------|-------|
-| Latest implementation commit | `a11bc67` (V24D6B3 complete, injury mutation wired behind default-false flags) |
-| Tests | 459 full suite total; 459 regression gate, 0 failures |
+| Latest implementation commit | `0dc184a` (V24D6C3 complete, fatigue mutation wired behind default-false flags) |
+| Tests | 506 full suite total; 506 regression gate, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |
 | Redis adapter | `V24DetailedMatchRedisAdapter` — used through `V24DetailedMatchStoragePort.save(...)` only when V24 path succeeds and `app.simulation.v24.persist-detail=true` |
@@ -48,7 +48,8 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | LeagueSimulator V24 path | Exists behind `app.simulation.league.use-v24-detailed-engine=false` |
 | Flag precedence | V24 > V23 > default |
 | Detail persistence | Implemented in V24D5C behind `app.simulation.v24.persist-detail=false`; default false — saves only when V24 path succeeds and flag is true |
-| Production wiring | V24 simulation path, optional detail persistence, and injury mutation wiring all exist behind default-false flags; read-only frontend match detail page, fixture modal entry point, player ratings UI, shot map UI, and page polish all exist in the separate frontend repo; career-state injury mutation pipeline complete (V24D6B3), fatigue/cards/form deferred |
+| Mutation wiring | Injury + fatigue mutation pipeline complete (V24D6C3), wired behind default-false flags; cards/form deferred |
+| Production wiring | V24 simulation path, optional detail persistence, and injury+fatigue mutation wiring all exist behind default-false flags; read-only frontend match detail page, fixture modal entry point, player ratings UI, shot map UI, and page polish all exist in the separate frontend repo; career-state injury+fatigue mutation pipeline complete (V24D6C3), cards/form deferred
 
 **Persistence behavior (V24D5F):**
 - V24 detail persistence is wired to `LeagueSimulator.persistV24Detail()`
@@ -79,7 +80,19 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 - V23/default path unaffected regardless of mutation flags
 - Failure is best-effort: mutation error does not fail the round
 - No new schema fields, no API changes, no Redis format changes
-- Fatigue/cards/form mutation flags defined but not implemented
+
+**V24D6C3 (Fatigue Mutation Wiring — Completed):**
+- Fatigue mutation pipeline is wired behind `app.simulation.v24.mutate-career-state` master gate
+- `persist-fatigue=true` requires `mutate-career-state=true` to have effect
+- V24 path success + both flags true → fatigue energy drain applied to SessionPlayer via `V24FatigueMutationApplier`
+- Fatigue skips injured players (Boolean.TRUE.equals(player.getInjured()))
+- Substitute-only players (appear in SUBSTITUTION events only) drain 6; full-match players drain 12
+- Energy floors at 0; null energy defaults to 100
+- V24 disabled or master flag false → no fatigue mutation; round completes normally
+- V23/default path unaffected regardless of mutation flags
+- V24D6C3 required no LeagueSimulator constructor change — V24D6C2's single-arg constructor already injected fatigue applier internally
+- No new schema fields, no API changes, no Redis format changes
+- Cards/form mutation flags defined but not implemented
 
 ---
 
@@ -117,14 +130,15 @@ RoundController
           → IF persist-detail=true:
               → V24DetailedMatchData.fromResult(careerId, season, round, homeName, awayName, result, playerRatings)
               → V24DetailedMatchStoragePort.save(careerId, detail)
-          → IF mutate-career-state=true AND persist-injuries=true:
+          → IF mutate-career-state=true AND (persist-injuries=true OR persist-fatigue=true):
               → V24CareerMutationService.applyMutations(career, v24Result, policy)
-              → SessionPlayer injury fields may be updated from INJURY events
+              → SessionPlayer injury fields may be updated from INJURY events when persist-injuries=true
+              → SessionPlayer.energy may be reduced from V24 participation when persist-fatigue=true
           → CareerSave persisted (MatchResultData unchanged)
       → ELSE: existing V23/default path unchanged
 ```
 
-**Critical invariant:** Even when V24 is enabled, `MatchResultData` stores only 6 aggregate fields. V24 detail is **additive and best-effort** — a failed detail save does not fail the match or standings update. Career mutation is also best-effort and explicitly gated; with all flags default false, the normal behavior remains unchanged.
+**Critical invariant:** Even when V24 is enabled, `MatchResultData` stores only 6 aggregate fields. V24 detail is **additive and best-effort** — a failed detail save does not fail the match or standings update. Career mutation (injury + fatigue) is also best-effort and explicitly gated; `persist-injuries` and `persist-fatigue` are independent — enabling one does not enable the other; with all flags default false, the normal behavior remains unchanged.
 
 ---
 
@@ -141,7 +155,7 @@ app:
       expose-detail-api: false    # V24D4C: GET /detail endpoint
       mutate-career-state: false  # V24D6B: master gate for career-state mutation
       persist-injuries: false      # V24D6B3: apply INJURY events to SessionPlayer
-      persist-fatigue: false       # deferred — not implemented
+      persist-fatigue: false       # V24D6C3: apply energy drain to SessionPlayer
       persist-discipline: false     # deferred — not implemented
       persist-form: false          # deferred — not implemented
 ```
@@ -156,12 +170,14 @@ app:
 - `expose-detail-api` does **NOT** imply mutation — these are independent features
 - All seven `app.simulation.v24.*` flags default to **false**
 
-**Mutation flag behavior (V24D6B3):**
+**Mutation flag behavior (V24D6B3 + V24D6C3):**
 - `mutate-career-state=false` (default) → no career-state mutation regardless of other flags
 - `mutate-career-state=true` + `persist-injuries=true` → injury mutation applied after V24 success
-- `mutate-career-state=true` + `persist-injuries=false` → no mutation
+- `mutate-career-state=true` + `persist-fatigue=true` → fatigue mutation applied after V24 success
+- `mutate-career-state=true` + `persist-injuries=false` + `persist-fatigue=false` → no mutation
 - V23/default path → no mutation regardless of flags
 - `use-v24-detailed-engine=false` → no mutation even if mutation flags are true
+- `persist-injuries` and `persist-fatigue` are independent — enabling one does not enable the other
 
 **Recommended production rollout sequence:**
 1. All flags false — V23/default path, no V24
@@ -260,7 +276,7 @@ app:
 | V24 result diverges from V23 stability | MEDIUM | HIGH | Extensive regression testing before production enable |
 | V24 performance slower than quick sim | MEDIUM | MEDIUM | Benchmark in dev before staging; async option for future |
 | Accidental production enablement | LOW | HIGH | All flags default false; manual opt-in required |
-| Career state side effects (injuries/fatigue) | LOW | MEDIUM | Injury mutation exists but is default-false behind `mutate-career-state` + `persist-injuries`; fatigue/cards/form remain deferred |
+| Career state side effects (injuries/fatigue) | LOW | MEDIUM | Injury + fatigue mutation exists behind `mutate-career-state` + respective persist flag; cards/form remain deferred |
 | Frontend depends on null shotCoordinate | MEDIUM | LOW | V24D3C now attaches shotCoordinate to shot-result events; frontend must still handle null for non-shot events, old persisted details, or missing data |
 
 ---
@@ -330,7 +346,7 @@ app:
 | V24D3C | Shot coordinate event attachment (V24MatchEvent schema) | LOW | V24D3A complete | **Completed** |
 | V24D5E | Frontend match detail implementation in separate frontend repo: E1/E2/E3/E3B/E4/E5/E6 all complete and polished | MEDIUM | V24D4C + V24D5F + V24D3C | All Completed |
 
-V24D5A/V24D5B/V24D5C/V24D5D/V24D5F, V24D3C, V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6, and V24D6A/V24D6B1/V24D6B2/V24D6B3 are complete. Injury mutation is wired behind default-false flags. The recommended next step is V24D6C — Fatigue/Energy Persistence, or V24D6B4 docs/regression finalization if needed.
+V24D5A/V24D5B/V24D5C/V24D5D/V24D5F, V24D3C, V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6, and V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 are complete. Injury + fatigue mutation is wired behind default-false flags. The recommended next step is V24D6D — Cards/Suspensions Design, or V24D6F — Extended Integration Tests.
 
 ---
 
@@ -340,7 +356,7 @@ V24D5A/V24D5B/V24D5C/V24D5D/V24D5F, V24D3C, V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24
 - No further V24 schema enrichment in V24D5; V24D3C shotCoordinate attachment is complete, and future schema work requires separate approval.
 - No `MatchFixture.MatchResultData` schema change
 - No `CareerSave` schema change unless separately planned
-- No `SessionPlayer` mutation for fatigue/cards/form (injury pipeline complete via V24D6B3; fatigue/cards/form deferred)
+- No `SessionPlayer` mutation for cards/form (injury+fatigue pipeline complete via V24D6C3; cards/form deferred)
 - No automatic production enablement
 - No removal of V23 path
 - No replacement of `DefaultMatchSimulator`
@@ -518,8 +534,8 @@ V24D5E is now complete in the separate frontend repo:
 - V24D5E5 shot map UI — commit `9b88739`
 - V24D5E6 visual polish — commit `12d203d`
 
-Backend/root state (V24D6B3 complete, `a11bc67`):
-- Latest implementation commit: `a11bc67` (V24D6B3 injury mutation wired behind default-false flags)
+Backend/root state (V24D6C3 complete, `0dc184a`):
+- Latest implementation commit: `0dc184a` (V24D6C3 fatigue mutation wired behind default-false flags)
 - Tests: 459, 0 failures
 - No backend/root changes from V24D5E frontend work
 - No API schema changes
@@ -542,7 +558,7 @@ After any V24 change, the full regression gate:
 mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest,V24ShotCoordinateAttachmentTest
 ```
 
-**Expected:** 406 tests (regression gate), 0 failures; 406 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F).
+**Expected:** 506 tests (regression gate), 0 failures; 506 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1).
 
 ---
 
