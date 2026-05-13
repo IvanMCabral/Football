@@ -1,9 +1,9 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F+V24D3C+V24D5E5 COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI and shot map UI complete in separate frontend repo (commit `9b88739`)
+**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6 COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI, shot map UI, and page polish complete in separate frontend repo (commit `12d203d`)
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `94b4962` (feat: attach shotCoordinates to V24 match events)
-**Latest docs commit:** `699bae9` (previous docs baseline before V24D5E5 documentation update)
+**Latest docs commit:** `bd01479` (docs: update engine docs after V24D5E5 shot map UI)
 **Tests:** 406 full suite total; 406 regression gate, 0 failures
 **Created:** 2026-05-09
 **Updated:** 2026-05-11
@@ -28,7 +28,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | Item | Value |
 |------|-------|
 | Latest implementation commit | `94b4962` (V24D3C complete, shot coordinates attached to events) |
-| Latest docs commit | `699bae9` |
+| Latest docs commit | `bd01479` |
 | Tests | 406 full suite total; 406 regression gate, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |
@@ -41,7 +41,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | LeagueSimulator V24 path | Exists behind `app.simulation.league.use-v24-detailed-engine=false` |
 | Flag precedence | V24 > V23 > default |
 | Detail persistence | Implemented in V24D5C behind `app.simulation.v24.persist-detail=false`; default false — saves only when V24 path succeeds and flag is true |
-| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; read-only frontend match detail page, fixture modal entry point, player ratings UI, and shot map UI all exist in the separate frontend repo; career-state mutation remains deferred |
+| Production wiring | V24 simulation path and optional detail persistence are wired behind default-false flags; read-only frontend match detail page, fixture modal entry point, player ratings UI, shot map UI, and page polish all exist in the separate frontend repo; career-state mutation remains deferred |
 
 **Persistence behavior (V24D5F):**
 - V24 detail persistence is wired to `LeagueSimulator.persistV24Detail()`
@@ -293,15 +293,15 @@ app:
 | V24D5D | End-to-end integration tests for all flag combinations | MEDIUM | V24D5C complete | **Completed** |
 | V24D5F | Player ratings persistence in V24DetailedMatchData | LOW | V24D5C complete | **Completed** |
 | V24D3C | Shot coordinate event attachment (V24MatchEvent schema) | LOW | V24D3A complete | **Completed** |
-| V24D5E | Frontend match detail implementation in separate frontend repo: E1/E2/E3/E3B/E4/E5 all complete | MEDIUM | V24D4C + V24D5F + V24D3C | All Completed |
+| V24D5E | Frontend match detail implementation in separate frontend repo: E1/E2/E3/E3B/E4/E5/E6 all complete and polished | MEDIUM | V24D4C + V24D5F + V24D3C | All Completed |
 
-**V24D5A is the recommended first step** — no runtime behavior change, fully testable in isolation, prepares V24D5B without activating it.
+V24D5A/V24D5B/V24D5C/V24D5D/V24D5F, V24D3C, and V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 are complete. The recommended next step is V24D6A — Career State Mutation Design.
 
 ---
 
 ## 13. Non-Goals
 
-- No additional frontend implementation in this backend/root repo; frontend V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 are complete in the separate frontend repo (commit `9b88739`). No further frontend phases planned.
+- No additional frontend implementation in this backend/root repo; frontend V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 are complete in the separate frontend repo, with latest frontend polish commit `12d203d`. Future frontend work should be planned separately.
 - No further V24 schema enrichment in V24D5; V24D3C shotCoordinate attachment is complete, and future schema work requires separate approval.
 - No `MatchFixture.MatchResultData` schema change
 - No `CareerSave` schema change unless separately planned
@@ -436,13 +436,15 @@ app:
 - **V24D3C is the final prerequisite for V24D5E5 shot map UI**
 - Regression gate: 406 tests, 0 failures
 
-**Status:** V24D5E1 + V24D5E2 + V24D5E3 + V24D5E3B + V24D5E4 COMPLETED — all frontend planning, API client, page, entry point, and player ratings UI complete in separate frontend repo
+**Status:** V24D5E1 + V24D5E2 + V24D5E3 + V24D5E3B + V24D5E4 + V24D5E5 + V24D5E6 COMPLETED — all frontend planning, API client, page, entry point, player ratings UI, shot map UI, and visual polish complete in separate frontend repo (latest commit `12d203d`)
 
 **Frontend V24D5E commits:**
 - `050ab57` — feat: add V24D5E2 match detail API client and TypeScript types
 - `0ba2305` — feat: add V24D5E3 read-only match detail page
 - `d244097` — feat: add match detail entry point from fixture modal
 - `958af1e` — feat: add V24D5E4 player ratings UI
+- `9b88739` — feat: add V24D5E5 shot map UI
+- `12d203d` — style: polish V24D5E6 match detail page
 
 **Frontend V24D5E3 completion summary:**
 - `V24MatchDetailPageComponent` — standalone Angular component at `src/app/features/match-detail/pages/v24-match-detail-page.component.ts`
@@ -463,7 +465,7 @@ app:
 - Fixture modal does NOT call detail endpoint
 - Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 
-**V24D5E4 is complete. V24D5E5 shot map UI is complete (frontend commit `9b88739`).**
+**V24D5E4 is complete. V24D5E5 shot map UI is complete (frontend commit `9b88739`). V24D5E6 page polish is complete (frontend commit `12d203d`).**
 
 **Backend unchanged by frontend implementation:** root repo branch `mvp-1-performance-cleanup` has no changes from V24D5E frontend work.
 
@@ -471,26 +473,29 @@ app:
 
 ## 14. Recommended Next Step
 
-**V24D5E3 — Read-only Match Detail Page — COMPLETED** in separate frontend repo (commit `0ba2305`).
+**Recommended next:** V24D6A — Career State Mutation Design.
 
-**V24D5E2 frontend API client** is complete (frontend repo commit `050ab57`).
+V24D5E is now complete in the separate frontend repo:
+- V24D5E2 API client/types — commit `050ab57`
+- V24D5E3 read-only detail page — commit `0ba2305`
+- V24D5E3B fixture modal entry point — commit `d244097`
+- V24D5E4 player ratings UI — commit `958af1e`
+- V24D5E5 shot map UI — commit `9b88739`
+- V24D5E6 visual polish — commit `12d203d`
 
-**V24D5E3 delivered:**
-- Route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
-- Uses `MatchDetailApiService.getMatchDetail(careerId, matchId)`
-- Header with score, round, season, V24 badge
-- Summary cards (xG, shots, possession, goals)
-- Timeline (minute-sorted events), stats comparison table
-- 404/null friendly unavailable state, 500/error retry state
-- Empty playerRatings state, shot map deferred state
-- Validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
+Backend/root state remains:
+- Latest implementation commit: `94b4962`
+- Tests: 406, 0 failures
+- No backend/root changes from V24D5E frontend work
+- No API schema changes
+- No Redis schema changes
 
-**Backend unchanged:** root repo has no changes from V24D5E frontend work. No API schema changes, no Redis schema changes.
-
-**Next recommended steps (in priority order):**
-1. V24D5E5 — frontend shot map UI
-2. Frontend QA/polish pass on match detail page
-3. Optional backend realism follow-ups: set pieces, stoppage time, goalkeeper save quality, career-state mutation decisions
+Next work should move from read-only detail visualization to career consequences:
+1. V24D6A — Career State Mutation Design
+2. V24D6B — injury persistence
+3. V24D6C — cards/suspensions
+4. V24D6D — fatigue/energy effects
+5. V24D6E — form/morale effects
 
 ---
 
@@ -506,4 +511,4 @@ mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24D
 
 ---
 
-*This document is the authoritative V24D5 production integration planning specification. V24D5A, V24D5B, V24D5C, V24D5D, V24D5F, and V24D3C are complete in the root/backend repo. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 are complete in the separate frontend repo (commit `9b88739`). Full V24 match detail flow is implemented from backend simulation through frontend display.*
+*This document is the authoritative V24D5 production integration planning specification. V24D5A, V24D5B, V24D5C, V24D5D, V24D5F, and V24D3C are complete in the root/backend repo. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 are complete in the separate frontend repo with polish commit `12d203d`. Full V24 match detail flow is implemented from backend simulation through frontend display.*

@@ -1,6 +1,6 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D3C+V24D5E5 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 completed in separate frontend repo; full V24 match detail frontend flow complete
+**Status:** V24D3C+V24D5E5+V24D5E6 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo; full V24 match detail frontend flow complete and polished
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `94b4962` (feat: attach shotCoordinates to V24 match events)
 **Tests:** 406 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F), 0 failures
@@ -84,9 +84,9 @@ No CareerSave/SessionPlayer/SessionTeam mutation.
 Regression gate: 398 tests, 0 failures; full suite: 398 tests.
 
 ### Still Limited
-- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates now attached to events (V24D3C complete); player ratings backend persistence is now available from V24D5F; DTO/snapshot classes and storage port interface now available from V24D4A; Redis adapter (V24D4B), query endpoint (V24D4C), LeagueSimulator V24 path (V24D5B), detail persistence (V24D5C), end-to-end flag tests (V24D5D), and playerRatings backend persistence (V24D5F) all exist. Frontend read-only page/entry point/player ratings UI/shot map (V24D5E1/E2/E3/E3B/E4/E5) all completed in separate frontend repo (commit `9b88739`). Remaining gaps are set pieces, stoppage time, goalkeeper save quality detail, and career-state mutation decisions.
+- Formation parsing and tactical role weighting are now available from V24D1; assist/key-pass selection is now available from V24D2; shot coordinates now attached to events (V24D3C complete); player ratings backend persistence is now available from V24D5F; DTO/snapshot classes and storage port interface now available from V24D4A; Redis adapter (V24D4B), query endpoint (V24D4C), LeagueSimulator V24 path (V24D5B), detail persistence (V24D5C), end-to-end flag tests (V24D5D), and playerRatings backend persistence (V24D5F) all exist. Frontend read-only page/entry point/player ratings UI/shot map/polish (V24D5E1/E2/E3/E3B/E4/E5/E6) all completed in separate frontend repo (commit `12d203d`). Remaining gaps are career-state mutation decisions, set pieces, stoppage time, and goalkeeper save quality detail.
 - ~~No assist/key-pass as first-class event logic~~
-- Shot coordinates now attached to GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events via V24D3C; shot map UI now complete (V24D5E5, frontend commit `9b88739`)
+- Shot coordinates now attached to GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events via V24D3C; shot map UI complete and polished (V24D5E5/E6, frontend commit `12d203d`)
 - Player rating helper exists (V24D3B) and backend persistence now exists (V24D5F); player ratings UI now complete (V24D5E4) in separate frontend repo
 - DTO/snapshot classes (V24D4A), Redis adapter (V24D4B), query endpoint (V24D4C), V24MatchContextFactory (V24D5A), LeagueSimulator V24 branch (V24D5B), V24 detail persistence (V24D5C), end-to-end flag tests (V24D5D), and playerRatings backend persistence (V24D5F) all exist and are tested. Player ratings UI now complete in separate frontend repo (V24D5E4). Shot coordinate attachment (V24D3C) now complete — shotCoordinate populated on shot events.
 - No goalkeeper save quality detail beyond xG
@@ -116,12 +116,13 @@ V24 could replace `MatchEngineImpl.simulateWithStrength()` for detailed matches:
 - Input: `V24MatchContext` built from `SessionTeam`, `SessionPlayer` starting XI
 - Output: `V24DetailedMatchResult` → mapped via `V24DetailedMatchResultAdapter`
 
-### Why V24 Is Not Wired
+### Remaining V24 Deferred Areas
 
-1. **Storage gap** — `MatchFixture.MatchResultData` has only 6 fields. V24 has 13+ fields (xG, timeline, cards, injuries, subs, summary). No storage shape exists.
-2. **API gap** — No frontend UI for detailed match data. No `MatchDetail` DTO.
-3. **Career impact gap** — V24C does not mutate `SessionPlayer`. Injuries/fatigue/cards have no career persistence path.
-4. **Feature flag missing** — No `useV24DetailedEngine` flag analogous to `useV23LeagueEngine`.
+1. **Career impact gap** — V24C does not mutate `SessionPlayer`. Injuries/fatigue/cards have no career persistence path; career-state mutation design needed (V24D6A).
+2. **Feature flag wiring** — V24 path exists in `LeagueSimulator` but is not exposed via a user-facing flag; `use-v24-detailed-engine` flag needs production wiring decision.
+3. **Storage/API exists but not exposed** — Redis adapter and query endpoint exist behind `app.simulation.v24.expose-detail-api=false`; API exposure requires separate approval.
+4. **Advanced realism gaps** — tactical instruction model, match weather/venue/referee, player form/chemistry/morale not in simulation context.
+5. **Old data fallback** — detailed match data only exists for matches played after V24D4B; older career matches lack detail and must fall back gracefully.
 
 ### Data Available at Simulation Time
 
@@ -138,7 +139,7 @@ V24 could replace `MatchEngineImpl.simulateWithStrength()` for detailed matches:
 
 | Data | Gap |
 |------|-----|
-| Dedicated persisted match-detail key | V24MatchContext has matchId, but no Redis/API storage key/shape exists for detailed timeline data |
+| Dedicated persisted match-detail key | Available — V24DetailedMatchData persists under Redis key `career:{careerId}:match-detail:{matchId}` when V24 path succeeds and `persist-detail=true` |
 | Opposition tactical instructions | No tactical instruction model |
 | Match weather/venue/referee | Not in simulation context |
 | Player form/chemistry/morale | Not in SessionPlayer |
@@ -146,34 +147,37 @@ V24 could replace `MatchEngineImpl.simulateWithStrength()` for detailed matches:
 
 ---
 
-## 4. Detailed Result Storage Gap
+## 4. Detailed Result Storage State
 
-`MatchFixture.MatchResultData` has 6 fields: `homeGoals`, `awayGoals`, `homePossession`, `awayPossession`, `homeShots`, `awayShots`.
+V24 detailed result storage now exists as an additive path:
+- `V24DetailedMatchData` snapshot DTO exists.
+- `V24MatchEventDto`, `V24ShotCoordinateDto`, and `V24PlayerMatchRatingDto` exist.
+- `V24DetailedMatchRedisAdapter` persists detail snapshots under `career:{careerId}:match-detail:{matchId}`.
+- `V24DetailedMatchStoragePort.save(...)` is called only when V24 simulation succeeds and `app.simulation.v24.persist-detail=true`.
+- `MatchFixture.MatchResultData` remains unchanged with 6 aggregate fields and remains the standings source of truth.
+- Old matches or disabled persistence may still lack detailed snapshots and must fall back gracefully.
 
-`V24DetailedMatchResult` has: `matchId`, `homeTeamId`, `awayTeamId`, `homeGoals`, `awayGoals`, `homeXg`, `awayXg`, `homeShots`, `awayShots`, `homePossession`, `awayPossession`, `timeline` (list of V24MatchEvent), `summary`.
-
-**Gap: No storage shape for timeline, xG, event-level attribution, cards, injuries, substitutions.**
-
-### Decision Points Before Integration
-
-- **Discard details?** — `V24DetailedMatchResultAdapter` already discards everything but 6 aggregate fields. Could remain permanently discarded.
-- **New Redis object?** — `V24DetailedMatchData` or `V24MatchSnapshot` stored separately with matchId key. Requires Redis schema migration plan.
-- **Expose via API without persistence?** — `V24DetailedMatchResult` returned as API response DTO. Frontend decides what to display.
-- **Separate `MatchDetail` DTO?** — Convert V24DetailedMatchResult to a new DTO for API exposure, separate from storage.
-- **In-memory only?** — V24 remains a research/analysis tool, results never persisted or exposed.
+Remaining storage-related decisions:
+- career-state mutation storage for injuries/fatigue/cards/form is not designed yet.
+- future cleanup/indexing/pagination may need a separate plan if payloads grow.
 
 ---
 
-## 5. API/Frontend Gap
+## 5. API/Frontend State
 
-No UI exists for:
-- Shot map / xG chart
-- Match event timeline
-- Player performance details
-- Card/injury/sub history
-- Possession timeline graph
+The V24 read-only detail API and frontend flow now exist:
+- Query endpoint exists: `GET /api/careers/{careerId}/matches/{matchId}/detail`.
+- API is feature-gated by `app.simulation.v24.expose-detail-api=false`.
+- Frontend API client/types exist in separate frontend repo.
+- Read-only match detail page exists.
+- Fixture modal entry point exists.
+- Timeline, summary, stats, player ratings UI, shot map UI, and visual polish are complete through V24D5E6.
+- Frontend latest commit: `12d203d`.
 
-Exposing V24 data requires: new API endpoint, new DTO, frontend component design, and separate approval for all three layers.
+Remaining API/frontend considerations:
+- expose-detail-api remains default false and needs rollout decision.
+- old/missing details must continue to show graceful empty states.
+- future frontend enhancements should be planned separately, not as current blockers.
 
 ---
 
@@ -207,21 +211,23 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 | Gap | Impact | V24D Candidate? |
 |-----|--------|-----------------|
-| No assist/key-pass first-class logic | Missing chance creation chain | Yes |
-| No shot coordinates | No shot map UI possible | Yes |
+| Assist/key-pass first-class logic | Completed via V24D2; richer possession-chain chance creation remains future work | Partial / future expansion |
+| Shot coordinates | Completed via V24D3C; consumed by V24D5E5 shot map UI | No |
 | No goalkeeper save quality detail | Saves are binary | Yes |
 | No corner/free kick model | Set pieces not modeled | Yes |
 | No stoppage time | 90 minutes is exactly 90 events | Yes |
 | No extra time/penalties | No knockout stage support | Future |
 | No team morale/chemistry | Form doesn't carry across matches | Future |
 | No player post-match form update | Form is static per SessionPlayer | Future |
-| No detailed player ratings | No per-match player scores | Yes |
+| Player ratings | Backend persistence via V24D5F; frontend UI via V24D5E4 | No |
 | No possession chains/pass sequences | Possession is aggregate only | Yes |
 | No weather/home advantage/referee | No situational modifiers | Future |
 
 ---
 
-## 9. Options
+## 9. Historical Options Considered
+
+These options were considered earlier in the V24D evolution. Several are now completed through V24D4/V24D5; this section is retained as historical context, not current recommended work.
 
 ### Option A — Keep V24 Isolated, Improve Realism
 
@@ -247,6 +253,8 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 ### Option B — Detailed Result Storage Design (Docs Only)
 
+**Status:** Superseded/Completed by V24D4A/V24D4B/V24D5C
+
 **Description:** Create `V24D_STORAGEDESIGN.md` with proposed Redis shape, DTOs, and migration plan. No implementation.
 
 **Files:** New design doc only.
@@ -268,6 +276,8 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 ---
 
 ### Option C — Feature-Flagged V24 Path in LeagueSimulator (Implementation)
+
+**Status:** Completed by V24D5B
 
 **Description:** Add `useV24DetailedEngine` flag to `SimulationConfig` and `LeagueSimulator`. When enabled, use `V24DetailedMatchEngine` instead of `MatchEngineImpl` for league simulation.
 
@@ -291,6 +301,8 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 ### Option D — API/DTO Exposure Design (Docs Only)
 
+**Status:** Completed by V24D4A/V24D4C and V24D5E frontend work
+
 **Description:** Design `MatchDetailDto`, `PlayerMatchPerformanceDto`, `ShotMapDto` and the endpoints that would expose V24 data. No implementation.
 
 **Files:** New design doc only.
@@ -313,6 +325,8 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 ### Option E — Full Production Integration
 
+**Status:** Still not recommended as a big-bang path; phased implementation already used instead
+
 **Description:** Wire V24 into LeagueSimulator, add Redis storage, add API endpoints, add frontend components — all at once.
 
 **Risk:** HIGH — too many concurrent decisions; V23 stability at risk.
@@ -321,9 +335,9 @@ V24C mutates only `V24PlayerMatchState` during a match. `SessionPlayer` is **nev
 
 ---
 
-## 10. Recommended V24D Path
+## 10. V24D Completion Sequence
 
-### Recommended Sequence
+### Completed Sequence
 
 **V24D1 (Isolated Expansion — Completed)**
 Formation parser + tactical role weighting inside isolated V24.
@@ -346,8 +360,8 @@ Assist and key-pass model + event richness.
 - Risk: LOW
 - **Status: COMPLETED** — commit `1149c0b`
 
-**V24D3 (Isolated Expansion — ✅ COMPLETED)**
-Shot coordinates (V24D3A) and player ratings helper (V24D3B) delivered. Both remain helper-only — no event/result schema change. V24D3C (optional schema enrichment) deferred. Recommended next: V24D4 (Storage/API design) or Phase 6C.
+**V24D3 (Isolated Expansion + Event Schema Enrichment — COMPLETED)**
+Shot coordinates (V24D3A), player ratings helper (V24D3B), and shotCoordinate event attachment (V24D3C) are complete. V24D3C attached nullable `shotCoordinate` to GOAL/SHOT/SHOT_ON_TARGET/BLOCK/MISS events, enabling the completed V24D5E5 shot map UI.
 
 **V24D4A (DTO/Storage Design — Completed)**
 DTO/snapshot classes and storage port interface — no Redis adapter yet.
@@ -425,14 +439,15 @@ GET `/api/careers/{careerId}/matches/{matchId}/detail` behind feature flag.
 `V24ShotCoordinateAttachmentTest` — 8 tests covering: shot events include coordinate, goal events include coordinate, non-shot events null, determinism for same seed, DTO mapping survival, snapshot preservation, backward-compatible event creation, xG formula unchanged.
 **Status: COMPLETED** — commit `94b4962`
 
-**V24D5E (Frontend Planning/Design/Implementation — Completed: E1+E2+E3+E3B+E4 done, E5 now possible)**
+**V24D5E (Frontend Planning/Design/Implementation — COMPLETED: E1/E2/E3/E3B/E4/E5/E6 complete and polished)**
 
 V24D5E1 Design Document — COMPLETED (commit `e64c2d9` in root repo)
-V24D5E2 Frontend API Client + Types — COMPLETED (frontend repo `050ab57` on `mvp-1`)
-V24D5E3 Read-only Match Detail Page — COMPLETED (frontend repo `0ba2305` on `mvp-1`)
-V24D5E3B Fixture/List Entry Point — COMPLETED (frontend repo `d244097` on `mvp-1`)
-V24D5E4 Player Ratings UI — COMPLETED (frontend repo `958af1e` on `mvp-1`)
-V24D5E5 Shot Map UI — Now possible with V24D3C shot coordinate attachment
+V24D5E2 Frontend API Client + Types — COMPLETED (`050ab57` on `mvp-1`)
+V24D5E3 Read-only Match Detail Page — COMPLETED (`0ba2305` on `mvp-1`)
+V24D5E3B Fixture/List Entry Point — COMPLETED (`d244097` on `mvp-1`)
+V24D5E4 Player Ratings UI — COMPLETED (`958af1e` on `mvp-1`)
+V24D5E5 Shot Map UI — COMPLETED (`9b88739` on `mvp-1`)
+V24D5E6 Match Detail Page Polish — COMPLETED (`12d203d` on `mvp-1`)
 
 Frontend repo: `front-ciber/project` / Football-angular / `mvp-1`
 Frontend route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetailPageComponent`
@@ -537,7 +552,7 @@ Expected: **406 tests (regression gate), 0 failures; 406 full suite total (112 V
 
 ---
 
-*This document is the authoritative V24D planning specification. No code implementation begins until this document is reviewed and a specific V24D phase is approved.*
+*This document is the authoritative V24D planning and completion record. V24D1/V24D2/V24D3/V24D4/V24D5 phases described here are complete where marked; remaining recommended work moves to V24D6A Career State Mutation Design and later realism expansions.*
 
 ---
 

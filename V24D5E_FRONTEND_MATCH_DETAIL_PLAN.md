@@ -1,6 +1,6 @@
 # V24D5E — Frontend Match Detail Planning/Design
 
-**Status:** V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 all COMPLETED in separate frontend repo
+**Status:** V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 all COMPLETED in separate frontend repo
 **Frontend repo:** `front-ciber/project` / Football-angular
 **Frontend branch:** `mvp-1`
 **Frontend commits:**
@@ -9,6 +9,7 @@
 - `d244097` — feat: add match detail entry point from fixture modal
 - `958af1e` — feat: add V24D5E4 player ratings UI
 - `9b88739` — feat: add V24D5E5 shot map UI
+- `12d203d` — style: polish V24D5E6 match detail page
 **Type:** Frontend design and integration planning
 **Date:** 2026-05-11
 
@@ -16,7 +17,7 @@
 
 ## 1. Executive Summary
 
-V24D5E is **now a completion record**. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5 are completed in the separate frontend repo. V24D5E5 delivered the shot map UI in commit `9b88739`, using existing `timeline[].shotCoordinate` data produced by V24D3C.
+V24D5E is **now a completion record**. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 are completed in the separate frontend repo. V24D5E5 delivered the shot map UI in commit `9b88739`, using existing `timeline[].shotCoordinate` data produced by V24D3C. V24D5E6 delivered full visual polish in commit `12d203d`.
 
 V24 detailed match data (stored in Redis, queryable via existing endpoint) is **additive enrichment** — it must never be required for career progress. The existing aggregate match result remains the source of truth for standings. If detail is unavailable (older matches, disabled flags, or missing data), the UI must gracefully fall back to the existing fixture display.
 
@@ -472,6 +473,27 @@ Before V24D5E4 (player ratings):
 2. V24D5E4 frontend player ratings UI is now unblocked from backend side
 
 Before V24D5E5 (shot map): **COMPLETED — backend V24D3C commit `94b4962` attached shotCoordinates; frontend V24D5E5 commit `9b88739` rendered them**
+
+### V24D5E6 — Match Detail Page Polish — COMPLETED
+
+**Commit:** `12d203d` — `style: polish V24D5E6 match detail page`
+**Date:** 2026-05-12
+**Changed file:** `src/app/features/match-detail/pages/v24-match-detail-page.component.ts`
+**Validation:** `npx tsc --noEmit` BUILD SUCCESS; `npx ng build` BUILD SUCCESS
+
+**V24D5E6 delivered:**
+- Full visual polish of `V24MatchDetailPageComponent` (UX refinement, no new features)
+- Polished header/scoreboard with centered score, improved team name layout, muted meta row
+- Polished summary cards: cleaner card styling, consistent home/away split with center divider
+- Improved timeline layout: badge class helper `eventClass()`, body/meta columns, event description ellipsis for mobile
+- Stats comparison simplified via `statsComparison()` helper returning structured rows
+- Player ratings UI preserved; top player badge added per team ("Top: PlayerName (8.5)")
+- Shot map preserved and polished: pitch border, dot colors/hover, legend
+- Loading/error/unavailable states improved: spinner animation, error/info icon circles, friendly copy, info-box
+- Mobile responsive: 4→2 column grid, ellipsis on long event descriptions
+- No route changes, no API client/type changes, no new endpoint calls
+- No backend/root repo changes, no API/Redis schema changes
+- Unrelated frontend changes (squad-management, career-setup) were not committed
 
 **Dev/test enablement (requires separate ops action):**
 ```
