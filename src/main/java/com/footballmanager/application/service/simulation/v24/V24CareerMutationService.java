@@ -5,7 +5,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 /**
  * Pure orchestration service that coordinates V24 career mutations after a match result.
  *
- * <p>V24D6B2 scope: injury mutation only. Fatigue, discipline, and form are not implemented.
+ * <p>V24D6C2 scope: injury + fatigue mutation. Discipline and form are not implemented.
  *
  * <p>This service is isolated — no Spring, no Redis, no IO.
  * It is not yet wired into LeagueSimulator; it exists as a standalone component.
@@ -13,9 +13,19 @@ import com.footballmanager.domain.model.entity.CareerSave;
 public class V24CareerMutationService {
 
     private final V24InjuryMutationApplier injuryMutationApplier;
+    private final V24FatigueMutationApplier fatigueMutationApplier;
 
     public V24CareerMutationService(V24InjuryMutationApplier injuryMutationApplier) {
+        this(injuryMutationApplier, new V24FatigueMutationApplier());
+    }
+
+    public V24CareerMutationService(
+            V24InjuryMutationApplier injuryMutationApplier,
+            V24FatigueMutationApplier fatigueMutationApplier) {
         this.injuryMutationApplier = injuryMutationApplier;
+        this.fatigueMutationApplier = fatigueMutationApplier != null
+                ? fatigueMutationApplier
+                : new V24FatigueMutationApplier();
     }
 
     /**
@@ -36,26 +46,34 @@ public class V24CareerMutationService {
         if (policy == null) return V24CareerMutationResult.empty();
         if (!policy.isCareerMutationEnabled()) return V24CareerMutationResult.empty();
 
-        // V24D6B2: only injury applier is active
-        if (!policy.isInjuryPersistenceEnabled()
-                && !policy.isFatiguePersistenceEnabled()
-                && !policy.isDisciplinePersistenceEnabled()
-                && !policy.isFormPersistenceEnabled()) {
-            return V24CareerMutationResult.empty();
-        }
-
         int injuries = 0;
-        int failuresCount = 0;
+        int fatigue = 0;
+        java.util.List<String> failures = new java.util.ArrayList<>();
 
         if (policy.isInjuryPersistenceEnabled()) {
             try {
                 injuries = injuryMutationApplier.applyInjuries(career, result, policy);
             } catch (Exception e) {
-                return V24CareerMutationResult.failure(
-                        "Injury mutation failed: " + e.getMessage());
+                failures.add("Injury mutation failed: " + e.getMessage());
             }
         }
 
-        return V24CareerMutationResult.success(injuries, 0, 0, 0);
+        if (policy.isFatiguePersistenceEnabled()) {
+            try {
+                fatigue = fatigueMutationApplier.applyFatigue(career, result, policy);
+            } catch (Exception e) {
+                failures.add("Fatigue mutation failed: " + e.getMessage());
+            }
+        }
+
+        if (!failures.isEmpty()) {
+            return V24CareerMutationResult.failure(injuries, fatigue, failures, injuries > 0 || fatigue > 0);
+        }
+
+        if (injuries == 0 && fatigue == 0) {
+            return V24CareerMutationResult.empty();
+        }
+
+        return V24CareerMutationResult.success(injuries, fatigue, 0, 0);
     }
 }

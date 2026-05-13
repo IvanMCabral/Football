@@ -15,7 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class V24CareerMutationServiceTest {
 
     private final V24InjuryMutationApplier injuryApplier = new V24InjuryMutationApplier();
-    private final V24CareerMutationService service = new V24CareerMutationService(injuryApplier);
+    private final V24FatigueMutationApplier fatigueApplier = new V24FatigueMutationApplier();
+    private final V24CareerMutationService service = new V24CareerMutationService(injuryApplier, fatigueApplier);
+
+    // Backwards-compatible service (fatigue applier injected internally)
+    private final V24CareerMutationService singleArgService = new V24CareerMutationService(injuryApplier);
 
     // ========== Helper builders ==========
 
@@ -151,14 +155,18 @@ class V24CareerMutationServiceTest {
     @Test
     void fatigueFlagTrueAlone_doesNotApplyInjuries() {
         CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        // result has INJURY event but injuries=false so injury not applied
+        // but fatigue=true so fatigue IS applied (player participated)
         V24DetailedMatchResult res = result(injuryEvent("p1", 45));
         V24CareerMutationPolicy pol = policy(true, false, true, false, false);
 
         V24CareerMutationResult r = service.applyMutations(career, res, pol);
 
         assertEquals(0, r.injuriesApplied());
-        assertEquals(0, r.fatigueApplied());
+        assertEquals(1, r.fatigueApplied());
         assertFalse(career.getSessionPlayer("p1").getInjured());
+        assertEquals(88, career.getSessionPlayer("p1").getEnergy());
     }
 
     @Test
@@ -294,8 +302,6 @@ class V24CareerMutationServiceTest {
 
     @Test
     void noMatchFixtureResultDataSchemaImpact() {
-        // V24CareerMutationService only mutates SessionPlayer fields.
-        // MatchFixture.MatchResultData is never touched.
         CareerSave career = careerWithPlayer("p1");
         V24DetailedMatchResult res = result(injuryEvent("p1", 45));
         V24CareerMutationPolicy pol = policy(true, true, false, false, false);
@@ -303,8 +309,270 @@ class V24CareerMutationServiceTest {
         V24CareerMutationResult r = service.applyMutations(career, res, pol);
 
         assertEquals(1, r.injuriesApplied());
-        // If this completes without error and the result is correct,
-        // MatchFixture.MatchResultData was not involved.
         assertNotNull(res);
+    }
+
+    // ========== Fatigue orchestration tests (V24D6C2) ==========
+
+    @Test
+    void fatigueFlagTrue_appliesFatigueAndReportsFatigueAppliedCount() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, true, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.fatigueApplied());
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(88, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void fatigueFlagFalse_doesNotApplyFatigue() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void injuryFlagTrue_plus_fatigueFlagTrue_appliesBothAndReportsBothCounts() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        // p1 has only a goal (fatigue participation)
+        // p2 has only an injury (injury participation) — different player
+        V24MatchEvent p1Goal = new V24MatchEvent(60, V24MatchEventType.GOAL, "team-A", "p1", "Goal", null, null, 0.35, "Goal");
+        V24MatchEvent p2Injury = new V24MatchEvent(45, V24MatchEventType.INJURY, "team-A", "p2", "Injured", null, null, 0.0, "Injury");
+        SessionPlayer p2 = SessionPlayer.fromWorldPlayer("p2", "Player2", "MID", 25, 70);
+        career.addSessionPlayer(p2);
+        p2.setEnergy(100);
+        V24DetailedMatchResult res = result(p1Goal, p2Injury);
+        V24CareerMutationPolicy pol = policy(true, true, true, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.injuriesApplied());
+        assertEquals(1, r.fatigueApplied());
+        assertTrue(career.getSessionPlayer("p2").getInjured());
+        assertEquals(88, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void injuryFlagTrue_plus_fatigueFlagFalse_appliesInjuriesOnly() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45), goalEvent("p1", 60));
+        V24CareerMutationPolicy pol = policy(true, true, false, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void injuryFlagFalse_plus_fatigueFlagTrue_appliesFatigueOnly() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45), goalEvent("p1", 60));
+        V24CareerMutationPolicy pol = policy(true, false, true, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(1, r.fatigueApplied());
+        assertFalse(career.getSessionPlayer("p1").getInjured());
+        assertEquals(88, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void masterFlagFalse_plus_fatigueFlagTrue_appliesNothing() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(false, false, true, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void persistInjuriesTrueAlone_doesNotTriggerFatigue() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, true, false, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void fatigueApplierException_returnsPartialFailureResult() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, true, false, false);
+
+        V24CareerMutationService failingService = new V24CareerMutationService(
+                new V24InjuryMutationApplier(),
+                new V24FatigueMutationApplier() {
+                    @Override
+                    public int applyFatigue(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("Fatigue applier failed");
+                    }
+                });
+
+        V24CareerMutationResult r = failingService.applyMutations(career, res, pol);
+
+        assertEquals(1, r.failures().size());
+        assertTrue(r.failures().get(0).contains("Fatigue applier failed"));
+        assertEquals(0, r.fatigueApplied()); // fatigue applier threw, no count recorded
+        assertFalse(r.partialFailure()); // no mutation succeeded
+    }
+
+    @Test
+    void injuryApplierException_doesNotPreventFatigueFromApplying() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45), goalEvent("p1", 60));
+        V24CareerMutationPolicy pol = policy(true, true, true, false, false);
+
+        V24CareerMutationService failingInjuryService = new V24CareerMutationService(
+                new V24InjuryMutationApplier() {
+                    @Override
+                    public int applyInjuries(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("Injury applier failed");
+                    }
+                },
+                new V24FatigueMutationApplier());
+
+        V24CareerMutationResult r = failingInjuryService.applyMutations(career, res, pol);
+
+        assertEquals(1, r.failures().size());
+        assertTrue(r.failures().get(0).contains("Injury applier failed"));
+        assertTrue(r.partialFailure());
+        assertEquals(1, r.fatigueApplied());
+        assertEquals(88, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void fatigueApplierException_doesNotEraseAppliedInjuryResult() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45), goalEvent("p1", 60));
+        V24CareerMutationPolicy pol = policy(true, true, true, false, false);
+
+        V24CareerMutationService failingFatigueService = new V24CareerMutationService(
+                new V24InjuryMutationApplier(),
+                new V24FatigueMutationApplier() {
+                    @Override
+                    public int applyFatigue(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("Fatigue applier failed");
+                    }
+                });
+
+        V24CareerMutationResult r = failingFatigueService.applyMutations(career, res, pol);
+
+        assertEquals(1, r.failures().size());
+        assertTrue(r.failures().get(0).contains("Fatigue applier failed"));
+        assertTrue(r.partialFailure());
+        assertEquals(1, r.injuriesApplied());
+        assertTrue(career.getSessionPlayer("p1").getInjured());
+    }
+
+    @Test
+    void bothAppliersThrowing_returnsBothFailures_noPartialFailureWhenNoSuccess() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45), goalEvent("p1", 60));
+        V24CareerMutationPolicy pol = policy(true, true, true, false, false);
+
+        V24CareerMutationService bothFailingService = new V24CareerMutationService(
+                new V24InjuryMutationApplier() {
+                    @Override
+                    public int applyInjuries(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("Injury failed");
+                    }
+                },
+                new V24FatigueMutationApplier() {
+                    @Override
+                    public int applyFatigue(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("Fatigue failed");
+                    }
+                });
+
+        V24CareerMutationResult r = bothFailingService.applyMutations(career, res, pol);
+
+        assertEquals(2, r.failures().size());
+        assertFalse(r.partialFailure());
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+    }
+
+    @Test
+    void oneSuccess_oneFailure_returnsPartialFailureTrue() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45), goalEvent("p1", 60));
+        V24CareerMutationPolicy pol = policy(true, true, true, false, false);
+
+        V24CareerMutationService oneFailingService = new V24CareerMutationService(
+                new V24InjuryMutationApplier(),
+                new V24FatigueMutationApplier() {
+                    @Override
+                    public int applyFatigue(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("Fatigue failed");
+                    }
+                });
+
+        V24CareerMutationResult r = oneFailingService.applyMutations(career, res, pol);
+
+        assertEquals(1, r.failures().size());
+        assertTrue(r.partialFailure());
+        assertEquals(1, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+    }
+
+    @Test
+    void disciplineAndFormFlags_doNotTriggerMutationInV24D6C2() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, true, true, true);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.fatigueApplied());
+        assertEquals(0, r.disciplineApplied());
+        assertEquals(0, r.formApplied());
+    }
+
+    @Test
+    void singleArgConstructor_injectsDefaultFatigueApplier() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, true, false, false);
+
+        V24CareerMutationResult r = singleArgService.applyMutations(career, res, pol);
+
+        assertEquals(1, r.fatigueApplied());
+        assertEquals(88, career.getSessionPlayer("p1").getEnergy());
     }
 }

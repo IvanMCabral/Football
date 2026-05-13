@@ -48,10 +48,43 @@ public final class V24CareerMutationResult {
     }
 
     public static V24CareerMutationResult failure(String message) {
+        return failure(message, false);
+    }
+
+    public static V24CareerMutationResult failure(String message, boolean partial) {
         ArrayList<String> list = new ArrayList<>();
         list.add(message);
         return new V24CareerMutationResult(0, 0, 0, 0,
-                Collections.unmodifiableList(list), false);
+                Collections.unmodifiableList(list), partial);
+    }
+
+    public static V24CareerMutationResult failure(int injuries, int fatigue, String message) {
+        ArrayList<String> list = new ArrayList<>();
+        list.add(message);
+        boolean partial = injuries > 0 || fatigue > 0;
+        return new V24CareerMutationResult(injuries, fatigue, 0, 0,
+                Collections.unmodifiableList(list), partial);
+    }
+
+    public static V24CareerMutationResult failure(List<String> messages) {
+        List<String> defensive = messages != null
+                ? Collections.unmodifiableList(new ArrayList<>(messages))
+                : Collections.emptyList();
+        return new V24CareerMutationResult(0, 0, 0, 0, defensive, false);
+    }
+
+    public static V24CareerMutationResult failure(List<String> messages, boolean partial) {
+        List<String> defensive = messages != null
+                ? Collections.unmodifiableList(new ArrayList<>(messages))
+                : Collections.emptyList();
+        return new V24CareerMutationResult(0, 0, 0, 0, defensive, partial);
+    }
+
+    public static V24CareerMutationResult failure(int injuries, int fatigue, List<String> messages, boolean partial) {
+        List<String> defensive = messages != null
+                ? Collections.unmodifiableList(new ArrayList<>(messages))
+                : Collections.emptyList();
+        return new V24CareerMutationResult(injuries, fatigue, 0, 0, defensive, partial);
     }
 
     public static V24CareerMutationResult partial(
