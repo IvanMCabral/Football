@@ -15,7 +15,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
  *   <li>injuryRemainingMatches = 2</li>
  * </ul>
  */
-public final class V24InjuryMutationApplier {
+public class V24InjuryMutationApplier {
 
     public static final String DEFAULT_INJURY_TYPE = "MATCH_INJURY";
     public static final int DEFAULT_INJURY_DURATION_MATCHES = 2;
