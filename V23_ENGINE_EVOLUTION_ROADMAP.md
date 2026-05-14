@@ -1,6 +1,6 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo (commit `12d203d`). V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline wired behind flags. Cards/form deferred.
+**Status:** ACTIVE — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo (commit `12d203d`). V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline wired behind flags. V24D6G3/V24D6G4A/V24D6G4B frontend UI phases implemented in separate frontend repo (commits `3675431`/`362c647`/`c4681e2`). Cards/form deferred.
 **Current baseline commit:** `0dc184a` (V24D6C3 complete)
 **Tests:** 506 full suite total; 506 regression gate, 0 failures
 **Date:** 2026-05-13

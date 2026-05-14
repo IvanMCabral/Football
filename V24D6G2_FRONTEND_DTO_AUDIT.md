@@ -327,16 +327,25 @@ These fields are NOT in `PlayerLineupDTO` (lineup endpoint). This is acceptable 
 
 **NOT committed in this phase:** squad-editor-modal condition warning logic (showConditionWarning, conditionWarning$ state). The modal file showed as untracked with a large diff (~1208 lines), which was not safe to commit without path/diff hygiene review.
 
-### V24D6G4B — Modal Warning Behavior / Selection UX Hygiene (NEXT PHASE)
+### V24D6G4B — Lineup Confirmation Warning (COMPLETED ✅)
 
-**Requires:** path/diff hygiene review for squad-editor-modal before committing modal changes.
+**Commit:** `c4681e2` (`feat: add V24D6G4B lineup confirmation warning`, front-ciber/project mvp-1)
 
-**Lineup endpoint:** `PlayerLineupDTO` exposes `energy` and `injured`. Injured players are already mapped to `active: !p.injured` in the editor. Warnings and blocking can proceed without backend/API changes.
+**No backend changes required.** Frontend-only change in the separate frontend repo.
 
-**Injury type display in lineup:**
-- Requires `injuryType` and `injuryRemainingMatches` — available from squad endpoint
-- Lineup editor may need to cross-reference squad data to show remaining match count
-- Or add these fields to `PlayerLineupDTO` if backend is willing to make that DTO change
+**What was implemented:**
+- `confirmationWarning$` and `pendingRiskyConfirm$` BehaviorSubjects added to `SquadManagementComponent`
+- `buildRiskyLineupMessage()` — detects injured/exhausted/very-tired players in lineup (risk rules: injured === true, exhausted: energy <= 19, very tired: energy 20–39)
+- `resetLineupWarning()` — clears warning state
+- `onConfirmLineup()` — two-click pattern: first click warns if lineup contains risky players, second click proceeds
+- `onAutoSelect()` — resets warning when user auto-selects lineup
+- Amber warning box with ⚠️ icon displayed above confirm button when risky players detected
+- No hard blocking — warning only, user chooses to proceed
+- No new HTTP calls — uses existing `/career/lineup/confirm` only
+- No backend/API/Redis/schema changes
+
+**V24D6G4C — Squad-editor-modal condition warning logic (DEFERRED)**
+The `squad-editor-modal` component was untracked/dead work — not imported, not routed, build passes without it. The condition warning logic for modal selection was NOT committed. This remains a potential future phase if the modal is ever revived with a legitimate use case.
 
 ---
 
@@ -392,7 +401,7 @@ These fields are NOT in `PlayerLineupDTO` (lineup endpoint). This is acceptable 
 
 **Lineup endpoint detail:** `PlayerLineupDTO` exposes `energy` and `injured`. `injuryType` and `injuryRemainingMatches` are not present — acceptable because injured players are blocked from lineup selection anyway, and remaining match count is most useful for squad management display. V24D6G4 may cross-reference squad data or extend `PlayerLineupDTO` if richer lineup tooltips are needed.
 
-**Recommended next phase: V24D6G4B — Modal Warning Behavior / Selection UX Hygiene**
+**Recommended next phase: V24D6G5 — Dashboard Next-Match Warnings**
 
 **Primary work:** Commit squad-editor-modal condition warning logic after path/diff hygiene review. Add warning state when selecting injured or exhausted players. No backend dependency. V24D6G4A proved no backend/API changes are needed for lineup warning UI.
 
