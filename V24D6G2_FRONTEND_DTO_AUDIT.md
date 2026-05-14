@@ -408,11 +408,21 @@ The `squad-editor-modal` component was untracked/dead work — not imported, not
 - No hard blocking — warning only, user can proceed
 - Error-safe: squad load failure emits empty array, warning hidden
 
-**Remaining phases:**
-- V24D6G6 — Match detail post-match condition summary (next)
-- V24D6G7 — UX polish/accessibility
-- V24D6G5B — Optional dashboard polish deferred until UX review
+**✅ V24D6G6A — Committed as `80ad1ed`** (front-ciber/project mvp-1)
 
-**Recommended next phase: V24D6G6 — Match Detail Post-Match Condition Summary**
+**Summary:**
+- Post-match injury/event summary added to match detail page
+- Uses existing `MatchDetail.timeline` — INJURY, YELLOW_CARD, RED_CARD events
+- No new HTTP calls — data already loaded by the page
+- No API/DTO/model changes
+- No energy/fatigue delta claims — match detail DTO does not expose before/after energy or energy delta
+- Shows: injury count, player names, minutes, card counts
+- Empty state: "No injury events recorded for this match."
+
+**Remaining phases:**
+- V24D6G7 — UX polish/accessibility (next)
+- V24D6G6B — Optional deeper match detail polish deferred until UX review
+
+**Recommended next phase: V24D6G7 — UX Polish and Accessibility Audit**
 
 *This document is the authoritative V24D6G2 audit record.*
