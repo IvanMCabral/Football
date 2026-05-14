@@ -8,8 +8,8 @@
 **V24D6G4B implementation commit:** `c4681e2` (frontend lineup confirmation warning, front-ciber/project mvp-1)
 **V24D6G5A implementation commit:** `18543dc` (frontend dashboard squad condition warning, front-ciber/project mvp-1)
 **V24D6G6A implementation commit:** `80ad1ed` (frontend match detail condition summary, front-ciber/project mvp-1)
-**Latest docs commit:** `8acfae7` (docs: update V24D6G docs after match detail condition summary)
-**Tests:** 506 full suite, 0 failures
+**Latest docs commit:** `0884815` — docs: complete V24D6G UI audit (docs: update V24D6G docs after match detail condition summary)
+**Tests:** 521 full suite, 0 failures
 **Created:** 2026-05-13
 
 ---
@@ -30,12 +30,12 @@ However, these career mutations are invisible to the user unless the UI surfaces
 |------|-------|
 | Latest implementation commit | `0dc184a` — V24D6C3 complete |
 | Latest docs commit | `8acfae7` — docs: update V24D6G docs after match detail condition summary |
-| Tests | 506, 0 failures |
+| Tests | 521, 0 failures |
 | Injury mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-injuries=true` |
 | Fatigue mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-fatigue=true` |
 | All mutation flags | Default false |
 | No API/Redis/frontend/schema changes in V24D6C | All mutation flags default false; cards/form not implemented |
-| Backend test count | 506 total (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3) |
+| Backend test count | 521 total (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3) |
 
 **Injury mutation target fields on `SessionPlayer`:**
 - `injured` (boolean)
@@ -535,7 +535,7 @@ Richer injury detail (e.g., `injuryRemainingMatches` tooltip) in lineup may requ
 
 ### 14.4 Future Backend Work (V24D6F)
 
-V24D6F (career mutation integration tests + rollback tests) is listed as HIGH priority in V24D6A design. V24D6F should be completed before V24D6G4 lineup blocking, to ensure the mutation pipeline is stable and the UI is not built on an unstable foundation.
+V24D6F (career mutation regression tests) is now complete (V24D6F1/F2/F3 — commits `9e52b08`/`5933d1c`/`6250f11`, +15 tests). V24D6G4 lineup blocking is also already complete without waiting for V24D6F.
 
 ---
 

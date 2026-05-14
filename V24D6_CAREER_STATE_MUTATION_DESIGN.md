@@ -4,7 +4,7 @@
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-12
 **Latest implementation commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
-**Tests:** 506 regression gate (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3), 0 failures
+**Tests:** 521 regression gate (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3), 0 failures
 
 ---
 
@@ -47,7 +47,7 @@ V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3
 | CareerSave schema | Unchanged |
 | MatchFixture.MatchResultData | Unchanged (6 aggregate fields) |
 | V23/default path | Unaffected by V24 |
-| Backend tests | 506, 0 failures |
+| Backend tests | 521, 0 failures |
 
 **Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6C3, there is now a persistent career-state path for injuries AND fatigue: INJURY events can update existing SessionPlayer injury fields, and energy drain can update SessionPlayer.energy, when the V24 path succeeds and both `mutate-career-state=true` and the respective effect flag is true. Cards/suspensions and form/morale remain match-local/deferred.
 
@@ -166,7 +166,7 @@ private int energy;  // 0-100, default 100
 | **V24D6C** | Fatigue/energy persistence — C1 applier, C2 service orchestration, C3 LeagueSimulator wiring | DONE |
 | **V24D6D** | Cards/suspensions design + persistence — new discipline model if approved | MEDIUM |
 | **V24D6E** | Form/morale updates — SessionPlayer.form or new field | LOW (defer) |
-| **V24D6F** | Career mutation integration tests + rollback tests | HIGH |
+| **V24D6F** | Career mutation regression tests — V24D6F1/F2/F3: +15 tests, no production code changes, best-effort partial mutation semantics confirmed | DONE |
 | **V24D6G** | UI indicators — show unavailable/tired/suspended players in lineup | MEDIUM |
 
 **Rationale:** Injury and fatigue are the least reversible effects (a player cannot play if injured or exhausted). Starting with these creates the most immediate gameplay consequence. Cards/suspensions require a new model. Form is the most sensitive to balance errors.
@@ -598,7 +598,7 @@ V24D6A does NOT include:
 - `V24CareerMutationIntegrationTest` — 6 new integration tests (19 total now)
 - Test coverage: master+persistFatigue flag combos, V24 disabled, V23 path, persist-detail independence, no cards/form
 - V24D6C3 required no LeagueSimulator constructor change — V24D6C2's single-arg constructor already injected fatigue applier internally
-- Regression gate: 506 tests, 0 failures
+- Regression gate: 521 tests, 0 failures
 
 **V24D6C3 behavior confirmed:**
 - `mutate-career-state` master gate required for fatigue mutation
@@ -613,7 +613,7 @@ V24D6A does NOT include:
 
 ## 17. Recommended Next Step
 
-**V24D6D — Cards/Suspensions Design** or **V24D6F — Extended Integration Tests**.
+**V24D6D — Cards/Suspensions Design** (discipline model required first) or **V24D6E — Form/Morale Design**.
 
 V24D6D (cards/suspension discipline model) requires a new data model and UI indicators (V24D6G) before implementation.
 

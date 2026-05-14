@@ -1,10 +1,10 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3 COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI, shot map UI, and page polish complete in separate frontend repo (commit `12d203d`); V24D6C1/C2/C3 fatigue mutation wired behind default-false flags; cards/form deferred
+**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3 COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI, shot map UI, and page polish complete in separate frontend repo (commit `12d203d`); V24D6C1/C2/C3 fatigue mutation wired behind default-false flags; V24D6F1/F2/F3 mutation regression tests complete (commits `9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes). Cards/form deferred.
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
-**Latest docs commit:** `11594a6` (docs after V24D6B3 injury mutation wiring)
-**Tests:** 506 full suite total; 506 regression gate, 0 failures
+**Latest docs commit:** `0884815` — docs: complete V24D6G UI audit
+**Tests:** 521 full suite total (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3); 521 regression gate, 0 failures
 **Created:** 2026-05-09
 **Updated:** 2026-05-13
 
@@ -36,7 +36,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | Item | Value |
 |------|-------|
 | Latest implementation commit | `0dc184a` (V24D6C3 complete, fatigue mutation wired behind default-false flags) |
-| Tests | 506 full suite total; 506 regression gate, 0 failures |
+| Tests | 521 full suite total; 521 regression gate, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |
 | Redis adapter | `V24DetailedMatchRedisAdapter` — used through `V24DetailedMatchStoragePort.save(...)` only when V24 path succeeds and `app.simulation.v24.persist-detail=true` |
@@ -346,7 +346,7 @@ app:
 | V24D3C | Shot coordinate event attachment (V24MatchEvent schema) | LOW | V24D3A complete | **Completed** |
 | V24D5E | Frontend match detail implementation in separate frontend repo: E1/E2/E3/E3B/E4/E5/E6 all complete and polished | MEDIUM | V24D4C + V24D5F + V24D3C | All Completed |
 
-V24D5A/V24D5B/V24D5C/V24D5D/V24D5F, V24D3C, V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6, and V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 are complete. Injury + fatigue mutation is wired behind default-false flags. The recommended next step is V24D6D — Cards/Suspensions Design, or V24D6F — Extended Integration Tests.
+V24D5A/V24D5B/V24D5C/V24D5D/V24D5F, V24D3C, V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6, and V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 are complete. Injury + fatigue mutation is wired behind default-false flags. V24D6F1/F2/F3 mutation regression tests complete (commits `9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes). The recommended next step is V24D6D — Cards/Suspensions Design, or V24D6E — Form/Morale Design.
 
 ---
 
@@ -558,7 +558,7 @@ After any V24 change, the full regression gate:
 mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest,V24ShotCoordinateAttachmentTest
 ```
 
-**Expected:** 506 tests (regression gate), 0 failures; 506 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1).
+**Expected:** 521 tests (regression gate), 0 failures; 521 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3).
 
 ---
 
