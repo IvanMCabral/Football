@@ -1,9 +1,10 @@
 # V24D6G — UI Indicators for Injured and Tired Players
 
-**Status:** V24D6G1 — DESIGN ONLY
+**Status:** V24D6G — DESIGN + V24D6G3 IMPLEMENTED
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
-**Latest docs commit:** `778a8a4` (docs: update engine docs after V24D6C fatigue mutation wiring)
+**Latest implementation commit:** `0dc184a` (backend fatigue mutation wiring)
+**V24D6G3 implementation commit:** `3675431` (frontend squad indicators, front-ciber/project mvp-1)
+**Latest docs commit:** `58ae8fb` (docs: add V24D6G2 frontend DTO audit)
 **Tests:** 506 full suite, 0 failures
 **Created:** 2026-05-13
 
@@ -15,9 +16,7 @@ V24D6B (injury persistence) and V24D6C (fatigue/energy persistence) introduced r
 
 However, these career mutations are invisible to the user unless the UI surfaces them. Without visible indicators, users will encounter "unavailable players" with no explanation, feel the game is unfair, or be unable to make informed squad and lineup decisions.
 
-**Goal:** V24D6G1 is design-only. This document defines the UX surfaces, display states, visual language, and implementation phases needed to make injury and fatigue mutations visible and actionable in the frontend. No code is written in this phase.
-
-V24D6G2 (frontend DTO/data audit) must follow before any implementation, to verify which fields are currently exposed to the frontend.
+**Goal:** V24D6G1 design is complete. V24D6G2 frontend DTO/data audit is complete. V24D6G3 squad indicators are implemented in frontend commit `3675431` (front-ciber/project mvp-1). Remaining phases: V24D6G4 lineup warnings/blocks, V24D6G5 dashboard warnings, V24D6G6 match detail condition summary, and V24D6G7 polish/accessibility.
 
 ---
 
@@ -26,7 +25,7 @@ V24D6G2 (frontend DTO/data audit) must follow before any implementation, to veri
 | Item | Value |
 |------|-------|
 | Latest implementation commit | `0dc184a` — V24D6C3 complete |
-| Latest docs commit | `778a8a4` — docs updated after V24D6C |
+| Latest docs commit | `58ae8fb` — docs: add V24D6G2 frontend DTO audit |
 | Tests | 506, 0 failures |
 | Injury mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-injuries=true` |
 | Fatigue mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-fatigue=true` |
@@ -80,24 +79,22 @@ Users must be able to answer at a glance:
 
 ## 4. Existing Data Available to Frontend
 
-The following `SessionPlayer` fields are the mutation targets and should be investigated in V24D6G2 to confirm frontend access:
+V24D6G2 confirmed the following `SessionPlayer` fields are accessible to the frontend:
 
-| Field | Type | Current Frontend Access | Notes |
-|-------|------|------------------------|-------|
-| `energy` | int (0–100, default 100) | Verify via existing API DTOs | Target of V24D6C fatigue mutation |
-| `injured` | boolean | Verify via existing API DTOs | Target of V24D6B injury mutation |
-| `injuryType` | String | Verify via existing API DTOs | e.g., "MATCH_INJURY" default from applier |
-| `injuryRemainingMatches` | int | Verify via existing API DTOs | Decremented per round |
-| `form` | int? | May or may not be exposed | Not mutated by V24D6C |
-| `position` | String (GK/DEF/MID/WINGER/ATT) | Should already be available | Used for lineup filtering |
-| `name` | String | Should already be available | Display label |
-| `overall` | int | May need calculation via `calculateOverall()` | OVR display |
+| Field | Type | Frontend Access | Notes |
+|-------|------|-----------------|-------|
+| `energy` | int (0–100, default 100) | ✅ Squad endpoint + lineup endpoint | Target of V24D6C fatigue mutation |
+| `injured` | boolean | ✅ Squad endpoint + lineup endpoint | Target of V24D6B injury mutation |
+| `injuryType` | String | ✅ Squad endpoint only | e.g., "MATCH_INJURY" default from applier |
+| `injuryRemainingMatches` | int | ✅ Squad endpoint only | Decremented per round |
+| `form` | int? | ✅ Via squad endpoint | Not mutated by V24D6C |
+| `position` | String (GK/DEF/MID/WINGER/ATT) | ✅ Already available | Used for lineup filtering |
+| `name` | String | ✅ Already available | Display label |
+| `overall` | int | ✅ Via `calculateOverall()` | OVR display |
 
-**Critical note for V24D6G2:** Before any UI implementation, verify whether the current API response (CareerSave serialization via Redis) exposes these fields to the frontend. If they are not currently serialized or sent to the frontend, the V24D6G implementation path splits:
-- Option A: fields exist but are not exposed in API → backend API change required before UI
-- Option B: fields do not exist in DTO → schema/API design needed
+V24D6G3 used the squad endpoint data to implement `PlayerCardComponent` indicators.
 
-No new backend fields are created by V24D6C. The fields already exist on `SessionPlayer`. V24D6G2 must confirm whether they traverse the API boundary.
+No new backend fields are created by V24D6C. The fields already exist on `SessionPlayer`. V24D6G2 confirmed they traverse the API boundary to the frontend via the squad endpoint.
 
 ---
 
@@ -148,7 +145,7 @@ The combined status displayed to the user is the highest applicable priority.
 
 ## 6. UI Surfaces to Update
 
-The following pages/views in the frontend require indicators. This document designs the UX intent; implementation is future work (V24D6G3–G7).
+The following pages/views in the frontend require indicators. This document designs the UX intent; implementation phases V24D6G3 are complete; V24D6G4–G7 are future work.
 
 ### 6.1 Squad Management Page
 
@@ -355,18 +352,17 @@ Tooltip copy should be human-readable, not technical. Avoid exposing raw field n
 
 ## 10. API/DTO Considerations
 
-### 10.1 Data Availability Audit Required (V24D6G2)
+### 10.1 Data Availability Audit Result (V24D6G2 — Complete)
 
-Before any implementation, V24D6G2 must answer:
+V24D6G2 confirmed the following:
 
-1. **Does the current CareerSave API response serialize `energy`, `injured`, `injuryType`, and `injuryRemainingMatches` to the frontend?**
+1. **Squad endpoint** (`/api/v1/career/players/squad`) exposes all four mutation fields: `energy`, `injured`, `injuryType`, `injuryRemainingMatches`.
 
-2. **Are these fields in the `SessionPlayer` DTO that the frontend receives?**
+2. **Lineup endpoint** (`/api/v1/career/lineup/current`) exposes `energy` and `injured` only. `injuryType` and `injuryRemainingMatches` are not in `PlayerLineupDTO`.
 
-3. **If they are not currently exposed, what is the path to exposure?**
-   - Redis schema may already have them — no migration needed
-   - API serialization may exclude them — may need backend change
-   - Frontend state management may need update
+3. V24D6G3 used squad endpoint data for `PlayerCardComponent` indicators. No backend/API change was required.
+
+4. Richer lineup tooltips (e.g., `injuryRemainingMatches` in lineup editor) may require cross-referencing the squad endpoint or extending `PlayerLineupDTO` later.
 
 ### 10.2 No New Backend Fields Required
 
@@ -396,13 +392,13 @@ V24D6G is too large to implement in one phase. Recommended phased approach:
 |-------|---------|------|------------|
 | **V24D6G1** | This design document | NONE | V24D6C3 complete |
 | **V24D6G2** | Frontend DTO/data availability audit — verify which mutation fields are accessible to frontend | LOW | V24D6G1 complete |
-| **V24D6G3** | Squad management injury + energy indicators | LOW | V24D6G2 complete |
+| **V24D6G3** | Squad management injury + energy indicators | LOW | ✅ COMPLETE (`3675431`, front-ciber/project mvp-1) |
 | **V24D6G4** | Lineup selection warnings/blocks for injured/exhausted players | MEDIUM | V24D6G3 complete |
 | **V24D6G5** | Dashboard next-match warnings | LOW | V24D6G4 complete |
 | **V24D6G6** | Match detail post-match condition summary | LOW | V24D6G5 complete |
 | **V24D6G7** | UX polish, responsive pass, accessibility audit | LOW | V24D6G6 complete |
 
-**V24D6G2 is the critical path blocker.** If V24D6G2 determines that the needed fields are not exposed in the API, V24D6G implementation must pause while a backend API phase is planned.
+**V24D6G2 completed the DTO/data audit and confirmed V24D6G3 could proceed without backend/API changes. V24D6G3 is now implemented. The next decision point is V24D6G4 lineup warnings/blocks, especially whether injured players are only warned or hard-blocked.**
 
 ---
 
@@ -454,7 +450,7 @@ Tests are future work for V24D6G3+. This section defines test intent for later i
 
 **Impact:** V24D6G UI cannot be implemented until a backend API phase adds these fields.
 
-**Mitigation:** V24D6G2 must audit frontend data availability before any implementation begins.
+**Mitigation:** V24D6G2 confirmed all required fields are accessible via the squad and lineup endpoints. No backend API change was needed for V24D6G3. This risk is resolved.
 
 ### Risk 2: Blocking Injured Players Too Early Frustrates Users
 
@@ -500,20 +496,17 @@ Tests are future work for V24D6G3+. This section defines test intent for later i
 
 ## 14. Recommendation
 
-### 14.1 Immediate Next Step: V24D6G2 — Frontend DTO Audit
+### 14.1 Immediate Next Step: V24D6G4 — Lineup Selection Warnings/Blocks
 
-Before any UI implementation, V24D6G2 must verify:
-1. Whether `energy`, `injured`, `injuryType`, `injuryRemainingMatches` are in the API response to the frontend
-2. What DTO shape the frontend uses for player data
-3. Whether any backend API change is required before UI work can begin
+V24D6G2 and V24D6G3 are complete. V24D6G4 should use existing `LineupPlayerData` fields (`energy` + `injured`) to add warnings or hard blocks when selecting injured or exhausted players in the lineup editor.
 
-If V24D6G2 finds fields are missing from the API, a backend API phase is needed before V24D6G3 can start.
+Richer injury detail (e.g., `injuryRemainingMatches` tooltip) in lineup may require cross-referencing the squad endpoint or extending `PlayerLineupDTO` in a later backend change.
 
 ### 14.2 Phased Implementation Order
 
-1. **V24D6G2** — Audit frontend data availability (blocking)
-2. **V24D6G3** — Squad management indicators (injury badge + energy badge)
-3. **V24D6G4** — Lineup selection warnings (injured blocked, exhausted warned)
+1. **V24D6G2** — Audit frontend data availability (blocking) — ✅ COMPLETE
+2. **V24D6G3** — Squad management indicators (injury badge + energy badge) — ✅ COMPLETE (`3675431`, front-ciber/project mvp-1)
+3. **V24D6G4** — Lineup selection warnings (injured blocked, exhausted warned) — NEXT
 4. **V24D6G5** — Dashboard next-match warnings
 5. **V24D6G6** — Match detail post-match condition summary
 6. **V24D6G7** — UX polish
@@ -533,15 +526,13 @@ V24D6F (career mutation integration tests + rollback tests) is listed as HIGH pr
 
 ## 15. Non-Goals
 
-V24D6G1 does NOT include:
-- **No frontend implementation** — design only
-- **No backend code** — no implementation
-- **No API changes** — no DTO modifications
-- **No Redis changes** — schema already exists
-- **No schema changes** — all needed fields already exist on `SessionPlayer`
+V24D6G (overall) does NOT include:
+- **No backend/API/Redis/schema changes** — current docs reflect this; V24D6G3 was pure frontend
 - **No cards/suspensions UI** — V24D6D discipline model required first
 - **No form/morale UI** — V24D6E not yet designed
 - **No production flag changes** — mutation flags remain default-false
+
+V24D6G1 was design-only. V24D6G3 implemented the first frontend phase.
 
 ---
 
@@ -556,15 +547,15 @@ V24D6G1 does NOT include:
 - [x] Visual language defined (badges, colors, icons, accessibility)
 - [x] Lineup rules recommendation defined (injured block, exhausted warn, tired info)
 - [x] Tooltip copy provided
-- [x] API/DTO considerations documented — V24D6G2 required before implementation
+- [x] API/DTO considerations documented — V24D6G2 completed; V24D6G3 implemented without backend/API changes
 - [x] Phased implementation plan defined (G1–G7)
 - [x] Testing strategy outlined for future phases
 - [x] Risks documented with mitigations
-- [x] Recommendation: V24D6G2 next, then V24D6G3 squad indicators
+- [x] Recommendation: V24D6G4 next (lineup warnings/blocks), then V24D6G5 dashboard warnings
 - [x] Non-goals explicit
 - [x] V24D6D cards/suspensions deferred until discipline model exists
 - [x] V24D6E form/morale UI deferred
 
 ---
 
-*This document is the authoritative V24D6G design specification. V24D6G1 is design-only. Implementation requires V24D6G2 data availability audit first.*
+*This document is the authoritative V24D6G design specification. V24D6G2 data availability audit is complete, and V24D6G3 squad indicators are implemented (commit `3675431`, front-ciber/project mvp-1). Next implementation phase is V24D6G4 lineup warnings/blocks.*

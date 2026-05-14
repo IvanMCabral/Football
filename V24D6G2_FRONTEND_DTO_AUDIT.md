@@ -249,13 +249,13 @@ const allPlayers: PlayerOnFieldDto[] = playersList.map((p: any) => ({
 
 ## 6. Gap Analysis
 
-### Gap 1: PlayerCardComponent does not use `injured` field
+### Gap 1: PlayerCardComponent now uses `injured` field
 
-`PlayerCardData` model does NOT include `injured`. The squad card component could display an injury badge but currently doesn't. This is a UI enhancement to implement in V24D6G3.
+✅ **RESOLVED by V24D6G3.** `PlayerCardData` model now includes `injured`, `injuryType`, and `injuryRemainingMatches`. Injury badge + "Out N matches" / "Returning soon" are displayed in `PlayerCardComponent`.
 
-### Gap 2: PlayerCardComponent does not use `injuryType` or `injuryRemainingMatches`
+### Gap 2: PlayerCardComponent now uses `injuryType` and `injuryRemainingMatches`
 
-The squad card currently shows no injury details. It could show "Injured — Out N matches" or "Returning soon" using these fields.
+✅ **RESOLVED by V24D6G3.** Injury detail now displays "Out N matches" or "Returning soon" when available, with "Unavailable" fallback for null/zero remaining matches.
 
 ### Gap 3: LineupPlayerCardComponent shows injured badge but no match count
 
@@ -300,30 +300,25 @@ These fields are NOT in `PlayerLineupDTO` (lineup endpoint). This is acceptable 
 
 ## 8. Implementation Recommendation
 
-### V24D6G3 — Squad Management Indicators (RECOMMENDED NEXT PHASE)
+### V24D6G3 — Squad Management Indicators (COMPLETED ✅)
 
-**No backend changes required.** All data is available.
+**Commit:** `3675431` (`feat: add V24D6G3 squad player condition indicators`, front-ciber/project mvp-1)
 
-**Squad management component changes (`squad-management.component.html`):**
-1. Add injury badge to `app-player-card` when `player.injured === true`
-2. Add `injuryRemainingMatches` display: "Out N matches" / "Returning soon"
-3. Add energy color coding to match lineup card (`low-energy` already exists in CSS)
+**No backend changes were required.** All data was already available from the squad endpoint.
 
-**New component or model extension for player cards:**
-- `PlayerCardData` model needs `injured`, `injuryType`, and `injuryRemainingMatches` added to display injury status in squad cards
-- Currently `PlayerCardData` only has `energy`, `name`, `position`, `attack`, `defense`, `technique`, `speed`, `age`, `form`
+**What was implemented:**
+- `PlayerCardData` model extended with `injured?`, `injuryType?`, `injuryRemainingMatches?`
+- `PlayerCardComponent` added condition helpers: `isInjured()`, `injuryLabel()`, `injuryDetail()`, `injuryTooltip()`, `energyStatus()`, `energyLabel()`, `energyTooltip()`, `energyPercent()`
+- Energy display upgraded: "Energy: 86% · Fresh" with status thresholds (Fresh 80–100, Good 60–79, Tired 40–59, Very Tired 20–39, Exhausted 0–19)
+- Injury display added: 🤕 "Injured" + "Out N matches" / "Returning soon" / "Unavailable" fallback
 
-**Lineup editor (`squad-editor-modal.component.ts`):**
-- Already uses `active: !p.injured` correctly
-- Injured players appear in bench but are marked `active: false`
-- Consider adding `injuryRemainingMatches` to `PlayerOnFieldDto` for tooltip display
+### V24D6G4 — Lineup Selection Warnings/Blocks (NEXT PHASE)
 
-### V24D6G4 — Lineup Selection Warnings/Blocks
+**Backend prerequisites:** None for warnings. For hard block (preventing injured players from being selected), V24D6F mutation integration tests should be stable first.
 
-**Injured players in lineup selection:**
-- `PlayerLineupDTO` has `injured` — injured players from lineup endpoint are marked `active: false` in the editor
-- Block UI is already partially in place via the `active` flag
-- Confirm whether backend rejects confirmed lineup with injured players (V24D6F validation)
+**Lineup endpoint:** `PlayerLineupDTO` exposes `energy` and `injured`. Injured players are already mapped to `active: !p.injured` in the editor. Warnings and blocking can proceed without backend/API changes.
+
+**Richer injury detail:** Adding `injuryRemainingMatches` to lineup tooltips may require cross-referencing the squad endpoint or extending `PlayerLineupDTO` in a later backend change.
 
 **Injury type display in lineup:**
 - Requires `injuryType` and `injuryRemainingMatches` — available from squad endpoint
@@ -365,29 +360,27 @@ These fields are NOT in `PlayerLineupDTO` (lineup endpoint). This is acceptable 
 - No backend implementation
 - No frontend implementation (design-only audit)
 - No Redis schema changes
-- No backend/API changes required for V24D6G3. Frontend model/component changes are expected because `PlayerCardData` does not currently include `injured`, `injuryType`, or `injuryRemainingMatches`.
+- No backend/API changes required. V24D6G3 was pure frontend work in a separate repository (front-ciber/project).
 - No new test files needed for this audit
 
 ---
 
 ## 11. Conclusion
 
-**V24D6G2 audit is complete. V24D6G3 (squad indicators) can proceed immediately without any backend work.**
+**V24D6G2 audit is complete. V24D6G3 squad indicators are also complete.**
+
+**✅ V24D6G3 — Committed as `3675431`** (front-ciber/project mvp-1)
 
 **Summary:**
 - `energy` — ✅ available everywhere, already displayed
-- `injured` — ✅ available everywhere, already triggers 🤕 badge in lineup card
+- `injured` — ✅ available everywhere, already triggers 🤕 badge in lineup card (V24D6G3 adds to squad card)
 - `injuryType` — ✅ in squad endpoint, not in lineup endpoint (acceptable)
 - `injuryRemainingMatches` — ✅ in squad endpoint, not in lineup endpoint (acceptable for V24D6G3–G4)
 
 **Lineup endpoint detail:** `PlayerLineupDTO` exposes `energy` and `injured`. `injuryType` and `injuryRemainingMatches` are not present — acceptable because injured players are blocked from lineup selection anyway, and remaining match count is most useful for squad management display. V24D6G4 may cross-reference squad data or extend `PlayerLineupDTO` if richer lineup tooltips are needed.
 
-**Recommended next phase: V24D6G3 — Squad Management Injury + Energy Indicators**
+**Recommended next phase: V24D6G4 — Lineup Selection Warnings/Blocks**
 
-Primary work: extend `PlayerCardData` model or create new player status card component that displays:
-1. Injury badge + "Out N matches" / "Returning soon" for injured players
-2. Energy color coding (Fresh/Good/Tired/Very Tired/Exhausted) matching lineup card thresholds
-
----
+Primary work: block or warn when selecting injured players in lineup editor, warn when selecting exhausted players (energy < 20). Backend dependency: none for warnings; V24D6F mutation integration tests should be stable before hard block implementation.
 
 *This document is the authoritative V24D6G2 audit record.*
