@@ -1,6 +1,6 @@
 # V24D6G — UI Indicators for Injured and Tired Players
 
-**Status:** V24D6G — DESIGN + V24D6G3 + V24D6G4A + V24D6G4B + V24D6G5A + V24D6G6A IMPLEMENTED
+**Status:** V24D6G — DESIGN + V24D6G3 + V24D6G4A + V24D6G4B + V24D6G5A + V24D6G6A + V24D6G7 AUDIT COMPLETE
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `0dc184a` (backend fatigue mutation wiring)
 **V24D6G3 implementation commit:** `3675431` (frontend squad indicators, front-ciber/project mvp-1)
@@ -8,7 +8,7 @@
 **V24D6G4B implementation commit:** `c4681e2` (frontend lineup confirmation warning, front-ciber/project mvp-1)
 **V24D6G5A implementation commit:** `18543dc` (frontend dashboard squad condition warning, front-ciber/project mvp-1)
 **V24D6G6A implementation commit:** `80ad1ed` (frontend match detail condition summary, front-ciber/project mvp-1)
-**Latest docs commit:** `4e3a3a4` (docs: update V24D6G docs after lineup confirmation warning)
+**Latest docs commit:** `8acfae7` (docs: update V24D6G docs after match detail condition summary)
 **Tests:** 506 full suite, 0 failures
 **Created:** 2026-05-13
 
@@ -20,7 +20,7 @@ V24D6B (injury persistence) and V24D6C (fatigue/energy persistence) introduced r
 
 However, these career mutations are invisible to the user unless the UI surfaces them. Without visible indicators, users will encounter "unavailable players" with no explanation, feel the game is unfair, or be unable to make informed squad and lineup decisions.
 
-**Goal:** V24D6G1 design is complete. V24D6G2 frontend DTO/data audit is complete. V24D6G3 squad indicators are implemented (frontend commit `3675431`). V24D6G4A lineup player card condition warnings are implemented (frontend commit `362c647`). V24D6G4B lineup confirmation warning is implemented (frontend commit `c4681e2`). V24D6G5A dashboard squad condition warning is implemented (frontend commit `18543dc`). V24D6G6A match detail condition summary is implemented (frontend commit `80ad1ed`). V24D6G6B (optional deeper match detail polish) and V24D6G7 polish/accessibility remain as future work.
+**Goal:** V24D6G1 design is complete. V24D6G2 frontend DTO/data audit is complete. V24D6G3 squad indicators are implemented (frontend commit `3675431`). V24D6G4A lineup player card condition warnings are implemented (frontend commit `362c647`). V24D6G4B lineup confirmation warning is implemented (frontend commit `c4681e2`). V24D6G5A dashboard squad condition warning is implemented (frontend commit `18543dc`). V24D6G6A match detail condition summary is implemented (frontend commit `80ad1ed`). V24D6G7 UX polish/accessibility audit is complete and found no code changes required. V24D6G is complete unless future UX review requests additional polish. V24D6G6B remains optional/deferred.
 
 ---
 
@@ -29,7 +29,7 @@ However, these career mutations are invisible to the user unless the UI surfaces
 | Item | Value |
 |------|-------|
 | Latest implementation commit | `0dc184a` — V24D6C3 complete |
-| Latest docs commit | `4e3a3a4` — docs: update V24D6G docs after lineup confirmation warning |
+| Latest docs commit | `8acfae7` — docs: update V24D6G docs after match detail condition summary |
 | Tests | 506, 0 failures |
 | Injury mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-injuries=true` |
 | Fatigue mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-fatigue=true` |
@@ -149,7 +149,7 @@ The combined status displayed to the user is the highest applicable priority.
 
 ## 6. UI Surfaces to Update
 
-The following pages/views in the frontend require indicators. This document designs the UX intent. V24D6G3 squad indicators, V24D6G4A lineup player card warnings, V24D6G4B lineup confirmation warning, V24D6G5A dashboard warning, and V24D6G6A match detail condition summary are complete; V24D6G6B (optional) and V24D6G7 remain future work.
+The following pages/views in the frontend require indicators. This document designs the UX intent. V24D6G3 squad indicators, V24D6G4A lineup player card warnings, V24D6G4B lineup confirmation warning, V24D6G5A dashboard warning, and V24D6G6A match detail condition summary are complete. V24D6G7 UX polish/accessibility audit is complete and found no code changes required. V24D6G6B remains optional/deferred.
 
 ### 6.1 Squad Management Page
 
@@ -403,9 +403,9 @@ V24D6G is too large to implement in one phase. Recommended phased approach:
 | **V24D6G5B** | Dashboard polish (optional, UX-driven) | LOW | Deferred — V24D6G5A only |
 | **V24D6G6A** | Match detail injury/event summary | LOW | ✅ COMPLETE (`80ad1ed`, front-ciber/project mvp-1) |
 | **V24D6G6B** | Deeper match detail polish (optional, UX-driven) | LOW | Deferred — V24D6G6A scope sufficient |
-| **V24D6G7** | UX polish, responsive pass, accessibility audit | LOW | V24D6G6A complete |
+| **V24D6G7** | UX polish/accessibility audit | LOW | ✅ COMPLETE — audit only, no code changes needed |
 
-**V24D6G2, V24D6G3, V24D6G4A, V24D6G4B, V24D6G5A, and V24D6G6A are complete. V24D6G7 (UX polish/accessibility) is the next phase. V24D6G6B (deeper match detail polish) is optional and deferred until UX review. V24D6G5B (dashboard polish) is also deferred. V24D6G4C (squad-editor-modal condition warning logic) was deferred — the modal file was untracked/dead work and was NOT committed.**
+**V24D6G is complete.** All V24D6G1 (design), V24D6G2 (audit), V24D6G3 (squad indicators), V24D6G4A (lineup card warnings), V24D6G4B (confirmation warning), V24D6G5A (dashboard warning), and V24D6G6A (match detail summary) phases are implemented. V24D6G7 (UX/accessibility audit) is complete — no code changes were required. All five V24D6G UI surfaces passed the audit with good UX and accessibility compliance: text+icon badges, role="alert", null-safe energy, no hard blocking, no forbidden energy delta claims. No further V24D6G work is planned unless UX review requests specific polish. V24D6G4C (squad-editor-modal) was deferred and remains dead/untracked — NOT committed.
 
 ---
 
@@ -503,9 +503,15 @@ Tests are future work for V24D6G3+. This section defines test intent for later i
 
 ## 14. Recommendation
 
-### 14.1 Immediate Next Step: V24D6G7 — UX Polish and Accessibility Audit
+### 14.1 V24D6G Complete — Recommended Next Phases
 
-V24D6G2, V24D6G3, V24D6G4A, V24D6G4B, V24D6G5A, and V24D6G6A are complete. V24D6G6A implemented an injury/event summary from existing `MatchDetail.timeline` — no energy delta, no new API calls, no backend changes. V24D6G6B (deeper match detail polish) is deferred until UX review confirms the current scope is sufficient. V24D6G7 should perform a UX polish pass across all completed V24D6G phases, ensuring responsive layout, accessibility compliance (color contrast, screen reader labels), and consistent visual language.
+V24D6G is complete. All implementation and audit phases are done — no further V24D6G work is planned unless UX review requests specific polish.
+
+**Recommended next phases (in priority order):**
+
+1. **V24D6D — Discipline/Cards Persistence** — design and implement cards/suspension persistence (V24D6D discipline model exists but persistence/UI not implemented)
+2. **V24D6E — Form/Morale Persistence** — design and implement form/morale mutation and persistence
+3. **V24D6F — Backend Mutation Regression Tests** — add mutation integration tests and rollback test hardening for V24D6B/C mutation pipeline
 
 Richer injury detail (e.g., `injuryRemainingMatches` tooltip) in lineup may require cross-referencing the squad endpoint or extending `PlayerLineupDTO` in a later backend change.
 
@@ -517,8 +523,8 @@ Richer injury detail (e.g., `injuryRemainingMatches` tooltip) in lineup may requ
 4. **V24D6G4B** — Lineup confirmation warning (two-click pattern) — ✅ COMPLETE (`c4681e2`, front-ciber/project mvp-1)
 5. **V24D6G5A** — Dashboard squad condition warning (before "Jugar Fecha") — ✅ COMPLETE (`18543dc`, front-ciber/project mvp-1)
 6. **V24D6G6A** — Match detail injury/event summary (from existing timeline) — ✅ COMPLETE (`80ad1ed`, front-ciber/project mvp-1)
-7. **V24D6G7** — UX polish, responsive pass, accessibility audit — NEXT
-8. **V24D6G6B** — Deeper match detail polish (optional) — Deferred until UX review
+7. **V24D6G7** — UX polish/accessibility audit — ✅ COMPLETE (audit only, no code changes needed)
+8. **V24D6G6B / V24D6G5B** — Optional polish — Deferred until UX review requests it
 
 ### 14.3 What NOT to Do Yet
 
@@ -536,12 +542,12 @@ V24D6F (career mutation integration tests + rollback tests) is listed as HIGH pr
 ## 15. Non-Goals
 
 V24D6G (overall) does NOT include:
-- **No backend/API/Redis/schema changes** — V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A were frontend work in the separate frontend repo. V24D6G5A reused existing endpoint `GET /api/v1/career/players/squad` and introduced no new API contract.
+- **No backend/API/Redis/schema changes** — V24D6G3, V24D6G4A, V24D6G4B, V24D6G5A, and V24D6G6A were frontend work in the separate frontend repo. V24D6G5A reused the existing endpoint `GET /api/v1/career/players/squad`; V24D6G6A used the existing `MatchDetail.timeline`; neither introduced a new API contract. V24D6G7 was audit-only and required no code changes.
 - **No cards/suspensions UI** — V24D6D discipline model required first
 - **No form/morale UI** — V24D6E not yet designed
 - **No production flag changes** — mutation flags remain default-false
 
-V24D6G1 was design-only. V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A were frontend work in the separate frontend repo; no backend/API/Redis/schema changes were introduced. V24D6G5A reused existing endpoint and introduced no new API contract.
+V24D6G1 was design-only. V24D6G2 was audit-only. V24D6G3, V24D6G4A, V24D6G4B, V24D6G5A, and V24D6G6A were frontend work in the separate frontend repo. V24D6G7 was audit-only and required no code changes. No backend/API/Redis/schema changes were introduced.
 
 ---
 
@@ -560,11 +566,11 @@ V24D6G1 was design-only. V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A were frontend
 - [x] Phased implementation plan defined (G1–G7)
 - [x] Testing strategy outlined for future phases
 - [x] Risks documented with mitigations
-- [x] Recommendation: V24D6G7 next (UX polish/accessibility). V24D6G6A completed with injury/event summary from existing timeline — no energy delta, no new API calls, no backend changes. V24D6G6B deferred until UX review. V24D6G5B deferred. V24D6G4C deferred — squad-editor-modal was untracked/dead work and was NOT committed.
+- [x] Recommendation: V24D6G is complete. All implementation and audit phases done — no further V24D6G work unless UX review requests specific polish. Recommended next: V24D6D (discipline/cards), V24D6E (form/morale), or V24D6F (mutation regression tests). V24D6G4C deferred — squad-editor-modal was untracked/dead work and was NOT committed.
 - [x] Non-goals explicit
 - [x] V24D6D cards/suspensions deferred until discipline model exists
 - [x] V24D6E form/morale UI deferred
 
 ---
 
-*This document is the authoritative V24D6G design specification. V24D6G2 audit, V24D6G3 squad indicators, V24D6G4A lineup player card warnings, V24D6G4B lineup confirmation warning, V24D6G5A dashboard warning, and V24D6G6A match detail condition summary are complete. Next: V24D6G7 UX polish/accessibility. V24D6G6B deferred until UX review. V24D6G4C (squad-editor-modal) was NOT committed — modal was untracked/dead work.*
+*This document is the authoritative V24D6G design specification. V24D6G is complete — all implementation and audit phases done (V24D6G3 through V24D6G7). No further V24D6G work planned unless UX review requests specific polish. V24D6G4C (squad-editor-modal) was NOT committed — modal was untracked/dead work.*

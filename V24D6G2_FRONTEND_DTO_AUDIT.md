@@ -419,10 +419,21 @@ The `squad-editor-modal` component was untracked/dead work — not imported, not
 - Shows: injury count, player names, minutes, card counts
 - Empty state: "No injury events recorded for this match."
 
-**Remaining phases:**
-- V24D6G7 — UX polish/accessibility (next)
-- V24D6G6B — Optional deeper match detail polish deferred until UX review
+**V24D6G7-0 Audit — Committed as part of `8acfae7` docs commit**
 
-**Recommended next phase: V24D6G7 — UX Polish and Accessibility Audit**
+**Audit result:** All five V24D6G UI surfaces passed UX/accessibility audit — no code changes required.
+
+**Surfaces audited:**
+- Squad player cards — text+color energy labels, injury badge with text, null-safe handling, tooltips ✅
+- Lineup player cards — condition badges with icon+text, injury priority, null-safe energy, tooltips ✅
+- Lineup confirmation warning — two-click pattern clear, role="alert", warning resets correctly, no hard blocking ✅
+- Dashboard warning — warning above "Jugar Fecha", role="alert", no button blocking, error-safe, no double-counting ✅
+- Match detail condition summary — uses existing timeline, no energy delta, empty state clear, card counts conditional ✅
+
+**Validation:** `npx tsc --noEmit` ✅ `npx ng build` ✅ BUILD SUCCESS
+
+**V24D6G is complete.** All V24D6G3 through V24D6G7 phases are implemented and audited. No further V24D6G work planned unless UX review requests specific polish.
+
+**Recommended next phases (from V24D6G design):** V24D6D (discipline/cards), V24D6E (form/morale), or V24D6F (mutation regression tests).
 
 *This document is the authoritative V24D6G2 audit record.*
