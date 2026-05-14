@@ -575,4 +575,132 @@ class V24CareerMutationServiceTest {
         assertEquals(1, r.fatigueApplied());
         assertEquals(88, career.getSessionPlayer("p1").getEnergy());
     }
+
+    // ========== V24D6F1: Policy + Orchestration Regression Tests ==========
+
+    @Test
+    void masterFalse_plusInjuryAndFatigueBothTrue_appliesNothing() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(
+                injuryEvent("p1", 45),
+                goalEvent("p1", 60)
+        );
+        V24CareerMutationPolicy pol = policy(false, true, true, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+        assertFalse(career.getSessionPlayer("p1").getInjured());
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void bothAppliersSucceed_together_correctCountsAndNoFailures() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(
+                injuryEvent("p1", 45),
+                goalEvent("p1", 60)
+        );
+        V24CareerMutationPolicy pol = policy(true, true, true, false, false);
+
+        V24CareerMutationService serviceWithStubAppliers = new V24CareerMutationService(
+                new V24InjuryMutationApplier() {
+                    @Override
+                    public int applyInjuries(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) { return 2; }
+                },
+                new V24FatigueMutationApplier() {
+                    @Override
+                    public int applyFatigue(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) { return 3; }
+                });
+
+        V24CareerMutationResult r = serviceWithStubAppliers.applyMutations(career, res, pol);
+
+        assertEquals(2, r.injuriesApplied());
+        assertEquals(3, r.fatigueApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
+
+    @Test
+    void disciplineFlagTrueAlone_doesNotTriggerMutation() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(0, r.disciplineApplied());
+        assertEquals(0, r.formApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(career.getSessionPlayer("p1").getInjured());
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void formFlagTrueAlone_doesNotTriggerMutation() {
+        CareerSave career = careerWithPlayer("p1");
+        career.getSessionPlayer("p1").setEnergy(100);
+        V24DetailedMatchResult res = result(injuryEvent("p1", 45));
+        V24CareerMutationPolicy pol = policy(true, false, false, false, true);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(0, r.disciplineApplied());
+        assertEquals(0, r.formApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(career.getSessionPlayer("p1").getInjured());
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+    }
+
+    @Test
+    void resultSuccess_withZeroCounts_hasNoFailures() {
+        V24CareerMutationResult r = V24CareerMutationResult.success(0, 0, 0, 0);
+
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(0, r.disciplineApplied());
+        assertEquals(0, r.formApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
+
+    @Test
+    void partialResult_withEmptyFailuresList_partialFalse() {
+        V24CareerMutationResult r = V24CareerMutationResult.partial(0, 0, 0, 0,
+                java.util.Collections.emptyList());
+
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
+
+    @Test
+    void failure_withCountsAndMessages_preservesCountsAndPartialFlag() {
+        java.util.ArrayList<String> messages = new java.util.ArrayList<>();
+        messages.add("Injury failed");
+        messages.add("Fatigue failed");
+
+        V24CareerMutationResult r = V24CareerMutationResult.failure(2, 3, messages, true);
+
+        assertEquals(2, r.injuriesApplied());
+        assertEquals(3, r.fatigueApplied());
+        assertEquals(2, r.failures().size());
+        assertTrue(r.partialFailure());
+
+        messages.add("Extra error");
+        assertEquals(2, r.failures().size(), "Failures list must be defensive copy");
+    }
 }
