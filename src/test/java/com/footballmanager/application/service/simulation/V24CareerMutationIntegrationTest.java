@@ -427,6 +427,61 @@ class V24CareerMutationIntegrationTest {
         assertEquals(100, p.getEnergy(), "No energy change when mutation flags are false");
     }
 
+    // ========== V24D6F2: LeagueSimulator Wiring / Best-Effort Integration Tests ==========
+
+    /**
+     * Test 1: master=false + injury+fatique both true → no mutation at wiring level.
+     * Regression: LeagueSimulator.applyV24CareerMutation checks isCareerMutationEnabled() first.
+     */
+    @Test
+    void mutateCareerStateFalse_plusInjuryAndFatigueBothTrue_noMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // mutateCareerState=false, persistInjuries=true, persistFatigue=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, true, true, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        p.setEnergy(100);
+        career.setTournamentState(makeTournamentState(makeFixture("m20", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertFalse(p.getInjured(), "No injury when master flag is false");
+        assertEquals(100, p.getEnergy(), "No energy change when master flag is false");
+        assertNotNull(career.getTournamentState().getFixtures().get(0).getResult(),
+                "Fixture result must exist after round completes");
+    }
+
+    /**
+     * Test 3: persistDetail storage throws → round completes.
+     * Regression: persistV24Detail is best-effort; storage failure does not fail the round.
+     * This is covered by existing test 18 design, but we add explicit storage-failure test here.
+     */
+    @Test
+    void persistDetailStorageFails_roundCompletes() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        ThrowingStoragePort throwingStorage = new ThrowingStoragePort();
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, true, throwingStorage,
+                false, false, false, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        p.setEnergy(100);
+        career.setTournamentState(makeTournamentState(makeFixture("m21", HOME1, AWAY1, 1)));
+
+        assertDoesNotThrow(() -> simulator.simulateLeagueRound(career, 1),
+                "Round must complete even when detail storage throws");
+        assertNotNull(career.getTournamentState().getFixtures().get(0).getResult(),
+                "Fixture result must exist after round completes");
+        assertEquals(100, p.getEnergy(), "No energy change when mutation flags are false");
+    }
+
     // ========== Test 19: no cards/form mutation ==========
 
     @Test
@@ -547,6 +602,26 @@ class V24CareerMutationIntegrationTest {
             this.saveCalled = true;
             this.savedCareerId = careerId;
             this.savedDetail = detail;
+        }
+
+        @Override
+        public java.util.Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId) {
+            return java.util.Optional.empty();
+        }
+
+        @Override
+        public void deleteByCareerId(String careerId) {
+        }
+    }
+
+    /**
+     * V24D6F2: Fake storage port that throws on save.
+     * Used to verify persistV24Detail is best-effort.
+     */
+    private static class ThrowingStoragePort implements V24DetailedMatchStoragePort {
+        @Override
+        public void save(String careerId, V24DetailedMatchData detail) {
+            throw new RuntimeException("Simulated storage failure");
         }
 
         @Override
