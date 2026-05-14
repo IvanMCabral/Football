@@ -299,4 +299,58 @@ class V24InjuryMutationApplierTest {
         assertEquals(career1.getSessionPlayer("p1").getInjured(),
                     career2.getSessionPlayer("p1").getInjured());
     }
+
+    // ========== V24D6F3: Edge Case Regression Tests ==========
+
+    @Test
+    void emptyTimeline_noMutation() {
+        CareerSave career = careerWithPlayers("p1", "p2");
+        V24DetailedMatchResult res = result();
+        V24CareerMutationPolicy pol = policy(true, true, false, false, false);
+
+        int count = applier.applyInjuries(career, res, pol);
+
+        assertEquals(0, count);
+        assertFalse(career.getSessionPlayer("p1").getInjured());
+        assertFalse(career.getSessionPlayer("p2").getInjured());
+    }
+
+    @Test
+    void allPlayersAlreadyInjured_noDoubleApplication() {
+        CareerSave career = careerWithPlayers("p1", "p2");
+        career.getSessionPlayer("p1").setInjured(true);
+        career.getSessionPlayer("p1").setInjuryType("PRE_EXISTING");
+        career.getSessionPlayer("p1").setInjuryRemainingMatches(99);
+        career.getSessionPlayer("p2").setInjured(true);
+        career.getSessionPlayer("p2").setInjuryType("OLD_INJURY");
+        career.getSessionPlayer("p2").setInjuryRemainingMatches(5);
+
+        V24DetailedMatchResult res = result(
+                injuryEvent("p1", 30),
+                injuryEvent("p2", 65)
+        );
+        V24CareerMutationPolicy pol = policy(true, true, false, false, false);
+
+        int count = applier.applyInjuries(career, res, pol);
+
+        assertEquals(0, count);
+        assertEquals("PRE_EXISTING", career.getSessionPlayer("p1").getInjuryType());
+        assertEquals(99, career.getSessionPlayer("p1").getInjuryRemainingMatches());
+        assertEquals("OLD_INJURY", career.getSessionPlayer("p2").getInjuryType());
+        assertEquals(5, career.getSessionPlayer("p2").getInjuryRemainingMatches());
+    }
+
+    @Test
+    void injuryEventWithNullPlayerId_ignoredSafely() {
+        CareerSave career = careerWithPlayer("p1", "Known Player", "MID");
+        V24MatchEvent nullIdEvent = new V24MatchEvent(45, V24MatchEventType.INJURY,
+                "team-A", null, null, null, null, 0.0, "Injury");
+        V24DetailedMatchResult res = result(nullIdEvent);
+        V24CareerMutationPolicy pol = policy(true, true, false, false, false);
+
+        int count = applier.applyInjuries(career, res, pol);
+
+        assertEquals(0, count);
+        assertFalse(career.getSessionPlayer("p1").getInjured());
+    }
 }

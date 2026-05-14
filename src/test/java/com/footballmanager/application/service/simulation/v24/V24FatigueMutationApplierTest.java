@@ -410,4 +410,67 @@ class V24FatigueMutationApplierTest {
         assertEquals(1, count);
         assertEquals(88, p.getEnergy());
     }
+
+    // ========== V24D6F3: Edge Case Regression Tests ==========
+
+    @Test
+    void allPlayersInjured_noEnergyDrained() {
+        CareerSave career = careerWithPlayers("p1", "p2", "p3");
+        career.getSessionPlayer("p1").setEnergy(100);
+        career.getSessionPlayer("p2").setEnergy(100);
+        career.getSessionPlayer("p3").setEnergy(100);
+        career.getSessionPlayer("p1").setInjured(true);
+        career.getSessionPlayer("p2").setInjured(true);
+        career.getSessionPlayer("p3").setInjured(true);
+
+        V24DetailedMatchResult res = result(
+                goalEvent("p1", 30),
+                goalEvent("p2", 60),
+                goalEvent("p3", 75)
+        );
+        V24CareerMutationPolicy pol = policy(true, false, true, false, false);
+
+        int count = applier.applyFatigue(career, res, pol);
+
+        assertEquals(0, count);
+        assertEquals(100, career.getSessionPlayer("p1").getEnergy());
+        assertEquals(100, career.getSessionPlayer("p2").getEnergy());
+        assertEquals(100, career.getSessionPlayer("p3").getEnergy());
+    }
+
+    @Test
+    void substituteEventWithRelatedPlayerId_takesSubDrain() {
+        CareerSave career = careerWithPlayer("p1", "Sub Player", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setEnergy(100);
+        // p1 appears only in SUBSTITUTION (both playerId and relatedPlayerId)
+        V24MatchEvent subEvent = new V24MatchEvent(60, V24MatchEventType.SUBSTITUTION,
+                "team-A", "p1", "Player Out", "p_sub", "Player In",
+                0.0, "Substitution");
+        V24DetailedMatchResult res = result(subEvent);
+        V24CareerMutationPolicy pol = policy(true, false, true, false, false);
+
+        int count = applier.applyFatigue(career, res, pol);
+
+        assertEquals(1, count);
+        assertEquals(94, p.getEnergy());
+    }
+
+    @Test
+    void timelineWithNullPlayerIdEvents_handledGracefully() {
+        CareerSave career = careerWithPlayer("p1", "Player", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setEnergy(100);
+        // null playerId event and a valid event
+        V24MatchEvent nullEvent = new V24MatchEvent(30, V24MatchEventType.SHOT,
+                "team-A", null, null, null, null, 0.2, "Shot");
+        V24MatchEvent validEvent = goalEvent("p1", 60);
+        V24DetailedMatchResult res = result(nullEvent, validEvent);
+        V24CareerMutationPolicy pol = policy(true, false, true, false, false);
+
+        int count = applier.applyFatigue(career, res, pol);
+
+        assertEquals(1, count);
+        assertEquals(88, p.getEnergy());
+    }
 }
