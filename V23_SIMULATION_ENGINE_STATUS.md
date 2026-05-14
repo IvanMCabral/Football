@@ -2,7 +2,7 @@
 
 **Branch:** `mvp-1-performance-cleanup`
 **Latest commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
-**Status:** V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 frontend complete (commit `12d203d`). V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline complete — wiring exists behind default-false flags. V24D6G3/V24D6G4A/V24D6G4B frontend UI phases implemented in separate frontend repo (commits `3675431`/`362c647`/`c4681e2`). Cards/form mutation deferred.
+**Status:** V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 frontend complete (commit `12d203d`). V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline complete — wiring exists behind default-false flags. V24D6G3/V24D6G4A/V24D6G4B/V24D6G5A frontend UI phases implemented in separate frontend repo (commits `3675431`/`362c647`/`c4681e2`/`18543dc`). Cards/form mutation deferred.
 **Test status:** 506 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1), 0 failures; regression gate 506 tests, 0 failures
 **Date:** 2026-05-13
 

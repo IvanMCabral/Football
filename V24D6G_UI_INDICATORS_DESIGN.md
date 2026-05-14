@@ -1,12 +1,13 @@
 # V24D6G — UI Indicators for Injured and Tired Players
 
-**Status:** V24D6G — DESIGN + V24D6G3 + V24D6G4A + V24D6G4B IMPLEMENTED
+**Status:** V24D6G — DESIGN + V24D6G3 + V24D6G4A + V24D6G4B + V24D6G5A IMPLEMENTED
 **Branch:** `mvp-1-performance-cleanup`
 **Latest implementation commit:** `0dc184a` (backend fatigue mutation wiring)
 **V24D6G3 implementation commit:** `3675431` (frontend squad indicators, front-ciber/project mvp-1)
 **V24D6G4A implementation commit:** `362c647` (frontend lineup condition warnings, front-ciber/project mvp-1)
 **V24D6G4B implementation commit:** `c4681e2` (frontend lineup confirmation warning, front-ciber/project mvp-1)
-**Latest docs commit:** `7ead7dd` (docs: update V24D6G docs after lineup warnings)
+**V24D6G5A implementation commit:** `18543dc` (frontend dashboard squad condition warning, front-ciber/project mvp-1)
+**Latest docs commit:** `4e3a3a4` (docs: update V24D6G docs after lineup confirmation warning)
 **Tests:** 506 full suite, 0 failures
 **Created:** 2026-05-13
 
@@ -18,7 +19,7 @@ V24D6B (injury persistence) and V24D6C (fatigue/energy persistence) introduced r
 
 However, these career mutations are invisible to the user unless the UI surfaces them. Without visible indicators, users will encounter "unavailable players" with no explanation, feel the game is unfair, or be unable to make informed squad and lineup decisions.
 
-**Goal:** V24D6G1 design is complete. V24D6G2 frontend DTO/data audit is complete. V24D6G3 squad indicators are implemented (frontend commit `3675431`). V24D6G4A lineup player card condition warnings are implemented (frontend commit `362c647`). V24D6G4B lineup confirmation warning is implemented (frontend commit `c4681e2`). Remaining phases: V24D6G5 dashboard warnings, V24D6G6 match detail condition summary, and V24D6G7 polish/accessibility.
+**Goal:** V24D6G1 design is complete. V24D6G2 frontend DTO/data audit is complete. V24D6G3 squad indicators are implemented (frontend commit `3675431`). V24D6G4A lineup player card condition warnings are implemented (frontend commit `362c647`). V24D6G4B lineup confirmation warning is implemented (frontend commit `c4681e2`). V24D6G5A dashboard squad condition warning is implemented (frontend commit `18543dc`). Remaining phases: V24D6G6 match detail condition summary and V24D6G7 polish/accessibility. V24D6G5B (optional dashboard polish) deferred until UX review.
 
 ---
 
@@ -27,7 +28,7 @@ However, these career mutations are invisible to the user unless the UI surfaces
 | Item | Value |
 |------|-------|
 | Latest implementation commit | `0dc184a` — V24D6C3 complete |
-| Latest docs commit | `7ead7dd` — docs: update V24D6G docs after lineup warnings |
+| Latest docs commit | `4e3a3a4` — docs: update V24D6G docs after lineup confirmation warning |
 | Tests | 506, 0 failures |
 | Injury mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-injuries=true` |
 | Fatigue mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-fatigue=true` |
@@ -147,7 +148,7 @@ The combined status displayed to the user is the highest applicable priority.
 
 ## 6. UI Surfaces to Update
 
-The following pages/views in the frontend require indicators. This document designs the UX intent. V24D6G3 squad indicators, V24D6G4A lineup player card warnings, and V24D6G4B lineup confirmation warning are complete; V24D6G5–G7 remain future work.
+The following pages/views in the frontend require indicators. This document designs the UX intent. V24D6G3 squad indicators, V24D6G4A lineup player card warnings, V24D6G4B lineup confirmation warning, and V24D6G5A dashboard warning are complete; V24D6G6–G7 remain future work.
 
 ### 6.1 Squad Management Page
 
@@ -397,11 +398,12 @@ V24D6G is too large to implement in one phase. Recommended phased approach:
 | **V24D6G3** | Squad management injury + energy indicators | LOW | ✅ COMPLETE (`3675431`, front-ciber/project mvp-1) |
 | **V24D6G4A** | Lineup player card condition badges/warnings | LOW | ✅ COMPLETE (`362c647`, front-ciber/project mvp-1) |
 | **V24D6G4B** | Lineup confirmation warning (two-click pattern) | MEDIUM | ✅ COMPLETE (`c4681e2`, front-ciber/project mvp-1) |
-| **V24D6G5** | Dashboard next-match warnings | LOW | V24D6G4B complete |
-| **V24D6G6** | Match detail post-match condition summary | LOW | V24D6G5 complete |
+| **V24D6G5A** | Dashboard next-match warning (before "Jugar Fecha") | LOW | ✅ COMPLETE (`18543dc`, front-ciber/project mvp-1) |
+| **V24D6G5B** | Dashboard polish (optional, UX-driven) | LOW | Deferred — V24D6G5A only |
+| **V24D6G6** | Match detail post-match condition summary | LOW | V24D6G5A complete |
 | **V24D6G7** | UX polish, responsive pass, accessibility audit | LOW | V24D6G6 complete |
 
-**V24D6G2, V24D6G3, V24D6G4A, and V24D6G4B are complete. V24D6G5 (dashboard next-match warnings) is the next phase. V24D6G6 (match detail condition summary) and V24D6G7 (UX polish) follow. V24D6G4C (squad-editor-modal condition warning logic) was deferred — the modal file was untracked/dead work and was NOT committed.**
+**V24D6G2, V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A are complete. V24D6G6 (match detail condition summary) is the next phase. V24D6G7 (UX polish) follows. V24D6G5B (optional dashboard polish) deferred until UX review. V24D6G4C (squad-editor-modal condition warning logic) was deferred — the modal file was untracked/dead work and was NOT committed.**
 
 ---
 
@@ -499,9 +501,9 @@ Tests are future work for V24D6G3+. This section defines test intent for later i
 
 ## 14. Recommendation
 
-### 14.1 Immediate Next Step: V24D6G5 — Dashboard Next-Match Warnings
+### 14.1 Immediate Next Step: V24D6G6 — Match Detail Post-Match Condition Summary
 
-V24D6G2, V24D6G3, V24D6G4A, and V24D6G4B are complete. V24D6G5 should implement dashboard/next-match warnings showing injured/exhausted player counts before the user simulates a round. No backend changes required. V24D6G5 was the recommended phase after V24D6G4B completion.
+V24D6G2, V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A are complete. V24D6G6 should implement a post-match condition summary on the match detail page, showing starting XI energy drain and any injuries that occurred during the match. V24D6G5B (dashboard polish) is deferred until UX review confirms the dashboard warning is sufficient.
 
 Richer injury detail (e.g., `injuryRemainingMatches` tooltip) in lineup may require cross-referencing the squad endpoint or extending `PlayerLineupDTO` in a later backend change.
 
@@ -511,8 +513,8 @@ Richer injury detail (e.g., `injuryRemainingMatches` tooltip) in lineup may requ
 2. **V24D6G3** — Squad management indicators (injury badge + energy badge) — ✅ COMPLETE (`3675431`, front-ciber/project mvp-1)
 3. **V24D6G4A** — Lineup player card condition badges/warnings — ✅ COMPLETE (`362c647`, front-ciber/project mvp-1)
 4. **V24D6G4B** — Lineup confirmation warning (two-click pattern) — ✅ COMPLETE (`c4681e2`, front-ciber/project mvp-1)
-5. **V24D6G5** — Dashboard next-match warnings — NEXT
-6. **V24D6G6** — Match detail post-match condition summary
+5. **V24D6G5A** — Dashboard squad condition warning (before "Jugar Fecha") — ✅ COMPLETE (`18543dc`, front-ciber/project mvp-1)
+6. **V24D6G6** — Match detail post-match condition summary — NEXT
 7. **V24D6G7** — UX polish
 
 ### 14.3 What NOT to Do Yet
@@ -531,12 +533,12 @@ V24D6F (career mutation integration tests + rollback tests) is listed as HIGH pr
 ## 15. Non-Goals
 
 V24D6G (overall) does NOT include:
-- **No backend/API/Redis/schema changes** — V24D6G3, V24D6G4A, and V24D6G4B were pure frontend in the separate frontend repo
+- **No backend/API/Redis/schema changes** — V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A were frontend work in the separate frontend repo. V24D6G5A reused existing endpoint `GET /api/v1/career/players/squad` and introduced no new API contract.
 - **No cards/suspensions UI** — V24D6D discipline model required first
 - **No form/morale UI** — V24D6E not yet designed
 - **No production flag changes** — mutation flags remain default-false
 
-V24D6G1 was design-only. V24D6G3, V24D6G4A, and V24D6G4B were pure frontend work in the separate frontend repo; no backend/API/Redis/schema changes were introduced.
+V24D6G1 was design-only. V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A were frontend work in the separate frontend repo; no backend/API/Redis/schema changes were introduced. V24D6G5A reused existing endpoint and introduced no new API contract.
 
 ---
 
@@ -555,11 +557,11 @@ V24D6G1 was design-only. V24D6G3, V24D6G4A, and V24D6G4B were pure frontend work
 - [x] Phased implementation plan defined (G1–G7)
 - [x] Testing strategy outlined for future phases
 - [x] Risks documented with mitigations
-- [x] Recommendation: V24D6G5 next (dashboard next-match warnings), then V24D6G6 (match detail condition summary) then V24D6G7 polish. V24D6G4B completed without modal changes. V24D6G4C deferred — squad-editor-modal was untracked/dead work and was NOT committed.
+- [x] Recommendation: V24D6G6 next (match detail post-match condition summary), then V24D6G7 polish. V24D6G5A completed with dashboard warning before "Jugar Fecha". V24D6G5B deferred until UX review. V24D6G4C deferred — squad-editor-modal was untracked/dead work and was NOT committed.
 - [x] Non-goals explicit
 - [x] V24D6D cards/suspensions deferred until discipline model exists
 - [x] V24D6E form/morale UI deferred
 
 ---
 
-*This document is the authoritative V24D6G design specification. V24D6G2 audit and V24D6G3 squad indicators are complete. V24D6G4A lineup player card warnings are implemented (`362c647`). V24D6G4B lineup confirmation warning is implemented (`c4681e2`). Next: V24D6G5 dashboard next-match warnings. V24D6G4C (squad-editor-modal) was NOT committed — modal was untracked/dead work.*
+*This document is the authoritative V24D6G design specification. V24D6G2 audit, V24D6G3 squad indicators, V24D6G4A lineup player card warnings, V24D6G4B lineup confirmation warning, and V24D6G5A dashboard warning are complete. Next: V24D6G6 match detail post-match condition summary. V24D6G5B deferred until UX review. V24D6G4C (squad-editor-modal) was NOT committed — modal was untracked/dead work.*

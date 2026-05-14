@@ -151,7 +151,7 @@ export interface SessionPlayer {
 
 ### 3.2 Lineup Endpoint — `/api/v1/career/lineup/current`
 
-**Called from:** `SquadManagementComponent.ngOnInit()` → line 237, and `SquadEditorModalComponent.loadSquadFromBackend()` → line 761
+**Called from:** `SquadManagementComponent.ngOnInit()` (line 179). The tracked lineup flow uses the squad-management component auto-select + confirm flow. The untracked SquadEditorModalComponent was audited during V24D6G4B and discarded as dead/untracked work — it was not imported, not routed, build passed without it, and was NOT committed.
 
 ```
 GET /api/v1/career/lineup/current
@@ -225,25 +225,21 @@ interface PlayerLineupDTO {
 
 **Note:** The injured badge (🤕 emoji) is already implemented! When `player.injured === true`, a badge is shown. No injury type or remaining matches shown.
 
-### 5.3 SquadEditorModalComponent
+### 5.3 SquadEditorModalComponent (DEAD/UNTRACKED — NOT COMMITTED)
 
-**File:** `squad-editor-modal.component.ts` lines 779–789
+The `squad-editor-modal` component was audited during V24D6G4B and found to be dead/untracked work:
+- Not imported in any module
+- Not routed in `app.routes.ts`
+- Build passes without it
+- Entire file (~1208 lines) showed as untracked with no git history
+- Condition warning logic for modal selection was NOT committed
 
-```typescript
-const allPlayers: PlayerOnFieldDto[] = playersList.map((p: any) => ({
-  playerId: p.playerId,
-  name: p.name,
-  position: p.position,
-  role: p.position,
-  overall: p.overall || 70,
-  slotId: '',
-  stamina: p.energy || 100,   // ✅ energy used as stamina
-  active: !p.injured,         // ✅ injured → active flag
-  isEmpty: false
-}));
-```
+The tracked lineup flow is handled by:
+- `squad-management.component.ts` — auto-select + two-click confirm pattern (V24D6G4B)
+- `lineup-player-card.component.ts` — condition badges on lineup cards (V24D6G4A)
+- `dashboard.component.ts` — squad condition warning before "Jugar Fecha" (V24D6G5A)
 
-**Note:** Injury is used as an `active` boolean (injured players are marked inactive). Energy is used as `stamina`. No `injuryType` or `injuryRemainingMatches`.
+The squad-editor-modal remains untracked and should be ignored unless revived with a legitimate use case.
 
 ---
 
@@ -370,7 +366,7 @@ The `squad-editor-modal` component was untracked/dead work — not imported, not
 | `squad-management.component.html` | Uses `app-player-card` and `app-lineup-player-card` |
 | `player-card.component.html` | Shows `energy` but no injury badge |
 | `lineup-player-card.component.html` | Already shows 🤕 injured badge and energy |
-| `squad-editor-modal.component.ts` | Maps lineup players, uses `active: !p.injured` |
+| `squad-editor-modal.component.ts` | DEAD/UNTRACKED — not imported, not routed, NOT committed — audited and discarded during V24D6G4B |
 | `career.service.ts` | CareerService endpoint definitions |
 | `career.model.ts` | `SessionTeam`, `CareerStatus` interfaces |
 
@@ -380,9 +376,11 @@ The `squad-editor-modal` component was untracked/dead work — not imported, not
 
 - No API changes recommended or required
 - No backend implementation
-- No frontend implementation (design-only audit)
+- This audit itself did not implement frontend code — it was design-only
+- Subsequent frontend phases V24D6G3, V24D6G4A, V24D6G4B, and V24D6G5A were implemented in the separate frontend repo
+- V24D6G5A reused existing endpoint `GET /api/v1/career/players/squad` and introduced no new API contract
+- No backend/API/Redis/schema changes were required
 - No Redis schema changes
-- No backend/API changes required. V24D6G3 was pure frontend work in a separate repository (front-ciber/project).
 - No new test files needed for this audit
 
 ---
@@ -401,8 +399,20 @@ The `squad-editor-modal` component was untracked/dead work — not imported, not
 
 **Lineup endpoint detail:** `PlayerLineupDTO` exposes `energy` and `injured`. `injuryType` and `injuryRemainingMatches` are not present — acceptable because injured players are blocked from lineup selection anyway, and remaining match count is most useful for squad management display. V24D6G4 may cross-reference squad data or extend `PlayerLineupDTO` if richer lineup tooltips are needed.
 
-**Recommended next phase: V24D6G5 — Dashboard Next-Match Warnings**
+**✅ V24D6G5A — Committed as `18543dc`** (front-ciber/project mvp-1)
 
-**Primary work:** Commit squad-editor-modal condition warning logic after path/diff hygiene review. Add warning state when selecting injured or exhausted players. No backend dependency. V24D6G4A proved no backend/API changes are needed for lineup warning UI.
+**Summary:**
+- Dashboard squad condition warning added above "Jugar Fecha" button
+- Uses existing endpoint `GET /api/v1/career/players/squad` (no new API contract)
+- Shows injured/exhausted/very-tired player counts before round simulation
+- No hard blocking — warning only, user can proceed
+- Error-safe: squad load failure emits empty array, warning hidden
+
+**Remaining phases:**
+- V24D6G6 — Match detail post-match condition summary (next)
+- V24D6G7 — UX polish/accessibility
+- V24D6G5B — Optional dashboard polish deferred until UX review
+
+**Recommended next phase: V24D6G6 — Match Detail Post-Match Condition Summary**
 
 *This document is the authoritative V24D6G2 audit record.*
