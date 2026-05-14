@@ -312,13 +312,26 @@ These fields are NOT in `PlayerLineupDTO` (lineup endpoint). This is acceptable 
 - Energy display upgraded: "Energy: 86% · Fresh" with status thresholds (Fresh 80–100, Good 60–79, Tired 40–59, Very Tired 20–39, Exhausted 0–19)
 - Injury display added: 🤕 "Injured" + "Out N matches" / "Returning soon" / "Unavailable" fallback
 
-### V24D6G4 — Lineup Selection Warnings/Blocks (NEXT PHASE)
+### V24D6G4A — Lineup Player Card Condition Warnings (COMPLETED ✅)
 
-**Backend prerequisites:** None for warnings. For hard block (preventing injured players from being selected), V24D6F mutation integration tests should be stable first.
+**Commit:** `362c647` (`feat: add V24D6G4A lineup condition warnings`, front-ciber/project mvp-1)
+
+**No backend changes were required.** Lineup endpoint already exposed `energy` and `injured`.
+
+**What was implemented:**
+- `LineupPlayerCardComponent` added condition helpers: `isInjured()`, `energyPercent()`, `isExhausted()`, `isVeryTired()`, `isTired()`, `conditionWarningLabel()`, `conditionWarningTooltip()`, `conditionClass()`, `hasConditionWarning()`
+- Condition badges: `⚠️ Injured`, `⚡ Exhausted`, `⚡ Very tired`, `⚡ Tired`
+- CSS classes: `condition-injured` (crimson), `condition-exhausted` (orange), `condition-very-tired` (amber), `condition-tired` (green)
+- Injury takes priority over exhaustion when both apply
+- Warnings only — no hard blocking
+
+**NOT committed in this phase:** squad-editor-modal condition warning logic (showConditionWarning, conditionWarning$ state). The modal file showed as untracked with a large diff (~1208 lines), which was not safe to commit without path/diff hygiene review.
+
+### V24D6G4B — Modal Warning Behavior / Selection UX Hygiene (NEXT PHASE)
+
+**Requires:** path/diff hygiene review for squad-editor-modal before committing modal changes.
 
 **Lineup endpoint:** `PlayerLineupDTO` exposes `energy` and `injured`. Injured players are already mapped to `active: !p.injured` in the editor. Warnings and blocking can proceed without backend/API changes.
-
-**Richer injury detail:** Adding `injuryRemainingMatches` to lineup tooltips may require cross-referencing the squad endpoint or extending `PlayerLineupDTO` in a later backend change.
 
 **Injury type display in lineup:**
 - Requires `injuryType` and `injuryRemainingMatches` — available from squad endpoint
@@ -379,8 +392,8 @@ These fields are NOT in `PlayerLineupDTO` (lineup endpoint). This is acceptable 
 
 **Lineup endpoint detail:** `PlayerLineupDTO` exposes `energy` and `injured`. `injuryType` and `injuryRemainingMatches` are not present — acceptable because injured players are blocked from lineup selection anyway, and remaining match count is most useful for squad management display. V24D6G4 may cross-reference squad data or extend `PlayerLineupDTO` if richer lineup tooltips are needed.
 
-**Recommended next phase: V24D6G4 — Lineup Selection Warnings/Blocks**
+**Recommended next phase: V24D6G4B — Modal Warning Behavior / Selection UX Hygiene**
 
-Primary work: block or warn when selecting injured players in lineup editor, warn when selecting exhausted players (energy < 20). Backend dependency: none for warnings; V24D6F mutation integration tests should be stable before hard block implementation.
+**Primary work:** Commit squad-editor-modal condition warning logic after path/diff hygiene review. Add warning state when selecting injured or exhausted players. No backend dependency. V24D6G4A proved no backend/API changes are needed for lineup warning UI.
 
 *This document is the authoritative V24D6G2 audit record.*
