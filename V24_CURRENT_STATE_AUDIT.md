@@ -2,10 +2,10 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 complete in separate frontend repo. V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind default-false flags. V24D6G3 (commit `3675431`), V24D6G4A (commit `362c647`), V24D6G4B (commit `c4681e2`), V24D6G5A (commit `18543dc`), V24D6G6A (commit `80ad1ed`), and V24D6G7 (audit — no code changes needed) implemented in separate frontend repo. V24D6F1/F2/F3 mutation regression tests committed (`9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes). Cards/form mutation deferred.
-**Latest commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
-**Tests:** 521 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3), 0 failures; regression gate 521 tests, 0 failures
-**Date:** 2026-05-13
+**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 complete in separate frontend repo. V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind default-false flags. V24D6D2/D3/D4/D5 discipline persistence pipeline wired behind default-false flags. V24D6G3 (commit `3675431`), V24D6G4A (commit `362c647`), V24D6G4B (commit `c4681e2`), V24D6G5A (commit `18543dc`), V24D6G6A (commit `80ad1ed`), and V24D6G7 (audit — no code changes needed) implemented in separate frontend repo. V24D6F1/F2/F3 mutation regression tests committed (`9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes). Form mutation deferred.
+**Latest commit:** `0f4ab39` (feat: wire V24D6D5 discipline mutation behind flags)
+**Tests:** 558 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5), 0 failures; regression gate 558 tests, 0 failures
+**Date:** 2026-05-15
 
 ---
 

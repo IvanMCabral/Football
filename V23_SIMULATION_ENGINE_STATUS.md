@@ -1,10 +1,10 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `0dc184a` (feat: add fatigue mutation applier, service orchestration, and LeagueSimulator wiring)
-**Status:** V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 frontend complete (commit `12d203d`). V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline complete — wiring exists behind default-false flags. V24D6G3/V24D6G4A/V24D6G4B/V24D6G5A/V24D6G6A frontend UI phases + V24D6G7 audit in separate frontend repo (commits `3675431`/`362c647`/`c4681e2`/`18543dc`/`80ad1ed`; V24D6G7 audit-only, no code changes). V24D6F1/F2/F3 mutation regression tests complete (commits `9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes). Cards/form mutation deferred.
-**Test status:** 521 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3), 0 failures; regression gate 521 tests, 0 failures
-**Date:** 2026-05-13
+**Latest commit:** `0f4ab39` (feat: wire V24D6D5 discipline mutation behind flags)
+**Status:** V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 frontend complete (commit `12d203d`). V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline complete — wiring exists behind default-false flags. V24D6G3/V24D6G4A/V24D6G4B/V24D6G5A/V24D6G6A frontend UI phases + V24D6G7 audit in separate frontend repo (commits `3675431`/`362c647`/`c4681e2`/`18543dc`/`80ad1ed`; V24D6G7 audit-only, no code changes). V24D6F1/F2/F3 mutation regression tests complete (commits `9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes). V24D6D2/D3/D4/D5 discipline persistence complete (commits `ecab588`/`7bf350a`/`f1ef4df`/`0f4ab39`). Form mutation deferred.
+**Test status:** 558 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5), 0 failures; regression gate 558 tests, 0 failures
+**Date:** 2026-05-15
 
 ---
 
@@ -123,11 +123,13 @@ public final class MatchQualityComputer {
 | `V24EndToEndFlagIntegrationTest` | 12 | V24D5D: end-to-end flag combinations, precedence, persistence/no-persistence, fallback, best-effort save, schema safety |
 | `V24PlayerRatingsPersistenceTest` | 12 | V24D5F: playerRatings persistence in V24DetailedMatchData, assembler, no mutation, best-effort persistence |
 | `V24InjuryMutationApplierTest` | 24 | V24D6B1: injury mutation applier, policy flags, null guards, flag-disabled, unknown player, already injured, duplicate events, empty/null playerId, edge cases |
-| `V24CareerMutationServiceTest` | 40 | V24D6B2/C2 + V24D6F1: mutation service orchestration, null guards, flag combinations, exception handling, result object behavior, fatigue orchestration, policy edge cases, result factory semantics |
-| `V24CareerMutationIntegrationTest` | 21 | V24D6B3/C3 + V24D6F2: LeagueSimulator wiring, allFlagsFalse, masterFlagFalse, specificFlagFalse, V24DisabledWithMutationFlags, defaultPathNoMutation, roundCompletion, fatigue flag combinations, storage failure best-effort, wiring-level master-gate |
+| `V24CareerMutationServiceTest` | 47 | V24D6B2/C2 + V24D6F1 + V24D6D4: mutation service orchestration, null guards, flag combinations, exception handling, result object behavior, fatigue orchestration, policy edge cases, result factory semantics, discipline wiring |
+| `V24CareerMutationIntegrationTest` | 27 | V24D6B3/C3 + V24D6F2 + V24D6D5: LeagueSimulator wiring, allFlagsFalse, masterFlagFalse, specificFlagFalse, V24DisabledWithMutationFlags, defaultPathNoMutation, roundCompletion, fatigue flag combinations, storage failure best-effort, wiring-level master-gate, discipline flag combinations |
+| `V24DisciplineMutationApplierTest` | 16 | V24D6D3: YELLOW_CARD increments yellowCards, RED_CARD increments redCards+sets suspended, duplicate RED same match counted once via HashSet, no suspension decrement, best-effort partial mutation |
+| `SessionPlayerDisciplineFieldsTest` | 8 | V24D6D2: SessionPlayer discipline fields, null-safe getters, default values, initDefaults, field initialization |
 | `V24FatigueMutationApplierTest` | 30 | V24D6C1 + V24D6F3: energy drain, null guards, flag combinations, floor at 0, unknown player skip, injured skip, substitute-only drain, custom drain values, null energy default, all-injured skip, relatedPlayerId substitute drain, null playerId graceful handling |
 
-**Total: 521 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3)
+**Total: 558 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5)
 
 ---
 
@@ -469,7 +471,7 @@ Frontend route: `/careers/:careerId/matches/:matchId/detail` → `V24MatchDetail
 Dashboard fixture modal links completed matches to detail page via "📊 Detalle" button.
 Frontend validation: `npx tsc --noEmit` OK, `npx ng build` BUILD SUCCESS
 Root/backend repo (`mvp-1-performance-cleanup`) unchanged by V24D5E frontend implementation.
-Backend tests: 521 full suite, 521 regression gate, 0 failures (V24D6F1/F2/F3 added +15 mutation regression tests; no production code changes).
+Backend tests: 558 full suite, 558 regression gate, 0 failures (V24D6F1/F2/F3 added +15 mutation regression tests; V24D6D2/D3/D4/D5 added +37 discipline tests, no production code changes in V24D6F).
 
 **Phase 11 — Frontend xG and Tactic Display**
 Integrate xG fields from `MatchInfo`/`LeagueMatchInfo` DTOs into UI:
@@ -497,7 +499,7 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 ```
 mvn test -Dtest=V24ShotCoordinateAttachmentTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingsPersistenceTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24MatchContextFactoryTest,V24InjuryMutationApplierTest,V24FatigueMutationApplierTest,V24CareerMutationServiceTest,V24CareerMutationIntegrationTest
 ```
-Expected: 521 tests (regression gate), 0 failures; 521 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3).
+Expected: 558 tests (regression gate), 0 failures; 558 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5).
 
 ---
 

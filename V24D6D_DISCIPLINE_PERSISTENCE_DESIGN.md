@@ -1,12 +1,12 @@
 # V24D6D — Discipline/Cards Persistence Design Document
 
-**Status:** V24D6D1 DESIGN ONLY
+**Status:** V24D6D1–D5 IMPLEMENTATION COMPLETE
 **Branch:** `mvp-1-performance-cleanup`
-**Latest backend implementation commit:** `0dc184a`
-**Latest docs commit:** `22c8668`
-**Tests:** 521, 0 failures
-**Mutation focused gate:** 115, 0 failures
-**No production code changes in V24D6D1**
+**Latest backend implementation commit:** `0f4ab39` (feat: wire V24D6D5 discipline mutation behind flags)
+**Latest docs commit:** `fbc81cd` — docs: add V24D6D discipline persistence design
+**Tests:** 558, 0 failures
+**Mutation focused gate:** 144, 0 failures
+**No production code changes in V24D6D1 (design only); V24D6D2/D3/D4/D5 production code committed separately**
 
 ---
 
@@ -20,7 +20,7 @@ V24 already generates match-local card events. During a match:
 - `V24PlayerRatingModel` applies performance penalties for yellow (-0.3) and red (-1.5) cards post-match.
 - `V24PlayerMatchStatsModel` records card counts per match.
 
-V24 detailed match data and player ratings can therefore display per-match card statistics. However, **no persistent career discipline or suspension state exists yet**. Yellow cards are not accumulated across matches. Red cards do not trigger suspension in the career model. Players who should be suspended can still be selected in the starting XI.
+V24 detailed match data and player ratings can therefore display per-match card statistics. **V24D6D2-D5 now implement persistent career discipline/suspension state.** Yellow cards accumulate on `SessionPlayer.yellowCards`, red cards accumulate on `SessionPlayer.redCards`, and red cards set `SessionPlayer.suspended=true` with `suspensionRemainingMatches=1`. Remaining work is suspension lifecycle/decrement (V24D6D6) and DTO/UI visibility (V24D6D7).
 
 V24D6D designs how red cards/suspensions and optional yellow accumulation persist across matches, so that:
 
@@ -44,15 +44,15 @@ V24D6D designs how red cards/suspensions and optional yellow accumulation persis
 | `V24PlayerRatingModel` card penalties | YES | `v24/V24PlayerRatingModel.java` | Yellow (-0.3), Red (-1.5) applied post-match |
 | `V24PlayerMatchStatsModel` card counts | YES | `v24/V24PlayerMatchStatsModel.java` | Records card counts per match in stats DTO |
 | `V24DetailedMatchData` card persistence | YES | Card stats embedded in match result DTO | Match result DTO carries card event data; not career-persistent |
-| `SessionPlayer` persistent `yellowCards` | **NO** | `domain/model/entity/SessionPlayer.java` | No discipline fields exist |
-| `SessionPlayer` persistent `redCards` | **NO** | `domain/model/entity/SessionPlayer.java` | No discipline fields exist |
-| `SessionPlayer` persistent `suspended` | **NO** | `domain/model/entity/SessionPlayer.java` | No discipline fields exist |
-| `SessionPlayer` `suspensionRemainingMatches` | **NO** | `domain/model/entity/SessionPlayer.java` | No discipline fields exist |
+| `SessionPlayer` persistent `yellowCards` | **YES** — implemented V24D6D2 | `domain/model/entity/SessionPlayer.java:47-50` | Integer, null-safe getter `(yellowCards != null ? yellowCards : 0)` |
+| `SessionPlayer` persistent `redCards` | **YES** — implemented V24D6D2 | `domain/model/entity/SessionPlayer.java:47-50` | Integer, null-safe getter `(redCards != null ? redCards : 0)` |
+| `SessionPlayer` persistent `suspended` | **YES** — implemented V24D6D2 | `domain/model/entity/SessionPlayer.java:47-50` | Boolean, null-safe getter `(suspended != null ? suspended : false)` |
+| `SessionPlayer` `suspensionRemainingMatches` | **YES** — implemented V24D6D2 | `domain/model/entity/SessionPlayer.java:47-50` | Integer, null-safe getter `(suspensionRemainingMatches != null ? suspensionRemainingMatches : 0)` |
 | `CareerSave` discipline registry | **NO** | `domain/model/entity/CareerSave.java` | No discipline map or state |
 | DTO/API suspension exposure | **NO** | No current DTO surface | Backend persistence first; API exposure deferred to V24D6D7 |
 | Frontend suspension indicators | **NO** | No current UI surface | Deferred to V24D6D7 DTO/UI audit |
 
-**Key finding from audit:** All discipline machinery is match-local. The gap is persistence — `SessionPlayer` has no discipline fields, and no applier reads V24 card events to update career state.
+**Key finding from audit:** All discipline machinery is in place. Persistence gap is now closed — `SessionPlayer` has discipline fields (V24D6D2), `V24DisciplineMutationApplier` reads V24 card events and updates career state (V24D6D3), and `V24CareerMutationService` orchestrates mutation behind flags (V24D6D4).
 
 ---
 
@@ -75,7 +75,7 @@ With getters/setters following the existing pattern.
 |--------|--------|
 | Schema impact | SessionPlayer widened by 4 fields. All existing callers unaffected. |
 | Redis/Jackson compatibility | Primitives with safe defaults (0, false) — old JSON without these fields deserializes with defaults. No Redis key migration needed. |
-| API impact | Fields added to SessionPlayer; if CareerPlayerDto or CareerSquadDto traverses SessionPlayer fields, API surface grows automatically. No explicit DTO change required to persist. |
+| API impact | Fields added to SessionPlayer, but API exposure is not guaranteed. DTO/API traversal must be audited explicitly in V24D6D7 before frontend work. No explicit DTO change required to persist. |
 | Complexity | Low — field addition + mutation applier write path only. |
 | Testability | High — unit tests for serialization/deserialization, unit tests for mutation applier, integration tests for wiring. |
 | Recommendation | **Option A for MVP** — mirrors existing `injured`, `energy`, `form` fields which use the same "accumulate and track remaining" pattern. Simplest serialization story. |
@@ -176,20 +176,13 @@ Follows the same pattern as `V24InjuryMutationApplier` and `V24FatigueMutationAp
 ```java
 public class V24DisciplineMutationApplier {
 
-    private final V24CareerMutationPolicy policy;
-
-    public V24DisciplineMutationApplier(V24CareerMutationPolicy policy) {
-        this.policy = policy;
-    }
-
-    public int applyDiscipline(CareerSave careerSave, V24DetailedMatchResult result,
-                                V24CareerMutationPolicy policy) {
-        // Gated by: isCareerMutationEnabled() && isDisciplinePersistenceEnabled()
+    public int applyDiscipline(
+            CareerSave career,
+            V24DetailedMatchResult result,
+            V24CareerMutationPolicy policy) {
+        // Gated by policy.isDisciplinePersistenceEnabled()
         // Iterates result.timeline() for YELLOW_CARD / RED_CARD events
-        // For each event: look up SessionPlayer, increment yellowCards or redCards, set suspension
-        // Skips null/missing playerIds
-        // On exception: logs, records failure, does NOT fail the round
-        // Returns count of players/cards to which discipline was applied
+        // Returns applied discipline mutation count
     }
 }
 ```
@@ -250,7 +243,7 @@ private int disciplineApplied;
 
 **Expected usage after V24D6D:**
 
-- `disciplineApplied` is incremented for each player who receives a card event mutation (one count per player, not per card).
+- `disciplineApplied` is incremented for each applied discipline mutation event. YELLOW_CARD events count individually; RED_CARD events count once per player per match when duplicate RED_CARD events appear for the same player.
 - `injuriesApplied`, `fatigueApplied`, `disciplineApplied` remain independent counters.
 - `failures` list remains a defensive copy.
 - `partialFailure` semantics unchanged.
@@ -361,15 +354,15 @@ Adding discipline fields to `SessionPlayer` automatically exposes them through a
 
 ## 12. Non-Goals
 
-V24D6D1 does **NOT**:
+V24D6D1 was design-only. V24D6D2/D3/D4/D5 implemented discipline fields, applier, service orchestration, and LeagueSimulator wiring. The following remain **NOT** implemented as of V24D6D5:
 
-- Implement discipline fields on SessionPlayer
-- Implement V24DisciplineMutationApplier
-- Wire discipline applier into V24CareerMutationService
-- Change LeagueSimulator construction or wiring
-- Change API endpoints or DTOs
-- Change frontend components
-- Implement suspension decrement lifecycle (V24D6D6)
+- ~~Implement discipline fields on SessionPlayer~~ ✓ V24D6D2 done
+- ~~Implement V24DisciplineMutationApplier~~ ✓ V24D6D3 done
+- ~~Wire discipline applier into V24CareerMutationService~~ ✓ V24D6D4 done
+- ~~Change LeagueSimulator construction or wiring~~ ✓ V24D6D5 done
+- Implement API endpoints or DTOs for suspension visibility (deferred to V24D6D7)
+- Change frontend components for suspension indicators (deferred to V24D6D7)
+- Implement suspension decrement lifecycle (deferred to V24D6D6)
 - Implement yellow accumulation threshold (e.g., 5 yellows → 1-match suspension)
 - Implement form, morale, or reputation effects
 - Implement lineup blocking for suspended players
@@ -394,7 +387,7 @@ Each phase is independent enough to be reviewed and committed separately.
 
 ## 14. Completion Criteria
 
-- [x] Design document created
+- [x] Design document created (V24D6D1)
 - [x] Current state audited (all 17 concepts in audit table)
 - [x] Option A selected for SessionPlayer field extension
 - [x] MVP rules defined with explicit conservative scope
@@ -402,9 +395,33 @@ Each phase is independent enough to be reviewed and committed separately.
 - [x] Testing plan covers all phases (D2 through D7)
 - [x] Risks documented with mitigations
 - [x] Non-goals explicitly listed
-- [x] No src/main code changes
-- [x] No src/test code changes
+- [x] V24D6D1: no src/main or src/test changes (design-only)
+- [x] V24D6D2: SessionPlayer fields implemented, tests committed
+- [x] V24D6D3: DisciplineMutationApplier implemented, tests committed
+- [x] V24D6D4: Service orchestration wired, tests committed
+- [x] V24D6D5: LeagueSimulator wiring complete, tests committed
+- [x] No API/schema/frontend changes in any V24D6D phase
 - [x] No target/ staging
+
+---
+
+## 15. Implementation Summary (V24D6D2–D5)
+
+| Phase | Commit | Files | Tests added |
+|-------|--------|-------|-------------|
+| V24D6D2 | `ecab588` | `SessionPlayer.java` | +8 |
+| V24D6D3 | `7bf350a` | `V24DisciplineMutationApplier.java` | +16 |
+| V24D6D4 | `f1ef4df` | `V24CareerMutationService.java`, `V24CareerMutationResult.java` | +7 |
+| V24D6D5 | `0f4ab39` | `LeagueSimulator.java` | +6 |
+
+Total new tests: **37** | Regression gate: **558** | Mutation gate: **144**
+
+**Deferred to future phases:**
+- V24D6D6: Suspension lifecycle decrement
+- V24D6D7: DTO/frontend suspension visibility audit
+- V24D6E: Form/morale effects
+- Yellow accumulation threshold (e.g., 5 yellows → 1-match suspension)
+- Lineup blocking for suspended players
 
 ---
 
