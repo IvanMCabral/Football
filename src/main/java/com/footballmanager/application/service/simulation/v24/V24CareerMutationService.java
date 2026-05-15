@@ -5,7 +5,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 /**
  * Pure orchestration service that coordinates V24 career mutations after a match result.
  *
- * <p>V24D6C2 scope: injury + fatigue mutation. Discipline and form are not implemented.
+ * <p>V24D6C2 scope: injury + fatigue mutation. Discipline added in V24D6D4.
  *
  * <p>This service is isolated — no Spring, no Redis, no IO.
  * It is not yet wired into LeagueSimulator; it exists as a standalone component.
@@ -14,18 +14,29 @@ public class V24CareerMutationService {
 
     private final V24InjuryMutationApplier injuryMutationApplier;
     private final V24FatigueMutationApplier fatigueMutationApplier;
+    private final V24DisciplineMutationApplier disciplineMutationApplier;
 
     public V24CareerMutationService(V24InjuryMutationApplier injuryMutationApplier) {
-        this(injuryMutationApplier, new V24FatigueMutationApplier());
+        this(injuryMutationApplier, new V24FatigueMutationApplier(), new V24DisciplineMutationApplier());
     }
 
     public V24CareerMutationService(
             V24InjuryMutationApplier injuryMutationApplier,
             V24FatigueMutationApplier fatigueMutationApplier) {
+        this(injuryMutationApplier, fatigueMutationApplier, new V24DisciplineMutationApplier());
+    }
+
+    public V24CareerMutationService(
+            V24InjuryMutationApplier injuryMutationApplier,
+            V24FatigueMutationApplier fatigueMutationApplier,
+            V24DisciplineMutationApplier disciplineMutationApplier) {
         this.injuryMutationApplier = injuryMutationApplier;
         this.fatigueMutationApplier = fatigueMutationApplier != null
                 ? fatigueMutationApplier
                 : new V24FatigueMutationApplier();
+        this.disciplineMutationApplier = disciplineMutationApplier != null
+                ? disciplineMutationApplier
+                : new V24DisciplineMutationApplier();
     }
 
     /**
@@ -48,6 +59,7 @@ public class V24CareerMutationService {
 
         int injuries = 0;
         int fatigue = 0;
+        int discipline = 0;
         java.util.List<String> failures = new java.util.ArrayList<>();
 
         if (policy.isInjuryPersistenceEnabled()) {
@@ -66,14 +78,23 @@ public class V24CareerMutationService {
             }
         }
 
-        if (!failures.isEmpty()) {
-            return V24CareerMutationResult.failure(injuries, fatigue, failures, injuries > 0 || fatigue > 0);
+        if (policy.isDisciplinePersistenceEnabled()) {
+            try {
+                discipline = disciplineMutationApplier.applyDiscipline(career, result, policy);
+            } catch (Exception e) {
+                failures.add("Discipline mutation failed: " + e.getMessage());
+            }
         }
 
-        if (injuries == 0 && fatigue == 0) {
+        if (!failures.isEmpty()) {
+            return V24CareerMutationResult.failure(injuries, fatigue, discipline, failures,
+                    injuries > 0 || fatigue > 0 || discipline > 0);
+        }
+
+        if (injuries == 0 && fatigue == 0 && discipline == 0) {
             return V24CareerMutationResult.empty();
         }
 
-        return V24CareerMutationResult.success(injuries, fatigue, 0, 0);
+        return V24CareerMutationResult.success(injuries, fatigue, discipline, 0);
     }
 }

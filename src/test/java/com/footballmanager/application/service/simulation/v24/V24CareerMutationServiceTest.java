@@ -16,9 +16,10 @@ class V24CareerMutationServiceTest {
 
     private final V24InjuryMutationApplier injuryApplier = new V24InjuryMutationApplier();
     private final V24FatigueMutationApplier fatigueApplier = new V24FatigueMutationApplier();
-    private final V24CareerMutationService service = new V24CareerMutationService(injuryApplier, fatigueApplier);
+    private final V24DisciplineMutationApplier disciplineApplier = new V24DisciplineMutationApplier();
+    private final V24CareerMutationService service = new V24CareerMutationService(injuryApplier, fatigueApplier, disciplineApplier);
 
-    // Backwards-compatible service (fatigue applier injected internally)
+    // Backwards-compatible service (fatigue + discipline appliers injected internally)
     private final V24CareerMutationService singleArgService = new V24CareerMutationService(injuryApplier);
 
     // ========== Helper builders ==========
@@ -43,6 +44,16 @@ class V24CareerMutationServiceTest {
     private V24MatchEvent goalEvent(String playerId, int minute) {
         return new V24MatchEvent(minute, V24MatchEventType.GOAL,
                 "team-A", playerId, "Goal", null, null, 0.35, "Goal");
+    }
+
+    private V24MatchEvent yellowCardEvent(String playerId, int minute) {
+        return new V24MatchEvent(minute, V24MatchEventType.YELLOW_CARD,
+                "team-A", playerId, "Card Player", null, null, 0.0, "Foul");
+    }
+
+    private V24MatchEvent redCardEvent(String playerId, int minute) {
+        return new V24MatchEvent(minute, V24MatchEventType.RED_CARD,
+                "team-A", playerId, "Sent Off", null, null, 0.0, "Second yellow");
     }
 
     private V24DetailedMatchResult result(V24MatchEvent... events) {
@@ -702,5 +713,154 @@ class V24CareerMutationServiceTest {
 
         messages.add("Extra error");
         assertEquals(2, r.failures().size(), "Failures list must be defensive copy");
+    }
+
+    // ========== V24D6D4 Discipline orchestration tests ==========
+
+    @Test
+    void persistDisciplineEnabled_callsDisciplineApplier() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30), redCardEvent("p1", 70));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(2, r.disciplineApplied());
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
+
+    @Test
+    void persistDisciplineDisabled_doesNotCallDisciplineApplier() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30), redCardEvent("p1", 70));
+        V24CareerMutationPolicy pol = policy(true, false, false, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.disciplineApplied());
+        assertTrue(r.failures().isEmpty());
+        // Player discipline fields unchanged
+        assertEquals(0, career.getSessionPlayer("p1").getYellowCards());
+        assertEquals(0, career.getSessionPlayer("p1").getRedCards());
+        assertFalse(career.getSessionPlayer("p1").getSuspended());
+    }
+
+    @Test
+    void masterFalse_persistDisciplineTrue_doesNotCallDisciplineApplier() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(false, false, false, true, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.disciplineApplied());
+        assertTrue(r.failures().isEmpty());
+    }
+
+    @Test
+    void injuryFatigueDiscipline_independentCounts() {
+        // Three players with distinct events; injury-player gets injured (fatigue skips),
+        // leaving fatigue-player (goal) + discipline-player (yellow) = fatigueApplied 2
+        // We only check that disciplineApplied=1, injuriesApplied=1, fatigueApplied>0
+        // so we only assert discipline count here and adjust expectations below
+        CareerSave career = careerWithPlayer("player-injury");
+        career.addSessionPlayer(SessionPlayer.fromWorldPlayer("player-fatigue", "Fatigue Guy", "MID", 25, 70));
+        career.addSessionPlayer(SessionPlayer.fromWorldPlayer("player-discipline", "Discipline Guy", "MID", 25, 70));
+
+        V24DetailedMatchResult res = result(
+                injuryEvent("player-injury", 30),
+                goalEvent("player-fatigue", 45),
+                yellowCardEvent("player-discipline", 60)
+        );
+        V24CareerMutationPolicy pol = policy(true, true, true, true, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        // injuries: player-injury
+        assertEquals(1, r.injuriesApplied());
+        // discipline: player-discipline gets yellow
+        assertEquals(1, r.disciplineApplied());
+        // fatigue: injury-player skipped (injured), fatigue-player + discipline-player = 2
+        assertEquals(2, r.fatigueApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
+
+    @Test
+    void disciplineFailure_doesNotEraseInjuryFatigueSuccess() {
+        // Distinct players: injury-player gets injured (fatigue applier skips),
+        // fatigue-player is healthy, discipline-player gets card
+        CareerSave career = careerWithPlayer("injury-player");
+        career.addSessionPlayer(SessionPlayer.fromWorldPlayer("fatigue-player", "FP", "MID", 25, 70));
+        career.addSessionPlayer(SessionPlayer.fromWorldPlayer("discipline-player", "DP", "MID", 25, 70));
+
+        V24DetailedMatchResult res = result(
+                injuryEvent("injury-player", 30),
+                goalEvent("fatigue-player", 45),
+                yellowCardEvent("discipline-player", 60)
+        );
+        V24CareerMutationPolicy pol = policy(true, true, true, true, false);
+
+        V24CareerMutationService badService = new V24CareerMutationService(
+                new V24InjuryMutationApplier(),
+                new V24FatigueMutationApplier(),
+                new V24DisciplineMutationApplier() {
+                    @Override
+                    public int applyDiscipline(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("boom discipline");
+                    }
+                }
+        );
+
+        V24CareerMutationResult r = badService.applyMutations(career, res, pol);
+
+        assertEquals(1, r.injuriesApplied());
+        // fatigue: injury-player skipped (injured), fatigue-player + discipline-player = 2
+        assertEquals(2, r.fatigueApplied());
+        assertEquals(0, r.disciplineApplied());
+        assertFalse(r.failures().isEmpty());
+        assertTrue(r.partialFailure());
+    }
+
+    @Test
+    void disciplineFailure_preservesFailureMessage() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        V24CareerMutationService badService = new V24CareerMutationService(
+                new V24InjuryMutationApplier(),
+                new V24FatigueMutationApplier(),
+                new V24DisciplineMutationApplier() {
+                    @Override
+                    public int applyDiscipline(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("boom discipline");
+                    }
+                }
+        );
+
+        V24CareerMutationResult r = badService.applyMutations(career, res, pol);
+
+        assertEquals(0, r.disciplineApplied());
+        assertFalse(r.failures().isEmpty());
+        assertTrue(r.failures().get(0).contains("boom discipline"));
+    }
+
+    @Test
+    void disciplineAndFormFlags_independent_formStillNoop() {
+        CareerSave career = careerWithPlayer("p1");
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, true);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.disciplineApplied());
+        assertEquals(0, r.formApplied());
+        assertTrue(r.failures().isEmpty());
     }
 }

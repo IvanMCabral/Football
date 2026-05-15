@@ -87,6 +87,13 @@ public final class V24CareerMutationResult {
         return new V24CareerMutationResult(injuries, fatigue, 0, 0, defensive, partial);
     }
 
+    public static V24CareerMutationResult failure(int injuries, int fatigue, int discipline, List<String> messages, boolean partial) {
+        List<String> defensive = messages != null
+                ? Collections.unmodifiableList(new ArrayList<>(messages))
+                : Collections.emptyList();
+        return new V24CareerMutationResult(injuries, fatigue, discipline, 0, defensive, partial);
+    }
+
     public static V24CareerMutationResult partial(
             int injuries, int fatigue, int discipline, int form,
             List<String> failures) {
