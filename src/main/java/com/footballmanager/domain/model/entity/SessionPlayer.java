@@ -38,6 +38,10 @@ public class SessionPlayer {
     private String injuryType;
     private Integer injuryRemainingMatches;
     private Integer matchesPlayedInRow;
+    private Integer yellowCards;
+    private Integer redCards;
+    private Boolean suspended;
+    private Integer suspensionRemainingMatches;
 
     // Origin
     private SessionPlayerOrigin origin;
@@ -122,6 +126,10 @@ public class SessionPlayer {
         this.injuryType = null;
         this.injuryRemainingMatches = 0;
         this.matchesPlayedInRow = 0;
+        this.yellowCards = 0;
+        this.redCards = 0;
+        this.suspended = false;
+        this.suspensionRemainingMatches = 0;
     }
 
     // ========== Business Logic ==========
@@ -175,6 +183,10 @@ public class SessionPlayer {
     public String getInjuryType() { return injuryType; }
     public Integer getInjuryRemainingMatches() { return injuryRemainingMatches; }
     public Integer getMatchesPlayedInRow() { return matchesPlayedInRow; }
+    public Integer getYellowCards() { return yellowCards != null ? yellowCards : 0; }
+    public Integer getRedCards() { return redCards != null ? redCards : 0; }
+    public Boolean getSuspended() { return suspended != null ? suspended : false; }
+    public Integer getSuspensionRemainingMatches() { return suspensionRemainingMatches != null ? suspensionRemainingMatches : 0; }
     public SessionPlayerOrigin getOrigin() { return origin; }
 
     // ========== Setters ==========
@@ -198,5 +210,9 @@ public class SessionPlayer {
     public void setInjuryType(String type) { this.injuryType = type; }
     public void setInjuryRemainingMatches(Integer matches) { this.injuryRemainingMatches = matches; }
     public void setMatchesPlayedInRow(Integer matches) { this.matchesPlayedInRow = matches; }
+    public void setYellowCards(Integer yellowCards) { this.yellowCards = yellowCards; }
+    public void setRedCards(Integer redCards) { this.redCards = redCards; }
+    public void setSuspended(Boolean suspended) { this.suspended = suspended; }
+    public void setSuspensionRemainingMatches(Integer matches) { this.suspensionRemainingMatches = matches; }
     public void setOrigin(SessionPlayerOrigin origin) { this.origin = origin; }
 }
