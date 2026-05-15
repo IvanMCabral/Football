@@ -23,7 +23,7 @@ import java.util.Random;
  * <p>Deterministic: same context + same seed = identical result.
  * No persistence, no Spring, no production wiring.
  */
-public class V24DetailedMatchEngine {
+public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
     private final V24FatigueModel fatigueModel = new V24FatigueModel();

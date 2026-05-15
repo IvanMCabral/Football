@@ -2,7 +2,10 @@ package com.footballmanager.application.service.simulation;
 
 import com.footballmanager.application.service.simulation.v24.V24CareerMutationService;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngineProvider;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchResult;
 import com.footballmanager.domain.model.entity.MatchState;
@@ -648,6 +651,310 @@ class V24CareerMutationIntegrationTest {
                 "Fixture result must exist after round with all flags enabled");
     }
 
+    // ========== V24D6D6B: Suspension lifecycle integration tests ==========
+
+    /**
+     * Deterministic V24 engine for lifecycle testing.
+     * Returns a controlled V24DetailedMatchResult with explicit timeline events.
+     * No randomness — tests control every event.
+     */
+    private static class DeterministicV24Engine implements V24DetailedMatchEngineProvider {
+        private final V24DetailedMatchResult result;
+
+        DeterministicV24Engine(V24DetailedMatchResult result) {
+            this.result = result;
+        }
+
+        @Override
+        public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
+            return result;
+        }
+    }
+
+    /**
+     * Test 1: pre-existing suspension not participated → decrements and clears.
+     * Fake V24 result has no events for suspended player.
+     * Suspended player is NOT in starting XI, NOT in timeline.
+     * Expect: suspended=false, remaining=0.
+     */
+    @Test
+    void preExistingSuspension_notParticipated_decrementsAndClears() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // Fake V24 result with no RED_CARD, no events for suspended player
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sl1").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no cards")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "suspended_p1", 1, true);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl1", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("suspended_p1");
+        assertFalse(p.getSuspended(), "Suspended player who did not participate should be cleared");
+        assertEquals(0, p.getSuspensionRemainingMatches(), "Remaining matches should be 0 after served");
+    }
+
+    /**
+     * Test 2: pre-existing suspension remaining=2, not participated → decrements to 1.
+     * Fake V24 result with no RED_CARD for suspended player.
+     * Suspended player is NOT in starting XI, NOT in timeline.
+     * Expect: suspended=true, remaining=1.
+     */
+    @Test
+    void preExistingSuspension_remainingTwo_decrementsToOne() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sl2").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(2).awayGoals(1).homeXg(1.8).awayXg(0.9)
+                .homeShots(7).awayShots(4).homePossession(52).awayPossession(48)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no cards")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "suspended_p1", 2, true);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl2", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("suspended_p1");
+        assertTrue(p.getSuspended(), "Player should remain suspended");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining matches should decrement to 1");
+    }
+
+    /**
+     * Test 3: pre-existing suspended player participated → does NOT decrement.
+     * Suspended player IS in starting XI, so participated=true.
+     * Expect: suspended=true, remaining=1 (unchanged).
+     */
+    @Test
+    void preExistingSuspendedPlayerParticipated_doesNotDecrement() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // Empty timeline — participation comes from starting XI
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sl3").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(0).awayGoals(0).homeXg(0.5).awayXg(0.5)
+                .homeShots(3).awayShots(3).homePossession(50).awayPossession(50)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false,
+                new DeterministicV24Engine(fakeResult));
+
+        // participated=true → suspended player is in starting XI
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "suspended_p1", 1, true, true); // participated=true
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl3", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("suspended_p1");
+        assertTrue(p.getSuspended(), "Participated suspended player should remain suspended");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not decrement");
+    }
+
+    /**
+     * Test 4: player receives RED_CARD in round → not decremented same round.
+     * Fake V24 result includes RED_CARD for the player.
+     * Expect: suspended=true, remaining=1 (newlySuspended blocks decrement).
+     */
+    @Test
+    void redCardInRound_playerStillSuspendedAfterRound() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                45,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.RED_CARD,
+                HOME1, "suspended_p1", "Suspended Player", null, null, 0.0, "Second yellow"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sl4").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(0).awayGoals(1).homeXg(0.4).awayXg(1.2)
+                .homeShots(2).awayShots(6).homePossession(40).awayPossession(60)
+                .timeline(timeline)
+                .summary("Deterministic: red card")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "suspended_p1", 1, true);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl4", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("suspended_p1");
+        assertTrue(p.getSuspended(), "Red-carded player should be suspended");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "RED_CARD takes priority over decrement");
+    }
+
+    /**
+     * Test 5: pre-existing suspended player also receives RED_CARD → not cleared.
+     * Player suspended (remaining=1), fake result has RED_CARD for same player.
+     * Expect: suspended=true, remaining=1 (newlySuspended blocks decrement).
+     */
+    @Test
+    void preExistingSuspendedAndRedCardedAgain_notCleared() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                60,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.RED_CARD,
+                HOME1, "both_p1", "Both Player", null, null, 0.0, "Second yellow"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sl5").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(2).homeXg(0.8).awayXg(1.5)
+                .homeShots(4).awayShots(7).homePossession(45).awayPossession(55)
+                .timeline(timeline)
+                .summary("Deterministic: red card on already suspended")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "both_p1", 1, true);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl5", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("both_p1");
+        assertTrue(p.getSuspended(), "Player suspended and red-carded should remain suspended");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "Should not decrement when newly suspended");
+    }
+
+    /**
+     * Test 6: persistDiscipline=false → no lifecycle change.
+     * Master=true but discipline=false.
+     * Expect: suspended state unchanged.
+     */
+    @Test
+    void persistDisciplineFalse_noLifecycleChange() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sl6").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(1).homeXg(1.1).awayXg(0.9)
+                .homeShots(5).awayShots(4).homePossession(52).awayPossession(48)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no discipline")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, false, false, // discipline=false
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "suspended_p1", 1, true);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl6", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("suspended_p1");
+        assertTrue(p.getSuspended(), "No lifecycle when discipline flag is false");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not change");
+    }
+
+    /**
+     * Test 7: mutateCareerState=false → no lifecycle change.
+     * Master=false even with persistDiscipline=true.
+     * Expect: suspended state unchanged.
+     */
+    @Test
+    void masterFalse_noLifecycleChange() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sl7").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(2).awayGoals(0).homeXg(1.6).awayXg(0.3)
+                .homeShots(6).awayShots(2).homePossession(58).awayPossession(42)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, false, false, true, false, // mutateCareerState=false
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "suspended_p1", 1, true);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl7", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("suspended_p1");
+        assertTrue(p.getSuspended(), "No lifecycle when master flag is false");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not change");
+    }
+
+    /**
+     * Test 8: useV24DetailedEngine=false → no lifecycle change.
+     * V24 disabled, falls back to default engine.
+     * Expect: suspended state unchanged.
+     */
+    @Test
+    void v24Disabled_noLifecycleChange() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // useV24DetailedEngine=false, so provider is never called — pass null
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, false, false, fakeStorage,
+                true, false, false, true, false,
+                (ctx, seed) -> { throw new AssertionError("V24 engine should not be used"); });
+
+        CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "suspended_p1", 1, true);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sl8", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("suspended_p1");
+        assertTrue(p.getSuspended(), "No lifecycle when V24 is disabled");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not change");
+    }
+
     // ========== Factory helpers ==========
 
     private static CareerSave makeCareer(String homeTeamId, String awayTeamId,
@@ -715,6 +1022,123 @@ class V24CareerMutationIntegrationTest {
             ts.getFixtures().add(f);
         }
         return ts;
+    }
+
+    // ========== V24D6D6B: Suspension lifecycle helpers ==========
+
+    /**
+     * Creates career with a suspended player who is NOT in the starting XI.
+     */
+    private static CareerSave makeCareerWithSuspension(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String suspendedPlayerId, int remainingMatches, boolean suspended) {
+        return makeCareerWithSuspension(homeTeamId, awayTeamId, homeStartingTeamId, awayStartingTeamId,
+                homeStarterCount, awayStarterCount, suspendedPlayerId, remainingMatches, suspended, false);
+    }
+
+    /**
+     * Creates career with a suspended player, optionally in the starting XI.
+     * Note: SessionPlayer.custom() generates a random UUID as sessionPlayerId,
+     * so we capture the real ID and use it for both squad assignment and assertions.
+     */
+    private static CareerSave makeCareerWithSuspension(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String suspendedPlayerId, int remainingMatches, boolean suspended,
+            boolean participated) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_" + suspendedPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        // Create all starters with their expected pids (for V24MatchContext resolve)
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            // Force sessionPlayerId to expected pid so V24MatchContext can resolve
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        // Add the suspended player (not in starting XI unless participated=true)
+        SessionPlayer suspendedPlayer = SessionPlayer.custom(suspendedPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        // Force sessionPlayerId to the expected value for test assertions
+        suspendedPlayer.setSessionPlayerId(suspendedPlayerId);
+        suspendedPlayer.setSuspended(suspended);
+        suspendedPlayer.setSuspensionRemainingMatches(remainingMatches);
+        pm.addSessionPlayer(suspendedPlayer);
+        tm.assignPlayerToSquad(suspendedPlayerId, homeTeamId);
+
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        if (participated) {
+            // Replace first starter with the suspended player
+            homeStarterIds.set(0, suspendedPlayerId);
+        }
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
+    /**
+     * Creates career with a player who receives a RED_CARD this round.
+     * The player is not pre-suspended.
+     */
+    private static CareerSave makeCareerWithRedCardThisRound(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            String redCardPlayerId, int redCardRemaining, boolean initiallySuspended) {
+        return makeCareerWithSuspension(homeTeamId, awayTeamId, homeStartingTeamId, awayStartingTeamId,
+                11, 11, redCardPlayerId, redCardRemaining, initiallySuspended);
+    }
+
+    /**
+     * Creates career with a player who is both pre-suspended AND receives RED_CARD this round.
+     */
+    private static CareerSave makeCareerWithSuspensionAndRedCard(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            String playerId, int remainingMatches, boolean suspended) {
+        return makeCareerWithSuspension(homeTeamId, awayTeamId, homeStartingTeamId, awayStartingTeamId,
+                11, 11, playerId, remainingMatches, suspended);
     }
 
     // ========== Fake MatchSimulator ==========

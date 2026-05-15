@@ -2,24 +2,29 @@ package com.footballmanager.application.service.simulation;
 
 import com.footballmanager.application.service.domain.MatchEngineImpl;
 import com.footballmanager.application.service.domain.TeamOverallCalculator;
+import com.footballmanager.application.service.simulation.v24.V24SuspensionLifecycleApplier;
+import com.footballmanager.application.service.simulation.v24.V24InjuryMutationApplier;
+import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
+import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
+import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.v24.V24PlayerRatingsAssembler;
 import com.footballmanager.application.service.simulation.v24.V24CareerMutationPolicy;
 import com.footballmanager.application.service.simulation.v24.V24CareerMutationResult;
 import com.footballmanager.application.service.simulation.v24.V24CareerMutationService;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngineProvider;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResultAdapter;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24InjuryMutationApplier;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
-import com.footballmanager.application.service.simulation.v24.V24PlayerRatingsAssembler;
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchResult;
-import com.footballmanager.domain.model.entity.TournamentState;
+import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.valueobject.Formation;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.model.valueobject.TeamId;
@@ -29,7 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -55,11 +62,12 @@ public class LeagueSimulator {
     private final boolean useV24DetailedEngine;
     private final boolean persistDetail;
     private final V24MatchContextFactory v24ContextFactory;
-    private final V24DetailedMatchEngine v24Engine;
+    private final V24DetailedMatchEngineProvider v24EngineProvider;
     private final V24DetailedMatchStoragePort storagePort;
     private final V24PlayerRatingsAssembler v24PlayerRatingsAssembler;
     private final V24CareerMutationService v24MutationService;
     private final V24CareerMutationPolicy v24MutationPolicy;
+    private final V24SuspensionLifecycleApplier v24SuspensionLifecycleApplier = new V24SuspensionLifecycleApplier();
 
     /**
      * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
@@ -117,6 +125,23 @@ public class LeagueSimulator {
                           boolean mutateCareerState, boolean persistInjuries,
                           boolean persistFatigue, boolean persistDiscipline,
                           boolean persistForm) {
+        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine,
+                persistDetail, storagePort, mutateCareerState, persistInjuries,
+                persistFatigue, persistDiscipline, persistForm,
+                new V24DetailedMatchEngine());
+    }
+
+    /**
+     * Internal constructor with full control including V24 engine provider.
+     * Used by production (default engine) and tests (fake/stub engine injection).
+     */
+    LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
+                    boolean useV23LeagueEngine, boolean useV24DetailedEngine,
+                    boolean persistDetail, V24DetailedMatchStoragePort storagePort,
+                    boolean mutateCareerState, boolean persistInjuries,
+                    boolean persistFatigue, boolean persistDiscipline,
+                    boolean persistForm,
+                    V24DetailedMatchEngineProvider v24EngineProvider) {
         this.matchSimulator = matchSimulator;
         this.matchEngine = matchEngine;
         this.useV23LeagueEngine = useV23LeagueEngine;
@@ -124,7 +149,7 @@ public class LeagueSimulator {
         this.persistDetail = persistDetail;
         this.storagePort = storagePort;
         this.v24ContextFactory = new V24MatchContextFactory();
-        this.v24Engine = new V24DetailedMatchEngine();
+        this.v24EngineProvider = v24EngineProvider;
         this.v24PlayerRatingsAssembler = new V24PlayerRatingsAssembler();
         this.v24MutationPolicy = new V24CareerMutationPolicy(
                 mutateCareerState, persistInjuries, persistFatigue,
@@ -140,6 +165,9 @@ public class LeagueSimulator {
         TournamentState tournamentState = career.getTournamentState();
         List<MatchFixture> allFixtures = tournamentState.getFixtures();
 
+        // V24D6D6B: Capture pre-round state before fixture loop
+        V24RoundMutationTracking tracking = new V24RoundMutationTracking();
+
         for (MatchFixture fixture : allFixtures) {
             if (fixture.getRound() != round) continue;
             if (!fixture.canBeSimulated()) continue;
@@ -149,13 +177,19 @@ public class LeagueSimulator {
             int awayOvr = calculateTeamOVR(career, fixture.getAwayTeamId());
 
             if (useV24DetailedEngine) {
-                simulateWithV24Engine(career, fixture, homeOvr, awayOvr, tournamentState);
+                V24DetailedMatchResult v24Result = simulateWithV24Engine(career, fixture, homeOvr, awayOvr, tournamentState, tracking);
+                if (v24Result != null) {
+                    tracking.v24RoundProcessed = true;
+                }
             } else if (useV23LeagueEngine) {
                 simulateWithV23Engine(fixture, homeOvr, awayOvr, tournamentState);
             } else {
                 simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             }
         }
+
+        // V24D6D6B: Run suspension lifecycle after full round loop
+        applyV24SuspensionLifecycle(career, round, allFixtures, tracking);
     }
 
     // ========== DefaultMatchSimulator Path (original behavior) ==========
@@ -204,9 +238,12 @@ public class LeagueSimulator {
     /**
      * Attempts V24 detailed engine simulation for a fixture.
      * If context build fails, falls back to default engine — round must complete.
+     *
+     * @return V24DetailedMatchResult if V24 path succeeded, null if fell back to default
      */
-    private void simulateWithV24Engine(CareerSave career, MatchFixture fixture,
-                                        int homeOvr, int awayOvr, TournamentState tournamentState) {
+    private V24DetailedMatchResult simulateWithV24Engine(CareerSave career, MatchFixture fixture,
+                                        int homeOvr, int awayOvr, TournamentState tournamentState,
+                                        V24RoundMutationTracking tracking) {
         long seed = deriveSeed(fixture);
         SessionTeam homeTeam = career.getSessionTeam(fixture.getHomeTeamId());
         SessionTeam awayTeam = career.getSessionTeam(fixture.getAwayTeamId());
@@ -215,14 +252,14 @@ public class LeagueSimulator {
             log.warn("[V24D5B] Cannot simulate fixture {} with V24: missing team data, falling back to default",
                     fixture.getMatchId());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
-            return;
+            return null;
         }
 
         try {
             V24MatchContext context = v24ContextFactory.build(
                     career, fixture, homeTeam, awayTeam, seed);
 
-            V24DetailedMatchResult v24Result = v24Engine.simulate(context, seed);
+            V24DetailedMatchResult v24Result = v24EngineProvider.simulate(context, seed);
             MatchFixture.MatchResultData resultData = V24DetailedMatchResultAdapter.toMatchResultData(v24Result);
             tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
 
@@ -234,17 +271,27 @@ public class LeagueSimulator {
                 persistV24Detail(career, fixture, homeTeam.getName(), awayTeam.getName(), v24Result);
             }
 
+            // V24D6D6B: collect participation from starting XI
+            collectStartingXIParticipation(context, tracking);
+
+            // V24D6D6B: collect RED_CARD and timeline participation from result
+            collectV24ResultParticipation(v24Result, tracking);
+
             // V24D6B3: apply career mutation if enabled
             applyV24CareerMutation(career, v24Result);
+
+            return v24Result;
 
         } catch (IllegalArgumentException e) {
             log.warn("[V24D5B] V24 context build failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
+            return null;
         } catch (Exception e) {
             log.warn("[V24D5B] V24 simulation failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
+            return null;
         }
     }
 
@@ -325,6 +372,123 @@ public class LeagueSimulator {
             log.warn("[V24D6B3] Career mutation failed unexpectedly for career {}: {}, continuing round",
                     career.getData().getCareerId(), e.getMessage());
         }
+    }
+
+    // ========== V24D6D6B: Suspension Lifecycle ==========
+
+    /**
+     * V24D6D6B: Runs suspension lifecycle after the full round loop.
+     * Called once per simulateLeagueRound call, only when at least one V24 fixture succeeded.
+     * Best-effort: failures are logged and do not fail the round.
+     */
+    private void applyV24SuspensionLifecycle(CareerSave career, int round,
+                                              List<MatchFixture> allFixtures,
+                                              V24RoundMutationTracking tracking) {
+        try {
+            // Only run if V24 path processed at least one fixture
+            if (!tracking.v24RoundProcessed) return;
+            if (!v24MutationPolicy.isDisciplinePersistenceEnabled()) return;
+
+            // Capture pre-round suspended players
+            Set<String> preRoundSuspended = capturePreRoundSuspendedPlayerIds(career);
+            if (preRoundSuspended.isEmpty()) return;
+
+            // Collect round fixtures for the current round
+            List<MatchFixture> roundFixtures = allFixtures.stream()
+                    .filter(f -> f.getRound() == round)
+                    .collect(java.util.stream.Collectors.toList());
+
+            int served = v24SuspensionLifecycleApplier.applyServedSuspensions(
+                    career,
+                    round,
+                    roundFixtures,
+                    preRoundSuspended,
+                    tracking.newlySuspendedPlayerIds,
+                    tracking.participatedPlayerIds,
+                    v24MutationPolicy
+            );
+
+            if (served > 0) {
+                log.debug("[V24D6D6B] Served {} suspensions for career {} round {}",
+                        served, career.getData().getCareerId(), round);
+            }
+        } catch (Exception e) {
+            log.warn("[V24D6D6B] Suspension lifecycle failed unexpectedly for career {} round {}: {}, continuing round",
+                    career.getData().getCareerId(), round, e.getMessage());
+        }
+    }
+
+    /**
+     * V24D6D6B: Captures player IDs that were suspended BEFORE the round started.
+     * Only includes players where suspended=true AND suspensionRemainingMatches > 0.
+     */
+    private Set<String> capturePreRoundSuspendedPlayerIds(CareerSave career) {
+        Set<String> suspended = new HashSet<>();
+        for (SessionTeam team : career.getAllSessionTeams()) {
+            for (String playerId : career.getSquadPlayerIds(team.getSessionTeamId())) {
+                SessionPlayer player = career.getSessionPlayer(playerId);
+                if (player == null) continue;
+                if (Boolean.TRUE.equals(player.getSuspended())) {
+                    Integer remaining = player.getSuspensionRemainingMatches();
+                    if (remaining != null && remaining > 0) {
+                        suspended.add(playerId);
+                    }
+                }
+            }
+        }
+        return suspended;
+    }
+
+    /**
+     * V24D6D6B: Collects starting XI participation from V24 context.
+     * All 11 starters per team are considered to have participated.
+     */
+    private void collectStartingXIParticipation(V24MatchContext context,
+                                                  V24RoundMutationTracking tracking) {
+        for (SessionPlayer p : context.homeStartingPlayers()) {
+            if (p != null && p.getSessionPlayerId() != null) {
+                tracking.participatedPlayerIds.add(p.getSessionPlayerId());
+            }
+        }
+        for (SessionPlayer p : context.awayStartingPlayers()) {
+            if (p != null && p.getSessionPlayerId() != null) {
+                tracking.participatedPlayerIds.add(p.getSessionPlayerId());
+            }
+        }
+    }
+
+    /**
+     * V24D6D6B: Collects timeline participation and RED_CARD events from V24 result.
+     * playerId and relatedPlayerId from all events count as participation.
+     * RED_CARD events populate newlySuspendedPlayerIds.
+     */
+    private void collectV24ResultParticipation(V24DetailedMatchResult v24Result,
+                                               V24RoundMutationTracking tracking) {
+        if (v24Result == null || v24Result.timeline() == null) return;
+
+        for (V24MatchEvent event : v24Result.timeline().events()) {
+            if (event.playerId() != null && !event.playerId().isBlank()) {
+                tracking.participatedPlayerIds.add(event.playerId());
+            }
+            if (event.relatedPlayerId() != null && !event.relatedPlayerId().isBlank()) {
+                tracking.participatedPlayerIds.add(event.relatedPlayerId());
+            }
+            if (event.type() == V24MatchEventType.RED_CARD) {
+                if (event.playerId() != null && !event.playerId().isBlank()) {
+                    tracking.newlySuspendedPlayerIds.add(event.playerId());
+                }
+            }
+        }
+    }
+
+    /**
+     * V24D6D6B: Tracks suspension lifecycle data across a single round.
+     * All fields are mutated in-place during the fixture loop.
+     */
+    private static class V24RoundMutationTracking {
+        final Set<String> newlySuspendedPlayerIds = new HashSet<>();
+        final Set<String> participatedPlayerIds = new HashSet<>();
+        boolean v24RoundProcessed = false;
     }
 
     /**
