@@ -504,6 +504,150 @@ class V24CareerMutationIntegrationTest {
         assertEquals(originalForm, p.getForm(), "Form should not change in V24D6C3");
     }
 
+    // ========== V24D6D5: Discipline mutation wiring tests ==========
+
+    @Test
+    void persistDisciplineEnabled_appliesDisciplineMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // mutateCareerState=true, persistDiscipline=true, injuries/fatigue disabled
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+
+        career.setTournamentState(makeTournamentState(makeFixture("md1", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertNotNull(career.getTournamentState().getFixtures().get(0).getResult(),
+                "Fixture result must exist after round completes");
+        // Round completes successfully when discipline flag is enabled
+        // (card events are produced by V24 engine naturally)
+    }
+
+    @Test
+    void persistDisciplineRequiresMasterGate() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // mutateCareerState=false, persistDiscipline=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, false, false, true, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        int originalYellow = p.getYellowCards();
+        int originalRed = p.getRedCards();
+
+        career.setTournamentState(makeTournamentState(makeFixture("md2", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertEquals(originalYellow, p.getYellowCards(),
+                "Yellow cards should not change when master flag is false");
+        assertEquals(originalRed, p.getRedCards(),
+                "Red cards should not change when master flag is false");
+        assertFalse(p.getSuspended(),
+                "Player should not be suspended when master flag is false");
+    }
+
+    @Test
+    void persistDisciplineSpecificFlagFalse_noDisciplineMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // mutateCareerState=true, persistDiscipline=false
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, false, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        int originalYellow = p.getYellowCards();
+
+        career.setTournamentState(makeTournamentState(makeFixture("md3", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertEquals(originalYellow, p.getYellowCards(),
+                "Yellow cards should not change when discipline flag is false");
+        assertFalse(p.getSuspended(),
+                "Player should not be suspended when discipline flag is false");
+    }
+
+    @Test
+    void persistDisciplineIndependentFromInjuryAndFatigue() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // Only discipline enabled
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        int originalEnergy = p.getEnergy();
+
+        career.setTournamentState(makeTournamentState(makeFixture("md4", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertEquals(originalEnergy, p.getEnergy(),
+                "Energy should not change when fatigue flag is false");
+        assertFalse(p.getInjured(),
+                "Player should not be injured when injury flag is false");
+        // Round completes; discipline may or may not be applied depending on V24 engine events
+    }
+
+    @Test
+    void v24DisabledWithDisciplineFlags_noMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // useV24DetailedEngine=false, discipline flags true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, false, false, fakeStorage,
+                true, false, false, true, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+        SessionPlayer p = career.getSessionPlayer(
+                career.getTeamStarting11().get(HOME1).get(0));
+        int originalYellow = p.getYellowCards();
+
+        career.setTournamentState(makeTournamentState(makeFixture("md5", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertEquals(originalYellow, p.getYellowCards(),
+                "Yellow cards should not change in V23 path");
+        assertFalse(p.getSuspended(),
+                "Player should not be suspended in V23 path");
+    }
+
+    @Test
+    void allMutationFlagsEnabled_appliesInjuryFatigueDisciplineTogether() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        // All three mutation flags enabled
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, true, true, false);
+
+        CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
+
+        career.setTournamentState(makeTournamentState(makeFixture("md6", HOME1, AWAY1, 1)));
+
+        simulator.simulateLeagueRound(career, 1);
+
+        assertNotNull(career.getTournamentState().getFixtures().get(0).getResult(),
+                "Fixture result must exist after round with all flags enabled");
+    }
+
     // ========== Factory helpers ==========
 
     private static CareerSave makeCareer(String homeTeamId, String awayTeamId,

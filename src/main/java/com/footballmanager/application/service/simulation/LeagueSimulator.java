@@ -316,6 +316,11 @@ public class LeagueSimulator {
                         mutationResult.fatigueApplied(), career.getData().getCareerId());
             }
 
+            if (mutationResult.disciplineApplied() > 0) {
+                log.debug("[V24D6D5] Applied {} discipline mutations for career {}",
+                        mutationResult.disciplineApplied(), career.getData().getCareerId());
+            }
+
         } catch (Exception e) {
             log.warn("[V24D6B3] Career mutation failed unexpectedly for career {}: {}, continuing round",
                     career.getData().getCareerId(), e.getMessage());
