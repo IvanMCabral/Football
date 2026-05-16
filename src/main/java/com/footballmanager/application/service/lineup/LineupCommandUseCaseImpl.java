@@ -122,6 +122,8 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .filter(Objects::nonNull)
             .filter(p -> p.getEnergy() > 20)
             .filter(p -> !p.getInjured())
+            .filter(p -> !Boolean.TRUE.equals(p.getSuspended()))
+            .filter(p -> p.getSuspensionRemainingMatches() <= 0)
             .sorted(Comparator.comparing(SessionPlayer::calculateOverall).reversed())
             .toList();
 
@@ -178,7 +180,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 p.calculateOverall(),
                 p.getEnergy(),
                 p.getInjured(),
-                p.getAge()
+                p.getAge(),
+                p.getYellowCards(),
+                p.getRedCards(),
+                p.getSuspended(),
+                p.getSuspensionRemainingMatches()
             ))
             .toList();
 

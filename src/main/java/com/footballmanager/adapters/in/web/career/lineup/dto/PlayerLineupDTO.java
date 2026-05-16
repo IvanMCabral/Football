@@ -10,6 +10,10 @@ public record PlayerLineupDTO(
     Integer overall,
     Integer energy,
     Boolean injured,
-    Integer age
+    Integer age,
+    Integer yellowCards,
+    Integer redCards,
+    Boolean suspended,
+    Integer suspensionRemainingMatches
 ) {
 }

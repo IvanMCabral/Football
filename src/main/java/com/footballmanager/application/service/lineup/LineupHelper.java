@@ -113,6 +113,10 @@ public class LineupHelper {
             if (player.getInjured()) {
                 throw new IllegalArgumentException("Player " + player.getName() + " is injured");
             }
+            if (Boolean.TRUE.equals(player.getSuspended()) || player.getSuspensionRemainingMatches() > 0) {
+                throw new IllegalArgumentException(
+                    "Player " + player.getName() + " is suspended for " + player.getSuspensionRemainingMatches() + " match(es)");
+            }
         }
     }
 }

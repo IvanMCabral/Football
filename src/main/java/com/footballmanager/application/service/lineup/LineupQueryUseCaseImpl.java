@@ -57,7 +57,11 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                 p.calculateOverall(),
                 p.getEnergy(),
                 p.getInjured(),
-                p.getAge()
+                p.getAge(),
+                p.getYellowCards(),
+                p.getRedCards(),
+                p.getSuspended(),
+                p.getSuspensionRemainingMatches()
             ))
             .toList();
 

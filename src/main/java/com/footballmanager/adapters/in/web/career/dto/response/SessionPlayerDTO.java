@@ -25,5 +25,9 @@ public record SessionPlayerDTO(
         String injuryType,
         Integer injuryRemainingMatches,
         String origin,
-        Integer overall
+        Integer overall,
+        Integer yellowCards,
+        Integer redCards,
+        Boolean suspended,
+        Integer suspensionRemainingMatches
 ) {}

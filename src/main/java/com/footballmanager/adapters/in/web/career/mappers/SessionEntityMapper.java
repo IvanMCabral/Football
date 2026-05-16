@@ -46,7 +46,11 @@ public final class SessionEntityMapper {
             player.getInjuryType(),
             player.getInjuryRemainingMatches(),
             player.getOrigin().name(),
-            player.calculateOverall()
+            player.calculateOverall(),
+            player.getYellowCards(),
+            player.getRedCards(),
+            player.getSuspended(),
+            player.getSuspensionRemainingMatches()
         );
     }
 }
