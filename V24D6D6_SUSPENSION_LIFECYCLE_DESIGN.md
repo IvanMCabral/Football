@@ -1,18 +1,17 @@
 # V24D6D6 — Suspension Lifecycle/Decrement Audit + Design
 
-**Status:** V24D6D6 AUDIT + DESIGN COMPLETE — no implementation code written
+**Status:** V24D6D6 IMPLEMENTATION COMPLETE — suspension lifecycle wired in LeagueSimulator; V24DetailedMatchEngineProvider interface enables deterministic test injection
 **Branch:** `mvp-1-performance-cleanup`
-**Latest backend implementation commit:** `0f4ab39` (V24D6D5 discipline wiring complete)
-**Latest docs commit:** `7b4486b` (docs: update V24D6D discipline persistence status)
-**Tests:** 558, 0 failures (unchanged — design-only phase)
-**Mutation focused gate:** 144, 0 failures
-**No production code changes in this phase**
+**Latest backend implementation commits:** `219628d` (V24D6D6A — V24SuspensionLifecycleApplier + unit tests), `b4291d9` (V24D6D6B — LeagueSimulator suspension lifecycle wiring + deterministic integration tests)
+**Latest docs commit:** this file
+**Tests:** 588 full suite total (558 baseline + 30 V24D6D6), 0 failures; mutation focused gate 171 (144 baseline + 27 V24D6D6), 0 failures
+**No production code changes pending in this phase**
 
 ---
 
 ## 1. Executive Summary
 
-V24D6D2-D5 implemented discipline persistence: RED_CARD events set `SessionPlayer.suspended=true` and `suspensionRemainingMatches=1`. The suspension lifecycle — decrementing the counter and clearing `suspended` after a player serves the ban — is not yet implemented.
+V24D6D2-D5 implemented discipline persistence: RED_CARD events set `SessionPlayer.suspended=true` and `suspensionRemainingMatches=1`. V24D6D6A/B implements the suspension lifecycle: `V24SuspensionLifecycleApplier` decrements eligible pre-round suspended players after the full fixture loop with participation verification, and `LeagueSimulator` wires it after round completion.
 
 This document audits the complete round simulation flow, existing injury lifecycle (which does not exist), availability/lineup blocking logic, and proposes a concrete suspension lifecycle design for V24D6D6 implementation.
 
@@ -48,7 +47,7 @@ player.setYellowCards(player.getYellowCards() + 1);  // increment yellowCards
 // No suspension effect in MVP
 ```
 
-**No decrement logic exists anywhere in the mutation applier or service.**
+**Historical audit finding (pre-V24D6D6A):** No decrement logic existed before this phase. V24D6D6A/B now implements the lifecycle.
 
 ### V24CareerMutationService Mutation Order (V24D6D4)
 

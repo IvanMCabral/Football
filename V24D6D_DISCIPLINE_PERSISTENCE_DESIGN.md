@@ -1,12 +1,11 @@
 # V24D6D — Discipline/Cards Persistence Design Document
 
-**Status:** V24D6D1–D5 IMPLEMENTATION COMPLETE
+**Status:** V24D6D1–D6 IMPLEMENTATION COMPLETE — V24D6D6 suspension lifecycle now wired in LeagueSimulator; V24DetailedMatchEngineProvider interface enables deterministic test injection
 **Branch:** `mvp-1-performance-cleanup`
-**Latest backend implementation commit:** `0f4ab39` (feat: wire V24D6D5 discipline mutation behind flags)
-**Latest docs commit:** `fbc81cd` — docs: add V24D6D discipline persistence design
-**Tests:** 558, 0 failures
-**Mutation focused gate:** 144, 0 failures
-**No production code changes in V24D6D1 (design only); V24D6D2/D3/D4/D5 production code committed separately**
+**Latest backend implementation commits:** `0f4ab39` (V24D6D5 discipline wiring), `219628d` (V24D6D6A suspension lifecycle applier), `b4291d9` (V24D6D6B suspension lifecycle wiring)
+**Latest docs commit:** `fbc81cd` — docs: add V24D6D discipline persistence design (V24D6D6 status updated in this file)
+**Tests:** 588, 0 failures (558 baseline + 30 V24D6D6); mutation focused gate 171 (144 baseline + 27 V24D6D6), 0 failures
+**No production code changes in V24D6D1 (design only); V24D6D2/D3/D4/D5/D6A/D6B production code committed separately**
 
 ---
 
@@ -20,7 +19,7 @@ V24 already generates match-local card events. During a match:
 - `V24PlayerRatingModel` applies performance penalties for yellow (-0.3) and red (-1.5) cards post-match.
 - `V24PlayerMatchStatsModel` records card counts per match.
 
-V24 detailed match data and player ratings can therefore display per-match card statistics. **V24D6D2-D5 now implement persistent career discipline/suspension state.** Yellow cards accumulate on `SessionPlayer.yellowCards`, red cards accumulate on `SessionPlayer.redCards`, and red cards set `SessionPlayer.suspended=true` with `suspensionRemainingMatches=1`. Remaining work is suspension lifecycle/decrement (V24D6D6) and DTO/UI visibility (V24D6D7).
+V24 detailed match data and player ratings can therefore display per-match card statistics. **V24D6D2-D6 now implement persistent career discipline/suspension state.** Yellow cards accumulate on `SessionPlayer.yellowCards`, red cards accumulate on `SessionPlayer.redCards`, and red cards set `SessionPlayer.suspended=true` with `suspensionRemainingMatches=1`. V24D6D6A/B implements suspension lifecycle/decrement (commits `219628d`/`b4291d9`). Remaining work is DTO/API/frontend suspension visibility, lineup blocking for suspended players, yellow-card suspension threshold, injury recovery lifecycle, and form/morale.
 
 V24D6D designs how red cards/suspensions and optional yellow accumulation persist across matches, so that:
 
@@ -344,7 +343,7 @@ Adding discipline fields to `SessionPlayer` automatically exposes them through a
 | **Schema widening** — adding 4 fields to SessionPlayer increases its surface area permanently | Low | High (by design) | Option A chosen because it mirrors existing fields; fields are low-cost primitives |
 | **UI confusion** — suspension persists in backend but frontend cannot display it | Medium | Medium | V24D6D explicitly defers API/UI exposure to V24D6D7; discipline persistence can proceed without UI |
 | **Lineup selection** — suspended players can still be picked in starting XI | Medium | Medium (if not guarded) | Lineup selection service must check `player.suspended` before confirming XI; guard in V24D6D5 or V24D6D7 |
-| **Suspension decrement timing** — `suspensionRemainingMatches` cleared before player actually misses a match | Medium | Medium | **Design decision:** decrement logic deferred to V24D6D6; V24D6D MVP only sets suspension, does not claim to manage lifecycle |
+| **Suspension decrement timing** — `suspensionRemainingMatches` cleared before player actually misses a match | Medium | Medium | **Implemented:** V24D6D6A/B suspension lifecycle now wired in LeagueSimulator with participation verification; lifecycle no longer deferred |
 | **Yellow accumulation unbounded** — yellowCards grows forever over long careers | Low | Low | Future phase can define reset threshold; MVP is informational only |
 | **Best-effort partial mutation** — discipline mutation fails but injury/fatigue already applied and persist | Low | Low | This is existing semantics confirmed by V24D6F tests; not a regression |
 | **Rollout with default-false** — `persist-discipline` defaults to false; enabling it activates discipline mutation silently | Medium | Low | Both master gate AND discipline-specific flag must be true; tests cover both flag combinations |
@@ -362,7 +361,7 @@ V24D6D1 was design-only. V24D6D2/D3/D4/D5 implemented discipline fields, applier
 - ~~Change LeagueSimulator construction or wiring~~ ✓ V24D6D5 done
 - Implement API endpoints or DTOs for suspension visibility (deferred to V24D6D7)
 - Change frontend components for suspension indicators (deferred to V24D6D7)
-- Implement suspension decrement lifecycle (deferred to V24D6D6)
+- ~~Implement suspension decrement lifecycle~~ ✓ V24D6D6A/B done
 - Implement yellow accumulation threshold (e.g., 5 yellows → 1-match suspension)
 - Implement form, morale, or reputation effects
 - Implement lineup blocking for suspended players
@@ -391,7 +390,7 @@ Each phase is independent enough to be reviewed and committed separately.
 - [x] Current state audited (all 17 concepts in audit table)
 - [x] Option A selected for SessionPlayer field extension
 - [x] MVP rules defined with explicit conservative scope
-- [x] Suspension lifecycle timing rule documented — decrement deferred to V24D6D6
+- [x] Suspension lifecycle timing rule documented — implemented through V24D6D6A/B
 - [x] Testing plan covers all phases (D2 through D7)
 - [x] Risks documented with mitigations
 - [x] Non-goals explicitly listed
