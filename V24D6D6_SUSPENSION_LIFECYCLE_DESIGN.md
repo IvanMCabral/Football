@@ -4,7 +4,7 @@
 **Branch:** `mvp-1-performance-cleanup`
 **Latest backend implementation commits:** `219628d` (V24D6D6A — V24SuspensionLifecycleApplier + unit tests), `b4291d9` (V24D6D6B — LeagueSimulator suspension lifecycle wiring + deterministic integration tests)
 **Latest docs commit:** this file
-**Tests:** 588 full suite total (558 baseline + 30 V24D6D6), 0 failures; mutation focused gate 171 (144 baseline + 27 V24D6D6), 0 failures
+**Tests:** V24D6D6 phase tests: 588 full suite total at D6 completion (558 baseline + 30 V24D6D6), 0 failures; mutation + lifecycle focused gate 171 (144 baseline + 27 V24D6D6), 0 failures. Current backend suite after V24D6D7A is 602 tests, 0 failures.
 **No production code changes pending in this phase**
 
 ---
@@ -15,7 +15,7 @@ V24D6D2-D5 implemented discipline persistence: RED_CARD events set `SessionPlaye
 
 This document audits the complete round simulation flow, existing injury lifecycle (which does not exist), availability/lineup blocking logic, and proposes a concrete suspension lifecycle design for V24D6D6 implementation.
 
-**Key finding:** No automatic lifecycle exists for injuries, and none should be assumed for suspensions. Suspended players are NOT currently blocked from lineup selection — `LineupHelper.validatePlayerFitness()` checks energy and injured status but does NOT check the `suspended` flag. Therefore, V24D6D6 lifecycle MUST verify non-participation before decrementing, or defer the decrement until lineup blocking exists.
+**Key finding (pre-V24D6D7A):** No automatic lifecycle exists for injuries, and none should be assumed for suspensions. **Pre-V24D6D7A:** Suspended players were NOT blocked from lineup selection — `LineupHelper.validatePlayerFitness()` checked energy and injured status but did NOT check the `suspended` flag. Therefore, V24D6D6 lifecycle MUST verify non-participation before decrementing. **As of V24D6D7A:** Backend lineup blocking is implemented — `LineupHelper.validatePlayerFitness()` and `LineupCommandUseCaseImpl.performAutoSelect()` now check and reject suspended players (backend `6aadcd5`).
 
 **Recommended MVP lifecycle:** Decrement only pre-round suspended players who did NOT participate in any fixture of the completed round. Snapshot suspended players before the round loop. After the round loop, exclude newly red-carded players AND exclude any pre-round suspended player who appeared in starting XI, match timeline events, or any available participation source. Only players who were suspended before the round and did not participate are considered to have served one suspension match.
 
@@ -266,9 +266,9 @@ public void validatePlayerFitness(List<SessionPlayer> players) {
 ### Conclusion
 
 - Injured and exhausted players are blocked from both auto-select and manual lineup confirmation.
-- Suspended players are **not blocked** — this is a documented gap from V24D6D.
-- Adding a `suspended` check to `LineupHelper.validatePlayerFitness()` is a trivial one-line addition, but it is **out of scope for V24D6D6** (deferred to V24D6D7 DTO/UI audit, or explicitly scoped as a separate change).
-- **V24D6D6 must not assume suspended players are blocked from lineup.** The lifecycle decrements the counter, but until lineup blocking exists, a suspended player could be selected — this is a known gap that must be documented in V24D6D6 non-goals.
+- **Pre-V24D6D7:** Suspended players were not blocked — this was a documented gap from V24D6D.
+- **As of V24D6D7A:** Backend lineup blocking is implemented — `LineupHelper.validatePlayerFitness()` and `LineupCommandUseCaseImpl.performAutoSelect()` now check and reject suspended players (backend `6aadcd5`).
+- The participation-verification lifecycle design remains correct even with lineup blocking in place.
 
 ---
 
@@ -280,7 +280,7 @@ public void validatePlayerFitness(List<SessionPlayer> players) {
 
 **Problem:** If the suspended player was NOT blocked from lineup (which they are not today), they could be selected and play in the match. Decrementing before the match means the suspension is cleared before the player actually misses a game.
 
-**Verdict: Reject for MVP.** Not safe without lineup blocking.
+**Verdict: Reject for MVP.** Not safe without lineup blocking. (Lineup blocking now exists as of V24D6D7A, but this option remains rejected as unnecessary given the participation-verification approach.)
 
 ### Option B — Decrement after user-team match simulation, only if player did not participate
 
@@ -306,7 +306,7 @@ public void validatePlayerFitness(List<SessionPlayer> players) {
 
 **Mechanism:** Keep current V24D6D5 behavior — `suspended` and `suspensionRemainingMatches` are sticky. A player red-carded in match N remains suspended until V24D6D6 (or later) with lineup blocking.
 
-**Problem:** If `persist-discipline=true` is enabled in production without lineup blocking, a red-carded player could be selected every round but never actually serve the suspension — they play through it. This is game-breaking.
+**Problem (pre-V24D6D7A):** If `persist-discipline=true` was enabled in production without lineup blocking, a red-carded player could be selected every round but never actually serve the suspension — they would play through it. This was game-breaking. **As of V24D6D7A:** Lineup blocking is implemented, so this option is no longer relevant.
 
 **Verdict: Reject.** Cannot enable `persist-discipline=true` in production without a lifecycle mechanism.
 
@@ -323,7 +323,7 @@ Lifecycle may run after the full round loop, but it must NOT blindly decrement e
 
 If participation cannot be reliably derived, the implementation must skip decrement and log/report the limitation. It must not assume that the pre-match snapshot alone proves that the player missed the match.
 
-Lineup blocking remains deferred, but the lifecycle remains safe before lineup blocking exists because it excludes players who participated.
+Lineup blocking is now implemented (V24D6D7A, backend `6aadcd5`), and the lifecycle remains safe as defense-in-depth because it excludes players who participated.
 
 ---
 
@@ -342,7 +342,7 @@ A suspension is served only when ALL of the following are true:
 
 ### Warning
 
-> **Until lineup blocking is implemented, decrementing blindly after a round is unsafe.** A suspended player who is selected and plays would have their suspension incorrectly served. V24D6D6 implementation must either verify non-participation or defer the decrement until lineup blocking exists.
+> **Pre-V24D6D7A:** Decrementing blindly after a round was unsafe without lineup blocking. **As of V24D6D7A:** Backend lineup blocking is implemented (`6aadcd5`), and the participation-verification lifecycle design remains correct as a defense-in-depth safeguard even with lineup blocking in place. The participation check ensures no incorrect decrement occurs even if lineup blocking is disabled or bypassed.
 
 ### Rule 1: Snapshot Before Round
 
@@ -624,8 +624,8 @@ The result object tracks `disciplineApplied` (discipline mutations applied) but 
 
 The following are explicitly NOT in V24D6D6 scope:
 
-- **No DTO/API/frontend exposure** — suspension visibility through CareerPlayerDto/CareerSquadDto is V24D6D7
-- **No lineup blocking** — checking `player.getSuspended()` in `LineupHelper.validatePlayerFitness()` is deferred to V24D6D7
+- **No DTO/API/frontend exposure** — ✓ V24D6D7 complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`)
+- **No lineup blocking** — ✓ V24D6D7 complete (backend `6aadcd5`)
 - **No yellow-card suspension threshold** — e.g., 5 yellows → 1-match ban is future work
 - **No multi-match bans beyond the existing `suspensionRemainingMatches` counter** — current model supports N-match bans if `suspensionRemainingMatches > 1` is set; MVP red card sets to 1
 - **No appeal/reduction logic**

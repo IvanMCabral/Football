@@ -2,15 +2,18 @@
 
 **Status:** V24D6G — DESIGN + V24D6G3 + V24D6G4A + V24D6G4B + V24D6G5A + V24D6G6A + V24D6G7 AUDIT COMPLETE
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `b4291d9` (backend suspension lifecycle wiring — V24D6D6B complete)
+**Latest implementation commit:** `6aadcd5` (V24D6D7A complete — backend suspension DTO exposure and lineup blocking)
 **V24D6G3 implementation commit:** `3675431` (frontend squad indicators, front-ciber/project mvp-1)
 **V24D6G4A implementation commit:** `362c647` (frontend lineup condition warnings, front-ciber/project mvp-1)
 **V24D6G4B implementation commit:** `c4681e2` (frontend lineup confirmation warning, front-ciber/project mvp-1)
 **V24D6G5A implementation commit:** `18543dc` (frontend dashboard squad condition warning, front-ciber/project mvp-1)
 **V24D6G6A implementation commit:** `80ad1ed` (frontend match detail condition summary, front-ciber/project mvp-1)
-**Latest docs commit:** this file (V24D6D6C documentation update)
-**Tests:** 588 full suite, 0 failures
+**V24D6D7B1 implementation commit:** `8097ca9` (frontend suspension warnings, front-ciber/project mvp-1)
+**V24D6D7B2 implementation commit:** `69bf879` (frontend suspended badges, front-ciber/project mvp-1)
+**Latest docs commit:** this file (V24D6D7C documentation update)
+**Tests:** 602 full suite, 0 failures
 **Created:** 2026-05-13
+**Updated:** 2026-05-16
 
 ---
 
@@ -28,17 +31,17 @@ However, these career mutations are invisible to the user unless the UI surfaces
 
 | Item | Value |
 |------|-------|
-| Latest implementation commit | `b4291d9` — V24D6D6B complete (suspension lifecycle wiring) |
-| Latest docs commit | this file (V24D6D6C documentation update) |
-| Tests | 588, 0 failures |
+| Latest implementation commit | `6aadcd5` — V24D6D7A complete (suspension DTO exposure and lineup blocking) |
+| Latest docs commit | this file (V24D6D7C documentation update) |
+| Tests | 602, 0 failures |
 | Injury mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-injuries=true` |
 | Fatigue mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-fatigue=true` |
 | Discipline persistence | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-discipline=true` |
 | Suspension lifecycle | Implemented through V24D6D6A/B (commits `219628d`/`b4291d9`) |
 | All mutation flags | Default false |
-| DTO/API/frontend suspension visibility | Deferred to V24D6D7 |
+| DTO/API/frontend suspension visibility | Implemented through V24D6D7A (backend `6aadcd5`) and V24D6D7B1/B2 (frontend `8097ca9`+`69bf879`) |
 | Form/morale | Deferred |
-| Backend test count | 588 total (521 baseline from V24D6G publication + 67 subsequent phase tests through V24D6D6) |
+| Backend test count | 602 total (521 baseline from V24D6G publication + 67 subsequent phase tests through V24D6D6 + 14 V24D6D7) |
 
 **Injury mutation target fields on `SessionPlayer`:**
 - `injured` (boolean)
@@ -48,7 +51,7 @@ However, these career mutations are invisible to the user unless the UI surfaces
 **Fatigue mutation target field on `SessionPlayer`:**
 - `energy` (int, 0–100, default 100)
 
-Discipline/card persistence and suspension lifecycle are implemented through V24D6D2-D6. DTO/API/frontend suspension visibility remains deferred to V24D6D7. Form/morale remains deferred. The UI design for V24D6G covers only injury and fatigue indicators.
+Discipline/card persistence and suspension lifecycle are implemented through V24D6D2-D6. V24D6D7A/B completed suspension visibility: backend DTO/API exposure and lineup blocking in `6aadcd5`, frontend dashboard/squad warnings in `8097ca9`, and PlayerCard/LineupPlayerCard suspended badges in `69bf879`. Form/morale remains deferred. V24D6G originally covered injury/fatigue indicators; suspension indicators were completed later through V24D6D7A/B.
 
 ---
 
@@ -93,11 +96,16 @@ V24D6G2 confirmed the following `SessionPlayer` fields are accessible to the fro
 | `energy` | int (0–100, default 100) | ✅ Squad endpoint + lineup endpoint | Target of V24D6C fatigue mutation |
 | `injured` | boolean | ✅ Squad endpoint + lineup endpoint | Target of V24D6B injury mutation |
 | `injuryType` | String | ✅ Squad endpoint only | e.g., "MATCH_INJURY" default from applier |
-| `injuryRemainingMatches` | int | ✅ Squad endpoint only | Decremented per round |
+| `injuryRemainingMatches` | int | ✅ Squad endpoint only | Set by V24 injury mutation; automatic injury recovery/decrement is not implemented yet |
 | `form` | int? | ✅ Via squad endpoint | Not mutated by V24D6C |
 | `position` | String (GK/DEF/MID/WINGER/ATT) | ✅ Already available | Used for lineup filtering |
 | `name` | String | ✅ Already available | Display label |
 | `overall` | int | ✅ Via `calculateOverall()` | OVR display |
+| **Discipline fields (V24D6D7A/B)** | | | |
+| `yellowCards` | number | ✅ Squad endpoint + lineup endpoint | V24D6D7A exposure; frontend model support in V24D6D7B1/B2 |
+| `redCards` | number | ✅ Squad endpoint + lineup endpoint | V24D6D7A exposure; frontend model support in V24D6D7B1/B2 |
+| `suspended` | boolean | ✅ Squad endpoint + lineup endpoint | Used by dashboard/squad warnings and card badges |
+| `suspensionRemainingMatches` | number | ✅ Squad endpoint + lineup endpoint | Used by suspended badge/detail and backend lineup blocking |
 
 V24D6G3 used the squad endpoint data to implement `PlayerCardComponent` indicators.
 

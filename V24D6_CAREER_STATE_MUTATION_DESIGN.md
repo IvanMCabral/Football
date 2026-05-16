@@ -1,10 +1,10 @@
 # V24D6 — Career State Mutation Design
 
-**Status:** V24D6A DESIGN COMPLETE; V24D6B1/B2/B3 IMPLEMENTATION COMPLETE; V24D6C1/C2/C3 FATIGUE MUTATION COMPLETE; V24D6D DISCIPLINE PERSISTENCE COMPLETE; V24D6D6 SUSPENSION LIFECYCLE COMPLETE; form deferred
+**Status:** V24D6A+V24D6B1/B2/B3+V24D6C1/C2/C3+V24D6D2/D3/D4/D5+V24D6D6+V24D6D7 COMPLETE — injury+fatigue+discipline+suspension mutation pipeline complete; V24D6D7 DTO/API/frontend suspension visibility complete (backend commit `6aadcd5`, frontend warn+badges `8097ca9`+`69bf879`); form deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-12
-**Latest implementation commit:** `b4291d9` (V24D6D6B suspension lifecycle wiring complete)
-**Tests:** 588 regression gate (521 baseline + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5 + 35 V24D6D6), 0 failures
+**Latest implementation commit:** `6aadcd5` (V24D6D7 complete — backend suspension DTO exposure and lineup blocking)
+**Tests:** 602 regression gate (588 baseline + 14 V24D6D7), 0 failures
 
 ---
 
@@ -16,7 +16,7 @@ The next logical step is to move from **visualization to consequence**: V24 matc
 
 **Goal:** Design how V24 match outcomes (injuries, fatigue, cards, form) can safely mutate `CareerSave` persistent state after a simulated round — without breaking existing careers, without forcing adoption, and without compromising the V23/stable path.
 
-V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3 are also complete: injury mutation applier, mutation service orchestration, and LeagueSimulator wiring behind default-false flags, PLUS fatigue mutation applier, fatigue service orchestration, and fatigue LeagueSimulator wiring behind default-false flags. Injury, fatigue, discipline persistence, and suspension lifecycle are complete through V24D6D6. DTO/API/frontend suspension visibility, lineup blocking for suspended players, yellow-card suspension threshold, injury recovery lifecycle, and form/morale remain deferred.
+V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3 are also complete: injury mutation applier, mutation service orchestration, and LeagueSimulator wiring behind default-false flags, PLUS fatigue mutation applier, fatigue service orchestration, and fatigue LeagueSimulator wiring behind default-false flags. Injury, fatigue, discipline persistence, suspension lifecycle, and DTO/API/frontend suspension visibility are complete through V24D6D7 (backend commit `6aadcd5`, frontend commits `8097ca9`+`69bf879`). Yellow-card suspension threshold, injury recovery lifecycle, and form/morale remain deferred.
 
 ---
 
@@ -47,9 +47,9 @@ V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3
 | CareerSave schema | Unchanged |
 | MatchFixture.MatchResultData | Unchanged (6 aggregate fields) |
 | V23/default path | Unaffected by V24 |
-| Backend tests | 588, 0 failures |
+| Backend tests | 602, 0 failures
 
-**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6D6B, injuries, fatigue, discipline/cards, and suspension lifecycle now have persistent career-state paths behind default-false flags. INJURY events update SessionPlayer injury fields, participation drains SessionPlayer.energy, YELLOW_CARD/RED_CARD events update SessionPlayer discipline fields, and suspension lifecycle decrements eligible pre-round suspended players when V24 succeeds and `mutate-career-state=true` plus the relevant effect flag (`persist-injuries`, `persist-fatigue`, `persist-discipline`) is enabled. Form/morale remains deferred. DTO/API/frontend suspension visibility remains deferred to V24D6D7. Lineup blocking for suspended players remains not implemented. Yellow-card suspension threshold remains deferred. Injury recovery lifecycle remains not implemented.
+**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6D7, injuries, fatigue, discipline/cards, suspension lifecycle, and DTO/API/frontend suspension visibility now have complete persistent career-state paths behind default-false flags. INJURY events update SessionPlayer injury fields, participation drains SessionPlayer.energy, YELLOW_CARD/RED_CARD events update SessionPlayer discipline fields, suspension lifecycle decrements eligible pre-round suspended players, and DTO/API/frontend visibility is now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`). Form/morale remains deferred. Yellow-card suspension threshold remains deferred. Injury recovery lifecycle remains not implemented.
 
 ---
 
@@ -121,9 +121,9 @@ private int energy;  // 0-100, default 100
 
 **Source:** `V24MatchEvent` with `type=YELLOW_CARD` or `RED_CARD`.
 
-**Target:** Implemented through V24D6D2-D5 using SessionPlayer.yellowCards, redCards, suspended, suspensionRemainingMatches. V24D6D5 wires persistence behind persist-discipline. V24D6D6A/B suspension lifecycle now implemented (commits `219628d`/`b4291d9`). DTO/UI visibility (V24D6D7) deferred.
+**Target:** Implemented through V24D6D2-D5 using SessionPlayer.yellowCards, redCards, suspended, suspensionRemainingMatches. V24D6D5 wires persistence behind persist-discipline. V24D6D6A/B suspension lifecycle now implemented (commits `219628d`/`b4291d9`). V24D6D7 DTO/API/frontend visibility now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`).
 
-V24D6D2-D5 implemented the MVP persistence path. YELLOW_CARD increments SessionPlayer.yellowCards. RED_CARD increments SessionPlayer.redCards and sets suspended=true with suspensionRemainingMatches=1. This is gated by mutate-career-state=true and persist-discipline=true. No yellow-card suspension threshold exists yet. Suspension lifecycle/decrement is implemented through V24D6D6A/B (commits `219628d`/`b4291d9`). DTO/API/frontend suspension visibility remains deferred to V24D6D7.
+V24D6D2-D5 implemented the MVP persistence path. YELLOW_CARD increments SessionPlayer.yellowCards. RED_CARD increments SessionPlayer.redCards and sets suspended=true with suspensionRemainingMatches=1. This is gated by mutate-career-state=true and persist-discipline=true. No yellow-card suspension threshold exists yet. Suspension lifecycle/decrement is implemented through V24D6D6A/B (commits `219628d`/`b4291d9`). V24D6D7 DTO/API/frontend suspension visibility is complete (backend commit `6aadcd5`, frontend commits `8097ca9`+`69bf879`).
 
 ---
 
@@ -165,7 +165,7 @@ V24D6D2-D5 implemented the MVP persistence path. YELLOW_CARD increments SessionP
 | **V24D6F** | Career mutation regression tests — V24D6F1/F2/F3: +15 tests, no production code changes, best-effort partial mutation semantics confirmed | DONE |
 | **V24D6G** | UI indicators — show unavailable/tired/suspended players in lineup | MEDIUM |
 
-**Rationale:** Injury and fatigue are the least reversible effects (a player cannot play if injured or exhausted). Starting with these creates the most immediate gameplay consequence. Cards/suspensions persistence is implemented through V24D6D2-D5 using SessionPlayer fields; V24D6D6A/B suspension lifecycle now complete (commits `219628d`/`b4291d9`); DTO/API/frontend visibility deferred to V24D6D7. Form is the most sensitive to balance errors.
+**Rationale:** Injury and fatigue are the least reversible effects (a player cannot play if injured or exhausted). Starting with these creates the most immediate gameplay consequence. Cards/suspensions persistence is implemented through V24D6D2-D5 using SessionPlayer fields; V24D6D6A/B suspension lifecycle now complete (commits `219628d`/`b4291d9`); V24D6D7 DTO/API/frontend visibility now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`). Form is the most sensitive to balance errors.
 
 ---
 
@@ -312,7 +312,7 @@ For V24D6B (injury) and V24D6C (fatigue), **no new SessionPlayer fields are requ
 - Use existing `injured`, `injuryType`, `injuryRemainingMatches` for injury persistence
 - Use existing `energy` for fatigue persistence
 
-V24D6D2-D5 implemented discipline persistence using SessionPlayer fields: yellowCards, redCards, suspended, and suspensionRemainingMatches. No separate discipline registry was added. V24D6D6A/B suspension lifecycle now complete (commits `219628d`/`b4291d9`); DTO/API/frontend visibility deferred to V24D6D7.
+V24D6D2-D5 implemented discipline persistence using SessionPlayer fields: yellowCards, redCards, suspended, and suspensionRemainingMatches. No separate discipline registry was added. V24D6D6A/B suspension lifecycle now complete (commits `219628d`/`b4291d9`); V24D6D7 DTO/API/frontend visibility now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`).
 
 ---
 
@@ -460,9 +460,9 @@ Mutation should occur **after** detail persistence and **before** CareerSave per
 
 ### Risk 4: Incomplete suspension lifecycle
 
-**Description:** V24D6D2-D5 persist discipline state and set `suspended=true` with `suspensionRemainingMatches=1` after RED_CARD events. V24D6D6A/B now implements suspension lifecycle/decrement with participation verification. Remaining risk is visibility and enforcement: DTO/API/frontend suspension visibility and lineup blocking are still deferred.
+**Description:** V24D6D2-D5 persist discipline state and set `suspended=true` with `suspensionRemainingMatches=1` after RED_CARD events. V24D6D6A/B now implements suspension lifecycle/decrement with participation verification. V24D6D7A DTO/API suspension exposure and lineup blocking are now implemented (backend `6aadcd5`).
 
-**Mitigation:** V24D6D6A/B suspension lifecycle is now implemented (commits `219628d`/`b4291d9`). Keep `persist-discipline=false` by default until DTO/UI visibility is validated via V24D6D7.
+**Mitigation:** V24D6D6A/B suspension lifecycle is now implemented (commits `219628d`/`b4291d9`). V24D6D7 DTO/UI visibility is now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`).
 
 ### Risk 5: Save compatibility
 
@@ -499,7 +499,7 @@ Mutation should occur **after** detail persistence and **before** CareerSave per
 
 ### Historical Note: Why V24D6D Was Deferred Initially
 
-Before V24D6D2-D5, discipline persistence was deferred because no persistent SessionPlayer suspension/card fields existed and UI visibility had not been audited. That concern is now resolved for backend persistence: V24D6D2-D5 added SessionPlayer fields, V24DisciplineMutationApplier, service orchestration, and LeagueSimulator wiring behind default-false flags. V24D6D6A/B suspension lifecycle now complete (commits `219628d`/`b4291d9`). DTO/API/frontend visibility audit deferred to V24D6D7.
+Before V24D6D2-D5, discipline persistence was deferred because no persistent SessionPlayer suspension/card fields existed and UI visibility had not been audited. That concern is now fully resolved: V24D6D2-D5 added SessionPlayer fields, V24DisciplineMutationApplier, service orchestration, and LeagueSimulator wiring behind default-false flags. V24D6D6A/B suspension lifecycle is complete (commits `219628d`/`b4291d9`). V24D6D7 DTO/API/frontend visibility is complete (backend commit `6aadcd5`, frontend commits `8097ca9`+`69bf879`).
 
 ---
 
@@ -647,15 +647,15 @@ V24D6A does NOT include:
 - V24 disabled / V23 path → no discipline mutation (even with flags true)
 - No API/schema/frontend changes in V24D6D2/D3/D4/D5
 - Suspension lifecycle (decrement after match is served) implemented through V24D6D6A/B
-- DTO/frontend audit for suspension visibility deferred to V24D6D7
+- V24D6D7 DTO/frontend audit for suspension visibility now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`)
 - Yellow accumulation threshold (e.g., 5 yellows → 1-match suspension) deferred
 
 ## 17. Recommended Next Step
 
-**V24D6D7 — DTO/API/frontend suspension visibility audit**.
+**V24D6E — Form/morale persistence** or **V24D6H — Yellow card accumulation threshold**.
 
-V24D6D5 discipline persistence is wired and functional. V24D6D6A/B suspension lifecycle/decrement is implemented and wired in LeagueSimulator. The remaining discipline follow-up is V24D6D7: audit whether suspension state reaches the frontend through existing DTOs/API, then decide whether frontend suspension indicators and lineup blocking need a separate implementation phase.
+V24D6D7 DTO/API/frontend suspension visibility is complete (backend commit `6aadcd5`, frontend commits `8097ca9`+`69bf879`). All discipline pipeline phases (D2-D7) are now complete. The remaining V24D6 phases are V24D6E (form/morale) and V24D6H (yellow card accumulation threshold).
 
 ---
 
-*This document is the authoritative V24D6 design specification. V24D6B1/B2/B3, V24D6C1/C2/C3, and V24D6D2/D3/D4/D5/D6A/D6B implementation conforms to this design. V24D6D6, V24D6F, and V24D6G are complete. Remaining phases are V24D6D7 DTO/API/frontend suspension visibility audit and V24D6E form/morale.*
+*This document is the authoritative V24D6 design specification. V24D6B1/B2/B3, V24D6C1/C2/C3, V24D6D2/D3/D4/D5/D6A/D6B/D7, V24D6F, and V24D6G are complete. V24D6E form/morale is the next deferred phase.*
