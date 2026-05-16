@@ -1,0 +1,26 @@
+<div class="lineup-player-card"
+     [class.goalkeeper]="player.position === 'GK'"
+     [class.defender]="player.position === 'DEF'"
+     [class.midfielder]="player.position === 'MID' || player.position === 'WINGER'"
+     [class.attacker]="player.position === 'ATT'">
+  <div class="lineup-player-header">
+    <span class="lineup-player-name">{{player.name}}</span>
+    <span class="lineup-player-position">{{player.position}}</span>
+  </div>
+  <div class="lineup-player-stats">
+    <span class="lineup-overall">OVR: {{player.overall}}</span>
+    <span class="lineup-energy" [class.low-energy]="player.energy <= 50">
+      {{player.energy}}%
+    </span>
+  </div>
+  <div class="lineup-player-meta">
+    <span>Age: {{player.age}}</span>
+    <span *ngIf="player.injured" class="injured-badge" title="This player is injured">🤕</span>
+  </div>
+  <div *ngIf="hasConditionWarning()" class="condition-warning"
+       [class]="conditionClass()"
+       [title]="conditionWarningTooltip()">
+    <span class="condition-icon">{{ isSuspended() ? '⛔' : isInjured() ? '⚠️' : '⚡' }}</span>
+    <span class="condition-label">{{conditionWarningLabel()}}</span>
+  </div>
+</div>
