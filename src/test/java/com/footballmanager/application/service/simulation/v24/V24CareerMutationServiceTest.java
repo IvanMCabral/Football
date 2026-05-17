@@ -863,4 +863,196 @@ class V24CareerMutationServiceTest {
         assertEquals(0, r.formApplied());
         assertTrue(r.failures().isEmpty());
     }
+
+    // ========== V24D6H3 Yellow-threshold regression tests ==========
+
+    /**
+     * 1. thresholdContributesToDisciplineAppliedCount_orDocumentedCountSemantics
+     *
+     * Verifies that a yellow-card threshold suspension contributes +1 to disciplineApplied
+     * through the existing int return value of applyDiscipline(). No new result field needed.
+     * disciplineApplied = 2 (1 yellow event + 1 threshold suspension).
+     */
+    @Test
+    void thresholdContributesToDisciplineAppliedCount_orDocumentedCountSemantics() {
+        CareerSave career = careerWithPlayer("p1");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4); // one YELLOW_CARD will bring to 5
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        // applied count = 1 yellow event + 1 threshold suspension = 2
+        assertEquals(2, r.disciplineApplied());
+        assertEquals(0, p.getYellowCards()); // 5 - 5 = 0
+        assertTrue(p.getSuspended());
+        assertEquals(1, p.getSuspensionRemainingMatches());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
+
+    /**
+     * 2a. disabledPolicy_noDisciplineMutationAndNoThresholdEffect — master false
+     */
+    @Test
+    void disabledPolicy_noDisciplineMutationAndNoThresholdEffect_masterFalse() {
+        CareerSave career = careerWithPlayer("p1");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(false, false, false, true, false); // master=false
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.disciplineApplied());
+        assertEquals(4, p.getYellowCards()); // unchanged
+        assertFalse(p.getSuspended());
+        assertEquals(0, p.getSuspensionRemainingMatches());
+        assertTrue(r.failures().isEmpty());
+    }
+
+    /**
+     * 2b. disabledPolicy_noDisciplineMutationAndNoThresholdEffect — discipline flag false
+     */
+    @Test
+    void disabledPolicy_noDisciplineMutationAndNoThresholdEffect_disciplineFlagFalse() {
+        CareerSave career = careerWithPlayer("p1");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, false, false); // discipline=false
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.disciplineApplied());
+        assertEquals(4, p.getYellowCards()); // unchanged
+        assertFalse(p.getSuspended());
+        assertEquals(0, p.getSuspensionRemainingMatches());
+        assertTrue(r.failures().isEmpty());
+    }
+
+    /**
+     * 3. thresholdAndRedCard_bothTrackedCorrectly
+     *
+     * Player A: yellowCards=4 + YELLOW_CARD → threshold suspension
+     * Player B: RED_CARD → red suspension
+     * Both contribute to disciplineApplied: 1 yellow + 1 threshold + 1 red = 3
+     */
+    @Test
+    void thresholdAndRedCard_bothTrackedCorrectly() {
+        CareerSave career = careerWithPlayer("player-a");
+        SessionPlayer playerA = career.getSessionPlayer("player-a");
+        playerA.setYellowCards(4);
+
+        SessionPlayer playerB = SessionPlayer.fromWorldPlayer("player-b", "Player B", "DEF", 25, 70);
+        career.addSessionPlayer(playerB);
+
+        V24DetailedMatchResult res = result(
+                yellowCardEvent("player-a", 25), // triggers threshold: 5 → suspended, yellowCards=0
+                redCardEvent("player-b", 70)     // red suspension: suspended, redCards=1
+        );
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        // disciplineApplied = yellow(1) + threshold(1) + red(1) = 3
+        assertEquals(3, r.disciplineApplied());
+        assertEquals(0, playerA.getYellowCards()); // 5 - 5 = 0
+        assertTrue(playerA.getSuspended());
+        assertEquals(1, playerA.getSuspensionRemainingMatches());
+        assertEquals(0, playerA.getRedCards());
+        assertTrue(playerB.getSuspended());
+        assertEquals(1, playerB.getSuspensionRemainingMatches());
+        assertEquals(1, playerB.getRedCards());
+        assertEquals(0, playerB.getYellowCards());
+        assertTrue(r.failures().isEmpty());
+    }
+
+    /**
+     * 4. thresholdDoesNotBreakInjuryFatigueCounts
+     *
+     * Injury + fatigue + discipline (with threshold) all tracked independently.
+     * Confirms threshold logic does not interfere with injury/fatigue applier counts.
+     */
+    @Test
+    void thresholdDoesNotBreakInjuryFatigueCounts() {
+        CareerSave career = careerWithPlayer("player-injury");
+        SessionPlayer injuryPlayer = career.getSessionPlayer("player-injury");
+        injuryPlayer.setEnergy(100);
+
+        SessionPlayer fatiguePlayer = SessionPlayer.fromWorldPlayer("player-fatigue", "FP", "MID", 25, 70);
+        fatiguePlayer.setEnergy(100);
+        career.addSessionPlayer(fatiguePlayer);
+
+        SessionPlayer disciplinePlayer = SessionPlayer.fromWorldPlayer("player-discipline", "DP", "MID", 25, 70);
+        disciplinePlayer.setYellowCards(4); // threshold on first yellow card
+        career.addSessionPlayer(disciplinePlayer);
+
+        V24DetailedMatchResult res = result(
+                injuryEvent("player-injury", 30),
+                goalEvent("player-fatigue", 45), // fatigue participation
+                yellowCardEvent("player-discipline", 60) // triggers threshold
+        );
+        V24CareerMutationPolicy pol = policy(true, true, true, true, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        // injuriesApplied: player-injury
+        assertEquals(1, r.injuriesApplied());
+        assertTrue(injuryPlayer.getInjured());
+
+        // fatigueApplied: injury-player skipped (injured), fatigue-player + discipline-player = 2
+        // (disciplinePlayer appears in yellow card event, counts as participating)
+        assertEquals(2, r.fatigueApplied());
+        assertEquals(88, fatiguePlayer.getEnergy());
+
+        // disciplineApplied: yellow(1) + threshold(1) = 2
+        assertEquals(2, r.disciplineApplied());
+        assertEquals(0, disciplinePlayer.getYellowCards()); // 5 - 5 = 0
+        assertTrue(disciplinePlayer.getSuspended());
+        assertEquals(1, disciplinePlayer.getSuspensionRemainingMatches());
+
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
+
+    /**
+     * 5. disciplineFailure_semanticsUnchangedForThreshold
+     *
+     * Uses existing mock pattern from existing disciplineFailure tests.
+     * When discipline applier throws, failure semantics are identical to pre-H2.
+     * Verifies threshold failure handling is no different than red/yellow failure.
+     */
+    @Test
+    void disciplineFailure_semanticsUnchangedForThreshold() {
+        CareerSave career = careerWithPlayer("p1");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        V24CareerMutationService badService = new V24CareerMutationService(
+                new V24InjuryMutationApplier(),
+                new V24FatigueMutationApplier(),
+                new V24DisciplineMutationApplier() {
+                    @Override
+                    public int applyDiscipline(CareerSave c, V24DetailedMatchResult r,
+                            V24CareerMutationPolicy p) {
+                        throw new RuntimeException("boom discipline");
+                    }
+                }
+        );
+
+        V24CareerMutationResult r = badService.applyMutations(career, res, pol);
+
+        assertEquals(0, r.disciplineApplied());
+        assertFalse(r.failures().isEmpty());
+        assertTrue(r.failures().get(0).contains("boom discipline"));
+        assertFalse(r.partialFailure()); // no mutation succeeded
+    }
 }
