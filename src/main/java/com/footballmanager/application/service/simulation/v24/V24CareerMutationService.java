@@ -15,21 +15,33 @@ public class V24CareerMutationService {
     private final V24InjuryMutationApplier injuryMutationApplier;
     private final V24FatigueMutationApplier fatigueMutationApplier;
     private final V24DisciplineMutationApplier disciplineMutationApplier;
+    private final V24FormMutationApplier formMutationApplier;
 
     public V24CareerMutationService(V24InjuryMutationApplier injuryMutationApplier) {
-        this(injuryMutationApplier, new V24FatigueMutationApplier(), new V24DisciplineMutationApplier());
+        this(injuryMutationApplier, new V24FatigueMutationApplier(),
+                new V24DisciplineMutationApplier(), new V24FormMutationApplier());
     }
 
     public V24CareerMutationService(
             V24InjuryMutationApplier injuryMutationApplier,
             V24FatigueMutationApplier fatigueMutationApplier) {
-        this(injuryMutationApplier, fatigueMutationApplier, new V24DisciplineMutationApplier());
+        this(injuryMutationApplier, fatigueMutationApplier,
+                new V24DisciplineMutationApplier(), new V24FormMutationApplier());
     }
 
     public V24CareerMutationService(
             V24InjuryMutationApplier injuryMutationApplier,
             V24FatigueMutationApplier fatigueMutationApplier,
             V24DisciplineMutationApplier disciplineMutationApplier) {
+        this(injuryMutationApplier, fatigueMutationApplier, disciplineMutationApplier,
+                new V24FormMutationApplier());
+    }
+
+    public V24CareerMutationService(
+            V24InjuryMutationApplier injuryMutationApplier,
+            V24FatigueMutationApplier fatigueMutationApplier,
+            V24DisciplineMutationApplier disciplineMutationApplier,
+            V24FormMutationApplier formMutationApplier) {
         this.injuryMutationApplier = injuryMutationApplier;
         this.fatigueMutationApplier = fatigueMutationApplier != null
                 ? fatigueMutationApplier
@@ -37,6 +49,9 @@ public class V24CareerMutationService {
         this.disciplineMutationApplier = disciplineMutationApplier != null
                 ? disciplineMutationApplier
                 : new V24DisciplineMutationApplier();
+        this.formMutationApplier = formMutationApplier != null
+                ? formMutationApplier
+                : new V24FormMutationApplier();
     }
 
     /**
@@ -60,6 +75,7 @@ public class V24CareerMutationService {
         int injuries = 0;
         int fatigue = 0;
         int discipline = 0;
+        int form = 0;
         java.util.List<String> failures = new java.util.ArrayList<>();
 
         if (policy.isInjuryPersistenceEnabled()) {
@@ -86,15 +102,22 @@ public class V24CareerMutationService {
             }
         }
 
-        if (!failures.isEmpty()) {
-            return V24CareerMutationResult.failure(injuries, fatigue, discipline, failures,
-                    injuries > 0 || fatigue > 0 || discipline > 0);
+        if (policy.isFormPersistenceEnabled()) {
+            try {
+                form = formMutationApplier.applyForm(career, result, policy);
+            } catch (Exception e) {
+                failures.add("Form mutation failed: " + e.getMessage());
+            }
         }
 
-        if (injuries == 0 && fatigue == 0 && discipline == 0) {
+        if (!failures.isEmpty()) {
+            return V24CareerMutationResult.partial(injuries, fatigue, discipline, form, failures);
+        }
+
+        if (injuries == 0 && fatigue == 0 && discipline == 0 && form == 0) {
             return V24CareerMutationResult.empty();
         }
 
-        return V24CareerMutationResult.success(injuries, fatigue, discipline, 0);
+        return V24CareerMutationResult.success(injuries, fatigue, discipline, form);
     }
 }

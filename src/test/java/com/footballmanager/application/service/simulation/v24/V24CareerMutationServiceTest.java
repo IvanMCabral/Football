@@ -1055,4 +1055,145 @@ class V24CareerMutationServiceTest {
         assertTrue(r.failures().get(0).contains("boom discipline"));
         assertFalse(r.partialFailure()); // no mutation succeeded
     }
+
+    // ========== V24D6E3 Form orchestration tests ==========
+
+    @Test
+    void persistFormEnabled_callsFormApplier() {
+        // p1 in starting XI with a goal -> rating 6.8 -> delta +1 -> form 51
+        CareerSave career = new CareerSave();
+        SessionPlayer p = SessionPlayer.fromWorldPlayer("p1", "Player p1", "MID", 25, 70);
+        p.setForm(50);
+        career.addSessionPlayer(p);
+        career.setTeamStarting11(java.util.Map.of("team-A", List.of("p1"), "team-B", List.of()));
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, false, true);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.formApplied());
+        assertEquals(0, r.injuriesApplied());
+        assertEquals(0, r.fatigueApplied());
+        assertEquals(0, r.disciplineApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+        assertEquals(51, career.getSessionPlayer("p1").getForm());
+    }
+
+    @Test
+    void persistFormDisabled_doesNotCallFormApplier() {
+        CareerSave career = new CareerSave();
+        SessionPlayer p = SessionPlayer.fromWorldPlayer("p1", "Player p1", "MID", 25, 70);
+        p.setForm(50);
+        career.addSessionPlayer(p);
+        career.setTeamStarting11(java.util.Map.of("team-A", List.of("p1"), "team-B", List.of()));
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, false, false);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.formApplied());
+        assertEquals(50, career.getSessionPlayer("p1").getForm());
+    }
+
+    @Test
+    void masterFalse_persistFormTrue_doesNotCallFormApplier() {
+        CareerSave career = new CareerSave();
+        SessionPlayer p = SessionPlayer.fromWorldPlayer("p1", "Player p1", "MID", 25, 70);
+        p.setForm(50);
+        career.addSessionPlayer(p);
+        career.setTeamStarting11(java.util.Map.of("team-A", List.of("p1"), "team-B", List.of()));
+        V24DetailedMatchResult res = result(goalEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(false, false, false, false, true);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(0, r.formApplied());
+        assertEquals(50, career.getSessionPlayer("p1").getForm());
+    }
+
+    /**
+     * DEFERRED (V24D6E3): formFailure_doesNotEraseInjuryFatigueDisciplineSuccess
+     *
+     * V24FormMutationApplier is final — cannot be stubbed via anonymous subclass.
+     * Real applier always succeeds with valid inputs (no failure path to trigger).
+     * This test verifies form success alongside other mutations using real applier.
+     */
+    @Test
+    void formMutationSucceedsAlongsideOtherMutations() {
+        // 2 players: p1 gets goal (form +1), p2 gets yellow (discipline +1)
+        // Form applier sees both in starting XI — p1 gets rating 6.8 (+1), p2 gets 5.7 (0)
+        CareerSave career = new CareerSave();
+        SessionPlayer p1 = SessionPlayer.fromWorldPlayer("p1-goal", "Goal Guy", "MID", 25, 70);
+        SessionPlayer p2 = SessionPlayer.fromWorldPlayer("p2-yellow", "Card Guy", "MID", 25, 70);
+        p1.setForm(50);
+        p2.setYellowCards(0);
+        career.addSessionPlayer(p1);
+        career.addSessionPlayer(p2);
+        career.setTeamStarting11(java.util.Map.of(
+                "team-A", java.util.List.of("p1-goal", "p2-yellow"),
+                "team-B", java.util.List.of()
+        ));
+        V24DetailedMatchResult res = result(
+                goalEvent("p1-goal", 30),
+                yellowCardEvent("p2-yellow", 50)
+        );
+        V24CareerMutationPolicy pol = policy(true, false, false, true, true);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.disciplineApplied());
+        // formApplied: ALL starting XI players get a rating entry (applier counts every player, delta may be 0)
+        assertEquals(2, r.formApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+        // p1-goal: 6.8 → +1 = form 51; p2-yellow: 5.7 → 0 = form unchanged at null→50
+        assertEquals(51, career.getSessionPlayer("p1-goal").getForm());
+        assertEquals(50, career.getSessionPlayer("p2-yellow").getForm());
+        assertEquals(1, career.getSessionPlayer("p2-yellow").getYellowCards());
+    }
+
+    @Test
+    void allMutationFlagsEnabled_includesForm() {
+        // 4 players in starting XI, all get form ratings via real applier
+        // p1-injury: injured (no form change since no event for them in form terms)
+        // p2-fatigue: goal (fatigue + form)
+        // p3-discipline: yellow (discipline + form)
+        // p4-form: goal (form only)
+        CareerSave career = new CareerSave();
+        SessionPlayer p1 = SessionPlayer.fromWorldPlayer("p1-injury", "Injury Guy", "MID", 25, 70);
+        SessionPlayer p2 = SessionPlayer.fromWorldPlayer("p2-fatigue", "Fatigue Guy", "MID", 25, 70);
+        SessionPlayer p3 = SessionPlayer.fromWorldPlayer("p3-discipline", "Card Guy", "MID", 25, 70);
+        SessionPlayer p4 = SessionPlayer.fromWorldPlayer("p4-form", "Form Guy", "MID", 25, 70);
+        p1.setInjured(false);
+        p2.setEnergy(100);
+        p3.setYellowCards(0);
+        p4.setForm(50);
+        career.addSessionPlayer(p1);
+        career.addSessionPlayer(p2);
+        career.addSessionPlayer(p3);
+        career.addSessionPlayer(p4);
+        career.setTeamStarting11(java.util.Map.of(
+                "team-A", java.util.List.of("p1-injury", "p2-fatigue", "p3-discipline", "p4-form"),
+                "team-B", java.util.List.of()
+        ));
+        V24DetailedMatchResult res = result(
+                injuryEvent("p1-injury", 30),
+                goalEvent("p2-fatigue", 45),
+                yellowCardEvent("p3-discipline", 60),
+                goalEvent("p4-form", 75)
+        );
+        V24CareerMutationPolicy pol = policy(true, true, true, true, true);
+
+        V24CareerMutationResult r = service.applyMutations(career, res, pol);
+
+        assertEquals(1, r.injuriesApplied());
+        // fatigue: p2 + p3 + p4 participated (p1-injury skipped due to injury)
+        assertEquals(3, r.fatigueApplied());
+        assertEquals(1, r.disciplineApplied());
+        // form: all 4 in starting XI get ratings (p1:6.0, p2:6.8, p3:5.7, p4:6.8)
+        assertEquals(4, r.formApplied());
+        assertTrue(r.failures().isEmpty());
+        assertFalse(r.partialFailure());
+    }
 }
