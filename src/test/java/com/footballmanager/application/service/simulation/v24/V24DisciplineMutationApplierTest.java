@@ -285,6 +285,214 @@ class V24DisciplineMutationApplierTest {
         assertEquals(1, p.getSuspensionRemainingMatches()); // reset to 1 per MVP rule
     }
 
+    // ========== V24D6H2 Yellow-card threshold tests ==========
+
+    // 1. belowThreshold_noSuspension
+    @Test
+    void belowThreshold_noSuspension() {
+        CareerSave career = careerWithPlayer("p1", "Below Threshold", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(3);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        assertEquals(1, applied);
+        assertEquals(4, p.getYellowCards());
+        assertFalse(p.getSuspended());
+        assertEquals(0, p.getSuspensionRemainingMatches());
+    }
+
+    // 2. exactlyThreshold_setsSuspendedAndRemainingOne
+    @Test
+    void exactlyThreshold_setsSuspendedAndRemainingOne() {
+        CareerSave career = careerWithPlayer("p1", "At Threshold", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        // applied = 1 yellow event + 1 threshold suspension
+        assertEquals(2, applied);
+        assertEquals(0, p.getYellowCards());
+        assertTrue(p.getSuspended());
+        assertEquals(1, p.getSuspensionRemainingMatches());
+    }
+
+    // 3. aboveThreshold_subtractsThresholdOnce
+    @Test
+    void aboveThreshold_subtractsThresholdOnce() {
+        CareerSave career = careerWithPlayer("p1", "Above Threshold", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(5);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        assertEquals(2, applied);
+        assertEquals(1, p.getYellowCards()); // 6 - 5 = 1
+        assertTrue(p.getSuspended());
+        assertEquals(1, p.getSuspensionRemainingMatches());
+    }
+
+    // 4. exactlyThresholdAtMatchEnd_subtractsToZero
+    @Test
+    void exactlyThresholdAtMatchEnd_subtractsToZero() {
+        CareerSave career = careerWithPlayer("p1", "Exactly Five", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 90));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        assertEquals(2, applied);
+        assertEquals(0, p.getYellowCards()); // 5 - 5 = 0
+    }
+
+    // 5. redCardSameMatch_doesNotApplyAdditionalYellowThresholdSuspension
+    @Test
+    void redCardSameMatch_doesNotApplyAdditionalYellowThresholdSuspension() {
+        CareerSave career = careerWithPlayer("p1", "Red and Yellow", "DEF");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24MatchEvent yellow = yellowCardEvent("p1", 25);
+        V24MatchEvent red = redCardEvent("p1", 70);
+        V24DetailedMatchResult res = result(yellow, red);
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        // applied = 1 yellow + 1 red (no extra threshold count since RED takes precedence)
+        assertEquals(2, applied);
+        assertEquals(5, p.getYellowCards()); // increments to 5, threshold skipped due to RED
+        assertTrue(p.getSuspended());
+        assertEquals(1, p.getSuspensionRemainingMatches()); // RED_CARD suspension
+        assertEquals(1, p.getRedCards());
+    }
+
+    // 6. alreadySuspended_reachesThreshold_doesNotOverrideSuspension
+    @Test
+    void alreadySuspended_reachesThreshold_doesNotOverrideSuspension() {
+        CareerSave career = careerWithPlayer("p1", "Already Suspended", "DEF");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+        p.setSuspended(true);
+        p.setSuspensionRemainingMatches(2);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        assertEquals(1, applied);
+        assertEquals(5, p.getYellowCards()); // incremented but no suspension applied
+        assertTrue(p.getSuspended()); // unchanged
+        assertEquals(2, p.getSuspensionRemainingMatches()); // unchanged
+    }
+
+    // 7. thresholdWithMultipleYellowsInSameMatch_appliesOnce
+    @Test
+    void thresholdWithMultipleYellowsInSameMatch_appliesOnce() {
+        CareerSave career = careerWithPlayer("p1", "Two Yellows", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24MatchEvent yc1 = yellowCardEvent("p1", 30);
+        V24MatchEvent yc2 = yellowCardEvent("p1", 55);
+        V24DetailedMatchResult res = result(yc1, yc2);
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        // First yellow: yellowCards=5, threshold fires, suspended, yellowCards=0, appliedCount=2
+        // Second yellow: yellowCards=1, no threshold, appliedCount=3
+        assertEquals(3, applied);
+        assertEquals(1, p.getYellowCards()); // 5 - 5 = 0, then +1 = 1
+        assertTrue(p.getSuspended());
+        assertEquals(1, p.getSuspensionRemainingMatches()); // applied only once
+    }
+
+    // 8. disabledPolicy_noThreshold
+    @Test
+    void disabledPolicy_noThreshold() {
+        CareerSave career = careerWithPlayer("p1", "Policy Off", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("p1", 30));
+        V24CareerMutationPolicy pol = policy(false, false, false, true, false); // master false
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        assertEquals(0, applied);
+        assertEquals(4, p.getYellowCards()); // no increment
+        assertFalse(p.getSuspended());
+    }
+
+    // 9. nullPlayerId_yellowThresholdSkipped
+    @Test
+    void nullPlayerId_yellowThresholdSkipped() {
+        CareerSave career = careerWithPlayers("p1");
+        V24MatchEvent nullIdEvent = new V24MatchEvent(30, V24MatchEventType.YELLOW_CARD,
+                "team-A", null, "Null Player", null, null, 0.0, "Foul");
+        V24DetailedMatchResult res = result(nullIdEvent);
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        assertEquals(0, applied);
+    }
+
+    // 10. unknownPlayer_yellowThresholdSkipped
+    @Test
+    void unknownPlayer_yellowThresholdSkipped() {
+        CareerSave career = careerWithPlayers("p1");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        p.setYellowCards(4);
+
+        V24DetailedMatchResult res = result(yellowCardEvent("unknown-player", 30));
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        int applied = applier.applyDiscipline(career, res, pol);
+
+        assertEquals(0, applied);
+        assertEquals(4, p.getYellowCards()); // unchanged
+    }
+
+    // 11. yellowCardsAccumulatesAcrossMatches
+    @Test
+    void yellowCardsAccumulatesAcrossMatches() {
+        CareerSave career = careerWithPlayer("p1", "Accumulator", "MID");
+        SessionPlayer p = career.getSessionPlayer("p1");
+        V24CareerMutationPolicy pol = policy(true, false, false, true, false);
+
+        // First match: 3 yellows + 1 = 4, no suspension
+        p.setYellowCards(3);
+        V24DetailedMatchResult res1 = result(yellowCardEvent("p1", 30));
+        int applied1 = applier.applyDiscipline(career, res1, pol);
+        assertEquals(1, applied1);
+        assertEquals(4, p.getYellowCards());
+        assertFalse(p.getSuspended());
+
+        // Second match: 4 yellows + 1 = threshold reached → suspension
+        V24DetailedMatchResult res2 = result(yellowCardEvent("p1", 45));
+        int applied2 = applier.applyDiscipline(career, res2, pol);
+        assertEquals(2, applied2); // 1 yellow + 1 threshold
+        assertEquals(0, p.getYellowCards()); // 5 - 5 = 0
+        assertTrue(p.getSuspended());
+        assertEquals(1, p.getSuspensionRemainingMatches());
+    }
+
     // ========== Null-exising-field tests ==========
 
     @Test
