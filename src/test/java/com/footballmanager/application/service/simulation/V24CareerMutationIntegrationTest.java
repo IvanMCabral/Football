@@ -1131,6 +1131,376 @@ class V24CareerMutationIntegrationTest {
         assertFalse(p.getSuspended(), "Player should not be suspended in V23 path");
     }
 
+    // ========== V24D6E4: Form mutation integration tests ==========
+
+    /**
+     * Test 1: persistFormEnabled_appliesFormMutation
+     *
+     * V24 enabled, master on, persist-form=true.
+     * Deterministic timeline: player p1-form scores GOAL at minute 30.
+     * Expected: rating 6.8 → delta +1 → form 50→51.
+     */
+    @Test
+    void persistFormEnabled_appliesFormMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.GOAL,
+                HOME1, "p1-form", "Form Player", null, null, 0.35, "Goal"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sf1").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.2).awayXg(0.4)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: goal for form test")
+                .build();
+
+        // V24 on, master on, persistForm on, all others off
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, false, true,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithFormPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p1-form", 50);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sf1", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("p1-form");
+        // goal → rating 6.8 → delta +1 → form 50→51
+        assertEquals(51, p.getForm(), "Form should increase by 1 after goal");
+        assertNotNull(career.getTournamentState().getFixtures().get(0).getResult(),
+                "Fixture result must exist");
+    }
+
+    /**
+     * Test 2: persistFormRequiresMasterGate
+     *
+     * V24 enabled, master=false, persist-form=true.
+     * Expected: form remains 50, no mutation.
+     */
+    @Test
+    void persistFormRequiresMasterGate() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.GOAL,
+                HOME1, "p1-form", "Form Player", null, null, 0.35, "Goal"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sf2").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.2).awayXg(0.4)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: goal")
+                .build();
+
+        // master=false (mutateCareerState=false), persistForm=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, false, false, false, true,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithFormPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p1-form", 50);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sf2", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("p1-form");
+        assertEquals(50, p.getForm(), "Form should not change when master flag is false");
+    }
+
+    /**
+     * Test 3: persistFormSpecificFlagFalse_noFormMutation
+     *
+     * V24 enabled, master=true, persist-form=false.
+     * Expected: form remains 50.
+     */
+    @Test
+    void persistFormSpecificFlagFalse_noFormMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.GOAL,
+                HOME1, "p1-form", "Form Player", null, null, 0.35, "Goal"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sf3").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.2).awayXg(0.4)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: goal")
+                .build();
+
+        // master=true, persistForm=false
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithFormPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p1-form", 50);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sf3", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("p1-form");
+        assertEquals(50, p.getForm(), "Form should not change when persistForm=false");
+    }
+
+    /**
+     * Test 4: v24DisabledWithFormFlags_noMutation
+     *
+     * V24 disabled (useV24DetailedEngine=false), all mutation flags true including persistForm.
+     * Expected: V23 path used, no form mutation.
+     */
+    @Test
+    void v24DisabledWithFormFlags_noMutation() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // useV24DetailedEngine=false; persistForm=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, false, false, fakeStorage,
+                true, false, false, false, true,
+                (ctx, seed) -> { throw new AssertionError("V24 engine should not be used"); });
+
+        CareerSave career = makeCareerWithFormPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p1-form", 50);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sf4", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        assertTrue(fakeSim.simulateQuickCalled, "Default path should be used");
+        SessionPlayer p = career.getSessionPlayer("p1-form");
+        assertEquals(50, p.getForm(), "Form should not change in V23 path");
+    }
+
+    /**
+     * Test 5: formPlusDisciplineTogether_bothUpdated
+     *
+     * V24 enabled, master on, persist-discipline+persist-form both true.
+     * Deterministic: p1-form gets YELLOW_CARD (not threshold), p2-form gets GOAL.
+     * p1-form: yellowCards=0 + YELLOW → yellowCards=1, form 6.0→0 → form 50
+     * p2-form: GOAL → rating 6.8 → delta +1 → form 50→51
+     */
+    @Test
+    void formPlusDisciplineTogether_bothUpdated() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        // p1-form gets yellow card
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.YELLOW_CARD,
+                HOME1, "p1-form", "Yellow Player", null, null, 0.0, "Foul"));
+        // p2-form scores goal
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                60,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.GOAL,
+                AWAY1, "p2-form", "Goal Player", null, null, 0.35, "Goal"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sf5").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(1).homeXg(1.0).awayXg(0.9)
+                .homeShots(4).awayShots(4).homePossession(50).awayPossession(50)
+                .timeline(timeline)
+                .summary("Deterministic: yellow + goal")
+                .build();
+
+        // persist-discipline + persist-form both true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, true,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithFormAndDisciplinePlayers(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p1-form", 50, "p2-form", 50);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sf5", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p1 = career.getSessionPlayer("p1-form");
+        SessionPlayer p2 = career.getSessionPlayer("p2-form");
+        // p1: yellow 6.0-0.3=5.7 → delta 0 → form 50; yellowCards=1
+        assertEquals(50, p1.getForm(), "p1 form unchanged (rating 5.7)");
+        assertEquals(1, p1.getYellowCards(), "p1 yellow card applied");
+        // p2: goal 6.8 → delta +1 → form 51
+        assertEquals(51, p2.getForm(), "p2 form increased by 1 after goal");
+        assertTrue(career.getTournamentState().getFixtures().get(0).getResult() != null,
+                "Fixture result must exist");
+    }
+
+    // ========== V24D6E4: Factory helpers for form integration tests ==========
+
+    /**
+     * Creates career with a player in starting XI who has initial form set.
+     */
+    private static CareerSave makeCareerWithFormPlayer(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String formPlayerId, int initialForm) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_form_" + formPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        // Add form player (replaces first home starter)
+        SessionPlayer formPlayer = SessionPlayer.custom(formPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        formPlayer.setSessionPlayerId(formPlayerId);
+        formPlayer.setForm(initialForm);
+        pm.addSessionPlayer(formPlayer);
+        tm.assignPlayerToSquad(formPlayerId, homeTeamId);
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        homeStarterIds.set(0, formPlayerId);
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
+    /**
+     * Creates career with two players in starting XI, each with initial form set.
+     */
+    private static CareerSave makeCareerWithFormAndDisciplinePlayers(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String formPlayerId1, int initialForm1,
+            String formPlayerId2, int initialForm2) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_formdisc_" + formPlayerId1 + "_" + formPlayerId2);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        // Add p1-form (replaces first home starter)
+        SessionPlayer formPlayer1 = SessionPlayer.custom(formPlayerId1, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        formPlayer1.setSessionPlayerId(formPlayerId1);
+        formPlayer1.setForm(initialForm1);
+        formPlayer1.setYellowCards(0);
+        pm.addSessionPlayer(formPlayer1);
+        tm.assignPlayerToSquad(formPlayerId1, homeTeamId);
+
+        // Add p2-form (replaces first away starter)
+        SessionPlayer formPlayer2 = SessionPlayer.custom(formPlayerId2, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        formPlayer2.setSessionPlayerId(formPlayerId2);
+        formPlayer2.setForm(initialForm2);
+        pm.addSessionPlayer(formPlayer2);
+        tm.assignPlayerToSquad(formPlayerId2, awayTeamId);
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        homeStarterIds.set(0, formPlayerId1);
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        awayStarterIds.set(0, formPlayerId2);
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
     // ========== Factory helpers ==========
 
     private static CareerSave makeCareer(String homeTeamId, String awayTeamId,
