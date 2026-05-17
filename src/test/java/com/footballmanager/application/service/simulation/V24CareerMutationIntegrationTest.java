@@ -955,6 +955,182 @@ class V24CareerMutationIntegrationTest {
         assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not change");
     }
 
+    // ========== V24D6H4: Yellow-threshold suspension lifecycle integration tests ==========
+
+    /**
+     * Test 1: thresholdSuspendedPlayer_notDecrementedSameRound
+     *
+     * Player starts with yellowCards=4. V24 engine emits one YELLOW_CARD → threshold triggers.
+     * Snapshot comparison detects newly suspended player → adds to newlySuspendedPlayerIds.
+     * Lifecycle skips decrement (newly suspended) → player ends round suspended=true, remaining=1.
+     */
+    @Test
+    void thresholdSuspendedPlayer_notDecrementedSameRound() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // Build timeline with YELLOW_CARD for threshold player
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        // Yellow card for the threshold player at minute 30
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.YELLOW_CARD,
+                HOME1, "threshold_p1", "Threshold Player", null, null, 0.0, "Foul"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sth1").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.2).awayXg(0.5)
+                .homeShots(6).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: yellow threshold")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false, // discipline=true
+                new DeterministicV24Engine(fakeResult));
+
+        // Player p1 starts with yellowCards=4 (threshold will fire on YELLOW_CARD → 5)
+        CareerSave career = makeCareerWithYellowCards(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "threshold_p1", 4);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sth1", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("threshold_p1");
+        assertTrue(p.getSuspended(), "Threshold-suspended player should be suspended");
+        assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining matches should be 1");
+        assertEquals(0, p.getYellowCards(), "Yellow cards should be reset to 0 after threshold");
+    }
+
+    /**
+     * Test 4: bothRedAndThreshold_newlySuspendedExcludesBoth
+     *
+     * Player A receives YELLOW_CARD (threshold suspension).
+     * Player B receives RED_CARD (red suspension).
+     * Both should be in newlySuspendedPlayerIds → neither decremented same round.
+     */
+    @Test
+    void bothRedAndThreshold_newlySuspendedExcludesBoth() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        // Player A: yellow card (threshold for player with yellowCards=4 → suspended)
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.YELLOW_CARD,
+                HOME1, "threshold_p1", "Threshold Player", null, null, 0.0, "Foul"));
+        // Player B: red card
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                70,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.RED_CARD,
+                AWAY1, "red_p1", "Red Player", null, null, 0.0, "Second yellow"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sth4").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.2).awayXg(0.5)
+                .homeShots(6).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: red + threshold")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, true, false,
+                new DeterministicV24Engine(fakeResult));
+
+        // Player A: yellowCards=4 (threshold fires), Player B: no pre-suspension
+        CareerSave career = makeCareerWithYellowCardsAndRedPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "threshold_p1", 4, "red_p1");
+
+        career.setTournamentState(makeTournamentState(makeFixture("sth4", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer thresholdPlayer = career.getSessionPlayer("threshold_p1");
+        assertTrue(thresholdPlayer.getSuspended(), "Threshold player should be suspended");
+        assertEquals(1, thresholdPlayer.getSuspensionRemainingMatches());
+        assertEquals(0, thresholdPlayer.getYellowCards());
+
+        SessionPlayer redPlayer = career.getSessionPlayer("red_p1");
+        assertTrue(redPlayer.getSuspended(), "Red-carded player should be suspended");
+        assertEquals(1, redPlayer.getSuspensionRemainingMatches());
+        assertEquals(1, redPlayer.getRedCards());
+    }
+
+    /**
+     * Test 5a: persistDisciplineFalse_noThresholdEffect
+     *
+     * Player yellowCards=4. YELLOW_CARD event emitted.
+     * persistDiscipline=false → no discipline applied → threshold never fires.
+     */
+    @Test
+    void persistDisciplineFalse_noThresholdEffect() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.YELLOW_CARD,
+                HOME1, "p1", "Yellow Player", null, null, 0.0, "Foul"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("sth5a").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.2).awayXg(0.5)
+                .homeShots(6).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: yellow")
+                .build();
+
+        // discipline=false
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithYellowCards(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p1", 4);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sth5a", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("p1");
+        assertEquals(4, p.getYellowCards(), "Yellow cards should not change when discipline=false");
+        assertFalse(p.getSuspended(), "Player should not be suspended when discipline=false");
+        assertEquals(0, p.getSuspensionRemainingMatches());
+    }
+
+    /**
+     * Test 5b: v24Disabled_noThresholdEffect
+     *
+     * useV24DetailedEngine=false → V24 path not used → no discipline mutation.
+     */
+    @Test
+    void v24Disabled_noThresholdEffect() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // useV24DetailedEngine=false, but persistDiscipline=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, false, false, fakeStorage,
+                true, false, false, true, false,
+                (ctx, seed) -> { throw new AssertionError("V24 engine should not be used"); });
+
+        CareerSave career = makeCareerWithYellowCards(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p1", 4);
+
+        career.setTournamentState(makeTournamentState(makeFixture("sth5b", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("p1");
+        assertEquals(4, p.getYellowCards(), "Yellow cards should not change in V23 path");
+        assertFalse(p.getSuspended(), "Player should not be suspended in V23 path");
+    }
+
     // ========== Factory helpers ==========
 
     private static CareerSave makeCareer(String homeTeamId, String awayTeamId,
@@ -1139,6 +1315,161 @@ class V24CareerMutationIntegrationTest {
             String playerId, int remainingMatches, boolean suspended) {
         return makeCareerWithSuspension(homeTeamId, awayTeamId, homeStartingTeamId, awayStartingTeamId,
                 11, 11, playerId, remainingMatches, suspended);
+    }
+
+    // ========== V24D6H4: Yellow-card threshold factory helpers ==========
+
+    /**
+     * Creates career with a player who starts with yellowCards=n (to test threshold behavior).
+     * Player is in starting XI and participates normally.
+     */
+    private static CareerSave makeCareerWithYellowCards(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String yellowPlayerId, int initialYellowCards) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_yellow_" + yellowPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        // Add the yellow-card player (replaces first home starter)
+        SessionPlayer yellowPlayer = SessionPlayer.custom(yellowPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        yellowPlayer.setSessionPlayerId(yellowPlayerId);
+        yellowPlayer.setYellowCards(initialYellowCards);
+        pm.addSessionPlayer(yellowPlayer);
+        tm.assignPlayerToSquad(yellowPlayerId, homeTeamId);
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        // Replace first home starter with the yellow player
+        homeStarterIds.set(0, yellowPlayerId);
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
+    /**
+     * Creates career with:
+     * - yellowPlayerId: starts with yellowCards=n, will receive YELLOW_CARD in timeline
+     * - redPlayerId: starts with 0 yellows, will receive RED_CARD in timeline
+     */
+    private static CareerSave makeCareerWithYellowCardsAndRedPlayer(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String yellowPlayerId, int initialYellowCards,
+            String redPlayerId) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_ycrc_" + yellowPlayerId + "_" + redPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        // Add yellow player (replaces first home starter)
+        SessionPlayer yellowPlayer = SessionPlayer.custom(yellowPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        yellowPlayer.setSessionPlayerId(yellowPlayerId);
+        yellowPlayer.setYellowCards(initialYellowCards);
+        pm.addSessionPlayer(yellowPlayer);
+        tm.assignPlayerToSquad(yellowPlayerId, homeTeamId);
+
+        // Add red player (replaces first away starter)
+        SessionPlayer redPlayer = SessionPlayer.custom(redPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        redPlayer.setSessionPlayerId(redPlayerId);
+        pm.addSessionPlayer(redPlayer);
+        tm.assignPlayerToSquad(redPlayerId, awayTeamId);
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        homeStarterIds.set(0, yellowPlayerId);
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        awayStarterIds.set(0, redPlayerId);
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
     }
 
     // ========== Fake MatchSimulator ==========

@@ -278,7 +278,7 @@ public class LeagueSimulator {
             collectV24ResultParticipation(v24Result, tracking);
 
             // V24D6B3: apply career mutation if enabled
-            applyV24CareerMutation(career, v24Result);
+            applyV24CareerMutation(career, v24Result, tracking);
 
             return v24Result;
 
@@ -343,8 +343,13 @@ public class LeagueSimulator {
      * - mutate-career-state master flag is false
      * - all specific mutation flags (injury/fatigue/discipline/form) are false
      */
-    private void applyV24CareerMutation(CareerSave career, V24DetailedMatchResult v24Result) {
+    private void applyV24CareerMutation(CareerSave career, V24DetailedMatchResult v24Result,
+                                         V24RoundMutationTracking tracking) {
         try {
+            // V24D6H4: capture pre-mutation suspended IDs for snapshot comparison
+            // (includes RED_CARD + yellow-threshold suspensions applied in this mutation)
+            Set<String> preMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
+
             V24CareerMutationResult mutationResult =
                     v24MutationService.applyMutations(career, v24Result, v24MutationPolicy);
 
@@ -366,6 +371,18 @@ public class LeagueSimulator {
             if (mutationResult.disciplineApplied() > 0) {
                 log.debug("[V24D6D5] Applied {} discipline mutations for career {}",
                         mutationResult.disciplineApplied(), career.getData().getCareerId());
+            }
+
+            // V24D6H4: snapshot comparison — detect newly suspended players from this mutation
+            // Includes both RED_CARD and yellow-threshold suspensions via snapshot diff
+            if (v24MutationPolicy.isDisciplinePersistenceEnabled()) {
+                Set<String> postMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
+                postMutationSuspended.removeAll(preMutationSuspended);
+                if (!postMutationSuspended.isEmpty()) {
+                    tracking.newlySuspendedPlayerIds.addAll(postMutationSuspended);
+                    log.debug("[V24D6H4] Newly suspended from mutation: {}",
+                            postMutationSuspended);
+                }
             }
 
         } catch (Exception e) {
