@@ -1,9 +1,11 @@
 # V24D6H — Yellow Card Suspension Threshold Design
 
-**Status:** V24D6H1 DESIGN COMPLETE — audit of current implementation done; V24D6H2 implementation not started
+**Status:** V24D6H IMPLEMENTATION COMPLETE (H1-H5 done, H6 docs update)
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-16
 **Audited from:** V24D6D7 complete state (commits `6aadcd5`, `8097ca9`, `69bf879`)
+**Implemented:** H1 (8b747bd), H2 (6a07173), H3 (ab1f7b5), H4 (980be03)
+**Tests:** Full suite 623, 0 failures; mutation/lifecycle gate 206, 0 failures
 
 ---
 
@@ -11,15 +13,17 @@
 
 V24D6D2-D5 implemented discipline persistence: YELLOW_CARD events increment `SessionPlayer.yellowCards`, RED_CARD events set `suspended=true` and `suspensionRemainingMatches=1`. V24D6D6 implemented suspension lifecycle/decrement. V24D6D7 completed DTO/API exposure, lineup blocking, and frontend suspension visibility.
 
-**Remaining gap:** Accumulated yellow cards have no career consequence. A player can accumulate 10 yellow cards across a season with no gameplay effect. V24D6H addresses this by implementing a yellow-card suspension threshold.
+**V24D6H implemented:** 5 accumulated yellow cards → 1-match suspension. Evaluated at discipline mutation time after each match. RED_CARD takes precedence. Subtract 5 once on threshold hit. Threshold-suspended players tracked as newly suspended via LeagueSimulator snapshot comparison — excluded from lifecycle decrement in the same round. No frontend changes required; existing suspended badge and lineup blocking handle threshold-suspended players automatically.
 
-**Recommended MVP rule:** 5 accumulated yellow cards → 1-match suspension. Evaluated at discipline mutation time after each match. Threshold-suspended players are treated as newly suspended (excluded from immediate lifecycle decrement). No frontend changes required for MVP because the existing suspended badge and lineup blocking already handle threshold-suspended players.
+**Implementation complete:** H1 (design), H2 (applier), H3 (service tests), H4 (lifecycle integration), H5 (validation — 623 tests, 0 failures).
 
 ---
 
-## 2. Current Discipline State
+## 2. Historical Pre-V24D6H Discipline State
 
-### 2.1 Discipline Pipeline (as of V24D6D7)
+**Current V24D6H state:** YELLOW_CARD events now increment yellowCards and apply a 5-yellow threshold suspension when eligible. RED_CARD precedence, subtract-5-once reset, and per-match threshold cap are implemented in V24DisciplineMutationApplier (`6a07173`). LeagueSimulator snapshot comparison tracks newly threshold-suspended players so lifecycle does not decrement them in the same round (`980be03`).
+
+### 2.1 Discipline Pipeline Before V24D6H (as of V24D6D7)
 
 **V24DisciplineMutationApplier.applyDiscipline()** — processes match timeline events:
 - `YELLOW_CARD`: `player.yellowCards++` (counts individually, no threshold)
@@ -55,7 +59,7 @@ V24D6D2-D5 implemented discipline persistence: YELLOW_CARD events increment `Ses
 - `LineupHelper.validatePlayerFitness()` — checks `player.getSuspended()`
 - `LineupCommandUseCaseImpl.performAutoSelect()` — filters `!p.getSuspended()`
 
-### 2.4 Current Discipline Field State on SessionPlayer
+### 2.4 Discipline Field State on SessionPlayer
 
 ```java
 private Integer yellowCards;  // default 0
@@ -64,7 +68,7 @@ private Boolean suspended;   // default false
 private Integer suspensionRemainingMatches;  // default 0
 ```
 
-All fields have null-safe getters. No threshold field exists anywhere in the codebase. The threshold is a constant (not per-player configurable).
+All fields have null-safe getters. No persistent threshold field exists on SessionPlayer. The implemented V24D6H threshold is a constant in discipline mutation logic, not per-player configurable state.
 
 ---
 
@@ -321,7 +325,7 @@ Tests for threshold behavior in applier:
 
 Run full regression gate:
 ```
-mvn test -Dtest=... (602 tests + V24D6H tests)
+mvn test -Dtest=... (623 tests, 0 failures)
 ```
 Expected: 602 + V24D6H2-H4 tests, all pass.
 
@@ -410,21 +414,25 @@ V24D6H does NOT include:
 ## 12. Completion Criteria
 
 - [x] Design document created (V24D6H1)
-- [ ] Threshold constant defined (5)
-- [ ] Threshold-applies-suspension logic implemented in V24DisciplineMutationApplier
-- [ ] Per-match cap enforced (1 threshold suspension max per match)
-- [ ] RED_CARD precedence implemented (no double suspension)
-- [ ] Already-suspended protection implemented
-- [ ] Yellow reset behavior (subtract 5 once) implemented
-- [ ] V24CareerMutationResult unchanged in MVP; count semantics documented/tested
-- [ ] LeagueSimulator snapshot comparison for threshold-suspended tracking implemented
-- [ ] Lifecycle exclusion verified (threshold-suspended players not decremented same round)
-- [ ] Unit tests: V24DisciplineMutationApplier threshold tests (11 tests)
-- [ ] Service/result regression tests confirm threshold behavior does not break existing disciplineApplied semantics
-- [ ] Integration tests: LeagueSimulator lifecycle with threshold (5 tests)
-- [ ] Full regression gate: 602 + V24D6H tests, 0 failures
-- [ ] No new API endpoints
-- [ ] No Redis/schema changes
+- [x] Threshold constant defined (5)
+- [x] Threshold-applies-suspension logic implemented in V24DisciplineMutationApplier
+- [x] Per-match cap enforced (1 threshold suspension max per match)
+- [x] RED_CARD precedence implemented (no double suspension)
+- [x] Already-suspended protection implemented
+- [x] Yellow reset behavior (subtract 5 once) implemented
+- [x] V24CareerMutationResult unchanged in MVP; count semantics documented/tested
+- [x] LeagueSimulator snapshot comparison for threshold-suspended tracking implemented
+- [x] Lifecycle exclusion verified (threshold-suspended players not decremented same round)
+- [x] Unit tests: V24DisciplineMutationApplier threshold tests (11 tests)
+- [x] Service/result regression tests confirm threshold behavior does not break existing disciplineApplied semantics
+- [x] Integration tests: LeagueSimulator lifecycle with threshold (4 tests added)
+- [x] Full regression gate: 623 tests, 0 failures
+- [x] No new API endpoints
+- [x] No Redis/schema changes
+- [x] No frontend changes (MVP)
+- [x] No target/ staging
+
+**Deferred:** Multi-round integration test (`thresholdSuspendedPlayer_decrementedNextRound`) deferred to future phase. `thresholdSuspendedPlayer_playsNextRound_notDecremented` covered by existing V24D6D6B participation tests. Optional frontend yellow counter display deferred. Injury recovery lifecycle and form/morale remain separate deferred phases.
 - [ ] No frontend changes (MVP)
 - [ ] No target/ staging
 

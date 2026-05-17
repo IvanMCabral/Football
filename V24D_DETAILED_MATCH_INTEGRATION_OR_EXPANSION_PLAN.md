@@ -1,9 +1,9 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo; V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind flags; V24D6D2/D3/D4/D5 discipline persistence pipeline wired behind flags; V24D6D6A suspension lifecycle applier committed (`219628d`); V24D6D6B suspension lifecycle wiring committed (`b4291d9`); V24D6D7A DTO/API suspension exposure and lineup blocking committed (`6aadcd5`); V24D6D7B1/B2 frontend suspension warnings/badges committed (`8097ca9`+`69bf879`); V24D6F1/F2/F3 mutation regression tests complete (commits `9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes); form deferred
+**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo; V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind flags; V24D6D2/D3/D4/D5 discipline persistence pipeline wired behind flags; V24D6D6A suspension lifecycle applier committed (`219628d`); V24D6D6B suspension lifecycle wiring committed (`b4291d9`); V24D6D7A DTO/API suspension exposure and lineup blocking committed (`6aadcd5`); V24D6D7B1/B2 frontend suspension warnings/badges committed (`8097ca9`+`69bf879`); V24D6F1/F2/F3 mutation regression tests complete; V24D6H yellow-card threshold (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`); form/morale and injury recovery lifecycle deferred
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `6aadcd5` (V24D6D7A complete — backend suspension DTO exposure and lineup blocking)
-**Tests:** 602 total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5 + 35 V24D6D6 + 14 V24D6D7), 0 failures
+**Latest implementation commit:** `980be03` (V24D6H4 — yellow threshold lifecycle integration)
+**Tests:** 623 total (602 baseline + 21 V24D6H), 0 failures
 
 ---
 
@@ -14,7 +14,7 @@
 - **No API/frontend changes without separate approval**
 - **V23 remains production-stable** — V24 is parallel
 - V24 implementation remains modular under `application/service/simulation/v24/`, but selected production wiring exists behind default-false flags.
-- **602 tests are the regression gate; full suite is 602 tests total** — all must pass after any V24D change
+- **623 tests are the regression gate; full suite is 623 tests total** — all must pass after any V24D change
 - Red-carded players remain non-substitutable (V24C invariant, never removed)
 
 ---
@@ -546,7 +546,7 @@ After any V24D change, the full regression gate:
 mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,MatchEngineImplMetricsValidationTest,MatchEngineImplPoissonValidationTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest,V24ShotCoordinateAttachmentTest
 ```
 
-Expected: **602 tests (regression gate), 0 failures; 602 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5 + 35 V24D6D6 + 14 V24D6D7)**.
+Expected: **623 tests (regression gate), 0 failures; 623 full suite total (602 baseline + 21 V24D6H)**.
 
 ---
 

@@ -1,10 +1,10 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7 COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI, shot map UI, and page polish complete in separate frontend repo (commit `12d203d`); V24D6C1/C2/C3 fatigue mutation wired behind default-false flags; V24D6D2/D3/D4/D5 discipline persistence wired behind default-false flags; V24D6D6A suspension lifecycle applier committed (`219628d`); V24D6D6B suspension lifecycle wiring committed (`b4291d9`); V24D6D7 DTO/API/frontend suspension visibility complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`); V24D6F1/F2/F3 mutation regression tests complete (commits `9e52b08`/`5933d1c`/`6250f11`; +15 tests, no production code changes). Form deferred.
+**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H COMPLETED — playerRatings populated in V24DetailedMatchData; player ratings UI, shot map UI, and page polish complete in separate frontend repo (commit `12d203d`); V24D6C1/C2/C3 fatigue mutation wired behind default-false flags; V24D6D2/D3/D4/D5 discipline persistence wired behind default-false flags; V24D6D6A suspension lifecycle applier committed (`219628d`); V24D6D6B suspension lifecycle wiring committed (`b4291d9`); V24D6D7 DTO/API/frontend suspension visibility complete; V24D6H yellow-card threshold (5 → 1-match suspension), RED precedence, subtract-5 reset, LeagueSimulator snapshot tracking (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`); V24D6F1/F2/F3 mutation regression tests complete. Form/morale and injury recovery lifecycle deferred.
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `6aadcd5` (V24D6D7 complete — backend suspension DTO exposure and lineup blocking)
+**Latest implementation commit:** `980be03` (V24D6H4 — yellow threshold lifecycle integration; 623 tests)
 **Latest docs commit:** `fbc81cd` — docs: add V24D6D discipline persistence design
-**Tests:** 602 full suite total (459 baseline + 27 V24D6C1 + 14 V24D6C2 + 6 V24D6C3 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5 + 35 V24D6D6 + 14 V24D6D7); 602 regression gate, 0 failures
+**Tests:** 623 full suite total (602 baseline + 21 V24D6H); 623 regression gate, 0 failures
 **Created:** 2026-05-09
 **Updated:** 2026-05-16
 
@@ -35,8 +35,8 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 
 | Item | Value |
 |------|-------|
-| Latest implementation commit | `6aadcd5` (V24D6D7 complete — backend suspension DTO exposure and lineup blocking) |
-| Tests | 602 full suite total; 602 regression gate, 0 failures |
+| Latest implementation commit | `980be03` (V24D6H4 — yellow threshold lifecycle integration; V24D6H complete)
+| Tests | 623 full suite total; 623 regression gate, 0 failures |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |
 | Redis adapter | `V24DetailedMatchRedisAdapter` — used through `V24DetailedMatchStoragePort.save(...)` only when V24 path succeeds and `app.simulation.v24.persist-detail=true` |
@@ -48,8 +48,8 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 | LeagueSimulator V24 path | Exists behind `app.simulation.league.use-v24-detailed-engine=false` |
 | Flag precedence | V24 > V23 > default |
 | Detail persistence | Implemented in V24D5C behind `app.simulation.v24.persist-detail=false`; default false — saves only when V24 path succeeds and flag is true |
-| Mutation wiring | Injury + fatigue + discipline + suspension lifecycle pipeline complete through V24D6D6, wired behind default-false flags; V24D6D7A DTO/API suspension exposure and lineup blocking complete (backend `6aadcd5`); V24D6D7B1/B2 frontend suspension warnings and badges complete (`8097ca9`+`69bf879`); form deferred; yellow-card threshold and injury recovery lifecycle deferred |
-| Production wiring | V24 simulation path, optional detail persistence, and injury+fatigue+discipline+suspension mutation wiring all exist behind default-false flags; read-only frontend match detail page, fixture modal entry point, player ratings UI, shot map UI, and page polish all exist in the separate frontend repo; career-state injury+fatigue+discipline+suspension mutation pipeline complete through V24D6D6; V24D6D7A DTO/API suspension exposure and lineup blocking complete (backend `6aadcd5`); V24D6D7B1/B2 frontend suspension warnings and badges complete (`8097ca9`+`69bf879`); form deferred; yellow-card threshold and injury recovery lifecycle deferred |
+| Mutation wiring | Injury + fatigue + discipline + suspension lifecycle pipeline complete through V24D6H, wired behind default-false flags; V24D6D7A DTO/API suspension exposure and lineup blocking complete (backend `6aadcd5`); V24D6D7B1/B2 frontend suspension warnings and badges complete (`8097ca9`+`69bf879`); yellow-card threshold (5 → 1-match suspension) implemented (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`); form and injury recovery lifecycle deferred |
+| Production wiring | V24 simulation path, optional detail persistence, and injury+fatigue+discipline+suspension mutation wiring all exist behind default-false flags; read-only frontend match detail page, fixture modal entry point, player ratings UI, shot map UI, and page polish all exist in the separate frontend repo; career-state injury+fatigue+discipline+suspension mutation pipeline complete through V24D6H; V24D6D7A DTO/API suspension exposure and lineup blocking complete (backend `6aadcd5`); V24D6D7B1/B2 frontend suspension warnings and badges complete (`8097ca9`+`69bf879`); yellow-card threshold (5 → 1-match suspension) implemented through V24D6H; form and injury recovery lifecycle deferred |
 
 **Persistence behavior (V24D5F):**
 - V24 detail persistence is wired to `LeagueSimulator.persistV24Detail()`
@@ -92,7 +92,7 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 - V23/default path unaffected regardless of mutation flags
 - V24D6C3 required no LeagueSimulator constructor change — V24D6C2's single-arg constructor already injected fatigue applier internally
 - No new schema fields, no API changes, no Redis format changes
-- Discipline/card mutation is implemented through V24D6D5 behind persist-discipline. Suspension lifecycle/decrement is implemented through V24D6D6A/B (commits `219628d`/`b4291d9`). V24D6D7 DTO/API/frontend suspension visibility now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`). Form mutation remains deferred. Lineup blocking, yellow-card suspension threshold, and injury recovery lifecycle remain deferred.
+- Discipline/card mutation is implemented through V24D6D5 behind persist-discipline. Suspension lifecycle/decrement is implemented through V24D6D6A/B (commits `219628d`/`b4291d9`). V24D6D7 DTO/API/frontend suspension visibility and lineup blocking now complete (backend `6aadcd5`, frontend `8097ca9`+`69bf879`). Yellow-card suspension threshold is complete through V24D6H (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`). Injury recovery lifecycle and form/morale remain deferred.
 
 ---
 
@@ -278,7 +278,7 @@ app:
 | V24 result diverges from V23 stability | MEDIUM | HIGH | Extensive regression testing before production enable |
 | V24 performance slower than quick sim | MEDIUM | MEDIUM | Benchmark in dev before staging; async option for future |
 | Accidental production enablement | LOW | HIGH | All flags default false; manual opt-in required |
-| Career state side effects (injuries/fatigue/discipline) | LOW | MEDIUM | Injury + fatigue + discipline + suspension lifecycle mutation exists behind `mutate-career-state` + respective persist flag; V24D6D7A/B DTO/API/frontend suspension visibility and lineup blocking now complete; form deferred; yellow-card threshold and injury recovery lifecycle deferred |
+| Career state side effects (injuries/fatigue/discipline) | LOW | MEDIUM | Injury + fatigue + discipline + suspension lifecycle mutation exists behind `mutate-career-state` + respective persist flag; V24D6D7A/B DTO/API/frontend suspension visibility and lineup blocking now complete; yellow-card threshold (5 → 1-match suspension) implemented through V24D6H; form and injury recovery lifecycle deferred |
 | Frontend depends on null shotCoordinate | MEDIUM | LOW | V24D3C now attaches shotCoordinate to shot-result events; frontend must still handle null for non-shot events, old persisted details, or missing data |
 
 ---
@@ -358,7 +358,7 @@ V24D5A/V24D5B/V24D5C/V24D5D/V24D5F, V24D3C, V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24
 - No further V24 schema enrichment in V24D5; V24D3C shotCoordinate attachment is complete, and future schema work requires separate approval.
 - No `MatchFixture.MatchResultData` schema change
 - No `CareerSave` schema change unless separately planned
-- No `SessionPlayer` mutation for cards/form (injury+fatigue+discipline+suspension pipeline complete through V24D6D6; V24D6D7A DTO/API suspension exposure and lineup blocking now complete; form deferred; yellow-card threshold and injury recovery lifecycle deferred)
+- No `SessionPlayer` mutation for cards/form (injury+fatigue+discipline+suspension pipeline complete through V24D6H; V24D6D7A DTO/API suspension exposure and lineup blocking now complete; V24D6H yellow-card threshold (5 → 1-match suspension) implemented; form and injury recovery lifecycle deferred)
 - No automatic production enablement
 - No removal of V23 path
 - No replacement of `DefaultMatchSimulator`
@@ -560,7 +560,7 @@ After any V24 change, the full regression gate:
 mvn test -Dtest=V24MatchContextFactoryTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,V24MetricsValidationTest,V24PoissonValidationTest,MatchEngineImplTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24LeagueSimulationPathTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24PlayerRatingsPersistenceTest,V24ShotCoordinateAttachmentTest,SessionPlayerDTODisciplineFieldsTest,LineupBlockingTest,LineupCommandUseCaseImplAutoSelectTest
 ```
 
-**Expected:** 602 tests (regression gate), 0 failures; 602 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5 + 35 V24D6D6 + 14 V24D6D7).
+**Expected:** 623 tests (regression gate), 0 failures; 623 full suite total (602 baseline + 21 V24D6H).
 
 ---
 

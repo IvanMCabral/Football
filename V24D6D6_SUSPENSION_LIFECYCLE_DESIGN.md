@@ -4,7 +4,7 @@
 **Branch:** `mvp-1-performance-cleanup`
 **Latest backend implementation commits:** `219628d` (V24D6D6A — V24SuspensionLifecycleApplier + unit tests), `b4291d9` (V24D6D6B — LeagueSimulator suspension lifecycle wiring + deterministic integration tests)
 **Latest docs commit:** this file
-**Tests:** V24D6D6 phase tests: 588 full suite total at D6 completion (558 baseline + 30 V24D6D6), 0 failures; mutation + lifecycle focused gate 171 (144 baseline + 27 V24D6D6), 0 failures. Current backend suite after V24D6D7A is 602 tests, 0 failures.
+**Tests:** V24D6D6 phase tests: 588 full suite total at D6 completion (558 baseline + 30 V24D6D6), 0 failures; mutation + lifecycle focused gate 171 (144 baseline + 27 V24D6D6), 0 failures. Current backend suite after V24D6H is 623 tests, 0 failures.
 **No production code changes pending in this phase**
 
 ---

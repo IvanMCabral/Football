@@ -1,9 +1,10 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `6aadcd5` (V24D6D7 complete — backend suspension DTO exposure and lineup blocking)
-**Status:** V24D6D7 COMPLETE — backend DTO/API suspension exposure + lineup blocking (`6aadcd5`), frontend warnings (`8097ca9`), frontend suspended badges (`69bf879`), frontend accessibility audit (no code changes). Form deferred.
-**Test status:** 602 total (588 baseline + 14 V24D6D7), 0 failures; regression gate 602 tests, 0 failures
+**Latest commit:** `980be03` (V24D6H4 — yellow threshold lifecycle integration; H1-H4 complete)
+**Status:** V24D6H COMPLETE — yellow-card threshold (5 → 1-match suspension), RED precedence, subtract-5 reset, LeagueSimulator snapshot tracking, no frontend changes required. Form/morale and injury recovery lifecycle deferred.
+**Test status:** 623 total (602 baseline + 21 V24D6H2-H4 tests), 0 failures; mutation/lifecycle gate 206, 0 failures
+**Test table:** V24DisciplineMutationApplierTest 27 | V24CareerMutationServiceTest 53 | V24CareerMutationIntegrationTest 39 | mutation/lifecycle gate 206
 **Date:** 2026-05-16
 
 ---
@@ -132,7 +133,7 @@ public final class MatchQualityComputer {
 | `SessionPlayerDisciplineFieldsTest` | 8 | V24D6D2: SessionPlayer discipline fields, null-safe getters, default values, initDefaults, field initialization |
 | `V24FatigueMutationApplierTest` | 30 | V24D6C1 + V24D6F3: energy drain, null guards, flag combinations, floor at 0, unknown player skip, injured skip, substitute-only drain, custom drain values, null energy default, all-injured skip, relatedPlayerId substitute drain, null playerId graceful handling |
 
-**Total: 602 tests, 0 failures** (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5 + 35 V24D6D6 + 14 V24D6D7)
+**Total: 623 tests, 0 failures** (602 baseline + 21 V24D6H: 11 applier + 5 service + 4 integration + 1 disciplineResult)
 
 ---
 
@@ -502,7 +503,7 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 ```
 mvn test -Dtest=V24ShotCoordinateAttachmentTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,V24MetricsValidationTest,V24PoissonValidationTest,MatchEngineImplTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingsPersistenceTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24MatchContextFactoryTest,V24InjuryMutationApplierTest,V24FatigueMutationApplierTest,V24CareerMutationServiceTest,V24CareerMutationIntegrationTest,SessionPlayerDTODisciplineFieldsTest,LineupBlockingTest,LineupCommandUseCaseImplAutoSelectTest
 ```
-Expected: 602 tests (regression gate), 0 failures; 602 full suite total (112 V23 + 8 V24A + 22 V24B + 58 V24C + 15 V24D1 + 22 V24D2 + 17 V24D3A + 31 V24D3B + 8 V24D3C + 24 V24D4A + 13 V24D4B + 12 V24D4C + 20 V24D5A + 11 V24D5B + 9 V24D5C + 12 V24D5D + 12 V24D5F + 21 V24D6B1 + 33 V24D6B2/C2 + 19 V24D6B3/C3 + 27 V24D6C1 + 7 V24D6F1 + 2 V24D6F2 + 6 V24D6F3 + 8 V24D6D2 + 16 V24D6D3 + 7 V24D6D4 + 6 V24D6D5 + 35 V24D6D6 + 14 V24D6D7).
+Expected: 623 tests (regression gate), 0 failures; 623 full suite total (602 baseline + 21 V24D6H).
 
 ---
 

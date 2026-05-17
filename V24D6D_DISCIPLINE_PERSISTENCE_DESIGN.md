@@ -1,11 +1,12 @@
 # V24D6D — Discipline/Cards Persistence Design Document
 
-**Status:** V24D6D1–D7 IMPLEMENTATION COMPLETE — V24D6D6 suspension lifecycle wired in LeagueSimulator; V24D6D7A DTO/API suspension exposure and lineup blocking complete; V24D6D7B1/B2 frontend suspension warnings/badges complete; V24DetailedMatchEngineProvider interface enables deterministic test injection
+**Status:** V24D6D1–D7+V24D6H IMPLEMENTATION COMPLETE — V24D6D6 suspension lifecycle wired in LeagueSimulator; V24D6D7A DTO/API suspension exposure and lineup blocking complete; V24D6D7B1/B2 frontend suspension warnings/badges complete; V24D6H yellow-card threshold (5 → 1-match suspension) implemented via V24DisciplineMutationApplier; threshold-suspended players tracked via LeagueSimulator snapshot comparison; V24DetailedMatchEngineProvider interface enables deterministic test injection; V24D6G3/G4A/G4B/G5A/G6A and V24D6G7 (audit — no code changes) in separate frontend repo
 **Branch:** `mvp-1-performance-cleanup`
-**Latest backend implementation commits:** `0f4ab39` (V24D6D5 discipline wiring), `219628d` (V24D6D6A suspension lifecycle applier), `b4291d9` (V24D6D6B suspension lifecycle wiring), `6aadcd5` (V24D6D7A DTO/API suspension exposure and lineup blocking)
-**Latest docs commit:** this file (V24D6D7C documentation update)
-**Tests:** 602, 0 failures (558 baseline + 30 V24D6D6 + 14 V24D6D7); mutation focused gate 171 (144 baseline + 27 V24D6D6), 0 failures
-**No production code changes in V24D6D1 (design only); V24D6D2/D3/D4/D5/D6A/D6B/D7A production code committed separately**
+**Latest backend implementation commits:** `0f4ab39` (V24D6D5 discipline wiring), `219628d` (V24D6D6A suspension lifecycle applier), `b4291d9` (V24D6D6B suspension lifecycle wiring), `6aadcd5` (V24D6D7A DTO/API suspension exposure), `8b747bd` (V24D6H1 design), `6a07173` (V24D6H2 applier), `ab1f7b5` (V24D6H3 service tests), `980be03` (V24D6H4 lifecycle integration)
+**Latest docs commit:** this file (V24D6D7C+V24D6H docs update)
+**Tests:** 623, 0 failures (602 baseline + 21 V24D6H); mutation/lifecycle focused gate 206, 0 failures
+**Remaining deferred:** Form/morale mutation, injury recovery lifecycle, advanced/competition-specific discipline rules, optional frontend yellow counter display
+**No production code changes in V24D6D1 (design only); V24D6D2/D3/D4/D5/D6A/D6B/D7A production code committed separately; V24D6H production code committed with respective H1-H4 commits**
 
 ---
 
@@ -19,7 +20,7 @@ V24 already generates match-local card events. During a match:
 - `V24PlayerRatingModel` applies performance penalties for yellow (-0.3) and red (-1.5) cards post-match.
 - `V24PlayerMatchStatsModel` records card counts per match.
 
-V24 detailed match data and player ratings can therefore display per-match card statistics. **V24D6D2-D7 now implement persistent career discipline/suspension state.** Yellow cards accumulate on `SessionPlayer.yellowCards`, red cards accumulate on `SessionPlayer.redCards`, and red cards set `SessionPlayer.suspended=true` with `suspensionRemainingMatches=1`. V24D6D6A/B implements suspension lifecycle/decrement (commits `219628d`/`b4291d9`). V24D6D7A implements DTO/API suspension exposure and lineup blocking (backend commit `6aadcd5`). V24D6D7B1/B2 implements frontend suspension warnings and badges (frontend commits `8097ca9`+`69bf879`). DTO/API/frontend suspension visibility and backend lineup blocking are complete. Remaining work is yellow-card suspension threshold, injury recovery lifecycle, form/morale, and advanced discipline rules.
+V24 detailed match data and player ratings can therefore display per-match card statistics. **V24D6D2-D7 now implement persistent career discipline/suspension state.** Yellow cards accumulate on `SessionPlayer.yellowCards`, red cards accumulate on `SessionPlayer.redCards`, and red cards set `SessionPlayer.suspended=true` with `suspensionRemainingMatches=1`. V24D6D6A/B implements suspension lifecycle/decrement (commits `219628d`/`b4291d9`). V24D6D7A implements DTO/API suspension exposure and lineup blocking (backend commit `6aadcd5`). V24D6D7B1/B2 implements frontend suspension warnings and badges (frontend commits `8097ca9`+`69bf879`). V24D6H implements yellow-card suspension threshold (5 → 1-match suspension) via V24DisciplineMutationApplier with LeagueSimulator snapshot tracking (commits `8b747bd`/`6a07173`/`ab1f7b5`/`980be03`). DTO/API/frontend suspension visibility, backend lineup blocking, and yellow threshold are complete. Remaining deferred: injury recovery lifecycle, form/morale, advanced discipline rules, optional frontend yellow counter display.
 
 V24D6D designs how red cards/suspensions and optional yellow accumulation persist across matches, so that:
 
@@ -405,7 +406,7 @@ Each phase is independent enough to be reviewed and committed separately.
 - [x] V24D6D6: Suspension lifecycle implemented and wired (commits `219628d`/`b4291d9`)
 - [x] V24D6D7A: Backend DTO/API suspension exposure and lineup blocking implemented (commit `6aadcd5`)
 - [x] V24D6D7B1/B2: Frontend suspension warnings and badges implemented (commits `8097ca9`/`69bf879`)
-- [x] Backend regression gate: 602 tests, 0 failures
+- [x] Backend regression gate: 623 tests, 0 failures
 - [x] Frontend V24D6D7B1/B2: `npx tsc --noEmit` + `npx ng build --configuration production` passed
 - [x] V24D6D7B3: accessibility/polish audit found no additional code changes required
 - [x] V24D6D1-D6 had no API/frontend changes; V24D6D7 intentionally added backend DTO/API exposure, lineup blocking, and frontend suspension indicators
