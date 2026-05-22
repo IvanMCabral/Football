@@ -1,11 +1,11 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `7886308` (V24D6I3 — injury recovery lifecycle wiring; I1/I2/I3 complete; 681 tests)
-**Status:** V24D6I COMPLETE — injury recovery lifecycle, automatic decrement, full recovery clearing. V24D6H COMPLETE. V24D6E COMPLETE.
-**Test status:** 681 total (651 pre-I + 30 I2/I3), 0 failures; mutation/lifecycle/form gate 151, 0 failures
-**Test table:** V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 52 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | focused gate 151
-**Date:** 2026-05-17
+**Latest commit:** `cb4574e` (V24D6J5 — energy recovery lifecycle wiring; J3/J4/J5 complete; 716 tests)
+**Status:** V24D6J COMPLETE — injured lineup blocking MVP (J3), energy recovery applier + unit tests (J4), energy recovery LeagueSimulator wiring + integration tests (J5). V24D6I COMPLETE. V24D6H COMPLETE. V24D6E COMPLETE.
+**Test status:** 716 total (681 pre-J + 35 new in J3/J4/J5), 0 failures; lifecycle/mutation/integration gate 207, 0 failures
+**Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | focused gate 207
+**Date:** 2026-05-22
 
 ---
 

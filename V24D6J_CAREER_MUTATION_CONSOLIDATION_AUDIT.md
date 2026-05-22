@@ -2,11 +2,11 @@
 
 **Purpose:** Consolidate and verify the complete V24D6 career mutation pipeline end-to-end, identify any gaps or risks, and recommend next implementation phase.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D6J1 — AUDIT COMPLETE
+**Status:** V24D6J — VALIDATION COMPLETE
 **Created:** 2026-05-22
-**Latest implementation commit:** `7886308` (V24D6I3 — injury recovery lifecycle wiring)
-**Latest docs commit:** `f49abad` (V24D6I5 — docs/status update)
-**Tests:** 681 full suite, 0 failures
+**Latest implementation commit:** `cb4574e` (V24D6J5 — energy recovery lifecycle wiring)
+**Latest docs commit:** pending — V24D6J6 docs/status update
+**Tests:** 716 full suite, 0 failures
 
 ---
 
@@ -14,7 +14,7 @@
 
 V24D6 career mutation system spans injury persistence, fatigue persistence, discipline persistence, suspension lifecycle, yellow-card threshold, form persistence, and injury recovery lifecycle. All components are implemented, tested, and wired behind default-false flags. The system is architecturally consistent with no conflicting interactions identified. No schema changes were required. The V23/default path is completely unaffected when V24 mutation flags are disabled.
 
-**Key finding:** The V24D6 mutation pipeline is complete and internally consistent. The primary remaining work is frontend visibility polish, balancing audit, and advanced optional features.
+**Key finding:** The V24D6 mutation pipeline is complete and internally consistent. Energy recovery and injured lineup blocking (V24D6J3-J5) have been implemented since this audit. The primary remaining work is frontend visibility polish, balancing audit, and advanced optional features.
 
 ---
 
@@ -345,18 +345,20 @@ newlyInjuredPlayerIds = postMutationInjured - preMutationInjured
 
 ## 7. Remaining Real Gaps
 
-### 7.1 Confirmed Gaps (Not Implemented)
+### 7.1 Confirmed Gaps — Post-V24D6J Status
 
-| Gap | Priority | Notes |
-|-----|----------|-------|
-| **Energy recovery mechanism** | High | Energy drains via V24D6C but has no automatic recovery between rounds. Players with low energy keep low energy across rounds. No rest/recovery model implemented. |
-| **Backend lineup blocking for injured players** | High | LeagueSimulator does NOT block injured players from starting XI. injured players can be selected in lineup. Frontend may or may not enforce this. |
-| **Optional frontend yellow-card counter display** | Medium | MVP relies on suspended badge only; no visible yellow card count per player |
-| **Optional frontend form display/polish** | Medium | Form exists on SessionPlayer but may not be displayed in frontend UI |
-| **Advanced injury severity model** | Low | All injuries are 2-match duration; no severity scaling |
-| **Team morale/chemistry** | Low | Not modeled in V24 simulation context |
-| **Player season stats** | Low | No per-player season cumulative stats beyond career total |
-| **Advanced/competition-specific discipline rules** | Low | Only standard league rules implemented |
+The following gaps were identified in this audit. After V24D6J3-J5 implementation:
+
+| Gap | Status | Resolution |
+|-----|--------|------------|
+| **Energy recovery mechanism** | ✅ IMPLEMENTED (V24D6J4-J5) | `V24EnergyRecoveryLifecycleApplier` — rest-based +8/round for non-participating players, wired after injury recovery in `LeagueSimulator`. 716 tests, 0 failures. |
+| **Backend lineup blocking for injured players** | ✅ IMPLEMENTED (V24D6J3) | `performAutoSelect()` and `validatePlayerFitness()` now cover `injured=true` AND `injuryRemainingMatches > 0` (stale-data edge case). No injured players can be auto-selected or manually saved. |
+| **Optional frontend yellow-card counter display** | Open | MVP relies on suspended badge only; no visible yellow card count per player |
+| **Optional frontend form display/polish** | Open | Form exists on SessionPlayer but may not be displayed in frontend UI |
+| **Advanced injury severity model** | Open | All injuries are 2-match duration; no severity scaling |
+| **Team morale/chemistry** | Open | Not modeled in V24 simulation context |
+| **Player season stats** | Open | No per-player season cumulative stats beyond career total |
+| **Advanced/competition-specific discipline rules** | Open | Only standard league rules implemented |
 | **Balancing audit for mutation frequency** | Medium | No systematic audit of whether injury/fatigue/card rates are well-balanced for gameplay |
 
 ### 7.2 Lineup Blocking for Injured Players — Audit Required
