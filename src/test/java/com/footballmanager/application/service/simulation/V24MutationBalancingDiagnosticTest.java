@@ -24,12 +24,16 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.footballmanager.application.service.simulation.V24SeasonShapeDiagnosticSupport.SeasonShapeContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -957,6 +961,354 @@ class V24MutationBalancingDiagnosticTest {
                 }
             }
         }
+    }
+
+    // ========================================================================
+    // PATH 3: SEASON-SHAPED DIAGNOSTIC (V24D6K6)
+    // Multi-team league, 38-round season, realistic squad sizes, rotation
+    // ========================================================================
+
+    /**
+     * V24D6K6: Season-shaped diagnostic — primary measurement for tuning readiness.
+     *
+     * Simulates a reduced 8-team league with 25-player squads running 30 rounds
+     * (full home-and-away round-robin = 56 possible matches per team; we run 30).
+     * Uses V24DetailedMatchEngine with all mutation flags enabled.
+     *
+     * This is NOT a full 20-team 38-round league — it is a reduced but season-shaped
+     * sample that captures multi-team dynamics, opponent rotation, and squad depth
+     * pressure that the single-team 50-match diagnostic could not measure.
+     *
+     * Key improvements over K4 rotation-aware diagnostic:
+     * - 8 teams × 30 rounds vs 2 teams × 50 rounds
+     * - 25-player squads vs 22-player squads
+     * - Opponent variety (each team rotates through 7 opponents)
+     * - Realistic fixture density (each team plays ~30 matches)
+     */
+    @Test
+    void diagnostic_seasonShaped_realV24Engine_baselineMetricsForReview() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+        V24DetailedMatchEngine realEngine = new V24DetailedMatchEngine();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null,
+                false,  // useV23LeagueEngine
+                true,   // useV24DetailedEngine
+                false,  // persistDetail
+                fakeStorage,
+                true,   // mutateCareerState
+                true,   // persistInjuries
+                true,   // persistFatigue
+                true,   // persistDiscipline
+                true,   // persistForm
+                realEngine
+        );
+
+        // Create 8-team season shape with 25-player squads, 30 rounds
+        SeasonShapeContext ctx = V24SeasonShapeDiagnosticSupport.createSeasonShapeContext(8, 25, 30);
+        CareerSave career = ctx.career();
+
+        // Initialize starting XI for all teams
+        for (String teamId : ctx.teamIds()) {
+            V24SeasonShapeDiagnosticSupport.selectStartingXI(career, teamId, 11);
+        }
+
+        // ---- Aggregate counters ----
+        int totalNewInjuries = 0;
+        int totalInjuryRecoveries = 0;
+        int totalNewSuspensions = 0;
+        int totalRotations = 0;
+        int totalForcedUnavailableStarters = 0;
+        int totalForcedLowEnergyStarters = 0;
+
+        // Per-round per-team snapshots
+        // Track: energy avg per team per round, unique unavailable per team per round
+        Map<String, List<Double>> teamEnergyByRound = new HashMap<>();
+        Map<String, List<Integer>> teamUnavailableByRound = new HashMap<>();
+        Map<String, List<Integer>> teamInjuredByRound = new HashMap<>();
+        for (String teamId : ctx.teamIds()) {
+            teamEnergyByRound.put(teamId, new ArrayList<>());
+            teamUnavailableByRound.put(teamId, new ArrayList<>());
+            teamInjuredByRound.put(teamId, new ArrayList<>());
+        }
+
+        // Per-team season totals
+        Map<String, Integer> teamInjuryCount = new HashMap<>();
+        Map<String, Integer> teamSuspensionCount = new HashMap<>();
+        Map<String, Integer> teamYellowCards = new HashMap<>();
+        Map<String, Integer> teamRedCards = new HashMap<>();
+        Map<String, Integer> teamRecoveries = new HashMap<>();
+        for (String teamId : ctx.teamIds()) {
+            teamInjuryCount.put(teamId, 0);
+            teamSuspensionCount.put(teamId, 0);
+            teamYellowCards.put(teamId, 0);
+            teamRedCards.put(teamId, 0);
+            teamRecoveries.put(teamId, 0);
+        }
+
+        // ---- Run 30 rounds ----
+        for (int round = 1; round <= 30; round++) {
+            // Per-team pre-state for this round
+            Map<String, Set<String>> preInjured = new HashMap<>();
+            Map<String, Set<String>> preSuspended = new HashMap<>();
+            for (String teamId : ctx.teamIds()) {
+                preInjured.put(teamId, V24SeasonShapeDiagnosticSupport.getInjuredIds(career, teamId));
+                preSuspended.put(teamId, V24SeasonShapeDiagnosticSupport.getSuspendedIds(career, teamId));
+            }
+
+            // Simulate the round
+            simulator.simulateLeagueRound(career, round);
+
+            // Post-round analysis
+            for (String teamId : ctx.teamIds()) {
+                Set<String> postInjured = V24SeasonShapeDiagnosticSupport.getInjuredIds(career, teamId);
+                Set<String> postSuspended = V24SeasonShapeDiagnosticSupport.getSuspendedIds(career, teamId);
+
+                // Newly injured transitions
+                int newlyInjured = 0;
+                for (String id : postInjured) {
+                    if (!preInjured.get(teamId).contains(id)) newlyInjured++;
+                }
+                teamInjuryCount.put(teamId, teamInjuryCount.get(teamId) + newlyInjured);
+                totalNewInjuries += newlyInjured;
+
+                // Injury recoveries (players who were injured before and aren't now)
+                int recovered = 0;
+                for (String id : preInjured.get(teamId)) {
+                    if (!postInjured.contains(id)) recovered++;
+                }
+                teamRecoveries.put(teamId, teamRecoveries.get(teamId) + recovered);
+                totalInjuryRecoveries += recovered;
+
+                // Newly suspended transitions
+                int newlySuspended = 0;
+                for (String id : postSuspended) {
+                    if (!preSuspended.get(teamId).contains(id)) newlySuspended++;
+                }
+                teamSuspensionCount.put(teamId, teamSuspensionCount.get(teamId) + newlySuspended);
+                totalNewSuspensions += newlySuspended;
+
+                // Yellow/red cards
+                teamYellowCards.put(teamId, V24SeasonShapeDiagnosticSupport.countTeamYellowCards(career, teamId));
+                teamRedCards.put(teamId, V24SeasonShapeDiagnosticSupport.countTeamRedCards(career, teamId));
+
+                // Per-round snapshots
+                teamEnergyByRound.get(teamId).add(V24SeasonShapeDiagnosticSupport.computeSquadAvgEnergy(career, teamId));
+                teamUnavailableByRound.get(teamId).add(V24SeasonShapeDiagnosticSupport.countUniqueUnavailable(career, teamId));
+                teamInjuredByRound.get(teamId).add(postInjured.size());
+
+                // Refresh starting XI for next round with rotation
+                V24SeasonShapeDiagnosticSupport.selectStartingXI(career, teamId, 11);
+
+                // Track forced unavailable starters (injured/suspended players in starting XI)
+                List<String> starters = career.getTeamStarting11().get(teamId);
+                if (starters != null) {
+                    for (String sid : starters) {
+                        SessionPlayer p = career.getSessionPlayer(sid);
+                        if (p != null && !V24SeasonShapeDiagnosticSupport.isPlayerAvailable(p)) {
+                            totalForcedUnavailableStarters++;
+                        }
+                    }
+                }
+
+                // Track forced low-energy starters (energy <= 20 must start)
+                if (starters != null) {
+                    for (String sid : starters) {
+                        SessionPlayer p = career.getSessionPlayer(sid);
+                        if (p != null && p.getEnergy() <= 20 &&
+                                V24SeasonShapeDiagnosticSupport.isPlayerAvailable(p)) {
+                            totalForcedLowEnergyStarters++;
+                        }
+                    }
+                }
+
+                // Energy-based rotation
+                totalRotations += V24SeasonShapeDiagnosticSupport.rotateDueToEnergy(career, teamId, 30, 15);
+            }
+        }
+
+        // ---- Compute aggregate stats ----
+        int totalFixtures = 8 * 30 / 2; // 8 teams, each plays ~30/2 opponents per round
+        int totalSquadSize = 8 * 25; // 200 total players in league
+
+        // League-level averages
+        double leagueAvgInjuriesPerTeam = (double) totalNewInjuries / ctx.teamIds().size();
+        double leagueAvgInjuriesPerMatch = (double) totalNewInjuries / 30.0;
+        double leagueAvgUnavailable = 0;
+        double leagueAvgEnergyRound10 = 0;
+        double leagueAvgEnergyRound20 = 0;
+        double leagueAvgEnergyRound30 = 0;
+        double leagueAvgStarterEnergyRound10 = 0;
+        double leagueAvgStarterEnergyRound20 = 0;
+        double leagueAvgStarterEnergyRound30 = 0;
+        double leagueAvgFormEnd = 0;
+        int leagueMinFormEnd = 99;
+        int leagueMaxFormEnd = 1;
+        int leagueTotalYellows = 0;
+        int leagueTotalReds = 0;
+        int leagueTotalSuspensions = 0;
+        int maxUnavailableAnyTeam = 0;
+        int minUnavailableAnyTeam = 99;
+
+        for (String teamId : ctx.teamIds()) {
+            List<Double> energies = teamEnergyByRound.get(teamId);
+            if (energies.size() >= 10) leagueAvgEnergyRound10 += energies.get(9);
+            if (energies.size() >= 20) leagueAvgEnergyRound20 += energies.get(19);
+            if (energies.size() >= 30) leagueAvgEnergyRound30 += energies.get(29);
+
+            List<Integer> unavailable = teamUnavailableByRound.get(teamId);
+            int maxUn = unavailable.stream().mapToInt(Integer::intValue).max().orElse(0);
+            int minUn = unavailable.stream().mapToInt(Integer::intValue).min().orElse(0);
+            if (maxUn > maxUnavailableAnyTeam) maxUnavailableAnyTeam = maxUn;
+            if (minUn < minUnavailableAnyTeam) minUnavailableAnyTeam = minUn;
+            leagueAvgUnavailable += unavailable.stream().mapToInt(Integer::intValue).average().orElse(0);
+
+            leagueAvgFormEnd += V24SeasonShapeDiagnosticSupport.computeTeamAvgForm(career, teamId);
+            int tMinForm = V24SeasonShapeDiagnosticSupport.computeTeamMinForm(career, teamId);
+            int tMaxForm = V24SeasonShapeDiagnosticSupport.computeTeamMaxForm(career, teamId);
+            if (tMinForm < leagueMinFormEnd) leagueMinFormEnd = tMinForm;
+            if (tMaxForm > leagueMaxFormEnd) leagueMaxFormEnd = tMaxForm;
+
+            leagueTotalYellows += teamYellowCards.get(teamId);
+            leagueTotalReds += teamRedCards.get(teamId);
+            leagueTotalSuspensions += teamSuspensionCount.get(teamId);
+        }
+
+        int teamCount = ctx.teamIds().size();
+        leagueAvgUnavailable /= teamCount;
+        leagueAvgEnergyRound10 /= teamCount;
+        leagueAvgEnergyRound20 /= teamCount;
+        leagueAvgEnergyRound30 /= teamCount;
+        leagueAvgFormEnd /= teamCount;
+
+        // Per-team injury/recovery summary
+        int minTeamInjuries = Integer.MAX_VALUE;
+        int maxTeamInjuries = 0;
+        int minTeamRecoveries = Integer.MAX_VALUE;
+        int maxTeamRecoveries = 0;
+        for (String teamId : ctx.teamIds()) {
+            int inj = teamInjuryCount.get(teamId);
+            int rec = teamRecoveries.get(teamId);
+            if (inj < minTeamInjuries) minTeamInjuries = inj;
+            if (inj > maxTeamInjuries) maxTeamInjuries = inj;
+            if (rec < minTeamRecoveries) minTeamRecoveries = rec;
+            if (rec > maxTeamRecoveries) maxTeamRecoveries = rec;
+        }
+
+        // ---- PRINT SEASON-SHAPED REPORT ----
+        System.out.println("\n========================================");
+        System.out.println("V24D6K6 SEASON-SHAPED REAL V24 ENGINE DIAGNOSTIC");
+        System.out.println("========================================");
+        System.out.println("Engine: V24DetailedMatchEngine (production)");
+        System.out.printf(Locale.US, "Teams: %d%n", ctx.teamIds().size());
+        System.out.printf(Locale.US, "Rounds: 30%n");
+        System.out.printf(Locale.US, "Squad size per team: %d%n", 25);
+        System.out.printf(Locale.US, "Total fixtures: %d (reduced league note below)%n", 30 * 4);
+        System.out.println("NOTE: This is a REDUCED season-shaped diagnostic (8 teams, 30 rounds).");
+        System.out.println("      A full league would have 20 teams x 38 rounds.");
+        System.out.println("      This reduced shape captures multi-team rotation and squad depth");
+        System.out.println("      pressure that single-team diagnostics cannot measure.");
+        System.out.println("Mode: ROTATION-AWARE (energy + availability per team)");
+        System.out.println("Mutation flags: ALL ENABLED");
+        System.out.println("========================================");
+        System.out.println("INJURY (league aggregate)");
+        System.out.printf(Locale.US, "  Total newly injured transitions (league): %d%n", totalNewInjuries);
+        System.out.printf(Locale.US, "  Avg per team per season: %.1f%n", leagueAvgInjuriesPerTeam);
+        System.out.printf(Locale.US, "  Avg per match: %.3f%n", leagueAvgInjuriesPerMatch);
+        System.out.printf(Locale.US, "  Per-team injuries min/avg/max: %d/%.1f/%d%n",
+                minTeamInjuries, leagueAvgInjuriesPerTeam, maxTeamInjuries);
+        System.out.println("----------------------------------------");
+        System.out.println("INJURY RECOVERY (league aggregate)");
+        System.out.printf(Locale.US, "  Total recoveries triggered: %d%n", totalInjuryRecoveries);
+        System.out.printf(Locale.US, "  Per-team recoveries min/avg/max: %d/%.1f/%d%n",
+                minTeamRecoveries, (double) totalInjuryRecoveries / teamCount, maxTeamRecoveries);
+        System.out.println("----------------------------------------");
+        System.out.println("AVAILABILITY (unique unavailable per team per round)");
+        System.out.printf(Locale.US, "  League avg unavailable at any round: %.1f%n", leagueAvgUnavailable);
+        System.out.printf(Locale.US, "  Max unavailable any team at any round: %d%n", maxUnavailableAnyTeam);
+        System.out.printf(Locale.US, "  Min unavailable any team at any round: %d%n", minUnavailableAnyTeam);
+        System.out.printf(Locale.US, "  Forced unavailable starters (entire run): %d%n", totalForcedUnavailableStarters);
+        System.out.printf(Locale.US, "  Forced low-energy starters (entire run): %d%n", totalForcedLowEnergyStarters);
+        System.out.println("----------------------------------------");
+        System.out.println("ENERGY CHECKPOINTS (league avg squad energy)");
+        System.out.printf(Locale.US, "  Round 10: avg=%.1f%n", leagueAvgEnergyRound10);
+        System.out.printf(Locale.US, "  Round 20: avg=%.1f%n", leagueAvgEnergyRound20);
+        System.out.printf(Locale.US, "  Round 30: avg=%.1f%n", leagueAvgEnergyRound30);
+        System.out.println("----------------------------------------");
+        System.out.println("ROTATION (energy-based substitutions)");
+        System.out.printf(Locale.US, "  Total rotations triggered: %d%n", totalRotations);
+        System.out.printf(Locale.US, "  Avg rotations per team: %.1f%n", (double) totalRotations / teamCount);
+        System.out.println("----------------------------------------");
+        System.out.println("DISCIPLINE (league aggregate)");
+        System.out.printf(Locale.US, "  Total yellow cards: %d%n", leagueTotalYellows);
+        System.out.printf(Locale.US, "  Total red cards: %d%n", leagueTotalReds);
+        System.out.printf(Locale.US, "  Total suspensions: %d%n", leagueTotalSuspensions);
+        System.out.printf(Locale.US, "  Suspensions per team: %.1f%n", (double) leagueTotalSuspensions / teamCount);
+        System.out.println("----------------------------------------");
+        System.out.println("FORM (season end)");
+        System.out.printf(Locale.US, "  League avg form: %.1f%n", leagueAvgFormEnd);
+        System.out.printf(Locale.US, "  League min form: %d%n", leagueMinFormEnd);
+        System.out.printf(Locale.US, "  League max form: %d%n", leagueMaxFormEnd);
+        System.out.println("========================================");
+
+        // ---- INTERPRETATION ----
+        System.out.println("\n[INTERPRETATION]");
+        System.out.println("K6 SEASON-SHAPED vs K4 ROTATION-AWARE (50-match single-team):");
+        System.out.printf(Locale.US, "  Injuries: K6 %.1f/team vs K4 22/team (50-match single-team)%n", leagueAvgInjuriesPerTeam);
+        System.out.printf(Locale.US, "  Recoveries: K6 %d vs K4 26 (50-match)%n", totalInjuryRecoveries);
+        System.out.printf(Locale.US, "  Max unavailable: K6 %d vs K4 22 (single-team stress)%n", maxUnavailableAnyTeam);
+        System.out.printf(Locale.US, "  Energy R10: K6 %.1f vs K4 15.8 (single-team)%n", leagueAvgEnergyRound10);
+        System.out.println();
+        System.out.println("[TUNING RECOMMENDATION]");
+
+        // Check against K5 acceptance criteria
+        boolean injuriesInTarget = leagueAvgInjuriesPerTeam >= 3 && leagueAvgInjuriesPerTeam <= 12;
+        boolean maxUnavailableOk = maxUnavailableAnyTeam <= 8;
+        boolean energyOkRound20 = leagueAvgEnergyRound20 >= 35;
+        boolean noSaturation = leagueMinFormEnd > 1 && leagueMaxFormEnd < 99;
+
+        if (injuriesInTarget && maxUnavailableOk && energyOkRound20 && noSaturation) {
+            System.out.println("Season-shaped diagnostic shows ACCEPTABLE ranges.");
+            System.out.println("Injuries per team: " + String.format(Locale.US, "%.1f", leagueAvgInjuriesPerTeam) + " (target 3-12).");
+            System.out.println("Max unavailable: " + maxUnavailableAnyTeam + " (target <= 8).");
+            System.out.println("Energy R20: " + String.format(Locale.US, "%.1f", leagueAvgEnergyRound20) + " (target >= 35).");
+            System.out.println("No tuning recommended. V24 constants are within acceptable ranges.");
+            System.out.println("Recommendation: proceed with V24D6K7 status update, do NOT tune constants.");
+        } else {
+            System.out.println("Season-shaped diagnostic shows concerning values:");
+            if (!injuriesInTarget)
+                System.out.println("  - Injuries per team: " + String.format(Locale.US, "%.1f", leagueAvgInjuriesPerTeam) + " OUTSIDE target 3-12");
+            if (!maxUnavailableOk)
+                System.out.println("  - Max unavailable: " + maxUnavailableAnyTeam + " ABOVE target <= 8");
+            if (!energyOkRound20)
+                System.out.println("  - Energy R20: " + String.format(Locale.US, "%.1f", leagueAvgEnergyRound20) + " BELOW target >= 35");
+            if (!noSaturation)
+                System.out.println("  - Form saturation detected: min=" + leagueMinFormEnd + " max=" + leagueMaxFormEnd);
+            System.out.println("Recommendation: V24D6K7 should consider conservative tuning for the above areas.");
+        }
+        System.out.println("========================================\n");
+
+        // ---- INVARIANT ASSERTIONS ----
+        assertTrue(career.getSessionPlayers().size() > 0, "Must have players in career");
+
+        for (SessionPlayer p : career.getSessionPlayers().values()) {
+            assertTrue(p.getEnergy() >= 0, "Energy must not be negative: " + p.getSessionPlayerId());
+            assertTrue(p.getEnergy() <= 100, "Energy must not exceed 100: " + p.getSessionPlayerId());
+            assertTrue(p.getForm() >= 1 && p.getForm() <= 99,
+                    "Form must be in [1,99]: " + p.getSessionPlayerId() + " = " + p.getForm());
+            if (p.getInjuryRemainingMatches() != null) {
+                assertTrue(p.getInjuryRemainingMatches() >= 0,
+                        "Injury remaining must not be negative: " + p.getSessionPlayerId());
+            }
+            if (p.getSuspensionRemainingMatches() != null) {
+                assertTrue(p.getSuspensionRemainingMatches() >= 0,
+                        "Suspension remaining must not be negative: " + p.getSessionPlayerId());
+            }
+        }
+
+        assertNotNull(career.getTournamentState(), "Tournament state must not be null");
+        assertTrue(maxUnavailableAnyTeam <= 25, "Unavailable must not exceed squad size");
     }
 
     // ========================================================================
