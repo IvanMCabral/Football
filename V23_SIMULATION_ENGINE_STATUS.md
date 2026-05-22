@@ -1,10 +1,10 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `e65cb03` (V24D6E4 — form mutation integration; E1-E4 complete; 651 tests)
-**Status:** V24D6H COMPLETE — yellow-card threshold (5 → 1-match suspension), RED precedence, subtract-5 reset, LeagueSimulator snapshot tracking, no frontend changes required. V24D6E COMPLETE — form persistence from V24 player ratings. Injury recovery lifecycle deferred.
-**Test status:** 651 total (602 baseline + 49 V24D6H+V24D6E), 0 failures; mutation/lifecycle/form gate 234, 0 failures
-**Test table:** V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 44 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | focused gate 234
+**Latest commit:** `7886308` (V24D6I3 — injury recovery lifecycle wiring; I1/I2/I3 complete; 681 tests)
+**Status:** V24D6I COMPLETE — injury recovery lifecycle, automatic decrement, full recovery clearing. V24D6H COMPLETE. V24D6E COMPLETE.
+**Test status:** 681 total (651 pre-I + 30 I2/I3), 0 failures; mutation/lifecycle/form gate 151, 0 failures
+**Test table:** V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 52 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | focused gate 151
 **Date:** 2026-05-17
 
 ---

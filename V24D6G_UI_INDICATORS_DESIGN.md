@@ -2,7 +2,7 @@
 
 **Status:** V24D6G — DESIGN + V24D6G3 + V24D6G4A + V24D6G4B + V24D6G5A + V24D6G6A + V24D6G7 AUDIT COMPLETE
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `e65cb03` (V24D6E4 — form mutation integration; V24D6E complete; 651 tests, 0 failures)
+**Latest implementation commit:** `7886308` (V24D6I3 — injury recovery lifecycle wiring; V24D6I complete; 681 tests, 0 failures)
 **V24D6G3 implementation commit:** `3675431` (frontend squad indicators, front-ciber/project mvp-1)
 **V24D6G4A implementation commit:** `362c647` (frontend lineup condition warnings, front-ciber/project mvp-1)
 **V24D6G4B implementation commit:** `c4681e2` (frontend lineup confirmation warning, front-ciber/project mvp-1)
@@ -10,8 +10,8 @@
 **V24D6G6A implementation commit:** `80ad1ed` (frontend match detail condition summary, front-ciber/project mvp-1)
 **V24D6D7B1 implementation commit:** `8097ca9` (frontend suspension warnings, front-ciber/project mvp-1)
 **V24D6D7B2 implementation commit:** `69bf879` (frontend suspended badges, front-ciber/project mvp-1)
-**Latest docs commit:** pending — V24D6E5 documentation update
-**Tests:** 651 full suite, 0 failures
+**Latest docs commit:** pending — V24D6I5 documentation update (injury recovery lifecycle docs)
+**Tests:** 681 full suite, 0 failures
 **Created:** 2026-05-13
 **Updated:** 2026-05-17
 
@@ -31,9 +31,9 @@ However, these career mutations are invisible to the user unless the UI surfaces
 
 | Item | Value |
 |------|-------|
-| Latest implementation commit | `e65cb03` — V24D6E4 (form mutation integration; V24D6E complete; 651 tests, 0 failures) |
-| Latest docs commit | pending — V24D6E5 documentation update |
-| Tests | 651, 0 failures |
+| Latest implementation commit | `7886308` — V24D6I3 (injury recovery lifecycle wiring; V24D6I complete; 681 tests, 0 failures) |
+| Latest docs commit | pending — V24D6I5 documentation update |
+| Tests | 681, 0 failures |
 | Injury mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-injuries=true` |
 | Fatigue mutation | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-fatigue=true` |
 | Discipline persistence | Wired behind `use-v24-detailed-engine=true` + `mutate-career-state=true` + `persist-discipline=true` |
@@ -41,7 +41,7 @@ However, these career mutations are invisible to the user unless the UI surfaces
 | All mutation flags | Default false |
 | DTO/API/frontend suspension visibility | Implemented through V24D6D7A (backend `6aadcd5`) and V24D6D7B1/B2 (frontend `8097ca9`+`69bf879`) |
 | Form/morale | Complete (V24D6E) |
-| Backend test count | 651 total (602 baseline + 49 V24D6H+V24D6E), 0 failures |
+| Backend test count | 681 total (602 baseline + 79 V24D6H+V24D6E+V24D6I), 0 failures |
 
 **Injury mutation target fields on `SessionPlayer`:**
 - `injured` (boolean)
@@ -51,7 +51,7 @@ However, these career mutations are invisible to the user unless the UI surfaces
 **Fatigue mutation target field on `SessionPlayer`:**
 - `energy` (int, 0–100, default 100)
 
-Discipline/card persistence and suspension lifecycle are implemented through V24D6D2-D6. V24D6D7A/B completed suspension visibility: backend DTO/API exposure and lineup blocking in `6aadcd5`, frontend dashboard/squad warnings in `8097ca9`, and PlayerCard/LineupPlayerCard suspended badges in `69bf879`. V24D6E form persistence now complete (`0388a57`/`9c101d1`/`f801299`/`e65cb03`); injury recovery lifecycle deferred. V24D6G originally covered injury/fatigue indicators; suspension indicators were completed later through V24D6D7A/B.
+Discipline/card persistence and suspension lifecycle are implemented through V24D6D2-D6. V24D6D7A/B completed suspension visibility: backend DTO/API exposure and lineup blocking in `6aadcd5`, frontend dashboard/squad warnings in `8097ca9`, and PlayerCard/LineupPlayerCard suspended badges in `69bf879`. V24D6E form persistence now complete (`0388a57`/`9c101d1`/`f801299`/`e65cb03`); V24D6I injury recovery lifecycle now complete (`4ad4210`/`7208821`/`7886308`). V24D6G originally covered injury/fatigue indicators; suspension indicators were completed later through V24D6D7A/B.
 
 ---
 
@@ -96,7 +96,7 @@ V24D6G2 confirmed the following `SessionPlayer` fields are accessible to the fro
 | `energy` | int (0–100, default 100) | ✅ Squad endpoint + lineup endpoint | Target of V24D6C fatigue mutation |
 | `injured` | boolean | ✅ Squad endpoint + lineup endpoint | Target of V24D6B injury mutation |
 | `injuryType` | String | ✅ Squad endpoint only | e.g., "MATCH_INJURY" default from applier |
-| `injuryRemainingMatches` | int | ✅ Squad endpoint only | Set by V24 injury mutation; automatic injury recovery/decrement is not implemented yet |
+| `injuryRemainingMatches` | int | ✅ Squad endpoint only | Set by V24 injury mutation; automatically decremented/cleared by V24D6I injury recovery lifecycle |
 | `form` | int? | ✅ Via squad endpoint | Mutated by V24D6E when persist-form=true; optional frontend display/polish remains future work |
 | `position` | String (GK/DEF/MID/WINGER/ATT) | ✅ Already available | Used for lineup filtering |
 | `name` | String | ✅ Already available | Display label |
@@ -577,7 +577,7 @@ V24D6G1 was design-only. V24D6G2 was audit-only. V24D6G3, V24D6G4A, V24D6G4B, V2
 - [x] Phased implementation plan defined (G1–G7)
 - [x] Testing strategy outlined for future phases
 - [x] Risks documented with mitigations
-- [x] Recommendation: V24D6G is complete. All implementation and audit phases done — no further V24D6G work unless UX review requests specific polish. Recommended next: injury recovery lifecycle, advanced discipline rules, or optional yellow-card counter UI if UX requests it. V24D6D, V24D6E, V24D6F, V24D6D7, and V24D6H are complete. V24D6G4C deferred — squad-editor-modal was untracked/dead work and was NOT committed.
+- [x] Recommendation: V24D6G is complete. All implementation and audit phases done — no further V24D6G work unless UX review requests specific polish. Recommended next: consolidation or new gap analysis (injury recovery lifecycle V24D6I is complete), or optional yellow-card counter UI if UX requests it. V24D6D, V24D6E, V24D6F, V24D6D7, V24D6H, and V24D6I are complete. V24D6G4C deferred — squad-editor-modal was untracked/dead work and was NOT committed.
 - [x] Non-goals explicit
 - [x] V24D6D cards/suspensions persistence is complete; suspension visibility completed through V24D6D7A/B
 - [x] V24D6E form/morale backend complete; optional frontend form display/polish deferred

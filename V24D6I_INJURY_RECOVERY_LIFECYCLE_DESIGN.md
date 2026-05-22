@@ -1,17 +1,19 @@
 # V24D6I — Injury Recovery Lifecycle Design
 
-**Status:** V24D6I1 — AUDIT COMPLETE / DESIGN DRAFT
+**Status:** V24D6I1-I5 COMPLETE
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `e65cb03` (V24D6E4 — form mutation integration; 651 tests)
-**Latest docs commit:** `18f3777` (V24D6E5 — form persistence docs update)
-**Tests:** 651 full suite, 0 failures
-**Created:** 2026-05-22
+**Latest implementation commit:** `7886308` (V24D6I3 — injury recovery lifecycle wiring)
+**Latest docs commit:** `4ad4210` (V24D6I1 — design document)
+**Tests:** 681 full suite total (651 pre-I + 30 I2/I3), 0 failures
+**Date:** 2026-05-22
 
 ---
 
 ## Executive Summary
 
-V24D6B injury persistence is complete — INJURY events from the V24 timeline update `SessionPlayer.injured=true`, `SessionPlayer.injuryType`, and `SessionPlayer.injuryRemainingMatches=2`. However, the **recovery lifecycle** (automatic decrement of `injuryRemainingMatches` after each round, and clearing of injury state when it reaches 0) is not yet implemented. This is V24D6I.
+V24D6I injury recovery lifecycle is **COMPLETE** — implemented and validated (681 tests, 0 failures).
+
+V24D6B injury persistence is complete — INJURY events from the V24 timeline update `SessionPlayer.injured=true`, `SessionPlayer.injuryType`, and `SessionPlayer.injuryRemainingMatches=2`. V24D6I adds the **recovery lifecycle** (automatic decrement of `injuryRemainingMatches` after each round, and clearing of injury state when it reaches 0).
 
 V24D6I follows the same pattern as V24D6D6 (suspension lifecycle): capture pre-round state before the fixture loop, apply mutations after the full round, exclude newly-injured players from the same-round decrement, and gate by `mutate-career-state=true` + `persist-injuries=true`.
 
@@ -492,33 +494,33 @@ No new service tests needed. Injury recovery lifecycle is applied in `LeagueSimu
 
 ```bash
 mvn test -Dtest=V24InjuryRecoveryLifecycleApplierTest,...
-# Expected: 651+ tests (new applier tests added), 0 failures
+# Expected: 681 full suite tests, 0 failures
 ```
 
 ---
 
-## 9. Proposed Implementation Phases
+## 9. Implementation Phases (All Complete)
 
-| Phase | Content | Deliverable | Est. Tests |
-|-------|---------|-------------|-----------|
-| **V24D6I1** | This design document | `V24D6I_INJURY_RECOVERY_LIFECYCLE_DESIGN.md` | 0 |
-| **V24D6I2** | V24InjuryRecoveryLifecycleApplier + unit tests | New applier class + ~18 tests | +18 |
-| **V24D6I3** | LeagueSimulator wiring + integration tests | LeagueSimulator changes + ~8 integration tests | +8 |
-| **V24D6I4** | Full suite validation | All 651+ tests pass, 0 failures | 0 |
-| **V24D6I5** | Documentation/status update | All docs updated with I1-I4 commits | 0 |
+| Phase | Content | Deliverable | Commit/Result |
+|-------|---------|-------------|---------------|
+| **V24D6I1** | This design document | `V24D6I_INJURY_RECOVERY_LIFECYCLE_DESIGN.md` | `4ad4210` ✓ |
+| **V24D6I2** | V24InjuryRecoveryLifecycleApplier + unit tests | New applier class + 22 tests | `7208821` ✓ |
+| **V24D6I3** | LeagueSimulator wiring + integration tests | LeagueSimulator changes + 8 integration tests | `7886308` ✓ |
+| **V24D6I4** | Full suite validation | 681 tests, 0 failures, BUILD SUCCESS | ✓ |
+| **V24D6I5** | Documentation/status update | This doc updated | pending |
 
 ---
 
-## 10. Completion Criteria
+## 10. Completion Criteria (All Met)
 
-- [ ] V24D6I1 design document created and approved
-- [ ] V24InjuryRecoveryLifecycleApplier implemented with recovery rules above
-- [ ] Unit tests pass (~18 tests, all scenarios)
-- [ ] LeagueSimulator wiring complete — pre-round capture, newly injured tracking, post-round recovery call
-- [ ] Integration tests pass (~8 new tests)
-- [ ] Full suite: test count updated, 0 failures
-- [ ] No new API/Redis/schema/frontend changes
-- [ ] target/dist not staged
+- [x] V24D6I1 design document created and approved (`4ad4210`)
+- [x] V24InjuryRecoveryLifecycleApplier implemented with recovery rules above (`7208821`; 22 tests)
+- [x] Unit tests pass (22 tests, all scenarios)
+- [x] LeagueSimulator wiring complete — pre-round capture, newly injured tracking, post-round recovery call (`7886308`)
+- [x] Integration tests pass (8 new tests in V24CareerMutationIntegrationTest)
+- [x] Full suite: 681 tests, 0 failures (BUILD SUCCESS)
+- [x] No new API/Redis/schema/frontend changes
+- [x] target/dist not staged
 
 ---
 
@@ -537,4 +539,4 @@ mvn test -Dtest=V24InjuryRecoveryLifecycleApplierTest,...
 
 ---
 
-*This document is the V24D6I1 design specification. No code implementation until V24D6I2.*
+*V24D6I is fully implemented. V24D6I1 design (`4ad4210`), V24D6I2 applier (`7208821`), V24D6I3 wiring (`7886308`), V24D6I4 validation (681 tests, 0 failures).*

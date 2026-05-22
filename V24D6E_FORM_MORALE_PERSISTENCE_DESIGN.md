@@ -2,7 +2,7 @@
 
 **Status:** V24D6E IMPLEMENTATION COMPLETE — E1 (0388a57) + E2 (9c101d1) + E3 (f801299) + E4 (e65cb03) + E5 (this doc) complete
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `e65cb03` (V24D6E4 — form mutation integration)
+**Latest implementation commit:** `e65cb03` (V24D6E4 — form mutation integration; V24D6E complete; superseded by V24D6I: 681 tests)
 **Latest docs commit:** (this update — V24D6E5)
 **Tests:** 651 full suite, 0 failures; focused mutation/lifecycle/form gate 234, 0 failures
 **Created:** 2026-05-17

@@ -391,8 +391,8 @@ V24D6H does NOT include:
 - **No competition-specific rules** — single threshold for all competitions/leagues
 - **No frontend yellow card counter display** — MVP relies on existing suspended badge only
 - **No configurable threshold** — threshold is hardcoded as 5
-- **No injury recovery lifecycle** — separate deferred phase
-- **No form/morale persistence** — separate deferred phase
+- **No injury recovery lifecycle** — V24D6I injury recovery lifecycle is now complete (`4ad4210`/`7208821`/`7886308`)
+- **No form/morale persistence** — V24D6E form persistence is complete (`0388a57`/`9c101d1`/`f801299`/`e65cb03`)
 - **No new API endpoints** — all changes are internal mutation logic
 - **No Redis/schema migration** — SessionPlayer fields already exist
 
@@ -432,7 +432,7 @@ V24D6H does NOT include:
 - [x] No frontend changes (MVP)
 - [x] No target/ staging
 
-**Deferred:** Multi-round integration test (`thresholdSuspendedPlayer_decrementedNextRound`) deferred to future phase. `thresholdSuspendedPlayer_playsNextRound_notDecremented` covered by existing V24D6D6B participation tests. Optional frontend yellow counter display deferred. Injury recovery lifecycle remains a separate deferred phase. V24D6E form/morale is now complete.
+**Deferred:** Multi-round integration test (`thresholdSuspendedPlayer_decrementedNextRound`) deferred to future phase. `thresholdSuspendedPlayer_playsNextRound_notDecremented` covered by existing V24D6D6B participation tests. Optional frontend yellow counter display deferred. V24D6I injury recovery lifecycle is now complete. V24D6E form/morale is complete.
 - [ ] No frontend changes (MVP)
 - [ ] No target/ staging
 
