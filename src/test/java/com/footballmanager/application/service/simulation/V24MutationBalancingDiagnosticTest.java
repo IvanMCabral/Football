@@ -23,11 +23,13 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -178,25 +180,22 @@ class V24MutationBalancingDiagnosticTest {
     }
 
     // ========================================================================
-    // PATH 2: REAL V24 ENGINE DIAGNOSTIC
-    // Uses actual V24DetailedMatchEngine — the production engine
+    // PATH 2A: REAL V24 ENGINE DIAGNOSTIC — FIXED XI STRESS TEST
+    // Uses actual V24DetailedMatchEngine — worst-case, no rotation
     // ========================================================================
 
     /**
-     * Real V24 engine diagnostic — measures actual production engine output.
+     * Real V24 engine stress diagnostic — WORST-CASE no-rotation.
      *
-     * Uses V24DetailedMatchEngine (the real engine, same as production)
-     * with deterministic seeds to measure:
-     * - Does V24InjuryModel actually emit injuries? How often?
-     * - Are yellow/red cards emitted? How often?
-     * - Does form move away from 50?
-     * - Does energy behave as expected?
+     * Uses V24DetailedMatchEngine with deterministic seeds.
+     * REUSES the same fixed starting XI for all 50 matches.
+     * This is a STRESS TEST — NOT representative of real gameplay.
      *
-     * This is the actual balancing baseline measurement.
-     * All mutation flags are enabled. No constant tuning.
+     * Purpose: measure worst-case attrition when no rotation occurs.
+     * Compare with rotationAware diagnostic to see how rotation helps.
      */
     @Test
-    void diagnostic_realV24Engine_baselineMetricsForReview() {
+    void diagnostic_realV24Engine_fixedXIStress() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -333,13 +332,20 @@ class V24MutationBalancingDiagnosticTest {
             if (endSuspendedIds.contains(id)) overlappingInjuredAndSuspended++;
         }
 
-        // ===== PRINT REAL ENGINE REPORT =====
+        // ===== PRINT FIXED XI STRESS REPORT =====
         System.out.println("\n========================================");
-        System.out.println("V24D6K2 REAL V24 ENGINE DIAGNOSTIC");
+        System.out.println("V24D6K4 FIXED XI STRESS DIAGNOSTIC");
         System.out.println("========================================");
+        System.out.println("WARNING: This diagnostic uses a FIXED");
+        System.out.println("starting XI with NO rotation. This is");
+        System.out.println("WORST-CASE — NOT representative of");
+        System.out.println("real gameplay or expected outcomes.");
+        System.out.println("Use ONLY for worst-case stress testing.");
+        System.out.println("----------------------------------------");
         System.out.println("Engine: V24DetailedMatchEngine (production)");
         System.out.printf(Locale.US, "Matches simulated: 50%n");
         System.out.printf(Locale.US, "Squad size: %d players%n", countAllPlayers(career));
+        System.out.println("Mode: FIXED XI — no rotation");
         System.out.println("Mutation flags: ALL ENABLED");
         System.out.println("----------------------------------------");
         System.out.println("INJURY (cumulative over run)");
@@ -420,6 +426,417 @@ class V24MutationBalancingDiagnosticTest {
         }
 
         assertNotNull(career.getTournamentState(), "Tournament state must not be null");
+    }
+
+    // ========================================================================
+    // PATH 2B: REAL V24 ENGINE DIAGNOSTIC — ROTATION-AWARE (PRIMARY)
+    // ========================================================================
+
+    /**
+     * Real V24 engine rotation-aware diagnostic — PRIMARY BALANCING MEASUREMENT.
+     *
+     * Uses V24DetailedMatchEngine with deterministic seeds.
+     * Auto-selects starting XI each round using:
+     * - isDiagnosticPlayerAvailable() — excludes injured/suspended players
+     * - Energy-based preference — prefers higher-energy players
+     * - Avoids energy <= 20 players when alternatives exist
+     *
+     * This is the expected gameplay measurement.
+     * Compare with fixedXI stress test to see rotation effect.
+     */
+    @Test
+    void diagnostic_realV24Engine_rotationAware_baselineMetricsForReview() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchEngine realEngine = new V24DetailedMatchEngine();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null,
+                false,  // useV23LeagueEngine
+                true,   // useV24DetailedEngine
+                false,  // persistDetail
+                fakeStorage,
+                true,   // mutateCareerState
+                true,   // persistInjuries
+                true,   // persistFatigue
+                true,   // persistDiscipline
+                true,   // persistForm
+                realEngine
+        );
+
+        CareerSave career = makeCareer(HOME, AWAY, HOME, AWAY, 11, 11);
+        career.getData().setCareerId("rotation_aware_" + System.currentTimeMillis());
+        career.getSeasonManager().setCurrentSeason(1);
+
+        List<MatchFixture> fixtures = new ArrayList<>();
+        for (int r = 1; r <= 50; r++) {
+            fixtures.add(new MatchFixture("rot_r" + r, HOME, AWAY, r));
+        }
+        career.setTournamentState(makeTournamentState(fixtures));
+
+        // Build initial starting XI using rotation-aware select
+        refreshStartingXIWithRotation(career, HOME);
+
+        // Aggregate counters
+        int totalInjuriesObserved = 0;
+        int totalInjuryRecoveries = 0;
+        int totalYellowCards = 0;
+        int totalRedCards = 0;
+        int totalNewSuspensions = 0;
+        int totalLineupFailures = 0;
+        int totalRotationsDone = 0;
+
+        // Per-round snapshots
+        List<Double> energyPerRound = new ArrayList<>();
+        List<Double> avgFormPerRound = new ArrayList<>();
+        List<Integer> uniqueUnavailablePerRound = new ArrayList<>();
+        List<Integer> currentlyInjuredPerRound = new ArrayList<>();
+        List<Integer> currentlySuspendedPerRound = new ArrayList<>();
+        List<Integer> starterEnergyAvgPerRound = new ArrayList<>();
+        List<Integer> benchEnergyAvgPerRound = new ArrayList<>();
+        List<Integer> availablePlayersPerRound = new ArrayList<>();
+
+        for (int round = 1; round <= 50; round++) {
+            Set<String> preInjuredIds = getCurrentlyInjuredPlayerIds(career);
+            Set<String> preSuspendedIds = getCurrentlySuspendedPlayerIds(career);
+
+            simulator.simulateLeagueRound(career, round);
+
+            Set<String> postInjuredIds = getCurrentlyInjuredPlayerIds(career);
+            Set<String> postSuspendedIds = getCurrentlySuspendedPlayerIds(career);
+
+            // Newly injured transitions
+            int newlyInjured = 0;
+            for (String id : postInjuredIds) {
+                if (!preInjuredIds.contains(id)) newlyInjured++;
+            }
+            totalInjuriesObserved += newlyInjured;
+
+            // Injury recoveries (previously injured, now recovered)
+            for (String id : preInjuredIds) {
+                if (!postInjuredIds.contains(id)) totalInjuryRecoveries++;
+            }
+
+            // Newly suspended transitions
+            int newlySuspended = 0;
+            for (String id : postSuspendedIds) {
+                if (!preSuspendedIds.contains(id)) newlySuspended++;
+            }
+            totalNewSuspensions += newlySuspended;
+
+            // Per-round snapshots
+            energyPerRound.add(computeAverageEnergy(career));
+            avgFormPerRound.add(computeAverageForm(career));
+            uniqueUnavailablePerRound.add(countUniqueUnavailable(career));
+            currentlyInjuredPerRound.add(postInjuredIds.size());
+            currentlySuspendedPerRound.add(postSuspendedIds.size());
+
+            // Count available players
+            availablePlayersPerRound.add(countAvailablePlayers(career, HOME));
+
+            // Starter vs bench energy
+            List<SessionPlayer> currentXI = getCurrentStartingXI(career, HOME);
+            Set<String> starterIds = currentXI.stream()
+                    .map(SessionPlayer::getSessionPlayerId)
+                    .collect(Collectors.toSet());
+
+            int starterEnergySum = 0;
+            int starterCount = 0;
+            int benchEnergySum = 0;
+            int benchCount = 0;
+            for (SessionPlayer p : getAllPlayers(career)) {
+                if (starterIds.contains(p.getSessionPlayerId())) {
+                    starterEnergySum += p.getEnergy();
+                    starterCount++;
+                } else {
+                    benchEnergySum += p.getEnergy();
+                    benchCount++;
+                }
+            }
+            starterEnergyAvgPerRound.add(starterCount > 0 ? starterEnergySum / starterCount : 0);
+            benchEnergyAvgPerRound.add(benchCount > 0 ? benchEnergySum / benchCount : 0);
+
+            // Refresh starting XI for next round
+            int prevStarterCount = currentXI.size();
+            refreshStartingXIWithRotation(career, HOME);
+            List<SessionPlayer> newXI = getCurrentStartingXI(career, HOME);
+            if (newXI.size() != prevStarterCount) totalRotationsDone++;
+
+            // Energy-based rotation check
+            totalRotationsDone += maybeRotateDueToEnergy(career, HOME);
+
+            // Check if lineup was forced to use unavailable
+            int forcedUnavailable = 0;
+            for (SessionPlayer p : getCurrentStartingXI(career, HOME)) {
+                if (!isDiagnosticPlayerAvailable(p)) forcedUnavailable++;
+            }
+            totalLineupFailures += forcedUnavailable;
+        }
+
+        // Count yellow/red cards
+        int totalYellows = 0;
+        int totalReds = 0;
+        for (SessionPlayer p : getAllPlayers(career)) {
+            if (p.getYellowCards() != null) totalYellows += p.getYellowCards();
+            if (p.getRedCards() != null && p.getRedCards() > 0) totalReds++;
+        }
+
+        // End-state
+        double avgFormSeason = computeAverageForm(career);
+        int minFormSeason = computeMinForm(career);
+        int maxFormSeason = computeMaxForm(career);
+        double avgEnergySeason = computeAverageEnergy(career);
+        double minEnergySeason = computeMinEnergy(career);
+        double maxEnergySeason = computeMaxEnergy(career);
+        int playersAtLowEnergy = countPlayersBelowEnergy(career, 40);
+        int playersBelow20 = countPlayersBelowEnergy(career, 20);
+        int playersBelow60 = countPlayersBelowEnergy(career, 60);
+
+        // Checkpoint metrics
+        int[] checkpointUniqueUnavailable = {
+                uniqueUnavailablePerRound.get(4),
+                uniqueUnavailablePerRound.get(9),
+                uniqueUnavailablePerRound.get(19),
+                uniqueUnavailablePerRound.get(29)
+        };
+        int[] checkpointCurrentlyInjured = {
+                currentlyInjuredPerRound.get(4),
+                currentlyInjuredPerRound.get(9),
+                currentlyInjuredPerRound.get(19),
+                currentlyInjuredPerRound.get(29)
+        };
+
+        // End-state unique counts
+        Set<String> endInjuredIds = getCurrentlyInjuredPlayerIds(career);
+        Set<String> endSuspendedIds = getCurrentlySuspendedPlayerIds(career);
+        Set<String> endUnavailableIds = new HashSet<>();
+        endUnavailableIds.addAll(endInjuredIds);
+        endUnavailableIds.addAll(endSuspendedIds);
+        int uniqueUnavailableAtEnd = endUnavailableIds.size();
+        int currentlyInjuredAtEnd = endInjuredIds.size();
+        int currentlySuspendedAtEnd = endSuspendedIds.size();
+
+        // ===== PRINT ROTATION-AWARE REPORT =====
+        System.out.println("\n========================================");
+        System.out.println("V24D6K4 ROTATION-AWARE DIAGNOSTIC");
+        System.out.println("========================================");
+        System.out.println("Engine: V24DetailedMatchEngine (production)");
+        System.out.printf(Locale.US, "Matches simulated: 50%n");
+        System.out.printf(Locale.US, "Squad size: %d players%n", countAllPlayers(career));
+        System.out.println("Mode: ROTATION-AWARE (energy + availability)");
+        System.out.println("Mutation flags: ALL ENABLED");
+        System.out.println("----------------------------------------");
+        System.out.println("LINEUP SELECTION");
+        System.out.printf(Locale.US, "  Total forced unavailable starters: %d%n", totalLineupFailures);
+        System.out.printf(Locale.US, "  Available players at end: %d / %d%n",
+                availablePlayersPerRound.get(49), countAllPlayers(career));
+        System.out.println("----------------------------------------");
+        System.out.println("INJURY (cumulative over run)");
+        System.out.printf(Locale.US, "  Newly injured transitions: %d%n", totalInjuriesObserved);
+        System.out.printf(Locale.US, "  Avg per match: %.3f%n", (double) totalInjuriesObserved / 50.0);
+        System.out.printf(Locale.US, "  Players recovered from injury: %d%n", totalInjuryRecoveries);
+        System.out.printf(Locale.US, "  Currently injured at end: %d%n", currentlyInjuredAtEnd);
+        System.out.println("----------------------------------------");
+        System.out.println("CARDS (cumulative on players)");
+        System.out.printf(Locale.US, "  Total yellow cards accumulated: %d%n", totalYellows);
+        System.out.printf(Locale.US, "  Total red cards: %d%n", totalReds);
+        System.out.printf(Locale.US, "  Avg yellows per player: %.2f%n", (double) totalYellows / countAllPlayers(career));
+        System.out.println("----------------------------------------");
+        System.out.println("SUSPENSIONS (cumulative over run)");
+        System.out.printf(Locale.US, "  New suspensions detected: %d%n", totalNewSuspensions);
+        System.out.printf(Locale.US, "  Currently suspended at end: %d%n", currentlySuspendedAtEnd);
+        System.out.println("----------------------------------------");
+        System.out.println("AVAILABILITY CHECKPOINTS (unique unavailable)");
+        System.out.printf(Locale.US, "  Round  5: injured=%d  uniqueUnavailable=%d%n",
+                checkpointCurrentlyInjured[0], checkpointUniqueUnavailable[0]);
+        System.out.printf(Locale.US, "  Round 10: injured=%d  uniqueUnavailable=%d%n",
+                checkpointCurrentlyInjured[1], checkpointUniqueUnavailable[1]);
+        System.out.printf(Locale.US, "  Round 20: injured=%d  uniqueUnavailable=%d%n",
+                checkpointCurrentlyInjured[2], checkpointUniqueUnavailable[2]);
+        System.out.printf(Locale.US, "  Round 30: injured=%d  uniqueUnavailable=%d%n",
+                checkpointCurrentlyInjured[3], checkpointUniqueUnavailable[3]);
+        System.out.println("----------------------------------------");
+        System.out.println("ENERGY CHECKPOINTS (rotation-aware)");
+        System.out.printf(Locale.US, "  Round  5: avg=%.1f  starters=%d  bench=%d%n",
+                energyPerRound.get(4), starterEnergyAvgPerRound.get(4), benchEnergyAvgPerRound.get(4));
+        System.out.printf(Locale.US, "  Round 10: avg=%.1f  starters=%d  bench=%d%n",
+                energyPerRound.get(9), starterEnergyAvgPerRound.get(9), benchEnergyAvgPerRound.get(9));
+        System.out.printf(Locale.US, "  Round 20: avg=%.1f  starters=%d  bench=%d%n",
+                energyPerRound.get(19), starterEnergyAvgPerRound.get(19), benchEnergyAvgPerRound.get(19));
+        System.out.printf(Locale.US, "  Round 30: avg=%.1f  starters=%d  bench=%d%n",
+                energyPerRound.get(29), starterEnergyAvgPerRound.get(29), benchEnergyAvgPerRound.get(29));
+        System.out.println("----------------------------------------");
+        System.out.println("ENERGY (End of 50-match run)");
+        System.out.printf(Locale.US, "  Average: %.1f  Min: %.1f  Max: %.1f%n", avgEnergySeason, minEnergySeason, maxEnergySeason);
+        System.out.printf(Locale.US, "  Players <60 energy: %d%n", playersBelow60);
+        System.out.printf(Locale.US, "  Players <40 energy: %d%n", playersAtLowEnergy);
+        System.out.printf(Locale.US, "  Players <20 energy: %d%n", playersBelow20);
+        System.out.println("----------------------------------------");
+        System.out.println("FORM (End of 50-match run)");
+        System.out.printf(Locale.US, "  Average: %.1f  Min: %d  Max: %d%n", avgFormSeason, minFormSeason, maxFormSeason);
+        System.out.println("========================================\n");
+
+        // === Key comparison ===
+        System.out.println("[ROTATION COMPARISON]");
+        System.out.printf(Locale.US, "  Injury recoveries triggered: %s%n", totalInjuryRecoveries > 0 ? "YES" : "NO");
+        System.out.printf(Locale.US, "  Unique unavailable at end (rotation): %d%n", uniqueUnavailableAtEnd);
+        System.out.println("  Compare to FIXED XI stress (22/22 unavailable by round 30)");
+        System.out.println("========================================\n");
+
+        // Conclusion
+        if (totalInjuriesObserved >= 40 && uniqueUnavailableAtEnd >= 20) {
+            System.out.println("[CONCLUSION] Rotation did NOT prevent severe attrition.");
+            System.out.println("  K5 should consider conservative tuning.\n");
+        } else if (totalInjuryRecoveries == 0 && uniqueUnavailableAtEnd > 10) {
+            System.out.println("[CONCLUSION] Injury recovery NOT triggering.");
+            System.out.println("  Verify isDiagnosticPlayerAvailable() excludes injured.\n");
+        } else {
+            System.out.println("[CONCLUSION] Rotation is helping. Model behavior acceptable.\n");
+        }
+
+        // === Broad sanity assertions — invariants only ===
+        assertTrue(countAllPlayers(career) > 0, "Squad must have players");
+
+        for (SessionPlayer p : getAllPlayers(career)) {
+            assertTrue(p.getEnergy() >= 0, "Energy must not be negative: " + p.getSessionPlayerId());
+            assertTrue(p.getEnergy() <= 100, "Energy must not exceed 100: " + p.getSessionPlayerId());
+            assertTrue(p.getForm() >= 1 && p.getForm() <= 99,
+                    "Form must be in [1,99]: " + p.getSessionPlayerId() + " = " + p.getForm());
+            if (p.getInjuryRemainingMatches() != null) {
+                assertTrue(p.getInjuryRemainingMatches() >= 0,
+                        "Injury remaining must not be negative: " + p.getSessionPlayerId());
+            }
+            if (p.getSuspensionRemainingMatches() != null) {
+                assertTrue(p.getSuspensionRemainingMatches() >= 0,
+                        "Suspension remaining must not be negative: " + p.getSessionPlayerId());
+            }
+        }
+
+        assertTrue(uniqueUnavailableAtEnd <= countAllPlayers(career),
+                "Unique unavailable must not exceed squad size");
+
+        assertNotNull(career.getTournamentState(), "Tournament state must not be null");
+    }
+
+    // ========================================================================
+    // PATH 2B HELPER: Rotation-Aware Starting XI Management
+    // ========================================================================
+
+    private boolean isDiagnosticPlayerAvailable(SessionPlayer player) {
+        if (Boolean.TRUE.equals(player.getInjured())) return false;
+        if (player.getInjuryRemainingMatches() != null && player.getInjuryRemainingMatches() > 0) return false;
+        if (Boolean.TRUE.equals(player.getSuspended())) return false;
+        if (player.getSuspensionRemainingMatches() != null && player.getSuspensionRemainingMatches() > 0) return false;
+        return true;
+    }
+
+    private int countAvailablePlayers(CareerSave career, String teamId) {
+        int count = 0;
+        for (SessionPlayer p : getAllPlayers(career)) {
+            if (isDiagnosticPlayerAvailable(p)) count++;
+        }
+        return count;
+    }
+
+    private List<SessionPlayer> getCurrentStartingXI(CareerSave career, String teamId) {
+        List<String> starterIds = career.getTeamStarting11().get(teamId);
+        if (starterIds == null) return new ArrayList<>();
+        List<SessionPlayer> starters = new ArrayList<>();
+        for (String id : starterIds) {
+            SessionPlayer p = career.getSessionPlayer(id);
+            if (p != null) starters.add(p);
+        }
+        return starters;
+    }
+
+    private void refreshStartingXIWithRotation(CareerSave career, String teamId) {
+        List<SessionPlayer> allPlayers = getAllPlayers(career);
+
+        List<SessionPlayer> available = new ArrayList<>();
+        List<SessionPlayer> unavailable = new ArrayList<>();
+        for (SessionPlayer p : allPlayers) {
+            if (isDiagnosticPlayerAvailable(p)) available.add(p);
+            else unavailable.add(p);
+        }
+
+        available.sort(Comparator
+                .comparingInt((SessionPlayer p) -> p.getEnergy()).reversed()
+                .thenComparing(SessionPlayer::getSessionPlayerId));
+
+        List<SessionPlayer> newStarters = new ArrayList<>();
+        List<SessionPlayer> lowEnergyStarters = new ArrayList<>();
+
+        for (SessionPlayer p : available) {
+            if (newStarters.size() >= 11) break;
+            if (p.getEnergy() <= 20) lowEnergyStarters.add(p);
+            else newStarters.add(p);
+        }
+
+        if (newStarters.size() < 11) {
+            int needed = 11 - newStarters.size();
+            int take = Math.min(needed, lowEnergyStarters.size());
+            for (int i = 0; i < take; i++) newStarters.add(lowEnergyStarters.get(i));
+        }
+
+        if (newStarters.size() < 11) {
+            int needed = 11 - newStarters.size();
+            unavailable.sort(Comparator.comparingInt((SessionPlayer p) -> p.getEnergy()).reversed());
+            int take = Math.min(needed, unavailable.size());
+            for (int i = 0; i < take; i++) newStarters.add(unavailable.get(i));
+        }
+
+        List<String> newStarterIds = newStarters.stream()
+                .map(SessionPlayer::getSessionPlayerId)
+                .collect(Collectors.toList());
+        career.getTeamStarting11().put(teamId, newStarterIds);
+    }
+
+    private int maybeRotateDueToEnergy(CareerSave career, String teamId) {
+        List<SessionPlayer> currentXI = getCurrentStartingXI(career, teamId);
+        if (currentXI.isEmpty()) return 0;
+
+        int minStarterEnergy = currentXI.stream()
+                .mapToInt(SessionPlayer::getEnergy).min().orElse(100);
+
+        if (minStarterEnergy >= 30) return 0;
+
+        Set<String> starterIds = currentXI.stream()
+                .map(SessionPlayer::getSessionPlayerId)
+                .collect(Collectors.toSet());
+
+        int bestBenchEnergy = 0;
+        for (SessionPlayer p : getAllPlayers(career)) {
+            if (!starterIds.contains(p.getSessionPlayerId()) && isDiagnosticPlayerAvailable(p)) {
+                if (p.getEnergy() > bestBenchEnergy) bestBenchEnergy = p.getEnergy();
+            }
+        }
+
+        if (bestBenchEnergy > minStarterEnergy + 15) {
+            SessionPlayer lowestStarter = currentXI.stream()
+                    .min(Comparator.comparingInt(SessionPlayer::getEnergy))
+                    .orElse(null);
+            SessionPlayer bestBenchPlayer = null;
+            for (SessionPlayer p : getAllPlayers(career)) {
+                if (!starterIds.contains(p.getSessionPlayerId()) && isDiagnosticPlayerAvailable(p)) {
+                    if (p.getEnergy() == bestBenchEnergy) {
+                        bestBenchPlayer = p;
+                        break;
+                    }
+                }
+            }
+
+            if (lowestStarter != null && bestBenchPlayer != null) {
+                List<String> currentStarterIds = new ArrayList<>(career.getTeamStarting11().get(teamId));
+                int idx = currentStarterIds.indexOf(lowestStarter.getSessionPlayerId());
+                if (idx >= 0) {
+                    currentStarterIds.set(idx, bestBenchPlayer.getSessionPlayerId());
+                    career.getTeamStarting11().put(teamId, currentStarterIds);
+                    return 1;
+                }
+            }
+        }
+        return 0;
     }
 
     // ========================================================================
