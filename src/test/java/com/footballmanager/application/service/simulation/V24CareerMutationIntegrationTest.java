@@ -1348,7 +1348,277 @@ class V24CareerMutationIntegrationTest {
                 "Fixture result must exist");
     }
 
-    // ========== V24D6E4: Factory helpers for form integration tests ==========
+    // ========== V24D6I3: Injury Recovery Lifecycle Integration Tests ==========
+
+    /**
+     * Test 1: pre-existing injured player — remaining=2, team has fixture, did not participate → decrements to 1.
+     */
+    @Test
+    void injuryRecovery_preExistingInjured_decrements() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("ri1").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no injuries")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, false, false, false, // injuries=true
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 2, false); // not in starting XI
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri1", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertTrue(p.getInjured(), "Player should still be injured");
+        assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should decrement from 2 to 1");
+        assertEquals("MATCH_INJURY", p.getInjuryType(), "injuryType should be preserved on partial decrement");
+    }
+
+    /**
+     * Test 2: pre-existing injured player — remaining=1, team has fixture, did not participate → recovers.
+     */
+    @Test
+    void injuryRecovery_playerRecoversAt1() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("ri2").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no injuries")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 1, false);
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri2", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertFalse(p.getInjured(), "Player should recover — injured=false");
+        assertEquals(0, p.getInjuryRemainingMatches(), "Remaining should be 0");
+        assertNull(p.getInjuryType(), "injuryType should be cleared on full recovery");
+    }
+
+    /**
+     * Test 3: player becomes injured during round — newlyInjuredPlayerIds populated → no decrement same round.
+     */
+    @Test
+    void injuryRecovery_newlyInjured_doesNotDecrementSameRound() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // Fake V24 result with INJURY event for injured_p1
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.INJURY,
+                HOME1, "injured_p1", "Injured Player", null, null, 0.0, "Muscle strain"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("ri3").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: injury event")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        // injured_p1 NOT pre-injured (injured=false initially)
+        CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 0, false); // injured=false
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri3", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertTrue(p.getInjured(), "Player should be newly injured from INJURY event");
+        assertEquals(2, p.getInjuryRemainingMatches(), "New injury duration should be 2 matches");
+        assertEquals("MATCH_INJURY", p.getInjuryType(), "injuryType should be set");
+        // Newly injured — should NOT decrement in same round (tracked via newlyInjuredPlayerIds)
+        assertEquals(2, p.getInjuryRemainingMatches(), "Remaining should stay 2 — newly injured not decremented");
+    }
+
+    /**
+     * Test 4: injured player has no fixture this round → no decrement.
+     */
+    @Test
+    void injuryRecovery_noFixture_noDecrement() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("ri4").homeTeamId("other-team-A").awayTeamId("other-team-B")
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no injuries")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        // injured_p1 is on AWAY1 (has fixture), but player_id_who_has_no_fixture is on "no-team"
+        // → AWAY1 has fixture (ri4), but "no-team" does not → no decrement
+        CareerSave career = makeCareerWithInjury(AWAY1, AWAY1, AWAY1, AWAY1,
+                11, 11, "player_no_fixture", 2, false);
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri4", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("player_no_fixture");
+        assertTrue(p.getInjured(), "Player should still be injured");
+        assertEquals(2, p.getInjuryRemainingMatches(), "No fixture → no decrement");
+    }
+
+    /**
+     * Test 5: injured player participated → no decrement.
+     */
+    @Test
+    void injuryRecovery_participated_noDecrement() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("ri5").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no injuries")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        // participated=true → injured_p1 is in starting XI
+        CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 2, true); // participated=true
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri5", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertTrue(p.getInjured(), "Player should still be injured");
+        assertEquals(2, p.getInjuryRemainingMatches(), "Participated → no decrement");
+    }
+
+    /**
+     * Test 6: persistInjuries=false → no recovery even if pre-injured.
+     */
+    @Test
+    void injuryRecovery_persistInjuriesFalse_noOp() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("ri6").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no injuries")
+                .build();
+
+        // injuries=false (mutateCareerState=true, persistInjuries=false)
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 1, false);
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri6", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertTrue(p.getInjured(), "Player should remain injured (no recovery when persistInjuries=false)");
+        assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should not change");
+    }
+
+    /**
+     * Test 7: mutateCareerState=false → no recovery.
+     */
+    @Test
+    void injuryRecovery_masterFlagFalse_noOp() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("ri7").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: no injuries")
+                .build();
+
+        // mutateCareerState=false, persistInjuries=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, true, false, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 1, false);
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri7", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertTrue(p.getInjured(), "Player should remain injured (master flag false)");
+        assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should not change");
+    }
+
+    /**
+     * Test 8: useV24DetailedEngine=false → no recovery.
+     */
+    @Test
+    void injuryRecovery_v24Disabled_noOp() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        // useV24DetailedEngine=false, injuries=true
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, false, false, fakeStorage,
+                true, true, false, false, false,
+                (ctx, seed) -> { throw new AssertionError("V24 engine should not be used"); });
+
+        CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 1, false);
+
+        career.setTournamentState(makeTournamentState(makeFixture("ri8", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertTrue(p.getInjured(), "Player should remain injured (V24 path not used)");
+        assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should not change");
+    }
+
+    // ========== V24D6I3: Factory helper for injury recovery tests ==========
 
     /**
      * Creates career with a player in starting XI who has initial form set.
@@ -1685,6 +1955,86 @@ class V24CareerMutationIntegrationTest {
             String playerId, int remainingMatches, boolean suspended) {
         return makeCareerWithSuspension(homeTeamId, awayTeamId, homeStartingTeamId, awayStartingTeamId,
                 11, 11, playerId, remainingMatches, suspended);
+    }
+
+    // ========== V24D6I2: Injury Recovery Lifecycle factory helpers ==========
+
+    /**
+     * Creates career with an injured player, optionally in the starting XI.
+     * Player is pre-injured (injured=true, injuryRemainingMatches>0) before the round.
+     */
+    private static CareerSave makeCareerWithInjury(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String injuredPlayerId, int injuryRemainingMatches,
+            boolean participated) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_injury_" + injuredPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        // Create all starters with their expected pids (for V24MatchContext resolve)
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        // Add the injured player (not in starting XI unless participated=true)
+        SessionPlayer injuredPlayer = SessionPlayer.custom(injuredPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        injuredPlayer.setSessionPlayerId(injuredPlayerId);
+        injuredPlayer.setInjured(injuryRemainingMatches > 0);
+        injuredPlayer.setInjuryRemainingMatches(injuryRemainingMatches);
+        injuredPlayer.setInjuryType(injuryRemainingMatches > 0 ? "MATCH_INJURY" : null);
+        pm.addSessionPlayer(injuredPlayer);
+        tm.assignPlayerToSquad(injuredPlayerId, homeTeamId);
+
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        if (participated) {
+            // Replace first starter with the injured player
+            homeStarterIds.set(0, injuredPlayerId);
+        }
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
     }
 
     // ========== V24D6H4: Yellow-card threshold factory helpers ==========

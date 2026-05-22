@@ -3,6 +3,7 @@ package com.footballmanager.application.service.simulation;
 import com.footballmanager.application.service.domain.MatchEngineImpl;
 import com.footballmanager.application.service.domain.TeamOverallCalculator;
 import com.footballmanager.application.service.simulation.v24.V24SuspensionLifecycleApplier;
+import com.footballmanager.application.service.simulation.v24.V24InjuryRecoveryLifecycleApplier;
 import com.footballmanager.application.service.simulation.v24.V24InjuryMutationApplier;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
@@ -68,6 +69,7 @@ public class LeagueSimulator {
     private final V24CareerMutationService v24MutationService;
     private final V24CareerMutationPolicy v24MutationPolicy;
     private final V24SuspensionLifecycleApplier v24SuspensionLifecycleApplier = new V24SuspensionLifecycleApplier();
+    private final V24InjuryRecoveryLifecycleApplier v24InjuryRecoveryLifecycleApplier = new V24InjuryRecoveryLifecycleApplier();
 
     /**
      * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
@@ -168,6 +170,9 @@ public class LeagueSimulator {
         // V24D6D6B: Capture pre-round state before fixture loop
         V24RoundMutationTracking tracking = new V24RoundMutationTracking();
 
+        // V24D6I2: Capture pre-round injured players for injury recovery lifecycle
+        Set<String> preRoundInjured = capturePreRoundInjuredPlayerIds(career);
+
         for (MatchFixture fixture : allFixtures) {
             if (fixture.getRound() != round) continue;
             if (!fixture.canBeSimulated()) continue;
@@ -190,6 +195,9 @@ public class LeagueSimulator {
 
         // V24D6D6B: Run suspension lifecycle after full round loop
         applyV24SuspensionLifecycle(career, round, allFixtures, tracking);
+
+        // V24D6I2: Run injury recovery lifecycle after suspension lifecycle
+        applyV24InjuryRecoveryLifecycle(career, round, allFixtures, tracking, preRoundInjured);
     }
 
     // ========== DefaultMatchSimulator Path (original behavior) ==========
@@ -385,6 +393,18 @@ public class LeagueSimulator {
                 }
             }
 
+            // V24D6I2: snapshot comparison — detect newly injured players from this mutation
+            if (v24MutationPolicy.isInjuryPersistenceEnabled()) {
+                Set<String> preMutationInjured = capturePreRoundInjuredPlayerIds(career);
+                Set<String> postMutationInjured = capturePreRoundInjuredPlayerIds(career);
+                postMutationInjured.removeAll(preMutationInjured);
+                if (!postMutationInjured.isEmpty()) {
+                    tracking.newlyInjuredPlayerIds.addAll(postMutationInjured);
+                    log.debug("[V24D6I2] Newly injured from mutation: {}",
+                            postMutationInjured);
+                }
+            }
+
         } catch (Exception e) {
             log.warn("[V24D6B3] Career mutation failed unexpectedly for career {}: {}, continuing round",
                     career.getData().getCareerId(), e.getMessage());
@@ -457,6 +477,68 @@ public class LeagueSimulator {
     }
 
     /**
+     * V24D6I2: Captures player IDs that were injured BEFORE the round started.
+     * Only includes players where injured=true AND injuryRemainingMatches > 0.
+     */
+    private Set<String> capturePreRoundInjuredPlayerIds(CareerSave career) {
+        Set<String> injured = new HashSet<>();
+        for (SessionTeam team : career.getAllSessionTeams()) {
+            for (String playerId : career.getSquadPlayerIds(team.getSessionTeamId())) {
+                SessionPlayer player = career.getSessionPlayer(playerId);
+                if (player == null) continue;
+                if (Boolean.TRUE.equals(player.getInjured())) {
+                    Integer remaining = player.getInjuryRemainingMatches();
+                    if (remaining != null && remaining > 0) {
+                        injured.add(playerId);
+                    }
+                }
+            }
+        }
+        return injured;
+    }
+
+    // ========== V24D6I2: Injury Recovery Lifecycle ==========
+
+    /**
+     * V24D6I2: Runs injury recovery lifecycle after the full round loop.
+     * Called once per simulateLeagueRound call, only when at least one V24 fixture succeeded.
+     * Best-effort: failures are logged and do not fail the round.
+     */
+    private void applyV24InjuryRecoveryLifecycle(CareerSave career, int round,
+                                                  List<MatchFixture> allFixtures,
+                                                  V24RoundMutationTracking tracking,
+                                                  Set<String> preRoundInjuredPlayerIds) {
+        try {
+            // Only run if V24 path processed at least one fixture
+            if (!tracking.v24RoundProcessed) return;
+            if (!v24MutationPolicy.isInjuryPersistenceEnabled()) return;
+
+            // Collect round fixtures for the current round
+            List<MatchFixture> roundFixtures = allFixtures.stream()
+                    .filter(f -> f.getRound() == round)
+                    .collect(java.util.stream.Collectors.toList());
+
+            int recovered = v24InjuryRecoveryLifecycleApplier.applyRecovery(
+                    career,
+                    round,
+                    roundFixtures,
+                    preRoundInjuredPlayerIds,
+                    tracking.newlyInjuredPlayerIds,
+                    tracking.participatedPlayerIds,
+                    v24MutationPolicy
+            );
+
+            if (recovered > 0) {
+                log.debug("[V24D6I2] Recovered {} injuries for career {} round {}",
+                        recovered, career.getData().getCareerId(), round);
+            }
+        } catch (Exception e) {
+            log.warn("[V24D6I2] Injury recovery lifecycle failed unexpectedly for career {} round {}: {}, continuing round",
+                    career.getData().getCareerId(), round, e.getMessage());
+        }
+    }
+
+    /**
      * V24D6D6B: Collects starting XI participation from V24 context.
      * All 11 starters per team are considered to have participated.
      */
@@ -505,6 +587,7 @@ public class LeagueSimulator {
     private static class V24RoundMutationTracking {
         final Set<String> newlySuspendedPlayerIds = new HashSet<>();
         final Set<String> participatedPlayerIds = new HashSet<>();
+        final Set<String> newlyInjuredPlayerIds = new HashSet<>();
         boolean v24RoundProcessed = false;
     }
 
