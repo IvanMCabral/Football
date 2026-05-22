@@ -1618,6 +1618,288 @@ class V24CareerMutationIntegrationTest {
         assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should not change");
     }
 
+    // ========== V24D6J5: Energy Recovery Lifecycle Integration Tests ==========
+
+    /**
+     * Test A: non-participating player recovers +8 energy.
+     * persistFatigue=true, master=true, V24 enabled.
+     * Player is in HOME1 squad but NOT in starting XI → not participated.
+     * Expected: energy 70 → 78.
+     */
+    @Test
+    void energyRecovery_nonParticipatingPlayerRecovers() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("er1").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, true, false, false, // fatigue=true
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "energy_p1", 70);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er1", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("energy_p1");
+        assertEquals(78, p.getEnergy(), "Non-participating player should recover +8 energy");
+    }
+
+    /**
+     * Test B: participating player drains to 88 (no recovery added).
+     * persistFatigue=true, master=true, V24 enabled.
+     * Player is in starting XI with energy=100. V24 engine produces a GOAL event
+     * so the player participates and energy drains to 88.
+     * Energy recovery should NOT add +8 on top.
+     * Expected: energy = 88 (drain only, no +8 recovery).
+     */
+    @Test
+    void energyRecovery_participatingPlayerDrainsAndDoesNotReceiveRecovery() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        com.footballmanager.application.service.simulation.v24.V24MatchTimeline timeline =
+                new com.footballmanager.application.service.simulation.v24.V24MatchTimeline();
+        // GOAL event for p_HOME1_0 so they are in the timeline (participation) and drain occurs
+        timeline.addEvent(new com.footballmanager.application.service.simulation.v24.V24MatchEvent(
+                30,
+                com.footballmanager.application.service.simulation.v24.V24MatchEventType.GOAL,
+                HOME1, "p_HOME1_0", "Energy Player", null, null, 0.35, "Goal"));
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("er2").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(timeline)
+                .summary("Deterministic: goal for energy player")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, true, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        // p_HOME1_0 is in starting XI with energy=100; V24 engine drains to 88 via GOAL event
+        CareerSave career = makeCareerWithEnergyPlayerInStartingXI(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "p_HOME1_0", 100);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er2", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("p_HOME1_0");
+        // GOAL event: player participates, energy drains to 88 (V24FatigueMutationApplier).
+        // Energy recovery runs but skips this player (participated=true).
+        assertEquals(88, p.getEnergy(), "Participating player drains to 88, no +8 recovery");
+    }
+
+    /**
+     * Test C: energy recovery caps at 100.
+     * persistFatigue=true, master=true, V24 enabled.
+     * Non-participating player with energy=95.
+     * Expected: energy → 100 (capped), not 103.
+     */
+    @Test
+    void energyRecovery_capsAt100() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("er3").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, true, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "energy_p1", 95);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er3", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("energy_p1");
+        assertEquals(100, p.getEnergy(), "Energy should cap at 100");
+    }
+
+    /**
+     * Test D: team without fixture — all squad players recover.
+     * HOME1 has fixture (vs AWAY1), AWAY1 has fixture (vs HOME1).
+     * A third team "team-no-fixture" has no fixture in round 1.
+     * Player on team-no-fixture, energy=70, should recover to 78.
+     */
+    @Test
+    void energyRecovery_teamWithoutFixtureRecovers() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        String noFixtureTeamId = UUID.randomUUID().toString();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("er4").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, true, false, false,
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithNoFixtureTeamPlayer(HOME1, AWAY1, noFixtureTeamId,
+                "energy_p1", 70);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er4", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("energy_p1");
+        assertEquals(78, p.getEnergy(), "Player on team without fixture should recover +8");
+    }
+
+    /**
+     * Test E: persistFatigue=false → no energy recovery.
+     * persistFatigue=false, master=true, V24 enabled.
+     * Non-participating player energy=70.
+     * Expected: energy stays 70.
+     */
+    @Test
+    void energyRecovery_persistFatigueFalse_noOp() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("er5").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, false, false, false, false, // fatigue=false
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "energy_p1", 70);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er5", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("energy_p1");
+        assertEquals(70, p.getEnergy(), "No recovery when persistFatigue=false");
+    }
+
+    /**
+     * Test F: mutateCareerState=false → no energy recovery.
+     * master=false, persistFatigue=true, V24 enabled.
+     * Non-participating player energy=70.
+     * Expected: energy stays 70.
+     */
+    @Test
+    void energyRecovery_masterFlagFalse_noOp() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("er6").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                false, false, true, false, false, // master=false, fatigue=true
+                new DeterministicV24Engine(fakeResult));
+
+        CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "energy_p1", 70);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er6", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("energy_p1");
+        assertEquals(70, p.getEnergy(), "No recovery when master flag is false");
+    }
+
+    /**
+     * Test G: V24 disabled → no energy recovery.
+     * useV24DetailedEngine=false, mutateCareerState=true, persistFatigue=true.
+     * V24 path not used → tracking.v24RoundProcessed=false → no recovery.
+     * Expected: energy stays 70.
+     */
+    @Test
+    void energyRecovery_v24Disabled_noOp() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, false, false, fakeStorage,
+                true, false, true, false, false,
+                (ctx, seed) -> { throw new AssertionError("V24 engine should not be used"); });
+
+        CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "energy_p1", 70);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er7", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("energy_p1");
+        assertEquals(70, p.getEnergy(), "No recovery when V24 is disabled");
+    }
+
+    /**
+     * Test H: injured non-participating player recovers energy, injury unchanged.
+     * persistFatigue=true, injured player NOT in starting XI → not participated.
+     * Expected: energy 60 → 68, injured remains true.
+     */
+    @Test
+    void energyRecovery_injuredNonParticipantRecovers() {
+        FakeMatchSimulator fakeSim = new FakeMatchSimulator();
+        FakeStoragePort fakeStorage = new FakeStoragePort();
+
+        V24DetailedMatchResult fakeResult = V24DetailedMatchResult.builder()
+                .matchId("er8").homeTeamId(HOME1).awayTeamId(AWAY1)
+                .homeGoals(1).awayGoals(0).homeXg(1.0).awayXg(0.3)
+                .homeShots(5).awayShots(3).homePossession(55).awayPossession(45)
+                .timeline(new com.footballmanager.application.service.simulation.v24.V24MatchTimeline())
+                .summary("Deterministic: clean match")
+                .build();
+
+        LeagueSimulator simulator = new LeagueSimulator(
+                fakeSim, null, false, true, false, fakeStorage,
+                true, true, true, false, false, // injuries=true, fatigue=true
+                new DeterministicV24Engine(fakeResult));
+
+        // injured_p1 is in HOME1 squad but NOT in starting XI (participated=false)
+        CareerSave career = makeCareerWithInjuryAndEnergy(HOME1, AWAY1, HOME1, AWAY1,
+                11, 11, "injured_p1", 2, false, 60);
+
+        career.setTournamentState(makeTournamentState(makeFixture("er8", HOME1, AWAY1, 1)));
+        simulator.simulateLeagueRound(career, 1);
+
+        SessionPlayer p = career.getSessionPlayer("injured_p1");
+        assertEquals(68, p.getEnergy(), "Injured non-participating player should recover +8");
+        assertTrue(p.getInjured(), "Injury status should be unchanged");
+    }
+
     // ========== V24D6I3: Factory helper for injury recovery tests ==========
 
     /**
@@ -1764,6 +2046,298 @@ class V24CareerMutationIntegrationTest {
             awayStarterIds.add(p.getSessionPlayerId());
         }
         awayStarterIds.set(0, formPlayerId2);
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
+    // ========== V24D6J5: Energy Recovery factory helpers ==========
+
+    /**
+     * Creates career with a player in HOME1 squad who is NOT in starting XI (non-participating).
+     * The player's energy is set before the round.
+     */
+    private static CareerSave makeCareerWithEnergyPlayer(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String energyPlayerId, int initialEnergy) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_energy_" + energyPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        // Create all starters with their expected pids (for V24MatchContext resolve)
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        // Add the energy player (NOT in starting XI)
+        SessionPlayer energyPlayer = SessionPlayer.custom(energyPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        energyPlayer.setSessionPlayerId(energyPlayerId);
+        energyPlayer.setEnergy(initialEnergy);
+        pm.addSessionPlayer(energyPlayer);
+        tm.assignPlayerToSquad(energyPlayerId, homeTeamId);
+
+        // Starting XI does NOT include the energy player
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
+    /**
+     * Creates career with a player IN starting XI (participating) with given energy.
+     */
+    private static CareerSave makeCareerWithEnergyPlayerInStartingXI(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String energyPlayerId, int initialEnergy) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_energy_participating_" + energyPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        // Add the energy player IN starting XI
+        SessionPlayer energyPlayer = SessionPlayer.custom(energyPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        energyPlayer.setSessionPlayerId(energyPlayerId);
+        energyPlayer.setEnergy(initialEnergy);
+        pm.addSessionPlayer(energyPlayer);
+        tm.assignPlayerToSquad(energyPlayerId, homeTeamId);
+
+        // Starting XI includes the energy player (replaces first home starter)
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        homeStarterIds.set(0, energyPlayerId);
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
+    /**
+     * Creates career with a player on a team that has NO fixture in the current round.
+     */
+    private static CareerSave makeCareerWithNoFixtureTeamPlayer(
+            String homeTeamId, String awayTeamId, String noFixtureTeamId,
+            String energyPlayerId, int initialEnergy) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_nofixture_" + energyPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId, noFixtureTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        // Create 11 starters for homeTeamId
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        // Create 11 starters for awayTeamId
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        // Add energy player on noFixtureTeamId (NOT in starting XI of any team with fixture)
+        SessionPlayer energyPlayer = SessionPlayer.custom(energyPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        energyPlayer.setSessionPlayerId(energyPlayerId);
+        energyPlayer.setEnergy(initialEnergy);
+        pm.addSessionPlayer(energyPlayer);
+        tm.assignPlayerToSquad(energyPlayerId, noFixtureTeamId);
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        // Starting XI for home/away teams (energy player not in any starting XI)
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
+        save.getTeamStarting11().put(homeTeamId, homeStarterIds);
+        save.getTeamStarting11().put(awayTeamId, awayStarterIds);
+
+        save.setTournamentState(new TournamentState());
+        return save;
+    }
+
+    /**
+     * Creates career with an injured player who has initial energy set.
+     * Player is NOT in starting XI (participated=false).
+     */
+    private static CareerSave makeCareerWithInjuryAndEnergy(
+            String homeTeamId, String awayTeamId,
+            String homeStartingTeamId, String awayStartingTeamId,
+            int homeStarterCount, int awayStarterCount,
+            String injuredPlayerId, int injuryRemainingMatches,
+            boolean participated, int initialEnergy) {
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId("test_career_injury_energy_" + injuredPlayerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        for (String tid : List.of(homeTeamId, awayTeamId)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        List<SessionPlayer> homePlayers = new ArrayList<>();
+        for (int i = 0; i < homeStarterCount; i++) {
+            String expectedPid = "p_" + homeTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, homeTeamId);
+            homePlayers.add(p);
+        }
+
+        List<SessionPlayer> awayPlayers = new ArrayList<>();
+        for (int i = 0; i < awayStarterCount; i++) {
+            String expectedPid = "p_" + awayTeamId + "_" + i;
+            SessionPlayer p = SessionPlayer.custom(expectedPid, 25, "MID",
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            p.setSessionPlayerId(expectedPid);
+            pm.addSessionPlayer(p);
+            tm.assignPlayerToSquad(expectedPid, awayTeamId);
+            awayPlayers.add(p);
+        }
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        // Add injured player with energy
+        SessionPlayer injuredPlayer = SessionPlayer.custom(injuredPlayerId, 25, "MID",
+                75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+        injuredPlayer.setSessionPlayerId(injuredPlayerId);
+        injuredPlayer.setInjured(injuryRemainingMatches > 0);
+        injuredPlayer.setInjuryRemainingMatches(injuryRemainingMatches);
+        injuredPlayer.setInjuryType(injuryRemainingMatches > 0 ? "MATCH_INJURY" : null);
+        injuredPlayer.setEnergy(initialEnergy);
+        pm.addSessionPlayer(injuredPlayer);
+        tm.assignPlayerToSquad(injuredPlayerId, homeTeamId);
+
+        List<String> homeStarterIds = new ArrayList<>();
+        for (SessionPlayer p : homePlayers) {
+            homeStarterIds.add(p.getSessionPlayerId());
+        }
+        if (participated) {
+            homeStarterIds.set(0, injuredPlayerId);
+        }
+        List<String> awayStarterIds = new ArrayList<>();
+        for (SessionPlayer p : awayPlayers) {
+            awayStarterIds.add(p.getSessionPlayerId());
+        }
         save.getTeamStarting11().put(homeStartingTeamId, homeStarterIds);
         save.getTeamStarting11().put(awayStartingTeamId, awayStarterIds);
 

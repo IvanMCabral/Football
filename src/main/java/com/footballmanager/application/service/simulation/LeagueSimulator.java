@@ -4,6 +4,7 @@ import com.footballmanager.application.service.domain.MatchEngineImpl;
 import com.footballmanager.application.service.domain.TeamOverallCalculator;
 import com.footballmanager.application.service.simulation.v24.V24SuspensionLifecycleApplier;
 import com.footballmanager.application.service.simulation.v24.V24InjuryRecoveryLifecycleApplier;
+import com.footballmanager.application.service.simulation.v24.V24EnergyRecoveryLifecycleApplier;
 import com.footballmanager.application.service.simulation.v24.V24InjuryMutationApplier;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
@@ -70,6 +71,7 @@ public class LeagueSimulator {
     private final V24CareerMutationPolicy v24MutationPolicy;
     private final V24SuspensionLifecycleApplier v24SuspensionLifecycleApplier = new V24SuspensionLifecycleApplier();
     private final V24InjuryRecoveryLifecycleApplier v24InjuryRecoveryLifecycleApplier = new V24InjuryRecoveryLifecycleApplier();
+    private final V24EnergyRecoveryLifecycleApplier v24EnergyRecoveryLifecycleApplier = new V24EnergyRecoveryLifecycleApplier();
 
     /**
      * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
@@ -198,6 +200,9 @@ public class LeagueSimulator {
 
         // V24D6I2: Run injury recovery lifecycle after suspension lifecycle
         applyV24InjuryRecoveryLifecycle(career, round, allFixtures, tracking, preRoundInjured);
+
+        // V24D6J5: Run energy recovery lifecycle after injury recovery
+        applyV24EnergyRecoveryLifecycle(career, tracking);
     }
 
     // ========== DefaultMatchSimulator Path (original behavior) ==========
@@ -535,6 +540,38 @@ public class LeagueSimulator {
         } catch (Exception e) {
             log.warn("[V24D6I2] Injury recovery lifecycle failed unexpectedly for career {} round {}: {}, continuing round",
                     career.getData().getCareerId(), round, e.getMessage());
+        }
+    }
+
+    // ========== V24D6J5: Energy Recovery Lifecycle ==========
+
+    /**
+     * V24D6J5: Runs energy recovery lifecycle after the full round loop.
+     * Non-participating players recover +8 energy (capped at 100).
+     * Participating players are not modified (they already drained through V24FatigueMutationApplier).
+     * Called once per simulateLeagueRound call, only when at least one V24 fixture succeeded.
+     * Best-effort: failures are logged and do not fail the round.
+     */
+    private void applyV24EnergyRecoveryLifecycle(CareerSave career,
+                                                  V24RoundMutationTracking tracking) {
+        try {
+            // Only run if V24 path processed at least one fixture
+            if (!tracking.v24RoundProcessed) return;
+            if (!v24MutationPolicy.isFatiguePersistenceEnabled()) return;
+
+            int recovered = v24EnergyRecoveryLifecycleApplier.applyRecovery(
+                    career,
+                    tracking.participatedPlayerIds,
+                    v24MutationPolicy
+            );
+
+            if (recovered > 0) {
+                log.debug("[V24D6J5] Recovered energy for {} players in career {}",
+                        recovered, career.getData().getCareerId());
+            }
+        } catch (Exception e) {
+            log.warn("[V24D6J5] Energy recovery lifecycle failed unexpectedly for career {}: {}, continuing round",
+                    career.getData().getCareerId(), e.getMessage());
         }
     }
 
