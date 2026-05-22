@@ -110,8 +110,11 @@ public class LineupHelper {
                 throw new IllegalArgumentException(
                     "Player " + player.getName() + " has low fitness (" + player.getEnergy() + "%)");
             }
-            if (player.getInjured()) {
-                throw new IllegalArgumentException("Player " + player.getName() + " is injured");
+            if (Boolean.TRUE.equals(player.getInjured())
+                || (player.getInjuryRemainingMatches() != null && player.getInjuryRemainingMatches() > 0)) {
+                int remaining = player.getInjuryRemainingMatches() != null ? player.getInjuryRemainingMatches() : 0;
+                throw new IllegalArgumentException(
+                    "Player " + player.getName() + " is injured for " + remaining + " match(es)");
             }
             if (Boolean.TRUE.equals(player.getSuspended()) || player.getSuspensionRemainingMatches() > 0) {
                 throw new IllegalArgumentException(

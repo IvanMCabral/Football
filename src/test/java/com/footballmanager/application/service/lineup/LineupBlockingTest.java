@@ -100,4 +100,59 @@ class LineupBlockingTest {
             () -> helper.validatePlayerFitness(players));
         assertTrue(ex.getMessage().contains("low fitness"));
     }
+
+    @Test
+    void validatePlayerFitness_rejectsInjuryRemainingMatchesPositiveEvenIfInjuredFalse() {
+        LineupHelper helper = new LineupHelper();
+        SessionPlayer p = new SessionPlayer();
+        p.setSessionPlayerId("stale-injury");
+        p.setName("Stale Injury Player");
+        p.setPosition("CM");
+        p.setEnergy(50);
+        p.setInjured(false);
+        p.setInjuryRemainingMatches(2);
+        assertThrows(IllegalArgumentException.class,
+            () -> helper.validatePlayerFitness(List.of(p)));
+    }
+
+    @Test
+    void validatePlayerFitness_allowsHealthyPlayerWithInjuredFalseAndRemainingZero() {
+        LineupHelper helper = new LineupHelper();
+        SessionPlayer p = new SessionPlayer();
+        p.setSessionPlayerId("healthy");
+        p.setName("Healthy Player");
+        p.setPosition("CB");
+        p.setEnergy(50);
+        p.setInjured(false);
+        p.setInjuryRemainingMatches(0);
+        assertDoesNotThrow(() -> helper.validatePlayerFitness(List.of(p)));
+    }
+
+    @Test
+    void validatePlayerFitness_nullInjuredAndNullRemainingDoesNotThrow() {
+        LineupHelper helper = new LineupHelper();
+        SessionPlayer p = new SessionPlayer();
+        p.setSessionPlayerId("null-injury");
+        p.setName("Null Injury Player");
+        p.setPosition("ST");
+        p.setEnergy(50);
+        // injured null, injuryRemainingMatches null
+        assertDoesNotThrow(() -> helper.validatePlayerFitness(List.of(p)));
+    }
+
+    @Test
+    void validatePlayerFitness_nullInjuredWithPositiveRemainingThrows() {
+        LineupHelper helper = new LineupHelper();
+        SessionPlayer p = new SessionPlayer();
+        p.setSessionPlayerId("null-inj-pos-remaining");
+        p.setName("Null Injured Pos Remaining");
+        p.setPosition("LW");
+        p.setEnergy(50);
+        p.setInjured(null);
+        p.setInjuryRemainingMatches(1);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+            () -> helper.validatePlayerFitness(List.of(p)));
+        assertTrue(ex.getMessage().contains("injured"));
+        assertTrue(ex.getMessage().contains("1 match(es)"));
+    }
 }

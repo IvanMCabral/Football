@@ -121,7 +121,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .map(id -> career.getSessionPlayers().get(id))
             .filter(Objects::nonNull)
             .filter(p -> p.getEnergy() > 20)
-            .filter(p -> !p.getInjured())
+            .filter(this::isPlayerAvailable)
             .filter(p -> !Boolean.TRUE.equals(p.getSuspended()))
             .filter(p -> p.getSuspensionRemainingMatches() <= 0)
             .sorted(Comparator.comparing(SessionPlayer::calculateOverall).reversed())
@@ -189,5 +189,15 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .toList();
 
         return new LineupDTO(formation.getCode(), playerDTOs, false);
+    }
+
+    private boolean isPlayerAvailable(SessionPlayer p) {
+        if (Boolean.TRUE.equals(p.getInjured())) {
+            return false;
+        }
+        if (p.getInjuryRemainingMatches() != null && p.getInjuryRemainingMatches() > 0) {
+            return false;
+        }
+        return true;
     }
 }

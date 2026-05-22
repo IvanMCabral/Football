@@ -63,6 +63,15 @@ class LineupCommandUseCaseImplAutoSelectTest {
         return p;
     }
 
+    private SessionPlayer makePlayerFull(String id, String name, String position, int overall, int energy,
+                                         Boolean injured, Integer injuryRemainingMatches,
+                                         boolean suspended, int suspensionRemainingMatches) {
+        SessionPlayer p = makePlayer(id, name, position, overall, energy, false, suspended, suspensionRemainingMatches);
+        p.setInjured(injured);
+        p.setInjuryRemainingMatches(injuryRemainingMatches);
+        return p;
+    }
+
     private CareerSave makeCareer(List<SessionPlayer> players) {
         CareerSave career = new CareerSave();
         career.setUserId(UUID.fromString(USER_ID));
@@ -168,6 +177,189 @@ class LineupCommandUseCaseImplAutoSelectTest {
                 boolean found = lineup.players().stream()
                     .anyMatch(p -> p.name().equals("Suspended Remaining"));
                 assertFalse(found, "Player with suspensionRemainingMatches=1 should not be in lineup");
+            })
+            .verifyComplete();
+
+        verify(careerRepository).save(any());
+    }
+
+    @Test
+    void autoSelect_excludesInjuredTrue() {
+        List<SessionPlayer> players = List.of(
+            makePlayerFull("inj-1", "Injured Star", "ST", 90, 80, true, null, false, 0),
+            makePlayer("gk-1", "Good GK", "GK", 70, 80, false, false, 0),
+            makePlayer("def-1", "Def A", "CB", 72, 80, false, false, 0),
+            makePlayer("def-2", "Def B", "CB", 71, 80, false, false, 0),
+            makePlayer("def-3", "Def C", "LB", 68, 80, false, false, 0),
+            makePlayer("def-4", "Def D", "RB", 67, 80, false, false, 0),
+            makePlayer("mid-1", "Mid A", "CM", 75, 80, false, false, 0),
+            makePlayer("mid-2", "Mid B", "CM", 74, 80, false, false, 0),
+            makePlayer("mid-3", "Mid C", "LM", 69, 80, false, false, 0),
+            makePlayer("mid-4", "Mid D", "RM", 68, 80, false, false, 0),
+            makePlayer("att-1", "Available Striker", "ST", 82, 80, false, false, 0),
+            makePlayer("att-2", "Second Striker", "ST", 78, 80, false, false, 0),
+            makePlayer("att-3", "Third Striker", "ST", 76, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(players);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
+            .assertNext(lineup -> {
+                assertNotNull(lineup.players());
+                assertEquals(11, lineup.players().size());
+                boolean found = lineup.players().stream()
+                    .anyMatch(p -> p.name().equals("Injured Star"));
+                assertFalse(found, "Injured player should not be in lineup");
+            })
+            .verifyComplete();
+
+        verify(careerRepository).save(any());
+    }
+
+    @Test
+    void autoSelect_excludesInjuryRemainingMatchesPositiveEvenIfInjuredFalse() {
+        List<SessionPlayer> players = List.of(
+            makePlayerFull("stale-1", "Stale Injury Player", "CM", 88, 80, false, 2, false, 0),
+            makePlayer("gk-1", "Good GK", "GK", 70, 80, false, false, 0),
+            makePlayer("def-1", "Def A", "CB", 72, 80, false, false, 0),
+            makePlayer("def-2", "Def B", "CB", 71, 80, false, false, 0),
+            makePlayer("def-3", "Def C", "LB", 68, 80, false, false, 0),
+            makePlayer("def-4", "Def D", "RB", 67, 80, false, false, 0),
+            makePlayer("mid-1", "Mid A", "CM", 85, 80, false, false, 0),
+            makePlayer("mid-2", "Mid B", "CM", 84, 80, false, false, 0),
+            makePlayer("mid-3", "Mid C", "LM", 69, 80, false, false, 0),
+            makePlayer("mid-4", "Mid D", "RM", 68, 80, false, false, 0),
+            makePlayer("att-1", "Attacker", "ST", 82, 80, false, false, 0),
+            makePlayer("att-2", "Second Striker", "ST", 78, 80, false, false, 0),
+            makePlayer("att-3", "Third Striker", "ST", 76, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(players);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
+            .assertNext(lineup -> {
+                assertNotNull(lineup.players());
+                assertEquals(11, lineup.players().size());
+                boolean found = lineup.players().stream()
+                    .anyMatch(p -> p.name().equals("Stale Injury Player"));
+                assertFalse(found, "Player with injuryRemainingMatches=2 should not be in lineup");
+            })
+            .verifyComplete();
+
+        verify(careerRepository).save(any());
+    }
+
+    @Test
+    void autoSelect_excludesInjuryRemainingMatchesPositiveWhenInjuredNull() {
+        List<SessionPlayer> players = List.of(
+            makePlayerFull("null-inj-1", "Null Injured Positive Remaining", "ST", 88, 80, null, 1, false, 0),
+            makePlayer("gk-1", "Good GK", "GK", 70, 80, false, false, 0),
+            makePlayer("def-1", "Def A", "CB", 72, 80, false, false, 0),
+            makePlayer("def-2", "Def B", "CB", 71, 80, false, false, 0),
+            makePlayer("def-3", "Def C", "LB", 68, 80, false, false, 0),
+            makePlayer("def-4", "Def D", "RB", 67, 80, false, false, 0),
+            makePlayer("mid-1", "Mid A", "CM", 75, 80, false, false, 0),
+            makePlayer("mid-2", "Mid B", "CM", 74, 80, false, false, 0),
+            makePlayer("mid-3", "Mid C", "LM", 69, 80, false, false, 0),
+            makePlayer("mid-4", "Mid D", "RM", 68, 80, false, false, 0),
+            makePlayer("att-1", "Available Striker", "ST", 82, 80, false, false, 0),
+            makePlayer("att-2", "Second Striker", "ST", 78, 80, false, false, 0),
+            makePlayer("att-3", "Third Striker", "ST", 76, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(players);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
+            .assertNext(lineup -> {
+                assertNotNull(lineup.players());
+                assertEquals(11, lineup.players().size());
+                boolean found = lineup.players().stream()
+                    .anyMatch(p -> p.name().equals("Null Injured Positive Remaining"));
+                assertFalse(found, "Player with null injured but injuryRemainingMatches=1 should not be in lineup");
+            })
+            .verifyComplete();
+
+        verify(careerRepository).save(any());
+    }
+
+    @Test
+    void autoSelect_allowsHealthyPlayerWithInjuredFalseAndRemainingZero() {
+        // Use 4-4-2 so the CM can fill a midfielder slot
+        List<SessionPlayer> players = List.of(
+            makePlayerFull("inj-mid", "Injured Mid", "CM", 88, 80, true, null, false, 0),
+            makePlayerFull("healthy-1", "Healthy Player", "CM", 75, 80, false, 0, false, 0),
+            makePlayer("gk-1", "Good GK", "GK", 70, 80, false, false, 0),
+            makePlayer("def-1", "Def A", "CB", 72, 80, false, false, 0),
+            makePlayer("def-2", "Def B", "CB", 71, 80, false, false, 0),
+            makePlayer("def-3", "Def C", "LB", 68, 80, false, false, 0),
+            makePlayer("def-4", "Def D", "RB", 67, 80, false, false, 0),
+            makePlayer("mid-1", "Mid A", "CM", 74, 80, false, false, 0),
+            makePlayer("mid-2", "Mid B", "CM", 73, 80, false, false, 0),
+            makePlayer("mid-3", "Mid C", "LM", 69, 80, false, false, 0),
+            makePlayer("mid-4", "Mid D", "RM", 68, 80, false, false, 0),
+            makePlayer("att-1", "Attacker", "ST", 82, 80, false, false, 0),
+            makePlayer("att-2", "Second Striker", "ST", 78, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(players);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(lineup -> {
+                assertNotNull(lineup.players());
+                assertEquals(11, lineup.players().size());
+                boolean foundHealthy = lineup.players().stream()
+                    .anyMatch(p -> p.name().equals("Healthy Player"));
+                assertTrue(foundHealthy, "Healthy player with injured=false and remaining=0 should be in lineup");
+                boolean foundInjured = lineup.players().stream()
+                    .anyMatch(p -> p.name().equals("Injured Mid"));
+                assertFalse(foundInjured, "Injured player should not be in lineup");
+            })
+            .verifyComplete();
+
+        verify(careerRepository).save(any());
+    }
+
+    @Test
+    void autoSelect_allowsHealthyPlayerWithInjuredNullAndRemainingNull() {
+        // Use 4-4-2 so the CM can fill a midfielder slot
+        List<SessionPlayer> players = List.of(
+            makePlayerFull("inj-mid", "Injured Mid Null", "CM", 88, 80, true, null, false, 0),
+            makePlayerFull("null-healthy-1", "Null Healthy Player", "CM", 75, 80, null, null, false, 0),
+            makePlayer("gk-1", "Good GK", "GK", 70, 80, false, false, 0),
+            makePlayer("def-1", "Def A", "CB", 72, 80, false, false, 0),
+            makePlayer("def-2", "Def B", "CB", 71, 80, false, false, 0),
+            makePlayer("def-3", "Def C", "LB", 68, 80, false, false, 0),
+            makePlayer("def-4", "Def D", "RB", 67, 80, false, false, 0),
+            makePlayer("mid-1", "Mid A", "CM", 74, 80, false, false, 0),
+            makePlayer("mid-2", "Mid B", "CM", 73, 80, false, false, 0),
+            makePlayer("mid-3", "Mid C", "LM", 69, 80, false, false, 0),
+            makePlayer("mid-4", "Mid D", "RM", 68, 80, false, false, 0),
+            makePlayer("att-1", "Attacker", "ST", 82, 80, false, false, 0),
+            makePlayer("att-2", "Second Striker", "ST", 78, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(players);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(lineup -> {
+                assertNotNull(lineup.players());
+                assertEquals(11, lineup.players().size());
+                boolean foundHealthy = lineup.players().stream()
+                    .anyMatch(p -> p.name().equals("Null Healthy Player"));
+                assertTrue(foundHealthy, "Player with null injured and null remaining should be in lineup");
+                boolean foundInjured = lineup.players().stream()
+                    .anyMatch(p -> p.name().equals("Injured Mid Null"));
+                assertFalse(foundInjured, "Injured player should not be in lineup");
             })
             .verifyComplete();
 
