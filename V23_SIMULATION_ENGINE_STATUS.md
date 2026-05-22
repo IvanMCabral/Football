@@ -1,11 +1,11 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `980be03` (V24D6H4 — yellow threshold lifecycle integration; H1-H4 complete)
-**Status:** V24D6H COMPLETE — yellow-card threshold (5 → 1-match suspension), RED precedence, subtract-5 reset, LeagueSimulator snapshot tracking, no frontend changes required. Form/morale and injury recovery lifecycle deferred.
-**Test status:** 623 total (602 baseline + 21 V24D6H2-H4 tests), 0 failures; mutation/lifecycle gate 206, 0 failures
-**Test table:** V24DisciplineMutationApplierTest 27 | V24CareerMutationServiceTest 53 | V24CareerMutationIntegrationTest 39 | mutation/lifecycle gate 206
-**Date:** 2026-05-16
+**Latest commit:** `e65cb03` (V24D6E4 — form mutation integration; E1-E4 complete; 651 tests)
+**Status:** V24D6H COMPLETE — yellow-card threshold (5 → 1-match suspension), RED precedence, subtract-5 reset, LeagueSimulator snapshot tracking, no frontend changes required. V24D6E COMPLETE — form persistence from V24 player ratings. Injury recovery lifecycle deferred.
+**Test status:** 651 total (602 baseline + 49 V24D6H+V24D6E), 0 failures; mutation/lifecycle/form gate 234, 0 failures
+**Test table:** V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 44 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | focused gate 234
+**Date:** 2026-05-17
 
 ---
 
@@ -133,7 +133,7 @@ public final class MatchQualityComputer {
 | `SessionPlayerDisciplineFieldsTest` | 8 | V24D6D2: SessionPlayer discipline fields, null-safe getters, default values, initDefaults, field initialization |
 | `V24FatigueMutationApplierTest` | 30 | V24D6C1 + V24D6F3: energy drain, null guards, flag combinations, floor at 0, unknown player skip, injured skip, substitute-only drain, custom drain values, null energy default, all-injured skip, relatedPlayerId substitute drain, null playerId graceful handling |
 
-**Total: 623 tests, 0 failures** (602 baseline + 21 V24D6H: 11 applier + 5 service + 4 integration + 1 disciplineResult)
+**Total: 651 tests, 0 failures** (602 baseline + 49 V24D6H+V24D6E: V24D6H 21 + V24D6E 28)
 
 ---
 
@@ -503,7 +503,7 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 ```
 mvn test -Dtest=V24ShotCoordinateAttachmentTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,V24MetricsValidationTest,V24PoissonValidationTest,MatchEngineImplTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingsPersistenceTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24MatchContextFactoryTest,V24InjuryMutationApplierTest,V24FatigueMutationApplierTest,V24CareerMutationServiceTest,V24CareerMutationIntegrationTest,SessionPlayerDTODisciplineFieldsTest,LineupBlockingTest,LineupCommandUseCaseImplAutoSelectTest
 ```
-Expected: 623 tests (regression gate), 0 failures; 623 full suite total (602 baseline + 21 V24D6H).
+Expected: 651 tests (regression gate), 0 failures; 651 full suite total (602 baseline + 49 V24D6H+V24D6E).
 
 ---
 

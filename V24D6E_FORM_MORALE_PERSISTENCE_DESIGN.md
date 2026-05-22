@@ -1,11 +1,12 @@
 # V24D6E — Form/Morale Persistence Design
 
-**Status:** V24D6E1 — AUDIT COMPLETE / DESIGN DRAFT
+**Status:** V24D6E IMPLEMENTATION COMPLETE — E1 (0388a57) + E2 (9c101d1) + E3 (f801299) + E4 (e65cb03) + E5 (this doc) complete
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `980be03` (V24D6H4 — yellow threshold lifecycle integration)
-**Latest docs commit:** `909cac1` (V24D6H6 docs update)
-**Tests:** 623 full suite, 0 failures
+**Latest implementation commit:** `e65cb03` (V24D6E4 — form mutation integration)
+**Latest docs commit:** (this update — V24D6E5)
+**Tests:** 651 full suite, 0 failures; focused mutation/lifecycle/form gate 234, 0 failures
 **Created:** 2026-05-17
+**Updated:** 2026-05-17
 
 ---
 
@@ -15,7 +16,7 @@ V24D6E targets form persistence — updating `SessionPlayer.form` from V24 match
 
 **Audit conclusion:** The infrastructure is almost entirely in place. `SessionPlayer.form` exists (Integer, default 50), is exposed in the API DTO, does not affect OVR calculations, and is independent from the team-level `SessionTeam.morale`. `V24CareerMutationPolicy` already has `persistForm` flag and `isFormPersistenceEnabled()`. `V24CareerMutationResult` already has `formApplied`. `V24PlayerRatingModel` produces deterministic [1.0–10.0] ratings for starting XI players from the match timeline. `V24PlayerRatingsAssembler` already assembles per-player ratings after each V24 match.
 
-**The only missing piece is `V24FormMutationApplier`** — the applier class that reads player ratings and mutates `SessionPlayer.form`. V24D6E2 through E4 implement this applier and wire it into the service/integration layers.
+V24D6E is implemented through E4. V24FormMutationApplier was added in 9c101d1, V24CareerMutationService orchestration was wired in f801299, and LeagueSimulator integration coverage was completed in e65cb03. Form persistence now updates SessionPlayer.form from V24 player ratings behind mutate-career-state + persist-form.
 
 **MVP recommendation:** Use existing `SessionPlayer.form` (Integer, [1,99], default 50), bounded conservative deltas from player match rating only (no team result modifier), clamp to [1, 99], only mutate starting XI players who appeared in the match timeline.
 
@@ -144,53 +145,36 @@ static V24CareerMutationResult partial(int injuries, int fatigue, int discipline
 
 All existing factory methods have been retrofitted with `form` parameter. **No result changes needed for V24D6E.**
 
-### 4.3 V24CareerMutationService — Form Not Wired
+### 4.3 V24CareerMutationService — Form Wired
 
 Current service orchestration:
 ```java
-// V24CareerMutationService.java — form applier NOT yet added
+// V24CareerMutationService.java — form applier wired in E3
 if (policy.isInjuryPersistenceEnabled())  → applyInjuries()
 if (policy.isFatiguePersistenceEnabled()) → applyFatigue()
 if (policy.isDisciplinePersistenceEnabled()) → applyDiscipline()
-// form: MISSING — needs V24FormMutationApplier + service wiring
+if (policy.isFormPersistenceEnabled()) → applyForm()
 ```
 
-**What needs to change:** Add `V24FormMutationApplier` field, constructor chain update, and `applyForm()` call with gate check.
+V24D6E3 added `V24FormMutationApplier` field, 4-arg constructor, and `applyForm()` call after discipline. No further service changes needed.
 
 ### 4.4 V24CareerMutationService Constructors
 
-Current 3-constructor chain (injury required, others optional):
-```java
-public V24CareerMutationService(V24InjuryMutationApplier injuryMutationApplier)
-public V24CareerMutationService(V24InjuryMutationApplier, V24FatigueMutationApplier)
-public V24CareerMutationService(V24InjuryMutationApplier, V24FatigueMutationApplier, V24DisciplineMutationApplier)
-```
-
-For V24D6E: Add `V24FormMutationApplier` as 4th optional parameter, following the same null-handling pattern.
+V24CareerMutationService now includes V24FormMutationApplier in the constructor chain. E3 added the form applier field, 4-arg constructor, and default constructor delegation. Existing constructors remain preserved and delegate to the full constructor with default appliers.
 
 ### 4.5 Configuration / LeagueSimulator Wiring
 
-**SimulationConfig.java:**
-```java
-@Value("${app.simulation.v24.persist-form:false}")
-private boolean persistForm;
-```
+V24FormMutationApplier is created in E2 and wired into V24CareerMutationService in E3. LeagueSimulator already threads persistForm through policy construction, so no LeagueSimulator production change was required.
 
-**LeagueSimulator.java:**
-- `applyV24CareerMutation()` accepts `V24RoundMutationTracking` — already passes through
-- `persistForm` parameter already threaded through constructor calls
-- V24 path calls `new V24CareerMutationService(...)` with all policy flags
-
-**No configuration changes needed.** `persist-form` flag already wired. Only `V24FormMutationApplier` needs to be created and wired into the service.
-
-### 4.6 Production Files Requiring Change (V24D6E2–E4)
+### 4.6 Production Files Changed (V24D6E2–E4)
 
 | File | Change |
 |------|--------|
-| `V24FormMutationApplier.java` | **NEW** — pure applier class |
-| `V24CareerMutationService.java` | Add form applier field + wiring |
-| `V24CareerMutationServiceTest.java` | Add form applier tests |
-| `V24FormMutationApplierTest.java` | **NEW** — unit tests |
+| `V24FormMutationApplier.java` | **NEW** — pure applier class (E2, commit `9c101d1`) |
+| `V24CareerMutationService.java` | Added form applier field + wiring (E3, commit `f801299`) |
+| `V24CareerMutationServiceTest.java` | Added form applier tests (E3, +5 tests) |
+| `V24FormMutationApplierTest.java` | **NEW** — unit tests (E2, 18 tests) |
+| `V24CareerMutationIntegrationTest.java` | Added form integration tests (E4, +5 tests) |
 | `V24CareerMutationIntegrationTest.java` | Add form integration tests |
 
 **No changes to:**
@@ -328,9 +312,9 @@ else delta = -2
 
 ---
 
-## 8. Proposed Implementation Design
+## 8. Implemented Design
 
-### V24D6E2 — V24FormMutationApplier
+### V24D6E2 — V24FormMutationApplier (implemented in 9c101d1)
 
 ```java
 package com.footballmanager.application.service.simulation.v24;
@@ -400,9 +384,8 @@ public final class V24FormMutationApplier {
 - Null player skip: continue silently (same as injury/fatigue discipline skip)
 - Delta computation is package-visible for unit testing
 
-### V24D6E3 — Service Wiring
+### V24D6E3 — Service Wiring (implemented in f801299)
 
-Add to `V24CareerMutationService`:
 ```java
 private final V24FormMutationApplier formMutationApplier;
 
@@ -427,11 +410,9 @@ public V24CareerMutationResult applyMutations(...) {
 }
 ```
 
-### V24D6E4 — LeagueSimulator Integration
+### V24D6E4 — LeagueSimulator Integration (integration coverage completed in e65cb03)
 
-No LeagueSimulator changes needed. `persistForm` parameter already threaded. `V24CareerMutationService` constructor is called with all policy flags already.
-
-The wiring is already done in LeagueSimulator — only the applier class and service field are missing.
+No LeagueSimulator production code change was required. `persistForm` parameter already threaded through policy construction and service constructor. The wiring was already done in LeagueSimulator — only the applier class and service field were missing (added in E2/E3).
 
 ---
 
@@ -572,30 +553,38 @@ V24D6E (overall) does NOT include:
 
 ## 13. Proposed Implementation Phases
 
-| Phase | Content | Deliverable |
-|-------|---------|-------------|
-| **V24D6E1** | This design document | `V24D6E_FORM_MORALE_PERSISTENCE_DESIGN.md` |
-| **V24D6E2** | V24FormMutationApplier + unit tests | New applier class + 17 tests |
-| **V24D6E3** | V24CareerMutationService orchestration + result tests | Service update + 5 tests |
-| **V24D6E4** | LeagueSimulator integration + full suite validation | Integration tests + full suite pass |
-| **V24D6E5** | Documentation update | All docs updated with E1–E4 commits |
+| Phase | Content | Deliverable | Status |
+|-------|---------|-------------|--------|
+| **V24D6E1** | This design document | `V24D6E_FORM_MORALE_PERSISTENCE_DESIGN.md` | DONE (`0388a57`) |
+| **V24D6E2** | V24FormMutationApplier + unit tests | New applier class + 18 tests | DONE (`9c101d1`) |
+| **V24D6E3** | V24CareerMutationService orchestration + service tests | Service update + 5 tests | DONE (`f801299`) |
+| **V24D6E4** | LeagueSimulator integration + full suite validation | Integration tests + 651 tests | DONE (`e65cb03`) |
+| **V24D6E5** | Documentation update | All docs updated | DONE (this doc) |
 
 ---
 
 ## 14. Completion Criteria
 
-- [x] V24D6E1 design document created and approved
-- [ ] V24D6E2 V24FormMutationApplier implemented with discrete-step delta formula
-- [ ] V24FormMutationApplier unit tests pass (17 tests, all scenarios)
-- [ ] V24D6E3 V24CareerMutationService updated with form applier wiring
-- [ ] V24CareerMutationServiceTest additions pass (5 new tests)
-- [ ] V24D6E4 LeagueSimulator integration tests pass
-- [ ] V24CareerMutationIntegrationTest additions pass (6 new tests)
-- [ ] Full suite: expected test count to be finalized after E2/E3/E4 test additions, 0 failures
-- [ ] No form effect on calculateOverall() or direct V24 match strength; V24PlayerSelector influence acceptable for MVP and must be validated in E4
-- [ ] persistForm flag wired: mutate-career-state + persist-form both required
-- [ ] Form mutation independent from injury/fatigue/discipline
-- [ ] V24D6E5 docs update committed with latest implementation commit
+- [x] V24D6E1 design document created and approved (`0388a57`)
+- [x] V24D6E2 V24FormMutationApplier implemented with discrete-step delta formula (`9c101d1`)
+- [x] V24FormMutationApplier unit tests pass (18 tests, all scenarios)
+- [x] V24D6E3 V24CareerMutationService updated with form applier wiring (`f801299`)
+- [x] V24CareerMutationServiceTest additions pass (58 tests total, 0 failures)
+- [x] V24D6E4 LeagueSimulator integration tests pass
+- [x] V24CareerMutationIntegrationTest additions pass (44 tests total, 0 failures)
+- [x] Full suite: 651 tests, 0 failures
+- [x] No form effect on calculateOverall() or direct V24 match strength; V24PlayerSelector influence acceptable for MVP and validated in E4
+- [x] persistForm flag wired: mutate-career-state + persist-form both required
+- [x] Form mutation independent from injury/fatigue/discipline
+- [x] V24D6E5 docs update committed (this update — `e65cb03`)
+- [x] No frontend/API/schema changes
+- [x] target/dist not staged
+
+**Remaining deferred (out of V24D6E scope):**
+- Optional frontend form display/polish
+- Optional future inclusion of substituted-in players if ratings assembler expands
+- Injury recovery lifecycle
+- Advanced/competition-specific discipline rules
 
 ---
 

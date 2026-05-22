@@ -2,10 +2,10 @@
 
 **Purpose:** Document existing simulation/domain state before designing V24 Detailed Match Engine.
 **Branch:** `mvp-1-performance-cleanup`
-**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F complete. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 complete in separate frontend repo. V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind default-false flags. V24D6D2/D3/D4/D5 discipline persistence pipeline wired behind default-false flags. V24D6D6A suspension lifecycle applier + V24D6D6B suspension lifecycle wiring complete. V24D6D7 DTO/API/frontend suspension visibility complete. V24D6H yellow-card threshold (5 → 1-match suspension), RED precedence, subtract-5 reset, LeagueSimulator snapshot tracking (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`). V24D6G3 (commit `3675431`), V24D6G4A (commit `362c647`), V24D6G4B (commit `c4681e2`), V24D6G5A (commit `18543dc`), V24D6G6A (commit `80ad1ed`), and V24D6G7 (audit — no code changes) in separate frontend repo. Form/morale and injury recovery lifecycle deferred.
-**Latest commit:** `980be03` (V24D6H4 — yellow threshold lifecycle integration; 623 tests)
-**Tests:** 623 total (602 baseline + 21 V24D6H), 0 failures; regression gate 623 tests, 0 failures
-**Date:** 2026-05-16
+**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H+V24D6E COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 complete in separate frontend repo. V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind flags. V24D6D2/D3/D4/D5 discipline persistence pipeline wired behind flags. V24D6D6A suspension lifecycle applier + V24D6D6B suspension lifecycle wiring complete. V24D6D7 DTO/API/frontend suspension visibility complete. V24D6H yellow-card threshold (5 → 1-match suspension), RED precedence, subtract-5 reset, LeagueSimulator snapshot tracking (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`). V24D6G3 (commit `3675431`), V24D6G4A (commit `362c647`), V24D6G4B (commit `c4681e2`), V24D6G5A (commit `18543dc`), V24D6G6A (commit `80ad1ed`), and V24D6G7 (audit — no code changes) in separate frontend repo. V24D6E form persistence complete (`0388a57`/`9c101d1`/`f801299`/`e65cb03`). Injury recovery lifecycle deferred.
+**Latest commit:** `e65cb03` (V24D6E4 — form mutation integration; 651 tests)
+**Tests:** 651 total (602 baseline + 49 V24D6H+V24D6E), 0 failures; regression gate 651 tests, 0 failures
+**Date:** 2026-05-17
 
 ---
 

@@ -1,10 +1,10 @@
 # V24D6 — Career State Mutation Design
 
-**Status:** V24D6A+V24D6B1/B2/B3+V24D6C1/C2/C3+V24D6D2/D3/D4/D5+V24D6D6+V24D6D7+V24D6H COMPLETE — injury+fatigue+discipline+suspension mutation pipeline complete; V24D6D7 DTO/API/frontend suspension visibility complete; V24D6H yellow-card threshold (5 → 1-match suspension) complete (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`); injury recovery lifecycle and form/morale deferred
+**Status:** V24D6A+V24D6B1/B2/B3+V24D6C1/C2/C3+V24D6D2/D3/D4/D5+V24D6D6+V24D6D7+V24D6H+V24D6E COMPLETE — injury+fatigue+discipline+suspension mutation pipeline complete; V24D6D7 DTO/API/frontend suspension visibility complete; V24D6H yellow-card threshold (5 → 1-match suspension) complete (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`); V24D6E form persistence from V24 player ratings, discrete deltas, clamp [1,99] complete (`0388a57`/`9c101d1`/`f801299`/`e65cb03`); injury recovery lifecycle deferred
 **Branch:** `mvp-1-performance-cleanup`
 **Created:** 2026-05-12
-**Latest implementation commit:** `980be03` (V24D6H4 — yellow threshold lifecycle integration)
-**Tests:** 623 regression gate (602 baseline + 21 V24D6H), 0 failures
+**Latest implementation commit:** `e65cb03` (V24D6E4 — form mutation integration)
+**Tests:** 651 regression gate (602 baseline + 49 V24D6H+V24D6E), 0 failures
 
 ---
 
@@ -16,7 +16,7 @@ The next logical step is to move from **visualization to consequence**: V24 matc
 
 **Goal:** Design how V24 match outcomes (injuries, fatigue, cards, form) can safely mutate `CareerSave` persistent state after a simulated round — without breaking existing careers, without forcing adoption, and without compromising the V23/stable path.
 
-V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3 are also complete: injury mutation applier, mutation service orchestration, and LeagueSimulator wiring behind default-false flags, PLUS fatigue mutation applier, fatigue service orchestration, and fatigue LeagueSimulator wiring behind default-false flags. Injury, fatigue, discipline persistence, suspension lifecycle, DTO/API/frontend suspension visibility, and yellow-card threshold are complete through V24D6H (backend `8b747bd`/`6a07173`/`ab1f7b5`/`980be03`). Injury recovery lifecycle and form/morale remain deferred.
+V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3 are also complete: injury mutation applier, mutation service orchestration, and LeagueSimulator wiring behind default-false flags, PLUS fatigue mutation applier, fatigue service orchestration, and fatigue LeagueSimulator wiring behind default-false flags. Injury, fatigue, discipline persistence, suspension lifecycle, DTO/API/frontend suspension visibility, and yellow-card threshold are complete through V24D6H (backend `8b747bd`/`6a07173`/`ab1f7b5`/`980be03`). Form persistence is complete through V24D6E. Injury recovery lifecycle remains deferred.
 
 ---
 
@@ -47,9 +47,9 @@ V24D6A began as design-only and is now complete. V24D6B1/B2/B3 and V24D6C1/C2/C3
 | CareerSave schema | Unchanged |
 | MatchFixture.MatchResultData | Unchanged (6 aggregate fields) |
 | V23/default path | Unaffected by V24 |
-| Backend tests | 623, 0 failures
+| Backend tests | 651, 0 failures
 
-**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6H, injuries, fatigue, discipline/cards, suspension lifecycle, DTO/API/frontend suspension visibility, and yellow-card threshold now have complete persistent career-state paths behind default-false flags. INJURY events update SessionPlayer injury fields, participation drains SessionPlayer.energy, YELLOW_CARD/RED_CARD events update SessionPlayer discipline fields, suspension lifecycle decrements eligible pre-round suspended players, DTO/API/frontend visibility is complete, and yellow-card threshold (5 → 1-match suspension) is implemented via LeagueSimulator snapshot tracking. Yellow-card suspension threshold is complete through V24D6H. Injury recovery lifecycle and form/morale remain deferred.
+**Key observation:** V24 produces rich match-local state (injuries, stamina drain, cards, ratings). As of V24D6E, injuries, fatigue, discipline/cards, suspension lifecycle, DTO/API/frontend suspension visibility, yellow-card threshold, and form persistence now have complete persistent career-state paths behind default-false flags. INJURY events update SessionPlayer injury fields, participation drains SessionPlayer.energy, YELLOW_CARD/RED_CARD events update SessionPlayer discipline fields, suspension lifecycle decrements eligible pre-round suspended players, DTO/API/frontend visibility is complete, yellow-card threshold (5 → 1-match suspension) is implemented via LeagueSimulator snapshot tracking, and SessionPlayer.form is persisted from V24 player ratings through V24D6E behind mutate-career-state + persist-form. Injury recovery lifecycle remains deferred.
 
 ---
 
@@ -131,13 +131,11 @@ V24D6D2-D5 implemented the MVP persistence path. YELLOW_CARD increments SessionP
 
 **Source:** `V24PlayerRatingModel` per-match rating, match result (win/draw/loss), goals/assists.
 
-**Target:** `SessionPlayer.form` (if it exists) or new morale/confidence field.
+**Target:** existing SessionPlayer.form.
 
-**Current state:** `SessionPlayer.form` may exist as a field. If not, a new field would be needed.
+**Current state:** V24D6E is complete. V24FormMutationApplier updates SessionPlayer.form from V24 player ratings behind mutate-career-state + persist-form. It uses discrete rating deltas, clamps [1,99], treats null form as 50, applies no team-result modifier, and adds no extra red-card penalty.
 
-**Risk:** Medium/High. Form affects player performance in subsequent matches. If not carefully balanced, high-OVR teams get even higher form, low-OVR teams spiral downward. Dynamic range must be limited.
-
-**Recommendation:** Defer V24D6E until injury/fatigue/cards pipeline is stable. Form/morale is the most game-sensitive effect and should not be the first mutation baseline.
+**Recommendation:** Complete. Future work is optional frontend form display/polish and rating/form balancing audit if needed.
 
 ---
 
@@ -161,7 +159,7 @@ V24D6D2-D5 implemented the MVP persistence path. YELLOW_CARD increments SessionP
 | **V24D6B** | Injury persistence — B1 applier, B2 service orchestration, B3 LeagueSimulator wiring behind flags | DONE |
 | **V24D6C** | Fatigue/energy persistence — C1 applier, C2 service orchestration, C3 LeagueSimulator wiring | DONE |
 | **V24D6D** | Cards/suspensions persistence — D1 design, D2 SessionPlayer fields, D3 applier, D4 service orchestration, D5 LeagueSimulator wiring, D6 suspension lifecycle/decrement; D7 DTO/API/frontend suspension visibility and lineup blocking complete | DONE |
-| **V24D6E** | Form/morale updates — SessionPlayer.form or new field | LOW (defer) |
+| **V24D6E** | Form persistence from V24 player ratings — E1 design, E2 applier, E3 service wiring, E4 integration tests | DONE |
 | **V24D6F** | Career mutation regression tests — V24D6F1/F2/F3: +15 tests, no production code changes, best-effort partial mutation semantics confirmed | DONE |
 | **V24D6G** | UI indicators — show unavailable/tired/suspended players in lineup | DONE (audit complete) |
 | **V24D6H** | Yellow-card suspension threshold — 5 yellows → 1-match suspension; RED precedence; subtract-5 reset; LeagueSimulator snapshot tracking | DONE |
@@ -234,7 +232,7 @@ LeagueSimulator.simulateRound()
 └── persist CareerSave                               ← existing
 ```
 
-`V24CareerMutationService`, `V24CareerMutationPolicy`, `V24CareerMutationResult`, `V24InjuryMutationApplier` are implemented through V24D6B1/B2/B3. `V24FatigueMutationApplier` is implemented in V24D6C1, with service orchestration in V24D6C2 and runtime wiring in V24D6C3. `V24DisciplineMutationApplier` is implemented in V24D6D3, orchestrated in V24D6D4, and wired in LeagueSimulator behind default-false flags in V24D6D5. `V24FormMutationApplier` remains future work.
+`V24CareerMutationService`, `V24CareerMutationPolicy`, `V24CareerMutationResult`, `V24InjuryMutationApplier` are implemented through V24D6B1/B2/B3. `V24FatigueMutationApplier` is implemented in V24D6C1, with service orchestration in V24D6C2 and runtime wiring in V24D6C3. `V24DisciplineMutationApplier` is implemented in V24D6D3, orchestrated in V24D6D4, and wired in LeagueSimulator behind default-false flags in V24D6D5. `V24FormMutationApplier` is implemented through V24D6E2 (`9c101d1`), wired into V24CareerMutationService through V24D6E3 (`f801299`), and covered by LeagueSimulator integration tests through V24D6E4 (`e65cb03`).
 
 ### V24CareerMutationService — Implemented in V24D6B2
 
@@ -292,7 +290,7 @@ public record V24CareerMutationResult(
 | Field | Type | Current Usage | Mutation Target? |
 |-------|------|---------------|------------------|
 | `energy` | int | Set at career creation; not modified by simulation | Yes — drain on V24 match |
-| `form` | int? | May exist; not modified by simulation | Yes — update on V24 match |
+| `form` | Integer | Existing SessionPlayer field; updated by V24D6E from V24 player ratings when mutate-career-state=true + persist-form=true | Yes — update on V24 match |
 | `injured` | boolean | Set manually or by career events | Yes — set from V24 INJURY event |
 | `injuryType` | String | Set manually or by career events | Yes — set from V24 INJURY event |
 | `injuryRemainingMatches` | int | Set by V24 injury mutation; automatic injury recovery/decrement is not implemented yet | Yes — set from V24 INJURY event |
@@ -659,4 +657,4 @@ V24D6H yellow-card threshold is now complete. All V24D6 discipline pipeline phas
 
 ---
 
-*This document is the authoritative V24D6 design specification. V24D6B1/B2/B3, V24D6C1/C2/C3, V24D6D2/D3/D4/D5/D6A/D6B/D7, V24D6F, and V24D6G are complete. V24D6E form/morale is the next deferred phase.*
+*This document is the authoritative V24D6 design specification. V24D6B1/B2/B3, V24D6C1/C2/C3, V24D6D2/D3/D4/D5/D6A/D6B/D7, V24D6E, V24D6F, and V24D6G are complete. Injury recovery lifecycle and advanced discipline rules remain deferred.*

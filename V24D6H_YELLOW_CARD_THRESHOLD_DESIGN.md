@@ -432,7 +432,7 @@ V24D6H does NOT include:
 - [x] No frontend changes (MVP)
 - [x] No target/ staging
 
-**Deferred:** Multi-round integration test (`thresholdSuspendedPlayer_decrementedNextRound`) deferred to future phase. `thresholdSuspendedPlayer_playsNextRound_notDecremented` covered by existing V24D6D6B participation tests. Optional frontend yellow counter display deferred. Injury recovery lifecycle and form/morale remain separate deferred phases.
+**Deferred:** Multi-round integration test (`thresholdSuspendedPlayer_decrementedNextRound`) deferred to future phase. `thresholdSuspendedPlayer_playsNextRound_notDecremented` covered by existing V24D6D6B participation tests. Optional frontend yellow counter display deferred. Injury recovery lifecycle remains a separate deferred phase. V24D6E form/morale is now complete.
 - [ ] No frontend changes (MVP)
 - [ ] No target/ staging
 
