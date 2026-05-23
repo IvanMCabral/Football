@@ -1,6 +1,6 @@
 # V24D6K7 — Conservative Tuning Decision Record
 
-**Status:** V24D6K7 — DECISION RECORD COMPLETE / NOT COMMITTED
+**Status:** V24D6K7 COMPLETE — committed at `fc8401a`. K8 docs/status close pending this update. Part of K1–K8 cycle. No tuning applied.
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-22
 **Based on:** K6 season-shaped diagnostic (8502b5d), K5 decision (2bf30d8), K3 tuning design (445e550)

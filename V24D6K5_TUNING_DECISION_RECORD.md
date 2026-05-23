@@ -1,6 +1,6 @@
 # V24D6K5 — Tuning Decision Record
 
-**Status:** V24D6K5 — DECISION RECORD COMPLETE / NOT COMMITTED
+**Status:** V24D6K5 COMPLETE — committed at `2bf30d8`. K6/K7 subsequently completed; K8 docs/status close pending this update. No tuning applied.
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-22
 **Based on:** K2 diagnostic (957ce7f), K4 rotation-aware diagnostic (cd48379), K3 tuning design (445e550)

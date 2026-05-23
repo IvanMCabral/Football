@@ -1,8 +1,8 @@
 # V24D6K3 — Constants Tuning Design Based on Diagnostic Harness Results
 
-**Status:** K3 — TUNING DESIGN COMPLETE / AWAITING K4 DIAGNOSTIC REALISM UPGRADE
+**Status:** K3 COMPLETE — K4/K5/K6/K7/K8 complete; no tuning applied. See V24D6K7 and V24D6K8 for final decisions.
 **Branch:** `mvp-1-performance-cleanup`
-**Based on:** V24D6K2 diagnostic harness results (`957ce7f`)
+**Based on:** V24D6K2 diagnostic harness results (`957ce7f`), K4 rotation-aware results (`cd48379`), K6 season-shaped results (`8502b5d`)
 **Last Updated:** 2026-05-22
 
 ---

@@ -1,10 +1,12 @@
 # V23 Simulation Engine — Status Document
 
 **Branch:** `mvp-1-performance-cleanup`
-**Latest commit:** `cb4574e` (V24D6J5 — energy recovery lifecycle wiring; J3/J4/J5 complete; 716 tests)
-**Status:** V24D6J COMPLETE — injured lineup blocking MVP (J3), energy recovery applier + unit tests (J4), energy recovery LeagueSimulator wiring + integration tests (J5). V24D6I COMPLETE. V24D6H COMPLETE. V24D6E COMPLETE.
-**Test status:** 716 total (681 pre-J + 35 new in J3/J4/J5), 0 failures; lifecycle/mutation/integration gate 207, 0 failures
-**Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | focused gate 207
+**Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests)
+**Latest docs commit:** `fc8401a` (V24D6K7 — conservative tuning decision)
+**V24D6K8 docs/status:** pending commit
+**Status:** V24D6K COMPLETE — K1–K8 diagnostic cycle complete; no production tuning applied. Energy healthy (R10 77.4/R20 72.2/R30 67.2), availability healthy (max 4 unavailable), injury borderline (12.3/team in reduced season shape), recovery working (87 recoveries). V24D6J COMPLETE. V24D6I COMPLETE. V24D6H COMPLETE. V24D6E COMPLETE.
+**Test status:** 723 total (716 pre-K + 7 new in K2/K4/K6), 0 failures; lifecycle/mutation/integration gate 207, 0 failures
+**Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | V24MutationBalancingDiagnosticTest 7 | focused gate 207
 **Date:** 2026-05-22
 
 ---
@@ -133,7 +135,7 @@ public final class MatchQualityComputer {
 | `SessionPlayerDisciplineFieldsTest` | 8 | V24D6D2: SessionPlayer discipline fields, null-safe getters, default values, initDefaults, field initialization |
 | `V24FatigueMutationApplierTest` | 30 | V24D6C1 + V24D6F3: energy drain, null guards, flag combinations, floor at 0, unknown player skip, injured skip, substitute-only drain, custom drain values, null energy default, all-injured skip, relatedPlayerId substitute drain, null playerId graceful handling |
 
-**Total: 651 tests, 0 failures** (602 baseline + 49 V24D6H+V24D6E: V24D6H 21 + V24D6E 28)
+**Total: 723 tests, 0 failures** (716 pre-K + 7 V24D6K diagnostic tests: K2/K4/K6)
 
 ---
 
@@ -503,7 +505,7 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 ```
 mvn test -Dtest=V24ShotCoordinateAttachmentTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,V24MetricsValidationTest,V24PoissonValidationTest,MatchEngineImplTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingsPersistenceTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24MatchContextFactoryTest,V24InjuryMutationApplierTest,V24FatigueMutationApplierTest,V24CareerMutationServiceTest,V24CareerMutationIntegrationTest,SessionPlayerDTODisciplineFieldsTest,LineupBlockingTest,LineupCommandUseCaseImplAutoSelectTest
 ```
-Expected: 651 tests (regression gate), 0 failures; 651 full suite total (602 baseline + 49 V24D6H+V24D6E).
+Expected: 723 tests (regression gate), 0 failures; 723 full suite total (716 pre-K + 7 V24D6K diagnostic tests).
 
 ---
 

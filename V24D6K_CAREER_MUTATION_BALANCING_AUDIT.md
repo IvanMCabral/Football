@@ -1,6 +1,6 @@
 # V24D6K — Career Mutation Balancing Audit
 
-**Status:** V24D6K1 — AUDIT COMPLETE / AWAITING COMMIT
+**Status:** V24D6K COMPLETE — diagnostic cycle K1–K8 complete, no production tuning applied.
 **Branch:** `mvp-1-performance-cleanup`
 **Last Updated:** 2026-05-22
 
@@ -417,6 +417,6 @@ The following are legitimate feature ideas but must NOT be taken up before K2-K4
 
 ---
 
-*Audit complete. Awaiting user signal to proceed to K2 or commit K1 document.*
+*V24D6K diagnostic cycle complete (K1–K8). No production constants changed. All phases documented.*
 
-**Final recommendation: Proceed next with V24D6K2 — balancing diagnostic harness/test only. Do not implement new gameplay modifiers (Form→Performance, Fatigue→Injury, Energy→Performance, Season Decay) until K2 establishes measured baseline.**
+**Final recommendation:** Close V24D6K. Future tuning candidates: `BASE_INJURY_PROB` 0.003→0.0025 (if full 20-team/38-round diagnostic confirms >12 injuries/team) or user explicitly requests lower injury pressure. Recommended next phase outside K sequence (e.g., V24D6L — full current-state consolidation). Do not implement gameplay modifiers (Form→Performance, Fatigue→Injury, Energy→Performance, Season Decay) until K evidence base is reviewed.
