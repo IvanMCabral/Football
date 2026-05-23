@@ -1,6 +1,6 @@
 # V24D6L — Full Current-State Consolidation / Release Readiness Audit
 
-**Status:** V24D6L1 — RELEASE READINESS AUDIT COMPLETE / NOT COMMITTED
+**Status:** V24D6L1 COMPLETE — committed at `22b650c`. V24D6L2 release checklist committed at `38c80f8`. L3 docs/status close pending this update.
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-22
 **Based on:** V24D6K complete (K1–K8: fc47ab7), full suite 723/0 failures
@@ -336,7 +336,7 @@ app.simulation.v24.persist-form: true        # beta only
 - Communication plan for beta testers
 
 **Deliverables:**
-- `V24D6L2_RELEASE_CHECKLIST.md`
+- `V24D6L2_RELEASE_CHECKLIST.md` ✅ COMMITTED at `38c80f8`
 - Flag combination table (safe/beta/full)
 - Go/no-go checklist
 - Communication template for beta announcement
@@ -344,8 +344,29 @@ app.simulation.v24.persist-form: true        # beta only
 **Non-deliverables:**
 - No code changes
 - No flag defaults changed
-- No frontend work (unless user explicitly requests)
+- No frontend work
+
+## 10. V24D6L Phase Summary
+
+| Phase | Commit | Type | Outcome |
+|-------|--------|------|---------|
+| L1 | `22b650c` | Docs | Release readiness audit; 0 blockers; backend release-ready behind flags |
+| L2 | `38c80f8` | Docs | Release checklist; Tier 0/Tier 1/Tier 2/Tier 3 rollout plan; beta communication template |
+| L3 | pending | Docs | Status/docs close — this update |
+
+**V24D6L complete. No code changes, no flag defaults modified.**
+
+## 11. Final Release-Readiness Conclusion
+
+- **Tier 0:** Safe general release — all flags `false`, no production behavior change
+- **Tier 1:** V24 detail read-only beta is low risk — enable for selected testers
+- **Tier 2:** Mutation beta requires frontend visibility (injury/suspension/energy/form visible in UI)
+- **Tier 3:** Full rollout not recommended yet — deferred until Tier 2 stable and user feedback positive
+- **Rollback:** Documented in L2; `use-v24-detailed-engine=false` returns to V23; `mutate-career-state=false` stops mutations
+- **No production constants changed:** All mutation constants at original values
+- **No flag defaults changed:** All V24/mutation flags remain `false` in `application.yaml`
+- **Backend release-ready:** Behind default-false flags
 
 ---
 
-*V24D6L1 release readiness audit complete. Awaiting user signal to proceed with L2 or next phase.*
+*V24D6L release-readiness package complete (L1–L3). Awaiting user signal to proceed with next phase.*

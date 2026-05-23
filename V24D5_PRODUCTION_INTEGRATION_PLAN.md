@@ -1,10 +1,9 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H+V24D6E+V24D6I+V24D6J+V24D6K COMPLETED — playerRatings populated; V24D6I injury recovery complete; V24D6J injured lineup blocking + energy recovery complete; V24D6K diagnostic cycle complete with no production tuning (energy healthy, availability healthy, injury borderline, recovery working).
+**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H+V24D6E+V24D6I+V24D6J+V24D6K+V24D6L COMPLETED — playerRatings populated; V24D6K diagnostic cycle complete with no production tuning; V24D6L release-readiness package complete (L1: `22b650c` audit / L2: `38c80f8` checklist); Tier 0 safe/Tier 1 low-risk/Tier 2 requires UX visibility.
 **Branch:** `mvp-1-performance-cleanup`
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests)
-**Latest docs commit:** `fc8401a` (V24D6K7 — conservative tuning decision)
-**V24D6K8 docs/status:** pending commit
+**Latest docs commit:** `38c80f8` (V24D6L2 — release checklist; V24D6L3 docs/status pending this update)
 **Tests:** 723 full suite total (716 pre-K + 7 new in K2/K4/K6); 723 regression gate, 0 failures
 **Created:** 2026-05-09
 **Updated:** 2026-05-22

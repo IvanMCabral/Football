@@ -1,6 +1,6 @@
 # V24D6L2 — Release Checklist / Flag Rollout Plan
 
-**Status:** V24D6L2 — RELEASE CHECKLIST COMPLETE / NOT COMMITTED
+**Status:** V24D6L2 COMPLETE — committed at `38c80f8`. L3 docs/status close pending this update.
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-22
 **Based on:** V24D6L1 release readiness audit (`22b650c`), V24D6K complete (K1–K8: `fc47ab7`), full suite 723/0 failures

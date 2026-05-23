@@ -2,9 +2,8 @@
 
 **Branch:** `mvp-1-performance-cleanup`
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests)
-**Latest docs commit:** `fc8401a` (V24D6K7 — conservative tuning decision)
-**V24D6K8 docs/status:** pending commit
-**Status:** V24D6K COMPLETE — K1–K8 diagnostic cycle complete; no production tuning applied. Energy healthy (R10 77.4/R20 72.2/R30 67.2), availability healthy (max 4 unavailable), injury borderline (12.3/team in reduced season shape), recovery working (87 recoveries). V24D6J COMPLETE. V24D6I COMPLETE. V24D6H COMPLETE. V24D6E COMPLETE.
+**Latest docs commit:** `38c80f8` (V24D6L2 — release checklist; V24D6L3 docs/status pending this update)
+**Status:** V24D6K COMPLETE — K1–K8 diagnostic cycle complete; no production tuning applied. Energy healthy (R10 77.4/R20 72.2/R30 67.2), availability healthy (max 4 unavailable), injury borderline (12.3/team in reduced season shape), recovery working (87 recoveries). V24D6L COMPLETE — release-readiness package complete (L1: `22b650c` audit / L2: `38c80f8` checklist); Tier 0 safe/Tier 1 low-risk/Tier 2 requires UX visibility. V24D6J COMPLETE. V24D6I COMPLETE. V24D6H COMPLETE. V24D6E COMPLETE.
 **Test status:** 723 total (716 pre-K + 7 new in K2/K4/K6), 0 failures; lifecycle/mutation/integration gate 207, 0 failures
 **Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | V24MutationBalancingDiagnosticTest 7 | focused gate 207
 **Date:** 2026-05-22
