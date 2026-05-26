@@ -1,9 +1,9 @@
 # V24D6M — Player Season Stats Design
 
-**Status:** V24D6M2 COMPLETE — source data audit complete, M3 MVP scope defined
+**Status:** V24D6M1-M4 COMPLETE — player season stats design, source audit, pure aggregator, read-only query service/API complete. M5 docs/status pending.
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-26
-**Based on:** V24D6L complete (`22b650c` L1 / `38c80f8` L2 / `9c2e6ad` L3), full suite 723/0 failures
+**Based on:** V24D6L complete (`22b650c` L1 / `38c80f8` L2 / `9c2e6ad` L3), full suite 760 tests
 
 ---
 
@@ -931,31 +931,64 @@ Status/roadmap updates.
 
 ## 17. Phase Summary
 
-| Phase | Type | Status | Key Deliverable |
-|-------|------|--------|-----------------|
-| M1 | Design | **COMPLETE** | `V24D6M_PLAYER_SEASON_STATS_DESIGN.md` |
-| M2 | Source audit | **COMPLETE** | Field mapping confirmed; M3 MVP scope defined |
-| M3 | Implementation | Pending | Aggregator + DTOs + unit tests |
-| M4 | Implementation | Pending | API + query service + integration tests |
-| M5 | Implementation | Future | Redis snapshot persistence |
-| M6 | Frontend | Future | Stats UI components |
-| M7 | Docs | Pending | Status/roadmap updates |
+| Phase | Type | Status | Key Deliverable | Commit |
+|-------|------|--------|-----------------|--------|
+| M1 | Design | **COMPLETE** | `V24D6M_PLAYER_SEASON_STATS_DESIGN.md` | `011ff92` |
+| M2 | Source audit | **COMPLETE** | Field mapping confirmed; M3 MVP scope defined | `db36055` |
+| M3 | Implementation | **COMPLETE** | Pure aggregator + DTOs + 19 tests | `533f101` |
+| M4 | Implementation | **COMPLETE** | Query service + API endpoints + 18 tests | `45c78c6` |
+| M5 | Docs/Status | **PENDING** | This update — status docs + roadmap | — |
+| M6 | Future | Future | Pagination / response metadata design | — |
+| M7 | Future | Future | Frontend stats UI design | — |
 
 ---
 
-## 18. Recommended Next Phase: V24D6M3
+## 18. V24D6M4 API Implementation
 
-### V24D6M3 — Pure Aggregator Service + Unit Tests
+**Commit:** `45c78c6`
 
-Implement M3 scope as defined in Section 14:
-- `PlayerSeasonStatsDto` with safe + approximate fields only
-- `PlayerSeasonStatsAggregator` pure function
-- `PlayerSeasonStatsResponse` wrapper
-- Unit tests for all field derivations
-- Redis key pattern scan workaround for career/season filtering
+### Endpoints
 
-**Constraints:** No API endpoints. No new Redis keys. No shotsOnTarget, minutesPlayed, form, or energy.
+| Method | Path | Behavior when no data | Feature disabled |
+|--------|------|----------------------|------------------|
+| GET | `.../seasons/{season}/player-stats` | 200, empty `playerStats[]` | 404 |
+| GET | `.../seasons/{season}/teams/{teamId}/player-stats` | 200, empty `playerStats[]` | 404 |
+| GET | `.../seasons/{season}/players/{playerId}/stats` | **404** if player not found | 404 |
+
+### Storage
+
+- `V24DetailedMatchStoragePort.findByCareerId(careerId)` — bulk read, no Redis writes
+- KEYS scan pattern `career:{careerId}:match-detail:*` + individual GETs per match
+- Existing key format unchanged: `career:{careerId}:match-detail:{matchId}`
+- No new Redis keys introduced
+
+### Feature Flag
+
+`app.simulation.v24.expose-detail-api=false` (default) → all endpoints return 404
 
 ---
 
-*V24D6M2 source data audit complete. M3 MVP scope defined. Awaiting user signal to proceed with M3 implementation.*
+## 19. Deferred Items (Still Not Implemented)
+
+| Item | Reason |
+|------|--------|
+| `minutesPlayed` | No per-minute tracking in source data |
+| `shotsOnTarget` | `SHOT_ON_TARGET` event not counted in stats model |
+| `currentForm` / `formDeltaSeason` | No form history baseline in source data |
+| `averageEnergy` / `lowestEnergy` | No energy history in source data |
+| Pagination (`limit`/`offset`) | Not in M4 scope |
+| Response-level cache metadata (`lastUpdatedRound` at response level) | Player-level `lastUpdatedRound` exists in `PlayerSeasonStatsDto`; response-level metadata deferred |
+| Redis snapshot persistence | Option B from Section 7 — deferred |
+| Frontend stats UI | Separate frontend repo |
+
+---
+
+## 20. Recommended Next Phase: V24D6M6
+
+**V24D6M6 — Pagination / Response Metadata Design**
+
+Design-only. No implementation until API consumers exist:
+- `limit` / `offset` query parameters for all-player endpoint
+- Response-level `metadata` block with `lastUpdatedRound`, `totalMatches`, `totalPlayers`
+- Sort options: `sortBy` (goals/assists/rating/appearances), `order` (asc/desc)
+- Backward-compatible — all new fields optional
