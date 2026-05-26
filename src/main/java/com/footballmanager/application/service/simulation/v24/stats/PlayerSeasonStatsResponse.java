@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D6M3: Response DTO for player season stats query.
+ * V24D6M7: Response DTO for player season stats query.
  *
  * <p>Contains a list of per-player season stat records plus optional
- * computed summaries and an incomplete flag for partial data.
+ * computed summaries, an incomplete flag for partial data, metadata
+ * block, and warnings array.
  */
 public final class PlayerSeasonStatsResponse {
 
@@ -21,6 +22,8 @@ public final class PlayerSeasonStatsResponse {
     private final Double averageRating;
     private final boolean incomplete;
     private final String message;
+    private final PlayerSeasonStatsMetadata metadata;
+    private final List<PlayerSeasonStatsWarning> warnings;
 
     public PlayerSeasonStatsResponse(
             String careerId,
@@ -31,7 +34,9 @@ public final class PlayerSeasonStatsResponse {
             Integer totalAppearances,
             Double averageRating,
             boolean incomplete,
-            String message) {
+            String message,
+            PlayerSeasonStatsMetadata metadata,
+            List<PlayerSeasonStatsWarning> warnings) {
         this.careerId = Objects.requireNonNull(careerId, "careerId must not be null");
         this.season = season;
         this.playerStats = (playerStats != null) ? Collections.unmodifiableList(playerStats) : Collections.emptyList();
@@ -41,6 +46,8 @@ public final class PlayerSeasonStatsResponse {
         this.averageRating = averageRating;
         this.incomplete = incomplete;
         this.message = message;
+        this.metadata = metadata;
+        this.warnings = (warnings != null) ? Collections.unmodifiableList(warnings) : Collections.emptyList();
     }
 
     public String careerId() { return careerId; }
@@ -52,6 +59,8 @@ public final class PlayerSeasonStatsResponse {
     public Double averageRating() { return averageRating; }
     public boolean incomplete() { return incomplete; }
     public String message() { return message; }
+    public PlayerSeasonStatsMetadata metadata() { return metadata; }
+    public List<PlayerSeasonStatsWarning> warnings() { return warnings; }
 
     @Override
     public boolean equals(Object o) {
@@ -65,13 +74,15 @@ public final class PlayerSeasonStatsResponse {
                 && Objects.equals(totalAppearances, that.totalAppearances)
                 && Double.compare(that.averageRating, averageRating) == 0
                 && incomplete == that.incomplete
-                && Objects.equals(message, that.message);
+                && Objects.equals(message, that.message)
+                && Objects.equals(metadata, that.metadata)
+                && Objects.equals(warnings, that.warnings);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(careerId, season, playerStats, totalGoals, totalAssists,
-                totalAppearances, averageRating, incomplete, message);
+                totalAppearances, averageRating, incomplete, message, metadata, warnings);
     }
 
     @Override
@@ -94,6 +105,8 @@ public final class PlayerSeasonStatsResponse {
         private Double averageRating;
         private boolean incomplete;
         private String message;
+        private PlayerSeasonStatsMetadata metadata;
+        private List<PlayerSeasonStatsWarning> warnings;
 
         public Builder careerId(String careerId) { this.careerId = careerId; return this; }
         public Builder season(Integer season) { this.season = season; return this; }
@@ -104,6 +117,8 @@ public final class PlayerSeasonStatsResponse {
         public Builder averageRating(Double averageRating) { this.averageRating = averageRating; return this; }
         public Builder incomplete(boolean incomplete) { this.incomplete = incomplete; return this; }
         public Builder message(String message) { this.message = message; return this; }
+        public Builder metadata(PlayerSeasonStatsMetadata metadata) { this.metadata = metadata; return this; }
+        public Builder warnings(List<PlayerSeasonStatsWarning> warnings) { this.warnings = warnings; return this; }
 
         public PlayerSeasonStatsResponse build() {
             return new PlayerSeasonStatsResponse(
@@ -114,7 +129,9 @@ public final class PlayerSeasonStatsResponse {
                     totalAppearances != null ? totalAppearances : 0,
                     averageRating != null ? averageRating : 0.0,
                     incomplete,
-                    message
+                    message,
+                    metadata,
+                    warnings
             );
         }
     }

@@ -96,46 +96,164 @@ public final class PlayerSeasonStatsAggregator {
             dtos.add(acc.toDto());
         }
 
-        // Sort
+        // Sort with tie-break chain
         dtos.sort(getComparator(s.sortField, s.sortOrder));
 
-        // Limit
-        if (s.limit > 0 && dtos.size() > s.limit) {
-            dtos = dtos.subList(0, s.limit);
-        }
-
-        // Totals
+        // Totals BEFORE pagination — reflects all players, not just the page
         int totalGoals = dtos.stream().mapToInt(PlayerSeasonStatsDto::goals).sum();
         int totalAssists = dtos.stream().mapToInt(PlayerSeasonStatsDto::assists).sum();
         int totalAppearances = dtos.stream().mapToInt(PlayerSeasonStatsDto::appearances).sum();
         double avgRating = dtos.isEmpty() ? 0.0
                 : dtos.stream().mapToDouble(PlayerSeasonStatsDto::averageRating).average().orElse(0.0);
 
+        // Apply offset + limit for pagination
+        int offset = s.offset;
+        if (offset < 0) offset = 0;
+        if (offset > 0 && offset < dtos.size()) {
+            dtos = dtos.subList(offset, dtos.size());
+        }
+        if (s.limit > 0 && dtos.size() > s.limit) {
+            dtos = dtos.subList(0, s.limit);
+        }
+
         return new PlayerSeasonStatsResponse(
                 careerId, season, dtos,
                 totalGoals, totalAssists, totalAppearances,
                 Math.round(avgRating * 100.0) / 100.0,
                 false,
-                null
+                null,
+                null,
+                List.of()
         );
     }
 
+    /**
+     * Compute aggregation result with full metadata for QueryService.
+     * Returns an enhanced response with all fields needed for metadata + warnings.
+     * Does NOT apply offset/limit — caller handles pagination.
+     */
+    public AggregationResult aggregateWithMetadata(
+            List<V24DetailedMatchData> details,
+            String careerId,
+            Integer season,
+            FilterOptions filter,
+            SortOptions sort) {
+
+        if (details == null || details.isEmpty()) {
+            return AggregationResult.builder().build();
+        }
+
+        FilterOptions f = filter != null ? filter : FilterOptions.NONE;
+        SortOptions s = sort != null ? sort : SortOptions.DEFAULT;
+
+        Map<String, V24DetailedMatchData> deduped = new HashMap<>();
+        for (V24DetailedMatchData detail : details) {
+            if (detail != null && detail.matchId() != null) {
+                deduped.putIfAbsent(detail.matchId(), detail);
+            }
+        }
+
+        Map<String, PlayerAccumulator> accumulators = new HashMap<>();
+        for (V24DetailedMatchData detail : deduped.values()) {
+            if (detail.playerRatings() == null) continue;
+            for (V24PlayerMatchRatingDto rating : detail.playerRatings()) {
+                if (rating == null || rating.playerId() == null) continue;
+                String tId = rating.teamId();
+                String pId = rating.playerId();
+                if (f.teamId != null && !f.teamId.equals(tId)) continue;
+                if (f.playerId != null && !f.playerId.equals(pId)) continue;
+                String key = tId + "|" + pId;
+                PlayerAccumulator acc = accumulators.computeIfAbsent(key,
+                        k -> new PlayerAccumulator(careerId, season, tId, pId,
+                                rating.playerName(), rating.position()));
+                acc.addMatch(detail.round(), rating);
+            }
+        }
+
+        List<PlayerSeasonStatsDto> dtos = new ArrayList<>();
+        for (PlayerAccumulator acc : accumulators.values()) {
+            dtos.add(acc.toDto());
+        }
+
+        List<String> matchIds = deduped.values().stream()
+                .map(V24DetailedMatchData::matchId)
+                .filter(Objects::nonNull)
+                .sorted()
+                .toList();
+
+        int lastUpdatedRound = deduped.values().stream()
+                .filter(d -> d.round() > 0)
+                .mapToInt(V24DetailedMatchData::round)
+                .max().orElse(0);
+
+        int totalMatchesProcessed = deduped.size();
+
+        dtos.sort(getComparator(s.sortField, s.sortOrder));
+
+        int totalGoals = dtos.stream().mapToInt(PlayerSeasonStatsDto::goals).sum();
+        int totalAssists = dtos.stream().mapToInt(PlayerSeasonStatsDto::assists).sum();
+        int totalAppearances = dtos.stream().mapToInt(PlayerSeasonStatsDto::appearances).sum();
+        double avgRating = dtos.isEmpty() ? 0.0
+                : dtos.stream().mapToDouble(PlayerSeasonStatsDto::averageRating).average().orElse(0.0);
+
+        int totalPlayers = dtos.size();
+
+        // Apply pagination
+        int offset = s.offset;
+        if (offset < 0) offset = 0;
+        if (offset > 0 && offset < dtos.size()) {
+            dtos = dtos.subList(offset, dtos.size());
+        }
+        if (s.limit > 0 && dtos.size() > s.limit) {
+            dtos = dtos.subList(0, s.limit);
+        }
+
+        return AggregationResult.builder()
+                .playerStats(dtos)
+                .totalGoals(totalGoals)
+                .totalAssists(totalAssists)
+                .totalAppearances(totalAppearances)
+                .averageRating(Math.round(avgRating * 100.0) / 100.0)
+                .matchIds(matchIds)
+                .totalMatchesProcessed(totalMatchesProcessed)
+                .lastUpdatedRound(lastUpdatedRound)
+                .totalPlayers(totalPlayers)
+                .build();
+    }
+
     private PlayerSeasonStatsResponse emptyResponse(String careerId, Integer season) {
-        return new PlayerSeasonStatsResponse(careerId, season, List.of(), 0, 0, 0, 0.0, false, null);
+        return new PlayerSeasonStatsResponse(careerId, season, List.of(), 0, 0, 0, 0.0, false, null, null, List.of());
     }
 
     private Comparator<PlayerSeasonStatsDto> getComparator(SortField field, SortOrder order) {
-        Comparator<PlayerSeasonStatsDto> cmp;
+        Comparator<PlayerSeasonStatsDto> primary;
         switch (field) {
-            case ASSISTS:      cmp = Comparator.comparingInt(PlayerSeasonStatsDto::assists); break;
-            case RATING:      cmp = Comparator.comparingDouble(PlayerSeasonStatsDto::averageRating); break;
-            case APPEARANCES: cmp = Comparator.comparingInt(PlayerSeasonStatsDto::appearances); break;
-            case PLAYER_NAME:  cmp = Comparator.comparing(PlayerSeasonStatsDto::playerName); break;
+            case ASSISTS:      primary = Comparator.comparingInt(PlayerSeasonStatsDto::assists); break;
+            case RATING:       primary = Comparator.comparingDouble(PlayerSeasonStatsDto::averageRating); break;
+            case APPEARANCES:  primary = Comparator.comparingInt(PlayerSeasonStatsDto::appearances); break;
+            case STARTS:       primary = Comparator.comparingInt(PlayerSeasonStatsDto::starts); break;
+            case SHOTS:        primary = Comparator.comparingInt(PlayerSeasonStatsDto::shots); break;
+            case KEY_PASSES:   primary = Comparator.comparingInt(PlayerSeasonStatsDto::keyPasses); break;
+            case YELLOW_CARDS: primary = Comparator.comparingInt(PlayerSeasonStatsDto::yellowCards); break;
+            case RED_CARDS:    primary = Comparator.comparingInt(PlayerSeasonStatsDto::redCards); break;
+            case INJURIES:     primary = Comparator.comparingInt(PlayerSeasonStatsDto::injuries); break;
+            case FOULS:        primary = Comparator.comparingInt(PlayerSeasonStatsDto::fouls); break;
+            case PLAYER_NAME:  primary = Comparator.comparing(PlayerSeasonStatsDto::playerName); break;
             case GOALS:
-            default:          cmp = Comparator.comparingInt(PlayerSeasonStatsDto::goals); break;
+            default:          primary = Comparator.comparingInt(PlayerSeasonStatsDto::goals); break;
         }
-        if (order == SortOrder.DESC) cmp = cmp.reversed();
-        return cmp.thenComparing(PlayerSeasonStatsDto::playerName);
+        if (order == SortOrder.DESC) primary = primary.reversed();
+
+        // Stable tie-break chain:
+        // goals DESC → assists DESC → averageRating DESC → playerName ASC → playerId ASC
+        Comparator<PlayerSeasonStatsDto> tieBreak =
+                Comparator.comparingInt(PlayerSeasonStatsDto::goals).reversed()
+                .thenComparingInt(PlayerSeasonStatsDto::assists).reversed()
+                .thenComparingDouble(PlayerSeasonStatsDto::averageRating).reversed()
+                .thenComparing(PlayerSeasonStatsDto::playerName)
+                .thenComparing(PlayerSeasonStatsDto::playerId);
+
+        return primary.thenComparing(tieBreak);
     }
 
     private static final class PlayerAccumulator {
@@ -201,7 +319,7 @@ public final class PlayerSeasonStatsAggregator {
         }
     }
 
-    public enum SortField { GOALS, ASSISTS, RATING, APPEARANCES, PLAYER_NAME }
+    public enum SortField { GOALS, ASSISTS, RATING, APPEARANCES, STARTS, SHOTS, KEY_PASSES, YELLOW_CARDS, RED_CARDS, INJURIES, FOULS, PLAYER_NAME }
     public enum SortOrder { ASC, DESC }
 
     public static final class FilterOptions {
@@ -215,14 +333,16 @@ public final class PlayerSeasonStatsAggregator {
     }
 
     public static final class SortOptions {
-        public static final SortOptions DEFAULT = new SortOptions(SortField.GOALS, SortOrder.DESC, 0);
+        public static final SortOptions DEFAULT = new SortOptions(SortField.GOALS, SortOrder.DESC, 0, 0);
         public final SortField sortField;
         public final SortOrder sortOrder;
         public final int limit;
-        public SortOptions(SortField sortField, SortOrder sortOrder, int limit) {
+        public final int offset;
+        public SortOptions(SortField sortField, SortOrder sortOrder, int limit, int offset) {
             this.sortField = sortField != null ? sortField : SortField.GOALS;
             this.sortOrder = sortOrder != null ? sortOrder : SortOrder.DESC;
             this.limit = limit;
+            this.offset = offset;
         }
     }
 }

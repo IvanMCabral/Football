@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.simulation.v24.stats;
 
 import com.footballmanager.adapters.in.web.career.controllers.PlayerSeasonStatsController;
+import com.footballmanager.application.service.simulation.v24.stats.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D6M4: Unit tests for PlayerSeasonStatsController.
+ * V24D6M7: Unit tests for PlayerSeasonStatsController.
  *
  * Uses reactive return types (Mono<ResponseEntity<Object>>) matching
  * the controller's actual signatures. Tests are deterministic and fast,
@@ -29,7 +30,7 @@ class PlayerSeasonStatsControllerTest {
     void getAllPlayerStats_returns200WithResponse() {
         PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.getPlayerSeasonStats(CAREER_ID, SEASON))
+        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), isNull(), eq(50), eq(0), isNull(), isNull()))
                 .thenReturn(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
@@ -43,7 +44,7 @@ class PlayerSeasonStatsControllerTest {
                         .build());
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
-        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, null, null, null, null);
 
         ResponseEntity<Object> entity = result.block();
         assertThat(entity).isNotNull();
@@ -58,7 +59,7 @@ class PlayerSeasonStatsControllerTest {
     void getTeamPlayerStats_filtersTeam() {
         PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), eq("team-A"), isNull(), isNull()))
+        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), eq("team-A"), isNull(), eq(50), eq(0), isNull(), isNull()))
                 .thenReturn(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
@@ -72,7 +73,7 @@ class PlayerSeasonStatsControllerTest {
                         .build());
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
-        Mono<ResponseEntity<Object>> result = controller.getTeamPlayerSeasonStats(CAREER_ID, SEASON, "team-A");
+        Mono<ResponseEntity<Object>> result = controller.getTeamPlayerSeasonStats(CAREER_ID, SEASON, "team-A", null, null, null, null);
 
         ResponseEntity<Object> entity = result.block();
         assertThat(entity).isNotNull();
@@ -93,7 +94,7 @@ class PlayerSeasonStatsControllerTest {
                 7.5, 9.0, 5.5,  // averageRating, bestRating, worstRating
                 30  // lastUpdatedRound
         );
-        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), eq("player-1"), isNull()))
+        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), eq("player-1")))
                 .thenReturn(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
@@ -123,7 +124,7 @@ class PlayerSeasonStatsControllerTest {
         PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
         when(queryService.isApiEnabled()).thenReturn(true);
         // Aggregator returns empty list when no data for the requested playerId
-        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), eq("missing-player"), isNull()))
+        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), eq("missing-player")))
                 .thenReturn(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
@@ -152,8 +153,8 @@ class PlayerSeasonStatsControllerTest {
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
 
         // All three endpoints return 404 when feature disabled
-        ResponseEntity<Object> allStats = controller.getPlayerSeasonStats(CAREER_ID, SEASON).block();
-        ResponseEntity<Object> teamStats = controller.getTeamPlayerSeasonStats(CAREER_ID, SEASON, "team-A").block();
+        ResponseEntity<Object> allStats = controller.getPlayerSeasonStats(CAREER_ID, SEASON, null, null, null, null).block();
+        ResponseEntity<Object> teamStats = controller.getTeamPlayerSeasonStats(CAREER_ID, SEASON, "team-A", null, null, null, null).block();
         ResponseEntity<Object> playerStats = controller.getPlayerStats(CAREER_ID, SEASON, "player-1").block();
 
         assertThat(allStats).isNotNull();
@@ -170,7 +171,7 @@ class PlayerSeasonStatsControllerTest {
         when(queryService.isApiEnabled()).thenReturn(true);
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
-        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(null, SEASON);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(null, SEASON, null, null, null, null);
 
         ResponseEntity<Object> entity = result.block();
         assertThat(entity).isNotNull();
@@ -183,7 +184,7 @@ class PlayerSeasonStatsControllerTest {
         when(queryService.isApiEnabled()).thenReturn(true);
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
-        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats("  ", SEASON);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats("  ", SEASON, null, null, null, null);
 
         ResponseEntity<Object> entity = result.block();
         assertThat(entity).isNotNull();
@@ -196,10 +197,106 @@ class PlayerSeasonStatsControllerTest {
         when(queryService.isApiEnabled()).thenReturn(true);
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
-        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, null);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, null, null, null, null, null);
 
         ResponseEntity<Object> entity = result.block();
         assertThat(entity).isNotNull();
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void getPlayerSeasonStats_limitZero_returns400() {
+        PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
+        when(queryService.isApiEnabled()).thenReturn(true);
+
+        PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, 0, null, null, null);
+
+        ResponseEntity<Object> entity = result.block();
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void getPlayerSeasonStats_limitNegative_returns400() {
+        PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
+        when(queryService.isApiEnabled()).thenReturn(true);
+
+        PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, -5, null, null, null);
+
+        ResponseEntity<Object> entity = result.block();
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void getPlayerSeasonStats_offsetNegative_returns400() {
+        PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
+        when(queryService.isApiEnabled()).thenReturn(true);
+
+        PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, null, -1, null, null);
+
+        ResponseEntity<Object> entity = result.block();
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void getPlayerSeasonStats_invalidSortBy_returns400() {
+        PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
+        when(queryService.isApiEnabled()).thenReturn(true);
+
+        PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, null, null, "invalidField", null);
+
+        ResponseEntity<Object> entity = result.block();
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void getPlayerSeasonStats_invalidOrder_returns400() {
+        PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
+        when(queryService.isApiEnabled()).thenReturn(true);
+
+        PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, null, null, null, "invalid");
+
+        ResponseEntity<Object> entity = result.block();
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void getPlayerSeasonStats_limitClampedTo200_withWarning() {
+        PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
+        when(queryService.isApiEnabled()).thenReturn(true);
+        when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), isNull(), eq(200), eq(0), isNull(), isNull()))
+                .thenReturn(PlayerSeasonStatsResponse.builder()
+                        .careerId(CAREER_ID)
+                        .season(SEASON)
+                        .playerStats(List.of())
+                        .totalGoals(0)
+                        .totalAssists(0)
+                        .totalAppearances(0)
+                        .averageRating(0.0)
+                        .incomplete(false)
+                        .message("ok")
+                        .warnings(List.of())
+                        .build());
+
+        PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
+        Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, 500, null, null, null);
+
+        ResponseEntity<Object> entity = result.block();
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        PlayerSeasonStatsResponse body = (PlayerSeasonStatsResponse) entity.getBody();
+        assertThat(body).isNotNull();
+        boolean hasLargeLimitWarning = body.warnings().stream()
+                .anyMatch(w -> w.code() == PlayerSeasonStatsWarningCode.LARGE_LIMIT_CLAMPED);
+        assertThat(hasLargeLimitWarning).isTrue();
     }
 }

@@ -234,7 +234,7 @@ class PlayerSeasonStatsAggregatorTest {
                 new PlayerSeasonStatsAggregator.FilterOptions(null, "p2"),
                 new PlayerSeasonStatsAggregator.SortOptions(
                         PlayerSeasonStatsAggregator.SortField.GOALS,
-                        PlayerSeasonStatsAggregator.SortOrder.DESC, 0));
+                        PlayerSeasonStatsAggregator.SortOrder.DESC, 0, 0));
 
         assertEquals(1, resp.playerStats().size());
         assertEquals("p2", resp.playerStats().get(0).playerId());
@@ -252,7 +252,7 @@ class PlayerSeasonStatsAggregatorTest {
                 new PlayerSeasonStatsAggregator.FilterOptions("teamA", null),
                 new PlayerSeasonStatsAggregator.SortOptions(
                         PlayerSeasonStatsAggregator.SortField.GOALS,
-                        PlayerSeasonStatsAggregator.SortOrder.DESC, 0));
+                        PlayerSeasonStatsAggregator.SortOrder.DESC, 0, 0));
 
         assertEquals(1, resp.playerStats().size());
         assertEquals("teamA", resp.playerStats().get(0).teamId());
@@ -326,7 +326,7 @@ class PlayerSeasonStatsAggregatorTest {
                 PlayerSeasonStatsAggregator.FilterOptions.NONE,
                 new PlayerSeasonStatsAggregator.SortOptions(
                         PlayerSeasonStatsAggregator.SortField.GOALS,
-                        PlayerSeasonStatsAggregator.SortOrder.DESC, 0));
+                        PlayerSeasonStatsAggregator.SortOrder.DESC, 0, 0));
 
         List<PlayerSeasonStatsDto> list = resp.playerStats();
         assertEquals(3, list.size());
