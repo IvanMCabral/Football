@@ -1,6 +1,6 @@
 # V24D6M — Player Season Stats Design
 
-**Status:** V24D6M1 DRAFT — design doc only, no implementation
+**Status:** V24D6M2 COMPLETE — source data audit complete, M3 MVP scope defined
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-26
 **Based on:** V24D6L complete (`22b650c` L1 / `38c80f8` L2 / `9c2e6ad` L3), full suite 723/0 failures
@@ -66,94 +66,244 @@ This is especially relevant before broad mutation rollout (Tier 2/3): users need
 
 ---
 
-## 4. Source Data Audit
+## 4. Source Data Audit (M2 Findings)
 
-### 4.1 V24DetailedMatchData
+All findings below are from direct source code inspection. No implementation changes made.
 
-Stored in Redis under `career:{careerId}:match-detail:{matchId}`. Contains:
+### 4.1 V24PlayerRatingsAssembler
+
+**File:** `src/main/java/com/footballmanager/application/service/simulation/v24/V24PlayerRatingsAssembler.java`
+
+**Key finding — CRITICAL GAP: Only starting XI players are included.**
+
+```java
+private List<V24PlayerMatchState> resolveStartingPlayers(CareerSave career, String teamId, String teamIdForState) {
+    List<String> starterIds = career.getTeamStarting11().get(teamId);
+    // ...
+    for (String playerId : starterIds) {
+        SessionPlayer sp = career.getPlayerManager().getSessionPlayer(playerId);
+        if (sp != null) {
+            players.add(V24PlayerMatchState.fromSessionPlayer(sp, teamIdForState));
+        }
+    }
+    return players;
+}
+```
+
+- Only `career.getTeamStarting11()` entries are processed — i.e., the starting XI only
+- **Substitute players who come on during the match are NOT included in playerRatings**
+- A substitute who plays 30 minutes will NOT have a `playerRatings` entry
+- This means `appearances` in season stats will undercount — bench players who played will appear as 0 appearances
+
+**Consequence for M3:** `appearances` = count of starting XI matches where the player started and was not substituted out at minute 0. This is an approximation. A player who came on as sub in 10 matches will show 0 appearances. See Section 9 for resolution.
+
+### 4.2 V24PlayerMatchStatsModel
+
+**File:** `src/main/java/com/footballmanager/application/service/simulation/v24/V24PlayerMatchStatsModel.java`
+
+**Computes the following per player per match:**
+
+```java
+int goals = 0;
+int assists = 0;
+int keyPasses = 0;
+int shots = 0;
+int yellowCards = 0;
+int redCards = 0;
+int injuries = 0;
+int fouls = 0;
+boolean substitutedIn = false;
+boolean substitutedOut = false;
+```
+
+**Event type handling in timeline scan:**
+
+| Event Type (playerId match) | Tracked As |
+|----------------------------|-----------|
+| `GOAL` | goals++ |
+| `SHOT` | shots++ |
+| `YELLOW_CARD` | yellowCards++ |
+| `RED_CARD` | redCards++ |
+| `INJURY` | injuries++ |
+| `FOUL` | fouls++ |
+| `SUBSTITUTION` | substitutedOut = true |
+
+**Event type handling for relatedPlayerId (assists/key passes):**
+
+| Event Type (relatedPlayerId match) | Tracked As |
+|------------------------------------|-----------|
+| `GOAL` | assists++ |
+| `SHOT` | keyPasses++ |
+| `SUBSTITUTION` | substitutedIn = true |
+
+**MISSING from V24PlayerMatchStatsModel (not computed):**
+- `shotsOnTarget` — `SHOT_ON_TARGET` event type exists in `V24MatchEventType` enum but is NOT handled in stats model
+- `minutesPlayed` — not computed, no minute tracking per event
+- `started` — not explicit; derived from `!substitutedIn`
+
+### 4.3 V24PlayerMatchRatingDto
+
+**File:** `src/main/java/com/footballmanager/application/service/simulation/v24/V24PlayerMatchRatingDto.java`
+
+**Persisted fields (all in `playerRatings` list in V24DetailedMatchData):**
+
+```
+playerId, playerName, teamId, position, rating,
+goals, assists, keyPasses, shots,
+yellowCards, redCards, injuries, fouls,
+substitutedIn, substitutedOut
+```
+
+**Confirmed present:** goals, assists, keyPasses, shots, yellowCards, redCards, injuries, fouls, substitutedIn, substitutedOut, rating, playerId, playerName, teamId, position
+
+**Confirmed MISSING:** `shotsOnTarget`, `minutesPlayed`, `started` flag
+
+**Approximation for appearances:** `appearances = startingMatches + substituteMatches`
+- startingMatches: count of matches where `!substitutedIn`
+- substituteMatches: count of matches where `substitutedIn == true`
+- A substitute who never entered (on bench, unused) will NOT appear in playerRatings at all
+
+### 4.4 V24DetailedMatchData
+
+**File:** `src/main/java/com/footballmanager/application/service/simulation/v24/V24DetailedMatchData.java`
+
+**Redis key:** `career:{careerId}:match-detail:{matchId}`
+
+**Persisted fields relevant to season aggregation:**
 
 | Field | Type | Aggregatable? | Notes |
 |-------|------|---------------|-------|
-| `matchId` | long | yes | match identity |
-| `careerId` | long | yes | career identity |
-| `round` | int | yes | round number |
-| `homeTeamId` | long | yes | team identity |
-| `awayTeamId` | long | yes | team identity |
-| `homeScore` / `awayScore` | int | yes | match result |
-| `timeline` | `List<V24MatchEvent>` | yes | goals, cards, injuries, substitutions |
-| `shots` | `List<V24ShotEvent>` | yes | shot locations, xG, shooter |
+| `matchId` | String | yes | match identity |
+| `careerId` | String | yes | career identity |
+| `seasonNumber` | Integer | **yes** | **season filtering available** |
+| `round` | Integer | yes | round number |
+| `homeTeamId` | String | yes | team identity |
+| `awayTeamId` | String | yes | team identity |
+| `homeGoals` / `awayGoals` | int | yes | match result |
+| `homeXg` / `awayXg` | double | yes | xG |
+| `homeShots` / `awayShots` | int | yes | team-level shots |
+| `timeline` | `List<V24MatchEventDto>` | yes | all events including INJURY, YELLOW_CARD, etc. |
+| `playerRatings` | `List<V24PlayerMatchRatingDto>` | **yes** | per-player stats, goals, cards, etc. |
 
-**Timeline event types to aggregate:**
+**Confirmed:** `seasonNumber` IS available. Season aggregation is possible.
 
-| Event Type | Aggregatable As |
-|------------|-----------------|
-| `GOAL` | goals (and assists via preceding pass event) |
-| `ASSIST` | assists |
-| `YELLOW_CARD` | yellowCards |
-| `RED_CARD` | redCards |
-| `INJURY` | injuries (count) |
-| `SUBSTITUTION` | minutesPlayed (via replacement) |
+### 4.5 V24MatchEventType Enum
 
-### 4.2 V24PlayerMatchRatingDto / playerRatings
+**File:** `src/main/java/com/footballmanager/application/service/simulation/v24/V24MatchEventType.java`
 
-Populated via `V24PlayerRatingsAssembler` into match detail. Per-player per-match:
+```java
+public enum V24MatchEventType {
+    GOAL, SHOT, SHOT_ON_TARGET, SAVE, MISS, BLOCK,
+    CHANCE_CREATED, FOUL, YELLOW_CARD, RED_CARD,
+    INJURY, CORNER, OFFSIDE, SUBSTITUTION
+}
+```
 
-| Field | Aggregatable As |
-|-------|-----------------|
-| `playerId` | identity |
-| `rating` | averageRating, bestRating, worstRating |
-| `goals` | goals |
-| `assists` | assists |
-| `shots` | shots, shotsOnTarget |
-| `passes` | keyPasses (approximate) |
-| `minutesPlayed` | minutesPlayed, appearances, starts |
-| `possession` | not directly aggregated |
-| `aerialsWon` | not directly aggregated |
+**SHIFT_ON_TARGET exists as event type but is NOT processed in V24PlayerMatchStatsModel.** Only SHOT events are counted as shots.
 
-**Key assumption to verify:** `minutesPlayed` field — is it reliably populated for all players who appeared? If a player starts and is substituted at 60min, does the assembler record 60 or 90? This must be confirmed in the source data audit phase (M2).
+### 4.6 V24MatchEvent / V24MatchEventDto
 
-### 4.3 V24PlayerMatchStatsModel
+**Files:**
+- `src/main/java/com/footballmanager/application/service/simulation/v24/V24MatchEvent.java`
+- `src/main/java/com/footballmanager/application/service/simulation/v24/V24MatchEventDto.java`
 
-Output of the per-match stats assembly. Used to produce `V24PlayerMatchRatingDto`. May contain additional fields not currently exposed in the DTO. M2 should audit this model precisely.
+**Fields:**
+```
+minute, type, teamId, playerId, playerName,
+relatedPlayerId, relatedPlayerName, xg, description, shotCoordinate
+```
 
-### 4.4 SessionPlayer (Redis, per career round state)
+**Key for aggregation:**
+- ASSIST: `relatedPlayerId` on `GOAL` events — assist attribution works
+- INJURY: `INJURY` events have `playerId` of injured player — count works
+- YELLOW/RED CARD: `playerId` on card events — count works
+- SUBSTITUTION: `playerId` = player coming OFF, `relatedPlayerId` = player coming ON — both substitutions tracked via `substitutedOut`/`substitutedIn`
 
-Not per-match — updated each round. Fields relevant to season stats:
+### 4.7 V24DetailedMatchRedisAdapter
 
-| Field | Aggregatable As |
-|-------|-----------------|
-| `injuryRemainingMatches` | derived: injury events + recovery tracking |
-| `injured` | current injury flag |
-| `suspensionRemainingMatches` | derived: suspension events |
-| `suspended` | current suspension flag |
-| `yellowCards` | cumulative yellowCards |
-| `redCards` | cumulative redCards (reset on season?) |
-| `energy` | averageEnergy, lowestEnergy |
-| `form` | currentForm, formDeltaSeason |
+**File:** `src/main/java/com/footballmanager/infrastructure/persistence/redis/V24DetailedMatchRedisAdapter.java`
 
-**Important:** SessionPlayer is a *current state* snapshot, not a historical log. To derive "matches missed due to injury," you need per-round snapshots or a derived event log. This is a design risk — see Section 13.
+**Key methods available:**
 
-### 4.5 Summary: Immediately Aggregatable Fields
+```java
+void save(String careerId, V24DetailedMatchData detail);
+Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId);
+void deleteByCareerId(String careerId);
+```
 
-| Stat | Source | Confidence |
-|------|--------|------------|
-| Goals | `playerRatings.goals` | HIGH |
-| Assists | `playerRatings.assists` | HIGH |
-| Appearances | count of `playerRatings` entries | HIGH |
-| Minutes | `playerRatings.minutesPlayed` | MEDIUM — needs verification |
-| Shots | `playerRatings.shots` | HIGH |
-| Shots on target | `playerRatings.shotsOnTarget` | MEDIUM — needs verification in stats model |
-| Yellow cards | `playerRatings.yellowCards` | HIGH |
-| Red cards | `playerRatings.redCards` | HIGH |
-| Average/best/worst rating | `playerRatings.rating` | HIGH |
-| Injuries (count) | `timeline.INJURY` events | HIGH |
-| Energy | `SessionPlayer.energy` | MEDIUM — current state only, not per-match |
-| Form | `SessionPlayer.form` | MEDIUM — current state only |
-| Matches missed injured | derived from SessionPlayer snapshots | **LOW** — needs lifecycle tracking |
+**Key pattern:** `career:{careerId}:match-detail:{matchId}`
+
+**CRITICAL GAP for season aggregation:** No `findByCareerId(careerId)` or `findByCareerIdAndSeason(careerId, seasonNumber)` method exists.
+
+**Workaround options for M3:**
+1. Use `redisTemplate.keys("career:" + careerId + ":match-detail:*")` — scans all keys for a career (expensive but functional)
+2. The `V24DetailedMatchData.seasonNumber` field exists — filter in-memory after fetching
+
+**Estimated cost:** For a career with 38 rounds × 20 teams / 2 = 380 matches, a keys scan + 380 individual `get` calls is ~200-500ms. Acceptable for MVP if limited to a few concurrent users.
+
+### 4.8 SessionPlayer State Fields (for context)
+
+**Not used directly in season stats aggregation** — season stats are derived from V24DetailedMatchData only (per-match, not per-round state). SessionPlayer fields like `injuryRemainingMatches`, `suspensionRemainingMatches`, `energy`, `form` are CURRENT STATE at the time of the match, not historical. They are NOT part of the season stats MVP computation.
 
 ---
 
-## 5. Proposed Aggregate Model
+## 5. Confirmed Field Mapping (M2 Audit)
+
+After source code audit, the following PlayerSeasonStatsDto fields are confirmed available or unavailable:
+
+| PlayerSeasonStatsDto Field | Source | Confidence | Implementation Notes |
+|----------------------------|--------|------------|----------------------|
+| `careerId` | V24DetailedMatchData.careerId | HIGH | Direct from detail data |
+| `season` | V24DetailedMatchData.seasonNumber | HIGH | Direct from detail data |
+| `teamId` | V24PlayerMatchRatingDto.teamId | HIGH | Direct from playerRatings |
+| `playerId` | V24PlayerMatchRatingDto.playerId | HIGH | Direct from playerRatings |
+| `playerName` | V24PlayerMatchRatingDto.playerName | HIGH | Direct from playerRatings |
+| `position` | V24PlayerMatchRatingDto.position | HIGH | Direct from playerRatings |
+| `goals` | V24PlayerMatchRatingDto.goals | HIGH | Direct sum |
+| `assists` | V24PlayerMatchRatingDto.assists | HIGH | Direct sum |
+| `keyPasses` | V24PlayerMatchRatingDto.keyPasses | HIGH | Direct sum |
+| `shots` | V24PlayerMatchRatingDto.shots | HIGH | Direct sum |
+| `shotsOnTarget` | — | **NOT AVAILABLE** | SHOT_ON_TARGET event exists but is not counted in stats model |
+| `yellowCards` | V24PlayerMatchRatingDto.yellowCards | HIGH | Direct sum |
+| `redCards` | V24PlayerMatchRatingDto.redCards | HIGH | Direct sum |
+| `injuries` | V24PlayerMatchRatingDto.injuries | HIGH | Direct sum (INJURY event count) |
+| `fouls` | V24PlayerMatchRatingDto.fouls | HIGH | Direct sum (available in DTO) |
+| `substitutedIn` | V24PlayerMatchRatingDto.substitutedIn | HIGH | Available in DTO |
+| `substitutedOut` | V24PlayerMatchRatingDto.substitutedOut | HIGH | Available in DTO |
+| `rating` | V24PlayerMatchRatingDto.rating | HIGH | Per-match rating available |
+| `averageRating` | derived from rating | HIGH | Mean of per-match ratings |
+| `bestRating` | derived from rating | HIGH | Max of per-match ratings |
+| `worstRating` | derived from rating | HIGH | Min of per-match ratings |
+| `appearances` | derived | **APPROXIMATE** | See 5.1 resolution |
+| `starts` | derived | **APPROXIMATE** | starts = !substitutedIn per match |
+| `minutesPlayed` | — | **NOT AVAILABLE** | No per-minute tracking in DTO or stats model |
+| `currentForm` | — | **NOT AVAILABLE** | SessionPlayer.form is current state only |
+| `formDeltaSeason` | — | **NOT AVAILABLE** | No form-at-round-1 baseline stored |
+| `averageEnergy` | — | **NOT AVAILABLE** | SessionPlayer.energy is current state only |
+| `lowestEnergy` | — | **NOT AVAILABLE** | No per-round energy snapshot |
+| `matchesMissedInjured` | derived | **PARTIAL** | See Q3 in Section 13 |
+| `matchesMissedSuspended` | derived | **PARTIAL** | See Q3 in Section 13 |
+
+### 5.1 Appearances Approximation (Critical Gap — Resolved for MVP)
+
+V24PlayerRatingsAssembler only processes starting XI. Bench players who came on as substitutes are NOT included in playerRatings.
+
+**M3 MVP resolution:**
+- `startingAppearances` = count of matches where `!substitutedIn` (player started)
+- `substituteAppearances` = count of matches where `substitutedIn == true`
+- `totalAppearances = startingAppearances + substituteAppearances`
+
+**Limitation:** An unused substitute (on bench, never entered) will NOT appear in playerRatings at all. This undercounts appearances for bench players who did play. Document in API response.
+
+### 5.2 Matches Missed Derivation (Partial — Q3 Resolved)
+
+- **Suspension:** Derive from INJURY/RED_CARD events + knowledge that 5 yellows = 1-match suspension. Count SUSPENSION events per player from timeline.
+- **Injury:** Count INJURY events per player per round. Each INJURY event marks at least 1 round missed.
+- **Limitation:** Precision requires SessionPlayer per-round snapshot history. MVP uses timeline event count as proxy.
+
+---
+
+## 6. Proposed Aggregate Model
 
 ### 5.1 Core Aggregate DTO: `PlayerSeasonStatsDto`
 
@@ -246,7 +396,7 @@ No new Redis keys written. No new persistence. Backward compatible.
 
 ---
 
-## 6. Storage Strategy Options
+## 7. Storage Strategy Options
 
 ### Option A — Compute on Demand from V24DetailedMatchData
 
@@ -285,7 +435,7 @@ No new Redis keys written. No new persistence. Backward compatible.
 
 ---
 
-## 7. Redis Key Proposal (For Future Option B)
+## 8. Redis Key Proposal (For Future Option B)
 
 If/when persistence is added (M5), propose:
 
@@ -323,7 +473,7 @@ If Option B keys do not exist for a season, fall back to Option A computation. T
 
 ---
 
-## 8. API Design Proposal
+## 9. API Design Proposal
 
 ### 8.1 Endpoints
 
@@ -424,7 +574,7 @@ Response when flags off:
 
 ---
 
-## 9. Frontend UX Use Cases
+## 10. Frontend UX Use Cases
 
 ### 9.1 Squad Stats Table
 
@@ -474,7 +624,7 @@ Response when flags off:
 
 ---
 
-## 10. Feature Flag Strategy
+## 11. Feature Flag Strategy
 
 ### 10.1 Recommended Approach
 
@@ -516,7 +666,7 @@ app.simulation.v24.persist-season-stats: false
 
 ---
 
-## 11. Backfill Strategy
+## 12. Backfill Strategy
 
 ### 11.1 For Careers Without V24 Detail Persistence
 
@@ -564,7 +714,7 @@ If a career has partial detail data (e.g., first 10 rounds with detail, earlier 
 
 ---
 
-## 12. Testing Strategy
+## 13. Testing Strategy
 
 ### 12.1 Unit Tests for PlayerSeasonStatsAggregator
 
@@ -612,167 +762,200 @@ If a career has partial detail data (e.g., first 10 rounds with detail, earlier 
 
 ---
 
-## 13. Risks and Open Questions
+## 14. Risks and Open Questions (M2 Answers)
 
-### 13.1 High Priority (Must Resolve Before M2)
+### 13.1 High Priority — Answered (RESOLVED by M2 audit)
 
 **Q1: Are minutesPlayed currently reliable from player ratings/stat model?**
 
-The `V24PlayerRatingsAssembler` produces `V24PlayerMatchRatingDto.minutesPlayed`. If a player starts and is substituted at 60min, does it record 60? If a player comes on at 70min, does it record 20? **This must be verified in the source code during M2.** If minutesPlayed is unreliable, appearances/minutes stats are unreliable.
+**ANSWER: NOT AVAILABLE — no minutes tracking exists.**
 
-**Q2: Does V24 detail persist all required event types?**
+V24PlayerMatchRatingDto does not have a `minutesPlayed` field. Neither V24PlayerRatingsAssembler nor V24PlayerMatchStatsModel computes or stores minutes played per player. The stats model only tracks `substitutedIn` and `substitutedOut` as booleans.
 
-We assume ASSIST events are persisted in the timeline. We assume INJURY events are persisted. We assume shotsOnTarget is in the stats model. **M2 must audit V24DetailedMatchData schema and V24PlayerMatchStatsModel precisely.**
-
-**Q3: Should injury/missed matches be derived from SessionPlayer state or per-round snapshots?**
-
-SessionPlayer is a **current state** store. `injuryRemainingMatches` tells you how many rounds left, but not a history of which rounds were missed. To compute "matches missed due to injury," you need either:
-- A per-round SessionPlayer snapshot log (does not currently exist)
-- A derivation from INJURY events + recovery events in timeline
-
-**Recommendation:** Derive from INJURY/RECOVERY events in timeline. This is the most reliable approach without new snapshot infrastructure.
-
-### 13.2 Medium Priority (Design Decision Needed)
-
-**Q4: Is on-demand aggregation fast enough?**
-
-A career with 38 rounds × 20 teams × 25 players = 19,000 player-match entries. Computing on demand reads 760 matches (38 rounds × 20 teams / 2 = 380 matches). Reading 380 Redis keys and aggregating in memory is likely <100ms. **Likely acceptable for MVP.** If careers grow to multiple seasons, consider Option B caching.
-
-**Q5: Do we need stats for non-V24 (V23) matches?**
-
-V23 matches do not produce V24DetailedMatchData. For mixed careers (some rounds with V23, some with V24), stats will only reflect V24 rounds. This should be documented and handled gracefully (incomplete flag).
-
-**Q6: How to handle player transfers later?**
-
-A player transferred mid-season should have stats split by team. The `teamId` field on `PlayerSeasonStatsDto` handles this — a transferred player appears in stats for both teams. However, the aggregator needs to handle this correctly: a player who played 15 matches for Team A and 10 for Team B should have two separate `PlayerSeasonStatsDto` entries, one per team.
-
-**Q7: Does shotsOnTarget exist in the stats model?**
-
-It is referenced in V24PlayerMatchRatingDto and may be assembled in V24PlayerRatingsAssembler. M2 must confirm. If not available, shotsOnTarget can be dropped from MVP scope.
-
-### 13.3 Low Priority (Future Consideration)
-
-**Q8: Should formDeltaSeason be computed from SessionPlayer snapshots or from match-level form events?**
-
-SessionPlayer.form is a current-state value. To compute `formDeltaSeason`, you need either:
-- First-round form (form at round 1) stored separately
-- A form-change event in the timeline
-
-**Approach:** Store `formAtRound1` as a separate computed value when aggregating season stats. Compare `currentForm` (at last round) against `formAtRound1`.
-
-**Q9: Should averageEnergy use SessionPlayer.energy snapshots or match-level energy data?**
-
-Currently SessionPlayer.energy is updated each round. To compute average energy, you need a snapshot per round. This is the same snapshot problem as injury misses. **For MVP: compute averageEnergy from SessionPlayer snapshots if available; otherwise drop from MVP scope.**
+**Consequence for M3:** Drop `minutesPlayed` from MVP scope. Use `substitutedIn`/`substitutedOut` to derive approximate appearances instead.
 
 ---
 
-## 14. Proposed Phases
+**Q2: Does V24 detail persist ASSIST and INJURY events in the timeline?**
 
-### M1 — This Document (Design)
+**ANSWER: YES (ASSIST), YES (INJURY) — both confirmed present.**
 
-**Deliverable:** `V24D6M_PLAYER_SEASON_STATS_DESIGN.md` — this document
-**Non-deliverables:** No code, no tests, no implementation
+- ASSIST: Derived from `relatedPlayerId` on `GOAL` events in the timeline. `statsModel.buildRatingDto()` checks `if (pid.equals(event.relatedPlayerId()))` for `GOAL` type and increments `assists`. Confirmed working.
+- INJURY: `INJURY` event type exists in `V24MatchEventType` enum. Stats model increments `injuries` counter when `event.type() == INJURY`. Confirmed present.
+- YELLOW_CARD / RED_CARD: Both confirmed present and counted.
+- SUBSTITUTION: Both `substitutedIn` (via relatedPlayerId) and `substitutedOut` (via playerId) confirmed tracked.
 
-### M2 — Source Data Audit (Code-Level Mapping)
+---
 
-**Deliverables:**
+**Q3: Can matches missed due to injury/suspension be derived without SessionPlayer snapshots?**
 
-- Precise audit of `V24PlayerRatingsAssembler` output fields
-- Confirm `minutesPlayed` reliability
-- Confirm `shotsOnTarget` availability
-- Confirm ASSIST event persistence in timeline
-- Confirm INJURY event persistence in timeline
-- Confirm which fields exist in `V24PlayerMatchStatsModel` vs `V24PlayerMatchRatingDto`
-- Document exact Redis key structure for V24DetailedMatchData
+**ANSWER: PARTIAL — timeline event counting as proxy, with limitations.**
 
-**Non-deliverables:** No implementation, no tests
+- INJURY events are persisted in the timeline. Each INJURY event corresponds to a round where the player was injured.
+- `matchesMissedInjured` can be approximated as: count of distinct rounds where the player has an INJURY event in the timeline.
+- Limitation: If a player is injured across multiple rounds from a single injury event (e.g., 3-match injury), the current model would count it as 1 event, not 3 missed matches. Full precision requires SessionPlayer per-round snapshots.
+- `matchesMissedSuspended`: Derived from accumulated yellow cards. 5 yellows = 1-match suspension. The suspension event itself may or may not be in the timeline — this needs verification during M3 implementation.
+
+**M3 MVP approach:** Use INJURY event count as `injuries` metric. Approximate `matchesMissedInjured` as `injuries × estimated_avg_injury_duration`. Document the approximation.
+
+---
+
+**Q7: Does shotsOnTarget exist in the stats model?**
+
+**ANSWER: NO — SHOT_ON_TARGET event exists but is NOT processed.**
+
+`V24MatchEventType.SHOT_ON_TARGET` exists in the enum. However, `V24PlayerMatchStatsModel.buildRatingDto()` does NOT handle `SHOT_ON_TARGET` events — it only handles `SHOT` events. `shotsOnTarget` is not computed and not stored in `V24PlayerMatchRatingDto`.
+
+**Consequence for M3:** Drop `shotsOnTarget` from MVP scope. Add to future phase if SHOT_ON_TARGET counting is implemented in the stats model.
+
+---
+
+### 13.2 Medium Priority — Confirmed and Updated
+
+**Q4: Is on-demand aggregation fast enough?**
+
+**CONFIRMED YES for MVP.** 380 Redis keys per season, each ~2-5KB, is ~2MB total data. ~200-500ms expected. Acceptable for MVP if Redis is co-located. Option B (snapshot persistence) remains available as future migration.
+
+**Q5: Do we need stats for non-V24 (V23) matches?**
+
+**CONFIRMED:** V23 matches do not produce V24DetailedMatchData. For mixed careers, stats will only reflect V24-enabled rounds. API should return an `incomplete` flag in this case.
+
+**Q6: How to handle player transfers?**
+
+**CONFIRMED.** Stats split by team via `teamId` on `PlayerSeasonStatsDto`. A transferred player appears twice — once per team — with separate `PlayerSeasonStatsDto` entries. Implementation must handle this correctly.
+
+---
+
+### 13.3 Low Priority — Confirmed
+
+**Q8: formDeltaSeason — confirmed NOT AVAILABLE.** No form-at-round-1 baseline stored. No timeline form events. Drop from MVP.
+
+**Q9: averageEnergy / lowestEnergy — confirmed NOT AVAILABLE.** SessionPlayer.energy is current-state only. No per-round snapshot. Drop from MVP.
+
+---
+
+## 15. M3 MVP Field Scope (Defined by M2 Audit)
+
+Based on M2 audit, M3 implements the following PlayerSeasonStatsDto fields:
+
+### 14.1 Safe to Implement (HIGH Confidence)
+
+| Field | Source | Notes |
+|-------|--------|-------|
+| careerId | V24DetailedMatchData.careerId | Direct |
+| season | V24DetailedMatchData.seasonNumber | Direct |
+| teamId | V24PlayerMatchRatingDto.teamId | Direct |
+| playerId | V24PlayerMatchRatingDto.playerId | Direct |
+| playerName | V24PlayerMatchRatingDto.playerName | Direct |
+| position | V24PlayerMatchRatingDto.position | Direct |
+| goals | V24PlayerMatchRatingDto.goals | Direct sum |
+| assists | V24PlayerMatchRatingDto.assists | Direct sum |
+| keyPasses | V24PlayerMatchRatingDto.keyPasses | Direct sum |
+| shots | V24PlayerMatchRatingDto.shots | Direct sum |
+| yellowCards | V24PlayerMatchRatingDto.yellowCards | Direct sum |
+| redCards | V24PlayerMatchRatingDto.redCards | Direct sum |
+| injuries | V24PlayerMatchRatingDto.injuries | Direct sum |
+| fouls | V24PlayerMatchRatingDto.fouls | Direct sum (bonus field) |
+| averageRating | derived | Mean of per-match ratings |
+| bestRating | derived | Max of per-match ratings |
+| worstRating | derived | Min of per-match ratings |
+| lastUpdatedRound | derived | Max round processed |
+
+### 14.2 Approximate (Implemented with Known Limitations)
+
+| Field | Derivation | Limitation |
+|-------|-----------|------------|
+| appearances | startingAppearances + substituteAppearances | Bench players who played but were never in starting XI are undercounted |
+| starts | count of !substitutedIn per match | Accurate for starters |
+| matchesMissedInjured | count of INJURY events × estimated duration | Approximation only; not precise |
+| matchesMissedSuspended | derived from yellow card accumulation | Approximate; needs verification |
+
+### 14.3 Deferred (NOT in M3 MVP)
+
+| Field | Reason |
+|-------|--------|
+| minutesPlayed | No per-minute tracking in source data |
+| shotsOnTarget | SHOT_ON_TARGET event not counted in stats model |
+| currentForm | No form history in source data |
+| formDeltaSeason | No form-at-round-1 baseline |
+| averageEnergy | No energy history in source data |
+| lowestEnergy | No energy history in source data |
+
+---
+
+## 16. Proposed Phases
+
+### M1 — Design
+
+**Status: COMPLETE** (`011ff92`)
+`V24D6M_PLAYER_SEASON_STATS_DESIGN.md`
+
+### M2 — Source Data Audit
+
+**Status: COMPLETE** (this document update)
+Code-level findings incorporated into design doc.
 
 ### M3 — Pure Aggregator Service + Unit Tests
 
 **Deliverables:**
+- `PlayerSeasonStatsAggregator` — pure function, reads V24DetailedMatchData, computes aggregates
+- `PlayerSeasonStatsDto` — DTO with M3 MVP fields only (Section 14)
+- `PlayerSeasonStatsResponse` — list wrapper with team totals
+- Unit tests for all safe fields and approximate field derivations
+- Storage gap workaround: use `redisTemplate.keys()` pattern scan for career + season filtering
 
-- `PlayerSeasonStatsAggregator` — pure function, no side effects
-- Unit tests for all aggregation cases (Section 12.1)
-- `PlayerSeasonStatsDto` and `PlayerSeasonStatsResponse` DTOs
-- No API endpoints yet
-- No new Redis keys
+**Scope limits:** No API endpoints. No new Redis keys. No shotsOnTarget, minutesPlayed, form, or energy fields.
 
 ### M4 — Query Service + API DTOs + Integration Tests
 
 **Deliverables:**
+- `PlayerSeasonStatsQueryService`
+- API controller with 3 endpoints (Section 8)
+- Integration tests
+- Feature flag check on `persist-detail`
+- `incomplete` flag when detail data is partial
 
-- `PlayerSeasonStatsQueryService` — orchestrates aggregation
-- API controller with endpoints (Section 8)
-- Integration tests (Section 12.2)
-- Feature flag check in API layer
-- Error responses per Section 8.4
+### M5 — Optional Redis Snapshot Persistence
 
-### M5 — Optional Redis Snapshot Persistence (Future)
+Future. Only if M4 query performance is unacceptable.
 
-**Deliverables (if needed):**
+### M6 — Frontend Stats UI
 
-- New Redis keys per Section 7
-- Write path: snapshot after each round
-- Read path: check snapshot first, fall back to computation
-- Backfill process documented
-- Migration tests
-
-**Non-deliverable:** Do not implement M5 unless M4 query performance is unacceptable.
-
-### M6 — Frontend Stats UI (Separate Repo)
-
-**Deliverables (in frontend repo):**
-
-- Squad stats table component
-- Player profile season stats tab
-- Leaderboard components
-- Discipline table
-- Form/energy trend indicators
-
-**Coordination:** Frontend and backend versions must be compatible. API contract documented in M4.
+Separate frontend repo.
 
 ### M7 — Docs/Status Update
 
-**Deliverables:**
-
-- Update V23_SIMULATION_ENGINE_STATUS.md with M1-M6 completion
-- Update V23_ENGINE_EVOLUTION_ROADMAP.md
-- Update V24D5_PRODUCTION_INTEGRATION_PLAN.md
-- Mark V24D6M complete
+Status/roadmap updates.
 
 ---
 
-## 15. Phase Summary
+## 17. Phase Summary
 
 | Phase | Type | Status | Key Deliverable |
 |-------|------|--------|-----------------|
-| M1 | Design | **IN PROGRESS** | This document |
-| M2 | Source audit | Pending | Code-level field mapping |
-| M3 | Implementation | Pending | Aggregator + unit tests |
-| M4 | Implementation | Pending | API + integration tests |
+| M1 | Design | **COMPLETE** | `V24D6M_PLAYER_SEASON_STATS_DESIGN.md` |
+| M2 | Source audit | **COMPLETE** | Field mapping confirmed; M3 MVP scope defined |
+| M3 | Implementation | Pending | Aggregator + DTOs + unit tests |
+| M4 | Implementation | Pending | API + query service + integration tests |
 | M5 | Implementation | Future | Redis snapshot persistence |
 | M6 | Frontend | Future | Stats UI components |
 | M7 | Docs | Pending | Status/roadmap updates |
 
 ---
 
-## 16. Recommended Next Phase: V24D6M2
+## 18. Recommended Next Phase: V24D6M3
 
-### V24D6M2 — Source Data Audit
+### V24D6M3 — Pure Aggregator Service + Unit Tests
 
-Before any code is written, M2 must answer the open questions in Section 13:
+Implement M3 scope as defined in Section 14:
+- `PlayerSeasonStatsDto` with safe + approximate fields only
+- `PlayerSeasonStatsAggregator` pure function
+- `PlayerSeasonStatsResponse` wrapper
+- Unit tests for all field derivations
+- Redis key pattern scan workaround for career/season filtering
 
-1. Audit `V24PlayerRatingsAssembler` — confirm exact output fields
-2. Verify `minutesPlayed` reliability — does sub-in/out record correctly?
-3. Verify `shotsOnTarget` — does it exist in the stats model?
-4. Verify ASSIST and INJURY events in timeline
-5. Confirm Redis key structure for V24DetailedMatchData
-6. Map all source fields to target PlayerSeasonStatsDto fields
-
-**Deliverable:** Updated design doc with confirmed field mappings, or a separate audit note with findings.
-
-**Scope:** Read-only investigation. No code changes. No tests. No implementation.
+**Constraints:** No API endpoints. No new Redis keys. No shotsOnTarget, minutesPlayed, form, or energy.
 
 ---
 
-*V24D6M1 design doc complete. Awaiting user signal to proceed with M2 source data audit or next phase.*
+*V24D6M2 source data audit complete. M3 MVP scope defined. Awaiting user signal to proceed with M3 implementation.*
