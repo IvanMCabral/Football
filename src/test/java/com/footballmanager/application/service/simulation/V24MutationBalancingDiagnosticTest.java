@@ -1527,6 +1527,11 @@ class V24MutationBalancingDiagnosticTest {
         }
 
         @Override
+        public List<V24DetailedMatchData> findByCareerId(String careerId) {
+            return List.of();
+        }
+
+        @Override
         public void deleteByCareerId(String careerId) {
         }
     }

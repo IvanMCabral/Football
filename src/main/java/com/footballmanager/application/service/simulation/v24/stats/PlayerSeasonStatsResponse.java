@@ -79,4 +79,43 @@ public final class PlayerSeasonStatsResponse {
         return "PlayerSeasonStatsResponse{careerId=%s, season=%s, players=%d, incomplete=%s}"
                 .formatted(careerId, season, playerStats.size(), incomplete);
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String careerId;
+        private Integer season;
+        private List<PlayerSeasonStatsDto> playerStats;
+        private Integer totalGoals;
+        private Integer totalAssists;
+        private Integer totalAppearances;
+        private Double averageRating;
+        private boolean incomplete;
+        private String message;
+
+        public Builder careerId(String careerId) { this.careerId = careerId; return this; }
+        public Builder season(Integer season) { this.season = season; return this; }
+        public Builder playerStats(List<PlayerSeasonStatsDto> playerStats) { this.playerStats = playerStats; return this; }
+        public Builder totalGoals(Integer totalGoals) { this.totalGoals = totalGoals; return this; }
+        public Builder totalAssists(Integer totalAssists) { this.totalAssists = totalAssists; return this; }
+        public Builder totalAppearances(Integer totalAppearances) { this.totalAppearances = totalAppearances; return this; }
+        public Builder averageRating(Double averageRating) { this.averageRating = averageRating; return this; }
+        public Builder incomplete(boolean incomplete) { this.incomplete = incomplete; return this; }
+        public Builder message(String message) { this.message = message; return this; }
+
+        public PlayerSeasonStatsResponse build() {
+            return new PlayerSeasonStatsResponse(
+                    careerId, season,
+                    playerStats != null ? playerStats : List.of(),
+                    totalGoals != null ? totalGoals : 0,
+                    totalAssists != null ? totalAssists : 0,
+                    totalAppearances != null ? totalAppearances : 0,
+                    averageRating != null ? averageRating : 0.0,
+                    incomplete,
+                    message
+            );
+        }
+    }
 }

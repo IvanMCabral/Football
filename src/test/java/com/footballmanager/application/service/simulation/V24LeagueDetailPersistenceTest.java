@@ -352,6 +352,11 @@ class V24LeagueDetailPersistenceTest {
         }
 
         @Override
+        public List<V24DetailedMatchData> findByCareerId(String careerId) {
+            return List.of();
+        }
+
+        @Override
         public void deleteByCareerId(String careerId) {
         }
     }
@@ -367,6 +372,11 @@ class V24LeagueDetailPersistenceTest {
         @Override
         public java.util.Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId) {
             return java.util.Optional.empty();
+        }
+
+        @Override
+        public List<V24DetailedMatchData> findByCareerId(String careerId) {
+            return List.of();
         }
 
         @Override

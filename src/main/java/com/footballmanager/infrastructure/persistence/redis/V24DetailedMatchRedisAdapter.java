@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -72,6 +73,35 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
         String key = buildKey(careerId, matchId);
         V24DetailedMatchData result = redisTemplate.opsForValue().get(key).block();
         return Optional.ofNullable(result);
+    }
+
+    /**
+     * Retrieve all V24DetailedMatchData for a career.
+     *
+     * <p>MVP note: uses KEYS scan. Acceptable for small-to-medium careers.
+     * Each key is fetched individually after the scan.
+     *
+     * @param careerId  the career to retrieve match details for
+     * @return list of all match details for the career, never null
+     */
+    @Override
+    public List<V24DetailedMatchData> findByCareerId(String careerId) {
+        if (careerId == null || careerId.isBlank()) {
+            throw new IllegalArgumentException("careerId must not be blank");
+        }
+        String pattern = buildPattern(careerId);
+        List<String> keys = redisTemplate.keys(pattern).collectList().block();
+        if (keys == null || keys.isEmpty()) {
+            return List.of();
+        }
+        List<V24DetailedMatchData> results = new ArrayList<>(keys.size());
+        for (String key : keys) {
+            V24DetailedMatchData detail = redisTemplate.opsForValue().get(key).block();
+            if (detail != null) {
+                results.add(detail);
+            }
+        }
+        return results;
     }
 
     @Override

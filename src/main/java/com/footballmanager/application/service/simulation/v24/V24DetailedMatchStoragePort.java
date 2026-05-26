@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -29,6 +30,19 @@ public interface V24DetailedMatchStoragePort {
      * @throws IllegalArgumentException if careerId or matchId is null
      */
     Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId);
+
+    /**
+     * Retrieve all detailed match data for a given career.
+     *
+     * <p>MVP implementation note: uses Redis KEYS scan which is acceptable for
+     * small-to-medium-sized careers. For production at scale, replace with a
+     * career-scoped index key to avoid KEYS overhead.
+     *
+     * @param careerId  the career whose match details to retrieve
+     * @return list of all V24DetailedMatchData for the career (never null)
+     * @throws IllegalArgumentException if careerId is null
+     */
+    List<V24DetailedMatchData> findByCareerId(String careerId);
 
     /**
      * Delete all detailed match data for a given career.
