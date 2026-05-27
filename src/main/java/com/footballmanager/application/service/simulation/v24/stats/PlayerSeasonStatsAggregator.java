@@ -2,6 +2,7 @@ package com.footballmanager.application.service.simulation.v24.stats;
 
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,6 +27,7 @@ import java.util.Objects;
  *   <li>matchesMissedSuspendedApprox = redCards + floor(yellowCards / 5)</li>
  * </ul>
  */
+@Component
 public final class PlayerSeasonStatsAggregator {
 
     public static final int DEFAULT_INJURY_MISSED_MATCHES_ESTIMATE = 2;
@@ -49,10 +51,10 @@ public final class PlayerSeasonStatsAggregator {
      */
     public PlayerSeasonStatsResponse aggregate(
             List<V24DetailedMatchData> details,
-            String careerId,
-            Integer season,
-            FilterOptions filter,
-            SortOptions sort) {
+                                               String careerId,
+                                               Integer season,
+                                               FilterOptions filter,
+                                               SortOptions sort) {
 
         if (details == null || details.isEmpty()) {
             return emptyResponse(careerId, season);
@@ -134,10 +136,10 @@ public final class PlayerSeasonStatsAggregator {
      */
     public AggregationResult aggregateWithMetadata(
             List<V24DetailedMatchData> details,
-            String careerId,
-            Integer season,
-            FilterOptions filter,
-            SortOptions sort) {
+                                             String careerId,
+                                             Integer season,
+                                             FilterOptions filter,
+                                             SortOptions sort) {
 
         if (details == null || details.isEmpty()) {
             return AggregationResult.builder().build();

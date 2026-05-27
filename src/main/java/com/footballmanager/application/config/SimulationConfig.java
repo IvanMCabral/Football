@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
  * <p>LeagueSimulator is NOT annotated @Service — it is created exclusively
  * through this config to allow property injection.
  */
-@Configuration
+@Configuration("applicationSimulationConfig")
 public class SimulationConfig {
 
     @Value("${app.simulation.league.use-v23-engine:false}")

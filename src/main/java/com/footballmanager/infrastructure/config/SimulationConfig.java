@@ -9,7 +9,7 @@ import java.util.Random;
 /**
  * Configuración de componentes para el motor de simulación.
  */
-@Configuration
+@Configuration("infrastructureSimulationConfig")
 public class SimulationConfig {
     
     /**
