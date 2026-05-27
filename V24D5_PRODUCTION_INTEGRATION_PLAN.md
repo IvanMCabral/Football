@@ -1,13 +1,14 @@
 # V24D5 — Production Integration Plan
 
-**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H+V24D6E+V24D6I+V24D6J+V24D6K+V24D6L+V24D6M1+V24D6M2+V24D6M3+V24D6M4 COMPLETED — playerRatings populated; V24D6K diagnostic cycle complete with no production tuning; V24D6L release-readiness package complete; V24D6M1-M4 player season stats all delivered. Tier 0 safe/Tier 1 low-risk/Tier 2 requires UX visibility.
+**Status:** V24D5F+V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H+V24D6E+V24D6I+V24D6J+V24D6K+V24D6L+V24D6M1+V24D6M2+V24D6M3+V24D6M4+V24D6M5+V24D6M6+V24D6M7 COMPLETED — playerRatings populated; V24D6K diagnostic cycle complete with no production tuning; V24D6L release-readiness package complete; V24D6M1-M7 player season stats all delivered. Tier 0 safe/Tier 1 low-risk/Tier 2 requires UX visibility.
 **Branch:** `mvp-1-performance-cleanup`
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests pre-M)
-**Latest implementation commit:** `45c78c6` (V24D6M4 — player season stats API; 760 tests full suite)
-**Latest docs commit:** `38c80f8` (V24D6L2 — release checklist; V24D6M5 docs update pending)
-**Tests:** 760 full suite total (723 pre-M + 37 new in M3/M4), 0 failures; 760 regression gate
+**Latest implementation commit:** `92669fb` (V24D6M7 — player season stats API pagination/metadata polish; 768 tests full suite)
+**Latest docs commit before M8:** `127b205` (V24D6M6 — API polish design)
+**M8 docs/status update:** pending commit
+**Tests:** 768 full suite total (723 pre-M + 45 new in M3/M4/M7), 0 failures; 768 regression gate
 **Created:** 2026-05-09
-**Updated:** 2026-05-22
+**Updated:** 2026-05-26
 
 ---
 
@@ -36,9 +37,10 @@ V24 should **NOT** replace V23 immediately. It should be introduced as a third s
 
 | Item | Value |
 |------|-------|
-| Latest diagnostic/test commit | `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests) |
-| Tests | 723 full suite total; 723 regression gate, 0 failures |
-| V24D6K status | K1–K8 diagnostic cycle complete; K8 docs/status close pending commit |
+| Latest diagnostic/test commit | `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests pre-M) |
+| Tests | 768 full suite total; 768 regression gate, 0 failures |
+| V24D6K status | K1–K8 diagnostic cycle complete, no tuning |
+| V24D6L status | release-readiness package complete |
 | V24D6J historical | `cb4574e` (V24D6J5 — energy recovery lifecycle wiring; V24D6J complete; 716 tests) |
 | V24 engine | `V24DetailedMatchEngine` — V24 path now wired in LeagueSimulator |
 | Context factory | `V24MatchContextFactory` — now wired to production via V24 path |

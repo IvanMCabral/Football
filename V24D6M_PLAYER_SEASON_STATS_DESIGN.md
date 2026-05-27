@@ -1,9 +1,9 @@
 # V24D6M — Player Season Stats Design
 
-**Status:** V24D6M1-M4 COMPLETE — player season stats design, source audit, pure aggregator, read-only query service/API complete. M5 docs/status pending.
+**Status:** V24D6M1-M7 COMPLETE — player season stats design, source audit, pure aggregator, read-only query service/API, docs/status, API polish design, and API pagination/metadata polish all complete. M8 docs/status pending.
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-26
-**Based on:** V24D6L complete (`22b650c` L1 / `38c80f8` L2 / `9c2e6ad` L3), full suite 760 tests
+**Based on:** V24D6L complete (`22b650c` L1 / `38c80f8` L2 / `9c2e6ad` L3), full suite 768 tests
 
 ---
 
@@ -937,9 +937,10 @@ Status/roadmap updates.
 | M2 | Source audit | **COMPLETE** | Field mapping confirmed; M3 MVP scope defined | `db36055` |
 | M3 | Implementation | **COMPLETE** | Pure aggregator + DTOs + 19 tests | `533f101` |
 | M4 | Implementation | **COMPLETE** | Query service + API endpoints + 18 tests | `45c78c6` |
-| M5 | Docs/Status | **PENDING** | This update — status docs + roadmap | — |
-| M6 | Future | Future | Pagination / response metadata design | — |
-| M7 | Future | Future | Frontend stats UI design | — |
+| M5 | Docs/Status | **COMPLETE** | Status docs + roadmap | `a38a50e` |
+| M6 | Design | **COMPLETE** | API polish design | `127b205` |
+| M7 | Implementation | **COMPLETE** | Pagination, metadata, warnings, sort validation + 45 tests | `92669fb` |
+| M8 | Docs/Status | **PENDING** | This update — status docs | pending |
 
 ---
 
@@ -983,12 +984,64 @@ Status/roadmap updates.
 
 ---
 
-## 20. Recommended Next Phase: V24D6M6
+## 20. V24D6M7 API — Pagination/Metadata/Polish Summary
 
-**V24D6M6 — Pagination / Response Metadata Design**
+**Commit:** `92669fb`
 
-Design-only. No implementation until API consumers exist:
-- `limit` / `offset` query parameters for all-player endpoint
-- Response-level `metadata` block with `lastUpdatedRound`, `totalMatches`, `totalPlayers`
-- Sort options: `sortBy` (goals/assists/rating/appearances), `order` (asc/desc)
-- Backward-compatible — all new fields optional
+### Implemented
+
+**Pagination:**
+- `limit` (default 50, max 200) and `offset` (default 0) query parameters on all-player and team-filtered endpoints
+- `limit <= 0` → 400 Bad Request
+- `limit > 200` → clamped to 200 + `LARGE_LIMIT_CLAMPED` warning
+- `offset < 0` → 400 Bad Request
+
+**Sort validation:**
+- 12 sort fields: `goals`, `assists`, `averageRating`, `appearances`, `starts`, `shots`, `keyPasses`, `yellowCards`, `redCards`, `injuries`, `fouls`, `playerName`
+- Default: `sortBy=goals`, `order=desc`
+- Invalid `sortBy` or `order` → 400 Bad Request
+- Stable tie-break chain: `goals DESC → assists DESC → averageRating DESC → playerName ASC → playerId ASC`
+
+**Response metadata block:**
+- `limit`, `offset`, `hasMore` (boolean: `offset + returnedPlayers < totalPlayers`)
+- `totalPlayers` (count before pagination), `returnedPlayers` (count after pagination)
+- `totalMatchesProcessed` (deduped match count), `lastUpdatedRound` (max round in scanned data)
+- `dataSource` (fixed `"V24_DETAIL"`), `dataCompleteness` (COMPLETE | PARTIAL | EMPTY | UNKNOWN)
+- `generatedAt` (ISO-8601 timestamp), `versionHash` (SHA-256 of sorted matchIds, first 12 hex chars)
+
+**Warnings array:**
+- `LARGE_LIMIT_CLAMPED` — when `limit > 200`
+- `APPROXIMATE_APPEARANCES` — on all non-empty responses (substitute appearances undercounted)
+- `APPROXIMATE_MATCHES_MISSED` — on all non-empty responses (missed matches approximated)
+- `NO_DETAIL_DATA` — when no match details found for career/season
+
+**Backward compatibility:**
+- Feature disabled (`expose-detail-api=false`) → 404
+- Single-player missing → 404
+- All/team no data → 200 empty `playerStats[]`
+- No Redis writes, no new Redis keys
+
+---
+
+## 21. Deferred Items (Still Not Implemented)
+
+| Item | Reason |
+|------|--------|
+| `minutesPlayed` | No per-minute tracking in source data |
+| `shotsOnTarget` | `SHOT_ON_TARGET` event not counted in stats model |
+| `currentForm` / `formDeltaSeason` | No form history baseline in source data |
+| `averageEnergy` / `lowestEnergy` | No energy history in source data |
+| Redis snapshot persistence | Option B from Section 7 — deferred |
+| Frontend stats UI | Separate frontend repo |
+
+---
+
+## 22. Recommended Next Phase: V24D6M9
+
+**V24D6M9 — Frontend Player Season Stats UI Design/Prompt**
+
+Backend MVP is now complete. Recommended next step is UI-facing work in a separate frontend repo:
+- Design prompts for squad stats table component (sortable columns, pagination controls)
+- Design prompts for player profile season stats tab
+- Design prompts for golden boot / top scorers leaderboard
+- API client consumption of `metadata` and `warnings` fields

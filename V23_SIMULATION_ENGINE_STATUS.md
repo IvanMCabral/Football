@@ -2,12 +2,13 @@
 
 **Branch:** `mvp-1-performance-cleanup`
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests)
-**Latest docs commit:** `38c80f8` (V24D6L2 — release checklist; V24D6M5 status/docs update pending)
-**Latest implementation commit:** `45c78c6` (V24D6M4 — player season stats API; 760 tests full suite)
-**Status:** V24D6M1-M4 COMPLETE — player season stats design, source audit, aggregator, and query service/API all delivered. V24D6L release-readiness complete. V24D6K complete with no production tuning. See V24D6M phase table in Section 4 for full V24D6M status.
-**Test status:** 760 total (723 pre-M + 37 new in M3/M4: 19 aggregator + 10 query service + 8 controller), 0 failures; lifecycle/mutation/integration gate 207, 0 failures
+**Latest docs commit before M8:** `127b205` (V24D6M6 — API polish design)
+**M8 docs/status update:** pending commit
+**Latest implementation commit:** `92669fb` (V24D6M7 — player season stats API pagination/metadata polish; 768 tests full suite)
+**Status:** V24D6M1-M7 COMPLETE — player season stats design, source audit, pure aggregator, read-only query service/API, docs/status, API polish design, and API pagination/metadata polish all delivered. V24D6L release-readiness complete. See V24D6M phase table in Section 4 for full V24D6M status.
+**Test status:** 768 total (723 pre-M + 45 new in M3/M4/M7: 19 aggregator + 12 query service + 14 controller), 0 failures; lifecycle/mutation/integration gate 207, 0 failures
 **Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | V24MutationBalancingDiagnosticTest 7 | focused gate 207
-**Date:** 2026-05-22
+**Date:** 2026-05-26
 
 ---
 
@@ -135,10 +136,10 @@ public final class MatchQualityComputer {
 | `SessionPlayerDisciplineFieldsTest` | 8 | V24D6D2: SessionPlayer discipline fields, null-safe getters, default values, initDefaults, field initialization |
 | `V24FatigueMutationApplierTest` | 30 | V24D6C1 + V24D6F3: energy drain, null guards, flag combinations, floor at 0, unknown player skip, injured skip, substitute-only drain, custom drain values, null energy default, all-injured skip, relatedPlayerId substitute drain, null playerId graceful handling |
 | `PlayerSeasonStatsAggregatorTest` | 19 | V24D6M3: pure aggregator, goals/assists/rating/cards/injuries/fouls/subs/appearances, deduplication, career/season/team isolation, sort direction, null safety |
-| `PlayerSeasonStatsQueryServiceTest` | 10 | V24D6M4: query service, feature-gated, no-data returns empty, season filter, team/player filter, sort options, null-args validation |
-| `PlayerSeasonStatsControllerTest` | 8 | V24D6M4: controller endpoints, 200/400/404 responses, feature-disabled behavior, null/blank param validation |
+| `PlayerSeasonStatsQueryServiceTest` | 12 | V24D6M4/M7: query service, feature-gated, no-data returns empty, season filter, team/player filter, sort options, null-args validation, metadata/warnings |
+| `PlayerSeasonStatsControllerTest` | 14 | V24D6M4/M7: controller endpoints, 200/400/404 responses, feature-disabled behavior, null/blank param validation, pagination validation |
 
-**Total: 760 tests, 0 failures** (723 pre-M + 37 new in M3/M4: 19 aggregator + 10 query service + 8 controller)
+**Total: 768 tests, 0 failures** (723 pre-M + 45 new in M3/M4/M7: 19 aggregator + 12 query service + 14 controller)
 
 ---
 
@@ -508,7 +509,7 @@ Only after sustained V23 stability (>30 days, quality gate passes consistently).
 ```
 mvn test -Dtest=V24ShotCoordinateAttachmentTest,V24ShotCoordinateTest,V24PlayerRatingModelTest,V24AssistModelTest,V24FormationParserTest,V24SubstitutionEngineTest,V24InjuryModelTest,V24DisciplineModelTest,V24FatigueModelTest,V24DetailedMatchEngineDeterminismTest,V24TimelineOrderingTest,V24DetailedMatchResultAdapterTest,V24MatchContextValidationTest,V24TimelineConsistencyTest,V24ShotXgModelTest,V24PlayerAttributionTest,LeagueSimulatorTest,MatchResultDataAdapterTest,TeamOverallCalculatorTest,MatchEngineImplStrengthSimulationTest,V24LeagueSimulationPathTest,MatchEngineImplStyleSimulationTest,MatchQualityMetricsTest,V23SimulationQualityGateTest,MatchEngineImplRoleContributionTest,MatchEngineImplEventConsistencyTest,MatchEngineImplDeterminismTest,V24MetricsValidationTest,V24PoissonValidationTest,MatchEngineImplTest,MatchQualityComputerTest,MatchEngineImplTest,DivisionTest,V24DetailedMatchQueryServiceTest,V24DetailedMatchRedisAdapterTest,V24DetailedMatchDataTest,V24PlayerMatchStatsModelTest,V24PlayerRatingsPersistenceTest,V24LeagueDetailPersistenceTest,V24EndToEndFlagIntegrationTest,V24MatchContextFactoryTest,V24InjuryMutationApplierTest,V24FatigueMutationApplierTest,V24CareerMutationServiceTest,V24CareerMutationIntegrationTest,SessionPlayerDTODisciplineFieldsTest,LineupBlockingTest,LineupCommandUseCaseImplAutoSelectTest
 ```
-Expected: 723 tests (regression gate), 0 failures; 723 full suite total (716 pre-K + 7 V24D6K diagnostic tests).
+Expected: 768 tests (regression gate), 0 failures; 768 full suite total (723 pre-M + 45 in M3/M4/M7).
 
 ---
 
@@ -592,6 +593,7 @@ V24 is **NOT a replacement for V23**. V23 remains the production simulation engi
 
 **Commit history on `mvp-1-performance-cleanup` for V24:**
 ```
+92669fb — feat: polish V24 player season stats API (V24D6M7)
 45c78c6 — feat: expose V24 player season stats API (V24D6M4)
 533f101 — feat: add V24 player season stats aggregator (V24D6M3)
 db36055 — docs: audit V24 player season stats source data (V24D6M2)

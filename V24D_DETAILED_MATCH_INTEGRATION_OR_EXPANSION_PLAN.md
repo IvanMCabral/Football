@@ -1,12 +1,13 @@
 # V24D — Detailed Match Integration or Expansion Plan
 
-**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H+V24D6E+V24D6I+V24D6J+V24D6K+V24D6L+V24D6M1+V24D6M2+V24D6M3+V24D6M4 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo; V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind flags; V24D6D2/D3/D4/D5 discipline persistence pipeline wired behind flags; V24D6D6A suspension lifecycle applier committed (`219628d`); V24D6D6B suspension lifecycle wiring committed (`b4291d9`); V24D6D7A DTO/API suspension exposure and lineup blocking committed (`6aadcd5`); V24D6D7B1/B2 frontend suspension warnings/badges committed (`8097ca9`+`69bf879`); V24D6F1/F2/F3 mutation regression tests complete; V24D6H yellow-card threshold (`8b747bd`/`6a07173`/`ab1f7b5`/`980be03`); V24D6E form persistence from V24 player ratings, discrete deltas, clamp [1,99] (`0388a57`/`9c101d1`/`f801299`/`e65cb03`). V24D6I injury recovery lifecycle complete (`4ad4210`/`7208821`/`7886308`). V24D6J injured lineup blocking + energy recovery complete (`83fb0d5`/`42e9de0`/`cb4574e`). V24D6K diagnostic cycle complete with no production tuning (energy healthy, availability healthy, injury borderline, recovery working). V24D6L release-readiness complete (`22b650c`/`38c80f8`/`9c2e6ad`). V24D6M1-M4 player season stats complete (`011ff92`/`db36055`/`533f101`/`45c78c6`). 760 tests full suite.
+**Status:** V24D3C+V24D5E5+V24D5E6+V24D6A+V24D6B1+V24D6B2+V24D6B3+V24D6C1+V24D6C2+V24D6C3+V24D6D2+V24D6D3+V24D6D4+V24D6D5+V24D6D6+V24D6D7+V24D6H+V24D6E+V24D6I+V24D6J+V24D6K+V24D6L+V24D6M1+V24D6M2+V24D6M3+V24D6M4+V24D6M5+V24D6M6+V24D6M7 COMPLETED — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F all delivered; V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in separate frontend repo; V24D6A design + V24D6B1/B2/B3 injury mutation + V24D6C1/C2/C3 fatigue mutation pipeline wired behind flags; V24D6D2/D3/D4/D5 discipline persistence pipeline wired behind flags; V24D6D6A/B suspension lifecycle wired; V24D6D7A DTO/API suspension exposure and lineup blocking complete; V24D6F1/F2/F3 mutation regression tests complete; V24D6H yellow-card threshold complete; V24D6E form persistence complete; V24D6I injury recovery lifecycle complete; V24D6J injured lineup blocking + energy recovery complete; V24D6K diagnostic cycle complete with no production tuning; V24D6L release-readiness complete; V24D6M1-M7 player season stats complete (`011ff92`/`db36055`/`533f101`/`45c78c6`/`a38a50e`/`127b205`/`92669fb`). 768 tests full suite.
 **Branch:** `mvp-1-performance-cleanup`
-**Latest implementation commit:** `45c78c6` (V24D6M4 — player season stats API; 760 tests)
+**Latest implementation commit:** `92669fb` (V24D6M7 — player season stats API pagination/metadata polish; 768 tests)
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests pre-M)
-**Latest docs commit:** `38c80f8` (V24D6L2 — release checklist; V24D6M5 docs pending)
-**V24D6M4 API:** `GET /api/careers/{careerId}/seasons/{season}/player-stats` | `GET .../teams/{teamId}/player-stats` | `GET .../players/{playerId}/stats` — feature-gated, read-only, no Redis writes
-**Tests:** 760 total (723 pre-M + 37 new in M3/M4), 0 failures
+**Latest docs commit before M8:** `127b205` (V24D6M6 — API polish design)
+**M8 docs/status update:** pending commit
+**V24D6M7 API:** `GET /api/careers/{careerId}/seasons/{season}/player-stats` | `GET .../teams/{teamId}/player-stats` | `GET .../players/{playerId}/stats` — feature-gated, read-only, pagination (limit/offset), sort validation, metadata block, warnings array, no Redis writes
+**Tests:** 768 total (723 pre-M + 45 new in M3/M4/M7), 0 failures
 
 ---
 
@@ -17,7 +18,7 @@
 - **No API/frontend changes without separate approval**
 - **V23 remains production-stable** — V24 is parallel
 - V24 implementation remains modular under `application/service/simulation/v24/`, but selected production wiring exists behind default-false flags.
-- **723 tests are the regression gate; full suite is 723 tests total** — all must pass after any V24D change
+- **768 tests are the current regression gate; full suite is 768 tests total** — all must pass after any V24D change (pre-M baseline was 723 tests)
 - Red-carded players remain non-substitutable (V24C invariant, never removed)
 
 ---

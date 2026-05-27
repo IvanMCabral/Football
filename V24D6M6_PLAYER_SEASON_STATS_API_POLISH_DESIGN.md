@@ -1,26 +1,26 @@
 # V24D6M6 — Player Season Stats API Polish Design
 
-**Status:** V24D6M6 DESIGN — M4 endpoints complete, M6 designs API polish only, no implementation
+**Status:** V24D6M6+M7 COMPLETE — API polish design implemented by V24D6M7 (`92669fb`). M8 docs/status pending.
 **Branch:** `mvp-1-performance-cleanup`
 **Date:** 2026-05-26
-**Based on:** V24D6M4 complete (`45c78c6`), full suite 760 tests
+**Based on:** V24D6M4 complete (`45c78c6`), full suite 768 tests (after M7)
 
 ---
 
 ## 1. Executive Summary
 
-V24D6M4 delivered three working read-only player season stats endpoints behind the `expose-detail-api` feature flag. The API is functional but unadorned: no pagination, no response metadata, no sort validation, no warning signals.
+V24D6M4 delivered three working read-only player season stats endpoints behind the `expose-detail-api` feature flag. The API was functional but unadorned: no pagination, no response metadata, no sort validation, no warning signals.
 
-V24D6M6 is **design only**. No implementation in this phase.
+V24D6M7 (commit `92669fb`) implemented all M6 design goals:
 
-**Goals for future M7 implementation:**
-1. Pagination — `limit` / `offset` query parameters
+**M7 implementation complete:**
+1. Pagination — `limit` / `offset` query parameters with validation
 2. Response metadata — counts, flags, and provenance at response level
 3. Sort contract — explicit supported fields, order, and tie-breaking
 4. Warning signals — approximate/deferred field disclosure
 5. Backward compatibility — existing M4 responses remain valid
 
-**What stays unchanged:** The existing M4 endpoint contracts and behaviors are preserved. Adding metadata fields to `PlayerSeasonStatsResponse` is backward-compatible.
+**What changed:** Adding `metadata` and `warnings` fields to `PlayerSeasonStatsResponse`. The existing M4 endpoint contracts and behaviors are preserved.
 
 ---
 
@@ -117,6 +117,15 @@ GET /api/careers/{careerId}/seasons/{season}/players/{playerId}/stats
 - No sort validation
 - No cache hints
 - No incomplete-data signal beyond `incomplete: boolean`
+
+### 2.5 What's in M7 (Implemented in Commit `92669fb`)
+
+All items above are now implemented:
+- `limit`/`offset` pagination with validation (limit ≤ 0 → 400, limit > 200 → clamp + warning, offset < 0 → 400)
+- Response-level `metadata` block with limit/offset/hasMore/totalPlayers/returnedPlayers/totalMatchesProcessed/lastUpdatedRound/dataSource/dataCompleteness/generatedAt/versionHash
+- `warnings` array with APPROXIMATE_APPEARANCES, APPROXIMATE_MATCHES_MISSED, NO_DETAIL_DATA, LARGE_LIMIT_CLAMPED
+- Sort validation for 12 fields with stable tie-breaking
+- Cache hints via `generatedAt` and `versionHash` (no full HTTP ETag)
 
 ---
 
@@ -570,22 +579,11 @@ The API does not currently have a versioned path (e.g., `/v2/`). Adding `metadat
 
 ---
 
-## 12. Recommended Next Phase: V24D6M7
+## 12. Recommended Next Phase: V24D6M8
 
-**V24D6M7 — Implement API Pagination/Metadata Polish**
+**V24D6M8 — Docs/Status Update**
 
-Implement the M7 scope defined in Section 10:
-1. `limit`/`offset` query parameters with validation
-2. `metadata` block with counts, `hasMore`, `dataCompleteness`, `dataSource`
-3. `warnings` array with approximate-field disclosures
-4. Sort validation + tie-breaking
-5. `versionHash` and `generatedAt` metadata fields
-6. Full test coverage for pagination, sort, metadata, and warnings
-7. Regression tests confirming M4 behavior unchanged
-
-**Constraints:** No Redis writes, no new Redis keys, no mutation behavior changes, no new source fields.
-
-**Estimated scope:** ~5 new files (metadata DTO, warning DTO), modifications to `PlayerSeasonStatsResponse` and `PlayerSeasonStatsController`, and ~20-30 new tests.
+All M6/M7 implementation work is complete. M8 is a docs-only update to close out the V24D6M phase and update all status/roadmap documents.
 
 ---
 
