@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V24D6M7: Controller for player season stats API.
+ * V24D6M9: Controller for player season stats API.
  *
  * <p>Three endpoints:
  * <ul>
- *   <li>GET /api/careers/{careerId}/seasons/{season}/player-stats — all players</li>
- *   <li>GET /api/careers/{careerId}/seasons/{season}/teams/{teamId}/player-stats — team filter</li>
- *   <li>GET /api/careers/{careerId}/seasons/{season}/players/{playerId}/stats — single player</li>
+ *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/player-stats — all players</li>
+ *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/teams/{teamId}/player-stats — team filter</li>
+ *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/players/{playerId}/stats — single player</li>
  * </ul>
  *
  * <p>Pagination (all/team endpoints):
@@ -34,7 +34,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/careers")
+@RequestMapping("/api/v1/careers")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class PlayerSeasonStatsController {
 
