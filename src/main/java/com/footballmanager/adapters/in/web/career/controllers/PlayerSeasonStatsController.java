@@ -3,6 +3,7 @@ package com.footballmanager.adapters.in.web.career.controllers;
 import com.footballmanager.application.service.simulation.v24.stats.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -124,7 +125,9 @@ public class PlayerSeasonStatsController {
                     .build();
         }
 
-        return Mono.just(ResponseEntity.ok(response));
+        return Mono.just(ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response));
     }
 
     @GetMapping("/{careerId}/seasons/{season}/teams/{teamId}/player-stats")
@@ -211,7 +214,9 @@ public class PlayerSeasonStatsController {
                     .build();
         }
 
-        return Mono.just(ResponseEntity.ok(response));
+        return Mono.just(ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response));
     }
 
     @GetMapping("/{careerId}/seasons/{season}/players/{playerId}/stats")
@@ -244,6 +249,8 @@ public class PlayerSeasonStatsController {
         if (response.playerStats().isEmpty()) {
             return Mono.just(ResponseEntity.notFound().build());
         }
-        return Mono.just(ResponseEntity.ok(response));
+        return Mono.just(ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response));
     }
 }

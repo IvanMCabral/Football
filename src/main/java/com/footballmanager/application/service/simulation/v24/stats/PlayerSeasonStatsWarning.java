@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24.stats;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
@@ -20,9 +21,9 @@ public final class PlayerSeasonStatsWarning {
         this.field = field;
     }
 
-    public PlayerSeasonStatsWarningCode code() { return code; }
-    public String message() { return message; }
-    public String field() { return field; }
+    @JsonProperty("code") public PlayerSeasonStatsWarningCode code() { return code; }
+    @JsonProperty("message") public String message() { return message; }
+    @JsonProperty("field") public String field() { return field; }
 
     @Override
     public boolean equals(Object o) {

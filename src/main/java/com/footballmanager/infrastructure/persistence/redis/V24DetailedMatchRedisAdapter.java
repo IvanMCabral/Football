@@ -10,6 +10,10 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * V24D4B: Redis adapter for V24DetailedMatchStoragePort.
@@ -17,13 +21,16 @@ import java.util.Optional;
  * <p>Stores V24DetailedMatchData snapshots at keys:
  * {@code career:{careerId}:match-detail:{matchId}}
  *
- * <p>This adapter is behind a feature flag and is NOT wired into production simulation.
- * V24D4B is persistence-only — it does not activate V24 detail storage unless explicitly
- * wired in a later phase (V24D5).
+ * <p>V24D6M12: Uses a dedicated ExecutorService with fixed daemon threads
+ * to execute blocking Redis I/O outside the WebFlux Netty event loop.
+ * Blocking calls are wrapped in CompletableFuture and submitted to the executor,
+ * then awaited with get(timeout). This is the only approach that reliably
+ * avoids "block() is blocking" violations on Netty event loop threads.
  *
- * <p>Uses Jackson2Json serialization via dedicated ReactiveRedisTemplate.
- * The objectMapper is configured with {@code FAIL_ON_UNKNOWN_PROPERTIES = false}
- * for forward compatibility when newer schemaVersion data is stored.
+ * <p>The ExecutorService approach is used instead of Schedulers.boundedElastic()
+ * because Mono.fromCallable() + subscribeOn() + block() still produced the
+ * "thread parallel-X" error in this Netty/R2DBC context, despite the pattern
+ * working in MatchEngineImpl for pure CPU-bound work.
  */
 @Repository
 public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort {
@@ -32,6 +39,12 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
     private static final String KEY_MATCH_DETAIL = ":match-detail:";
 
     private final ReactiveRedisTemplate<String, V24DetailedMatchData> redisTemplate;
+    private final ExecutorService executor = Executors.newFixedThreadPool(
+            2, r -> {
+                Thread t = new Thread(r, "v24-redis-io");
+                t.setDaemon(true);
+                return t;
+            });
 
     public V24DetailedMatchRedisAdapter(
             @Qualifier("v24DetailedMatchDataRedisTemplate") ReactiveRedisTemplate<String, V24DetailedMatchData> redisTemplate) {
@@ -59,7 +72,13 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("detail.matchId must not be blank");
         }
         String key = buildKey(careerId, matchId);
-        redisTemplate.opsForValue().set(key, detail).block();
+        try {
+            CompletableFuture.runAsync(() ->
+                    redisTemplate.opsForValue().set(key, detail).block(), executor)
+                    .get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException("Redis save failed", e);
+        }
     }
 
     @Override
@@ -71,8 +90,14 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("matchId must not be blank");
         }
         String key = buildKey(careerId, matchId);
-        V24DetailedMatchData result = redisTemplate.opsForValue().get(key).block();
-        return Optional.ofNullable(result);
+        try {
+            V24DetailedMatchData data = CompletableFuture.supplyAsync(() ->
+                    redisTemplate.opsForValue().get(key).block(), executor)
+                    .get(5, TimeUnit.SECONDS);
+            return Optional.ofNullable(data);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -80,9 +105,6 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
      *
      * <p>MVP note: uses KEYS scan. Acceptable for small-to-medium careers.
      * Each key is fetched individually after the scan.
-     *
-     * @param careerId  the career to retrieve match details for
-     * @return list of all match details for the career, never null
      */
     @Override
     public List<V24DetailedMatchData> findByCareerId(String careerId) {
@@ -90,18 +112,28 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("careerId must not be blank");
         }
         String pattern = buildPattern(careerId);
-        List<String> keys = redisTemplate.keys(pattern).collectList().block();
-        if (keys == null || keys.isEmpty()) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<String> keys = (List<String>) CompletableFuture.supplyAsync(() -> {
+                List<String> k = redisTemplate.keys(pattern).collectList().block();
+                return k != null ? k : List.of();
+            }, executor).get(10, TimeUnit.SECONDS);
+            if (keys == null || keys.isEmpty()) {
+                return List.of();
+            }
+            List<V24DetailedMatchData> results = new ArrayList<>(keys.size());
+            for (String key : keys) {
+                V24DetailedMatchData detail = CompletableFuture.supplyAsync(() ->
+                        redisTemplate.opsForValue().get(key).block(), executor)
+                        .get(5, TimeUnit.SECONDS);
+                if (detail != null) {
+                    results.add(detail);
+                }
+            }
+            return results;
+        } catch (Exception e) {
             return List.of();
         }
-        List<V24DetailedMatchData> results = new ArrayList<>(keys.size());
-        for (String key : keys) {
-            V24DetailedMatchData detail = redisTemplate.opsForValue().get(key).block();
-            if (detail != null) {
-                results.add(detail);
-            }
-        }
-        return results;
     }
 
     @Override
@@ -110,14 +142,17 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("careerId must not be blank");
         }
         String pattern = buildPattern(careerId);
-        redisTemplate.keys(pattern)
-                .collectList()
-                .flatMap(keys -> {
-                    if (keys.isEmpty()) {
-                        return Mono.just(0L);
-                    }
-                    return redisTemplate.delete(keys.toArray(new String[0]));
-                })
-                .block();
+        try {
+            CompletableFuture.runAsync(() ->
+                    redisTemplate.keys(pattern).collectList().flatMap(keys -> {
+                        if (keys.isEmpty()) {
+                            return Mono.just(0L);
+                        }
+                        return redisTemplate.delete(keys.toArray(new String[0]));
+                    }).block(), executor)
+                    .get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            // ignore
+        }
     }
 }

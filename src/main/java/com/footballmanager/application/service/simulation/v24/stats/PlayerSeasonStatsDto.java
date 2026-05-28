@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24.stats;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
@@ -102,29 +103,45 @@ public final class PlayerSeasonStatsDto {
     }
 
     // Identity getters
+    @JsonProperty("careerId")
     public String careerId() { return careerId; }
+    @JsonProperty("season")
     public Integer season() { return season; }
+    @JsonProperty("teamId")
     public String teamId() { return teamId; }
+    @JsonProperty("playerId")
     public String playerId() { return playerId; }
+    @JsonProperty("playerName")
     public String playerName() { return playerName; }
+    @JsonProperty("position")
     public String position() { return position; }
 
     // Appearance getters
+    @JsonProperty("appearances")
     public int appearances() { return appearances; }
+    @JsonProperty("starts")
     public int starts() { return starts; }
 
     // Attack getters
+    @JsonProperty("goals")
     public int goals() { return goals; }
+    @JsonProperty("assists")
     public int assists() { return assists; }
+    @JsonProperty("keyPasses")
     public int keyPasses() { return keyPasses; }
+    @JsonProperty("shots")
     public int shots() { return shots; }
 
     // Discipline getters
+    @JsonProperty("yellowCards")
     public int yellowCards() { return yellowCards; }
+    @JsonProperty("redCards")
     public int redCards() { return redCards; }
 
     // Health getters
+    @JsonProperty("injuries")
     public int injuries() { return injuries; }
+    @JsonProperty("fouls")
     public int fouls() { return fouls; }
 
     // Approximate getters (documented limitations — see design doc)
@@ -133,6 +150,7 @@ public final class PlayerSeasonStatsDto {
      * Derived from injury event count × DEFAULT_INJURY_MISSED_MATCHES_ESTIMATE.
      * Does not reflect actual round-by-round injury state.
      */
+    @JsonProperty("matchesMissedInjuredApprox")
     public int matchesMissedInjuredApprox() { return matchesMissedInjuredApprox; }
 
     /**
@@ -140,14 +158,19 @@ public final class PlayerSeasonStatsDto {
      * Derived from: redCards + floor(yellowCards / 5).
      * May double-count if yellowCards is already season-cumulative in source data.
      */
+    @JsonProperty("matchesMissedSuspendedApprox")
     public int matchesMissedSuspendedApprox() { return matchesMissedSuspendedApprox; }
 
     // Rating getters
+    @JsonProperty("averageRating")
     public double averageRating() { return averageRating; }
+    @JsonProperty("bestRating")
     public double bestRating() { return bestRating; }
+    @JsonProperty("worstRating")
     public double worstRating() { return worstRating; }
 
     // Metadata getters
+    @JsonProperty("lastUpdatedRound")
     public int lastUpdatedRound() { return lastUpdatedRound; }
 
     @Override

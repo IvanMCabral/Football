@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24.stats;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -50,17 +51,17 @@ public final class PlayerSeasonStatsResponse {
         this.warnings = (warnings != null) ? Collections.unmodifiableList(warnings) : Collections.emptyList();
     }
 
-    public String careerId() { return careerId; }
-    public Integer season() { return season; }
-    public List<PlayerSeasonStatsDto> playerStats() { return playerStats; }
-    public Integer totalGoals() { return totalGoals; }
-    public Integer totalAssists() { return totalAssists; }
-    public Integer totalAppearances() { return totalAppearances; }
-    public Double averageRating() { return averageRating; }
-    public boolean incomplete() { return incomplete; }
-    public String message() { return message; }
-    public PlayerSeasonStatsMetadata metadata() { return metadata; }
-    public List<PlayerSeasonStatsWarning> warnings() { return warnings; }
+    @JsonProperty("careerId") public String careerId() { return careerId; }
+    @JsonProperty("season") public Integer season() { return season; }
+    @JsonProperty("playerStats") public List<PlayerSeasonStatsDto> playerStats() { return playerStats; }
+    @JsonProperty("totalGoals") public Integer totalGoals() { return totalGoals; }
+    @JsonProperty("totalAssists") public Integer totalAssists() { return totalAssists; }
+    @JsonProperty("totalAppearances") public Integer totalAppearances() { return totalAppearances; }
+    @JsonProperty("averageRating") public Double averageRating() { return averageRating; }
+    @JsonProperty("incomplete") public boolean incomplete() { return incomplete; }
+    @JsonProperty("message") public String message() { return message; }
+    @JsonProperty("metadata") public PlayerSeasonStatsMetadata metadata() { return metadata; }
+    @JsonProperty("warnings") public List<PlayerSeasonStatsWarning> warnings() { return warnings; }
 
     @Override
     public boolean equals(Object o) {

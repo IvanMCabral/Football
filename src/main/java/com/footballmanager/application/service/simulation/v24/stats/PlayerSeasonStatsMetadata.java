@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24.stats;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -49,17 +50,17 @@ public final class PlayerSeasonStatsMetadata {
         this.versionHash = versionHash;
     }
 
-    public Integer limit() { return limit; }
-    public Integer offset() { return offset; }
-    public Boolean hasMore() { return hasMore; }
-    public Integer totalPlayers() { return totalPlayers; }
-    public Integer returnedPlayers() { return returnedPlayers; }
-    public Integer totalMatchesProcessed() { return totalMatchesProcessed; }
-    public Integer lastUpdatedRound() { return lastUpdatedRound; }
-    public String dataSource() { return dataSource; }
-    public PlayerSeasonStatsDataCompleteness dataCompleteness() { return dataCompleteness; }
-    public Instant generatedAt() { return generatedAt; }
-    public String versionHash() { return versionHash; }
+    @JsonProperty("limit") public Integer limit() { return limit; }
+    @JsonProperty("offset") public Integer offset() { return offset; }
+    @JsonProperty("hasMore") public Boolean hasMore() { return hasMore; }
+    @JsonProperty("totalPlayers") public Integer totalPlayers() { return totalPlayers; }
+    @JsonProperty("returnedPlayers") public Integer returnedPlayers() { return returnedPlayers; }
+    @JsonProperty("totalMatchesProcessed") public Integer totalMatchesProcessed() { return totalMatchesProcessed; }
+    @JsonProperty("lastUpdatedRound") public Integer lastUpdatedRound() { return lastUpdatedRound; }
+    @JsonProperty("dataSource") public String dataSource() { return dataSource; }
+    @JsonProperty("dataCompleteness") public PlayerSeasonStatsDataCompleteness dataCompleteness() { return dataCompleteness; }
+    @JsonProperty("generatedAt") public Instant generatedAt() { return generatedAt; }
+    @JsonProperty("versionHash") public String versionHash() { return versionHash; }
 
     @Override
     public boolean equals(Object o) {
