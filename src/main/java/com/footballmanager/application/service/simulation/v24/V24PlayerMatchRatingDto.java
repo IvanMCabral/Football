@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
@@ -24,22 +26,23 @@ public final class V24PlayerMatchRatingDto {
     private final boolean substitutedIn;
     private final boolean substitutedOut;
 
+    @JsonCreator
     public V24PlayerMatchRatingDto(
-            String playerId,
-            String playerName,
-            String teamId,
-            String position,
-            double rating,
-            int goals,
-            int assists,
-            int keyPasses,
-            int shots,
-            int yellowCards,
-            int redCards,
-            int injuries,
-            int fouls,
-            boolean substitutedIn,
-            boolean substitutedOut) {
+            @JsonProperty("playerId") String playerId,
+            @JsonProperty("playerName") String playerName,
+            @JsonProperty("teamId") String teamId,
+            @JsonProperty("position") String position,
+            @JsonProperty("rating") double rating,
+            @JsonProperty("goals") int goals,
+            @JsonProperty("assists") int assists,
+            @JsonProperty("keyPasses") int keyPasses,
+            @JsonProperty("shots") int shots,
+            @JsonProperty("yellowCards") int yellowCards,
+            @JsonProperty("redCards") int redCards,
+            @JsonProperty("injuries") int injuries,
+            @JsonProperty("fouls") int fouls,
+            @JsonProperty("substitutedIn") boolean substitutedIn,
+            @JsonProperty("substitutedOut") boolean substitutedOut) {
         this.playerId = Objects.requireNonNull(playerId, "playerId must not be null");
         this.playerName = (playerName != null && !playerName.isBlank()) ? playerName : "Unknown";
         this.teamId = teamId;
@@ -64,21 +67,21 @@ public final class V24PlayerMatchRatingDto {
         return rating;
     }
 
-    public String playerId() { return playerId; }
-    public String playerName() { return playerName; }
-    public String teamId() { return teamId; }
-    public String position() { return position; }
-    public double rating() { return rating; }
-    public int goals() { return goals; }
-    public int assists() { return assists; }
-    public int keyPasses() { return keyPasses; }
-    public int shots() { return shots; }
-    public int yellowCards() { return yellowCards; }
-    public int redCards() { return redCards; }
-    public int injuries() { return injuries; }
-    public int fouls() { return fouls; }
-    public boolean substitutedIn() { return substitutedIn; }
-    public boolean substitutedOut() { return substitutedOut; }
+    @JsonProperty("playerId") public String playerId() { return playerId; }
+    @JsonProperty("playerName") public String playerName() { return playerName; }
+    @JsonProperty("teamId") public String teamId() { return teamId; }
+    @JsonProperty("position") public String position() { return position; }
+    @JsonProperty("rating") public double rating() { return rating; }
+    @JsonProperty("goals") public int goals() { return goals; }
+    @JsonProperty("assists") public int assists() { return assists; }
+    @JsonProperty("keyPasses") public int keyPasses() { return keyPasses; }
+    @JsonProperty("shots") public int shots() { return shots; }
+    @JsonProperty("yellowCards") public int yellowCards() { return yellowCards; }
+    @JsonProperty("redCards") public int redCards() { return redCards; }
+    @JsonProperty("injuries") public int injuries() { return injuries; }
+    @JsonProperty("fouls") public int fouls() { return fouls; }
+    @JsonProperty("substitutedIn") public boolean substitutedIn() { return substitutedIn; }
+    @JsonProperty("substitutedOut") public boolean substitutedOut() { return substitutedOut; }
 
     @Override
     public boolean equals(Object o) {

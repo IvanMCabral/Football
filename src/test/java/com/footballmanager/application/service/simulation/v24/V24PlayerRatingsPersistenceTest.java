@@ -269,6 +269,93 @@ class V24PlayerRatingsPersistenceTest {
         assertNotNull(byPid.get("p_h_0").position());
     }
 
+    // ========== Test 13: starting11 exists → uses starting11 (explicit) ==========
+
+    @Test
+    void assembleRatings_whenStarting11Exists_usesStarting11() {
+        // Career has starting XI set
+        CareerSave career = makeCareerWithXI(HOME, AWAY, 11, 11);
+        MatchFixture fixture = makeFixture(HOME, AWAY, 1);
+        V24DetailedMatchResult result = emptyResult(HOME, AWAY);
+
+        List<V24PlayerMatchRatingDto> ratings = assembler.assemblePlayerRatings(career, fixture, result);
+
+        assertFalse(ratings.isEmpty(), "ratings should not be empty when starting XI exists");
+        assertEquals(22, ratings.size(), "11v11 = 22 players expected");
+        // Verify starting11 IDs are used (not squad IDs)
+        Map<String, V24PlayerMatchRatingDto> byPid = byPlayerId(ratings);
+        assertNotNull(byPid.get("p_h_0"), "starting XI player p_h_0 should be in ratings");
+        assertNotNull(byPid.get("p_a_0"), "starting XI player p_a_0 should be in ratings");
+    }
+
+    // ========== Test 14: starting11 missing → falls back to squad ==========
+
+    @Test
+    void assembleRatings_whenStarting11Missing_fallsBackToSquad() {
+        // Career has NO starting XI (simulates live/SSE flow)
+        String careerId = HOME + "_" + AWAY;
+        CareerSave save = new CareerSave();
+        save.getData().setCareerId(careerId);
+        CareerTeamManager tm = new CareerTeamManager();
+        CareerPlayerManager pm = new CareerPlayerManager();
+
+        // Create teams
+        for (String tid : List.of(HOME, AWAY)) {
+            UUID uuid = UUID.fromString(tid);
+            SessionTeam team = SessionTeam.fromRealTeam(uuid, "world_" + tid,
+                    "Team " + tid, "Country", BigDecimal.ZERO, "4-3-3", null);
+            team.setSessionTeamId(tid);
+            tm.addSessionTeam(team);
+        }
+
+        // Create 15 squad players per team (more than 11, to test "up to 11")
+        // HOME players: p_h_0 through p_h_14
+        // AWAY players: p_a_0 through p_a_14
+        String homePrefix = "p_h_";
+        String awayPrefix = "p_a_";
+        for (int i = 0; i < 15; i++) {
+            SessionPlayer homeP = SessionPlayer.custom(homePrefix + i, 25,
+                    i == 0 ? "ST" : (i < 5 ? "MID" : "DEF"),
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            homeP.setSessionPlayerId(homePrefix + i);
+            pm.addSessionPlayer(homeP);
+            tm.assignPlayerToSquad(homeP.getSessionPlayerId(), HOME);
+
+            SessionPlayer awayP = SessionPlayer.custom(awayPrefix + i, 25,
+                    i == 0 ? "ST" : (i < 5 ? "MID" : "DEF"),
+                    75, 75, 75, 75, 75, 75, BigDecimal.valueOf(1000));
+            awayP.setSessionPlayerId(awayPrefix + i);
+            pm.addSessionPlayer(awayP);
+            tm.assignPlayerToSquad(awayP.getSessionPlayerId(), AWAY);
+        }
+
+        save.setTeamManager(tm);
+        save.setPlayerManager(pm);
+
+        // intentionally do NOT set teamStarting11 - simulates live/SSE flow
+        CareerSeasonManager sm = new CareerSeasonManager();
+        sm.setCurrentSeason(1);
+        save.setSeasonManager(sm);
+        save.setTournamentState(new com.footballmanager.domain.model.entity.TournamentState());
+
+        MatchFixture fixture = makeFixture(HOME, AWAY, 1);
+        V24DetailedMatchResult result = emptyResult(HOME, AWAY);
+
+        List<V24PlayerMatchRatingDto> ratings = assembler.assemblePlayerRatings(save, fixture, result);
+
+        assertFalse(ratings.isEmpty(), "ratings should not be empty when falling back to squad");
+        // Should return up to 11 players per team = 22 total
+        assertEquals(22, ratings.size(), "fallback should return up to 11 players per team (22 total)");
+        // Verify squad players are used (p_h_0 through p_h_14 exist in squad, but only first 11 should be used)
+        Map<String, V24PlayerMatchRatingDto> byPid = byPlayerId(ratings);
+        // First 11 players should be in ratings
+        assertNotNull(byPid.get("p_h_0"), "squad player p_h_0 should be in ratings (first 11 used)");
+        assertNotNull(byPid.get("p_a_0"), "squad player p_a_0 should be in ratings (first 11 used)");
+        // Players beyond 11 should NOT be in ratings
+        assertNull(byPid.get("p_h_11"), "squad player p_h_11 should NOT be in ratings (only first 11 used)");
+        assertNull(byPid.get("p_a_11"), "squad player p_a_11 should NOT be in ratings (only first 11 used)");
+    }
+
     // ========== Helpers ==========
 
     private static final String HOME = UUID.randomUUID().toString();

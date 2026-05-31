@@ -10,6 +10,7 @@ import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.v24.V24MatchTimeline;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
 import com.footballmanager.application.service.simulation.v24.V24PlayerRatingsAssembler;
 import com.footballmanager.application.service.simulation.v24.V24CareerMutationPolicy;
@@ -653,6 +654,152 @@ public class LeagueSimulator {
      */
     private long deriveSeed(MatchFixture fixture) {
         return fixture.getMatchId().hashCode();
+    }
+
+    // ========== Live Round Persistence (V24D6M12) ==========
+
+    /**
+     * V24D6M12: Persist V24DetailedMatchData for a single live match.
+     *
+     * <p>Called from MatchSimulationOrchestrator after a live/SSE match completes
+     * via the RoundController → MatchSession → onFinishCallback path.
+     * The live path does NOT go through simulateLeagueRound() — LeagueSimulator's
+     * internal V24 engine is not involved in live match execution.
+     *
+     * <p>This method bridges the gap: given CareerSave and match metadata,
+     * it builds a V24DetailedMatchData snapshot and persists it to Redis.
+     * Only active when persistDetail=true and useV24DetailedEngine=true.
+     * Best-effort: failures are logged and do not fail the match result processing.
+     *
+     * <p>CareerId convention: uses career.getData().getCareerId() — the same careerId
+     * that PlayerSeasonStatsQueryService.findByCareerId(careerId) reads from Redis.
+     *
+     * @param career      the CareerSave for this user's career
+     * @param matchId     the matchId of the completed match
+     * @param homeTeamId  session team ID of the home team
+     * @param awayTeamId  session team ID of the away team
+     * @param homeGoals   final home goals
+     * @param awayGoals   final away goals
+     * @param homeXg      final home xG
+     * @param awayXg      final away xG
+     * @param homeShots   final home shots
+     * @param awayShots   final away shots
+     * @param homePossession final home possession %
+     * @param awayPossession final away possession %
+     */
+    public void persistV24DetailForLiveMatch(
+            CareerSave career,
+            String matchId,
+            String homeTeamId,
+            String awayTeamId,
+            int homeGoals,
+            int awayGoals,
+            double homeXg,
+            double awayXg,
+            int homeShots,
+            int awayShots,
+            int homePossession,
+            int awayPossession) {
+
+        if (!persistDetail) {
+            log.debug("[V24-DETAIL-PERSIST] Skipped for match {}: persistDetail=false", matchId);
+            return;
+        }
+
+        if (!useV24DetailedEngine) {
+            log.debug("[V24-DETAIL-PERSIST] Skipped for match {}: useV24DetailedEngine=false", matchId);
+            return;
+        }
+
+        if (storagePort == null) {
+            log.warn("[V24-DETAIL-PERSIST] Skipped for match {}: storagePort is null", matchId);
+            return;
+        }
+
+        try {
+            String careerId = career.getData().getCareerId();
+            Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
+
+            // Find current round from fixtures
+            Integer round = career.getTournamentState().getFixtures().stream()
+                    .filter(f -> f.getMatchId().equals(matchId))
+                    .findFirst()
+                    .map(MatchFixture::getRound)
+                    .orElse(career.getTournamentState().getCurrentRound());
+
+            SessionTeam homeTeam = career.getSessionTeam(homeTeamId);
+            SessionTeam awayTeam = career.getSessionTeam(awayTeamId);
+            String homeTeamName = homeTeam != null ? homeTeam.getName() : "Home";
+            String awayTeamName = awayTeam != null ? awayTeam.getName() : "Away";
+
+            // Build V24DetailedMatchResult from live match data
+            V24MatchTimeline timeline = new V24MatchTimeline();
+            V24DetailedMatchResult result = new V24DetailedMatchResult(
+                    matchId,
+                    homeTeamId,
+                    awayTeamId,
+                    homeGoals,
+                    awayGoals,
+                    homeXg,
+                    awayXg,
+                    homeShots,
+                    awayShots,
+                    homePossession,
+                    awayPossession,
+                    timeline,
+                    "Live match result"
+            );
+
+            // Assemble per-player ratings from starting XI
+            // Build a minimal MatchFixture just for player resolution (team IDs only)
+            MatchFixture playerFixture = new MatchFixture(matchId, homeTeamId, awayTeamId, round);
+
+            List<V24PlayerMatchRatingDto> playerRatings =
+                    v24PlayerRatingsAssembler.assemblePlayerRatings(career, playerFixture, result);
+
+            V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
+                    careerId,
+                    seasonNumber,
+                    round,
+                    homeTeamName,
+                    awayTeamName,
+                    result,
+                    playerRatings
+            );
+
+            storagePort.save(careerId, detail);
+            log.info("[V24-DETAIL-PERSIST] saved match detail careerId={}, matchId={}, season={}, round={}",
+                    careerId, matchId, seasonNumber, round);
+
+        } catch (Exception e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            log.warn("[V24-DETAIL-PERSIST] Failed to persist for match {}: {} [cause: {}], continuing",
+                    matchId, e.getMessage(), cause.getMessage());
+        }
+    }
+
+    /**
+     * V24-DETAIL-PERSIST: Overload for SSE/live match flow where matchId comes as UUID.
+     * Converts UUIDs to Strings and delegates to the main method with zeros for unavailable stats.
+     */
+    public void persistV24DetailForLiveMatch(
+            CareerSave career,
+            UUID matchId,
+            UUID homeTeamId,
+            UUID awayTeamId,
+            int homeGoals,
+            int awayGoals) {
+        persistV24DetailForLiveMatch(
+                career,
+                matchId.toString(),
+                homeTeamId.toString(),
+                awayTeamId.toString(),
+                homeGoals,
+                awayGoals,
+                0.0, 0.0,
+                0, 0,
+                0, 0
+        );
     }
 
     // ========== OVR Calculation (Phase 10C1) ==========

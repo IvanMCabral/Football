@@ -65,13 +65,27 @@ public final class V24PlayerRatingsAssembler {
     }
 
     private List<V24PlayerMatchState> resolveStartingPlayers(CareerSave career, String teamId, String teamIdForState) {
+        // 1. First try starting XI
         List<String> starterIds = career.getTeamStarting11().get(teamId);
-        if (starterIds == null || starterIds.isEmpty()) {
-            return List.of();
+        List<String> playerIdsToUse;
+
+        if (starterIds != null && !starterIds.isEmpty()) {
+            // Use starting XI (existing behavior for batch/league flow)
+            playerIdsToUse = starterIds;
+        } else {
+            // 2. Fallback to squad players for live/SSE flow when starting11 is empty
+            List<String> squadIds = career.getSquadPlayerIds(teamId);
+            if (squadIds == null || squadIds.isEmpty()) {
+                return List.of();
+            }
+            // Take up to 11 players from squad
+            playerIdsToUse = squadIds.size() > 11
+                    ? squadIds.subList(0, 11)
+                    : squadIds;
         }
 
-        List<V24PlayerMatchState> players = new ArrayList<>(starterIds.size());
-        for (String playerId : starterIds) {
+        List<V24PlayerMatchState> players = new ArrayList<>(playerIdsToUse.size());
+        for (String playerId : playerIdsToUse) {
             SessionPlayer sp = career.getPlayerManager().getSessionPlayer(playerId);
             if (sp != null) {
                 players.add(V24PlayerMatchState.fromSessionPlayer(sp, teamIdForState));
