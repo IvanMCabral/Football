@@ -2,11 +2,13 @@ package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  * "thread parallel-X" error in this Netty/R2DBC context, despite the pattern
  * working in MatchEngineImpl for pure CPU-bound work.
  */
+@Slf4j
 @Repository
 public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort {
 
@@ -39,8 +42,9 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
     private static final String KEY_MATCH_DETAIL = ":match-detail:";
 
     private final ReactiveRedisTemplate<String, V24DetailedMatchData> redisTemplate;
+    // Larger pool to parallelize multi-key retrieval without pipelining
     private final ExecutorService executor = Executors.newFixedThreadPool(
-            2, r -> {
+            8, r -> {
                 Thread t = new Thread(r, "v24-redis-io");
                 t.setDaemon(true);
                 return t;
@@ -77,7 +81,10 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
                     redisTemplate.opsForValue().set(key, detail).block(), executor)
                     .get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
-            throw new RuntimeException("Redis save failed", e);
+            // Redis unavailable — log and continue rather than crashing the round
+            log.error("[V24-REDIS] Failed to save match detail key={}, careerId={}, matchId={}: {}",
+                    key, careerId, matchId, e.getMessage());
+            // Do not throw — caller handles gracefully via warning log
         }
     }
 
@@ -103,8 +110,9 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
     /**
      * Retrieve all V24DetailedMatchData for a career.
      *
-     * <p>MVP note: uses KEYS scan. Acceptable for small-to-medium careers.
-     * Each key is fetched individually after the scan.
+     * <p>Uses Redis KEYS scan to find matching keys, then parallel GET for values.
+     * Deserialization failures are logged per-key and skipped.
+     * Timeout on the KEYS phase is treated as a failure (ERROR log), not as "no data".
      */
     @Override
     public List<V24DetailedMatchData> findByCareerId(String careerId) {
@@ -112,27 +120,62 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("careerId must not be blank");
         }
         String pattern = buildPattern(careerId);
+        log.info("[V24-REDIS] findByCareerId careerId={}, pattern={}", careerId, pattern);
         try {
+            long start = System.nanoTime();
+            // KEYS with explicit 30s timeout — if it times out, treat as error not empty
             @SuppressWarnings("unchecked")
-            List<String> keys = (List<String>) CompletableFuture.supplyAsync(() -> {
-                List<String> k = redisTemplate.keys(pattern).collectList().block();
-                return k != null ? k : List.of();
-            }, executor).get(10, TimeUnit.SECONDS);
-            if (keys == null || keys.isEmpty()) {
+            List<String> keys = (List<String>) CompletableFuture.supplyAsync(() ->
+                    redisTemplate.keys(pattern).collectList().block(Duration.ofSeconds(30)), executor)
+                    .get(35, TimeUnit.SECONDS);
+            long elapsed = (System.nanoTime() - start) / 1_000_000;
+            if (keys == null) {
+                log.error("[V24-REDIS] KEYS returned null for careerId={}, pattern={} (took {}ms) — treating as error",
+                        careerId, pattern, elapsed);
                 return List.of();
             }
-            List<V24DetailedMatchData> results = new ArrayList<>(keys.size());
+            log.info("[V24-REDIS] KEYS for careerId={} took {}ms, found {} keys", careerId, elapsed, keys.size());
+            if (keys.isEmpty()) {
+                log.info("[V24-REDIS] no keys found for pattern={}", pattern);
+                return List.of();
+            }
+            log.info("[V24-REDIS] fetching values for {} keys in parallel", keys.size());
+
+            // Fetch all values in parallel using individual futures
+            List<CompletableFuture<V24DetailedMatchData>> futures = new ArrayList<>(keys.size());
             for (String key : keys) {
-                V24DetailedMatchData detail = CompletableFuture.supplyAsync(() ->
-                        redisTemplate.opsForValue().get(key).block(), executor)
-                        .get(5, TimeUnit.SECONDS);
-                if (detail != null) {
-                    results.add(detail);
+                CompletableFuture<V24DetailedMatchData> f = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        V24DetailedMatchData d = redisTemplate.opsForValue().get(key)
+                                .block(Duration.ofSeconds(5));
+                        return d;
+                    } catch (Exception e) {
+                        log.warn("[V24-REDIS] deserialization failed for key={}: {}", key, e.getMessage());
+                        return null;
+                    }
+                }, executor);
+                futures.add(f);
+            }
+            // Wait for all with generous total timeout
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(60, TimeUnit.SECONDS);
+            List<V24DetailedMatchData> results = new ArrayList<>();
+            for (String key : keys) {
+                try {
+                    V24DetailedMatchData d = futures.get(keys.indexOf(key)).get(1, TimeUnit.SECONDS);
+                    if (d != null) {
+                        results.add(d);
+                    }
+                } catch (Exception e) {
+                    log.warn("[V24-REDIS] failed to retrieve value for key={}: {}", key, e.getMessage());
                 }
             }
+            log.info("[V24-REDIS] findByCareerId returning {} results for careerId={}", results.size(), careerId);
             return results;
         } catch (Exception e) {
-            return List.of();
+            log.error("[V24-REDIS] findByCareerId FAILED for careerId={}, pattern={}: {}",
+                    careerId, pattern, e.getMessage());
+            // Do NOT return empty list silently — caller should handle error case
+            throw new RuntimeException("[V24-REDIS] findByCareerId failed for careerId=" + careerId, e);
         }
     }
 

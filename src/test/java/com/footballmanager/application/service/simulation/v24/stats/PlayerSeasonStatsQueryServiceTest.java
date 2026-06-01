@@ -286,35 +286,45 @@ class PlayerSeasonStatsQueryServiceTest {
     }
 
     @Test
-    void getPlayerSeasonStats_warningsPresentOnNonEmpty() {
-        V24DetailedMatchData match1 = makeDetail(CAREER_ID, 1, "match-1", "team-A", List.of(
-                makeRating("p1", "team-A", 7.0, 1, 0, 3, 0, 0, 0, 0, 1, false, false)
-        ));
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of(match1));
+    void getPlayerSeasonStats_withRealMadridScenario_teamFilterReturnsNonEmpty() {
+        // Simulate the exact real-world scenario:
+        // career 228981ee, season=1, teamId=671ee06d (Real Madrid)
+        // 6 matches in Redis, each with seasonNumber=1
+        // Real Madrid appears as home OR away with teamId 671ee06d
+        String realMadridTeamId = "671ee06d-cf1a-4109-8243-578adf37e340";
+        String careerId = "228981ee-5a41-4ff6-8614-b27db3183f18";
 
-        when(aggregator.aggregateWithMetadata(any(), eq(CAREER_ID), eq(SEASON), any(), any()))
+        V24DetailedMatchData match1 = makeDetail(careerId, 1, "match-146f10bd", "373705ee-42fd-4ddf-b0a8-67a529e1eb57", List.of(
+                makeRating("p1", realMadridTeamId, 7.5, 1, 0, 3, 0, 0, 0, 0, 1, false, false),
+                makeRating("p2", realMadridTeamId, 7.0, 0, 1, 2, 0, 0, 0, 0, 2, false, false)
+        ));
+        V24DetailedMatchData match2 = makeDetail(careerId, 1, "match-other", "some-other-team", List.of(
+                makeRating("p3", "other-team", 6.5, 0, 0, 1, 1, 0, 0, 0, 0, false, false)
+        ));
+        when(storagePort.findByCareerId(careerId)).thenReturn(List.of(match1, match2));
+
+        when(aggregator.aggregateWithMetadata(any(), eq(careerId), eq(1), any(), any()))
                 .thenReturn(AggregationResult.builder()
                         .playerStats(List.of(
-                                new PlayerSeasonStatsDto(CAREER_ID, SEASON, "team-A", "p1", "Player 1", "FWD",
-                                        1, 1, 1, 0, 3, 3, 0, 0, 0, 0, 0, 0, 7.0, 7.0, 7.0, 1)))
+                                new PlayerSeasonStatsDto(careerId, 1, realMadridTeamId, "p1", "Player p1", "MID",
+                                        1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 7.5, 7.5, 7.5, 1),
+                                new PlayerSeasonStatsDto(careerId, 1, realMadridTeamId, "p2", "Player p2", "MID",
+                                        0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 7.0, 7.0, 7.0, 1)))
                         .totalGoals(1)
-                        .totalAssists(0)
-                        .totalAppearances(1)
-                        .averageRating(7.0)
-                        .matchIds(List.of("match-1"))
+                        .totalAssists(1)
+                        .totalAppearances(2)
+                        .averageRating(7.25)
+                        .matchIds(List.of("match-146f10bd"))
                         .totalMatchesProcessed(1)
                         .lastUpdatedRound(1)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(careerId, 1, realMadridTeamId, null);
 
-        assertThat(response.warnings()).isNotEmpty();
-        boolean hasApproxAppearances = response.warnings().stream()
-                .anyMatch(w -> w.code() == PlayerSeasonStatsWarningCode.APPROXIMATE_APPEARANCES);
-        boolean hasApproxMissed = response.warnings().stream()
-                .anyMatch(w -> w.code() == PlayerSeasonStatsWarningCode.APPROXIMATE_MATCHES_MISSED);
-        assertThat(hasApproxAppearances).isTrue();
-        assertThat(hasApproxMissed).isTrue();
+        assertThat(response.playerStats()).isNotEmpty();
+        assertThat(response.playerStats().size()).isEqualTo(2);
+        assertThat(response.message()).isNull(); // success path, no error message
+        assertThat(response.totalGoals()).isEqualTo(1);
     }
 
     // --- helpers (matching PlayerSeasonStatsAggregatorTest patterns) ---

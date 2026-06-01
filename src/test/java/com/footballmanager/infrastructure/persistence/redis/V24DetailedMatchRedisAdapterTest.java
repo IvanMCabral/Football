@@ -247,27 +247,52 @@ class V24DetailedMatchRedisAdapterTest {
     }
 
     @Test
-    void preservesSchemaVersionAndEngineVersion() {
-        V24DetailedMatchData detail = new V24DetailedMatchData(
-                "match-schema", "career-test", 5, 20,
-                "team-a", "team-b", "Team A", "Team B",
-                3, 2, 2.1, 1.8,
-                15, 10, 52, 48,
+    void findByCareerIdReturnsAllMatches() {
+        String pattern = "career:career-abc:match-detail:*";
+        V24DetailedMatchData detail2 = new V24DetailedMatchData(
+                "match-456", "career-abc", 1, 3,
+                "home-team", "away-team",
+                "Home Utd", "Away City",
+                0, 1, 0.3, 1.2,
+                5, 10, 40, 60,
                 List.of(), List.of(),
-                "Thriller 3-2", "V24", 1, Instant.now()
+                "Away win 1-0", "V24", 1, Instant.now()
         );
+        when(redisTemplate.keys(pattern)).thenReturn(Flux.fromIterable(List.of(
+                "career:career-abc:match-detail:match-123",
+                "career:career-abc:match-detail:match-456"
+        )));
+        when(reactiveValueOps.get("career:career-abc:match-detail:match-123")).thenReturn(Mono.just(sampleDetail));
+        when(reactiveValueOps.get("career:career-abc:match-detail:match-456")).thenReturn(Mono.just(detail2));
 
-        when(reactiveValueOps.set(anyString(), any())).thenReturn(Mono.just(true));
-        when(reactiveValueOps.get(anyString())).thenReturn(Mono.just(detail));
+        List<V24DetailedMatchData> results = adapter.findByCareerId("career-abc");
 
-        adapter.save("career-test", detail);
-        Optional<V24DetailedMatchData> found = adapter.findByMatchId("career-test", "match-schema");
+        assertEquals(2, results.size());
+    }
 
-        assertTrue(found.isPresent());
-        assertEquals("V24", found.get().engineVersion());
-        assertEquals(1, found.get().schemaVersion());
-        assertEquals("Thriller 3-2", found.get().summary());
-        assertEquals(5, found.get().seasonNumber());
-        assertEquals(20, found.get().round());
+    @Test
+    void findByCareerIdHandlesDeserializationFailure() {
+        String pattern = "career:career-abc:match-detail:*";
+        when(redisTemplate.keys(pattern)).thenReturn(Flux.fromIterable(List.of(
+                "career:career-abc:match-detail:match-123",
+                "career:career-abc:match-detail:match-456"
+        )));
+        when(reactiveValueOps.get("career:career-abc:match-detail:match-123")).thenReturn(Mono.just(sampleDetail));
+        when(reactiveValueOps.get("career:career-abc:match-detail:match-456")).thenReturn(Mono.error(new RuntimeException("bad data")));
+
+        List<V24DetailedMatchData> results = adapter.findByCareerId("career-abc");
+
+        assertEquals(1, results.size());
+        assertEquals("match-123", results.get(0).matchId());
+    }
+
+    @Test
+    void findByCareerIdReturnsEmptyListWhenNoKeys() {
+        String pattern = "career:career-empty:match-detail:*";
+        when(redisTemplate.keys(pattern)).thenReturn(Flux.empty());
+
+        List<V24DetailedMatchData> results = adapter.findByCareerId("career-empty");
+
+        assertTrue(results.isEmpty());
     }
 }

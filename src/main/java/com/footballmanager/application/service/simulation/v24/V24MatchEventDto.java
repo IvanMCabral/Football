@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
@@ -19,17 +21,18 @@ public final class V24MatchEventDto {
     private final String description;
     private final V24ShotCoordinateDto shotCoordinate;
 
+    @JsonCreator
     public V24MatchEventDto(
-            int minute,
-            String type,
-            String teamId,
-            String playerId,
-            String playerName,
-            String relatedPlayerId,
-            String relatedPlayerName,
-            double xg,
-            String description,
-            V24ShotCoordinateDto shotCoordinate) {
+            @JsonProperty("minute") int minute,
+            @JsonProperty("type") String type,
+            @JsonProperty("teamId") String teamId,
+            @JsonProperty("playerId") String playerId,
+            @JsonProperty("playerName") String playerName,
+            @JsonProperty("relatedPlayerId") String relatedPlayerId,
+            @JsonProperty("relatedPlayerName") String relatedPlayerName,
+            @JsonProperty("xg") double xg,
+            @JsonProperty("description") String description,
+            @JsonProperty("shotCoordinate") V24ShotCoordinateDto shotCoordinate) {
         if (minute < 1 || minute > 130) {
             throw new IllegalArgumentException("minute must be between 1 and 130, got " + minute);
         }

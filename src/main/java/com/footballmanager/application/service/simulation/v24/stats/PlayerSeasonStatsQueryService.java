@@ -2,6 +2,7 @@ package com.footballmanager.application.service.simulation.v24.stats;
 
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * <p>Feature-gated: returns empty/incomplete when
  * {@code app.simulation.v24.expose-detail-api=false} (no data accessible).
  */
+@Slf4j
 @Service
 public class PlayerSeasonStatsQueryService {
 
@@ -108,9 +110,21 @@ public class PlayerSeasonStatsQueryService {
 
         List<V24DetailedMatchData> details = storagePort.findByCareerId(careerId);
 
+        log.info("[V24-STATS-QUERY] careerId={}, teamId={}, details.size={}", careerId, teamId, details.size());
+
+        // DEBUG: log distinct seasonNumbers
+        var seasonNumbers = details.stream()
+                .map(V24DetailedMatchData::seasonNumber)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        log.info("[V24-STATS-SEASON] season param={}, distinct seasonNumbers in details={}", season, seasonNumbers);
+
         List<V24DetailedMatchData> seasonDetails = details.stream()
                 .filter(d -> d.seasonNumber() != null && d.seasonNumber().equals(season))
                 .collect(Collectors.toList());
+
+        log.info("[V24-STATS-SEASON] seasonDetails.size={} after filter with season={}", seasonDetails.size(), season);
 
         if (seasonDetails.isEmpty()) {
             return PlayerSeasonStatsResponse.builder()
@@ -139,6 +153,9 @@ public class PlayerSeasonStatsQueryService {
 
         AggregationResult result = aggregator.aggregateWithMetadata(
                 seasonDetails, careerId, season, filterOpts, sortOpts);
+
+        log.info("[V24-STATS-AGG] playerStatsSize={}, totalMatchesProcessed={}, matchIds={}, teamId={}",
+                result.playerStats().size(), result.totalMatchesProcessed(), result.matchIds(), teamId);
 
         List<PlayerSeasonStatsWarning> warnings = buildWarnings(result);
         PlayerSeasonStatsMetadata metadata = buildMetadata(
