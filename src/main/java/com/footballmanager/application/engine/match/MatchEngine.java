@@ -18,7 +18,7 @@ public class MatchEngine {
     }
 
     public void setOnFinishCallback(java.util.function.Consumer<MatchStateSnapshot> callback) {
-        session.setOnFinishCallback(callback);
+        session.setOnFinishCallbackLegacy(callback);
     }
 
     public Flux<MatchStateSnapshot> getStateStream() {

@@ -1,5 +1,7 @@
 package com.footballmanager.infrastructure.config;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.footballmanager.infrastructure.persistence.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -69,6 +71,10 @@ public class RedisEntityConfig {
             ReactiveRedisConnectionFactory connectionFactory, Class<T> entityClass) {
         StringRedisSerializer keySerializer = new StringRedisSerializer();
         Jackson2JsonRedisSerializer<T> valueSerializer = new Jackson2JsonRedisSerializer<>(entityClass);
+        // Use the Spring-configured ObjectMapper so @JsonCreator/@JsonProperty on constructor params
+        // are recognized during deserialization (same as JacksonConfig.objectMapper()).
+        // Also set FIELD visibility so Jackson can set private final fields via constructor binding.
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.PUBLIC_ONLY);
         valueSerializer.setObjectMapper(objectMapper);
         RedisSerializationContext<String, T> context = RedisSerializationContext
                 .<String, T>newSerializationContext(keySerializer)

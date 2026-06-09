@@ -687,38 +687,53 @@ public class LeagueSimulator {
      * @param homePossession final home possession %
      * @param awayPossession final away possession %
      */
+    /**
+     * V24D6M12: Persist V24 detail to Redis.
+     * Accepts the actual V24DetailedMatchResult (with real timeline from V24LiveSession.finalResult()).
+     *
+     * @param career       the CareerSave
+     * @param v24Result    the V24DetailedMatchResult with timeline events (not null)
+     * @param homeTeamId   home team UUID string
+     * @param awayTeamId   away team UUID string
+     * @param homeGoals    home team goals
+     * @param awayGoals    away team goals
+     */
     public void persistV24DetailForLiveMatch(
             CareerSave career,
-            String matchId,
+            V24DetailedMatchResult v24Result,
             String homeTeamId,
             String awayTeamId,
             int homeGoals,
-            int awayGoals,
-            double homeXg,
-            double awayXg,
-            int homeShots,
-            int awayShots,
-            int homePossession,
-            int awayPossession) {
+            int awayGoals) {
 
         if (!persistDetail) {
-            log.debug("[V24-DETAIL-PERSIST] Skipped for match {}: persistDetail=false", matchId);
+            log.debug("[V24-DETAIL-PERSIST] Skipped for match {}: persistDetail=false",
+                    v24Result != null ? v24Result.matchId() : "null");
             return;
         }
 
         if (!useV24DetailedEngine) {
-            log.debug("[V24-DETAIL-PERSIST] Skipped for match {}: useV24DetailedEngine=false", matchId);
+            log.debug("[V24-DETAIL-PERSIST] Skipped for match {}: useV24DetailedEngine=false",
+                    v24Result != null ? v24Result.matchId() : "null");
+            return;
+        }
+
+        if (v24Result == null) {
+            log.warn("[V24-DETAIL-PERSIST] Skipped: v24Result is null");
             return;
         }
 
         if (storagePort == null) {
-            log.warn("[V24-DETAIL-PERSIST] Skipped for match {}: storagePort is null", matchId);
+            log.warn("[V24-DETAIL-PERSIST] Skipped for match {}: storagePort is null", v24Result.matchId());
             return;
         }
 
         try {
             String careerId = career.getData().getCareerId();
-            Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
+            String matchId = v24Result.matchId();
+            // Fallback to 1 if getCurrentSeason() returns 0 (uninitialized pre-season state)
+            int rawSeason = career.getSeasonManager().getCurrentSeason();
+            Integer seasonNumber = rawSeason > 0 ? rawSeason : 1;
 
             // Find current round from fixtures
             Integer round = career.getTournamentState().getFixtures().stream()
@@ -732,30 +747,12 @@ public class LeagueSimulator {
             String homeTeamName = homeTeam != null ? homeTeam.getName() : "Home";
             String awayTeamName = awayTeam != null ? awayTeam.getName() : "Away";
 
-            // Build V24DetailedMatchResult from live match data
-            V24MatchTimeline timeline = new V24MatchTimeline();
-            V24DetailedMatchResult result = new V24DetailedMatchResult(
-                    matchId,
-                    homeTeamId,
-                    awayTeamId,
-                    homeGoals,
-                    awayGoals,
-                    homeXg,
-                    awayXg,
-                    homeShots,
-                    awayShots,
-                    homePossession,
-                    awayPossession,
-                    timeline,
-                    "Live match result"
-            );
-
             // Assemble per-player ratings from starting XI
             // Build a minimal MatchFixture just for player resolution (team IDs only)
             MatchFixture playerFixture = new MatchFixture(matchId, homeTeamId, awayTeamId, round);
 
             List<V24PlayerMatchRatingDto> playerRatings =
-                    v24PlayerRatingsAssembler.assemblePlayerRatings(career, playerFixture, result);
+                    v24PlayerRatingsAssembler.assemblePlayerRatings(career, playerFixture, v24Result);
 
             V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
                     careerId,
@@ -763,24 +760,30 @@ public class LeagueSimulator {
                     round,
                     homeTeamName,
                     awayTeamName,
-                    result,
+                    v24Result,
                     playerRatings
             );
 
             storagePort.save(careerId, detail);
+            // [V24D6M11-TRACE] Log full persistence context
+            log.info("[V24D6M11-TRACE] persistV24Detail careerId={}, matchId={}, season={}, round={}, timeline={}, playerRatings={}, key=career:{}:match-detail:{}",
+                    careerId, matchId, seasonNumber, round,
+                    v24Result.timeline().events().size(),
+                    playerRatings.size(),
+                    careerId, matchId);
             log.info("[V24-DETAIL-PERSIST] saved match detail careerId={}, matchId={}, season={}, round={}",
                     careerId, matchId, seasonNumber, round);
 
         } catch (Exception e) {
             Throwable cause = e.getCause() != null ? e.getCause() : e;
             log.warn("[V24-DETAIL-PERSIST] Failed to persist for match {}: {} [cause: {}], continuing",
-                    matchId, e.getMessage(), cause.getMessage());
+                    v24Result != null ? v24Result.matchId() : "unknown", e.getMessage(), cause.getMessage());
         }
     }
 
     /**
      * V24-DETAIL-PERSIST: Overload for SSE/live match flow where matchId comes as UUID.
-     * Converts UUIDs to Strings and delegates to the main method with zeros for unavailable stats.
+     * Converts UUIDs to Strings and delegates to the main method.
      */
     public void persistV24DetailForLiveMatch(
             CareerSave career,
@@ -789,16 +792,15 @@ public class LeagueSimulator {
             UUID awayTeamId,
             int homeGoals,
             int awayGoals) {
+        // This overload cannot provide v24Result — timeline will be empty
+        // Use the V24DetailedMatchResult overload instead where possible
         persistV24DetailForLiveMatch(
                 career,
-                matchId.toString(),
+                null, // v24Result not available in this path
                 homeTeamId.toString(),
                 awayTeamId.toString(),
                 homeGoals,
-                awayGoals,
-                0.0, 0.0,
-                0, 0,
-                0, 0
+                awayGoals
         );
     }
 

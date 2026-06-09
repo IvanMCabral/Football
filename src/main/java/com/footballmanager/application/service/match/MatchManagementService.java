@@ -1,8 +1,11 @@
 package com.footballmanager.application.service.match;
 
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
+import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
+import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.domain.model.entity.MatchCommand;
+import com.footballmanager.domain.model.entity.MatchFinishedResult;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.port.in.match.*;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +20,14 @@ import java.util.function.Consumer;
  * Servicio de orquestación para gestión de partidos.
  * Delega en los UseCases sin contener lógica de negocio propia.
  *
- * Cumple el principio de composición: coordina el flujo entre UseCases.
+ * <p>V24D6M11: Added startMatch with V24LiveSession for V24DetailedMatchEngine path.
  */
 @Service
 @RequiredArgsConstructor
 public class MatchManagementService {
 
     private final StartMatchUseCase startMatchUseCase;
+    private final StartMatchUseCaseImpl startMatchUseCaseImpl;
     private final PauseMatchUseCase pauseMatchUseCase;
     private final ResumeMatchUseCase resumeMatchUseCase;
     private final StopMatchUseCase stopMatchUseCase;
@@ -32,7 +36,7 @@ public class MatchManagementService {
     private final RoundEngineRegistry roundEngineRegistry;
 
     /**
-     * Inicia la simulación de un partido.
+     * Inicia la simulación de un partido (legacy path).
      */
     public Flux<MatchStateSnapshot> startMatch(
             UUID userId,
@@ -41,10 +45,27 @@ public class MatchManagementService {
             UUID awayTeamId,
             Consumer<MatchStateSnapshot> onFinishCallback) {
 
-        // Asegurar que existe la sesión antes de iniciar
         sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId);
-
         return startMatchUseCase.execute(userId, matchId, onFinishCallback);
+    }
+
+    /**
+     * V24D6M11: Inicia la simulación de un partido con V24LiveSession.
+     * Uses executeV24 with MatchFinishedResult callback for V24DetailedMatchEngine path.
+     */
+    public Flux<MatchStateSnapshot> startMatch(
+            UUID userId,
+            UUID matchId,
+            UUID homeTeamId,
+            UUID awayTeamId,
+            Consumer<MatchFinishedResult> onFinishCallback,
+            V24LiveSession v24LiveSession) {
+
+        // Create session with V24LiveSession
+        MatchSession session = sessionRegistry.getOrCreateSessionWithV24(
+                userId, matchId, homeTeamId, awayTeamId, v24LiveSession);
+
+        return startMatchUseCaseImpl.executeV24(userId, matchId, onFinishCallback, v24LiveSession);
     }
 
     /**
@@ -64,7 +85,6 @@ public class MatchManagementService {
         return resumeMatchUseCase.execute(userId, matchId)
             .doOnSuccess(v -> {
                 System.out.println("[MATCH-MGMT] UseCase.execute success, looking for RoundEngine...");
-                // Reanudar el RoundEngine que contiene este partido
                 var roundEngine = roundEngineRegistry.getByMatchId(matchId);
                 if (roundEngine != null) {
                     System.out.println("[MATCH-MGMT] Found RoundEngine, calling resumeAll()...");

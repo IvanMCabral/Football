@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.match.session;
 
+import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.domain.model.entity.MatchState;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Registro de sesiones de partido activas.
  * Thread-safe usando ConcurrentHashMap.
+ *
+ * <p>V24D6M11: Supports creating MatchSession with V24LiveSession for
+ * V24DetailedMatchEngine path.
  */
 @Component
 public class MatchSessionRegistry {
@@ -27,7 +31,7 @@ public class MatchSessionRegistry {
     }
 
     /**
-     * Obtiene una sesión existente o crea una nueva si no existe.
+     * Obtiene una sesión existente o crea una nueva si no existe (legacy path).
      */
     public Optional<MatchSession> getOrCreateSession(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
         String key = buildKey(userId, matchId);
@@ -37,6 +41,19 @@ public class MatchSessionRegistry {
             initialState.setAwayTeamId(awayTeamId);
             return new MatchSession(userId, matchId, initialState, tickHandler);
         }));
+    }
+
+    /**
+     * V24D6M11: Obtiene o crea una sesión con V24LiveSession (V24 path).
+     */
+    public MatchSession getOrCreateSessionWithV24(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, V24LiveSession v24LiveSession) {
+        String key = buildKey(userId, matchId);
+        return activeSessions.computeIfAbsent(key, id -> {
+            MatchState initialState = new MatchState(matchId);
+            initialState.setHomeTeamId(homeTeamId);
+            initialState.setAwayTeamId(awayTeamId);
+            return new MatchSession(userId, matchId, initialState, tickHandler, v24LiveSession);
+        });
     }
 
     /**

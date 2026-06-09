@@ -106,33 +106,44 @@ class V24DetailedMatchDataTest {
     }
 
     @Test
-    void rejectsBlankMatchId() {
+    void fromResultRejectsBlankMatchId() {
+        var result = V24DetailedMatchResult.builder()
+                .matchId("  ")
+                .homeTeamId("h").awayTeamId("a")
+                .homeGoals(1).awayGoals(0)
+                .homeXg(1.0).awayXg(0.5)
+                .homeShots(5).awayShots(3)
+                .homePossession(50).awayPossession(50)
+                .build();
         assertThrows(IllegalArgumentException.class, () ->
-                new V24DetailedMatchData(
-                        "  ", "career", null, null, "h", "a", "H", "A",
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        List.of(), List.of(), "", "V24", 1, Instant.now()
-                ));
+                V24DetailedMatchData.fromResult("career", 1, 1, "H", "A", result, List.of()));
     }
 
     @Test
-    void rejectsBlankCareerId() {
+    void fromResultRejectsBlankCareerId() {
+        var result = V24DetailedMatchResult.builder()
+                .matchId("match").homeTeamId("h").awayTeamId("a")
+                .homeGoals(1).awayGoals(0)
+                .homeXg(1.0).awayXg(0.5)
+                .homeShots(5).awayShots(3)
+                .homePossession(50).awayPossession(50)
+                .build();
         assertThrows(IllegalArgumentException.class, () ->
-                new V24DetailedMatchData(
-                        "match", "", null, null, "h", "a", "H", "A",
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        List.of(), List.of(), "", "V24", 1, Instant.now()
-                ));
+                V24DetailedMatchData.fromResult("  ", 1, 1, "H", "A", result, List.of()));
     }
 
     @Test
-    void rejectsNullMatchId() {
+    void fromResultRejectsNullMatchId() {
+        var result = V24DetailedMatchResult.builder()
+                .matchId(null)
+                .homeTeamId("h").awayTeamId("a")
+                .homeGoals(1).awayGoals(0)
+                .homeXg(1.0).awayXg(0.5)
+                .homeShots(5).awayShots(3)
+                .homePossession(50).awayPossession(50)
+                .build();
         assertThrows(NullPointerException.class, () ->
-                new V24DetailedMatchData(
-                        null, "career", null, null, "h", "a", "H", "A",
-                        0, 0, 0, 0, 0, 0, 0, 0,
-                        List.of(), List.of(), "", "V24", 1, Instant.now()
-                ));
+                V24DetailedMatchData.fromResult("career", 1, 1, "H", "A", result, List.of()));
     }
 
     @Test

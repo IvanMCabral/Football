@@ -1,11 +1,19 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
  * V24D4A: DTO for V24ShotCoordinate in storage/API layers.
  * Immutable snapshot — not tied to internal V24ShotCoordinate.
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        isGetterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        setterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        creatorVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY)
 public final class V24ShotCoordinateDto {
 
     private final double x;
@@ -15,13 +23,14 @@ public final class V24ShotCoordinateDto {
     private final double angleToGoal;
     private final boolean insideBox;
 
+    @JsonCreator
     public V24ShotCoordinateDto(
-            double x,
-            double y,
-            String location,
-            double distanceToGoal,
-            double angleToGoal,
-            boolean insideBox) {
+            @JsonProperty("x") double x,
+            @JsonProperty("y") double y,
+            @JsonProperty("location") String location,
+            @JsonProperty("distanceToGoal") double distanceToGoal,
+            @JsonProperty("angleToGoal") double angleToGoal,
+            @JsonProperty("insideBox") boolean insideBox) {
         if (!Double.isFinite(x) || x < 0.0 || x > 100.0) {
             throw new IllegalArgumentException("x must be between 0 and 100, got " + x);
         }
@@ -54,12 +63,12 @@ public final class V24ShotCoordinateDto {
         );
     }
 
-    public double x() { return x; }
-    public double y() { return y; }
-    public String location() { return location; }
-    public double distanceToGoal() { return distanceToGoal; }
-    public double angleToGoal() { return angleToGoal; }
-    public boolean insideBox() { return insideBox; }
+    @JsonProperty("x") public double x() { return x; }
+    @JsonProperty("y") public double y() { return y; }
+    @JsonProperty("location") public String location() { return location; }
+    @JsonProperty("distanceToGoal") public double distanceToGoal() { return distanceToGoal; }
+    @JsonProperty("angleToGoal") public double angleToGoal() { return angleToGoal; }
+    @JsonProperty("insideBox") public boolean insideBox() { return insideBox; }
 
     @Override
     public boolean equals(Object o) {

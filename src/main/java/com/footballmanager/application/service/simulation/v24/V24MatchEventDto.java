@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
@@ -8,6 +9,11 @@ import java.util.Objects;
  * V24D4A: DTO for V24MatchEvent in storage/API layers.
  * Immutable snapshot — not tied to internal V24MatchEvent.
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        isGetterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        setterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        creatorVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY)
 public final class V24MatchEventDto {
 
     private final int minute;
@@ -71,16 +77,16 @@ public final class V24MatchEventDto {
         );
     }
 
-    public int minute() { return minute; }
-    public String type() { return type; }
-    public String teamId() { return teamId; }
-    public String playerId() { return playerId; }
-    public String playerName() { return playerName; }
-    public String relatedPlayerId() { return relatedPlayerId; }
-    public String relatedPlayerName() { return relatedPlayerName; }
-    public double xg() { return xg; }
-    public String description() { return description; }
-    public V24ShotCoordinateDto shotCoordinate() { return shotCoordinate; }
+    @JsonProperty("minute") public int minute() { return minute; }
+    @JsonProperty("type") public String type() { return type; }
+    @JsonProperty("teamId") public String teamId() { return teamId; }
+    @JsonProperty("playerId") public String playerId() { return playerId; }
+    @JsonProperty("playerName") public String playerName() { return playerName; }
+    @JsonProperty("relatedPlayerId") public String relatedPlayerId() { return relatedPlayerId; }
+    @JsonProperty("relatedPlayerName") public String relatedPlayerName() { return relatedPlayerName; }
+    @JsonProperty("xg") public double xg() { return xg; }
+    @JsonProperty("description") public String description() { return description; }
+    @JsonProperty("shotCoordinate") public V24ShotCoordinateDto shotCoordinate() { return shotCoordinate; }
 
     @Override
     public boolean equals(Object o) {

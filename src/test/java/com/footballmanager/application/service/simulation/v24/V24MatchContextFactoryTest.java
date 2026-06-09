@@ -136,33 +136,38 @@ class V24MatchContextFactoryTest {
     // ========== Starting XI validation tests ==========
 
     @Test
-    void rejectsMissingHomeStartingXi() {
+    void derivesStartingXiFromSquadWhenMissingHome() {
+        // V24D6M11: When CareerSave has no starting XI, factory derives from squad.
+        // Squad must have ≥11 players for this to succeed.
         CareerSave career = makeCareerWithNoStarting11("career-5", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
         MatchFixture fixture = makeFixture("match-5", "home-t1", "away-t2", 1);
         SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-3-3");
         SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> factory.build(career, fixture, homeTeam, awayTeam, 0L));
-        assertTrue(ex.getMessage().contains("home") && ex.getMessage().contains("starting XI"));
+        // Should succeed by deriving starting XI from squad's first 11 players
+        V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
+        assertEquals(11, ctx.homeStartingPlayers().size());
+        assertEquals(11, ctx.awayStartingPlayers().size());
     }
 
     @Test
-    void rejectsMissingAwayStartingXi() {
+    void derivesStartingXiFromSquadWhenMissingAway() {
+        // V24D6M11: Away starting XI missing — should derive from squad.
         CareerSave career = makeCareerWithNoAwayStarting11("career-6", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
         MatchFixture fixture = makeFixture("match-6", "home-t1", "away-t2", 1);
         SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-3-3");
         SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> factory.build(career, fixture, homeTeam, awayTeam, 0L));
-        assertTrue(ex.getMessage().contains("away") && ex.getMessage().contains("starting XI"));
+        V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
+        assertEquals(11, ctx.homeStartingPlayers().size());
+        assertEquals(11, ctx.awayStartingPlayers().size());
     }
 
     @Test
-    void rejectsStartingXiWithLessThanEleven() {
+    void derivesFromSquadWhenStartingXiLessThanEleven() {
+        // V24D6M11: Explicit starting XI with <11 players is supplemented from squad.
         CareerSave career = makeCareerWithStartingXi("career-7", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70),
                 "home-t1", 10, "away-t2", 11);
@@ -170,13 +175,13 @@ class V24MatchContextFactoryTest {
         SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-3-3");
         SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> factory.build(career, fixture, homeTeam, awayTeam, 0L));
-        assertTrue(ex.getMessage().contains("11") || ex.getMessage().contains("home"));
+        V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
+        assertEquals(11, ctx.homeStartingPlayers().size());
     }
 
     @Test
     void rejectsStartingXiWithMoreThanEleven() {
+        // More than 11 in explicit starting XI is still rejected.
         CareerSave career = makeCareerWithStartingXi("career-8", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70),
                 "home-t1", 12, "away-t2", 11);
@@ -190,7 +195,8 @@ class V24MatchContextFactoryTest {
     }
 
     @Test
-    void rejectsUnknownPlayerId() {
+    void rejectsUnknownPlayerIdInStartingXi() {
+        // Unknown playerId in explicit starting XI is still rejected.
         CareerSave career = makeCareer("career-9", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
         // Inject a bad player ID into home starting XI

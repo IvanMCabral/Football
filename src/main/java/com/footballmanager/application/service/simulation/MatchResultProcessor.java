@@ -22,7 +22,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class MatchResultProcessor {
 
-    public record MatchResultInfo(String matchId, int homeGoals, int awayGoals) {}
+    public record MatchResultInfo(String matchId, int homeGoals, int awayGoals, List<com.footballmanager.domain.model.entity.MatchEvent> events) {
+        public MatchResultInfo(String matchId, int homeGoals, int awayGoals) {
+            this(matchId, homeGoals, awayGoals, List.of());
+        }
+    }
 
     /**
      * Procesa los resultados individuales de partidos.

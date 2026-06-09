@@ -1,5 +1,8 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +19,11 @@ import java.util.Objects;
  * <p>schemaVersion: 1 — for future migrations.
  * engineVersion: "V24" — identifies the engine that produced this data.
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        isGetterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        setterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        creatorVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY)
 public final class V24DetailedMatchData {
 
     private final String matchId;
@@ -41,37 +49,32 @@ public final class V24DetailedMatchData {
     private final int schemaVersion;
     private final Instant createdAt;
 
+    @JsonCreator
     public V24DetailedMatchData(
-            String matchId,
-            String careerId,
-            Integer seasonNumber,
-            Integer round,
-            String homeTeamId,
-            String awayTeamId,
-            String homeTeamName,
-            String awayTeamName,
-            int homeGoals,
-            int awayGoals,
-            double homeXg,
-            double awayXg,
-            int homeShots,
-            int awayShots,
-            int homePossession,
-            int awayPossession,
-            List<V24MatchEventDto> timeline,
-            List<V24PlayerMatchRatingDto> playerRatings,
-            String summary,
-            String engineVersion,
-            int schemaVersion,
-            Instant createdAt) {
-        this.matchId = Objects.requireNonNull(matchId, "matchId must not be null");
-        if (matchId.isBlank()) {
-            throw new IllegalArgumentException("matchId must not be blank");
-        }
-        this.careerId = Objects.requireNonNull(careerId, "careerId must not be null");
-        if (careerId.isBlank()) {
-            throw new IllegalArgumentException("careerId must not be blank");
-        }
+            @JsonProperty("matchId") String matchId,
+            @JsonProperty("careerId") String careerId,
+            @JsonProperty("seasonNumber") Integer seasonNumber,
+            @JsonProperty("round") Integer round,
+            @JsonProperty("homeTeamId") String homeTeamId,
+            @JsonProperty("awayTeamId") String awayTeamId,
+            @JsonProperty("homeTeamName") String homeTeamName,
+            @JsonProperty("awayTeamName") String awayTeamName,
+            @JsonProperty("homeGoals") int homeGoals,
+            @JsonProperty("awayGoals") int awayGoals,
+            @JsonProperty("homeXg") double homeXg,
+            @JsonProperty("awayXg") double awayXg,
+            @JsonProperty("homeShots") int homeShots,
+            @JsonProperty("awayShots") int awayShots,
+            @JsonProperty("homePossession") int homePossession,
+            @JsonProperty("awayPossession") int awayPossession,
+            @JsonProperty("timeline") List<V24MatchEventDto> timeline,
+            @JsonProperty("playerRatings") List<V24PlayerMatchRatingDto> playerRatings,
+            @JsonProperty("summary") String summary,
+            @JsonProperty("engineVersion") String engineVersion,
+            @JsonProperty("schemaVersion") int schemaVersion,
+            @JsonProperty("createdAt") Instant createdAt) {
+        this.matchId = matchId; // Null/no-blank validation done in fromResult() factory
+        this.careerId = careerId; // Null/no-blank validation done in fromResult() factory
         this.seasonNumber = seasonNumber;
         this.round = round;
         this.homeTeamId = homeTeamId;
@@ -122,7 +125,17 @@ public final class V24DetailedMatchData {
             V24DetailedMatchResult result,
             List<V24PlayerMatchRatingDto> playerRatings) {
         Objects.requireNonNull(careerId, "careerId must not be null");
+        if (careerId.isBlank()) {
+            throw new IllegalArgumentException("careerId must not be blank");
+        }
         Objects.requireNonNull(result, "result must not be null");
+        String matchId = result.matchId();
+        if (matchId == null) {
+            throw new NullPointerException("result.matchId must not be null");
+        }
+        if (matchId.isBlank()) {
+            throw new IllegalArgumentException("result.matchId must not be blank");
+        }
 
         List<V24MatchEventDto> eventDtos = new ArrayList<>();
         for (V24MatchEvent event : result.timeline().events()) {
@@ -156,28 +169,28 @@ public final class V24DetailedMatchData {
     }
 
     // Getters
-    public String matchId() { return matchId; }
-    public String careerId() { return careerId; }
-    public Integer seasonNumber() { return seasonNumber; }
-    public Integer round() { return round; }
-    public String homeTeamId() { return homeTeamId; }
-    public String awayTeamId() { return awayTeamId; }
-    public String homeTeamName() { return homeTeamName; }
-    public String awayTeamName() { return awayTeamName; }
-    public int homeGoals() { return homeGoals; }
-    public int awayGoals() { return awayGoals; }
-    public double homeXg() { return homeXg; }
-    public double awayXg() { return awayXg; }
-    public int homeShots() { return homeShots; }
-    public int awayShots() { return awayShots; }
-    public int homePossession() { return homePossession; }
-    public int awayPossession() { return awayPossession; }
-    public List<V24MatchEventDto> timeline() { return timeline; }
-    public List<V24PlayerMatchRatingDto> playerRatings() { return playerRatings; }
-    public String summary() { return summary; }
-    public String engineVersion() { return engineVersion; }
-    public int schemaVersion() { return schemaVersion; }
-    public Instant createdAt() { return createdAt; }
+    @JsonProperty("matchId") public String matchId() { return matchId; }
+    @JsonProperty("careerId") public String careerId() { return careerId; }
+    @JsonProperty("seasonNumber") public Integer seasonNumber() { return seasonNumber; }
+    @JsonProperty("round") public Integer round() { return round; }
+    @JsonProperty("homeTeamId") public String homeTeamId() { return homeTeamId; }
+    @JsonProperty("awayTeamId") public String awayTeamId() { return awayTeamId; }
+    @JsonProperty("homeTeamName") public String homeTeamName() { return homeTeamName; }
+    @JsonProperty("awayTeamName") public String awayTeamName() { return awayTeamName; }
+    @JsonProperty("homeGoals") public int homeGoals() { return homeGoals; }
+    @JsonProperty("awayGoals") public int awayGoals() { return awayGoals; }
+    @JsonProperty("homeXg") public double homeXg() { return homeXg; }
+    @JsonProperty("awayXg") public double awayXg() { return awayXg; }
+    @JsonProperty("homeShots") public int homeShots() { return homeShots; }
+    @JsonProperty("awayShots") public int awayShots() { return awayShots; }
+    @JsonProperty("homePossession") public int homePossession() { return homePossession; }
+    @JsonProperty("awayPossession") public int awayPossession() { return awayPossession; }
+    @JsonProperty("timeline") public List<V24MatchEventDto> timeline() { return timeline; }
+    @JsonProperty("playerRatings") public List<V24PlayerMatchRatingDto> playerRatings() { return playerRatings; }
+    @JsonProperty("summary") public String summary() { return summary; }
+    @JsonProperty("engineVersion") public String engineVersion() { return engineVersion; }
+    @JsonProperty("schemaVersion") public int schemaVersion() { return schemaVersion; }
+    @JsonProperty("createdAt") public Instant createdAt() { return createdAt; }
 
     @Override
     public boolean equals(Object o) {

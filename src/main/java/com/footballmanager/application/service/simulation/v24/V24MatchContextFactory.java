@@ -5,13 +5,13 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -31,12 +31,13 @@ import java.util.stream.Collectors;
  *
  * <p>Behavior on invalid input:
  * <ul>
- *   <li>{@link #build(Career, fixture, homeTeam, awayTeam, seed)} throws IllegalArgumentException</li>
+ *   <li>{@link #build(Career, fixture, homeTeam, awayTeam, seed) throws IllegalArgumentException</li>
  *   <li>{@link #canBuild(...)} returns false and never throws</li>
  * </ul>
  *
  * <p>No mutation: does not modify CareerSave, SessionPlayer, SessionTeam, or MatchFixture.
  */
+@Component
 public final class V24MatchContextFactory {
 
     /**
@@ -65,7 +66,7 @@ public final class V24MatchContextFactory {
      * @param career    non-null CareerSave
      * @param fixture   non-null MatchFixture
      * @param homeTeam  non-null SessionTeam
-     * @param awayTeam  non-null SessionTeam
+     * @param awayTeam non-null SessionTeam
      * @param homeStyle nullable; defaults to BALANCED if null
      * @param awayStyle nullable; defaults to BALANCED if null
      * @param seed      deterministic seed
@@ -87,10 +88,8 @@ public final class V24MatchContextFactory {
         String homeTeamId = resolveTeamId(fixture.getHomeTeamId(), homeTeam);
         String awayTeamId = resolveTeamId(fixture.getAwayTeamId(), awayTeam);
 
-        List<SessionPlayer> homeStarters = resolveStartingXI(
-                career, homeTeamId, "home");
-        List<SessionPlayer> awayStarters = resolveStartingXI(
-                career, awayTeamId, "away");
+        List<SessionPlayer> homeStarters = resolveStartingXI(career, homeTeamId, "home");
+        List<SessionPlayer> awayStarters = resolveStartingXI(career, awayTeamId, "away");
 
         validateStarterCount(homeStarters, "home");
         validateStarterCount(awayStarters, "away");
@@ -143,18 +142,10 @@ public final class V24MatchContextFactory {
             MatchFixture fixture,
             SessionTeam homeTeam,
             SessionTeam awayTeam) {
-        if (career == null) {
-            throw new IllegalArgumentException("career must not be null");
-        }
-        if (fixture == null) {
-            throw new IllegalArgumentException("fixture must not be null");
-        }
-        if (homeTeam == null) {
-            throw new IllegalArgumentException("homeTeam must not be null");
-        }
-        if (awayTeam == null) {
-            throw new IllegalArgumentException("awayTeam must not be null");
-        }
+        if (career == null) throw new IllegalArgumentException("career must not be null");
+        if (fixture == null) throw new IllegalArgumentException("fixture must not be null");
+        if (homeTeam == null) throw new IllegalArgumentException("homeTeam must not be null");
+        if (awayTeam == null) throw new IllegalArgumentException("awayTeam must not be null");
     }
 
     private void validateStarterCount(List<SessionPlayer> starters, String teamLabel) {
@@ -177,57 +168,106 @@ public final class V24MatchContextFactory {
 
     // ========== Resolution helpers ==========
 
+    /**
+     * V24D6M11: Always use team.getSessionTeamId() — the career-internal ID.
+     * The fixture's teamId may not match career storage format.
+     */
     private String resolveTeamId(String fixtureTeamId, SessionTeam team) {
-        if (fixtureTeamId != null && !fixtureTeamId.isBlank()) {
-            return fixtureTeamId;
-        }
         return team.getSessionTeamId();
     }
 
-    private List<SessionPlayer> resolveStartingXI(
+    /**
+     * Resolve starting XI via:
+     * 1. CareerSave.teamStarting11 (HashMap written by LineupController).
+     * 2. CareerTeamManager.teamSquads (written by CareerTeamManager.assignPlayerToSquad).
+     * Either path must yield 11 valid SessionPlayer objects.
+     */
+    private List<SessionPlayer> resolveStartingXI(CareerSave career, String teamId, String teamLabel) {
+        // Try CareerSave.teamStarting11 first (LineupController writes here)
+        List<SessionPlayer> resolved = resolveFromStarting11OrNull(career, teamId, teamLabel);
+        if (resolved != null) return resolved;
+
+        // V24D6M11: Fallback — derive from squad
+        resolved = deriveStartingXIfromSquad(career, teamId, teamLabel);
+        if (resolved.size() == 11) return resolved;
+
+        throw new IllegalArgumentException(
+                teamLabel + " starting XI must contain exactly 11 players, got " + resolved.size()
+                + " for teamId: " + teamId);
+    }
+
+    /**
+     * Try CareerSave.teamStarting11 (LineupController writes Map.Entry<teamId, List<playerId&gt;).
+     * Returns null if not found or too few entries — signals fallback.
+     * Throws if entries exist but contain null/blank/unknown playerId.
+     */
+    private List<SessionPlayer> resolveFromStarting11OrNull(
             CareerSave career, String teamId, String teamLabel) {
         Map<String, List<String>> starting11 = career.getTeamStarting11();
-        if (starting11 == null || !starting11.containsKey(teamId)) {
+        if (starting11 == null) return null;
+        List<String> ids = starting11.get(teamId);
+        if (ids == null || ids.isEmpty()) return null;
+        if (ids.size() > 11) {
             throw new IllegalArgumentException(
-                    teamLabel + " starting XI not found in career for teamId: " + teamId);
+                    teamLabel + " starting XI has " + ids.size()
+                    + " entries — maximum is 11 for teamId: " + teamId);
         }
-        List<String> playerIds = starting11.get(teamId);
-        if (playerIds == null) {
-            throw new IllegalArgumentException(
-                    teamLabel + " starting XI list is null for teamId: " + teamId);
-        }
+        // <11 entries: fall back to squad derivation
+        if (ids.size() < 11) return null;
 
         List<SessionPlayer> resolved = new ArrayList<>();
-        for (String playerId : playerIds) {
-            if (playerId == null || playerId.isBlank()) {
+        for (String pid : ids) {
+            if (pid == null || pid.isBlank()) {
                 throw new IllegalArgumentException(
-                        teamLabel + " starting XI contains null/blank playerId");
+                        teamLabel + " starting XI contains null/blank playerId for teamId: " + teamId);
             }
-            SessionPlayer player = career.getSessionPlayer(playerId);
-            if (player == null) {
+            SessionPlayer p = career.getSessionPlayer(pid);
+            if (p == null) {
                 throw new IllegalArgumentException(
-                        teamLabel + " starting XI playerId not found in playerManager: " + playerId);
+                        teamLabel + " starting XI player not found: " + pid);
             }
-            resolved.add(player);
+            resolved.add(p);
         }
         return resolved;
     }
 
     /**
+     * V24D6M11: Derive starting XI from squad (CareerTeamManager.teamSquads).
+     * Handles fresh careers where LineupController has not been used yet.
+     */
+    private List<SessionPlayer> deriveStartingXIfromSquad(
+            CareerSave career, String teamId, String teamLabel) {
+        // Try CareerTeamManager.teamSquads (written by CareerTeamManager.assignPlayerToSquad)
+        List<String> squadIds = career.getTeamManager().getSquadPlayerIds(teamId);
+        if (squadIds == null || squadIds.size() < 11) {
+            throw new IllegalArgumentException(
+                    teamLabel + " squad has only "
+                    + (squadIds != null ? squadIds.size() : 0)
+                    + " players for teamId: " + teamId + " — need at least 11 for starting XI");
+        }
+        List<SessionPlayer> starters = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            SessionPlayer p = career.getSessionPlayer(squadIds.get(i));
+            if (p == null) {
+                throw new IllegalArgumentException(
+                        teamLabel + " squad player not found: " + squadIds.get(i));
+            }
+            starters.add(p);
+        }
+        return starters;
+    }
+
+    /**
      * Derives bench as all team players minus the starting XI.
-     * Bench may be empty — that is acceptable.
+     * Bench may be empty — acceptable.
      */
     private List<SessionPlayer> deriveBench(
             CareerSave career, String teamId, List<SessionPlayer> starters) {
         Set<String> starterIds = starters.stream()
                 .map(SessionPlayer::getSessionPlayerId)
                 .collect(Collectors.toSet());
-
         List<SessionPlayer> squad = career.getTeamSquad(teamId);
-        if (squad == null || squad.isEmpty()) {
-            return List.of();
-        }
-
+        if (squad == null || squad.isEmpty()) return List.of();
         return squad.stream()
                 .filter(p -> !starterIds.contains(p.getSessionPlayerId()))
                 .collect(Collectors.toList());

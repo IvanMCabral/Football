@@ -1,10 +1,18 @@
 package com.footballmanager.application.service.match.session;
 
 import com.footballmanager.application.engine.match.MatchCommandHandler;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
+import com.footballmanager.application.service.simulation.v24.V24LiveSession;
+import com.footballmanager.application.service.simulation.v24.V24LiveSnapshot;
+import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
+import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.domain.model.entity.MatchCommand;
+import com.footballmanager.domain.model.entity.MatchEvent;
+import com.footballmanager.domain.model.entity.MatchFinishedResult;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
+import com.footballmanager.domain.model.valueobject.Score;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -17,7 +25,11 @@ import java.util.function.Consumer;
 /**
  * Sesión interna de un partido en curso.
  *
- * Thread-safe: usa estado inmutable (MatchStateSnapshot) volatile.
+ * <p>Thread-safe: usa estado inmutable (MatchStateSnapshot) volatile.
+ *
+ * <p>V24D6M11: When v24LiveSession is non-null, uses V24DetailedMatchEngine
+ * via V24LiveSession.tick() for tick-by-tick SSE simulation. The legacy
+ * path (v24LiveSession == null) uses MatchTickHandler.
  */
 public class MatchSession {
 
@@ -26,34 +38,50 @@ public class MatchSession {
     private final MatchTickHandler tickHandler;
     private final ConcurrentLinkedQueue<MatchCommand> commandQueue;
     private final Sinks.Many<MatchStateSnapshot> stateSink;
+    /** V24 live session — null means legacy path (use MatchTickHandler). */
+    private final V24LiveSession v24LiveSession;
 
-    private Consumer<MatchStateSnapshot> onFinishCallback;
+    private Consumer<MatchFinishedResult> onFinishCallback;
     private volatile boolean finishCallbackExecuted = false;
 
+    /**
+     * Legacy constructor — no V24LiveSession.
+     * Uses MatchTickHandler for event generation.
+     */
     public MatchSession(UUID userId, UUID matchId, MatchState state, MatchTickHandler tickHandler) {
+        this(userId, matchId, state, tickHandler, null);
+    }
+
+    /**
+     * Full constructor with optional V24LiveSession.
+     *
+     * @param v24LiveSession null for legacy path; non-null to use V24DetailedMatchEngine
+     */
+    public MatchSession(UUID userId, UUID matchId, MatchState state,
+                        MatchTickHandler tickHandler, V24LiveSession v24LiveSession) {
         this.matchId = matchId;
         this.currentState = convertToSnapshot(matchId, state);
         this.tickHandler = tickHandler;
         this.commandQueue = new ConcurrentLinkedQueue<>();
         this.stateSink = Sinks.many().multicast().onBackpressureBuffer();
+        this.v24LiveSession = v24LiveSession;
     }
 
     private MatchStateSnapshot convertToSnapshot(UUID matchId, MatchState state) {
-        com.footballmanager.domain.model.valueobject.Score newScore =
-            new com.footballmanager.domain.model.valueobject.Score(
+        Score newScore = new Score(
                 state.getScore().home(),
                 state.getScore().away()
-            );
+        );
         return new MatchStateSnapshot(
-            matchId,
-            state.getHomeTeamId(),
-            state.getAwayTeamId(),
-            state.getCurrentMinute(),
-            state.getStatus(),
-            newScore,
-            new ArrayList<>(state.getEvents()),
-            state.getCareerId(),
-            state.getUserId()
+                matchId,
+                state.getHomeTeamId(),
+                state.getAwayTeamId(),
+                state.getCurrentMinute(),
+                state.getStatus(),
+                newScore,
+                new ArrayList<>(state.getEvents()),
+                state.getCareerId(),
+                state.getUserId()
         );
     }
 
@@ -61,8 +89,20 @@ public class MatchSession {
         return stateSink.asFlux();
     }
 
-    public void setOnFinishCallback(Consumer<MatchStateSnapshot> callback) {
+    /**
+     * Set callback for V24 path (receives MatchFinishedResult with V24DetailedMatchResult).
+     */
+    public void setOnFinishCallback(Consumer<MatchFinishedResult> callback) {
         this.onFinishCallback = callback;
+    }
+
+    /**
+     * Backward-compatible method for legacy callers that expect MatchStateSnapshot.
+     * Delegates to the new callback type by wrapping the legacy consumer.
+     * Used by MatchEngine (via MatchSession.setOnFinishCallback) to maintain backward compat.
+     */
+    public void setOnFinishCallbackLegacy(Consumer<MatchStateSnapshot> legacyCallback) {
+        this.onFinishCallback = result -> legacyCallback.accept(result.snapshot());
     }
 
     public void start() {
@@ -75,25 +115,35 @@ public class MatchSession {
             return currentState;
         }
 
-        List<MatchTickHandler.TickResult> results = tickHandler.processTick(
-            currentState,
-            commandQueue,
-            false,
-            true
-        );
+        if (v24LiveSession != null) {
+            // V24 path: use V24LiveSession.tick() — no MatchTickHandler involved
+            V24LiveSnapshot snap = v24LiveSession.tick();
+            this.currentState = adaptV24Snapshot(snap);
+            emitState();
+        } else {
+            // Legacy path: use MatchTickHandler
+            List<MatchTickHandler.TickResult> results = tickHandler.processTick(
+                    currentState,
+                    commandQueue,
+                    false,
+                    true
+            );
 
-        MatchStateSnapshot newState = currentState;
-        for (MatchTickHandler.TickResult result : results) {
-            newState = result.newState();
+            MatchStateSnapshot newState = currentState;
+            for (MatchTickHandler.TickResult result : results) {
+                newState = result.newState();
+            }
+            this.currentState = newState;
+            emitState();
         }
-
-        this.currentState = newState;
-        emitState();
 
         if (isFinished() && onFinishCallback != null && !finishCallbackExecuted) {
             finishCallbackExecuted = true;
             try {
-                onFinishCallback.accept(currentState);
+                V24DetailedMatchResult v24Result = (v24LiveSession != null)
+                        ? v24LiveSession.finalResult()
+                        : null;
+                onFinishCallback.accept(new MatchFinishedResult(currentState, v24Result));
             } catch (Exception ignored) {
             }
         }
@@ -135,7 +185,7 @@ public class MatchSession {
 
     public boolean isFinished() {
         return currentState != null &&
-            currentState.status() == MatchStatus.FINISHED;
+                currentState.status() == MatchStatus.FINISHED;
     }
 
     public MatchStateSnapshot getCurrentState() {
@@ -144,5 +194,73 @@ public class MatchSession {
 
     private void emitState() {
         stateSink.tryEmitNext(currentState);
+    }
+
+    /**
+     * Adapt V24LiveSnapshot to MatchStateSnapshot for SSE stream.
+     * Events are converted from V24MatchEvent → domain MatchEvent.
+     */
+    private MatchStateSnapshot adaptV24Snapshot(V24LiveSnapshot snap) {
+        UUID homeTeamId = snap.homeTeamId() != null ? UUID.fromString(snap.homeTeamId()) : null;
+        UUID awayTeamId = snap.awayTeamId() != null ? UUID.fromString(snap.awayTeamId()) : null;
+
+        List<MatchEvent> adaptedEvents = new ArrayList<>();
+        for (V24MatchEvent e : snap.allEvents()) {
+            adaptedEvents.add(toDomainMatchEvent(e));
+        }
+
+        return new MatchStateSnapshot(
+                currentState.matchId(),
+                homeTeamId,
+                awayTeamId,
+                snap.minute(),
+                snap.isFinished() ? MatchStatus.FINISHED : MatchStatus.RUNNING,
+                new Score(snap.homeGoals(), snap.awayGoals()),
+                adaptedEvents,
+                currentState.careerId(),
+                currentState.userId()
+        );
+    }
+
+    /**
+     * Convert a V24MatchEvent to domain MatchEvent, preserving player attribution.
+     * Used for SSE stream — no information loss since V24MatchEvent has all needed fields.
+     */
+    private MatchEvent toDomainMatchEvent(V24MatchEvent e) {
+        MatchEvent.EventType domainType = toDomainEventType(e.type());
+        return MatchEvent.of(
+                domainType,
+                e.minute(),
+                e.playerId(),
+                e.playerName(),
+                e.teamId(),
+                e.description()
+        );
+    }
+
+    /**
+     * Map V24MatchEventType to domain MatchEvent.EventType.
+     * Every V24MatchEventType maps explicitly — no lossy fallbacks.
+     */
+    private MatchEvent.EventType toDomainEventType(V24MatchEventType v24Type) {
+        if (v24Type == null) {
+            throw new IllegalArgumentException("V24MatchEventType cannot be null");
+        }
+        return switch (v24Type) {
+            case GOAL -> MatchEvent.EventType.GOAL;
+            case SHOT -> MatchEvent.EventType.SHOT;
+            case SHOT_ON_TARGET -> MatchEvent.EventType.SHOT_ON_TARGET;
+            case SAVE -> MatchEvent.EventType.SAVE;
+            case MISS -> MatchEvent.EventType.MISS;
+            case BLOCK -> MatchEvent.EventType.BLOCK;
+            case CHANCE_CREATED -> MatchEvent.EventType.CHANCE_CREATED;
+            case FOUL -> MatchEvent.EventType.FOUL;
+            case YELLOW_CARD -> MatchEvent.EventType.YELLOW_CARD;
+            case RED_CARD -> MatchEvent.EventType.RED_CARD;
+            case INJURY -> MatchEvent.EventType.INJURY;
+            case CORNER -> MatchEvent.EventType.CORNER;
+            case OFFSIDE -> MatchEvent.EventType.OFFSIDE;
+            case SUBSTITUTION -> MatchEvent.EventType.SUBSTITUTION;
+        };
     }
 }

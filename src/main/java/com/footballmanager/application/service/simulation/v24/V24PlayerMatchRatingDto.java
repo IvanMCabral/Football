@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
@@ -8,6 +9,11 @@ import java.util.Objects;
  * V24D4A: DTO for per-player match rating and stat bundle.
  * Immutable snapshot — not tied to V24PlayerMatchState.
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
+        getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        isGetterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        setterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
+        creatorVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY)
 public final class V24PlayerMatchRatingDto {
 
     private final String playerId;
