@@ -1,0 +1,15 @@
+# Maven build outputs
+target/
+
+# Java / Kotlin compiled classes
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Log files
+*.log
