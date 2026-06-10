@@ -70,7 +70,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             V24TeamMatchState possessor = homeHasPossession ? homeState : awayState;
             V24TeamMatchState opponent = homeHasPossession ? awayState : homeState;
             V24PlayerSelector selector = homeHasPossession ? homeSelector : awaySelector;
-            String teamRole = homeHasPossession ? "HOME" : "AWAY";
+            // V24D6O-fix: use real team UUIDs (not "HOME"/"AWAY" sentinels) so the
+            // persisted detail timeline exposes sessionTeamId UUIDs, matching
+            // the V24MatchContext and the V24 frontend model. Substitution-engine
+            // counters are also keyed by the same UUID below, so the substitution
+            // limit (5/team) is now enforced correctly.
+            String teamRole = homeHasPossession ? context.homeTeamId() : context.awayTeamId();
 
             // Accumulate possession
             possessor.addPossessionTick();
@@ -215,12 +220,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
             // V24C4: Substitutions using V24SubstitutionEngine (5 max, priority-based)
             // Home team substitution after minute 60 when not in possession
-            if (minute >= 60 && !homeState.startingPlayers().isEmpty() && substitutionEngine.hasSubstitutionsRemaining("HOME") && !homeHasPossession) {
+            if (minute >= 60 && !homeState.startingPlayers().isEmpty() && substitutionEngine.hasSubstitutionsRemaining(context.homeTeamId()) && !homeHasPossession) {
                 substitutionEngine.attemptSubstitution(homeState, minute)
                         .ifPresent(e -> timeline.addEvent(e));
             }
             // Away team substitution after minute 60 when in possession
-            if (minute >= 60 && !awayState.startingPlayers().isEmpty() && substitutionEngine.hasSubstitutionsRemaining("AWAY") && homeHasPossession) {
+            if (minute >= 60 && !awayState.startingPlayers().isEmpty() && substitutionEngine.hasSubstitutionsRemaining(context.awayTeamId()) && homeHasPossession) {
                 substitutionEngine.attemptSubstitution(awayState, minute)
                         .ifPresent(e -> timeline.addEvent(e));
             }
@@ -290,6 +295,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             isGoal = random.nextDouble() < (xg / 0.45); // scale: 0.45 xG = ~50% goal
             if (isGoal) {
                 possessor.addGoal();
+                // V24D6O-fix: count goal as a shot on target so homeShots/awayShots
+                // (used in the Stats summary) is consistent with the Shot Map total.
+                // A goal is by definition a shot that hit the target and went in.
+                possessor.addShot(true);
                 String goalDesc = assistPlayerId != null
                         ? "Goal by " + shooter.name() + " assisted by " + assistPlayerName + " " + minute + "'"
                         : "Goal! " + shooter.name() + " " + minute + "'";

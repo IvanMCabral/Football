@@ -1,0 +1,126 @@
+<div class="summary-container" *ngIf="vm$ | async as vm">
+
+  <div class="header">
+    <h2>📋 Resumen Fecha {{ vm.roundNumber }}</h2>
+  </div>
+
+  <div *ngIf="vm.errorMsg" class="error">{{ vm.errorMsg }}</div>
+
+  <!-- Resultados de la fecha -->
+  <div class="results-section card">
+    <h3>⚽ Resultados de la Fecha</h3>
+    <div class="results-grid">
+      <div *ngFor="let match of vm.matches" class="match-result"
+           [class.user-match]="match.isUserMatch">
+        <div class="team-info">
+          <span class="team-name">{{ getTeamName(match.homeTeamId) }}</span>
+          <span class="team-score">{{ match.homeGoals }}</span>
+        </div>
+        <div class="match-vs">-</div>
+        <div class="team-info">
+          <span class="team-score">{{ match.awayGoals }}</span>
+          <span class="team-name">{{ getTeamName(match.awayTeamId) }}</span>
+        </div>
+        <!-- V24D6O: link to V24 match detail page for completed matches -->
+        <button *ngIf="match.status === 'COMPLETED'"
+                type="button"
+                class="btn-detail"
+                (click)="goToMatchDetail(match.matchId)"
+                title="Ver detalle V24 del partido">
+          📊 Ver Detalle V24
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de posiciones -->
+  <div class="standings-section card">
+    <h3>🏆 Tabla de Posiciones</h3>
+    <div class="table-responsive">
+      <table class="standings-table">
+        <thead>
+          <tr>
+            <th>Pos</th>
+            <th>Equipo</th>
+            <th>PJ</th>
+            <th>G</th>
+            <th>E</th>
+            <th>P</th>
+            <th>GF</th>
+            <th>GC</th>
+            <th>DG</th>
+            <th>PTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let standing of vm.standings; let i = index" 
+              [class.user-team]="standing.teamId === vm.userTeamId"
+              [class.champion]="i === 0 && vm.tournamentStatus?.isFinished">
+            <td class="position">{{ i + 1 }}</td>
+            <td class="team-name-cell">
+              <span *ngIf="i === 0 && vm.tournamentStatus?.isFinished" class="trophy">🏆</span>
+              <span *ngIf="standing.teamId === vm.userTeamId" class="star">⭐</span>
+              {{ standing.teamName || getTeamName(standing.teamId) }}
+            </td>
+            <td>{{ standing.played }}</td>
+            <td>{{ standing.won }}</td>
+            <td>{{ standing.drawn }}</td>
+            <td>{{ standing.lost }}</td>
+            <td>{{ standing.goalsFor }}</td>
+            <td>{{ standing.goalsAgainst }}</td>
+            <td [class.positive]="standing.goalDifference > 0" 
+                [class.negative]="standing.goalDifference < 0">
+              {{ standing.goalDifference > 0 ? '+' : '' }}{{ standing.goalDifference }}
+            </td>
+            <td class="points">{{ standing.points }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tu equipo -->
+  <div class="user-team-section card">
+    <h3>⭐ Tu Equipo: {{ vm.userTeamName || 'Cargando...' }}</h3>
+    <p class="info-text">
+      <span *ngIf="vm.userPosition > 0">Posición actual: <strong>{{ vm.userPosition }}°</strong></span>
+      <span *ngIf="vm.userPosition === 0">Tu equipo no está en esta clasificación</span>
+    </p>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="actions">
+    <div *ngIf="!vm.tournamentStatus" class="debug-info">
+      Cargando estado del torneo...
+    </div>
+    <div *ngIf="vm.tournamentStatus" class="debug-info">
+      Debug: currentRound={{ vm.tournamentStatus.currentRound }}, 
+      totalRounds={{ vm.tournamentStatus.totalRounds }}, 
+      careerPhase={{ vm.careerPhase }},
+      isFinished={{ vm.tournamentStatus.isFinished }}
+    </div>
+    
+    <!-- FIN DE TORNEO: Opciones de cierre -->
+    <ng-container *ngIf="vm.careerPhase === 'FINISHED'">
+      <div class="tournament-ended-message">
+        <h3>🏆 ¡Temporada Finalizada!</h3>
+        <p>La temporada {{ vm.tournamentStatus?.season || 1 }} ha llegado a su fin.</p>
+      </div>
+      
+      <button (click)="goToChampion()" class="btn btn-champion btn-large">
+        📊 Ver Tabla Final
+      </button>
+      
+      <button (click)="continueToNewSeason()" class="btn btn-success btn-large">
+        🚀 Continuar Carrera (Nueva Temporada)
+      </button>
+    </ng-container>
+    
+    <!-- TORNEO ACTIVO: Volver al equipo para preparar siguiente fecha -->
+    <ng-container *ngIf="vm.careerPhase !== 'FINISHED'">
+      <button (click)="backToGame()" class="btn btn-primary btn-large">
+        ⬅️ Volver al Equipo
+      </button>
+    </ng-container>
+  </div>
+</div>

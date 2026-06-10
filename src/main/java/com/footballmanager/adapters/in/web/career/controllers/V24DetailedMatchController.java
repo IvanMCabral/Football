@@ -12,14 +12,19 @@ import java.util.Map;
 /**
  * V24D4C: Controller for querying V24 detailed match data.
  *
- * <p>GET /api/careers/{careerId}/matches/{matchId}/detail
+ * <p>GET /api/v1/careers/{careerId}/matches/{matchId}/detail
  *
  * <p>Feature-gated: returns 404 when {@code app.simulation.v24.expose-detail-api=false}.
  * Does NOT enable V24 simulation, persistence, or any production simulation path.
+ *
+ * <p>V24D6O: Path moved to /api/v1/careers to align with the rest of the
+ * career namespace and the dev proxy (/api/v1 -> localhost:8080). Previously
+ * the controller sat at /api/careers (no v1) which meant frontend calls
+ * landed on a 404 through the proxy.
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/careers")
+@RequestMapping("/api/v1/careers")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class V24DetailedMatchController {
 
@@ -30,7 +35,7 @@ public class V24DetailedMatchController {
     }
 
     /**
-     * GET /api/careers/{careerId}/matches/{matchId}/detail
+     * GET /api/v1/careers/{careerId}/matches/{matchId}/detail
      *
      * Returns V24DetailedMatchData if:
      * - Feature flag expose-detail-api is true
