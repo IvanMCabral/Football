@@ -461,6 +461,36 @@ Root/backend repo unchanged by V24D5E frontend implementation.
 
 ---
 
+## 12. V24D6O Completion Record
+
+**Commit:** `6689b69e` — feat: add V24 match detail entrypoint
+**Date:** 2026-06-10
+**Tests:** 129 V24-focused tests, 0 failures
+**E2E:** Browser passed — 200 OK, score/timeline/playerRatings visible, no HOME/AWAY labels
+**V24D6O delivered:**
+- `V24DetailedMatchController.java` at `/api/v1/careers/{careerId}/matches/{matchId}/detail`
+- `V24DetailedMatchEngine.java` uses `context.homeTeamId()` / `context.awayTeamId()` (UUID team IDs, not HOME/AWAY)
+- GOAL events counted as shots via `addShot(true)` — shot map totals now match match stats
+- `V24DetailedMatchEngineTeamIdTest.java` — 4 tests guarding HOME/AWAY avoidance and shot contract
+- `MatchShotMapComponent` extracted as standalone component with deterministic 100×100 geometry
+- Round Summary navigation to persisted V24 match detail page ("Ver Detalle V24")
+- Timeline uses real session team UUIDs instead of HOME/AWAY sentinels
+- `ChangeDetectorRef` keeps detail page loading state after 200 response
+- Pitch symmetric: both teams attack opposite ends, penalty areas/six-yard boxes/center circle drawn from math specs
+- Penalty area mirroring: away shots drawn horizontally mirrored so both teams attack same direction on shared pitch
+- Substitution limit fixed: UUID keys used so 5-per-team cap properly enforced
+- **No HOME/AWAY labels in UI**
+- **No "Jugador local/visitante" labels**
+- **Squad → Stats regression passed**
+
+**V24D6O did NOT add:**
+- No new features beyond detail entrypoint and bug fixes listed above
+- No `application-local.yml` changes
+- No `.claude/` tracking
+- No V23_PHASE*.md changes
+
+---
+
 ## 11. V24D1 Completion Record
 
 **Commit:** `55f7638` — feat: add V24 formation parser (V24D1)

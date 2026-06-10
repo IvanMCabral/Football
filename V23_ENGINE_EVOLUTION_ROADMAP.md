@@ -1,12 +1,12 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6/V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline wired behind flags. V24D6G3/V24D6G4A/V24D6G4B/V24D6G5A/V24D6G6A frontend UI phases + V24D6G7 audit in separate frontend repo. V24D6F1/F2/F3 mutation regression tests committed. V24D6D2/D3/D4/D5 discipline persistence implemented. V24D6D6A/B suspension lifecycle wired. V24D6D7 COMPLETED. V24D6H COMPLETED. V24D6E COMPLETED. V24D6I COMPLETED. V24D6J COMPLETED. V24D6K COMPLETE — diagnostic cycle (K1–K8) with no production tuning; energy healthy, availability healthy, injury borderline, recovery working. V24D6L COMPLETE — release-readiness package complete. V24D6M1-M7 COMPLETE — player season stats design (`011ff92`), source audit (`db36055`), pure aggregator (`533f101`), query service + API (`45c78c6`), docs/status update (`a38a50e`), API polish design (`127b205`), and API pagination/metadata polish (`92669fb`) all delivered. 768 tests full suite.
-**Current baseline commit:** `92669fb` (V24D6M7 — player season stats API pagination/metadata polish; 768 tests)
+**Status:** ACTIVE — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in frontend repo. V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline wired behind flags. V24D6G3/V24D6G4A/V24D6G4B/V24D6G5A/V24D6G6A frontend UI phases + V24D6G7 audit in separate frontend repo. V24D6F1/F2/F3 mutation regression tests committed. V24D6D2/D3/D4/D5 discipline persistence implemented. V24D6D6A/B suspension lifecycle wired. V24D6D7 COMPLETED. V24D6H COMPLETED. V24D6E COMPLETED. V24D6I COMPLETED. V24D6J COMPLETED. V24D6K COMPLETE — diagnostic cycle (K1–K8) with no production tuning; energy healthy, availability healthy, injury borderline, recovery working. V24D6L COMPLETE — release-readiness package complete. V24D6M1-M7 COMPLETE. V24D6O COMPLETE — match detail entrypoint, UUID teamIds, GOAL-as-shot, MatchShotMapComponent, Round Summary nav, no HOME/AWAY. 768 tests full suite.
+**Current baseline commit:** `6689b69e` (V24D6O — match detail entrypoint; 768 tests)
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests pre-M)
 **Latest docs commit before M8:** `127b205` (V24D6M6 — API polish design)
-**M8 docs/status update:** pending commit
+**M8 docs/status update:** COMPLETED — commit `6689b69e`
 **Tests:** 768 full suite total; 768 regression gate, 0 failures
-**Date:** 2026-05-26
+**Date:** 2026-06-10
 
 ---
 
@@ -777,9 +777,17 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D6M2 | Player Season Stats Source Audit — Completed (commit `db36055`) | — | Done | Completed |
 | V24D6M3 | Player Season Stats Aggregator + Unit Tests — Completed (commit `533f101`) | LOW | Done | Completed |
 | V24D6M4 | Player Season Stats Query Service + API + Controller Tests — Completed (commit `45c78c6`) | LOW | Done | Completed |
-| V24D6M5 | Player Season Stats Docs/Status Update — Pending | — | Pending | Pending |
-| V24D6M6 | Player Season Stats Pagination / Response Metadata — Future | LOW | Future | Future |
+| V24D6M5 | Player Season Stats Docs/Status Update — Completed (`a38a50e`) | — | Done | Completed |
+| V24D6M6 | Player Season Stats Pagination / Response Metadata — Completed (`92669fb`) | LOW | Done | Completed |
 | V24D6M7 | Player Season Stats Frontend UI — Future | MEDIUM | Future | Future |
+| **V24D6O** | **Match Detail Entrypoint (controller, engine teamId UUIDs, GOAL-as-shot, shot map component, Round Summary nav) — Complete** | | | **Completed** |
+| V24D6O1 | V24DetailedMatchController at /api/v1/careers/{careerId}/matches/{matchId}/detail — Completed (`6689b69e`) | — | Done | Completed |
+| V24D6O2 | V24DetailedMatchEngine uses context.homeTeamId()/awayTeamId() (UUID, not HOME/AWAY) — Completed (`6689b69e`) | — | Done | Completed |
+| V24D6O3 | GOAL events counted as shots via addShot(true) — Completed (`6689b69e`) | — | Done | Completed |
+| V24D6O4 | V24DetailedMatchEngineTeamIdTest (4 tests) — Completed (`6689b69e`) | — | Done | Completed |
+| V24D6O5 | MatchShotMapComponent standalone, deterministic 100×100, penalty mirroring — Completed (`6689b69e`) | — | Done | Completed |
+| V24D6O6 | Round Summary navigation to V24 detail ("Ver Detalle V24") — Completed (`6689b69e`) | — | Done | Completed |
+| V24D6O7 | No HOME/AWAY labels, no "Jugador local/visitante", Squad→Stats regression passed — Completed (`6689b69e`) | — | Done | Completed |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
 

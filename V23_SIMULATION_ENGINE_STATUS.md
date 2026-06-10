@@ -3,12 +3,12 @@
 **Branch:** `mvp-1-performance-cleanup`
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests)
 **Latest docs commit before M8:** `127b205` (V24D6M6 — API polish design)
-**M8 docs/status update:** pending commit
-**Latest implementation commit:** `92669fb` (V24D6M7 — player season stats API pagination/metadata polish; 768 tests full suite)
-**Status:** V24D6M1-M7 COMPLETE — player season stats design, source audit, pure aggregator, read-only query service/API, docs/status, API polish design, and API pagination/metadata polish all delivered. V24D6L release-readiness complete. See V24D6M phase table in Section 4 for full V24D6M status.
-**Test status:** 768 total (723 pre-M + 45 new in M3/M4/M7: 19 aggregator + 12 query service + 14 controller), 0 failures; lifecycle/mutation/integration gate 207, 0 failures
+**M8 docs/status update:** COMPLETED — commit `6689b69e`
+**Latest implementation commit:** `6689b69e` (V24D6O — match detail entrypoint; 768 tests full suite)
+**Status:** V24D6M1-M7 COMPLETE. V24D6O COMPLETE — match detail entrypoint, UUID teamIds, GOAL-as-shot, MatchShotMapComponent, Round Summary nav, no HOME/AWAY. V24D6L release-readiness complete. See V24D6M phase table in Section 4 for full V24D6M status.
+**Test status:** 768 total, 0 failures; lifecycle/mutation/integration gate 207, 0 failures
 **Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | V24MutationBalancingDiagnosticTest 7 | focused gate 207
-**Date:** 2026-05-26
+**Date:** 2026-06-10
 
 ---
 
