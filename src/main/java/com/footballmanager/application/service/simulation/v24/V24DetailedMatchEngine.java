@@ -27,11 +27,24 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
     private final V24FatigueModel fatigueModel = new V24FatigueModel();
-    private final V24DisciplineModel disciplineModel = new V24DisciplineModel();
+    private final V24DisciplineModel disciplineModel;
     private final V24InjuryModel injuryModel = new V24InjuryModel();
     private final V24SubstitutionEngine substitutionEngine = new V24SubstitutionEngine();
     private final V24AssistModel assistModel = new V24AssistModel();
     private final V24ShotCoordinateGenerator coordGenerator = new V24ShotCoordinateGenerator();
+
+    public V24DetailedMatchEngine() {
+        this(new V24DisciplineModel());
+    }
+
+    /**
+     * V24D6Q: Constructor for testing — allows injecting a discipline model
+     * whose shouldCommitFoul / shouldReceiveYellow can be stubbed to force
+     * second-yellow scenarios deterministically.
+     */
+    V24DetailedMatchEngine(V24DisciplineModel disciplineModel) {
+        this.disciplineModel = disciplineModel != null ? disciplineModel : new V24DisciplineModel();
+    }
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
         if (context == null) {
@@ -133,33 +146,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
                     // V24C2: Yellow card check
                     if (disciplineModel.shouldReceiveYellow(f, possessor.style(), random) && !f.redCard()) {
-                        f.addYellowCard();
-                        timeline.addEvent(new V24MatchEvent(
-                                minute,
-                                V24MatchEventType.YELLOW_CARD,
-                                teamRole,
-                                f.sessionPlayerId(),
-                                f.name(),
-                                null, null,
-                                0.0,
-                                f.name() + " received a yellow card"
-                        ));
-
-                        // V24C2: Second yellow → red card
-                        if (f.yellowCards() >= 2 && !f.redCard()) {
-                            f.giveRedCard();
-                            timeline.addEvent(new V24MatchEvent(
-                                    minute,
-                                    V24MatchEventType.RED_CARD,
-                                    teamRole,
-                                    f.sessionPlayerId(),
-                                    f.name(),
-                                    null, null,
-                                    0.0,
-                                    f.name() + " received a red card"
-                            ));
-                            // No substitution for red-carded player — team plays with one fewer
-                        }
+                        applyYellowCardAndMaybeSecondYellowRed(f, timeline, minute, teamRole);
                     }
                 }
             }
@@ -494,5 +481,49 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .timeline(timeline)
                 .summary(summary)
                 .build();
+    }
+
+    /**
+     * V24D6Q: Apply a yellow card to a player and, if this is the player's
+     * second yellow of the match, also emit a RED_CARD event.
+     *
+     * <p>Package-private to allow deterministic unit testing without
+     * depending on random or stubbed discipline models.
+     *
+     * <p>The pre-yellow red state is captured BEFORE addYellowCard() because
+     * addYellowCard() itself flips redCard=true when yellowCards reaches 2.
+     * Using a guard against the post-add state would never fire.
+     */
+    void applyYellowCardAndMaybeSecondYellowRed(
+            V24PlayerMatchState player,
+            V24MatchTimeline timeline,
+            int minute,
+            String teamRole) {
+        boolean wasRedBefore = player.redCard();
+        player.addYellowCard();
+        timeline.addEvent(new V24MatchEvent(
+                minute,
+                V24MatchEventType.YELLOW_CARD,
+                teamRole,
+                player.sessionPlayerId(),
+                player.name(),
+                null, null,
+                0.0,
+                player.name() + " received a yellow card"
+        ));
+        if (player.yellowCards() >= 2 && !wasRedBefore) {
+            // player.redCard() is already true (set by addYellowCard) — no need to call giveRedCard().
+            timeline.addEvent(new V24MatchEvent(
+                    minute,
+                    V24MatchEventType.RED_CARD,
+                    teamRole,
+                    player.sessionPlayerId(),
+                    player.name(),
+                    null, null,
+                    0.0,
+                    player.name() + " received a red card (second yellow)"
+            ));
+            // No substitution for red-carded player — team plays with one fewer
+        }
     }
 }

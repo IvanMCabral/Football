@@ -101,11 +101,18 @@ class V24PlayerAttributionTest {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         V24DetailedMatchResult r = engine.simulate(ctx, 33333L);
 
+        // V24D6O: events carry the real session team UUIDs (not HOME/AWAY literals).
+        // Use the context's own teamIds as the filter so this test stays
+        // consistent with the engine contract introduced in V24D6O.
+        String homeId = ctx.homeTeamId();
+        String awayId = ctx.awayTeamId();
+        assertNotEquals(homeId, awayId, "home and away teamIds must be distinct in context");
+
         List<V24MatchEvent> homeEvents = r.timeline().events().stream()
-                .filter(e -> "HOME".equals(e.teamId()))
+                .filter(e -> homeId.equals(e.teamId()))
                 .toList();
         List<V24MatchEvent> awayEvents = r.timeline().events().stream()
-                .filter(e -> "AWAY".equals(e.teamId()))
+                .filter(e -> awayId.equals(e.teamId()))
                 .toList();
 
         // Both sides should have events
