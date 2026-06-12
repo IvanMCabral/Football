@@ -1,12 +1,13 @@
 # V23 Engine Evolution Roadmap
 
-**Status:** ACTIVE — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in frontend repo. V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline wired behind flags. V24D6G3/V24D6G4A/V24D6G4B/V24D6G5A/V24D6G6A frontend UI phases + V24D6G7 audit in separate frontend repo. V24D6F1/F2/F3 mutation regression tests committed. V24D6D2/D3/D4/D5 discipline persistence implemented. V24D6D6A/B suspension lifecycle wired. V24D6D7 COMPLETED. V24D6H COMPLETED. V24D6E COMPLETED. V24D6I COMPLETED. V24D6J COMPLETED. V24D6K COMPLETE — diagnostic cycle (K1–K8) with no production tuning; energy healthy, availability healthy, injury borderline, recovery working. V24D6L COMPLETE — release-readiness package complete. V24D6M1-M7 COMPLETE. V24D6O COMPLETE. V24D6R COMPLETE — live match career mutation pipeline wired; v24-mutations profile; smoke E2E passed. 814 tests full suite.
-**Current baseline commit:** `88e2cab` (V24D6R — live match career mutation hotfix; 814 tests)
+**Status:** ACTIVE — V24A/V24B/V24C/V24D1/V24D2/V24D3A/V24D3B/V24D3C/V24D4A/V24D4B/V24D4C/V24D5A/V24D5B/V24D5C/V24D5D/V24D5F completed. V24D5E1/V24D5E2/V24D5E3/V24D5E3B/V24D5E4/V24D5E5/V24D5E6 completed in frontend repo. V24D6A/V24D6B1/V24D6B2/V24D6B3/V24D6C1/V24D6C2/V24D6C3 injury+fatigue mutation pipeline wired behind flags. V24D6G3/V24D6G4A/V24D6G4B/V24D6G5A/V24D6G6A frontend UI phases + V24D6G7 audit in separate frontend repo. V24D6F1/F2/F3 mutation regression tests committed. V24D6D2/D3/D4/D5 discipline persistence implemented. V24D6D6A/B suspension lifecycle wired. V24D6D7 COMPLETED. V24D6H COMPLETED. V24D6E COMPLETED. V24D6I COMPLETED. V24D6J COMPLETED. V24D6K COMPLETE — diagnostic cycle (K1–K8) with no production tuning; energy healthy, availability healthy, injury borderline, recovery working. V24D6L COMPLETE — release-readiness package complete. V24D6M1-M7 COMPLETE. V24D6O COMPLETE. V24D6R COMPLETE — live match career mutation pipeline wired; v24-mutations profile; smoke E2E passed. V24D6R2 COMPLETE — end-of-round lifecycle decrement wired in live path; participation-aware recovery; newlyInjured/newlySuspended protection. 822 tests full suite.
+**Current baseline commit:** `1b26d57` (V24D6R2 — end-of-round lifecycle decrement; 822 tests)
 **Latest diagnostic/test commit:** `8502b5d` (V24D6K6 — season-shaped diagnostic; 723 tests pre-M)
 **Latest docs commit before M8:** `127b205` (V24D6M6 — API polish design)
 **M8 docs/status update:** COMPLETED — commit `6689b69e`
 **V24D6R docs/status update:** COMPLETED — commit `88e2cab`
-**Tests:** 814 full suite total; 814 regression gate, 0 failures
+**V24D6R2 docs/status update:** COMPLETED — commit `1b26d57`
+**Tests:** 822 full suite total; 822 regression gate, 0 failures
 **Date:** 2026-06-12
 
 ---
@@ -796,7 +797,9 @@ V24 is a parallel evolution line to V23. It is **not** a replacement for the V23
 | V24D6R4 | application-v24-mutations.yml profile (mutate-career-state, persist-discipline, persist-injuries) — Completed (`f6f90ed`) | — | Done | Completed |
 | V24D6R5 | LeagueSimulator.applyLiveMatchCareerMutations() hotfix — live path now calls mutation pipeline — Completed (`88e2cab`) | — | Done | Completed |
 | V24D6R6 | Smoke E2E: Player 11 MAD second-yellow RED_CARD → suspended=true, Auto Select excludes, Stats shows yellowCards=2/redCards=1 — Completed (`88e2cab`) | — | Done | Completed |
-| V24D6R-PENDING | V24D6R2 — lifecycle decrement end-of-round (suspended/injured recovery tracking across rounds) | HIGH | Future | Pending |
+| **V24D6R2** | **End-of-Round Lifecycle Decrement — Complete** | | | **Completed** |
+| V24D6R2-1 | V24LivePathEndOfRoundLifecycleDecrementTest (8 tests) — Completed (`1b26d57`) | — | Done | Completed |
+| V24D6R2-2 | LeagueSimulator.applyEndOfRoundLiveLifecycle() — newlyInjured/newlySuspended protection, participation-aware recovery — Completed (`1b26d57`) | — | Done | Completed |
 
 *This document is the authoritative V23 evolution roadmap. V24 is documented separately in V24A_DETAILED_ENGINE_SKELETON_PLAN.md.*
 

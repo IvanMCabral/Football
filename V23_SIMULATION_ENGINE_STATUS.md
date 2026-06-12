@@ -5,9 +5,9 @@
 **Latest docs commit before M8:** `127b205` (V24D6M6 — API polish design)
 **M8 docs/status update:** COMPLETED — commit `6689b69e`
 **Latest implementation commit:** `6689b69e` (V24D6O — match detail entrypoint; 768 tests full suite)
-**Status:** V24D6M1-M7 COMPLETE. V24D6O COMPLETE. V24D6R COMPLETE — live match career mutation pipeline wired; v24-mutations profile available; smoke E2E passed. V24D6L release-readiness complete. See V24D6M phase table in Section 4 for full V24D6M status.
-**Test status:** 814 total, 0 failures; lifecycle/mutation/integration gate 271, 0 failures
-**Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | V24MutationBalancingDiagnosticTest 7 | V24LivePathCareerMutationIntegrationTest 5 | V24SecondYellowDisciplineLifecycleIntegrationTest 2 | V24CareerMutationAvailabilityLifecycleIntegrationTest 3 | V24ManualSelectLineupAvailabilityBlockingTest 1 | focused gate 271
+**Status:** V24D6M1-M7 COMPLETE. V24D6O COMPLETE. V24D6R COMPLETE — live match career mutation pipeline wired; v24-mutations profile available; smoke E2E passed. V24D6R2 COMPLETE — end-of-round lifecycle decrement wired in live path; newlyInjured/newlySuspended protection; participation-aware recovery. V24D6L release-readiness complete. See V24D6M phase table in Section 4 for full V24D6M status.
+**Test status:** 822 total, 0 failures; lifecycle/mutation/integration gate 279, 0 failures
+**Test table:** V24EnergyRecoveryLifecycleApplierTest 18 | V24FormMutationApplierTest 18 | V24CareerMutationServiceTest 58 | V24CareerMutationIntegrationTest 60 | V24SuspensionLifecycleApplierTest 19 | V24InjuryMutationApplierTest 24 | V24InjuryRecoveryLifecycleApplierTest 22 | V24FatigueMutationApplierTest 30 | V24DisciplineMutationApplierTest 27 | V24MutationBalancingDiagnosticTest 7 | V24LivePathCareerMutationIntegrationTest 5 | V24SecondYellowDisciplineLifecycleIntegrationTest 2 | V24CareerMutationAvailabilityLifecycleIntegrationTest 3 | V24ManualSelectLineupAvailabilityBlockingTest 1 | V24LivePathEndOfRoundLifecycleDecrementTest 8 | focused gate 279
 **Date:** 2026-06-12
 
 ---
