@@ -13,6 +13,7 @@ import com.footballmanager.application.service.simulation.MatchSimulationOrchest
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.v24.LiveRoundMutationTracking;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
@@ -98,6 +99,12 @@ public class RoundController {
         String traceCareerId = career.getData().getCareerId();
         log.info("[V24D6M11-TRACE] RoundController careerId={}, roundId={}", traceCareerId, roundId);
 
+        // V24D6R2: Initialize per-round tracking for lifecycle decrement
+        int currentRound = career.getTournamentState().getCurrentRound();
+        int currentSeason = career.getSeasonManager().getCurrentSeason();
+        LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
+        capturePreRoundState(career, tracking);
+
         // Iniciar todos los partidos
         for (StartRoundRequest.MatchInfo matchInfo : request.matches()) {
             UUID matchId = UUID.fromString(matchInfo.matchId());
@@ -117,7 +124,7 @@ public class RoundController {
                         matchId,
                         homeTeamId,
                         awayTeamId,
-                        result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career),
+                        result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
                         v24LiveSession)
                     .subscribe();
             } else {
@@ -229,7 +236,8 @@ public class RoundController {
                                      int totalMatches,
                                      RoundEngine roundEngine,
                                      UUID userId,
-                                     CareerSave career) {
+                                     CareerSave career,
+                                     LiveRoundMutationTracking tracking) {
         List<com.footballmanager.domain.model.entity.MatchEvent> events;
         if (result.v24Result() != null) {
             // V24 path: use timeline from V24DetailedMatchResult — convert V24MatchEvent to MatchEvent
@@ -246,15 +254,15 @@ public class RoundController {
             }
             log.info("[ROUND-CONTROLLER] V24 match finished, {} timeline events for persistence", events.size());
 
-            // V24D6M12: Persist V24 detail to Redis via LeagueSimulator
-            // Pass the actual v24Result (with real timeline) instead of building an empty one
+            // V24D6R2: Persist V24 detail to Redis via LeagueSimulator with live tracking
             leagueSimulator.persistV24DetailForLiveMatch(
                     career,
                     result.v24Result(),
                     result.snapshot().homeTeamId().toString(),
                     result.snapshot().awayTeamId().toString(),
                     result.snapshot().score().home(),
-                    result.snapshot().score().away()
+                    result.snapshot().score().away(),
+                    tracking
             );
         } else {
             events = new java.util.ArrayList<>(result.snapshot().events());
@@ -273,9 +281,50 @@ public class RoundController {
         if (finished == totalMatches) {
             log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
             roundEngine.emitCompletedState();
+
+            // V24D6R2: Apply end-of-round lifecycle decrements BEFORE orchestrator saves
+            if (tracking != null) {
+                leagueSimulator.applyEndOfRoundLiveLifecycle(
+                        career,
+                        tracking.roundNumber,
+                        career.getTournamentState().getFixtures(),
+                        tracking
+                );
+            }
+
             orchestrator.processMatchDayResults(userId.toString(), matchResults)
                     .subscribe();
         }
+    }
+
+    /**
+     * V24D6R2: Capture pre-round state for suspended/injured players.
+     * Mirrors {@code LeagueSimulator.capturePreRoundSuspendedPlayerIds} and
+     * {@code capturePreRoundInjuredPlayerIds} but lives in the controller
+     * since tracking is a per-round artifact created at startMatches.
+     */
+    private void capturePreRoundState(CareerSave career, LiveRoundMutationTracking tracking) {
+        for (var team : career.getAllSessionTeams()) {
+            for (String playerId : career.getSquadPlayerIds(team.getSessionTeamId())) {
+                var player = career.getSessionPlayer(playerId);
+                if (player == null) continue;
+                if (Boolean.TRUE.equals(player.getSuspended())
+                        && player.getSuspensionRemainingMatches() != null
+                        && player.getSuspensionRemainingMatches() > 0) {
+                    tracking.preRoundSuspendedPlayerIds.add(playerId);
+                }
+                if (Boolean.TRUE.equals(player.getInjured())
+                        && player.getInjuryRemainingMatches() != null
+                        && player.getInjuryRemainingMatches() > 0) {
+                    tracking.preRoundInjuredPlayerIds.add(playerId);
+                }
+            }
+        }
+        log.info("[V24D6R2-LIVE-LIFECYCLE] Pre-round snapshot: suspended={}, injured={}, round={}, season={}",
+                tracking.preRoundSuspendedPlayerIds.size(),
+                tracking.preRoundInjuredPlayerIds.size(),
+                tracking.roundNumber,
+                tracking.seasonNumber);
     }
 
     public record StartRoundRequest(String roundId, String userId, List<MatchInfo> matches) {
