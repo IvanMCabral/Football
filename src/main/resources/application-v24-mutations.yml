@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: v24-mutations
+
+app:
+  simulation:
+    v24:
+      mutate-career-state: true
+      persist-discipline: true
+      persist-injuries: true
+      persist-fatigue: false
+      persist-form: false
