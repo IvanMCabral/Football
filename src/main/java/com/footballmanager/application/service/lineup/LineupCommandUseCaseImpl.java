@@ -2,6 +2,7 @@ package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
+import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
@@ -114,7 +115,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         List<String> squadIds = career.getTeamManager().getTeamSquads().get(teamId);
 
         if (squadIds == null || squadIds.isEmpty()) {
-            throw new IllegalStateException("No squad found for team: " + teamId);
+            throw new NotEnoughPlayersException("No squad found for team: " + teamId);
         }
 
         List<SessionPlayer> availablePlayers = squadIds.stream()
@@ -135,7 +136,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .findFirst()
             .ifPresentOrElse(
                 lineup::add,
-                () -> { throw new IllegalStateException("No available goalkeeper"); }
+                () -> { throw new NotEnoughPlayersException("No available goalkeeper"); }
             );
 
         // Defenders
@@ -144,7 +145,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .limit(formation.getDefenders())
             .toList();
         if (defenders.size() < formation.getDefenders()) {
-            throw new IllegalStateException("Not enough defenders");
+            throw new NotEnoughPlayersException("Not enough defenders");
         }
         lineup.addAll(defenders);
 
@@ -154,7 +155,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .limit(formation.getMidfielders())
             .toList();
         if (midfielders.size() < formation.getMidfielders()) {
-            throw new IllegalStateException("Not enough midfielders");
+            throw new NotEnoughPlayersException("Not enough midfielders");
         }
         lineup.addAll(midfielders);
 
@@ -164,7 +165,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .limit(formation.getAttackers())
             .toList();
         if (attackers.size() < formation.getAttackers()) {
-            throw new IllegalStateException("Not enough attackers");
+            throw new NotEnoughPlayersException("Not enough attackers");
         }
         lineup.addAll(attackers);
 
