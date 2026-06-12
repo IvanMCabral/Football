@@ -51,6 +51,16 @@ public class MatchResultProcessor {
             }
 
             try {
+                // V24D6T: NOTE — `result.events()` carries live path events but
+                // TournamentState.processMatchResult expects
+                // `domain.model.valueobject.MatchEvent` (a different type) and
+                // currently does not consume the list. Forwarding the events
+                // would require an entity→VO converter, which is a refactor
+                // deferred to V24D6T+ui. The events remain persisted via the
+                // V24 detail store (LeagueSimulator.persistV24DetailForLiveMatch)
+                // and re-emitted in RoundController.handleMatchFinished.
+                // Mutations are applied BEFORE this point by
+                // applyLiveMatchCareerMutations — no duplication risk.
                 tournamentState.processMatchResult(result.matchId, result.homeGoals, result.awayGoals, List.of());
                 nuevosProcesados++;
             } catch (Exception e) {
