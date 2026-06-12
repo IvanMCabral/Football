@@ -417,6 +417,77 @@ public class LeagueSimulator {
         }
     }
 
+    // ========== V24D6R-hotfix: Live match career mutations ==========
+
+    /**
+     * V24D6R-hotfix: Apply career-state mutations (INJURY, RED_CARD, YELLOW_CARD
+     * and yellow-threshold suspension) from a single live match's
+     * {@link V24DetailedMatchResult} timeline to the in-memory
+     * {@link CareerSave}.
+     *
+     * <p>Used by the live/SSE match finish path
+     * ({@code persistV24DetailForLiveMatch}), which the UI drives via
+     * {@code RoundController.handleMatchFinished}. Previously the live path
+     * persisted V24 detail (for stats) but never mutated SessionPlayer, so
+     * squad/lineup reads saw a stale state.
+     *
+     * <p>Best-effort: any failure is logged and the match processing continues.
+     * The orchestrator's {@code careerSessionService.saveCareer} at end of round
+     * persists this same CareerSave instance, so subsequent reads pick up the
+     * mutations.
+     *
+     * <p>Lifecycle decrement (suspension/injury recovery) is intentionally NOT
+     * applied here. That requires end-of-round participation tracking
+     * ({@code preMatchSuspended}, {@code newlySuspended},
+     * {@code participatedPlayerIds}) which the live path does not yet collect.
+     * Deferred to V24D6R2.
+     *
+     * <p>Skips silently if the policy is disabled — read-only behavior
+     * matches the existing batch path.
+     */
+    private void applyLiveMatchCareerMutations(CareerSave career, V24DetailedMatchResult v24Result) {
+        if (career == null || v24Result == null) {
+            return;
+        }
+        if (!v24MutationPolicy.isCareerMutationEnabled()) {
+            log.debug("[V24D6R-LIVE-MUTATION] Skipped for match {}: mutate-career-state=false",
+                    v24Result.matchId());
+            return;
+        }
+
+        try {
+            V24CareerMutationResult mutationResult =
+                    v24MutationService.applyMutations(career, v24Result, v24MutationPolicy);
+
+            if (!mutationResult.failures().isEmpty()) {
+                log.warn("[V24D6R-LIVE-MUTATION] Partial failures for match {}: {}",
+                        v24Result.matchId(), mutationResult.failures());
+            }
+
+            int total = mutationResult.injuriesApplied()
+                    + mutationResult.fatigueApplied()
+                    + mutationResult.disciplineApplied()
+                    + mutationResult.formApplied();
+
+            if (total > 0) {
+                log.info("[V24D6R-LIVE-MUTATION] careerId={}, matchId={}, injuriesApplied={}, fatigueApplied={}, disciplineApplied={}, formApplied={}, totalMutations={}",
+                        career.getData().getCareerId(),
+                        v24Result.matchId(),
+                        mutationResult.injuriesApplied(),
+                        mutationResult.fatigueApplied(),
+                        mutationResult.disciplineApplied(),
+                        mutationResult.formApplied(),
+                        total);
+            } else {
+                log.debug("[V24D6R-LIVE-MUTATION] careerId={}, matchId={}, no mutations applied (no qualifying events)",
+                        career.getData().getCareerId(), v24Result.matchId());
+            }
+        } catch (Exception e) {
+            log.warn("[V24D6R-LIVE-MUTATION] Failed for match {}: {}, continuing",
+                    v24Result.matchId(), e.getMessage());
+        }
+    }
+
     // ========== V24D6D6B: Suspension Lifecycle ==========
 
     /**
@@ -773,6 +844,17 @@ public class LeagueSimulator {
                     careerId, matchId);
             log.info("[V24-DETAIL-PERSIST] saved match detail careerId={}, matchId={}, season={}, round={}",
                     careerId, matchId, seasonNumber, round);
+
+            // V24D6R-hotfix: Apply career-state mutations (INJURY, RED_CARD, YELLOW_CARD)
+            // from this match's timeline to the in-memory CareerSave. The orchestrator
+            // calls careerSessionService.saveCareer at end of round, which persists this
+            // same instance, so the next squad/lineup read will see the mutations.
+            //
+            // NOTE: suspension/injury recovery lifecycle decrement is NOT applied here.
+            // That requires end-of-round participation tracking (preMatchSuspended,
+            // newlySuspended, participatedPlayerIds) which the live path does not yet
+            // collect. Deferred to V24D6R2.
+            applyLiveMatchCareerMutations(career, v24Result);
 
         } catch (Exception e) {
             Throwable cause = e.getCause() != null ? e.getCause() : e;
