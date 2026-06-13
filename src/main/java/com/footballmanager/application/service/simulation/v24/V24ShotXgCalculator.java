@@ -13,12 +13,14 @@ package com.footballmanager.application.service.simulation.v24;
  *   <li>Team style modifier (attacking = higher, defensive = lower)</li>
  * </ul>
  *
- * <p>Output clamped to [0.01, 0.80].
+ * <p>Output clamped to [0.01, 0.60] (V24D6U4 tuned from 0.80).
  */
 public class V24ShotXgCalculator {
 
     private static final double MIN_XG = 0.01;
-    private static final double MAX_XG = 0.80;
+    // V24D6U4: Reduced from 0.80 to 0.60 — even with multipliers, realistic xG
+    // for a 6-yard box tap-in should not exceed ~0.50 in this tuned model.
+    private static final double MAX_XG = 0.60;
 
     private static final double INSIDE_BOX_DISTANCE = 16.0; // meters from goal line
     private static final double SIX_YARD_BOX_DISTANCE = 8.0;
@@ -34,13 +36,17 @@ public class V24ShotXgCalculator {
         return clamp(xg);
     }
 
+    // V24D6U4: Base xG reduced ~45-55% to lower expected goals from ~4.5 to ~1.25 per team.
+    // Target distribution: P(0)=29%, P(1)=36%, P(2)=22%, P(3+)=13% (Poisson λ=1.25).
+    // Previous six-yard box was 0.38 → 0.20 (real football ~0.40-0.50 but with fewer chances).
+    // Outside box reduced from 0.08 → 0.04, long range 0.04 → 0.02.
     private double baseXg(V24ShotLocation location) {
         return switch (location) {
-            case SIX_YARD_BOX -> 0.38;
-            case PENALTY_AREA_CENTER -> 0.22;
-            case PENALTY_AREA_WIDE -> 0.16;
-            case OUTSIDE_BOX -> 0.08;
-            case LONG_RANGE -> 0.04;
+            case SIX_YARD_BOX -> 0.20;
+            case PENALTY_AREA_CENTER -> 0.12;
+            case PENALTY_AREA_WIDE -> 0.09;
+            case OUTSIDE_BOX -> 0.04;
+            case LONG_RANGE -> 0.02;
         };
     }
 

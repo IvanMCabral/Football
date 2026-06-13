@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * V24B: Shot xG model tests.
- * Verifies: xG clamped [0.01, 0.80], different locations produce different xG,
+ * Verifies: xG clamped [0.01, 0.60] (V24D6U4 tuned from 0.80), different locations produce different xG,
  * style modifier affects xG, goal resolution correlates with xG.
  */
 class V24ShotXgModelTest {
@@ -25,7 +25,8 @@ class V24ShotXgModelTest {
         V24ShotQuality max = new V24ShotQuality(
                 V24ShotLocation.SIX_YARD_BOX, 0.95, 0.95, 0.05, 0.1, 1.15);
         double xgMax = calc.calculateXg(max);
-        assertTrue(xgMax <= 0.80, "xG must be <= 0.80, got " + xgMax);
+        // V24D6U4: MAX_XG tuned from 0.80 to 0.60
+        assertTrue(xgMax <= 0.60, "xG must be <= 0.60, got " + xgMax);
     }
 
     @Test
@@ -97,8 +98,9 @@ class V24ShotXgModelTest {
         for (V24ShotLocation loc : locations) {
             V24ShotQuality q = new V24ShotQuality(loc, 0.5, 0.5, 0.5, 0.5, 1.0);
             double xg = calc.calculateXg(q);
-            assertTrue(xg >= 0.01 && xg <= 0.80,
-                    "xG for " + loc + " must be in [0.01, 0.80], got " + xg);
+            // V24D6U4: xG range updated from [0.01, 0.80] to [0.01, 0.60]
+            assertTrue(xg >= 0.01 && xg <= 0.60,
+                    "xG for " + loc + " must be in [0.01, 0.60], got " + xg);
         }
     }
 }
