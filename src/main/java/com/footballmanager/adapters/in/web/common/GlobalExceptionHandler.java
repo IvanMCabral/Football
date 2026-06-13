@@ -18,6 +18,10 @@ import java.util.Map;
  * {@code LINEUP_MINIMUM_PLAYERS_NOT_MET} code, the available count and
  * the minimum required count, so the UI can render a meaningful error
  * banner.
+ *
+ * <p>V24D6T2: Added handlers for IllegalArgumentException and IllegalStateException
+ * thrown by LineupHelper.validatePlayerFitness() and manual-select validation,
+ * mapping them to 422 Unprocessable Entity instead of 400/500.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -37,5 +41,29 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // Agregar más handlers según se necesiten
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleIllegalArgument(IllegalArgumentException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", "LINEUP_VALIDATION_ERROR");
+        body.put("message", ex.getMessage());
+        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        return Mono.just(
+            ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(body)
+        );
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleIllegalState(IllegalStateException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", "LINEUP_STATE_ERROR");
+        body.put("message", ex.getMessage());
+        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        return Mono.just(
+            ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(body)
+        );
+    }
 }
