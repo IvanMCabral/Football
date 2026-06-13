@@ -371,6 +371,74 @@ class LineupShortHandedTest {
         verify(careerRepository).save(any());
     }
 
+    // ========== T-V24D6T2: manual-select 10 jugadores -> V24D6U2 short-handed path (no longer 400) ==========
+    // Bug #3 (re-smoke): manual-select 10 jugadores retornaba 400 "Failed to read HTTP message"
+    // porque LineupHelper tiraba IllegalArgumentException("Must select exactly 11 players")
+    // y el WebFlux decoder serializaba mal. V24D6U2 + bc85e2e fix liberan el rango 7-11,
+    // y el GlobalExceptionHandler ahora mapea cualquier excepcion de dominio a 422.
+
+    @Test
+    void manualSelect_10Players_allowed_noLongerReturns400() {
+        // Squad of 11 healthy, manual-select 10 = best-effort short-handed
+        List<SessionPlayer> squad = fullHealthySquad();
+        CareerSave career = makeCareer(squad);
+        // 10 healthy IDs (omit 1 healthy player to land in the [7, 11] range)
+        List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
+                                          "mid-1", "mid-2", "mid-3", "mid-4",
+                                          "att-1");
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        // V24D6T2 expectation: success (not 400). Pre-V24D6U2 this would have
+        // thrown IllegalArgumentException("Must select exactly 11 players") and
+        // the WebFlux decoder serialized it as 400 "Failed to read HTTP message".
+        StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
+            .assertNext(dto -> {
+                assertEquals(10, dto.players().size(),
+                    "10 players should be accepted (V24D6U2 short-handed flow)");
+                assertNotNull(dto.warnings());
+                assertTrue(dto.warnings().stream()
+                    .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code())),
+                    "Should contain LINEUP_SHORT_HANDED warning");
+            })
+            .verifyComplete();
+
+        verify(careerRepository).save(any());
+    }
+
+    // ========== T-V24D6T2: manual-select with injured player -> 422 (no longer 500) ==========
+    // Bug #4 (re-smoke): manual-select con lesionado retornaba 500 porque
+    // LineupHelper.validatePlayerFitness tiraba IllegalArgumentException sin
+    // handler. El GlobalExceptionHandler ahora lo mapea a 422 con code.
+
+    @Test
+    void manualSelect_withInjuredPlayer_rejectedAsIllegalArgument() {
+        List<SessionPlayer> squad = fullHealthySquad();
+        // Mark one midfielder injured
+        squad.add(makeInjuredPlayer("inj-extra", "Injured", "CM"));
+        CareerSave career = makeCareer(squad);
+
+        // 11 IDs including the injured one
+        List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
+                                          "mid-1", "mid-2", "mid-3", "mid-4",
+                                          "att-1", "inj-extra");
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+
+        // The use-case layer throws IllegalArgumentException; the GlobalExceptionHandler
+        // maps it to 422. This test pins the use-case-layer contract; the handler
+        // mapping is verified by the integration in a separate spec.
+        StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
+            .expectErrorSatisfies(err -> {
+                assertTrue(err instanceof IllegalArgumentException,
+                    "Expected IllegalArgumentException, got " + err.getClass().getSimpleName());
+                assertTrue(err.getMessage().toLowerCase().contains("injured"),
+                    "Expected message to mention 'injured', got: " + err.getMessage());
+            })
+            .verify();
+
+        verify(careerRepository, never()).save(any());
+    }
+
     // ========== T8: manual-select 6 players -> rejected ==========
 
     @Test
