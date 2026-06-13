@@ -1,14 +1,20 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.Formation;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Helper compartido para operaciones de lineup.
  * Extraído para evitar duplicación entre UseCases.
+ *
+ * <p>V24D6U2: Added short-handed variants that return warnings instead
+ * of throwing on position deficit. The strict methods remain for
+ * legacy callers and tests.
  */
 @Component
 public class LineupHelper {
@@ -122,4 +128,46 @@ public class LineupHelper {
             }
         }
     }
+
+    // ========== V24D6U2: Short-handed variants ==========
+
+    /**
+     * V24D6U2: Validates a short-handed lineup. Throws on out-of-bounds size
+     * or duplicate IDs. Does NOT throw on missing goalkeeper (returns
+     * warning instead) or position deficit (no warnings, the lineup is
+     * already accepted as best-effort).
+     *
+     * <p>Caller is expected to have already filtered for availability
+     * (energy, injury, suspension).
+     */
+    public void validateLineupBasicShortHanded(List<SessionPlayer> players) {
+        if (players == null || players.isEmpty()) {
+            throw new IllegalArgumentException("Lineup must not be empty");
+        }
+        int size = players.size();
+        if (size < LineupRules.MIN_AVAILABLE_PLAYERS) {
+            throw new IllegalArgumentException(
+                "Lineup must have at least " + LineupRules.MIN_AVAILABLE_PLAYERS
+                + " players, found: " + size);
+        }
+        if (size > LineupRules.MAX_LINEUP_PLAYERS) {
+            throw new IllegalArgumentException(
+                "Lineup must have at most " + LineupRules.MAX_LINEUP_PLAYERS
+                + " players, found: " + size);
+        }
+    }
+
+    /**
+     * V24D6U2: Returns a warning if the lineup has no goalkeeper.
+     * Returns empty otherwise. Does not throw.
+     */
+    public List<LineupWarningDTO> detectShortHandedWarnings(List<SessionPlayer> players) {
+        List<LineupWarningDTO> warnings = new ArrayList<>();
+        if (players != null && players.size() > 0
+            && countGoalkeepers(players) == 0) {
+            warnings.add(LineupWarningDTO.noGoalkeeper(players.size()));
+        }
+        return warnings;
+    }
 }
+

@@ -63,13 +63,21 @@ public final class V24MatchContext {
     }
 
     private void validate() {
-        if (homeStartingPlayers.size() != 11) {
+        validateStarterCount(homeStartingPlayers, "homeStartingPlayers");
+        validateStarterCount(awayStartingPlayers, "awayStartingPlayers");
+    }
+
+    /**
+     * V24D6U2: Short-handed lineups are now permitted. The engine accepts
+     * any starting-XI size in {@code [MIN, 11]} inclusive. Below MIN the
+     * team cannot field a match.
+     */
+    private static void validateStarterCount(List<SessionPlayer> starters, String label) {
+        int size = starters.size();
+        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (size < min || size > com.footballmanager.application.service.lineup.LineupRules.MAX_LINEUP_PLAYERS) {
             throw new IllegalArgumentException(
-                    "homeStartingPlayers must contain exactly 11 players, got " + homeStartingPlayers.size());
-        }
-        if (awayStartingPlayers.size() != 11) {
-            throw new IllegalArgumentException(
-                    "awayStartingPlayers must contain exactly 11 players, got " + awayStartingPlayers.size());
+                    label + " must contain between " + min + " and 11 players, got " + size);
         }
     }
 

@@ -21,7 +21,9 @@ class V24MatchContextValidationTest {
 
     @Test
     void rejectsInvalidStartingEleven() {
-        List<SessionPlayer> homeStart = makePlayers("home", 10, 75); // only 10
+        // V24D6U2: short-handed lineups are accepted in [MIN=7, 11]. Test the
+        // boundary below MIN (6 players) which should still be rejected.
+        List<SessionPlayer> homeStart = makePlayers("home", 6, 75); // below MIN
         List<SessionPlayer> awayStart = makePlayers("away", 11, 75);
         V24MatchContext ctx = buildContext("match-valid", 75, 75);
 
@@ -34,8 +36,27 @@ class V24MatchContextValidationTest {
                         "4-3-3", "4-3-3",
                         TeamStyle.BALANCED, TeamStyle.BALANCED
                 ));
-        assertTrue(ex.getMessage().contains("11") || ex.getMessage().contains("home"),
-                "Exception should mention 11 players or home: " + ex.getMessage());
+        assertTrue(ex.getMessage().contains("7") || ex.getMessage().contains("home"),
+                "Exception should mention 7 or home: " + ex.getMessage());
+    }
+
+    @Test
+    void acceptsShortHandedStartingEleven() {
+        // V24D6U2: 10-player home is now accepted
+        List<SessionPlayer> homeStart = makePlayers("home", 10, 75);
+        List<SessionPlayer> awayStart = makePlayers("away", 11, 75);
+        V24MatchContext ctx = buildContext("match-valid", 75, 75);
+
+        V24MatchContext shortCtx = new V24MatchContext(
+                ctx.matchId(), ctx.homeTeamId(), ctx.awayTeamId(),
+                ctx.homeTeam(), ctx.awayTeam(),
+                homeStart, awayStart,
+                List.of(), List.of(),
+                "4-3-3", "4-3-3",
+                TeamStyle.BALANCED, TeamStyle.BALANCED
+        );
+        assertEquals(10, shortCtx.homeStartingPlayers().size());
+        assertEquals(11, shortCtx.awayStartingPlayers().size());
     }
 
     @ParameterizedTest

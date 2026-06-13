@@ -62,8 +62,11 @@ public class V24TeamMatchState {
         Objects.requireNonNull(team, "team must not be null");
         Objects.requireNonNull(starting, "starting list must not be null");
         Objects.requireNonNull(bench, "bench list must not be null");
-        if (starting.size() != 11) {
-            throw new IllegalArgumentException("starting must contain exactly 11 players, got " + starting.size());
+        // V24D6U2: accept short-handed starting lineups in [MIN, 11]
+        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (starting.size() < min || starting.size() > 11) {
+            throw new IllegalArgumentException(
+                "starting must contain between " + min + " and 11 players, got " + starting.size());
         }
         TeamStyle effectiveStyle = (style != null) ? style : TeamStyle.BALANCED;
 

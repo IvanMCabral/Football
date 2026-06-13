@@ -167,7 +167,9 @@ class V24MatchContextFactoryTest {
 
     @Test
     void derivesFromSquadWhenStartingXiLessThanEleven() {
-        // V24D6M11: Explicit starting XI with <11 players is supplemented from squad.
+        // V24D6U2: <11 starting XI is now passed through (short-handed), not
+        // supplemented from squad. The squad fallback only triggers when the
+        // teamStarting11 entry is empty/absent.
         CareerSave career = makeCareerWithStartingXi("career-7", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70),
                 "home-t1", 10, "away-t2", 11);
@@ -176,7 +178,24 @@ class V24MatchContextFactoryTest {
         SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
 
         V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
-        assertEquals(11, ctx.homeStartingPlayers().size());
+        assertEquals(10, ctx.homeStartingPlayers().size(),
+            "V24D6U2: short-handed starting XI flows through unchanged");
+    }
+
+    @Test
+    void derivesFromSquadWhenStartingXiIsEmpty() {
+        // V24D6U2: when the user has not set a starting XI, the factory falls
+        // back to derive the first 11 from the squad. This is the pre-V24D6U2
+        // behavior preserved for fresh careers that haven't picked a lineup yet.
+        CareerSave career = makeCareerWithNoStarting11("career-7b", "home-t1", "away-t2",
+                makePlayers("h", 15, 75), makePlayers("a", 15, 70));
+        MatchFixture fixture = makeFixture("match-7b", "home-t1", "away-t2", 1);
+        SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-3-3");
+        SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
+
+        V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
+        assertEquals(11, ctx.homeStartingPlayers().size(),
+            "Empty teamStarting11 should still fall back to squad derivation");
     }
 
     @Test

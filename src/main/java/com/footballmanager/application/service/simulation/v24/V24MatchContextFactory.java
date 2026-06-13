@@ -149,9 +149,12 @@ public final class V24MatchContextFactory {
     }
 
     private void validateStarterCount(List<SessionPlayer> starters, String teamLabel) {
-        if (starters.size() != 11) {
+        // V24D6U2: accept short-handed lineups in [MIN, 11]
+        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (starters.size() < min || starters.size() > 11) {
             throw new IllegalArgumentException(
-                    teamLabel + "StartingPlayers must contain exactly 11 players, got " + starters.size());
+                    teamLabel + "StartingPlayers must contain between " + min
+                    + " and 11 players, got " + starters.size());
         }
     }
 
@@ -189,10 +192,12 @@ public final class V24MatchContextFactory {
 
         // V24D6M11: Fallback — derive from squad
         resolved = deriveStartingXIfromSquad(career, teamId, teamLabel);
-        if (resolved.size() == 11) return resolved;
+        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (resolved.size() >= min) return resolved;
 
         throw new IllegalArgumentException(
-                teamLabel + " starting XI must contain exactly 11 players, got " + resolved.size()
+                teamLabel + " starting XI must contain at least " + min
+                + " players, got " + resolved.size()
                 + " for teamId: " + teamId);
     }
 
@@ -212,8 +217,15 @@ public final class V24MatchContextFactory {
                     teamLabel + " starting XI has " + ids.size()
                     + " entries — maximum is 11 for teamId: " + teamId);
         }
-        // <11 entries: fall back to squad derivation
-        if (ids.size() < 11) return null;
+        // V24D6U2: short-handed entries flow through (used to fall back to squad
+        // derivation, but that masks user intent; the user explicitly submitted
+        // a short-handed XI and the engine should honour it).
+        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (ids.size() < min) {
+            throw new IllegalArgumentException(
+                    teamLabel + " starting XI has " + ids.size()
+                    + " entries — minimum is " + min + " for teamId: " + teamId);
+        }
 
         List<SessionPlayer> resolved = new ArrayList<>();
         for (String pid : ids) {
@@ -239,14 +251,17 @@ public final class V24MatchContextFactory {
             CareerSave career, String teamId, String teamLabel) {
         // Try CareerTeamManager.teamSquads (written by CareerTeamManager.assignPlayerToSquad)
         List<String> squadIds = career.getTeamManager().getSquadPlayerIds(teamId);
-        if (squadIds == null || squadIds.size() < 11) {
+        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (squadIds == null || squadIds.size() < min) {
             throw new IllegalArgumentException(
                     teamLabel + " squad has only "
                     + (squadIds != null ? squadIds.size() : 0)
-                    + " players for teamId: " + teamId + " — need at least 11 for starting XI");
+                    + " players for teamId: " + teamId
+                    + " — need at least " + min + " for starting XI");
         }
         List<SessionPlayer> starters = new ArrayList<>();
-        for (int i = 0; i < 11; i++) {
+        int take = Math.min(11, squadIds.size());
+        for (int i = 0; i < take; i++) {
             SessionPlayer p = career.getSessionPlayer(squadIds.get(i));
             if (p == null) {
                 throw new IllegalArgumentException(
