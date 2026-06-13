@@ -96,8 +96,17 @@ public class V24SuspensionLifecycleApplier {
             // Skip if player was newly red-carded this round
             if (newSuspended.contains(playerId)) continue;
 
-            // Skip if player participated this round
-            if (participatedPlayerIds.contains(playerId)) continue;
+            // Skip if player participated this round.
+            // V24D6T2 (bug #7): a currently-suspended player cannot have actually
+            // participated even if their ID appears in participatedPlayerIds
+            // (e.g. they were in the starting XI but did not play because of
+            // their suspension). In that case the participation tracker is
+            // wrong and the suspension decrement must still fire. Trust the
+            // suspension status over the tracker.
+            if (participatedPlayerIds.contains(playerId)
+                    && !Boolean.TRUE.equals(player.getSuspended())) {
+                continue;
+            }
 
             // Check team fixture eligibility
             String teamId = playerToTeam.get(playerId);

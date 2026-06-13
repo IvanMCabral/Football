@@ -175,18 +175,21 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
     // ========== T5: participated player does not recover or serve ==========
 
     @Test
-    void participatedPlayerDoesNotRecoverOrServe() {
-        String p1 = "p-susp-inj-participating";
+    void participatedInjuredPlayer_doesNotRecover() {
+        // V24D6T2: this test now isolates the injury-decrement contract from the
+        // suspension-decrement contract (the latter changed — see
+        // preExistingSuspendedInParticipatedPlayerIds_decrementFires). A player
+        // who is in preRoundInjuredPlayerIds but is also in participatedPlayerIds
+        // (i.e. actually played) must NOT have their injury recovery decrement
+        // applied, because the recovery represents matches missed.
+        String p1 = "p-inj-participating";
         LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(1, 1);
-        tracking.preRoundSuspendedPlayerIds.add(p1);
         tracking.preRoundInjuredPlayerIds.add(p1);
         tracking.participatedPlayerIds.add(p1);
 
         CareerSave career = newCareer();
         addPlayer(career, p1, HOME);
         SessionPlayer p = career.getPlayerManager().getSessionPlayer(p1);
-        p.setSuspended(true);
-        p.setSuspensionRemainingMatches(1);
         p.setInjured(true);
         p.setInjuryRemainingMatches(2);
         p.setInjuryType("MATCH_INJURY");
@@ -198,8 +201,6 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
         simulator.applyEndOfRoundLiveLifecycle(career, 1,
                 career.getTournamentState().getFixtures(), tracking);
 
-        assertTrue(p.getSuspended(), "Participated: suspended stays true");
-        assertEquals(1, p.getSuspensionRemainingMatches(), "Participated: no suspension decrement");
         assertTrue(p.getInjured(), "Participated: injured stays true");
         assertEquals(2, p.getInjuryRemainingMatches(), "Participated: no injury recovery");
     }
@@ -297,6 +298,97 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
         assertSame(sameRef, career, "CareerSave reference must be unchanged");
         assertFalse(career.getPlayerManager().getSessionPlayer(p1).getSuspended(),
                 "In-place mutation must be visible via the same CareerSave reference");
+    }
+
+    // ========== T-V24D6T2 (bug #7): suspended player in participatedPlayerIds still decrements ==========
+    // V24D6T2 fix: applyLiveMatchCareerMutations excludes currently-suspended
+    // players from participatedPlayerIds accumulation. This test validates the
+    // decrement fires for a pre-suspended player even when the participation
+    // tracking would otherwise include them.
+
+    @Test
+    void preExistingSuspendedInParticipatedPlayerIds_decrementFires() {
+        String p1 = "p-susp-in-xi";
+        LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(1, 1);
+        tracking.preRoundSuspendedPlayerIds.add(p1);
+        // Simulate: V24 engine emitted events for p1 (they are in starting XI),
+        // so participatedPlayerIds contains them. Pre-fix this would block the decrement.
+        tracking.participatedPlayerIds.add(p1);
+
+        CareerSave career = newCareer();
+        addPlayer(career, p1, HOME);
+        SessionPlayer p = career.getPlayerManager().getSessionPlayer(p1);
+        p.setSuspended(true);
+        p.setSuspensionRemainingMatches(1);
+
+        career.getTournamentState().getFixtures().add(new MatchFixture("m-r1-susp-xi", HOME, AWAY, 1));
+
+        LeagueSimulator simulator = newSimulator(true, false, false, true, false);
+
+        simulator.applyEndOfRoundLiveLifecycle(career, 1,
+                career.getTournamentState().getFixtures(), tracking);
+
+        // V24D6T2: even though participatedPlayerIds contains p1 (from V24
+        // timeline events), the decrement still fires because suspended
+        // players are excluded from participatedPlayerIds accumulation.
+        assertFalse(p.getSuspended(),
+                "V24D6T2: suspended player in participatedPlayerIds must still decrement");
+        assertEquals(0, p.getSuspensionRemainingMatches(),
+                "V24D6T2: remaining must be 0 even when in participatedPlayerIds");
+    }
+
+    // ========== T-V24D6T2 (bug #7): applyLiveMatchCareerMutations excludes suspended from participated ==========
+    // V24D6T2: directly exercises applyLiveMatchCareerMutations (now package-private
+    // for testability) and asserts a suspended player appearing in the V24 timeline
+    // does NOT end up in tracking.participatedPlayerIds. End-to-end decrement
+    // behavior is covered by preExistingSuspendedInParticipatedPlayerIds_decrementFires
+    // and V24CareerMutationIntegrationTest.preExistingSuspendedPlayerInStartingXI_decrementFires.
+
+    @Test
+    void applyLiveMatchCareerMutations_excludesSuspendedFromParticipated() {
+        String suspId = "p-suspended-in-xi";
+        String healthyId = "p-healthy-in-xi";
+        LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(1, 1);
+
+        CareerSave career = newCareer();
+        addPlayer(career, suspId, HOME);
+        addPlayer(career, healthyId, HOME);
+        SessionPlayer sp = career.getPlayerManager().getSessionPlayer(suspId);
+        sp.setSuspended(true);
+        sp.setSuspensionRemainingMatches(1);
+
+        // Build a V24 timeline where BOTH players appear (e.g. they are in the
+        // starting XI). The live mutations method should accumulate both event
+        // IDs into participatedPlayerIds — but the suspended one must be excluded.
+        V24MatchTimeline timeline = new V24MatchTimeline();
+        timeline.addEvent(new V24MatchEvent(
+            10, V24MatchEventType.GOAL,
+            HOME, suspId, "Suspended Scorer", null, null, 0.0, "Susp goal"));
+        timeline.addEvent(new V24MatchEvent(
+            20, V24MatchEventType.GOAL,
+            HOME, healthyId, "Healthy Scorer", null, null, 0.0, "Healthy goal"));
+
+        V24DetailedMatchResult v24Result = V24DetailedMatchResult.builder()
+            .matchId("m-bug7").homeTeamId(HOME).awayTeamId(AWAY)
+            .homeGoals(2).awayGoals(0).homeXg(1.0).awayXg(0.0)
+            .homeShots(5).awayShots(2).homePossession(60).awayPossession(40)
+            .timeline(timeline)
+            .summary("V24D6T2: suspended in XI")
+            .build();
+
+        LeagueSimulator simulator = newSimulator(true, false, false, true, false);
+
+        // Call the package-private method directly.
+        simulator.applyLiveMatchCareerMutations(career, v24Result, tracking);
+
+        // V24D6T2 assertion: suspended player must NOT be in participatedPlayerIds
+        // (even though they appear in the V24 timeline as a goal scorer).
+        assertFalse(tracking.participatedPlayerIds.contains(suspId),
+            "V24D6T2: suspended player must be excluded from participatedPlayerIds "
+            + "(they are not actually on the pitch even if they appear in the XI)");
+        // Healthy player SHOULD be in participatedPlayerIds.
+        assertTrue(tracking.participatedPlayerIds.contains(healthyId),
+            "V24D6T2: healthy player who appears in timeline must be in participatedPlayerIds");
     }
 
     // ========== Helpers ==========

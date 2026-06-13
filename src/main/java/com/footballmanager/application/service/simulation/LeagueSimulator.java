@@ -446,8 +446,12 @@ public class LeagueSimulator {
      * <p>Skips silently if the policy is disabled — read-only behavior
      * matches the existing batch path.
      */
-    private void applyLiveMatchCareerMutations(CareerSave career, V24DetailedMatchResult v24Result,
-                                               LiveRoundMutationTracking tracking) {
+    /**
+     * V24D6T2 (bug #7): package-private for unit test coverage of the
+     * suspended-player exclusion. Was {@code private}.
+     */
+    void applyLiveMatchCareerMutations(CareerSave career, V24DetailedMatchResult v24Result,
+                                       LiveRoundMutationTracking tracking) {
         if (career == null || v24Result == null) {
             return;
         }
@@ -495,13 +499,22 @@ public class LeagueSimulator {
 
             // V24D6R2: Post-mutation diff — detect newly suspended/injured from this match
             if (tracking != null) {
-                // Accumulate participatedPlayerIds from timeline
+                // V24D6T2 (bug #7): build set of currently-suspended players so they
+                // are NOT counted as "participated" — a suspended player does not
+                // actually play even if the V24 timeline emits events for them
+                // (e.g. they appear in the starting XI). Without this filter,
+                // V24SuspensionLifecycleApplier skips the player and decrement never fires.
+                Set<String> currentlySuspended = capturePreRoundSuspendedPlayerIds(career);
+
+                // Accumulate participatedPlayerIds from timeline (excluding suspended)
                 if (v24Result.timeline() != null) {
                     for (V24MatchEvent event : v24Result.timeline().events()) {
-                        if (event.playerId() != null && !event.playerId().isBlank()) {
+                        if (event.playerId() != null && !event.playerId().isBlank()
+                                && !currentlySuspended.contains(event.playerId())) {
                             tracking.participatedPlayerIds.add(event.playerId());
                         }
-                        if (event.relatedPlayerId() != null && !event.relatedPlayerId().isBlank()) {
+                        if (event.relatedPlayerId() != null && !event.relatedPlayerId().isBlank()
+                                && !currentlySuspended.contains(event.relatedPlayerId())) {
                             tracking.participatedPlayerIds.add(event.relatedPlayerId());
                         }
                     }
@@ -778,17 +791,20 @@ public class LeagueSimulator {
 
     /**
      * V24D6D6B: Collects starting XI participation from V24 context.
-     * All 11 starters per team are considered to have participated.
+     * All 11 starters per team are considered to have participated
+     * (V24D6T2 bug #7: suspended starters are excluded — a suspended
+     * player does not actually play, so the suspension decrement must
+     * still fire end-of-round).
      */
     private void collectStartingXIParticipation(V24MatchContext context,
                                                   V24RoundMutationTracking tracking) {
         for (SessionPlayer p : context.homeStartingPlayers()) {
-            if (p != null && p.getSessionPlayerId() != null) {
+            if (p != null && p.getSessionPlayerId() != null && !Boolean.TRUE.equals(p.getSuspended())) {
                 tracking.participatedPlayerIds.add(p.getSessionPlayerId());
             }
         }
         for (SessionPlayer p : context.awayStartingPlayers()) {
-            if (p != null && p.getSessionPlayerId() != null) {
+            if (p != null && p.getSessionPlayerId() != null && !Boolean.TRUE.equals(p.getSuspended())) {
                 tracking.participatedPlayerIds.add(p.getSessionPlayerId());
             }
         }

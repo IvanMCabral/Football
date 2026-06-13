@@ -743,12 +743,12 @@ class V24CareerMutationIntegrationTest {
     }
 
     /**
-     * Test 3: pre-existing suspended player participated → does NOT decrement.
-     * Suspended player IS in starting XI, so participated=true.
+     * Test 3: pre-existing suspended player participated → DOES decrement. V24D6T2 (bug #7) — participation tracking now excludes suspended players (a suspended player is not actually on the pitch).
+     * V24D6T2: participation tracking excludes suspended players; the suspension decrement fires end-of-round.
      * Expect: suspended=true, remaining=1 (unchanged).
      */
     @Test
-    void preExistingSuspendedPlayerParticipated_doesNotDecrement() {
+    void preExistingSuspendedPlayerInStartingXI_decrementFires() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -774,8 +774,12 @@ class V24CareerMutationIntegrationTest {
         simulator.simulateLeagueRound(career, 1);
 
         SessionPlayer p = career.getSessionPlayer("suspended_p1");
-        assertTrue(p.getSuspended(), "Participated suspended player should remain suspended");
-        assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not decrement");
+        // V24D6T2 bug #7 fix: suspended player in XI is now excluded from
+        // participatedPlayerIds, so the suspension decrement fires.
+        assertEquals(0, p.getSuspensionRemainingMatches(),
+            "V24D6T2: suspended player must decrement end-of-round (even if in XI)");
+        assertFalse(p.getSuspended(),
+            "V24D6T2: suspended=true with remaining=0 should clear the suspension");
     }
 
     /**
