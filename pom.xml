@@ -135,6 +135,16 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- V24D7 FASE B: Spring Security Test support for SecurityMockServerConfigurers
+             (mockUser / mockJwt / mockAuthentication) on @WebFluxTest slices.
+             Provides SecurityMockServerConfigurers for the WebFlux WebTestClient,
+             enabling JWT-bypassing E2E HTTP tests without booting the full context. -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
