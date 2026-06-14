@@ -96,15 +96,21 @@ public class CareerSessionService {
     @Deprecated
     public Mono<CareerSave> startNewCareer(UUID userId, String worldLeagueId, String worldTeamId,
                                             String difficulty, String gameSpeed) {
-        CareerSave career = new CareerSave();
-        career.setUserId(userId);
-        return careerRepository.save(career).thenReturn(career);
+        // Redirige al método correcto con teamsPerDivision default de 5.
+        // El deprecated 5-param creaba un Career VACÍO (sin userSessionTeamId) — BUG.
+        return startCareerUseCase.start(userId, worldLeagueId, worldTeamId, difficulty, gameSpeed, 5);
     }
 
     @Deprecated
     public Mono<CareerSave> startNewCareer(UUID userId, Long leagueId, Long teamId) {
-        CareerSave career = new CareerSave();
-        career.setUserId(userId);
-        return careerRepository.save(career).thenReturn(career);
+        // Redirige al método String-based con teamsPerDivision default de 5.
+        return startCareerUseCase.start(
+                userId,
+                leagueId.toString(),
+                teamId.toString(),
+                "NORMAL",
+                "NORMAL",
+                5
+        );
     }
 }

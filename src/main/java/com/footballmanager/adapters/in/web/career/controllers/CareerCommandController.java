@@ -48,26 +48,19 @@ public class CareerCommandController {
             Authentication authentication) {
 
         UUID userId = controllerHelper.getUserId(authentication);
-        Integer teamsPerDivision = request.teamsPerDivision();
+        // teamsPerDivision es requerido — default a 5 si viene null (antiguo frontend)
+        int effectiveTeamsPerDivision = request.teamsPerDivision() != null
+                ? request.teamsPerDivision()
+                : 5;
 
-        Mono<?> careerMono = teamsPerDivision != null
-                ? sessionService.startNewCareer(
+        return sessionService.startNewCareer(
                         userId,
                         request.leagueId(),
                         request.teamId(),
                         request.difficulty(),
                         request.gameSpeed(),
-                        teamsPerDivision
-                )
-                : sessionService.startNewCareer(
-                        userId,
-                        request.leagueId(),
-                        request.teamId(),
-                        request.difficulty(),
-                        request.gameSpeed()
-                );
-
-        return careerMono.then();
+                        effectiveTeamsPerDivision
+                ).then();
     }
 
     /**
