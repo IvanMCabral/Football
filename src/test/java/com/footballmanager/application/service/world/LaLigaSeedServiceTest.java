@@ -9,14 +9,17 @@ import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -25,13 +28,14 @@ import static org.mockito.Mockito.*;
  * <p>Verifica: idempotencia, conteo de equipos/players, asignación de league, persistencia.
  *
  * <p><b>V24D8-BUG-002 update:</b> agrega verificación de Capa 2 (deleteByUserId del WorldSnapshot
- * viejo) y Capa 3 (persistPlayerNamesInPostgres fire-and-forget).
+ * viejo) y Capa 3 (persistPlayerNamesInPostgres con DatabaseClient).
  */
 class LaLigaSeedServiceTest {
 
     private WorldSnapshotService snapshotService;
     private RedisWorldRepository worldRepository;
     private PlayerRepository playerRepository;
+    private DatabaseClient databaseClient;
     private LaLigaSeedService service;
 
     @BeforeEach
@@ -39,18 +43,38 @@ class LaLigaSeedServiceTest {
         snapshotService = mock(WorldSnapshotService.class);
         worldRepository = mock(RedisWorldRepository.class);
         playerRepository = mock(PlayerRepository.class);
+        databaseClient = mock(DatabaseClient.class);
+
         service = new LaLigaSeedService(
                 snapshotService,
                 new com.fasterxml.jackson.databind.ObjectMapper(),
                 worldRepository,
-                playerRepository
+                playerRepository,
+                databaseClient
         );
 
-        // Stubs básicos para que los tests viejos no fallen por NPE en la Capa 2/3
+        // Stubs básicos para que los tests no fallen por NPE en la Capa 2/3
         when(worldRepository.deleteByUserId(any(UUID.class))).thenReturn(Mono.just(true));
         when(playerRepository.findById(any(UUID.class), any(UUID.class))).thenReturn(Mono.empty());
         when(playerRepository.save(any(UUID.class), any(Player.class)))
                 .thenAnswer(inv -> Mono.just(inv.getArgument(1)));
+
+        // Stub DatabaseClient para persistPlayerNamesInPostgres (V24D8-BUG-004 fix)
+        // La impl usa sql().bind()...bind().fetch().rowsUpdated().block()
+        // Stub completo de la cadena fluida usando doAnswer para retornar el mock en cada paso
+        org.springframework.r2dbc.core.FetchSpec<Map<String, Object>> fetchSpec =
+                mock(org.springframework.r2dbc.core.FetchSpec.class);
+        lenient().when(fetchSpec.rowsUpdated()).thenReturn(Mono.just(1L));
+
+        org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec execSpec =
+                mock(org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec.class);
+        lenient().when(execSpec.bind(anyString(), any())).thenReturn(execSpec);
+        lenient().when(execSpec.bind(anyString(), any(UUID[].class))).thenReturn(execSpec);
+        lenient().when(execSpec.bind(anyString(), any(int.class))).thenReturn(execSpec);
+        lenient().when(execSpec.bind(anyString(), any(boolean.class))).thenReturn(execSpec);
+        lenient().when(execSpec.fetch()).thenReturn(fetchSpec);
+
+        lenient().when(databaseClient.sql(anyString())).thenReturn(execSpec);
     }
 
     @Test

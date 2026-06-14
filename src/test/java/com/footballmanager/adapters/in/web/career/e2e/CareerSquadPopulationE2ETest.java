@@ -233,4 +233,74 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
             .as("totalRounds must be > 0")
             .isGreaterThan(0);
     }
+
+    /**
+     * V24D8-BUG-004: Squad shows "Player N MAD" placeholders instead of real La Liga player names.
+     *
+     * Fix: LaLigaSeedService.persistPlayerNamesInPostgres() now inserts players + team_squad entries
+     * into PostgreSQL using DatabaseClient. BuildWorldViewUseCase rebuilds WorldView from Postgres
+     * and loads real player names (Vinicius Jr., Bellingham, Mbappe, etc.).
+     */
+    @Test
+    @DisplayName("V24D8-BUG-004: POST /world/seed-la-liga + POST /career/start → squad has REAL player names (not placeholders)")
+    void seedLaLiga_careerStart_squadHasRealPlayerNames() {
+        // 1. Get first team from La Liga (Real Madrid: teamId = 8e55b18e-051d-48bd-9763-a35ae3005ac0)
+        // Use fixed teamId to ensure we get Real Madrid for deterministic test
+        String teamId = "8e55b18e-051d-48bd-9763-a35ae3005ac0";
+
+        // 2. Seed La Liga
+        webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .post().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/seed-la-liga")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .exchange()
+            .expectStatus().isOk();
+
+        // 3. Create career with Real Madrid
+        webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .post().uri("/api/v1/career/start")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(String.format(
+                "{\"leagueId\":\"%s\",\"teamId\":\"%s\",\"difficulty\":\"NORMAL\",\"gameSpeed\":\"NORMAL\",\"teamsPerDivision\":5}",
+                LALIGA_ID, teamId))
+            .exchange()
+            .expectStatus().isCreated();
+
+        // 4. GET squad — names must NOT match "Player N XXX" pattern
+        List<Map<String, Object>> squad = webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .get().uri("/api/v1/career/teams/me/squad")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
+            .returnResult()
+            .getResponseBody();
+
+        assertThat(squad)
+            .as("Squad must not be empty")
+            .isNotNull()
+            .hasSizeGreaterThanOrEqualTo(11);
+
+        // All squad players must have real names (not "Player N XXX" placeholders)
+        for (Map<String, Object> player : squad) {
+            String name = (String) player.get("name");
+            assertThat(name)
+                .as("Player name must NOT be a placeholder like 'Player N MAD'")
+                .isNotNull()
+                .doesNotMatch("^Player \\d+ [A-Z]{3}$");
+        }
+
+        // Verify Real Madrid key players are present (at least some of these)
+        List<String> squadNames = squad.stream()
+            .map(p -> (String) p.get("name"))
+            .toList();
+
+        // Real Madrid has these players in the seed data
+        assertThat(squadNames)
+            .as("Squad should contain real Real Madrid players (e.g. Bellingham, Mbappe, Vinicius)")
+            .anyMatch(name -> name.contains("Bellingham") || name.contains("Mbappe") ||
+                             name.contains("Vinicius") || name.contains("Modric") ||
+                             name.contains("Courtois") || name.contains("Carvajal"));
+    }
 }

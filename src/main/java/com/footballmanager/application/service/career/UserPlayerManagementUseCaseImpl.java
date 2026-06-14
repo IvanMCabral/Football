@@ -96,6 +96,12 @@ public class UserPlayerManagementUseCaseImpl implements UserPlayerManagementUseC
     @Override
     public Mono<List<SessionPlayer>> getUserSquad(UUID userId) {
         return sessionService.getCareer(userId)
-            .map(career -> career.getTeamSquad(career.getUserSessionTeamId()));
+            .map(career -> {
+                String userTeamId = career.getUserSessionTeamId();
+                if (userTeamId == null) {
+                    return List.<SessionPlayer>of();
+                }
+                return career.getTeamSquad(userTeamId);
+            });
     }
 }

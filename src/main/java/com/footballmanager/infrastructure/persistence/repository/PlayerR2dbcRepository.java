@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Repository
@@ -28,9 +30,25 @@ public interface PlayerR2dbcRepository extends R2dbcRepository<PlayerEntity, UUI
 
         @Query("""
                 INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at)
-                VALUES (:#{#entity.id}, :#{#entity.name}, :#{#entity.age}, :#{#entity.position}, :#{#entity.attack}, :#{#entity.defense}, :#{#entity.technique}, :#{#entity.speed}, :#{#entity.stamina}, :#{#entity.mentality}, :#{#entity.marketValue}, :#{#entity.energy}, :#{#entity.injured}, :#{#entity.createdAt}, :#{#entity.updatedAt})
+                VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :marketValue, :energy, :injured, :createdAt, :updatedAt)
                 """)
-        Mono<Void> insertPlayer(PlayerEntity entity);
+        Mono<Void> insertPlayer(
+                UUID id,
+                String name,
+                int age,
+                String position,
+                int attack,
+                int defense,
+                int technique,
+                int speed,
+                int stamina,
+                int mentality,
+                BigDecimal marketValue,
+                int energy,
+                boolean injured,
+                Instant createdAt,
+                Instant updatedAt
+        );
 
     @Query("""
             INSERT INTO team_squad (team_id, player_id)

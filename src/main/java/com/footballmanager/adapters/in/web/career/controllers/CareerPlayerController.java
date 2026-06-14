@@ -42,11 +42,15 @@ public class CareerPlayerController {
                                                          Authentication authentication) {
         UUID userId = getUserIdFromAuth(authentication);
         return playerService.assignPlayerToUserTeam(userId, request.sessionPlayerId())
-                .map(career -> new AssignResultDTO(
-                        "Player assigned to your team successfully",
-                        career.getTeamSquad(career.getUserSessionTeamId()).size(),
-                        career.getFreePlayers().size()
-                ));
+                .map(career -> {
+                    String userTeamId = career.getUserSessionTeamId();
+                    int squadSize = userTeamId != null ? career.getTeamSquad(userTeamId).size() : 0;
+                    return new AssignResultDTO(
+                            "Player assigned to your team successfully",
+                            squadSize,
+                            career.getFreePlayers().size()
+                    );
+                });
     }
 
     @DeleteMapping("/{sessionPlayerId}")

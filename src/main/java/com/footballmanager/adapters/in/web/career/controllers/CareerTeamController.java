@@ -125,10 +125,11 @@ public class CareerTeamController {
                 if (userTeamId == null) {
                     return Mono.empty();
                 }
-                return teamCommandUseCase.getSessionTeam(userId, userTeamId)
-                    .map(SessionEntityMapper::toDTO);
-            })
-            .switchIfEmpty(Mono.just(null));
+                return Mono.defer(() -> Mono.justOrEmpty(
+                    teamCommandUseCase.getSessionTeam(userId, userTeamId)
+                        .map(SessionEntityMapper::toDTO)
+                        .block()));
+            });
     }
 
     /**
