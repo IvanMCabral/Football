@@ -1,10 +1,13 @@
 package com.footballmanager.application.service.world;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.model.entity.Player;
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -42,6 +45,8 @@ public class LaLigaSeedService {
 
     private final WorldSnapshotService snapshotService;
     private final ObjectMapper objectMapper;
+    private final RedisWorldRepository worldRepository;
+    private final PlayerRepository playerRepository;
 
     /**
      * Ejecuta el seed para el usuario indicado. Crea/actualiza la league, los 20 equipos
@@ -74,8 +79,16 @@ public class LaLigaSeedService {
         // UPSERT players: agrupar por team-name para asignar worldTeamId
         List<WorldPlayer> createdOrUpdated = ensurePlayers(snapshot, seed, teamsByName);
 
-        // Persistir snapshot
+        // Capa 3: persistir nombres reales en PostgreSQL (fire-and-forget, no bloquea el seed)
+        persistPlayerNamesInPostgres(userId, createdOrUpdated);
+
+        // Capa 2: forzar regeneración del WorldSnapshot borrando el snapshot viejo de Redis
+        // después del save. Así, un próximo getOrCreateSnapshot reconstruirá desde el state real.
         return snapshotService.saveSnapshot(snapshot)
+                .flatMap(saved -> worldRepository.deleteByUserId(userId)
+                        .doOnNext(deleted -> log.info("[LA-LIGA-SEED] snapshot invalidated for rebuild, userId={}, deleted={}", userId, deleted))
+                        .thenReturn(saved))
+                .doOnSuccess(s -> log.info("[LA-LIGA-SEED] snapshot regenerated for userId={}", userId))
                 .map(saved -> {
                     long durationMs = System.currentTimeMillis() - start;
                     int teamsCount = teamsByName.size();
@@ -84,6 +97,37 @@ public class LaLigaSeedService {
                             userId, teamsCount, playersCount, durationMs);
                     return new SeedResult(seed.league().name(), teamsCount, playersCount, durationMs);
                 });
+    }
+
+    /**
+     * V24D8-BUG-002 Capa 3: para cada WorldPlayer con realPlayerId (es decir, origin REAL),
+     * busca la Player entity correspondiente en Postgres y, si el nombre difiere del nuevo
+     * nombre del seed, persiste un rename via {@link Player#rename(String)}.
+     *
+     * <p>Fire-and-forget: el seed no espera a que las updates de Postgres terminen. Esto es
+     * aceptable porque (a) el seed ya escribió el snapshot nuevo en Redis con los nombres
+     * correctos, y (b) la career que se cree a continuación va a leer del snapshot, no de
+     * Postgres. La persistencia en Postgres es para mantener consistencia con futuras
+     * reconstrucciones del WorldView desde la base.
+     */
+    private void persistPlayerNamesInPostgres(UUID userId, List<WorldPlayer> players) {
+        for (WorldPlayer wp : players) {
+            if (wp.getRealPlayerId() == null) continue;
+            UUID realPlayerId = wp.getRealPlayerId();
+            String newName = wp.getName();
+            playerRepository.findById(userId, realPlayerId)
+                    .flatMap(dbPlayer -> {
+                        if (newName != null && !newName.equals(dbPlayer.getName())) {
+                            return playerRepository.save(userId, dbPlayer.rename(newName));
+                        }
+                        return Mono.empty();
+                    })
+                    .subscribe(
+                            saved -> log.debug("[LA-LIGA-SEED] postgres player renamed: realId={}, newName={}", realPlayerId, newName),
+                            err -> log.warn("[LA-LIGA-SEED] failed to rename postgres player realId={}: {}", realPlayerId, err.getMessage())
+                    );
+        }
+        log.info("[LA-LIGA-SEED] postgres player names update dispatched for userId={}, count={}", userId, players.size());
     }
 
     // ========== League ==========
@@ -232,6 +276,7 @@ public class LaLigaSeedService {
     }
 
     private void updatePlayerFromDto(WorldPlayer p, LaLigaSeedData.PlayerDto dto, WorldTeam team) {
+        p.setName(dto.name());
         p.setWorldTeamId(team.getWorldTeamId());
         p.setAge(dto.age());
         p.setPosition(dto.position());
