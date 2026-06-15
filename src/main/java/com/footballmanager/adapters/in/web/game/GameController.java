@@ -65,10 +65,12 @@ public class GameController {
     }
 
     @GetMapping("/{id}")
-    public Mono<Game> getGameById(@PathVariable String id, Authentication authentication) {
+    public Mono<ResponseEntity<Game>> getGameById(@PathVariable String id, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
         UUID userId = UUID.fromString(userIdStr);
-        return gameService.getGameById(userId, new GameId(UUID.fromString(id)));
+        return gameService.getGameById(userId, new GameId(UUID.fromString(id)))
+            .map(ResponseEntity::ok)
+            .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/user/{userId}")
