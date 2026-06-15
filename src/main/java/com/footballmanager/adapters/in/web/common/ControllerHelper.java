@@ -17,11 +17,12 @@ public class ControllerHelper {
      *
      * @param authentication Spring Security authentication
      * @return UUID del usuario autenticado
-     * @throws IllegalArgumentException si no hay usuario autenticado
+     * @throws UnauthorizedException si no hay usuario autenticado
+     *         (mapeada a HTTP 401 por GlobalExceptionHandler)
      */
     public UUID getUserId(Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
-            throw new IllegalArgumentException("Unauthorized: no user id in authentication");
+            throw new UnauthorizedException("Unauthorized: no user id in authentication");
         }
         return UUID.fromString(authentication.getName());
     }

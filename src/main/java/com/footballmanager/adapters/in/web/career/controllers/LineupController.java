@@ -1,6 +1,7 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.*;
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
@@ -28,6 +29,7 @@ public class LineupController {
     private final LineupCommandUseCase lineupCommandUseCase;
     private final LineupQueryUseCase lineupQueryUseCase;
     private final CareerSessionService careerSessionService;
+    private final ControllerHelper controllerHelper;
 
     /**
      * Auto-seleccionar Starting XI basado en OVR
@@ -37,7 +39,7 @@ public class LineupController {
     @PostMapping("/auto-select")
     public Mono<LineupDTO> autoSelectLineup(@RequestBody AutoSelectRequest request,
                                             Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return careerSessionService.getCareerFromCache(userId)
             .flatMap(career -> {
                 CareerPhase phase = career.getTournamentState().getCareerPhase();
@@ -58,7 +60,7 @@ public class LineupController {
     @PostMapping("/manual-select")
     public Mono<LineupDTO> manualSelectLineup(@RequestBody ManualSelectRequest request,
                                               Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return careerSessionService.getCareerFromCache(userId)
             .flatMap(career -> {
                 CareerPhase phase = career.getTournamentState().getCareerPhase();
@@ -80,7 +82,7 @@ public class LineupController {
      */
     @PostMapping("/confirm")
     public Mono<Void> confirmLineup(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return careerSessionService.getCareerFromCache(userId)
             .flatMap(career -> {
                 CareerPhase phase = career.getTournamentState().getCareerPhase();
@@ -99,14 +101,7 @@ public class LineupController {
      */
     @GetMapping("/current")
     public Mono<LineupDTO> getCurrentLineup(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return lineupQueryUseCase.getCurrentLineup(userId);
-    }
-
-    private UUID getUserIdFromAuth(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized: no user id in authentication");
-        }
-        return UUID.fromString(authentication.getName());
     }
 }

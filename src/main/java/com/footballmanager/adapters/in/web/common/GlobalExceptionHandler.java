@@ -66,4 +66,24 @@ public class GlobalExceptionHandler {
                 .body(body)
         );
     }
+
+    /**
+     * V24D12-3: Auth failures (no JWT, no name in Authentication) thrown by
+     * ControllerHelper.getUserId() now land here as HTTP 401 instead of
+     * being caught by the IllegalArgumentException handler and incorrectly
+     * mapped to 422 LINEUP_VALIDATION_ERROR. The front can now show a
+     * dedicated 'please log in again' banner on UNAUTHORIZED codes.
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleUnauthorized(UnauthorizedException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", "UNAUTHORIZED");
+        body.put("message", ex.getMessage());
+        body.put("status", HttpStatus.UNAUTHORIZED.value());
+        return Mono.just(
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(body)
+        );
+    }
 }

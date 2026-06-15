@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.domain.port.in.fixture.MigrateFixturesUseCase;
 import com.footballmanager.domain.port.in.fixture.RegenerateFixturesUseCase;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * CareerAdminController - Endpoints administrativos/técnicos.
@@ -25,6 +27,7 @@ public class CareerAdminController {
 
     private final MigrateFixturesUseCase migrateFixturesUseCase;
     private final RegenerateFixturesUseCase regenerateFixturesUseCase;
+    private final ControllerHelper controllerHelper;
 
     /**
      * POST /api/v1/career/admin/migrate
@@ -32,7 +35,7 @@ public class CareerAdminController {
      */
     @PostMapping("/migrate")
     public Mono<Map<String, Object>> migrateFixtures(Authentication authentication) {
-        String userId = getUserIdFromAuth(authentication);
+        String userId = controllerHelper.getUserId(authentication).toString();
 
         return migrateFixturesUseCase.migrate(userId)
                 .<Map<String, Object>>map(result -> {
@@ -55,9 +58,9 @@ public class CareerAdminController {
      */
     @PostMapping("/regenerate")
     public Mono<Map<String, Object>> regenerateFixtures(Authentication authentication) {
-        String userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
 
-        return regenerateFixturesUseCase.regenerate(java.util.UUID.fromString(userId))
+        return regenerateFixturesUseCase.regenerate(userId)
                 .<Map<String, Object>>map(result -> {
                     Map<String, Object> response = new HashMap<>();
                     response.put("success", true);
@@ -70,12 +73,5 @@ public class CareerAdminController {
                     error.put("error", e.getMessage());
                     return Mono.just(error);
                 });
-    }
-
-    private String getUserIdFromAuth(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized: no user id in authentication");
-        }
-        return authentication.getName();
     }
 }

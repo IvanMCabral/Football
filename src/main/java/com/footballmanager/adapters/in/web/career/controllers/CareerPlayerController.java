@@ -4,6 +4,7 @@ import com.footballmanager.adapters.in.web.career.dto.request.AssignPlayerReques
 import com.footballmanager.adapters.in.web.career.dto.response.AssignResultDTO;
 import com.footballmanager.adapters.in.web.career.dto.response.SessionPlayerDTO;
 import com.footballmanager.adapters.in.web.career.mappers.SessionEntityMapper;
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.career.CareerPlayerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -23,14 +24,16 @@ import java.util.UUID;
 public class CareerPlayerController {
 
     private final CareerPlayerService playerService;
+    private final ControllerHelper controllerHelper;
 
-    public CareerPlayerController(CareerPlayerService playerService) {
+    public CareerPlayerController(CareerPlayerService playerService, ControllerHelper controllerHelper) {
         this.playerService = playerService;
+        this.controllerHelper = controllerHelper;
     }
 
     @GetMapping("/free")
     public Mono<List<SessionPlayerDTO>> getFreePlayers(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return playerService.getFreePlayers(userId)
                 .map(players -> players.stream().map(SessionEntityMapper::toDTO).toList());
     }
@@ -40,7 +43,7 @@ public class CareerPlayerController {
     @ResponseStatus(HttpStatus.OK)
     public Mono<AssignResultDTO> assignPlayerToUserTeam(@RequestBody AssignPlayerRequest request,
                                                          Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return playerService.assignPlayerToUserTeam(userId, request.sessionPlayerId())
                 .map(career -> {
                     String userTeamId = career.getUserSessionTeamId();
@@ -57,21 +60,14 @@ public class CareerPlayerController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> removePlayer(@PathVariable String sessionPlayerId,
                                    Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return playerService.removePlayer(userId, sessionPlayerId).then();
     }
 
     @GetMapping("/squad")
     public Mono<List<SessionPlayerDTO>> getUserSquad(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return playerService.getUserSquad(userId)
                 .map(players -> players.stream().map(SessionEntityMapper::toDTO).toList());
-    }
-
-    private UUID getUserIdFromAuth(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized: no user id in authentication");
-        }
-        return UUID.fromString(authentication.getName());
     }
 }

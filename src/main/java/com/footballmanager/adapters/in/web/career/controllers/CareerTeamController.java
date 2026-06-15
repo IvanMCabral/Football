@@ -5,6 +5,7 @@ import com.footballmanager.adapters.in.web.career.dto.response.AssignResultDTO;
 import com.footballmanager.adapters.in.web.career.dto.response.SessionPlayerDTO;
 import com.footballmanager.adapters.in.web.career.dto.response.SessionTeamDTO;
 import com.footballmanager.adapters.in.web.career.mappers.SessionEntityMapper;
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.port.in.career.PlayerAssignmentUseCase;
 import com.footballmanager.domain.port.in.career.SquadQueryUseCase;
@@ -36,11 +37,12 @@ public class CareerTeamController {
     private final PlayerAssignmentUseCase playerAssignmentUseCase;
     private final SquadQueryUseCase squadQueryUseCase;
     private final CareerSessionService sessionService;
+    private final ControllerHelper controllerHelper;
 
     @PostMapping("/random")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<SessionTeamDTO> createRandomTeam(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return teamCommandUseCase.createRandomTeam(userId)
             .flatMap(career -> Mono.just(SessionEntityMapper.toDTO(
                 career.getAllSessionTeams().get(career.getAllSessionTeams().size() - 1))));
@@ -50,7 +52,7 @@ public class CareerTeamController {
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<SessionTeamDTO> cloneTeamToSession(@PathVariable UUID realTeamId,
                                                     Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return teamCommandUseCase.cloneTeamToSession(userId, realTeamId)
             .flatMap(career -> Mono.just(SessionEntityMapper.toDTO(
                 career.getAllSessionTeams().get(career.getAllSessionTeams().size() - 1))));
@@ -58,14 +60,14 @@ public class CareerTeamController {
 
     @GetMapping("")
     public Mono<List<SessionTeamDTO>> getSessionTeams(Authentication authentication) {
-        return teamCommandUseCase.getSessionTeams(getUserIdFromAuth(authentication))
+        return teamCommandUseCase.getSessionTeams(controllerHelper.getUserId(authentication))
             .map(teams -> teams.stream().map(SessionEntityMapper::toDTO).toList());
     }
 
     @GetMapping("/{sessionTeamId}")
     public Mono<SessionTeamDTO> getSessionTeam(@PathVariable String sessionTeamId,
                                                 Authentication authentication) {
-        return teamCommandUseCase.getSessionTeam(getUserIdFromAuth(authentication), sessionTeamId)
+        return teamCommandUseCase.getSessionTeam(controllerHelper.getUserId(authentication), sessionTeamId)
             .map(SessionEntityMapper::toDTO);
     }
 
@@ -73,7 +75,7 @@ public class CareerTeamController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> removeSessionTeam(@PathVariable String sessionTeamId,
                                          Authentication authentication) {
-        return teamCommandUseCase.removeSessionTeam(getUserIdFromAuth(authentication), sessionTeamId).then();
+        return teamCommandUseCase.removeSessionTeam(controllerHelper.getUserId(authentication), sessionTeamId).then();
     }
 
     @PostMapping("/{sessionTeamId}/players")
@@ -82,7 +84,7 @@ public class CareerTeamController {
             @PathVariable String sessionTeamId,
             @RequestBody AssignPlayerToTeamRequest request,
             Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return playerAssignmentUseCase.assignPlayerToSessionTeam(userId, request.sessionPlayerId(), sessionTeamId)
             .map(career -> new AssignResultDTO("Player assigned to team successfully"));
     }
@@ -93,7 +95,7 @@ public class CareerTeamController {
             @PathVariable String sessionTeamId,
             @PathVariable String sessionPlayerId,
             Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return playerAssignmentUseCase.removePlayerFromSessionTeam(userId, sessionPlayerId, sessionTeamId)
             .map(career -> new AssignResultDTO("Player removed from team successfully"));
     }
@@ -101,14 +103,14 @@ public class CareerTeamController {
     @GetMapping("/{sessionTeamId}/squad")
     public Mono<List<SessionPlayerDTO>> getSessionTeamSquad(@PathVariable String sessionTeamId,
                                                              Authentication authentication) {
-        return squadQueryUseCase.getSessionTeamSquad(getUserIdFromAuth(authentication), sessionTeamId)
+        return squadQueryUseCase.getSessionTeamSquad(controllerHelper.getUserId(authentication), sessionTeamId)
             .map(players -> players.stream().map(SessionEntityMapper::toDTO).toList());
     }
 
     @GetMapping("/by-world/{worldTeamId}/squad")
     public Mono<List<SessionPlayerDTO>> getTeamSquadByWorldId(@PathVariable String worldTeamId,
                                                                Authentication authentication) {
-        return squadQueryUseCase.getTeamSquadByWorldTeamId(getUserIdFromAuth(authentication), worldTeamId)
+        return squadQueryUseCase.getTeamSquadByWorldTeamId(controllerHelper.getUserId(authentication), worldTeamId)
             .map(players -> players.stream().map(SessionEntityMapper::toDTO).toList());
     }
 
@@ -118,7 +120,7 @@ public class CareerTeamController {
      */
     @GetMapping("/me")
     public Mono<SessionTeamDTO> getMyTeam(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return sessionService.continueCareer(userId)
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
@@ -138,7 +140,7 @@ public class CareerTeamController {
      */
     @GetMapping("/me/squad")
     public Mono<List<SessionPlayerDTO>> getMyTeamSquad(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return sessionService.continueCareer(userId)
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
@@ -149,12 +151,5 @@ public class CareerTeamController {
                     .map(players -> players.stream().map(SessionEntityMapper::toDTO).toList());
             })
             .switchIfEmpty(Mono.just(List.of()));
-    }
-
-    private UUID getUserIdFromAuth(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized: no user id in authentication");
-        }
-        return UUID.fromString(authentication.getName());
     }
 }

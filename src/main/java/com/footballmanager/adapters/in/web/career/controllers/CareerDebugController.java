@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.springframework.context.annotation.Profile;
@@ -31,9 +32,11 @@ import java.util.UUID;
 public class CareerDebugController {
 
     private final CareerSessionService sessionService;
+    private final ControllerHelper controllerHelper;
 
-    public CareerDebugController(CareerSessionService sessionService) {
+    public CareerDebugController(CareerSessionService sessionService, ControllerHelper controllerHelper) {
         this.sessionService = sessionService;
+        this.controllerHelper = controllerHelper;
     }
 
     /**
@@ -55,7 +58,7 @@ public class CareerDebugController {
      */
     @GetMapping("/fixtures")
     public Mono<Map<String, Object>> debugFixtures(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
 
         return sessionService.continueCareer(userId)
                 .flatMap(career -> {
@@ -86,14 +89,5 @@ public class CareerDebugController {
                     return Mono.just(debug);
                 })
                 .switchIfEmpty(Mono.just(Map.of("error", "Career no encontrado")));
-    }
-
-    // ========== Helper Methods ==========
-
-    private UUID getUserIdFromAuth(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized: no user id in authentication");
-        }
-        return UUID.fromString(authentication.getName());
     }
 }

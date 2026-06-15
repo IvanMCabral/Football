@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.career.CareerNotificationService;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -23,9 +24,11 @@ import java.util.UUID;
 public class CareerEventController {
 
     private final CareerNotificationService notificationService;
+    private final ControllerHelper controllerHelper;
 
-    public CareerEventController(CareerNotificationService notificationService) {
+    public CareerEventController(CareerNotificationService notificationService, ControllerHelper controllerHelper) {
         this.notificationService = notificationService;
+        this.controllerHelper = controllerHelper;
     }
 
     /**
@@ -35,16 +38,7 @@ public class CareerEventController {
      */
     @GetMapping(value = "", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<CareerNotificationService.CareerEvent> streamCareerEvents(Authentication authentication) {
-        UUID userId = getUserIdFromAuth(authentication);
+        UUID userId = controllerHelper.getUserId(authentication);
         return notificationService.getEventsForUser(userId.toString());
-    }
-
-    // ========== Helper Methods ==========
-
-    private UUID getUserIdFromAuth(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized: no user id in authentication");
-        }
-        return UUID.fromString(authentication.getName());
     }
 }
