@@ -112,8 +112,40 @@ public class SecurityConfig {
                 // 3 alternative options we considered and rejected.
                 .pathMatchers("/api/v1/teams", "/api/v1/teams/**").permitAll()
                 .pathMatchers("/api/v1/career", "/api/v1/career/**").authenticated()
+                // V24D12-C-3: /api/v1/world stays permitAll intentionally. The
+                // setup flow (create leagues, teams, players, seed La Liga via
+                // /api/v1/world/seed-la-liga) must be reachable BEFORE any user
+                // exists. PlayerCommandController and TeamCommandController
+                // receive userId from the request BODY (not Authentication)
+                // because the world must be seedable without an authenticated
+                // session. WorldQueryController exposes the WorldSnapshot
+                // (leagues, teams, players) read-only to the team-selection
+                // dropdown in the front, which the user sees before creating
+                // a career. Not a security risk: the world is global reference
+                // data, not per-user data.
                 .pathMatchers("/api/v1/world", "/api/v1/world/**").permitAll()
+                // V24D12-C-3: /api/v1/leagues stays permitAll intentionally.
+                // LeagueController (non-reactive) is an empty legacy class
+                // with no endpoints (only a constructor). LeagueControllerReactive
+                // (the actual traffic, 10 endpoints) enforces auth in-code via
+                // ControllerHelper.getUserId() (post-V24D12-B-1), so unauthenticated
+                // calls return 401 at the controller level. The 401 contract
+                // (V24D12.1 + V24D12.1.1 + V24D12.1.2) is preserved for any path
+                // that reaches a controller. The permitAll() is a no-op defense
+                // layer for the empty legacy class, kept to match the explicit
+                // pattern from V24D12.1.1.
                 .pathMatchers("/api/v1/leagues", "/api/v1/leagues/**").permitAll()
+                // V24D12-C-3: /api/v1/match-engine stays permitAll intentionally.
+                // MatchController (non-reactive, pause/resume/stop) uses userId=null
+                // for internal/admin match control. MatchEngineController.streamRoundState
+                // is a public SSE broadcast (real-time round state for any client
+                // watching the match) and does not require auth. MatchEngineController
+                // (pauseMatch/resumeMatch/stopMatch) and RoundController.startRound
+                // enforce auth in-code via ControllerHelper.getUserId() (post-V24D12-B-1),
+                // so unauthenticated calls return 401 at the controller level. The
+                // 401 contract is preserved for protected paths. The SSE public
+                // broadcast is the design intent: clients should be able to watch
+                // a live match without authenticating first.
                 .pathMatchers("/api/v1/match-engine", "/api/v1/match-engine/**").permitAll()
                 .pathMatchers("/api/v1/fixtures", "/api/v1/fixtures/**").permitAll()
                 .pathMatchers("/api/v1/games", "/api/v1/games/**").authenticated()
