@@ -58,7 +58,7 @@ class AuthControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /register — 200 with a fresh email")
+    @DisplayName("POST /register — 200 with JWT tokens (auto-login post-register)")
     void register_newUser_returns200() {
         webTestClient.post().uri("/api/v1/auth/register")
             .contentType(MediaType.APPLICATION_JSON)
@@ -67,7 +67,17 @@ class AuthControllerE2ETest extends AbstractIntegrationTest {
                 uniqueEmail(), UUID.randomUUID().toString().substring(0, 8)))
             .exchange()
             .expectStatus().isOk()
-            .expectBody(String.class).isEqualTo("User registered");
+            .expectBody(JsonNode.class)
+            .value(json -> {
+                String access = json.get("accessToken").asText();
+                String refresh = json.get("refreshToken").asText();
+                String type = json.get("tokenType").asText();
+                org.junit.jupiter.api.Assertions.assertNotNull(access);
+                org.junit.jupiter.api.Assertions.assertNotNull(refresh);
+                org.junit.jupiter.api.Assertions.assertEquals("Bearer", type);
+                org.junit.jupiter.api.Assertions.assertFalse(access.isBlank());
+                org.junit.jupiter.api.Assertions.assertFalse(refresh.isBlank());
+            });
     }
 
     @Test
