@@ -36,16 +36,15 @@ public class GameController {
     private final TournamentQueryUseCase tournamentQueryUseCase;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Game> createGame(@RequestBody CreateGameRequest request, Authentication authentication) {
+    public Mono<ResponseEntity<Game>> createGame(@RequestBody CreateGameRequest request, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
         if (userIdStr == null) {
-            return Mono.error(new RuntimeException("Unauthorized: no user id in authentication"));
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
         UserId userId = UserId.of(UUID.fromString(userIdStr));
 
         if (request.leagueId() == null) {
-            return Mono.error(new IllegalArgumentException("leagueId is required"));
+            return Mono.just(ResponseEntity.badRequest().build());
         }
         UUID leagueId = UUID.fromString(request.leagueId());
 
@@ -61,12 +60,16 @@ public class GameController {
             LocalDateTime.now()
         );
 
-        return gameService.createGame(game, leagueId, difficulty, gameSpeed, teamsPerDivision);
+        return gameService.createGame(game, leagueId, difficulty, gameSpeed, teamsPerDivision)
+            .map(gameCreated -> ResponseEntity.status(HttpStatus.CREATED).body(gameCreated));
     }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Game>> getGameById(@PathVariable String id, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
+        if (userIdStr == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
         UUID userId = UUID.fromString(userIdStr);
         return gameService.getGameById(userId, new GameId(UUID.fromString(id)))
             .map(ResponseEntity::ok)
@@ -79,36 +82,55 @@ public class GameController {
     }
 
     @GetMapping
-    public Flux<Game> getAllGames(Authentication authentication) {
+    public Mono<ResponseEntity<Flux<Game>>> getAllGames(Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
+        if (userIdStr == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
         UUID userId = UUID.fromString(userIdStr);
-        return gameService.getAllGames(userId);
+        return Mono.just(ResponseEntity.ok(gameService.getAllGames(userId)));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteGame(@PathVariable String id, Authentication authentication) {
+    public Mono<ResponseEntity<Void>> deleteGame(@PathVariable String id, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
+        if (userIdStr == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
         UUID userId = UUID.fromString(userIdStr);
-        return gameService.deleteGame(userId, new GameId(UUID.fromString(id)));
+        return gameService.deleteGame(userId, new GameId(UUID.fromString(id)))
+            .then(Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).<Void>build()));
     }
 
     @GetMapping("/{id}/tournament-status")
-    public Mono<TournamentStatusDTO> getTournamentStatus(@PathVariable String id, Authentication authentication) {
-        String userId = authentication.getName();
-        return tournamentQueryUseCase.getTournamentStatus(userId);
+    public Mono<ResponseEntity<TournamentStatusDTO>> getTournamentStatus(@PathVariable String id, Authentication authentication) {
+        String userId = authentication != null ? authentication.getName() : null;
+        if (userId == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
+        return tournamentQueryUseCase.getTournamentStatus(userId)
+            .map(ResponseEntity::ok)
+            .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/standings")
-    public Flux<StandingDTO> getStandings(@PathVariable String id, Authentication authentication) {
-        String userId = authentication.getName();
-        return tournamentQueryUseCase.getStandings(userId);
+    public Mono<ResponseEntity<Flux<StandingDTO>>> getStandings(@PathVariable String id, Authentication authentication) {
+        String userId = authentication != null ? authentication.getName() : null;
+        if (userId == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
+        return Mono.just(ResponseEntity.ok(tournamentQueryUseCase.getStandings(userId)));
     }
 
     @GetMapping("/{id}/champion")
-    public Mono<ChampionDTO> getChampion(@PathVariable String id, Authentication authentication) {
-        String userId = authentication.getName();
-        return tournamentQueryUseCase.getChampion(userId);
+    public Mono<ResponseEntity<ChampionDTO>> getChampion(@PathVariable String id, Authentication authentication) {
+        String userId = authentication != null ? authentication.getName() : null;
+        if (userId == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
+        return tournamentQueryUseCase.getChampion(userId)
+            .map(ResponseEntity::ok)
+            .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/round/{round}/start")
@@ -117,6 +139,9 @@ public class GameController {
             @PathVariable int round,
             Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
+        if (userIdStr == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
         UUID userId = UUID.fromString(userIdStr);
 
         return startRoundUseCase.startRound(userId, careerId, round)
@@ -129,6 +154,9 @@ public class GameController {
     @GetMapping("/match/{matchId}")
     public Mono<ResponseEntity<RuntimeMatch>> getMatchState(@PathVariable String matchId, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
+        if (userIdStr == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
         UUID userId = UUID.fromString(userIdStr);
 
         return getMatchStateQueryUseCase.getMatchState(userId, matchId)
@@ -141,6 +169,9 @@ public class GameController {
     @PostMapping("/match/{matchId}/advance")
     public Mono<ResponseEntity<RuntimeMatch>> advanceMatch(@PathVariable String matchId, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
+        if (userIdStr == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
         UUID userId = UUID.fromString(userIdStr);
 
         return advanceMatchUseCase.advanceMatch(userId, matchId)
@@ -153,6 +184,9 @@ public class GameController {
     @PostMapping("/match/{matchId}/finalize")
     public Mono<ResponseEntity<Void>> finalizeMatch(@PathVariable String matchId, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
+        if (userIdStr == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
         UUID userId = UUID.fromString(userIdStr);
 
         return finalizeMatchUseCase.finalizeMatch(userId, matchId)
