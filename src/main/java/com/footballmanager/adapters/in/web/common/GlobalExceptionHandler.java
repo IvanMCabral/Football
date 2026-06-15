@@ -82,6 +82,10 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.UNAUTHORIZED.value());
         return Mono.just(
             ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                // V24D12.1.2: add WWW-Authenticate: Bearer header (RFC 7235)
+                // so this handler produces the same header set as the
+                // SecurityConfig entry point (V24D12.1.1).
+                .header("WWW-Authenticate", "Bearer")
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .body(body)
         );
