@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.career.simulation;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.engine.model.RoundState;
 import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
@@ -28,6 +29,10 @@ public class MatchEngineController {
 
     private final RoundEngineRegistry roundEngineRegistry;
     private final MatchManagementService matchManagementService;
+    // V24D12-B: use ControllerHelper for userId extraction; replaces the
+    // copy-paste getUserIdFromAuth helper that accepted an optional
+    // requestUserId and threw IAE on auth failure.
+    private final ControllerHelper controllerHelper;
 
     /**
      * GET /api/v1/match-engine/rounds/{roundId}/stream
@@ -66,7 +71,7 @@ public class MatchEngineController {
         log.info("[MATCH-CONTROLLER] pauseMatch called for matchId: {}", matchId);
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        UUID userId = getUserIdFromAuth(authentication, null);
+        UUID userId = controllerHelper.getUserId(authentication);
         log.info("[MATCH-CONTROLLER] userId: {}", userId);
 
         return matchManagementService.pauseMatch(userId, matchIdUuid)
@@ -90,7 +95,7 @@ public class MatchEngineController {
         log.info("[MATCH-CONTROLLER] resumeMatch called for matchId: {}", matchId);
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        UUID userId = getUserIdFromAuth(authentication, null);
+        UUID userId = controllerHelper.getUserId(authentication);
         log.info("[MATCH-CONTROLLER] userId: {}", userId);
 
         return matchManagementService.resumeMatch(userId, matchIdUuid)
@@ -114,7 +119,7 @@ public class MatchEngineController {
         log.info("[MATCH-CONTROLLER] stopMatch called for matchId: {}", matchId);
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        UUID userId = getUserIdFromAuth(authentication, null);
+        UUID userId = controllerHelper.getUserId(authentication);
         log.info("[MATCH-CONTROLLER] userId: {}", userId);
 
         return matchManagementService.stopMatch(userId, matchIdUuid)
@@ -125,15 +130,5 @@ public class MatchEngineController {
                 log.error("[MATCH-CONTROLLER] Error in stopMatch: {}", e.getMessage());
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage()));
             });
-    }
-
-    private UUID getUserIdFromAuth(Authentication authentication, String requestUserId) {
-        if (requestUserId != null) {
-            return UUID.fromString(requestUserId);
-        }
-        if (authentication != null && authentication.getName() != null) {
-            return UUID.fromString(authentication.getName());
-        }
-        throw new IllegalArgumentException("User ID not available from authentication or request");
     }
 }

@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.career.simulation;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.engine.match.MatchEngine;
 import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.engine.model.RoundState;
@@ -53,6 +54,10 @@ public class RoundController {
     private final CareerSessionService careerSessionService;
     private final V24MatchContextFactory v24ContextFactory;
     private final LeagueSimulator leagueSimulator;
+    // V24D12-B: use ControllerHelper for userId extraction; replaces the
+    // copy-paste getUserIdFromAuth helper that accepted an optional
+    // requestUserId from the body and threw IAE on auth failure.
+    private final ControllerHelper controllerHelper;
 
     /** V24D6M11: When true, matches use V24DetailedMatchEngine via V24LiveSession. */
     @Value("${simulation.use-v24-detailed-engine:true}")
@@ -66,7 +71,10 @@ public class RoundController {
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
         UUID roundId = UUID.fromString(request.roundId());
-        UUID userId = getUserIdFromAuth(authentication, request.userId());
+        // V24D12-B: use the JWT identity. The legacy optional requestUserId
+        // from the body is no longer honored - use the controller helper
+        // for the 401 path consistency that V24D12 established.
+        UUID userId = controllerHelper.getUserId(authentication);
 
         log.info("[ROUND-CONTROLLER] Starting round {} for user {}", roundId, userId);
 
@@ -329,16 +337,6 @@ public class RoundController {
 
     public record StartRoundRequest(String roundId, String userId, List<MatchInfo> matches) {
         public record MatchInfo(String matchId, String homeTeamId, String awayTeamId) {}
-    }
-
-    private UUID getUserIdFromAuth(Authentication authentication, String requestUserId) {
-        if (requestUserId != null) {
-            return UUID.fromString(requestUserId);
-        }
-        if (authentication != null && authentication.getName() != null) {
-            return UUID.fromString(authentication.getName());
-        }
-        throw new IllegalArgumentException("User ID not available from authentication or request");
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.versus;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.domain.model.entity.*;
 import com.footballmanager.domain.model.valueobject.*;
 import com.footballmanager.domain.ports.out.match.MatchRepository;
@@ -28,11 +29,14 @@ public class MatchControllerReactive {
     private final GetMatchStateQueryUseCase getMatchStateQueryUseCase;
     private final AdvanceMatchUseCase advanceMatchUseCase;
     private final ExecuteMatchCommandUseCase executeMatchCommandUseCase;
+    // V24D12-B: use ControllerHelper for userId extraction so the 401 path
+    // matches V24D12's UnauthorizedException -> 401 contract instead of
+    // leaking the inline NPE on UUID.fromString(null).
+    private final ControllerHelper controllerHelper;
 
     @PostMapping("/{matchId}/advance")
     public Mono<ResponseEntity<RuntimeMatch>> advanceMatch(@PathVariable String matchId, @RequestBody AdvanceRequest req, Authentication authentication) {
-        String userIdStr = authentication != null ? authentication.getName() : null;
-        UUID userId = UUID.fromString(userIdStr);
+        UUID userId = controllerHelper.getUserId(authentication);
         return advanceMatchUseCase.advanceMatch(userId, matchId)
             .map(ResponseEntity::ok)
             .onErrorResume(e -> {
@@ -42,8 +46,7 @@ public class MatchControllerReactive {
 
     @PostMapping("/{matchId}/commands")
     public Mono<ResponseEntity<String>> applyCommand(@PathVariable String matchId, @RequestBody MatchCommand command, Authentication authentication) {
-        String userIdStr = authentication != null ? authentication.getName() : null;
-        UUID userId = UUID.fromString(userIdStr);
+        UUID userId = controllerHelper.getUserId(authentication);
         UUID id = UUID.fromString(matchId);
         return executeMatchCommandUseCase.execute(userId, id, command)
             .map(applied -> applied
@@ -56,8 +59,7 @@ public class MatchControllerReactive {
 
     @GetMapping("/{matchId}/state")
     public Mono<ResponseEntity<RuntimeMatch>> getMatchState(@PathVariable String matchId, Authentication authentication) {
-        String userIdStr = authentication != null ? authentication.getName() : null;
-        UUID userId = UUID.fromString(userIdStr);
+        UUID userId = controllerHelper.getUserId(authentication);
         return getMatchStateQueryUseCase.getMatchState(userId, matchId)
             .map(ResponseEntity::ok)
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()))
@@ -70,8 +72,7 @@ public class MatchControllerReactive {
 
     @GetMapping
     public Flux<MatchDTO> getMatches(@RequestParam(value = "gameId", required = false) String gameId, Authentication authentication) {
-        String userIdStr = authentication != null ? authentication.getName() : null;
-        UUID userId = UUID.fromString(userIdStr);
+        UUID userId = controllerHelper.getUserId(authentication);
 
         if (gameId != null && !gameId.isEmpty()) {
             return matchRepository.findByGameId(userId, new GameId(UUID.fromString(gameId)))
@@ -84,8 +85,7 @@ public class MatchControllerReactive {
 
     @PostMapping
     public Mono<ResponseEntity<MatchDTO>> createMatch(@RequestBody CreateMatchRequest request, Authentication authentication) {
-        String userIdStr = authentication != null ? authentication.getName() : null;
-        UUID userId = UUID.fromString(userIdStr);
+        UUID userId = controllerHelper.getUserId(authentication);
 
         MatchId matchId = MatchId.generate();
         TeamId homeTeamId = TeamId.of(UUID.fromString(request.homeTeamId()));
@@ -98,8 +98,7 @@ public class MatchControllerReactive {
 
     @PostMapping("/{matchId}/simulate")
     public Mono<ResponseEntity<MatchDTO>> simulateMatch(@PathVariable String matchId, Authentication authentication) {
-        String userIdStr = authentication != null ? authentication.getName() : null;
-        UUID userId = UUID.fromString(userIdStr);
+        UUID userId = controllerHelper.getUserId(authentication);
         UUID matchUuid = UUID.fromString(matchId);
 
         return matchSimulationService.advanceMatch(userId, matchUuid, 90)
@@ -127,8 +126,7 @@ public class MatchControllerReactive {
 
     @GetMapping("/{matchId}")
     public Mono<ResponseEntity<MatchDTO>> getMatch(@PathVariable String matchId, Authentication authentication) {
-        String userIdStr = authentication != null ? authentication.getName() : null;
-        UUID userId = UUID.fromString(userIdStr);
+        UUID userId = controllerHelper.getUserId(authentication);
         return matchRepository.findById(userId, MatchId.of(UUID.fromString(matchId)))
                 .map(this::mapToDTO)
                 .map(ResponseEntity::ok)
