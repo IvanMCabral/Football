@@ -77,8 +77,23 @@ public class GameController {
     }
 
     @GetMapping("/user/{userId}")
-    public Flux<Game> getGamesByUserId(@PathVariable String userId) {
-        return gameService.getGamesByUserId(UUID.fromString(userId), UserId.of(UUID.fromString(userId)));
+    public Mono<ResponseEntity<Flux<Game>>> getGamesByUserId(@PathVariable String userId, Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
+        String jwtUserIdStr = authentication.getName();
+        UUID pathUserUuid;
+        UUID jwtUserUuid;
+        try {
+            pathUserUuid = UUID.fromString(userId);
+            jwtUserUuid = UUID.fromString(jwtUserIdStr);
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+        }
+        if (!pathUserUuid.equals(jwtUserUuid)) {
+            return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
+        }
+        return Mono.just(ResponseEntity.ok(gameService.getGamesByUserId(jwtUserUuid, UserId.of(jwtUserUuid))));
     }
 
     @GetMapping
