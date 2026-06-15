@@ -63,6 +63,8 @@ public class SecurityConfig {
                     String method = exchange.getRequest().getMethod().name();
                     addCorsHeaders(exchange);
                     exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                    // V24D12.1.1: add WWW-Authenticate: Bearer header (RFC 7235)
+                    exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
                     // V24D12.1: write a consistent JSON body for 401, matching the
                     // GlobalExceptionHandler.handleUnauthorized() contract. Without
                     // this, the Spring default entry point returns 401 with body
