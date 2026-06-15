@@ -1,9 +1,11 @@
 package com.footballmanager.application.service.career;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CareerNotificationService {
 
     private final Map<String, Sinks.Many<CareerEvent>> userEventSinks = new ConcurrentHashMap<>();
@@ -57,10 +60,22 @@ public class CareerNotificationService {
                 return Sinks.many().replay().latest();
             });
 
-        return sink.asFlux()
-            .doOnSubscribe(s -> {})
-            .doOnCancel(() -> {})
-            .doOnError(e -> {});
+        // V24D13-1: heartbeat cada 15s para mantener la conexion SSE viva.
+        // Proxy/ingress cierra conexiones idle a los 30s por default
+        // (nginx proxy_read_timeout 60s default pero cloud-native ingress
+        // suelen usar 30s). 15s da margen: 1 heartbeat entre cada
+        // ventana de 30s. Patron estandar de SSE.
+        Flux<CareerEvent> events = sink.asFlux();
+        Flux<CareerEvent> heartbeat = Flux.interval(Duration.ofSeconds(15))
+            .map(tick -> new CareerEvent(
+                CareerEventType.HEARTBEAT,
+                Map.of("timestamp", System.currentTimeMillis())
+            ));
+
+        return Flux.merge(events, heartbeat)
+            .doOnSubscribe(s -> log.info("[SSE] subscribed userId={}", userId))
+            .doOnCancel(() -> log.info("[SSE] cancelled userId={}", userId))
+            .doOnError(e -> log.error("[SSE] error userId={}", userId, e));
     }
 
     /**
@@ -86,7 +101,8 @@ public class CareerNotificationService {
         RESULTS_UPDATED,
         ROUND_COMPLETED,
         CAREER_UPDATED,
-        STANDINGS_UPDATED
+        STANDINGS_UPDATED,
+        HEARTBEAT  // V24D13-1: keepalive SSE
     }
 
     public static class CareerEvent {
