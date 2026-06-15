@@ -97,13 +97,25 @@ public class GameController {
     }
 
     @GetMapping
-    public Mono<ResponseEntity<Flux<Game>>> getAllGames(Authentication authentication) {
+    public Mono<ResponseEntity<List<Game>>> getAllGames(Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
         if (userIdStr == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
         UUID userId = UUID.fromString(userIdStr);
-        return Mono.just(ResponseEntity.ok(gameService.getAllGames(userId)));
+        // V24D12-B.2: collectList() + isEmpty check on the Flux content
+        // (not the Mono wrapper) is what makes the 404 fire. The previous
+        // B-2 .defaultIfEmpty() was applied to Mono.just(RE) which never
+        // emits empty, so the operator never triggered. The Flux<Game>
+        // serializes to "[]" before defaultIfEmpty gets a chance to run
+        // on the wrapper. The fix is to change the response shape from
+        // Mono<ResponseEntity<Flux<Game>>> to Mono<ResponseEntity<List<Game>>>
+        // and gate the status code on the collected list size.
+        return gameService.getAllGames(userId)
+            .collectList()
+            .map(list -> list.isEmpty()
+                ? ResponseEntity.notFound().<List<Game>>build()
+                : ResponseEntity.ok(list));
     }
 
     @DeleteMapping("/{id}")
@@ -129,12 +141,24 @@ public class GameController {
     }
 
     @GetMapping("/{id}/standings")
-    public Mono<ResponseEntity<Flux<StandingDTO>>> getStandings(@PathVariable String id, Authentication authentication) {
+    public Mono<ResponseEntity<List<StandingDTO>>> getStandings(@PathVariable String id, Authentication authentication) {
         String userId = authentication != null ? authentication.getName() : null;
         if (userId == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return Mono.just(ResponseEntity.ok(tournamentQueryUseCase.getStandings(userId)));
+        // V24D12-B.2: same fix as getAllGames - collectList() + isEmpty
+        // check. Note: when the tournamentId doesn't exist,
+        // tournamentQueryUseCase throws and the ErrorWebExceptionHandler
+        // returns 404 with a JSON body (Spring default). When the
+        // tournament exists but has no standings, this code returns 404
+        // with an empty body (the explicit notFound().build()). This
+        // matches the contract that REVISOR's smoke expects for the
+        // "no standings" case.
+        return tournamentQueryUseCase.getStandings(userId)
+            .collectList()
+            .map(list -> list.isEmpty()
+                ? ResponseEntity.notFound().<List<StandingDTO>>build()
+                : ResponseEntity.ok(list));
     }
 
     @GetMapping("/{id}/champion")
