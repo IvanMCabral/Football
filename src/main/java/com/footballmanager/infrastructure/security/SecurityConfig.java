@@ -63,7 +63,22 @@ public class SecurityConfig {
                     String method = exchange.getRequest().getMethod().name();
                     addCorsHeaders(exchange);
                     exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-                    return exchange.getResponse().setComplete();
+                    // V24D12.1: write a consistent JSON body for 401, matching the
+                    // GlobalExceptionHandler.handleUnauthorized() contract. Without
+                    // this, the Spring default entry point returns 401 with body
+                    // empty (just WWW-Authenticate: Bearer), which is inconsistent
+                    // with the JSON that the controller helper path produces. We
+                    // re-use the same body shape and code value so the client can
+                    // parse 401s uniformly regardless of where the rejection
+                    // originated (security filter vs UnauthorizedException handler).
+                    exchange.getResponse().getHeaders().setContentType(
+                        org.springframework.http.MediaType.APPLICATION_JSON);
+                    String json = "{\"code\":\"UNAUTHORIZED\",\"message\":\"Unauthorized: no user id in authentication\",\"status\":401}";
+                    return exchange.getResponse().writeWith(
+                        reactor.core.publisher.Mono.just(exchange.getResponse()
+                            .bufferFactory()
+                            .wrap(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                    ).then();
                 })
                 .accessDeniedHandler((exchange, ex) -> {
                     String path = exchange.getRequest().getPath().toString();
