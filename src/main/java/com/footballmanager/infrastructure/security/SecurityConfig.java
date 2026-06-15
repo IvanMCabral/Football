@@ -97,6 +97,19 @@ public class SecurityConfig {
                 .pathMatchers("/actuator/health").permitAll()
                 .pathMatchers("/api/v1/players", "/api/v1/players/**").authenticated()
                 .pathMatchers("/api/v1/matches", "/api/v1/matches/**").authenticated()
+                // V24D12-C.2: /api/v1/teams and /api/v1/fixtures are dead
+                // paths (no controller backs them in the codebase). We keep
+                // them as permitAll() intentionally: Spring Security WebFlux
+                // cannot distinguish "public path with no resource" (404)
+                // from "protected path with no auth" (401) without an
+                // explicit permitAll() entry. If we removed these, the
+                // security filter would cut with 401 BEFORE the routing
+                // ran, and clients would get 401 instead of the
+                // contractually correct 404 "path does not exist".
+                // Trade-off accepted: 2 historical permitAll() entries as
+                // implicit documentation of dead paths. See
+                // V24D12-C.2 prompt for full analysis of the
+                // 3 alternative options we considered and rejected.
                 .pathMatchers("/api/v1/teams", "/api/v1/teams/**").permitAll()
                 .pathMatchers("/api/v1/career", "/api/v1/career/**").authenticated()
                 .pathMatchers("/api/v1/world", "/api/v1/world/**").permitAll()
