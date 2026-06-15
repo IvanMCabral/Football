@@ -86,7 +86,7 @@ public class SecurityConfig {
                 .pathMatchers("/api/v1/leagues", "/api/v1/leagues/**").permitAll()
                 .pathMatchers("/api/v1/match-engine", "/api/v1/match-engine/**").permitAll()
                 .pathMatchers("/api/v1/fixtures", "/api/v1/fixtures/**").permitAll()
-                .pathMatchers("/api/v1/games", "/api/v1/games/**").permitAll()
+                .pathMatchers("/api/v1/games", "/api/v1/games/**").authenticated()
                 .pathMatchers("/api/v1/dashboard/**").authenticated()
                 .anyExchange().authenticated()
             )
