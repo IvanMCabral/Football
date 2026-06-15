@@ -27,7 +27,7 @@ NO se commitean credenciales reales. Las env vars se setean en:
 
 ### Rotacion de credenciales (V24D12-D)
 
-Las credenciales fueron rotadas el 2026-06-15 (V24D12-D) despues de обнаружения que el `.env` estaba trackeado en el repo sin `.gitignore`. Procedimiento de rotacion:
+Las credenciales fueron rotadas el 2026-06-15 (V24D12-D) tras detectarse que el archivo `.env` estaba trackeado en el repo sin estar en `.gitignore`. Procedimiento de rotacion:
 
 1. PostgreSQL: `ALTER USER manager_user WITH PASSWORD "NUEVO_PASS";` (RDS console o `psql`).
 2. Redis: `redis-cli CONFIG SET requirepass "NUEVO_PASS";` + `CONFIG GET requirepass`.
@@ -36,4 +36,4 @@ Las credenciales fueron rotadas el 2026-06-15 (V24D12-D) despues de обнару
 5. Reiniciar stack.
 6. Smoke: login + endpoint autenticado para validar.
 
-Ver `workspace/rotar-credenciales.md` para el script completo.
+Ver `docs/rotar-credenciales.md` para el script completo.
