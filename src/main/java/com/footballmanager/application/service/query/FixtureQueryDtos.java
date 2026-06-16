@@ -93,4 +93,13 @@ public final class FixtureQueryDtos {
             List<LeagueMatchInfo> fixtures,
             Boolean hasBye
     ) {}
+
+    // UX-6: BYE indicator DTOs
+    public record RoundFixturesWithBye(
+            Integer round,
+            List<MatchInfo> matches,
+            String byeTeam
+    ) {}
+
+    public record AllRoundsWithBye(List<RoundFixturesWithBye> rounds) {}
 }

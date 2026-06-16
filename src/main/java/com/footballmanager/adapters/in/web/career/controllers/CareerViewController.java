@@ -120,6 +120,34 @@ public class CareerViewController {
                 .switchIfEmpty(Mono.just(List.of()));
     }
 
+    // UX-6: BYE indicator endpoints
+
+    /**
+     * GET /api/v1/career/fixtures/round/{round}
+     * Obtiene fixtures de la división del usuario para una fecha específica CON info de BYE
+     */
+    @GetMapping("/fixtures/round/{round}")
+    public Mono<FixtureQueryDtos.RoundFixturesWithBye> getUserDivisionFixturesWithBye(
+            @PathVariable int round,
+            Authentication auth) {
+        UUID userId = controllerHelper.getUserId(auth);
+        return sessionService.getCareerFromCache(userId)
+                .flatMap(career -> fixtureQueryService.getUserDivisionFixturesByRoundWithBye(career, round))
+                .switchIfEmpty(Mono.just(new FixtureQueryDtos.RoundFixturesWithBye(round, List.of(), null)));
+    }
+
+    /**
+     * GET /api/v1/career/fixtures/round-with-bye
+     * Obtiene TODOS los fixtures con info de BYE por fecha (para dashboard/modal)
+     */
+    @GetMapping("/fixtures/round-with-bye")
+    public Mono<FixtureQueryDtos.AllRoundsWithBye> getAllFixturesWithBye(Authentication auth) {
+        UUID userId = controllerHelper.getUserId(auth);
+        return sessionService.getCareerFromCache(userId)
+                .flatMap(fixtureQueryService::getAllUserDivisionFixturesWithBye)
+                .switchIfEmpty(Mono.just(new FixtureQueryDtos.AllRoundsWithBye(List.of())));
+    }
+
     /**
      * GET /api/v1/career/standings
      * Obtiene standings de la división del usuario
