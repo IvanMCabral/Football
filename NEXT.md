@@ -1,9 +1,9 @@
 # NEXT.md — Estado del proyecto (ancla viva)
 
-> **Última actualización:** 2026-06-16 03:33 ART
+> **Última actualización:** 2026-06-16 06:27 ART
 > **Mantenedor:** Iván (con Mavis como copiloto de prompts)
 > **Propósito:** Único punto de verdad sobre "dónde estamos parados". Se actualiza al cerrar cada tag.
-> **Actualizado por:** Mavis root tras cierre de V24D12.2 + V24D13-1 + V24D12-D-6 (completado + actualizado por MANAGER review)
+> **Actualizado por:** Mavis root tras cierre de UX-6 BYE Indicator (backend + frontend)
 
 ---
 
@@ -11,24 +11,26 @@
 
 ### Backend (root: `D:\ProyectosOpenCode\MANAGER`)
 - **Branch activa:** `master`
-- **HEAD local y remote:** `d442403 fix: add @NoArgsConstructor and @Setter to GameEntity for Jackson deserialization` ✅ **PUSHEADO a origin/master**
-- **Commits nuevos post-anterior NEXT.md (4 commits):**
-  - `d442403` V24D12.2 — GameEntity Jackson deserialization fix (`@NoArgsConstructor` + `@Setter`)
+- **HEAD local y remote:** `66a0a32 feat: UX-6 BYE indicator — backend DTOs, services and endpoints` ✅ **PUSHEADO a origin/master**
+- **Commits nuevos post-anterior NEXT.md (6 commits):**
+  - `66a0a32` UX-6 backend — BYE indicator DTOs, services, endpoints
+  - `aad2b8f` UX-6 frontend — BYE indicator en round-live, round-summary, dashboard-fixture-modal
+  - `e6529cc` — Update NEXT.md con V24D12.2 + V24D13-1 + V24D12-D-6
+  - `d442403` V24D12.2 — GameEntity Jackson deserialization fix
   - `b3e25cb` V24D13 — Update NEXT.md con V24D12-D-6 + V24D13-1
-  - `6e9ab8e` V24D12-D-6 — `application-local.yml` con credenciales rotadas (gitignored)
-  - `dffe02a` V24D12-D-6 — `RedisConfig.java` con `@Value` para password del YAML
-  - `819ec49` V24D13-1 — SSE heartbeat 15s en `CareerNotificationService` (cierra cuelgue 30s+)
+  - `819ec49` V24D13-1 — SSE heartbeat 15s en CareerNotificationService
 - **Working tree:** limpio
 - **Tests:** 933/933 PASS, 0 FAIL, 0 ERROR, 0 SKIPPED
 - **Smoke V24D12.2:** 🟢 **GO** por Mavis root — `GET /games/{id}` → 200 post-fix
 
 ### Frontend (sub-repo: `D:\ProyectosOpenCode\MANAGER\front-ciber\project`)
 - **Branch activa:** `mvp-1`
-- **HEAD local y remote:** `872fee9 chore(ux): V24D11.2 add tooltips to 6 squad action buttons (BUG-2)` ✅ PUSHEADO
+- **HEAD local y remote:** `aad2b8f feat(ux): UX-6 BYE indicator — frontend components` ✅ PUSHEADO a origin/mvp-1
 - **Working tree:** limpio
 - **Build:** ng build SUCCESS (0 errors)
 
 ### Tags creados y pusheados (todos)
+- ✅ **UX-6 (66a0a32 + aad2b8f)** — BYE indicator en fixture: backend DTOs `RoundFixturesWithBye` + `AllRoundsWithBye`, endpoints `GET /career/fixtures/round/{round}` y `GET /career/fixtures/round-with-bye`, frontend round-live + round-summary + dashboard-fixture-modal con badge BYE.
 - ✅ **V24D12.2 (d442403)** — `@NoArgsConstructor` + `@Setter` en `GameEntity` para deserialización Jackson (GameEntity no tenía constructor público sin args → 404 silencioso en `GET /games/{id}`).
 - ✅ **V24D13 (b3e25cb)** — Update NEXT.md con estado V24D12-D-6 + V24D13-1.
 - ✅ **V24D13-1 (819ec49)** — SSE heartbeat cada 15s en `CareerNotificationService` (`/career/events` ya no cuelga 30s+).
@@ -60,23 +62,23 @@
 
 ### Últimos 10 commits backend
 ```
+66a0a32 feat: UX-6 BYE indicator — backend DTOs, services and endpoints
+aad2b8f feat: UX-6 BYE indicator — frontend components
+e6529cc chore: update NEXT.md — V24D12.2 + V24D13-1 + V24D12-D-6 closed
 d442403 fix: add @NoArgsConstructor and @Setter to GameEntity for Jackson deserialization
 b3e25cb chore: V24D13 update NEXT.md with V24D12-D-6 + V24D13-1 status
 6e9ab8e chore(security): V24D12-D-6 add application-local.yml with rotated credentials (gitignored)
-dffe02a fix(security): V24D12-D-6 make RedisConfig read password from YAML + gitignore the local profile
+dffe02a fix(security): V24D12-D-6 make RedisConfig read password from YAML
 819ec49 fix(perf): V24D13-1 add SSE heartbeat every 15s in CareerNotificationService
 ee27111 chore(security): V24D12-D-4 create docs/rotar-credenciales.md and fix path reference
 4355012 chore(security): V24D12-D-3 add docs/SETUP.md with env vars list and setup procedure
-dbab109 chore(security): V24D12-D-2 add .env to .gitignore and remove from git tracking
-9588056 chore(security): V24D12-D-1 add .env.example template with 18 env vars
-9c98aec chore(security): V24D12-C-3 document remaining permitAll /world /leagues /match-engine
 ```
 
 ---
 
 ## Seguridad — 100% CERRADA ✅
 
-**V24D12 + V24D12.1 + V24D12.1.1 + V24D12.1.2 + V24D12-B + V24D12-C + V24D12-D + V24D12-D-6 + V24D12.2 = ~20 commits en master**
+**V24D12 + V24D12.1 + V24D12.1.1 + V24D12.1.2 + V24D12-B + V24D12-C + V24D12-D + V24D12-D-6 + V24D12.2 + UX-6 = ~22 commits en master**
 
 - Contrato uniforme: HTTP 401 + `WWW-Authenticate: Bearer` + `Content-Type: application/json` + body `{code, message, status}` en TODOS los endpoints protegidos.
 - IDOR fix en `getGamesByUserId`.
@@ -91,6 +93,9 @@ dbab109 chore(security): V24D12-D-2 add .env to .gitignore and remove from git t
 
 ## Cola de trabajo (post-V24D12.2 cerrado)
 
+### Features cerradas ✅
+- ✅ **UX-6:** BYE indicator en fixture — backend DTOs + endpoints + frontend round-live + round-summary + dashboard-fixture-modal. MANAGER review 🟢 GO.
+
 ### Bugs cerrados ✅
 - ✅ **V24D12.2:** `GET /games/{id}` 404 → `@NoArgsConstructor` + `@Setter` en `GameEntity`. smoke GO.
 - ✅ **V24D13-1:** `/career/events` cuelgue 30s+ → SSE heartbeat 15s en `CareerNotificationService`.
@@ -103,8 +108,7 @@ Alinear `.env` legacy con `.env.example` — **OBSOLETO**. `V24D12-D-6` creó `a
 
 | # | Tag | Descripción | Severidad |
 |---|---|---|---|
-| 1 | UX-6 | BYE indicator en fixture (feature) | 🟡 media |
-| 2 | P1a | Match detail UI polish (~15% restante) | 🟡 media |
+| 1 | P1a | Match detail UI polish (~15% restante) | 🟡 media |
 | 3 | P1b | Career mutations edge cases (~10% restante) | 🟡 media |
 | 4 | R3/R4 | Custom `ErrorWebExceptionHandler` para 404 con body vacío en `/games/tournament/{id}/status` y `/games/champion/{id}` | 🟢 baja |
 | 5 | NG8113 | Warnings imports no usados en `squad-management.component.ts` | 🟢 baja |
