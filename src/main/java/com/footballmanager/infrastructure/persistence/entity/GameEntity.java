@@ -6,6 +6,8 @@ import com.footballmanager.domain.model.valueobject.TeamId;
 import com.footballmanager.domain.model.valueobject.UserId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -14,7 +16,9 @@ import java.util.UUID;
 
 @Table("games")
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
+@Setter
 public class GameEntity {
     @Id
     private UUID id;
