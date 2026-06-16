@@ -1,24 +1,20 @@
 # NEXT.md — Estado del proyecto (ancla viva)
 
-> **Última actualización:** 2026-06-16 06:27 ART
+> **Última actualización:** 2026-06-16 12:53 ART
 > **Mantenedor:** Iván (con Mavis como copiloto de prompts)
 > **Propósito:** Único punto de verdad sobre "dónde estamos parados". Se actualiza al cerrar cada tag.
-> **Actualizado por:** Mavis root tras cierre de UX-6 BYE Indicator (backend + frontend)
+> **Actualizado por:** SENIOR + Mavis root tras cierre de V24D14 (housekeeping documental)
 
 ---
 
 ## Estado actual verificado (no de memoria — leído de `git log` / `git status`)
 
 ### Backend (root: `D:\ProyectosOpenCode\MANAGER`)
-- **Branch activa:** `master`
-- **HEAD local y remote:** `66a0a32 feat: UX-6 BYE indicator — backend DTOs, services and endpoints` ✅ **PUSHEADO a origin/master**
-- **Commits nuevos post-anterior NEXT.md (6 commits):**
-  - `66a0a32` UX-6 backend — BYE indicator DTOs, services, endpoints
-  - `aad2b8f` UX-6 frontend — BYE indicator en round-live, round-summary, dashboard-fixture-modal
-  - `e6529cc` — Update NEXT.md con V24D12.2 + V24D13-1 + V24D12-D-6
-  - `d442403` V24D12.2 — GameEntity Jackson deserialization fix
-  - `b3e25cb` V24D13 — Update NEXT.md con V24D12-D-6 + V24D13-1
-  - `819ec49` V24D13-1 — SSE heartbeat 15s en CareerNotificationService
+- **Branch activa:** `chore/v24d14-housekeeping` (preparado para merge a master tras smoke GO)
+- **HEAD local y remote:** `9efa3d7 chore: update NEXT.md — UX-6 BYE Indicator closed, UX cleanup 100%, P1a next` ✅ **PUSHEADO a origin/master**
+- **Commits nuevos post-anterior NEXT.md (1 commit + 1 tag en preparación):**
+  - `9efa3d7` — Update NEXT.md con UX-6 BYE Indicator closed
+  - `dfaf2d6` — V24D14 housekeeping: sincronizar NEXT.md con HEAD, limpiar runbook §8 (D-5 OBSOLETO), gitignore frontend `src/assets/` (assets muertos no integrados al build)
 - **Working tree:** limpio
 - **Tests:** 933/933 PASS, 0 FAIL, 0 ERROR, 0 SKIPPED
 - **Smoke V24D12.2:** 🟢 **GO** por Mavis root — `GET /games/{id}` → 200 post-fix
@@ -26,10 +22,11 @@
 ### Frontend (sub-repo: `D:\ProyectosOpenCode\MANAGER\front-ciber\project`)
 - **Branch activa:** `mvp-1`
 - **HEAD local y remote:** `aad2b8f feat(ux): UX-6 BYE indicator — frontend components` ✅ PUSHEADO a origin/mvp-1
-- **Working tree:** limpio
+- **Working tree:** untracked `src/assets/` (resuelto en V24D14 con gitignore)
 - **Build:** ng build SUCCESS (0 errors)
 
 ### Tags creados y pusheados (todos)
+- ✅ **V24D14 (dfaf2d6)** — Housekeeping: sincronizar NEXT.md, borrar V24D12-D-5 del runbook §8, gitignore `src/assets/` (assets muertos no integrados al build).
 - ✅ **UX-6 (66a0a32 + aad2b8f)** — BYE indicator en fixture: backend DTOs `RoundFixturesWithBye` + `AllRoundsWithBye`, endpoints `GET /career/fixtures/round/{round}` y `GET /career/fixtures/round-with-bye`, frontend round-live + round-summary + dashboard-fixture-modal con badge BYE.
 - ✅ **V24D12.2 (d442403)** — `@NoArgsConstructor` + `@Setter` en `GameEntity` para deserialización Jackson (GameEntity no tenía constructor público sin args → 404 silencioso en `GET /games/{id}`).
 - ✅ **V24D13 (b3e25cb)** — Update NEXT.md con estado V24D12-D-6 + V24D13-1.
@@ -62,6 +59,7 @@
 
 ### Últimos 10 commits backend
 ```
+9efa3d7 chore: update NEXT.md — UX-6 BYE Indicator closed, UX cleanup 100%, P1a next
 66a0a32 feat: UX-6 BYE indicator — backend DTOs, services and endpoints
 aad2b8f feat: UX-6 BYE indicator — frontend components
 e6529cc chore: update NEXT.md — V24D12.2 + V24D13-1 + V24D12-D-6 closed
@@ -71,7 +69,6 @@ b3e25cb chore: V24D13 update NEXT.md with V24D12-D-6 + V24D13-1 status
 dffe02a fix(security): V24D12-D-6 make RedisConfig read password from YAML
 819ec49 fix(perf): V24D13-1 add SSE heartbeat every 15s in CareerNotificationService
 ee27111 chore(security): V24D12-D-4 create docs/rotar-credenciales.md and fix path reference
-4355012 chore(security): V24D12-D-3 add docs/SETUP.md with env vars list and setup procedure
 ```
 
 ---
@@ -158,8 +155,8 @@ Alinear `.env` legacy con `.env.example` — **OBSOLETO**. `V24D12-D-6` creó `a
 - Mensajes de commit en inglés conventional; planes y reportes en español
 
 ## Branches en remote (informativo)
-- `master` ← release limpia con MVP completo (HEAD `d442403`, pusheado a `origin/master`)
-- `mvp-1` ← branch de trabajo front (HEAD `872fee9`, pusheado a `origin/mvp-1`)
+- `master` ← release limpia con MVP completo (HEAD `9efa3d7`, pusheado a `origin/master`)
+- `mvp-1` ← branch de trabajo front (HEAD `aad2b8f`, pusheado a `origin/mvp-1`)
 - `feature/v23-poisson-goal-model` (paralelo V23)
 - `feature/v33-tactical-chance-quality` (paralelo)
 - `mvp-1-performance-cleanup` → mergeado en master
@@ -178,4 +175,4 @@ Si en una sesión nueva Mavis no lee este archivo, pedirselo explícitamente:
 
 ---
 
-*NEXT.md actualizado por Mavis root tras cierre de V24D12.2 + V24D13-1 + V24D12-D-6 + V24D13 (4 commits, todos pusheados a origin/master). Security audit 100% cerrado. Próximo paso: UX-6 BYE indicator.*
+*NEXT.md actualizado por SENIOR + Mavis root tras cierre de V24D14 (housekeeping documental, local commit). Próximo paso: P1a — Match detail UI polish.*
