@@ -57,16 +57,43 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
             .serverCommands().flushDb().block();
     }
 
+    // V24D7+2.1: /api/v1/world/teams is a global endpoint that requires the
+    // seeded admin user (per WorldQueryControllerE2ETest SEED_USER_ID).
+    // Random userIds trigger 500. So we hardcode the seed user here.
+    private static final String SEED_USER_ID =
+        "00000000-0000-0000-0000-000000000001";
+
     private String uniqueUserId() {
         return UUID.randomUUID().toString();
     }
 
-    private String validCreateBody(String name) {
-        // leagueId is REQUIRED (controller returns 400 if null, line 46-48)
+    /**
+     * Fetches a real teamId from the LaLiga seed via the world/teams endpoint.
+     * Per AbstractIntegrationTest the DB is NOT truncated between tests, so seed teams
+     * are always available. Returns the id of the first team in the response array.
+     * Note: the userId parameter is unused — world/teams requires SEED_USER_ID.
+     */
+    private String seedTeamId(String userId) {
+        return webTestClient.mutateWith(mockUser(SEED_USER_ID))
+            .get().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/teams")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(JsonNode.class)
+            .returnResult()
+            .getResponseBody()
+            .get(0).get("id").asText();
+    }
+
+    private String validCreateBody(String name, String teamId) {
+        // teamId and leagueId are REQUIRED (controller returns 400 if null/missing).
         // other fields optional with defaults
         return String.format(
-            "{\"name\":\"%s\",\"leagueId\":\"%s\"}",
-            name, UUID.randomUUID()
+            "{\"name\":\"%s\",\"teamId\":\"%s\",\"leagueId\":\"%s\"}",
+            name, teamId, UUID.randomUUID()
         );
     }
 
@@ -74,7 +101,8 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @DisplayName("POST /api/v1/games — 201 with body containing gameId and userId")
     void createGame_validRequest_returns201() {
         String userId = uniqueUserId();
-        String body = validCreateBody("My Career " + UUID.randomUUID().toString().substring(0, 8));
+        String teamId = seedTeamId(userId);
+        String body = validCreateBody("My Career " + UUID.randomUUID().toString().substring(0, 8), teamId);
 
         webTestClient.mutateWith(mockUser(userId))
             .post().uri("/api/v1/games")
@@ -97,7 +125,8 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @DisplayName("GET /api/v1/games/{id} — 200 with body (regression for V24D12.2 deserialization fix)")
     void getGameById_existingGame_returns200() {
         String userId = uniqueUserId();
-        String createBody = validCreateBody("GetTest");
+        String teamId = seedTeamId(userId);
+        String createBody = validCreateBody("GetTest", teamId);
 
         // Create
         String gameId = webTestClient.mutateWith(mockUser(userId))
@@ -127,8 +156,9 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @DisplayName("GET /api/v1/games — 200 with list (array of games)")
     void getAllGames_userHasGames_returns200List() {
         String userId = uniqueUserId();
-        String body1 = validCreateBody("List1");
-        String body2 = validCreateBody("List2");
+        String teamId = seedTeamId(userId);
+        String body1 = validCreateBody("List1", teamId);
+        String body2 = validCreateBody("List2", teamId);
 
         // Create 2 games
         webTestClient.mutateWith(mockUser(userId)).post().uri("/api/v1/games")
@@ -164,7 +194,8 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @DisplayName("DELETE /api/v1/games/{id} — 204 No Content")
     void deleteGame_existingGame_returns204() {
         String userId = uniqueUserId();
-        String createBody = validCreateBody("DeleteMe");
+        String teamId = seedTeamId(userId);
+        String createBody = validCreateBody("DeleteMe", teamId);
 
         // Create
         String gameId = webTestClient.mutateWith(mockUser(userId))
@@ -189,7 +220,8 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @DisplayName("GET /api/v1/games/{id} after DELETE — 404 (idempotency: deleted game is gone)")
     void getGameById_afterDelete_returns404() {
         String userId = uniqueUserId();
-        String createBody = validCreateBody("DeleteAndGet");
+        String teamId = seedTeamId(userId);
+        String createBody = validCreateBody("DeleteAndGet", teamId);
 
         // Create
         String gameId = webTestClient.mutateWith(mockUser(userId))
@@ -219,7 +251,9 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("POST /api/v1/games without auth — 401 (SecurityConfig rule V24D12-1)")
     void createGame_unauthenticated_returns401() {
-        String body = validCreateBody("UnauthTest");
+        // Hardcoded UUID — controller returns 401 before parsing the body
+        // (line 41-43 of GameController), so the teamId value is irrelevant.
+        String body = validCreateBody("UnauthTest", "00000000-0000-0000-0000-000000000002");
 
         // No mockUser → no JWT → SecurityConfig returns 401
         webTestClient.post().uri("/api/v1/games")
@@ -227,5 +261,25 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
             .bodyValue(body)
             .exchange()
             .expectStatus().isUnauthorized();
+    }
+
+    // ========== V24D7+2.1: defensive guard regression ==========
+
+    @Test
+    @DisplayName("POST /api/v1/games without teamId — 400 (controller defensive guard)")
+    void createGame_missingTeamId_returns400() {
+        String userId = uniqueUserId();
+        // Body has name + leagueId but NO teamId
+        String body = String.format(
+            "{\"name\":\"MissingTeam\",\"leagueId\":\"%s\"}",
+            UUID.randomUUID()
+        );
+
+        webTestClient.mutateWith(mockUser(userId))
+            .post().uri("/api/v1/games")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .exchange()
+            .expectStatus().isBadRequest();
     }
 }

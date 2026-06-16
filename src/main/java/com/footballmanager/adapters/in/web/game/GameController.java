@@ -48,6 +48,18 @@ public class GameController {
         }
         UUID leagueId = UUID.fromString(request.leagueId());
 
+        // V24D7+2.1: defensive guard — teamId is required by domain (GameService uses it
+        // to start the Career). Reject null/blank/invalid-UUID with 400 instead of NPE→500.
+        if (request.teamId() == null || request.teamId().isBlank()) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+        UUID teamUuid;
+        try {
+            teamUuid = UUID.fromString(request.teamId());
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+
         String difficulty = request.difficulty() != null ? request.difficulty() : "NORMAL";
         String gameSpeed = request.gameSpeed() != null ? request.gameSpeed() : "NORMAL";
         int teamsPerDivision = request.teamsPerDivision() != null ? request.teamsPerDivision() : 20;
