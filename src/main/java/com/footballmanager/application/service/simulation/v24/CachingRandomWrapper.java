@@ -26,12 +26,13 @@ import java.util.Random;
  * any moment (R5 from the refactor analysis) — both threads may hit this
  * wrapper concurrently.
  *
- * <p><b>Design choice — composition over inheritance</b>: this class is NOT
- * a subclass of {@code Random}. It wraps a private final {@code Random}
- * instance and overrides the methods that the engine calls. Rationale
- * (anti-pattern section of the F1 prompt): subclassing exposes ~70 methods
- * we don't need and risks accidental override of methods that aren't
- * thread-safe in the JDK's Random. Composition keeps the surface area small.
+ * <p><b>Design choice — Random subclass with composition</b>: this class
+ * extends {@link Random} (so it can be passed to any API that expects one,
+ * including the new {@code V24DetailedMatchEngine.simulate(ctx, Random)}
+ * overload) but internally delegates to a private final {@code Random}
+ * instance. The surface area is intentionally narrow: only the methods the
+ * engine actually calls are overridden with caching semantics; everything
+ * else propagates to the inner Random without persistence.
  *
  * <p><b>NOT cached</b>: {@code nextGaussian()}, {@code nextLong()},
  * {@code nextFloat()}, {@code nextBytes()}, {@code nextBoolean()} — these
@@ -39,7 +40,9 @@ import java.util.Random;
  * persisting. If a future engine method starts using them, this class must
  * be extended.
  */
-public class CachingRandomWrapper {
+public class CachingRandomWrapper extends Random {
+
+    private static final long serialVersionUID = 1L;
 
     /** Inner Random that produces the actual draws. Thread-confined via the wrapper's monitor. */
     private final Random inner;
@@ -97,6 +100,7 @@ public class CachingRandomWrapper {
      * Delegate {@code nextDouble()} to the inner Random, persist the value,
      * and return it. Hot path — kept lean (no logging, no allocation).
      */
+    @Override
     public synchronized double nextDouble() {
         double v = inner.nextDouble();
         doubleCache.add(v);
@@ -109,6 +113,7 @@ public class CachingRandomWrapper {
      *
      * <p>Bound validation is left to {@link Random#nextInt(int)}.
      */
+    @Override
     public synchronized int nextInt(int bound) {
         int v = inner.nextInt(bound);
         intCache.add(new int[]{bound, v});
@@ -120,28 +125,46 @@ public class CachingRandomWrapper {
     // the V24 engine does not call them. If that changes, the F1 prompt
     // requires explicit cache support.
 
+    @Override
     public synchronized double nextGaussian() {
         return inner.nextGaussian();
     }
 
+    @Override
     public synchronized long nextLong() {
         return inner.nextLong();
     }
 
+    @Override
     public synchronized float nextFloat() {
         return inner.nextFloat();
     }
 
+    @Override
     public synchronized boolean nextBoolean() {
         return inner.nextBoolean();
     }
 
+    @Override
     public synchronized void nextBytes(byte[] bytes) {
         inner.nextBytes(bytes);
     }
 
+    @Override
     public synchronized void setSeed(long seed) {
-        inner.setSeed(seed);
+        // The JDK's Random.setSeed(long) must run to reset the internal seed
+        // state (otherwise the wrapper would continue from the old sequence).
+        super.setSeed(seed);
+        // Guard against the constructor ordering: when the user calls
+        // `new CachingRandomWrapper(long)`, super() runs first (no-arg
+        // constructor does not call setSeed, so we're safe here), then our
+        // body runs `this.inner = new Random(seed)`. Inside that nested
+        // constructor the JDK calls `this.setSeed(seed)` on the outer
+        // `this` (this CachingRandomWrapper instance) — at which point
+        // `this.inner` is still null. Skip the inner delegation in that case.
+        if (inner != null) {
+            inner.setSeed(seed);
+        }
     }
 
     // ========== Read-only accessors (for tests + B3 V24LiveSession) ==========

@@ -47,11 +47,73 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
+        // LEGACY PATH (B4 of LIVE-MATCH-F2-LIVE F1 plan): preserved verbatim so
+        // the 832 existing V24 tests that call this signature keep passing.
+        // Internally creates 3 independent Randoms (main + 2 player selectors)
+        // seeded from the same seed for backward compatibility. The replay path
+        // (V24LiveSession.replayFromMinute) goes through the Random-overload
+        // below with a single shared CachingRandomWrapper.
+        return simulateWithRandom(context,
+            new Random(seed),
+            new Random(seed),
+            new Random(seed + 1));
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F1 B4 — replay-aware overload.
+     *
+     * <p>Accepts a caller-provided {@link Random} (typically a
+     * {@link CachingRandomWrapper}) and uses it for all three sources of
+     * randomness in the engine: the main loop (possession/chance/shot rolls)
+     * AND the two player selectors. Collapsing to a single Random source
+     * means ALL doubles are consumed in a single ordered sequence, which is
+     * what the replay path needs to invalidate from a specific minute and
+     * reproduce the same draw stream on the re-run.
+     *
+     * <p>Note: results produced by this overload are NOT identical to
+     * {@link #simulate(V24MatchContext, long)} for the same seed, because the
+     * 3-Random vs 1-Random split changes the double consumption order.
+     * This is intentional — the two overloads serve different purposes:
+     * <ul>
+     *   <li>{@code simulate(ctx, long seed)} — deterministic, single-shot
+     *       simulation for tests and post-match replay-from-disk.</li>
+     *   <li>{@code simulate(ctx, Random random)} — live-match replay path,
+     *       driven by a {@link CachingRandomWrapper} so any manager-applied
+     *       mutation can invalidate-and-replay from a known minute.</li>
+     * </ul>
+     *
+     * @param context the match context (home/away teams, starting XI, bench, formation, style)
+     * @param random the random source for ALL draws (main + both selectors).
+     *               Pass a {@link CachingRandomWrapper} to enable replay.
+     */
+    public V24DetailedMatchResult simulate(V24MatchContext context, Random random) {
+        if (random == null) {
+            throw new IllegalArgumentException("random must not be null");
+        }
+        // REPLAY PATH: a single Random is shared across main + both selectors
+        // so all doubles flow through one ordered stream. This is what makes
+        // CachingRandomWrapper.invalidateFromIndex(minuteBoundaries[m]) + a
+        // re-call to this method produce the same draws from minute m onward.
+        return simulateWithRandom(context, random, random, random);
+    }
+
+    /**
+     * Core simulation logic shared by both overloads. Takes three pre-seeded
+     * Randoms (one for main, one for each player selector). The CALLER is
+     * responsible for choosing whether they want 3 independent Randoms
+     * (legacy path via {@link #simulate(V24MatchContext, long)}) or a single
+     * shared Random (replay path via {@link #simulate(V24MatchContext, Random)}).
+     *
+     * <p>This method was extracted from the original
+     * {@link #simulate(V24MatchContext, long)} during F1 B4 and is logically
+     * identical to the pre-refactor body — no draw-order changes inside the
+     * loop body.
+     */
+    private V24DetailedMatchResult simulateWithRandom(
+            V24MatchContext context, Random random, Random homeSelectorRandom, Random awaySelectorRandom) {
         if (context == null) {
             throw new IllegalArgumentException("context must not be null");
         }
-
-        Random random = new Random(seed);
 
         V24TeamMatchState homeState = V24TeamMatchState.create(
                 context.homeTeam(), context.homeStartingPlayers(),
@@ -69,9 +131,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double awayPossBase = possessionBase(context.awayStyle());
         double homeShare = homePossBase / (homePossBase + awayPossBase);
 
-        // Player selector seeded by match
-        V24PlayerSelector homeSelector = new V24PlayerSelector(new Random(seed));
-        V24PlayerSelector awaySelector = new V24PlayerSelector(new Random(seed + 1));
+        // Player selectors — share the same Random source in replay path,
+        // independent Randoms in legacy path (both via simulateWithRandom's args).
+        V24PlayerSelector homeSelector = new V24PlayerSelector(homeSelectorRandom);
+        V24PlayerSelector awaySelector = new V24PlayerSelector(awaySelectorRandom);
 
         while (clock.isRunning()) {
             int minute = clock.currentMinute();
