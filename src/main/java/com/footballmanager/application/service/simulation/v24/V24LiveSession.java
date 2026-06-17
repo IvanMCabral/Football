@@ -262,7 +262,11 @@ public final class V24LiveSession {
                 finished,
                 eventsSoFar,
                 homePossession(),
-                awayPossession()
+                awayPossession(),
+                effectiveContext.homeStyle() != null ? effectiveContext.homeStyle().name() : null,
+                effectiveContext.awayStyle() != null ? effectiveContext.awayStyle().name() : null,
+                effectiveContext.homeFormation(),
+                effectiveContext.awayFormation()
         );
     }
 

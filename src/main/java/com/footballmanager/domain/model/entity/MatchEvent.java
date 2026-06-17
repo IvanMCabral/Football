@@ -11,6 +11,14 @@ import java.util.Objects;
  * <p>V24D6M11: EventType enum extended to cover every V24MatchEventType
  * for lossless event type preservation. No lossy mappings (no SHOT→GOAL,
  * no SHOT→CARD, no events dropped).
+ *
+ * <p>LIVE-MATCH-F3-UI-LIVE BE2: added optional {@code playerOnName} field
+ * for SUBSTITUTION events so the F3 UI can render "Salió X, entró Y" in the
+ * timeline without resolving sessionPlayerId to a name. The existing
+ * {@code playerName} field carries the OFF player (consistent with
+ * {@code V24MatchEvent.playerName()}); {@code playerOnName} carries the ON
+ * player (from {@code V24MatchEvent.relatedPlayerName()}). For non-SUBSTITUTION
+ * events {@code playerOnName} is {@code null}.
  */
 public class MatchEvent {
 
@@ -23,6 +31,8 @@ public class MatchEvent {
     private final String teamId;
     // V24D6M10: Optional matchId for deterministic player selection
     private final String matchId;
+    // LIVE-MATCH-F3-UI-LIVE BE2: optional ON-player name for SUBSTITUTION events
+    private final String playerOnName;
 
     public enum EventType {
         GOAL,
@@ -56,7 +66,7 @@ public class MatchEvent {
      * Backward-compatible constructor without playerId/teamId/matchId.
      */
     private MatchEvent(EventType eventType, int minute, String playerName, String description) {
-        this(eventType, minute, playerName, description, null, null, null);
+        this(eventType, minute, playerName, description, null, null, null, null);
     }
 
     /**
@@ -64,7 +74,7 @@ public class MatchEvent {
      */
     private MatchEvent(EventType eventType, int minute, String playerName, String description,
                       String playerId, String teamId) {
-        this(eventType, minute, playerName, description, playerId, teamId, null);
+        this(eventType, minute, playerName, description, playerId, teamId, null, null);
     }
 
     /**
@@ -72,12 +82,22 @@ public class MatchEvent {
      */
     private MatchEvent(EventType eventType, int minute, String playerName, String description,
                       String playerId, String teamId, String matchId) {
+        this(eventType, minute, playerName, description, playerId, teamId, matchId, null);
+    }
+
+    /**
+     * LIVE-MATCH-F3-UI-LIVE BE2: full constructor including the optional
+     * {@code playerOnName} for SUBSTITUTION events.
+     */
+    private MatchEvent(EventType eventType, int minute, String playerName, String description,
+                      String playerId, String teamId, String matchId, String playerOnName) {
         this.eventType = Objects.requireNonNull(eventType, "Event type cannot be null");
         this.playerName = (playerName != null && !playerName.isBlank()) ? playerName : "Unknown";
         this.description = (description != null) ? description : "";
         this.playerId = playerId;
         this.teamId = teamId;
         this.matchId = matchId;
+        this.playerOnName = (playerOnName != null && !playerOnName.isBlank()) ? playerOnName : null;
 
         validateMinute(minute);
         this.minute = minute;
@@ -102,7 +122,7 @@ public class MatchEvent {
      */
     public static MatchEvent of(EventType eventType, int minute, String playerId, String playerName,
                                String teamId, String description) {
-        return new MatchEvent(eventType, minute, playerName, description, playerId, teamId, null);
+        return new MatchEvent(eventType, minute, playerName, description, playerId, teamId, null, null);
     }
 
     /**
@@ -118,7 +138,27 @@ public class MatchEvent {
      */
     public static MatchEvent of(EventType eventType, int minute, String playerId, String playerName,
                                String teamId, String description, String matchId) {
-        return new MatchEvent(eventType, minute, playerName, description, playerId, teamId, matchId);
+        return new MatchEvent(eventType, minute, playerName, description, playerId, teamId, matchId, null);
+    }
+
+    /**
+     * LIVE-MATCH-F3-UI-LIVE BE2: factory method that also carries the optional
+     * {@code playerOnName} for SUBSTITUTION events. The value is a no-op for
+     * non-SUBSTITUTION events (it's still stored, but the UI only displays it
+     * for SUBSTITUTION).
+     *
+     * @param eventType    type of event
+     * @param minute       match minute
+     * @param playerId     sessionPlayerId of the OFF player (may be null)
+     * @param playerName   OFF player name (existing field, primary attribution)
+     * @param teamId       sessionTeamId of the player's team (may be null)
+     * @param description  event description
+     * @param matchId      matchId for deterministic player selection (may be null)
+     * @param playerOnName ON player name for SUBSTITUTION events (may be null)
+     */
+    public static MatchEvent of(EventType eventType, int minute, String playerId, String playerName,
+                               String teamId, String description, String matchId, String playerOnName) {
+        return new MatchEvent(eventType, minute, playerName, description, playerId, teamId, matchId, playerOnName);
     }
 
     private void validateMinute(int minute) {
@@ -164,6 +204,15 @@ public class MatchEvent {
         return matchId;
     }
 
+    /**
+     * LIVE-MATCH-F3-UI-LIVE BE2: ON player name for SUBSTITUTION events.
+     * Returns {@code null} for non-SUBSTITUTION events or when the
+     * V24MatchEvent did not carry a {@code relatedPlayerName}.
+     */
+    public String getPlayerOnName() {
+        return playerOnName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -175,12 +224,13 @@ public class MatchEvent {
                 Objects.equals(description, that.description) &&
                 Objects.equals(playerId, that.playerId) &&
                 Objects.equals(teamId, that.teamId) &&
-                Objects.equals(matchId, that.matchId);
+                Objects.equals(matchId, that.matchId) &&
+                Objects.equals(playerOnName, that.playerOnName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventType, minute, playerName, description, playerId, teamId, matchId);
+        return Objects.hash(eventType, minute, playerName, description, playerId, teamId, matchId, playerOnName);
     }
 
     @Override

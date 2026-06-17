@@ -82,6 +82,9 @@ public class MatchSession {
                 state.getScore().home(),
                 state.getScore().away()
         );
+        // LIVE-MATCH-F3-UI-LIVE BE1: legacy path (no V24LiveSession) — defaults
+        // for the new possession/style/formation fields. The 9-arg constructor
+        // applies safe defaults (50/50, BALANCED, 4-4-2).
         return new MatchStateSnapshot(
                 matchId,
                 state.getHomeTeamId(),
@@ -209,6 +212,11 @@ public class MatchSession {
     /**
      * Adapt V24LiveSnapshot to MatchStateSnapshot for SSE stream.
      * Events are converted from V24MatchEvent → domain MatchEvent.
+     *
+     * <p>LIVE-MATCH-F3-UI-LIVE BE1: propagates the 6 new fields
+     * (homePossession, awayPossession, homeStyle, awayStyle, homeFormation,
+     * awayFormation) so the F3 UI can render the possession bar and the
+     * current style/formation per team in real time.
      */
     private MatchStateSnapshot adaptV24Snapshot(V24LiveSnapshot snap) {
         UUID homeTeamId = snap.homeTeamId() != null ? UUID.fromString(snap.homeTeamId()) : null;
@@ -228,13 +236,25 @@ public class MatchSession {
                 new Score(snap.homeGoals(), snap.awayGoals()),
                 adaptedEvents,
                 currentState.careerId(),
-                currentState.userId()
+                currentState.userId(),
+                // LIVE-MATCH-F3-UI-LIVE BE1
+                snap.homePossession(),
+                snap.awayPossession(),
+                snap.homeStyle(),
+                snap.awayStyle(),
+                snap.homeFormation(),
+                snap.awayFormation()
         );
     }
 
     /**
      * Convert a V24MatchEvent to domain MatchEvent, preserving player attribution.
      * Used for SSE stream — no information loss since V24MatchEvent has all needed fields.
+     *
+     * <p>LIVE-MATCH-F3-UI-LIVE BE2: for SUBSTITUTION events, the
+     * {@code relatedPlayerName} from V24MatchEvent is propagated to the domain
+     * {@code playerOnName} so the F3 UI can render "Salió X, entró Y" in the
+     * timeline without resolving IDs.
      */
     private MatchEvent toDomainMatchEvent(V24MatchEvent e) {
         MatchEvent.EventType domainType = toDomainEventType(e.type());
@@ -244,7 +264,10 @@ public class MatchSession {
                 e.playerId(),
                 e.playerName(),
                 e.teamId(),
-                e.description()
+                e.description(),
+                // LIVE-MATCH-F3-UI-LIVE BE2: propagate relatedPlayerName for
+                // SUBSTITUTION events. The factory no-ops it for non-SUB events.
+                e.relatedPlayerName()
         );
     }
 

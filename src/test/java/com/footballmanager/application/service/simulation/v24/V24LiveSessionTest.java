@@ -611,4 +611,58 @@ class V24LiveSessionTest {
             "Substitution: " + playerOnName + " on for " + playerOffName
         );
     }
+
+    // ========== LIVE-MATCH-F3-UI-LIVE BE1 — style/formation in snapshot ==========
+
+    @Test
+    @DisplayName("BE1: tick() snapshot exposes the effective style and formation per team")
+    void tick_exposesStyleAndFormation() {
+        // Baseline: a fresh session with BALANCED/BALANCED and 4-3-3/4-4-2.
+        // The first tick in setUp() ran before the assertion block; tick() returns
+        // a snapshot whose style/formation should match the effective context.
+        V24LiveSnapshot baseline = session.tick();
+        assertEquals("BALANCED", baseline.homeStyle(),
+            "BE1: home style should be BALANCED on a fresh context");
+        assertEquals("BALANCED", baseline.awayStyle(),
+            "BE1: away style should be BALANCED on a fresh context");
+        assertEquals("4-3-3", baseline.homeFormation(),
+            "BE1: home formation should match the SessionTeam.formation (\"4-3-3\")");
+        assertEquals("4-4-2", baseline.awayFormation(),
+            "BE1: away formation should match the SessionTeam.formation (\"4-4-2\")");
+
+        // Now mutate the home style to ATTACKING via the F1 mutation path.
+        // mutateContext triggers replayFromMinute(currentMinute) so the next
+        // tick() reflects the new style.
+        session.mutateContext(ctx -> ctx.withNewStyle(homeTeamId, TeamStyle.ATTACKING));
+        V24LiveSnapshot afterStyle = session.tick();
+        assertEquals("ATTACKING", afterStyle.homeStyle(),
+            "BE1: home style should be ATTACKING after withNewStyle(home, ATTACKING)");
+        assertEquals("BALANCED", afterStyle.awayStyle(),
+            "BE1: away style should remain BALANCED (untouched)");
+
+        // Mutate the away formation.
+        session.mutateContext(ctx -> ctx.withNewFormation(awayTeamId, "3-5-2"));
+        V24LiveSnapshot afterFormation = session.tick();
+        assertEquals("3-5-2", afterFormation.awayFormation(),
+            "BE1: away formation should be 3-5-2 after withNewFormation(away, 3-5-2)");
+        assertEquals("4-3-3", afterFormation.homeFormation(),
+            "BE1: home formation should remain 4-3-3 (untouched)");
+    }
+
+    @Test
+    @DisplayName("BE1: legacy 10-arg V24LiveSnapshot constructor defaults style/formation")
+    void legacyConstructor_defaultsStyleAndFormation() {
+        // Pre-BE1 callers (legacy tests, ad-hoc) use the 10-arg constructor.
+        // The new fields must default to safe values (BALANCED / 4-4-2) so the
+        // contract holds and the F3 UI never receives nulls.
+        V24LiveSnapshot legacy = new V24LiveSnapshot(
+            "match-legacy", 30, 1, 0,
+            "home", "away", false, List.of(),
+            55, 45
+        );
+        assertEquals("BALANCED", legacy.homeStyle());
+        assertEquals("BALANCED", legacy.awayStyle());
+        assertEquals("4-4-2", legacy.homeFormation());
+        assertEquals("4-4-2", legacy.awayFormation());
+    }
 }
