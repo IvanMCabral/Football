@@ -466,16 +466,19 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         V24ShotCoordinate shotCoord = coordGenerator.generate(location, random);
 
         // Resolve shot outcome (xG threshold + randomness)
-        // V24D6U4: Tuned both onTarget and goal thresholds to reduce conversion rate.
-        // Previous: onTarget base 30%, goal at xg/0.45 → 45% xG = 100% goal (too generous).
-        // New: onTarget base 18%, goal at xg/0.40 → 40% xG = 100% goal.
-        // Combined effect: fewer shots on target AND harder to score from same xG.
-        boolean onTarget = random.nextDouble() < (0.18 + (1 - xg) * 0.42);
+        // V24D6U4-RE: Recalibrated onTarget base and goal threshold to hit
+        // Poisson λ=1.25 after raising chanceProbability (more shots).
+        // Previous (V24D6U4): onTarget base 0.18, goal threshold xg/0.40
+        // produced too few goals (~9% conversion, λ≈0.45).
+        // New: onTarget base 0.30 (more realistic 30-35% on-target),
+        // goal threshold xg/0.60 (60% xG = 100% goal — slightly more
+        // permissive per unit xG to compensate for higher shot volume).
+        boolean onTarget = random.nextDouble() < (0.30 + (1 - xg) * 0.42);
         boolean isGoal = false;
 
         if (onTarget) {
             // Goal if xG > random threshold (higher xG = more likely to beat keeper)
-            isGoal = random.nextDouble() < (xg / 0.40); // scale: 0.40 xG = ~50% goal
+            isGoal = random.nextDouble() < (xg / 0.60); // scale: 0.60 xG = ~50% goal
             if (isGoal) {
                 possessor.addGoal();
                 // V24D6O-fix: count goal as a shot on target so homeShots/awayShots
@@ -607,16 +610,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     private double chanceProbability(TeamStyle style, int minute) {
-        // V24D6U4: Tuned from ~0.26 base to ~0.10 to reduce goals from ~5/team to ~1.25/team.
-        // Target: λ ≈ 1.25 per team (Poisson), ~2.5 total/match.
-        // Previous: λ ≈ 4.5 → 46.7% of matches with 5+ goals.
-        // New: λ ≈ 1.25 → 91.4% of matches with ≤3 goals.
+        // V24D6U4-RE: Recalibrated to hit Poisson λ=1.25 per team.
+        // Previous tuning (V24D6U4) overshot the suppression: empirical λ≈0.45
+        // vs target λ≈1.25 (factor 2.77x too low). ITER 1 (base 0.25) gave
+        // λ≈0.89; ITER 2 (base 0.35) targets λ≈1.24.
         double base = switch (style) {
-            case ATTACKING -> 0.13;
-            case POSSESSION -> 0.11;
-            case COUNTER -> 0.10;
-            case DEFENSIVE -> 0.08;
-            case BALANCED -> 0.10;
+            case ATTACKING -> 0.42;
+            case POSSESSION -> 0.38;
+            case COUNTER -> 0.35;
+            case DEFENSIVE -> 0.28;
+            case BALANCED -> 0.35;
         };
 
         // Slight increase in second half (more open)

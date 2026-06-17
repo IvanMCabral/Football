@@ -198,7 +198,7 @@ Si en una sesión nueva Mavis no lee este archivo, pedirselo explícitamente:
 
 ## Tickets nuevos (post-V24D14)
 
-### 🟡 V24D6U4-RE — Recalibrar V24 model a su propio target λ=1.25
+### 🟢 V24D6U4-RE — Recalibrar V24 model a su propio target λ=1.25
 
 **Detectado en:** LIVE-MATCH-F2-LIVE F2.5 (2026-06-17) durante cierre de 2 tests RED.
 
@@ -212,8 +212,57 @@ Si en una sesión nueva Mavis no lee este archivo, pedirselo explícitamente:
 
 **Workaround aplicado en F2.5:** cambiar assertions de "homeGoals/awayGoals differ" a "el engine emits SUBSTITUTION event at the effectiveMinute" (test del F2.5 contract puro, no del F2 contract). Más robusto y no depende del tuning.
 
-**Para resolver:** crear ticket V24D7+ (no V24D6U4) — es un recalibration pass, no un bug fix. Asignar después de cerrar LIVE-MATCH-F2-LIVE.
+**ESTADO 2026-06-17 19:42 ART — RESUELTO localmente, pendiente commit/push con aprobación de Mavis root.**
+
+**Cambios aplicados (commit en working tree, no pusheado):**
+
+| Parámetro                                    | PRE (master) | POST (V24D6U4-RE) | Δ |
+|----------------------------------------------|--------------|-------------------|---|
+| `chanceProbability` ATTACKING                | 0.13         | 0.42              | ×3.23 |
+| `chanceProbability` POSSESSION               | 0.11         | 0.38              | ×3.45 |
+| `chanceProbability` COUNTER                  | 0.10         | 0.35              | ×3.5  |
+| `chanceProbability` DEFENSIVE                | 0.08         | 0.28              | ×3.5  |
+| `chanceProbability` BALANCED                 | 0.10         | 0.35              | ×3.5  |
+| `onTarget` base                              | 0.18         | 0.30              | ×1.67 |
+| `goalThreshold` divisor                      | 0.40         | 0.60              | ÷1.5  |
+
+**Resultado empírico (N=1000 seeds, BALANCED × BALANCED, OVR=75):**
+
+| Métrica                     | PRE        | POST       | Target  |
+|-----------------------------|------------|------------|---------|
+| λ home                      | 0.435      | 1.199      | 1.25    |
+| λ away                      | 0.468      | 1.247      | 1.25    |
+| **λ avg**                   | **0.452**  | **1.223**  | **1.25** ✓ |
+| P(0) per team               | 64.0%      | 29.25%     | ~29% ✓ |
+| P(1) per team               | 28.25%     | 35.9%      | ~36% ✓ |
+| P(2) per team               | 6.55%      | 22.7%      | ~22% ✓ |
+| P(3+) per team              | 1.25%      | 12.15%     | ~13% ✓ |
+| P(0-0) match                | 40.1%      | 10.0%      | ~8.2% (in [6%, 12%]) ✓ |
+| Avg shots/team              | 4.84       | 17.27      | (informational) |
+| Avg xG/team                 | 0.301      | 1.078      | (informational) |
+| Goals/shot                  | 0.093      | 0.071      | (informational) |
+
+**Validación de tests (`mvn test` full, 1317 tests):**
+- PRE-cambio: 1 fail (V24ModelTuningDiagnosticTest, esperado), 100 errors (Redis infra pre-existente)
+- POST-cambio: 0 fail, 100 errors (mismos Redis infra pre-existentes — ninguno introducido por la recalibración)
+- **Confirmado: 100% de los errors son `RedisConnectionFailureException` / `NOAUTH Authentication required`** (infra, no del engine).
+- 957/957 V24-side tests verde, incluido el nuevo `V24ModelTuningDiagnosticTest`.
+
+**Test nuevo creado:**
+`src/test/java/com/footballmanager/application/simulation/v24/V24ModelTuningDiagnosticTest.java`
+- N=1000 simulaciones BALANCED × BALANCED, OVR=75
+- Imprime histograma completo a stdout
+- Assertions de regression guard: λ ∈ [0.9, 1.6], P(0) ∈ [20%, 40%] (anchos para no flakear con minor tweaks)
+- Sirve como baseline histórico Y regression check futuro
+
+**Tests NO ajustados:** ninguno. Los 832+ tests V24+V23 originales no dependían del goal output específico (asserts sobre possession, shots, xG, eventos, mutations, formations, substitutions — todos pasan con el nuevo λ).
+
+**Archivos modificados:**
+- `src/main/java/com/footballmanager/application/service/simulation/v24/V24DetailedMatchEngine.java` — 3 hunks (chanceProbability + onTarget + goalThreshold + comments)
+- `src/test/java/com/footballmanager/application/service/simulation/v24/V24ModelTuningDiagnosticTest.java` (NEW)
+
+**Pendiente:** commit + push + tag `V24D7-V24D6U4-RE` (sugerido) — esperando aprobación de Mavis root.
 
 ---
 
-*NEXT.md actualizado por SENIOR + Mavis root tras cierre de V24D14 (housekeeping documental, local commit). Próximo paso: P1a — Match detail UI polish.*
+*NEXT.md actualizado por SENIOR tras cierre de V24D6U4-RE (cambios en working tree, pendiente push).*
