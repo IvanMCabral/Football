@@ -41,6 +41,16 @@ public class MatchSession {
     /** V24 live session — null means legacy path (use MatchTickHandler). */
     private final V24LiveSession v24LiveSession;
 
+    /**
+     * LIVE-MATCH-F1-POC: public accessor for the V24LiveSession.
+     * Returns null if this session is on the legacy (non-V24) path.
+     * Callers that need V24-specific behavior (manual substitutions, etc.)
+     * must null-check.
+     */
+    public V24LiveSession getV24LiveSession() {
+        return v24LiveSession;
+    }
+
     private Consumer<MatchFinishedResult> onFinishCallback;
     private volatile boolean finishCallbackExecuted = false;
 

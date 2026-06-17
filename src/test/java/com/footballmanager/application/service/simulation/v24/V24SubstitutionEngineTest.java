@@ -342,4 +342,113 @@ class V24SubstitutionEngineTest {
         };
     }
 
+    // ========== LIVE-MATCH-F1-POC: manualSubstitute tests ==========
+
+    @Test
+    void manualSubstitute_validPair_returnsEventAndMutatesState() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState subOff = team.startingPlayers().get(0);
+        V24PlayerMatchState subOn = team.benchPlayers().get(0); // GK, same position as subOff[0]
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        V24MatchEvent event = engine.manualSubstitute(
+            team, subOff.sessionPlayerId(), subOn.sessionPlayerId(), 70);
+
+        assertNotNull(event);
+        assertEquals(V24MatchEventType.SUBSTITUTION, event.type());
+        assertEquals(subOff.sessionPlayerId(), event.playerId());
+        assertEquals(subOn.sessionPlayerId(), event.relatedPlayerId());
+        assertEquals(70, event.minute());
+        // Player state mutated
+        assertFalse(subOff.onPitch(), "Substituted-off player should be off pitch");
+        assertTrue(subOn.onPitch(), "Substituted-on player should be on pitch");
+        // Counter incremented
+        assertEquals(1, engine.substitutionsUsed("team-1"));
+        assertEquals(MAX_SUBS - 1, engine.substitutionsRemaining("team-1"));
     }
+
+    @Test
+    void manualSubstitute_offPlayerInjured_throwsIllegalState() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState injured = team.startingPlayers().get(0);
+        injured.injure();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        assertThrows(IllegalStateException.class,
+            () -> engine.manualSubstitute(team, injured.sessionPlayerId(),
+                team.benchPlayers().get(0).sessionPlayerId(), 70));
+    }
+
+    @Test
+    void manualSubstitute_offPlayerAlreadySubstitutedOff_throwsIllegalState() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState subOff = team.startingPlayers().get(0);
+        V24PlayerMatchState subOn = team.benchPlayers().get(0);
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        // First substitution succeeds
+        engine.manualSubstitute(team, subOff.sessionPlayerId(), subOn.sessionPlayerId(), 70);
+        // Second attempt with the same off player should fail
+        assertThrows(IllegalStateException.class,
+            () -> engine.manualSubstitute(team, subOff.sessionPlayerId(),
+                team.benchPlayers().get(1).sessionPlayerId(), 75));
+    }
+
+    @Test
+    void manualSubstitute_maxSubsReached_throwsIllegalState() {
+        V24TeamMatchState team = makeTeam();
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(2); // tighter limit
+
+        // First substitution
+        engine.manualSubstitute(team,
+            team.startingPlayers().get(0).sessionPlayerId(),
+            team.benchPlayers().get(0).sessionPlayerId(), 30);
+
+        // Second substitution (different players)
+        engine.manualSubstitute(team,
+            team.startingPlayers().get(1).sessionPlayerId(),
+            team.benchPlayers().get(1).sessionPlayerId(), 50);
+
+        // Third attempt should fail (max 2 reached)
+        assertThrows(IllegalStateException.class,
+            () -> engine.manualSubstitute(team,
+                team.startingPlayers().get(2).sessionPlayerId(),
+                team.benchPlayers().get(2).sessionPlayerId(), 70));
+    }
+
+    @Test
+    void manualSubstitute_nullOrBlankIds_throwsIllegalArgument() {
+        V24TeamMatchState team = makeTeam();
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, null, "bench-0", 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "", "bench-0", 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", null, 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", "  ", 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", "bench-0", 0));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", "bench-0", 131));
+    }
+
+    @Test
+    void isSubstitutedOffPublic_returnsCorrectValue() {
+        V24TeamMatchState team = makeTeam();
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        // SessionPlayer.custom generates a random sessionPlayerId, so we
+        // capture the actual id of starter-0 rather than hardcoding the name.
+        String starterId = team.startingPlayers().get(0).sessionPlayerId();
+
+        // Initially false
+        assertFalse(engine.isSubstitutedOffPublic(starterId));
+        // After substitution, true
+        engine.manualSubstitute(team,
+            starterId,
+            team.benchPlayers().get(0).sessionPlayerId(), 70);
+        assertTrue(engine.isSubstitutedOffPublic(starterId));
+    }
+}

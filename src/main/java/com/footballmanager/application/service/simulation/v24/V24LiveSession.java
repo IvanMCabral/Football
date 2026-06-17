@@ -168,4 +168,64 @@ public final class V24LiveSession {
         // Already simulated once — re-run to get clean final result
         return engine.simulate(context, seed);
     }
+
+    // ========== LIVE-MATCH-F1-POC: manual substitution injection ==========
+
+    /**
+     * LIVE-MATCH-F1-POC: record a manual substitution event from the user.
+     *
+     * <p>Phase 1 POC (D1=B): this method does NOT alter the match result.
+     * The {@link V24DetailedMatchEngine} runs the full 90-minute simulation
+     * once and caches events; injecting this event makes the substitution
+     * visible in the next SSE snapshot (it appears in the timeline) but
+     * {@code homeGoals}/{@code awayGoals} are NOT recomputed.
+     *
+     * <p>The proper engine refactor that recomputes results after user actions
+     * is deferred to Phase 2.
+     *
+     * @param event the substitution event (must be of type {@link V24MatchEventType#SUBSTITUTION})
+     * @throws IllegalStateException    if the match has already finished
+     * @throws IllegalArgumentException if the event type is not SUBSTITUTION
+     */
+    public synchronized void recordManualSubstitution(V24MatchEvent event) {
+        if (finished) {
+            throw new IllegalStateException("Match already finished");
+        }
+        if (event == null) {
+            throw new IllegalArgumentException("event must not be null");
+        }
+        if (event.type() != V24MatchEventType.SUBSTITUTION) {
+            throw new IllegalArgumentException(
+                "Expected SUBSTITUTION event, got " + event.type());
+        }
+        this.accumulatedEvents.add(event);
+        // Do NOT recalculate homeGoals/awayGoals (D1=B).
+    }
+
+    /**
+     * LIVE-MATCH-F1-POC: expose current minute for SubstitutionCommandUseCase.
+     * The session's current minute is the authoritative time reference —
+     * the request's {@code requestedMinute} from the API body is overridden
+     * by this value to avoid drift between client clock and server tick.
+     */
+    public int currentMinute() {
+        return currentMinute;
+    }
+
+    /**
+     * LIVE-MATCH-F1-POC: expose context (read-only view) for SubstitutionCommandUseCase.
+     * Consumers MUST treat the returned object as immutable; mutations are not
+     * expected outside of {@link V24PlayerMatchState} per-player mutations.
+     */
+    public V24MatchContext context() {
+        return context;
+    }
+
+    /**
+     * LIVE-MATCH-F1-POC: read-only accessor for accumulated events.
+     * Returns an unmodifiable view so consumers cannot mutate the internal list.
+     */
+    public java.util.List<V24MatchEvent> accumulatedEvents() {
+        return java.util.Collections.unmodifiableList(accumulatedEvents);
+    }
 }
