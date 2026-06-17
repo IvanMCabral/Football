@@ -363,6 +363,8 @@ public class RoundController {
             case CORNER -> com.footballmanager.domain.model.entity.MatchEvent.EventType.CORNER;
             case OFFSIDE -> com.footballmanager.domain.model.entity.MatchEvent.EventType.OFFSIDE;
             case SUBSTITUTION -> com.footballmanager.domain.model.entity.MatchEvent.EventType.SUBSTITUTION;
+            // LIVE-MATCH-F2-LIVE F5: tactical change maps 1:1.
+            case TACTICAL_CHANGE -> com.footballmanager.domain.model.entity.MatchEvent.EventType.TACTICAL_CHANGE;
         };
     }
 }

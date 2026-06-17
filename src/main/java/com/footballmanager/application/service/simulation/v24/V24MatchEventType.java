@@ -18,5 +18,9 @@ public enum V24MatchEventType {
     INJURY,
     CORNER,
     OFFSIDE,
-    SUBSTITUTION
+    SUBSTITUTION,
+    // LIVE-MATCH-F2-LIVE F5: emitted when the manager changes style/formation
+    // mid-match. The event is appended to the timeline (visible to F3 UI) but
+    // does NOT carry goals/xG — those are recomputed by V24LiveSession.replayFromMinute.
+    TACTICAL_CHANGE
 }

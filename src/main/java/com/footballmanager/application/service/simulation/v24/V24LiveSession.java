@@ -328,6 +328,44 @@ public final class V24LiveSession {
         // Do NOT recalculate homeGoals/awayGoals (D1=B).
     }
 
+    // ========== LIVE-MATCH-F2-LIVE F5 (B3.2): tactical change event recording ==========
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B3.2): record a tactical change event (style/formation)
+     * initiated by the manager. Mirrors the {@link #recordManualSubstitution} contract:
+     * the event is appended to the live session so the F3 UI can render it, but
+     * the goals/xG are recomputed by the {@link #replayFromMinute(int)} call that
+     * the {@code TacticalChangeService} drives through {@link #mutateContext}.
+     *
+     * <p>{@code synchronized} for the same reason as {@code recordManualSubstitution}:
+     * the {@code RoundEngine} scheduler ticks every 500ms and can race with a
+     * controller POST. The event list mutation must be atomic w.r.t. tick().
+     *
+     * <p>Per the F5 spec: NO mutation of {@code effectiveContext} here (the
+     * service does that via {@code mutateContext} first). NO trigger of
+     * {@code replayFromMinute} here either — the service is the single owner
+     * of the mutate + replay sequence.
+     *
+     * @param event the tactical-change event (must be of type {@link V24MatchEventType#TACTICAL_CHANGE})
+     * @throws IllegalStateException    if the match has already finished
+     * @throws IllegalArgumentException if event is null or its type is not TACTICAL_CHANGE
+     */
+    public synchronized void recordTacticalChange(V24MatchEvent event) {
+        if (finished) {
+            throw new IllegalStateException("Match already finished");
+        }
+        if (event == null) {
+            throw new IllegalArgumentException("event must not be null");
+        }
+        if (event.type() != V24MatchEventType.TACTICAL_CHANGE) {
+            throw new IllegalArgumentException(
+                "Expected TACTICAL_CHANGE event, got " + event.type());
+        }
+        this.manualEvents.add(event);
+        log.info("[LIVE-MATCH-F2-F5] Tactical change recorded: minute={} teamId={} description='{}'",
+            event.minute(), event.teamId(), event.description());
+    }
+
     // ========== LIVE-MATCH-F2-LIVE F1 B3 — replay path (NEW API) ==========
 
     /**

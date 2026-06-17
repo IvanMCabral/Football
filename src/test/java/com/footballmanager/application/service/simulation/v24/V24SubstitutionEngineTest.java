@@ -451,4 +451,70 @@ class V24SubstitutionEngineTest {
             team.benchPlayers().get(0).sessionPlayerId(), 70);
         assertTrue(engine.isSubstitutedOffPublic(starterId));
     }
+
+    // ========== LIVE-MATCH-F2-LIVE F5 (B7): formation-respecting substitution ==========
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B7): the B6 bug colateral fix. When the
+     * formation has been tactically changed mid-match to a layout that
+     * does NOT have a slot for the OFF player's position, the engine
+     * must skip the substitution (not produce a SUBSTITUTION event that
+     * would reference a non-existent slot).
+     *
+     * <p>Scenario: start with a 4-3-3 team (has GK + 4 DEF + 3 MID + 2 WINGER + 1 ATT).
+     * Tactically change formation to 3-5-2 (GK + 3 DEF + 5 MID + 2 ATT — no WINGER slot).
+     * A WINGER becomes "very tired" → attemptSubstitution should NOT produce
+     * a substitution event because 3-5-2 has no WINGER slot to fill.
+     */
+    @Test
+    void attemptSubstitution_respectsCurrentFormation_skipsWhenNoSlot() {
+        V24TeamMatchState team = makeTeam(); // starts at 4-3-3
+
+        // Mid-match tactical change: switch to 3-5-2 (no WINGER slot).
+        team.setFormation("3-5-2");
+
+        // Make a WINGER very tired so they become a substitution candidate.
+        V24PlayerMatchState winger = team.startingPlayers().stream()
+            .filter(p -> "WINGER".equals(p.position()))
+            .findFirst()
+            .orElseThrow();
+        winger.drainStamina(100); // stamina = 0 → very tired
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        // Bug colateral fix: with no WINGER slot in 3-5-2, the engine must skip.
+        assertTrue(event.isEmpty(),
+            "Substitution must be skipped when current formation has no slot for the OFF position");
+        // Sub counter is NOT incremented (no actual sub happened).
+        assertEquals(0, engine.substitutionsUsed(team.teamId()),
+            "Substitution counter must not increment on a no-op skip");
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B7): positive path. After tactically changing
+     * to a formation that DOES have a slot for the OFF player's position,
+     * the substitution proceeds normally.
+     */
+    @Test
+    void attemptSubstitution_respectsCurrentFormation_proceedsWhenSlotExists() {
+        V24TeamMatchState team = makeTeam(); // starts at 4-3-3
+
+        // Mid-match tactical change: stay in 4-3-3 (or any DEF-supporting layout).
+        // Make a DEF very tired — 4-3-3 has 4 DEF slots, so the substitution should proceed.
+        team.setFormation("4-3-3");
+
+        V24PlayerMatchState def = team.startingPlayers().stream()
+            .filter(p -> "DEF".equals(p.position()))
+            .findFirst()
+            .orElseThrow();
+        def.drainStamina(100); // very tired
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        // Sanity: 4-3-3 has DEF slots, so the substitution should fire.
+        assertTrue(event.isPresent(),
+            "Substitution must proceed when current formation has a slot for the OFF position");
+    }
 }

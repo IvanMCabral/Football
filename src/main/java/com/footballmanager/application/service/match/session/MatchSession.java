@@ -271,6 +271,8 @@ public class MatchSession {
             case CORNER -> MatchEvent.EventType.CORNER;
             case OFFSIDE -> MatchEvent.EventType.OFFSIDE;
             case SUBSTITUTION -> MatchEvent.EventType.SUBSTITUTION;
+            // LIVE-MATCH-F2-LIVE F5: tactical change maps 1:1 (description carries the payload).
+            case TACTICAL_CHANGE -> MatchEvent.EventType.TACTICAL_CHANGE;
         };
     }
 }

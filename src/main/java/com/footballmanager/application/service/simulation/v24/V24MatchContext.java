@@ -99,4 +99,98 @@ public final class V24MatchContext {
     public String awayFormation() { return awayFormation; }
     public TeamStyle homeStyle() { return homeStyle; }
     public TeamStyle awayStyle() { return awayStyle; }
+
+    // ========== LIVE-MATCH-F2-LIVE F5 (B4): tactical mutation helpers ==========
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B4): return a NEW {@link V24MatchContext} with
+     * {@code teamId}'s tactical style replaced by {@code newStyle}. This
+     * context is otherwise immutable (F1 design): the helper builds a fresh
+     * instance rather than mutating in-place, so the replay path can compare
+     * snapshots and the cache invalidation logic in F1 stays valid.
+     *
+     * <p>Validation: {@code newStyle} must be non-null, {@code teamId} must
+     * match the home or away team of this context. The F5 spec restricts
+     * tactical changes to the manager's team (home), but the helper is
+     * generic — the policy lives in {@code TacticalChangeService}.
+     *
+     * @param teamId   homeTeamId or awayTeamId of this match
+     * @param newStyle the new tactical style (NOT NULL)
+     * @return a new V24MatchContext with the style replaced
+     * @throws IllegalArgumentException if teamId is unknown or newStyle is null
+     */
+    public V24MatchContext withNewStyle(String teamId, TeamStyle newStyle) {
+        if (newStyle == null) {
+            throw new IllegalArgumentException("newStyle must not be null");
+        }
+        if (teamId == null || teamId.isBlank()) {
+            throw new IllegalArgumentException("teamId must not be blank");
+        }
+        if (homeTeamId.equals(teamId)) {
+            return new V24MatchContext(
+                    matchId, homeTeamId, awayTeamId,
+                    homeTeam, awayTeam,
+                    homeStartingPlayers, awayStartingPlayers,
+                    homeBenchPlayers, awayBenchPlayers,
+                    homeFormation, awayFormation,
+                    newStyle, awayStyle);
+        }
+        if (awayTeamId.equals(teamId)) {
+            return new V24MatchContext(
+                    matchId, homeTeamId, awayTeamId,
+                    homeTeam, awayTeam,
+                    homeStartingPlayers, awayStartingPlayers,
+                    homeBenchPlayers, awayBenchPlayers,
+                    homeFormation, awayFormation,
+                    homeStyle, newStyle);
+        }
+        throw new IllegalArgumentException(
+                "teamId '" + teamId + "' does not match home ('"
+                + homeTeamId + "') or away ('" + awayTeamId + "')");
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B4): return a NEW {@link V24MatchContext} with
+     * {@code teamId}'s formation string replaced by {@code newFormation}.
+     * Like {@link #withNewStyle}, this returns a fresh instance.
+     *
+     * <p>Validation is delegated to {@link V24TeamMatchState#setFormation(String)}
+     * (which the tactical-change service invokes after {@code mutateContext}
+     * rebuilds the {@code V24TeamMatchState}). The helper itself only checks
+     * the identity constraint (teamId must match home/away) and non-blank.
+     *
+     * @param teamId        homeTeamId or awayTeamId of this match
+     * @param newFormation  the new formation code (NOT NULL, NOT BLANK)
+     * @return a new V24MatchContext with the formation replaced
+     * @throws IllegalArgumentException if teamId is unknown or formation is null/blank
+     */
+    public V24MatchContext withNewFormation(String teamId, String newFormation) {
+        if (newFormation == null || newFormation.isBlank()) {
+            throw new IllegalArgumentException("newFormation must not be null or blank");
+        }
+        if (teamId == null || teamId.isBlank()) {
+            throw new IllegalArgumentException("teamId must not be blank");
+        }
+        if (homeTeamId.equals(teamId)) {
+            return new V24MatchContext(
+                    matchId, homeTeamId, awayTeamId,
+                    homeTeam, awayTeam,
+                    homeStartingPlayers, awayStartingPlayers,
+                    homeBenchPlayers, awayBenchPlayers,
+                    newFormation, awayFormation,
+                    homeStyle, awayStyle);
+        }
+        if (awayTeamId.equals(teamId)) {
+            return new V24MatchContext(
+                    matchId, homeTeamId, awayTeamId,
+                    homeTeam, awayTeam,
+                    homeStartingPlayers, awayStartingPlayers,
+                    homeBenchPlayers, awayBenchPlayers,
+                    homeFormation, newFormation,
+                    homeStyle, awayStyle);
+        }
+        throw new IllegalArgumentException(
+                "teamId '" + teamId + "' does not match home ('"
+                + homeTeamId + "') or away ('" + awayTeamId + "')");
+    }
 }

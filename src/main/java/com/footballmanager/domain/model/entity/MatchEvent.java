@@ -44,7 +44,12 @@ public class MatchEvent {
          * and MatchEngineImpl. Not mapped from V24MatchEventType (V24 uses YELLOW_CARD/RED_CARD).
          * Prefer YELLOW_CARD or RED_CARD in new code.
          */
-        CARD
+        CARD,
+        /**
+         * LIVE-MATCH-F2-LIVE F5: manager-initiated style/formation change.
+         * Mapped 1:1 from {@code V24MatchEventType.TACTICAL_CHANGE}.
+         */
+        TACTICAL_CHANGE
     }
 
     /**
