@@ -196,4 +196,24 @@ Si en una sesión nueva Mavis no lee este archivo, pedirselo explícitamente:
 
 ---
 
+## Tickets nuevos (post-V24D14)
+
+### 🟡 V24D6U4-RE — Recalibrar V24 model a su propio target λ=1.25
+
+**Detectado en:** LIVE-MATCH-F2-LIVE F2.5 (2026-06-17) durante cierre de 2 tests RED.
+
+**Síntoma:** `V24ShotXgCalculator.java:39-40` declara target `Poisson λ=1.25` para goals/team, pero el código actual produce `λ≈0.36` (calculado: ~5 shots/team × 7% conversion). Resultado: P(0 goles) = 70% por equipo, P(0-0) = 49% por partido. La mayoría de los partidos son 0-0, lo cual hace que los tests de "substitution alters homeGoals" sean estadísticamente poco confiables (P(pasa con seed=42) ≈ 0).
+
+**Causa raíz:** tuning insuficiente de `chanceProbability` (BALANCED = 0.10, debería ser ~0.20) y `goalThreshold` (`xg / 0.40`, debería ser `xg / 0.55`). El comment aspiracional nunca se validó empíricamente con tests reales.
+
+**Por qué NO en F2.5:** la F2.5 contract es "el sub fires at the right minute" (verificado con asserts sobre `subMinute` y `subCount`, no sobre `homeGoals`). Recalibrar el modelo es un epic aparte (afecta TODOS los tests V24, requiere revisar distribuciones de chance creation, onTarget, conversion, xG, etc.) — no es scope de LIVE-MATCH-F2-LIVE.
+
+**Estimate:** 1-2 días (tocar `chanceProbability` + `goalThreshold` + recalibrar V24D6U4 distribution targets + revalidar 1056 tests V24 + posiblemente ajustar tests F2 tests que dependían del tuning anterior).
+
+**Workaround aplicado en F2.5:** cambiar assertions de "homeGoals/awayGoals differ" a "el engine emits SUBSTITUTION event at the effectiveMinute" (test del F2.5 contract puro, no del F2 contract). Más robusto y no depende del tuning.
+
+**Para resolver:** crear ticket V24D7+ (no V24D6U4) — es un recalibration pass, no un bug fix. Asignar después de cerrar LIVE-MATCH-F2-LIVE.
+
+---
+
 *NEXT.md actualizado por SENIOR + Mavis root tras cierre de V24D14 (housekeeping documental, local commit). Próximo paso: P1a — Match detail UI polish.*

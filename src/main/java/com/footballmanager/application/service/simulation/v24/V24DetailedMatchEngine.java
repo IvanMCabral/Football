@@ -224,7 +224,27 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                         ? homeState : awayState;
                 if (appliedScheduledSubs.contains(subKey)) {
                     // Re-apply on subsequent ticks (homeState is fresh).
+                    // F2.5 fix: also emit the SUBSTITUTION event here so the
+                    // timeline is complete on the LAST tick of the match
+                    // (the F1 design runs simulate() once per tick via
+                    // CachingRandomWrapper — without re-emitting on the
+                    // re-apply path, the SUBSTITUTION event is only present
+                    // in the FIRST tick's timeline, and the session's
+                    // finalResult() (which uses the LAST tick's timeline)
+                    // loses the event. The session's accumulatedEvents()
+                    // deduplicates when building snapshots, so emitting
+                    // every tick does not cause UI-level duplication.
                     applyScheduledSubManually(target, sub);
+                    timeline.addEvent(new V24MatchEvent(
+                            sub.effectiveMinute(),
+                            V24MatchEventType.SUBSTITUTION,
+                            sub.teamId(),
+                            sub.playerOffId(),
+                            null,
+                            sub.playerOnId(),
+                            null,
+                            0.0,
+                            "Substitution: " + sub.playerOnId() + " on for " + sub.playerOffId()));
                     log.info("[LIVE-MATCH-F2-F2.5] Re-applied scheduled sub at minute {} (subsequent tick): teamId={} off={} on={}",
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
                     continue;
