@@ -101,14 +101,16 @@ ee27111 chore(security): V24D12-D-4 create docs/rotar-credenciales.md and fix pa
 ### ❌ OBSOLETO — V24D12-D-5
 Alinear `.env` legacy con `.env.example` — **OBSOLETO**. `V24D12-D-6` creó `application-local.yml` que reemplaza completamente el `.env` legacy. El ticket pierde sentido.
 
+### ❌ OBSOLETO — R3/R4
+Custom `ErrorWebExceptionHandler` para 404 con body JSON en `/games/tournament/{id}/status` y `/games/champion/{id}` — **OBSOLETO**. V24D12-B.2 (commit `530bf53`) ya cerró el problema: los 3 endpoints concernés (`tournament-status`, `standings`, `champion` en `/api/v1/games/{id}/...`) ahora retornan 404 con body vacío (o 200 con defaults para `tournament-status`) usando `.notFound().build()` explícito. El comentario stale en `GameController.java` líneas 161-168 puede limpiarse como drive-by pero no es un ticket.
+
 ### Cola priorizada
 
 | # | Tag | Descripción | Severidad |
 |---|---|---|---|
 | 1 | P1a | Match detail UI polish (~15% restante) | 🟡 media |
 | 3 | P1b | Career mutations edge cases (~10% restante) | 🟡 media |
-| 4 | R3/R4 | Custom `ErrorWebExceptionHandler` para 404 con body vacío en `/games/tournament/{id}/status` y `/games/champion/{id}` | 🟢 baja |
-| 5 | NG8113 | Warnings imports no usados en `squad-management.component.ts` | 🟢 baja |
+| 4 | NG8113 | Warnings imports no usados en `squad-management.component.ts` | 🟢 baja |
 | 6 | V24D7+2 | E2E coverage 36% → 80% | 🟡 media |
 | 7 | V23 Phase 10C | TeamOverallCalculator integration | 🔴 alta (feature) |
 | 8 | V23 Phase 6C | TeamStyle user-configurable | 🔴 alta (feature) |
@@ -119,7 +121,6 @@ Alinear `.env` legacy con `.env.example` — **OBSOLETO**. `V24D12-D-6` creó `a
 - Warnings NG8113 en `squad-management.component.ts` (4 imports no usados: FixtureModalComponent, StandingsModalComponent, PalmaresDialogComponent, PromotionsDialogComponent) — preexistentes
 - `recentActivities: RecentActivity[] = []` declarado pero vacío en `dashboard.component.ts` (decisión "segura" V24D11)
 - JSON de 401 hardcoded en 2 lugares — frágil ante cambios de shape
-- R3/R4: 404 con body JSON del handler default de Spring en `/games/tournament/{id}/status` y `/games/champion/{id}`
 
 ---
 
@@ -143,7 +144,7 @@ Alinear `.env` legacy con `.env.example` — **OBSOLETO**. `V24D12-D-6` creó `a
 | Security audit | 100% | ~20 commits: games auth + IDOR + ControllerHelper + JSON consistente + WWW-Authenticate + audit 8 permitAll + .env securizado + credenciales rotadas |
 | GameEntity deserialization | 100% | V24D12.2 — smoke GO |
 | /career/events performance | 100% | V24D13-1 — SSE heartbeat 15s |
-| **MVP jugable estimado** | **99.9%** | Todos los bugs P0/P1 cerrados. Pendientes: UX-6, P1a/P1b, NG8113, R3/R4, JSON 401, V24D7+2, V23 features |
+| **MVP jugable estimado** | **99.9%** | Todos los bugs P0/P1 cerrados. Pendientes: UX-6, P1a/P1b, NG8113, JSON 401, V24D7+2, V23 features |
 
 ---
 

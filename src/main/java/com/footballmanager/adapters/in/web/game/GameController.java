@@ -159,13 +159,9 @@ public class GameController {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
         // V24D12-B.2: same fix as getAllGames - collectList() + isEmpty
-        // check. Note: when the tournamentId doesn't exist,
-        // tournamentQueryUseCase throws and the ErrorWebExceptionHandler
-        // returns 404 with a JSON body (Spring default). When the
-        // tournament exists but has no standings, this code returns 404
-        // with an empty body (the explicit notFound().build()). This
-        // matches the contract that REVISOR's smoke expects for the
-        // "no standings" case.
+        // check. Returns 404 with empty body (the explicit notFound().build())
+        // both when the tournament doesn't exist and when it exists but has
+        // no standings. This matches the contract that REVISOR's smoke expects.
         return tournamentQueryUseCase.getStandings(userId)
             .collectList()
             .map(list -> list.isEmpty()
