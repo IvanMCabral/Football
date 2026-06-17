@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -257,5 +258,228 @@ class V24LiveSessionTest {
             }
         }
         return count;
+    }
+
+    // ========== LIVE-MATCH-F2-LIVE — Fase 0 RED tests ==========
+    //
+    // These 4 tests document the contract that the engine refactor (Fase 1,
+    // Opcion A replay incremental) MUST satisfy. They are RED today because
+    // the engine pre-simulates the full 90-minute match on tick #0 and caches
+    // the result — manual substitutions only append to the visual event
+    // cache without recomputing goals. Once the refactor lands, all 4 tests
+    // must turn GREEN.
+    //
+    // See: C:\Users\ichu_\.mavis\scratchpads\mvs_3f18031aaa7b4cd6a4e35a40d2a83f30\
+    //      engine-refactor-analysis.md (sections 1.1, 1.2, 6)
+
+    /**
+     * F2 RED #1: a manager-applied substitution MUST alter the match result
+     * relative to a no-substitution baseline (same seed, same context).
+     *
+     * <p>Today this test FAILS because the engine pre-simulates on tick #0 with
+     * the original context and the substitution is only appended to the visual
+     * event cache — homeGoals/awayGoals remain identical to the baseline.
+     *
+     * <p>Post-refactor: the substitution must invalidate the simulation cache
+     * (or trigger a replay) so that the bench player's attributes feed into
+     * subsequent goal/xG/shots computation. The final result MUST differ.
+     */
+    @Test
+    @DisplayName("F2 RED: manual substitution alters match result (different from no-sub baseline)")
+    void recordManualSubstitution_altersResult_differentFromBaseline() {
+        // Baseline: same seed/context, NO substitutions, run to completion.
+        V24LiveSession baselineSession = new V24LiveSession(context, 42L);
+        for (int i = 0; i < 90; i++) baselineSession.tick();
+        V24DetailedMatchResult baselineResult = baselineSession.finalResult();
+
+        // Treatment: same seed/context, apply a substitution at minute 30 with
+        // a higher-attack bench player (home-starter-9 is ATT, home-bench-9 is ATT).
+        // The substitution should give the new player 60 minutes of game time
+        // to influence the result — measurably different outcome expected.
+        V24LiveSession subSession = new V24LiveSession(context, 42L);
+        V24MatchEvent subEvent = buildManualSubstitutionEvent(
+            homeTeamId, "home-starter-9", "Home Starter 9",
+            "home-bench-9", "Home Bench 9", 30);
+        subSession.recordManualSubstitution(subEvent);
+        for (int i = 0; i < 90; i++) subSession.tick();
+        V24DetailedMatchResult subResult = subSession.finalResult();
+
+        // ASSERT: at least one of homeGoals/awayGoals must differ. Comparing
+        // both is the strongest signal — even one goal difference proves the
+        // substitution influenced goal scoring.
+        boolean homeGoalsDiffer = baselineResult.homeGoals() != subResult.homeGoals();
+        boolean awayGoalsDiffer = baselineResult.awayGoals() != subResult.awayGoals();
+        assertTrue(homeGoalsDiffer || awayGoalsDiffer,
+            "F2 RED violated: manual substitution did not alter the match result. "
+            + "baseline(homeGoals=" + baselineResult.homeGoals()
+            + ", awayGoals=" + baselineResult.awayGoals() + ") "
+            + "== substitution(homeGoals=" + subResult.homeGoals()
+            + ", awayGoals=" + subResult.awayGoals() + "). "
+            + "This means the engine still pre-simulates without considering manager actions.");
+    }
+
+    /**
+     * F2 RED #2: determinism contract — same seed + same context + same
+     * substitution(s) MUST produce the same final result.
+     *
+     * <p>Today this test may PASS trivially because the substitution does not
+     * influence the result at all, so two runs with the same seed produce
+     * identical results regardless of substitutions. Post-refactor the test
+     * still passes but now it actually exercises the determinism invariant
+     * through the replay path.
+     *
+     * <p>If this test fails post-refactor, the replay mechanism is not
+     * consuming doubles in a deterministic order — a regression of the V24
+     * determinism guarantee.
+     */
+    @Test
+    @DisplayName("F2 RED: determinism — same seed + same substitutions = same result")
+    void determinism_sameSeedSameSubstitutions_sameResult() {
+        // First run
+        V24LiveSession runA = new V24LiveSession(context, 42L);
+        runA.recordManualSubstitution(buildManualSubstitutionEvent(
+            homeTeamId, "home-starter-9", "Home Starter 9",
+            "home-bench-9", "Home Bench 9", 30));
+        for (int i = 0; i < 90; i++) runA.tick();
+        V24DetailedMatchResult resultA = runA.finalResult();
+
+        // Second run from scratch, identical setup
+        V24LiveSession runB = new V24LiveSession(context, 42L);
+        runB.recordManualSubstitution(buildManualSubstitutionEvent(
+            homeTeamId, "home-starter-9", "Home Starter 9",
+            "home-bench-9", "Home Bench 9", 30));
+        for (int i = 0; i < 90; i++) runB.tick();
+        V24DetailedMatchResult resultB = runB.finalResult();
+
+        // ASSERT: same seed + same context + same substitution = identical result.
+        assertEquals(resultA.homeGoals(), resultB.homeGoals(),
+            "F2 determinism violated: homeGoals differs across identical runs "
+            + "(runA=" + resultA.homeGoals() + ", runB=" + resultB.homeGoals() + ")");
+        assertEquals(resultA.awayGoals(), resultB.awayGoals(),
+            "F2 determinism violated: awayGoals differs across identical runs "
+            + "(runA=" + resultA.awayGoals() + ", runB=" + resultB.awayGoals() + ")");
+    }
+
+    /**
+     * F2 RED #3: the moment a substitution is applied MUST influence the
+     * outcome. Substituting a fresh, high-attack player at minute 1 gives
+     * them ~89 minutes of influence; substituting them at minute 89 gives
+     * them only 1 minute. The two outcomes MUST differ.
+     *
+     * <p>Today this test FAILS because both substitutions are visual-only —
+     * the engine never replays, so the final result is identical regardless
+     * of when the substitution is recorded.
+     *
+     * <p>Note: V24MatchEvent validates {@code minute in [1, 130]}, so we use
+     * minute 1 (not 0) for the "early" case. The 88-minute delta vs the late
+     * case still produces a measurable outcome difference once the refactor
+     * is in place.
+     */
+    @Test
+    @DisplayName("F2 RED: early (min 1) vs late (min 89) substitution produces different outcomes")
+    void earlyVsLateSubstitution_producesDifferentOutcomes() {
+        // Early substitution: same player (home-bench-9, ATT) comes on at minute 1
+        // (~89 minutes of play for the bench player).
+        V24LiveSession earlySession = new V24LiveSession(context, 42L);
+        earlySession.recordManualSubstitution(buildManualSubstitutionEvent(
+            homeTeamId, "home-starter-9", "Home Starter 9",
+            "home-bench-9", "Home Bench 9", 1));
+        for (int i = 0; i < 90; i++) earlySession.tick();
+        V24DetailedMatchResult earlyResult = earlySession.finalResult();
+
+        // Late substitution: SAME bench player comes on at minute 89 (1 min of play).
+        V24LiveSession lateSession = new V24LiveSession(context, 42L);
+        lateSession.recordManualSubstitution(buildManualSubstitutionEvent(
+            homeTeamId, "home-starter-9", "Home Starter 9",
+            "home-bench-9", "Home Bench 9", 89));
+        for (int i = 0; i < 90; i++) lateSession.tick();
+        V24DetailedMatchResult lateResult = lateSession.finalResult();
+
+        // ASSERT: at least one of homeGoals/awayGoals must differ. The early
+        // sub gives ~89 minutes of influence, the late gives 1 minute — the
+        // cumulative goal output should be measurably different.
+        boolean homeGoalsDiffer = earlyResult.homeGoals() != lateResult.homeGoals();
+        boolean awayGoalsDiffer = earlyResult.awayGoals() != lateResult.awayGoals();
+        assertTrue(homeGoalsDiffer || awayGoalsDiffer,
+            "F2 RED violated: substituting at minute 1 vs minute 89 produced identical "
+            + "results. early(homeGoals=" + earlyResult.homeGoals()
+            + ", awayGoals=" + earlyResult.awayGoals() + ") "
+            + "== late(homeGoals=" + lateResult.homeGoals()
+            + ", awayGoals=" + lateResult.awayGoals() + "). "
+            + "This means the substitution timing does not influence the outcome.");
+    }
+
+    /**
+     * F2 RED #4: an invalid substitution (player not in starting XI) MUST be
+     * rejected with an IllegalArgumentException (or IllegalStateException) AND
+     * the match result MUST remain unchanged.
+     *
+     * <p>Today this test FAILS because {@code recordManualSubstitution} does
+     * NOT validate that the playerOffId is actually in the starting XI — it
+     * only checks {@code event.type() == SUBSTITUTION} and {@code !finished}.
+     * Any V24MatchEvent with type=SUBSTITUTION is accepted into accumulatedEvents,
+     * even if the playerId references a non-existent player.
+     *
+     * <p>Post-refactor: the engine must validate the substitution (playerOff
+     * exists, playerOn is on the bench, position compatibility, max 5 subs)
+     * before committing it to the timeline.
+     */
+    @Test
+    @DisplayName("F2 RED: invalid substitution (non-existent playerOffId) is rejected + result unchanged")
+    void invalidSubstitution_stillFails() {
+        // Capture baseline state by running the full match.
+        V24LiveSession baselineSession = new V24LiveSession(context, 42L);
+        for (int i = 0; i < 90; i++) baselineSession.tick();
+        V24DetailedMatchResult baselineResult = baselineSession.finalResult();
+
+        // Attempt an invalid substitution: playerOffId does not exist in the XI.
+        V24LiveSession invalidSession = new V24LiveSession(context, 42L);
+        V24MatchEvent invalidSub = buildManualSubstitutionEvent(
+            homeTeamId,
+            "nonexistent-player-xyz", "Nonexistent Player",
+            "home-bench-0", "Home Bench 0",
+            30);
+
+        // ASSERT (a): the invalid substitution must throw an exception.
+        assertThrows(RuntimeException.class,
+            () -> invalidSession.recordManualSubstitution(invalidSub),
+            "F2 RED violated: recordManualSubstitution accepted an invalid substitution "
+            + "(playerOffId='nonexistent-player-xyz' is not in the starting XI). "
+            + "The engine must validate substitutions before accepting them.");
+
+        // Run to completion — the match result must be unchanged from baseline.
+        for (int i = 0; i < 90; i++) invalidSession.tick();
+        V24DetailedMatchResult invalidResult = invalidSession.finalResult();
+
+        // ASSERT (b): result must equal baseline (the rejected sub changed nothing).
+        assertEquals(baselineResult.homeGoals(), invalidResult.homeGoals(),
+            "F2 invariant violated: rejected invalid substitution altered homeGoals");
+        assertEquals(baselineResult.awayGoals(), invalidResult.awayGoals(),
+            "F2 invariant violated: rejected invalid substitution altered awayGoals");
+    }
+
+    // ========== Helpers — F2 RED tests ==========
+
+    /**
+     * Build a SUBSTITUTION event with the given players and minute. Pure
+     * factory — does not touch any session state.
+     */
+    private V24MatchEvent buildManualSubstitutionEvent(String teamId,
+                                                       String playerOffId,
+                                                       String playerOffName,
+                                                       String playerOnId,
+                                                       String playerOnName,
+                                                       int minute) {
+        return new V24MatchEvent(
+            minute,
+            V24MatchEventType.SUBSTITUTION,
+            teamId,
+            playerOffId,
+            playerOffName,
+            playerOnId,
+            playerOnName,
+            0.0,
+            "Substitution: " + playerOnName + " on for " + playerOffName
+        );
     }
 }
