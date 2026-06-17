@@ -24,17 +24,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * LIVE-MATCH-F1-POC: implementation of {@link SubstitutionCommandUseCase}.
+ * LIVE-MATCH-F2-LIVE F2: implementation of {@link SubstitutionCommandUseCase}.
  *
- * <p>Phase 1 POC (D1=B): manual substitutions are UI-only. The
- * {@link V24SubstitutionEngine} validates and produces the event; this
- * service wires the engine to the live session and persists the event into
- * the session's {@code accumulatedEvents} list so the next SSE snapshot
- * shows the substitution.
- *
- * <p>Critical: homeGoals/awayGoals are NOT recalculated. The result of the
- * match is unchanged. See {@code V24LiveSessionTest#recordManualSubstitution_doesNotAlterResult()}
- * for the regression test that enforces this constraint.
+ * <p>F2 wire: manual substitutions now affect the match result via
+ * {@link V24LiveSession#mutateContext} + {@link V24LiveSession#replayFromMinute}
+ * (the F1 replay infrastructure). The D1=B invariant was removed in F2:
+ * swapping {@code playerOffId} out of the starting lineup and
+ * {@code playerOnId} in via {@link V24MatchContext#withManualSubstitution}
+ * causes the engine's next replay to use the new lineup, so
+ * {@code homeGoals}/{@code awayGoals} can change from the baseline.
  *
  * <p>Per-match {@link V24SubstitutionEngine} lifecycle: we keep a
  * {@code Map<UUID matchId, V24SubstitutionEngine>} for the duration of the
@@ -44,9 +42,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p><b>FLAG 1 UX fix:</b> this method NEVER throws
  * {@link IllegalArgumentException}/{@link IllegalStateException} for business
  * validation. Those exceptions (raised by the engine for missing players,
- * max subs reached, already-subbed, etc.) are caught and translated into a
- * {@link SubstitutionResult#failure(String)} so the controller can forward a
- * uniform 200 OK + {@code success=false} body to the frontend. Only
+ * max subs reached, already-subbed, etc. — or by
+ * {@code V24MatchContext#withManualSubstitution} for invalid teamId / off
+ * not in starting / on not in bench / etc.) are caught and translated into
+ * a {@link SubstitutionResult#failure(String)} so the controller can forward
+ * a uniform 200 OK + {@code success=false} body to the frontend. Only
  * genuinely unexpected runtime errors (NPE, DB, etc.) propagate as
  * {@code Mono.error} for the global handler to surface as 500.
  *
@@ -81,14 +81,14 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                 userId, matchId, teamId, playerOffId, playerOnId, requestedMinute))
             .doOnSuccess(result -> {
                 if (result.success()) {
-                    log.debug("[LIVE-MATCH-F1] Substitution persisted, {} subs remaining, minute={}",
+                    log.debug("[LIVE-MATCH-F2-F2] Substitution persisted, {} subs remaining, minute={}",
                         result.substitutionsRemaining(), result.minuteApplied());
                 } else {
-                    log.warn("[LIVE-MATCH-F1] Substitution validation failed for matchId={}: {}",
+                    log.warn("[LIVE-MATCH-F2-F2] Substitution validation failed for matchId={}: {}",
                         matchId, result.error());
                 }
             })
-            .doOnError(e -> log.error("[LIVE-MATCH-F1] Unexpected error during substitution for matchId={}",
+            .doOnError(e -> log.error("[LIVE-MATCH-F2-F2] Unexpected error during substitution for matchId={}",
                 matchId, e));
     }
 
@@ -138,11 +138,21 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                 matchId, id -> new V24SubstitutionEngine());
             V24MatchEvent event = engine.manualSubstitute(team, playerOffId, playerOnId, minute);
 
-            // 5. Inject the event into the live session's accumulatedEvents.
-            liveSession.recordManualSubstitution(event);
+            // 5. F2 WIRE: drive the substitution through the F1 replay path so
+            // homeGoals/awayGoals actually change. The engine call above
+            // (engine.manualSubstitute) is still needed because it produces
+            // the V24MatchEvent and enforces the per-team substitution limit
+            // (5 subs / team), but its mutations to the local V24TeamMatchState
+            // are LOST when the method returns. mutateContext + withManualSubstitution
+            // persist the swap in the live session's effective context, and
+            // the next replay (triggered by mutateContext itself, from the
+            // current minute) rebuilds the V24TeamMatchState from the
+            // swapped SessionPlayer lists.
+            liveSession.mutateContext(ctx -> ctx.withManualSubstitution(
+                resolvedTeamId, playerOffId, playerOnId, minute));
 
             int remaining = engine.substitutionsRemaining(resolvedTeamId);
-            log.info("[LIVE-MATCH-F1] Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",
+            log.info("[LIVE-MATCH-F2-F2] Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",
                 matchId, resolvedTeamId, playerOffId, playerOnId, minute, remaining);
 
             return SubstitutionResult.ok(minute, remaining);
@@ -155,19 +165,19 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     }
 
     /**
-     * LIVE-MATCH-F1-POC: cleanup hook called when the match finishes. Frees the
+     * LIVE-MATCH-F2-LIVE F2: cleanup hook called when the match finishes. Frees the
      * per-match substitution engine to avoid memory leaks.
      * Wired from the match-finished lifecycle (deferred to Phase 2 integration).
      */
     public void onMatchFinished(UUID matchId) {
         V24SubstitutionEngine removed = enginesByMatchId.remove(matchId);
         if (removed != null) {
-            log.debug("[LIVE-MATCH-F1] Cleaned up substitution engine for matchId={}", matchId);
+            log.debug("[LIVE-MATCH-F2-F2] Cleaned up substitution engine for matchId={}", matchId);
         }
     }
 
     /**
-     * LIVE-MATCH-F1-POC: resolve the teamId by searching the context's
+     * LIVE-MATCH-F2-LIVE F2: resolve the teamId by searching the context's
      * starting lineups and bench for the playerOffId.
      * Returns the teamId or throws IllegalArgumentException if not found.
      */
@@ -206,7 +216,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     }
 
     /**
-     * LIVE-MATCH-F1-POC: build a {@link V24TeamMatchState} from the context
+     * LIVE-MATCH-F2-LIVE F2: build a {@link V24TeamMatchState} from the context
      * by mapping the SessionPlayer lists to V24PlayerMatchState.
      *
      * <p>We use the {@link V24TeamMatchState#create} factory which internally

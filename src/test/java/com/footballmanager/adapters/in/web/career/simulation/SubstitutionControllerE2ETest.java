@@ -200,6 +200,85 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             .jsonPath("$.error").doesNotExist();
     }
 
+    /**
+     * LIVE-MATCH-F2-LIVE F2 (T3): the full wire — POST substitution through
+     * the controller, the use case drives
+     * {@code mutateContext(ctx -> ctx.withManualSubstitution(...))} +
+     * {@code replayFromMinute(...)} (F1 replay infra), and the live
+     * session's final result changes measurably from a no-substitution
+     * baseline running with the same seed + context.
+     *
+     * <p>This test validates the end-to-end behavior the F2 spec calls
+     * out: a manager-applied substitution is no longer UI-only; it
+     * affects the match result. We assert this indirectly through the
+     * live session state (which is the authoritative result holder) and
+     * the HTTP response (200 OK with success=true).
+     */
+    @Test
+    @DisplayName("F2 E2E: POST substitution — homeGoals/awayGoals differ from no-sub baseline")
+    void substitute_happyPath_F2_altersMatchResult() {
+        // Arrange: baseline session — same seed/context, NO substitutions, run to completion.
+        String homeTeamId = "home-f2";
+        String awayTeamId = "away-f2";
+        V24MatchContext baselineContext = buildHappyPathContext(homeTeamId, awayTeamId);
+        V24LiveSession baselineSession = new V24LiveSession(baselineContext, 99999L);
+        for (int i = 0; i < 90; i++) baselineSession.tick();
+        int baselineHomeGoals = baselineSession.finalResult().homeGoals();
+        int baselineAwayGoals = baselineSession.finalResult().awayGoals();
+
+        // Arrange: treatment session — same seed/context, register a MatchSession
+        // so the controller can resolve it, then POST a substitution through the API.
+        UUID userId = UUID.randomUUID();
+        UUID matchId = UUID.randomUUID();
+        UUID homeTeamUuid = UUID.randomUUID();
+        UUID awayTeamUuid = UUID.randomUUID();
+
+        V24MatchContext treatmentContext = buildHappyPathContext(homeTeamId, awayTeamId);
+        V24LiveSession treatmentSession = new V24LiveSession(treatmentContext, 99999L);
+        treatmentSession.tick(); // currentMinute=1 (so replay can fire from minute 1)
+
+        matchSessionRegistry.getOrCreateSessionWithV24(
+            userId, matchId, homeTeamUuid, awayTeamUuid, treatmentSession);
+
+        String body = """
+            {"playerOffId":"home-starter-9","playerOnId":"home-bench-4","minute":null}
+            """;
+
+        // Act: POST substitution.
+        webTestClient.mutateWith(mockUser(userId.toString()))
+            .post().uri("/api/v1/match-engine/matches/{id}/substitutions", matchId.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.success").isEqualTo(true)
+            .jsonPath("$.error").doesNotExist();
+
+        // Tick the treatment session to completion so the replay's effect on
+        // the final result is fully realized.
+        for (int i = 0; i < 90; i++) treatmentSession.tick();
+        int treatmentHomeGoals = treatmentSession.finalResult().homeGoals();
+        int treatmentAwayGoals = treatmentSession.finalResult().awayGoals();
+
+        // Assert: the F2 wire is in effect — at least one of homeGoals/awayGoals
+        // differs between the no-sub baseline and the sub-applied treatment.
+        // With identical players the result would be identical; the F2 test
+        // fixture (see makePlayers in V24LiveSessionTest) gives bench players
+        // a different attribute profile so the swap measurably affects the
+        // engine's draw consumption and goal output.
+        boolean homeGoalsDiffer = baselineHomeGoals != treatmentHomeGoals;
+        boolean awayGoalsDiffer = baselineAwayGoals != treatmentAwayGoals;
+        org.junit.jupiter.api.Assertions.assertTrue(
+            homeGoalsDiffer || awayGoalsDiffer,
+            "F2 wire violated: substitution did not alter the match result. "
+            + "baseline(home=" + baselineHomeGoals + ", away=" + baselineAwayGoals + ") "
+            + "== treatment(home=" + treatmentHomeGoals + ", away=" + treatmentAwayGoals + "). "
+            + "Either the mutateContext+replayFromMinute wire is not reaching the engine, "
+            + "or the bench players in the test fixture have identical attributes to "
+            + "the starters (the swap is then a no-op for the engine).");
+    }
+
     // ========== Fixture helpers (FLAG 1 happy path) ==========
 
     private V24MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {
@@ -251,12 +330,27 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
                 : (i <= 7) ? "MID"
                 : (i <= 9) ? "WINGER" : "ATT";
             String id = teamId + "-" + suffix + "-" + i;
+            // F2 fixture: bench players have higher attack/defense/technique
+            // than starters so a swap starter→bench measurably alters the
+            // engine's goal output. Without this, all players have
+            // identical stats and the F2 contract "substitution alters
+            // result" is impossible to satisfy (the engine's draw
+            // consumption is identical regardless of the swap). The
+            // existing happy-path test (success=true, substitutionsRemaining=4)
+            // is unaffected because it does not assert on goals.
+            int attack = "bench".equals(suffix) ? 80 : 70;
+            int defense = "bench".equals(suffix) ? 75 : 70;
+            int technique = "bench".equals(suffix) ? 78 : 70;
+            int speed = "bench".equals(suffix) ? 80 : 70;
+            int stamina = 70;
+            int mentality = 70;
             // SessionPlayer.custom(name, age, position, stats..., marketValue)
             // The first arg is the player name; we then override sessionPlayerId
             // to a known value so the substitution engine can find the player
             // by id when the request comes in.
             SessionPlayer sp = SessionPlayer.custom(id, 25, position,
-                70, 70, 70, 70, 70, 70, BigDecimal.valueOf(70000L));
+                attack, defense, technique, speed, stamina, mentality,
+                BigDecimal.valueOf(70000L));
             sp.setSessionPlayerId(id);
             sp.setEnergy(100);
             players.add(sp);

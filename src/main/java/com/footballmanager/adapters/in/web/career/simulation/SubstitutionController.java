@@ -20,24 +20,24 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * LIVE-MATCH-F1-POC: controller for manual substitutions during a live match.
+ * LIVE-MATCH-F2-LIVE F2: controller for manual substitutions during a live match.
  *
- * <p>Phase 1 POC (D1=B): manual substitutions are UI-only. The substitution
- * is recorded in the live session's event stream and the player states
- * are mutated for downstream consumers, but {@code homeGoals}/{@code awayGoals}
- * are NOT recalculated. See {@link SubstitutionCommandUseCaseImpl}.
+ * <p>F2 wire: manual substitutions now affect the match result. The use case
+ * drives the substitution through {@code V24LiveSession.mutateContext(...)} +
+ * {@code replayFromMinute(...)} (the F1 replay infrastructure), so
+ * {@code homeGoals}/{@code awayGoals} can change from the baseline after a
+ * substitution is applied. The D1=B invariant was removed in F2.
  *
  * <p>Endpoint: {@code POST /api/v1/match-engine/matches/{matchId}/substitutions}
  * <p>Body: {@link SubstitutionRequestDTO}
  * <p>Response: 200 OK + {@link SubstitutionResultDTO} (with {@code success=true}
  * or {@code success=false} depending on validation outcome)
  *
- * <p>FLAG 1 UX fix: the controller now uses {@code .map()} to forward the
+ * <p>FLAG 1 UX fix: the controller uses {@code .map()} to forward the
  * use case's real {@link SubstitutionResult} (with
- * {@code substitutionsRemaining} and {@code minuteApplied}) instead of the
- * previous hardcoded {@code ok(0, 0)} placeholder. The frontend can now
- * decrement its local counter from this value and show the correct minute
- * in the snackbar / dialog UI.
+ * {@code substitutionsRemaining} and {@code minuteApplied}) so the frontend
+ * can decrement its local counter from this value and show the correct
+ * minute in the snackbar / dialog UI.
  *
  * <p>Error mapping (FLAG 1 UX):
  * <ul>
@@ -46,8 +46,9 @@ import java.util.UUID;
  *       carrying {@code success=false} (controller-level validation,
  *       short-circuited before the use case runs).</li>
  *   <li>Use case validation failures (no session, player not found, max subs
- *       reached, etc.) → 200 OK with {@code success=false} and a descriptive
- *       {@code error} (FLAG 1 fix; was previously 409 CONFLICT).</li>
+ *       reached, off not in starting, on not on bench, etc.) → 200 OK with
+ *       {@code success=false} and a descriptive {@code error} (FLAG 1 fix;
+ *       was previously 409 CONFLICT).</li>
  *   <li>Unexpected errors (NPE, DB, etc.) → 500 via the generic catch-all.</li>
  * </ul>
  */
@@ -88,7 +89,7 @@ public class SubstitutionController {
                 .body(SubstitutionResultDTO.error("playerOnId must not be blank")));
         }
 
-        log.info("[LIVE-MATCH-F1] Substitution request received: matchId={} userId={} off={} on={}",
+        log.info("[LIVE-MATCH-F2-F2] Substitution request received: matchId={} userId={} off={} on={}",
             matchUuid, userId, request.playerOffId(), request.playerOnId());
 
         // FLAG 1 UX fix: use case returns Mono<SubstitutionResult>; we forward the
@@ -108,7 +109,7 @@ public class SubstitutionController {
                 result.substitutionsRemaining(),
                 result.error())))
             .onErrorResume(e -> {
-                log.error("[LIVE-MATCH-F1] Unexpected error during substitution for matchId={}",
+                log.error("[LIVE-MATCH-F2-F2] Unexpected error during substitution for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(SubstitutionResultDTO.error("Internal error: " + e.getMessage())));

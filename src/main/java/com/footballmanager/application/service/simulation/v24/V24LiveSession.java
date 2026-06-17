@@ -286,28 +286,43 @@ public final class V24LiveSession {
         return cachedResult;
     }
 
-    // ========== LIVE-MATCH-F1-POC: manual substitution injection (D1=B legacy) ==========
+    // ========== LIVE-MATCH-F2-LIVE F2: manual substitution injection (alters result) ==========
 
     /**
-     * LIVE-MATCH-F1-POC: record a manual substitution event from the user.
+     * LIVE-MATCH-F2-LIVE F2: record a manual substitution event from the user.
      *
-     * <p>Phase 1 POC (D1=B): this method does NOT alter the match result.
-     * The {@link V24DetailedMatchEngine} runs the full 90-minute simulation
-     * once and caches events; injecting this event makes the substitution
-     * visible in the next SSE snapshot (it appears in the timeline) but
-     * {@code homeGoals}/{@code awayGoals} are NOT recomputed.
+     * <p>F2 wire: this method now drives the substitution through the F1
+     * replay path so {@code homeGoals}/{@code awayGoals} actually change.
+     * It extracts the off/on player IDs and the teamId from the
+     * {@link V24MatchEvent} and invokes {@link #mutateContext} with
+     * {@link V24MatchContext#withManualSubstitution}, which swaps the two
+     * players between the starting and bench lists of the target team.
+     * {@code mutateContext} triggers {@link #replayFromMinute(int)} from
+     * {@code currentMinute} so the engine's next tick picks up the new
+     * lineup and recomputes goals/xG from that minute onward.
      *
-     * <p>For Phase 2 (F2 of the LIVE-MATCH-F2-LIVE ticket), this method will
-     * be replaced with a call to {@link #mutateContext} that applies the
-     * substitution to the {@code effectiveContext} and triggers
-     * {@link #replayFromMinute(int)} so homeGoals/awayGoals DO update.
+     * <p>This is the SINGLE entry point for F2 option (a) of the prompt:
+     * any caller (use case, tests, future direct consumers) that hands a
+     * valid SUBSTITUTION event to this method gets a match result that
+     * reflects the sub. The POC F1 D1=B invariant (substitution is
+     * UI-only) has been removed.
      *
-     * <p>For F1 this method is preserved as-is to keep the existing
-     * POC test coverage green (the F1 plan section 5 specifies this).
+     * <p>The event is also appended to {@code manualEvents} (after the
+     * mutate+replay) so the F3 UI can render the substitution in the
+     * timeline regardless of which minute it was applied at.
+     *
+     * <p>Validation: if the event's playerOffId is not in the starting XI
+     * of the event's teamId, the {@code withManualSubstitution} helper
+     * throws {@link IllegalArgumentException}, which propagates up (this
+     * preserves the F0 contract that invalid subs are rejected). The
+     * engine's own {@link V24SubstitutionEngine#manualSubstitute} checks
+     * are a superset and run in the use case path.
      *
      * @param event the substitution event (must be of type {@link V24MatchEventType#SUBSTITUTION})
      * @throws IllegalStateException    if the match has already finished
-     * @throws IllegalArgumentException if the event type is not SUBSTITUTION
+     * @throws IllegalArgumentException if the event type is not SUBSTITUTION,
+     *                                  or if playerOffId is not in starting XI,
+     *                                  or if playerOnId is not on the bench
      */
     public synchronized void recordManualSubstitution(V24MatchEvent event) {
         if (finished) {
@@ -320,12 +335,27 @@ public final class V24LiveSession {
             throw new IllegalArgumentException(
                 "Expected SUBSTITUTION event, got " + event.type());
         }
-        // F1 B3: append to the separate manualEvents list (preserved across
-        // ticks because tick() replaces engineTimeline but not manualEvents).
-        // This keeps the POC F1 behavior (D1=B) intact: the event appears in
-        // accumulatedEvents() but does NOT alter homeGoals/awayGoals.
+        // F2 WIRE: drive the substitution through the F1 replay path.
+        // Extract the off/on player IDs and teamId from the event, then
+        // delegate to withManualSubstitution which swaps the players in
+        // the effective context. mutateContext triggers replayFromMinute
+        // automatically (when currentMinute >= 1), so the engine's next
+        // tick uses the new lineup.
+        final String teamId = event.teamId();
+        final String playerOffId = event.playerId();
+        final String playerOnId = event.relatedPlayerId();
+        final int minute = event.minute();
+
+        mutateContext(ctx -> ctx.withManualSubstitution(
+            teamId, playerOffId, playerOnId, minute));
+
+        // Append the event to manualEvents AFTER the swap so the timeline
+        // shows the substitution regardless of which minute it was applied
+        // at. manualEvents is preserved across replays (engineTimeline is
+        // replaced, manualEvents is not).
         this.manualEvents.add(event);
-        // Do NOT recalculate homeGoals/awayGoals (D1=B).
+        log.info("[LIVE-MATCH-F2-F2] Manual substitution recorded + applied: teamId={} off={} on={} minute={}",
+            teamId, playerOffId, playerOnId, minute);
     }
 
     // ========== LIVE-MATCH-F2-LIVE F5 (B3.2): tactical change event recording ==========
