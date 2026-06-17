@@ -1,5 +1,7 @@
 package com.footballmanager.infrastructure.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.footballmanager.adapters.in.web.common.ErrorResponseBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +24,10 @@ import reactor.core.publisher.Mono;
 @EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    // V24D14-JSON401: ObjectMapper injected via Lombok @RequiredArgsConstructor
+    // to serialize the centralized ErrorResponseBody record.
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
 
     public static void addCorsHeaders(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
@@ -75,7 +80,20 @@ public class SecurityConfig {
                     // originated (security filter vs UnauthorizedException handler).
                     exchange.getResponse().getHeaders().setContentType(
                         org.springframework.http.MediaType.APPLICATION_JSON);
-                    String json = "{\"code\":\"UNAUTHORIZED\",\"message\":\"Unauthorized: no user id in authentication\",\"status\":401}";
+                    // V24D14-JSON401: serialize via ObjectMapper instead of hardcoded
+                    // string. ErrorResponseBody record is shared with
+                    // GlobalExceptionHandler.handleUnauthorized() so the two 401
+                    // paths produce byte-equivalent JSON.
+                    ErrorResponseBody body = ErrorResponseBody.unauthorized(
+                        "Unauthorized: no user id in authentication");
+                    String json;
+                    try {
+                        json = objectMapper.writeValueAsString(body);
+                    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                        // Should not happen with a simple record, but defensive
+                        // guard in case Jackson config is changed in the future.
+                        throw new RuntimeException("Failed to serialize 401 ErrorResponseBody", e);
+                    }
                     return exchange.getResponse().writeWith(
                         reactor.core.publisher.Mono.just(exchange.getResponse()
                             .bufferFactory()
