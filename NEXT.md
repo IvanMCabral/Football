@@ -107,6 +107,18 @@ Custom `ErrorWebExceptionHandler` para 404 con body JSON en `/games/tournament/{
 ### ❌ OBSOLETO — NG8113
 Warnings NG8113 en `squad-management.component.ts` (4 imports no usados: FixtureModalComponent, StandingsModalComponent, PalmaresDialogComponent, PromotionsDialogComponent) — **OBSOLETO**. El commit `f3dd8f8` (2026-06-16 15:01 ART) ya removió los 4 dialog components del `imports: []` array. Los TypeScript imports (líneas 10-13) se mantienen porque son necesarios para `this.dialog.open(SomeComponent, ...)`. `ng build` actual no emite ningún NG8113. `MatDialog.open()` no requiere template-import en el array `imports: []` (los componentes se pasan como referencias de tipo, no se referencian en el template).
 
+### ❌ OBSOLETO — V23 Phase 10C
+TeamOverallCalculator integration en V23 engine path — **OBSOLETO**. Los 4 subphases (10C1, 10C2, 10C3, 10C4) están mergeados a master:
+- 10C1 (`05597ab`): `LeagueSimulator.calculateTeamOVR()` delega a `TeamOverallCalculator`.
+- 10C2 (`a430e96`): V23 engine path detrás de feature flag `useV23LeagueEngine`.
+- 10C3 (`268188f`): externalización del flag via `SimulationConfig`.
+- 10C4 (`b290ca6`): LeagueSimulator dual-path tests.
+
+**832 tests verde** per `V23_SIMULATION_ENGINE_STATUS.md`. **V23 engine preservado** detrás del flag para compat, no se borra. **`TeamOverallCalculator` utility** (`application/service/domain/`) sigue vivo y reusable si V24 lo necesita en el futuro. **V24 vs V23:** V24 es el default (`useV24DetailedEngine=true`), V23 es legacy preservado vía flag. Phase 10C es integración V23-side; V24 no usa OVR-based simulation.
+
+### ❌ REMOVIDO — V23 Phase 6C (TeamStyle user-configurable)
+"TeamStyle user-configurable" — **REMOVIDO de la cola**. Phase 6A y 6B (enum + simulación experimental) están mergeados desde V23. **El aspecto "user-configurable" (UI + persistencia + API) nunca fue implementado formalmente** — no hay plan V23 que lo cubra, y `V23_SIMULATION_ENGINE_STATUS.md` NO lista Phase 6C en los completados. Los planes V23 (`V23_PHASE6_TACTICS_STYLE_MODIFIERS_PLAN.md`, `V23_PHASE6B_TACTICAL_STYLE_INTEGRATION_PLAN.md`) solo cubren 6A y 6B; el "user-configurable" no aparece. Si en el futuro se quiere, debería ser un **ticket V24-side separado** (agregar `teamStyle` field a `SessionTeam` con backward-compat Redis JSON, endpoint, UI dropdown, integración con `V24MatchContextFactory`). El enum `TeamStyle` actual se usa internamente en V24 pero sin user-config.
+
 ### Cola priorizada
 
 | # | Tag | Descripción | Severidad |
@@ -114,8 +126,6 @@ Warnings NG8113 en `squad-management.component.ts` (4 imports no usados: Fixture
 | 1 | P1a | Match detail UI polish (~15% restante) | 🟡 media |
 | 3 | P1b | Career mutations edge cases (~10% restante) | 🟡 media |
 | 6 | V24D7+2 | E2E coverage 36% → 80% | 🟡 media |
-| 7 | V23 Phase 10C | TeamOverallCalculator integration | 🔴 alta (feature) |
-| 8 | V23 Phase 6C | TeamStyle user-configurable | 🔴 alta (feature) |
 | 9 | JSON 401 | Centralizar body hardcoded en SecurityConfig + GlobalExceptionHandler | 🟢 baja |
 
 ### Deuda técnica identificada
