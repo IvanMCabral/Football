@@ -4,7 +4,7 @@
 >
 > **Mantenedor:** Mavis (root) — actualizar cada vez que se cree/aborte un agente, se cambie un ID, o se aprenda un workflow nuevo.
 >
-> **Ultima actualizacion:** 2026-06-16 12:53 ART (V24D14 cerrado: housekeeping documental, src/assets/ gitignored, V24D12-D-5 borrado de §8 por OBSOLETO, NEXT.md sincronizado con HEAD 9efa3d7.)
+> **Ultima actualizacion:** 2026-06-16 ART — restart: nohup → cron → mensaje texto obligatorio → terminar turno. Eliminado Start-Sleep 60 del turno launch. Fix bug "Ran 2 command(s) colgado".
 
 ---
 
@@ -74,17 +74,32 @@
 - **BUG IPv6 FIXEADO (2026-06-16):** Angular a veces binds en `::1` (IPv6) y `Get-NetTCPConnection` no lo detecta en `127.0.0.1` (IPv4) → skipeaba restart del frontend aunque el proceso viejo siguiera vivo. **Fix aplicado:** el script ahora mata los PIDs guardados en `${PID_DIR}/frontend.pid` ANTES de verificar puertos.
 - **Wrapper Windows v4:** `C:\Users\ichu_\Desktop\start_manager_full.bat` — `start /B bash start_manager_full.sh` desacopla el bash.exe. Sale en <1s.
 
-### 4.2 Procedimiento canonico para Mavis (3 fases, NUNCA en el mismo turno)
+### 4.2 Procedimiento canónico para Mavis (3 fases, NUNCA en el mismo turno)
 
-**FASE 1 — LANZAR + VERIFICAR (todo en el mismo turno).** El unico canal de notificacion que le llega al usuario es ESTE CHAT (Mavis root). Los crons y los `mavis communication send` automaticos NO le llegan como notificacion visible. Por lo tanto Mavis:
+**FASE 1 — LANZAR (turno del trigger). Exactamente 3 pasos, en este orden:**
 
-1. Lanza el restart con `restart-stack-v2.ps1` (devuelve en <1s).
-2. Espera 60s y verifica los 4 puertos con `Test-NetConnection`.
-3. Le responde al usuario con el resultado LITERAL al final del turno.
+Paso 1 — lanzar el script:
+```bash
+bash -c "cd '/c/Users/ichu_/Desktop' && nohup bash reiniciar.sh > /tmp/mgr-rstr.log 2>&1 &"
+```
+
+Paso 2 — crear el cron:
+```
+mavis cron self check-stack-after-restart --every 1m --prompt "PRIMER TICK (mensaje VISIBLE al usuario): testea puertos 5432/6379/8080/4200 con Test-NetConnection. Si los 4 UP -> 'stack UP, paso a REVISOR' + mavis cron delete mavis check-stack-after-restart. Si DOWN -> leer /tmp/mgr-rstr.log + reportar error. SIGUIENTES TICKS: solo si el estado cambió."
+```
+
+Paso 3 — OBLIGATORIO: escribir mensaje de texto al usuario y terminar el turno:
+> "Restart lanzado ✓. Cron activo cada 1 min para verificar los 4 puertos. Cuando levante te confirmo."
+
+**SIN el paso 3, Mavis queda colgado.** El modelo no termina el turno solo después de ejecutar comandos — necesita escribir texto. Esta es la causa del bug donde el usuario ve "Ran 2 command(s)" y Mavis no responde más.
+
+NO hacer Start-Sleep. NO hacer Test-NetConnection en este turno. NO esperar el cron.
+
+---
+
+**FASE 2 — VERIFICAR (cuando el cron dispara o cuando Iván pregunta):**
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\ichu_\Desktop\restart-stack-v2.ps1" 2>$null; Write-Host "OK"
-Start-Sleep -Seconds 60
 $pg = (Test-NetConnection localhost -Port 5432 -InformationLevel Quiet) -eq 'True'
 $rd = (Test-NetConnection localhost -Port 6379 -InformationLevel Quiet) -eq 'True'
 $be = (Test-NetConnection localhost -Port 8080 -InformationLevel Quiet) -eq 'True'
@@ -92,23 +107,10 @@ $fe = (Test-NetConnection localhost -Port 4200 -InformationLevel Quiet) -eq 'Tru
 Write-Host "PG=$pg Redis=$rd Backend=$be Frontend=$fe"
 ```
 
-**Por que este esquema y NO crons:** probado 2026-06-15. Los crons tickean, Mavis procesa, escribe el mensaje, pero el runtime NO se lo muestra al usuario como notificacion visible en la UI del chat. Los `mavis communication send` automaticos (a la propia sesion) tambien fallan con "Communication denied". El unico canal que funciona es el chat directo en el mismo turno. **REGLA PERMANENTE: para avisarle algo al usuario, Mavis TIENE que escribirlo en el chat actual del turno. Cualquier otro canal (cron, communication send, IM push) es unreliable.**
+Si los 4 `True` → reportar al usuario + `mavis communication send` a REVISOR + eliminar cron.
+Si alguno `False` → leer logs + reportar error + dejar cron activo.
 
-**FASE 2 — REVISAR (turno siguiente, ~1 min despues).** Cuando el cron dispare (o en el siguiente turno del usuario), Mavis verifica puertos:
-
-```powershell
-# 1 sola corrida, sin loop
-$pg = (Test-NetConnection localhost -Port 5432 -InformationLevel Quiet) -eq 'True'
-$rd = (Test-NetConnection localhost -Port 6379 -InformationLevel Quiet) -eq 'True'
-$be = (Test-NetConnection localhost -Port 8080 -InformationLevel Quiet) -eq 'True'
-$fe = (Test-NetConnection localhost -Port 4200 -InformationLevel Quiet) -eq 'True'
-Write-Host "PG=$pg Redis=$rd Backend=$be Frontend=$fe"
-```
-
-Si los 4 dan `True` → reportar "Stack UP" al usuario + `mavis communication send` a REVISOR para que arranque el smoke + `mavis cron delete mavis check-stack`.
-Si alguno da `False` → leer `D:\temp\manager-backend.log` o `D:\temp\manager-frontend.log` por primera vez y reportar el error. NO borrar el cron todavia.
-
-**FASE 3 — CERRAR.** Una vez confirmado UP, `mavis cron delete mavis check-stack` (idempotente). Si no, dejar el cron activo hasta que se levante.
+**FASE 3 — CERRAR.** Una vez confirmado UP estable, `mavis cron delete mavis check-stack-after-restart` (idempotente).
 
 ### 4.3 Procedimiento alternativo (kill manual + bash directo, sin reiniciar.sh)
 
@@ -161,7 +163,7 @@ sleep 2
 2. **NUNCA** ejecutar el `.bat`/`.sh` en foreground — siempre via `restart-stack-v2.ps1` (Start-Process desacoplado) o `nohup ... &`.
 3. **NUNCA** mirar `bat-out.log` ni `bat-err.log` mientras corre. El polling a los 4 puertos es la unica fuente de verdad.
 4. **NUNCA** esperar output interactivo. `restart-stack-v2.ps1` devuelve en <1s.
-5. **Lanzar + verificar en el MISMO turno.** El unico canal de notificacion que le llega al usuario es el chat directo. NO usar crons ni communication send automaticos (no le llegan como notificacion visible, probado 2026-06-15). Procedimiento: `bash /c/Users/ichu_/Desktop/start_manager_full.sh` + `Start-Sleep 60` + `Test-NetConnection` a los 4 puertos + reportar el resultado literal al usuario. El script ahora matea los PIDs guardados antes de verificar puertos (fix IPv6).
+5. **NUNCA lanzar + verificar en el mismo turno.** Procedimiento: nohup → cron → mensaje de texto al usuario → terminar turno. El cron hace la verificación ~1 min después. NO Start-Sleep, NO Test-NetConnection en el turno del launch. **El paso de escribir el mensaje de texto después del cron es OBLIGATORIO** — sin él Mavis queda colgado (bug detectado 2026-06-16). Decisión de Iván.
 6. **Matar PIDs viejos por edad:** `StartTime -lt (Get-Date).AddMinutes(-3)`. NO -10 (era muy permisivo y mataba procesos legitimos).
 7. **Matar node solo del front-ciber:** `Where-Object {$_.Path -like '*front-ciber*'}`. NO matar node del MCP de Mavis.
 8. **Si en 60s los 4 puertos NO estan UP** → leer logs y reportar.
