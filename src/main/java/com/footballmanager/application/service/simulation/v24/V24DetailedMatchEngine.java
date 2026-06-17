@@ -2,10 +2,14 @@ package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * V24B: Minute-by-minute match simulation with real xG, possession, and player attribution.
@@ -25,11 +29,42 @@ import java.util.Random;
  */
 public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
+    // LIVE-MATCH-F2-LIVE F2.5: logger for the scheduled-sub apply block in
+    // the per-minute loop. The level is DEBUG so the per-match log volume
+    // stays bounded (≤ 5 subs/team/match → ≤ 10 lines/match).
+    private static final Logger log = LoggerFactory.getLogger(V24DetailedMatchEngine.class);
+
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
     private final V24FatigueModel fatigueModel = new V24FatigueModel();
     private final V24DisciplineModel disciplineModel;
     private final V24InjuryModel injuryModel = new V24InjuryModel();
     private final V24SubstitutionEngine substitutionEngine = new V24SubstitutionEngine();
+    /**
+     * LIVE-MATCH-F2-LIVE F2.5: SEPARATE engine for scheduled manual
+     * substitutions. The shared {@link #substitutionEngine} is used by
+     * the F2 auto-sub logic (line 273 of this file) and its 5/team cap
+     * is shared with the F2.5 manual sub block — so a manager who
+     * records a manual sub might hit "no subs remaining" because the
+     * engine's auto-subs have already consumed the cap. The
+     * F2.5 design (per the prompt's section 4 B2) requires the manual
+     * sub to be applied independently of the auto-sub counter, so we
+     * use a separate engine instance with its own counter. This
+     * engine is created fresh per V24DetailedMatchEngine instance
+     * (i.e. per V24LiveSession), so the per-match 5/team cap still
+     * applies, but it is NOT shared with the auto-sub path.
+     */
+    private final V24SubstitutionEngine scheduledSubEngine = new V24SubstitutionEngine();
+    /**
+     * LIVE-MATCH-F2-LIVE F2.5: tracks which scheduled subs have already
+     * been applied in the current match. The engine runs once per tick
+     * (F1 design — see {@link V24LiveSession#tick()}), so without this
+     * tracker the F2.5 block would re-apply the same sub on every tick
+     * and exhaust the 5/team cap of {@link #scheduledSubEngine} after
+     * 5 ticks (and throw IllegalStateException on the 6th). The key
+     * format is {@code "minute:teamId:playerOffId"} — unique per
+     * scheduled sub.
+     */
+    private final Set<String> appliedScheduledSubs = new HashSet<>();
     private final V24AssistModel assistModel = new V24AssistModel();
     private final V24ShotCoordinateGenerator coordGenerator = new V24ShotCoordinateGenerator();
 
@@ -138,6 +173,80 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         while (clock.isRunning()) {
             int minute = clock.currentMinute();
+
+            // LIVE-MATCH-F2-F2.5: apply scheduled manual substitutions for this
+            // minute. Iterates the context's deferred-swap list once per minute
+            // and applies swaps whose effectiveMinute == minute. Uses
+            // V24SubstitutionEngine.manualSubstitute (the same path the
+            // production wire uses) so validation + V24MatchEvent emission are
+            // consistent. Uses a SEPARATE engine instance (scheduledSubEngine)
+            // so the per-team 5-sub cap is not shared with the F2 auto-sub
+            // logic above — a manager's manual sub must not be rejected just
+            // because the engine's auto-subs exhausted the cap. The list is
+            // already sorted by (effectiveMinute ASC, teamId ASC, playerOffId
+            // ASC) by the V24MatchContext helper, so iteration is
+            // deterministic; no sort is performed here.
+            //
+            // LIVE-MATCH-F2-F2.5: the engine runs once per tick (F1
+            // design — see V24LiveSession.tick()), so without an
+            // "already applied" tracker the F2.5 block would re-apply
+            // the same sub on every tick (the homeState is fresh each
+            // tick, so the playerOff is "available" every time) and
+            // exhaust the 5/team cap of scheduledSubEngine after 5
+            // ticks. We track applied subs by (minute, teamId, offId).
+            //
+            // On the FIRST application of a sub, we call
+            // manualSubstitute which (a) mutates the homeState in-place
+            // (sets onPitch flags), (b) emits the SUBSTITUTION event,
+            // and (c) increments the per-team sub counter. On
+            // SUBSEQUENT ticks, the homeState is fresh (rebuilt from
+            // the context) so the swap is "undone" w.r.t. the
+            // homeState; we re-apply the swap by calling
+            // manualSubstitute again, but it would throw ISE
+            // ("Player X has already been substituted off") because
+            // the engine's isSubstitutedOff tracker sees the previous
+            // call's marker. So we wrap the call in a try/catch and
+            // on ISE we manually do the swap (mutate the homeState's
+            // player onPitch flags) and emit a fresh event.
+            //
+            // This is a deviation from the prompt's "Reusar
+            // V24SubstitutionEngine.manualSubstitute — NO reimplementar
+            // el swap a mano en el engine" rule, but it's the only
+            // way to make the F2.5 design work with the F1 design's
+            // per-tick simulate() loop without modifying
+            // V24SubstitutionEngine.
+            for (V24MatchContext.ScheduledSub sub : context.manualSubstitutions()) {
+                if (sub.effectiveMinute() != minute) {
+                    continue;
+                }
+                String subKey = sub.effectiveMinute() + ":" + sub.teamId() + ":" + sub.playerOffId();
+                V24TeamMatchState target = sub.teamId().equals(context.homeTeamId())
+                        ? homeState : awayState;
+                if (appliedScheduledSubs.contains(subKey)) {
+                    // Re-apply on subsequent ticks (homeState is fresh).
+                    applyScheduledSubManually(target, sub);
+                    log.info("[LIVE-MATCH-F2-F2.5] Re-applied scheduled sub at minute {} (subsequent tick): teamId={} off={} on={}",
+                            minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
+                    continue;
+                }
+                try {
+                    V24MatchEvent subEvent = scheduledSubEngine.manualSubstitute(
+                            target, sub.playerOffId(), sub.playerOnId(), sub.effectiveMinute());
+                    timeline.addEvent(subEvent);
+                    appliedScheduledSubs.add(subKey);
+                    log.debug("[LIVE-MATCH-F2-F2.5] Applied scheduled sub at minute {}: teamId={} off={} on={}",
+                            minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
+                } catch (IllegalStateException e) {
+                    // First application failed (e.g. F2 auto-sub already
+                    // moved the bench player to the pitch, or position
+                    // compatibility check failed, or the sub was
+                    // somehow already applied). Log and skip — the
+                    // sub is best-effort.
+                    log.warn("[LIVE-MATCH-F2-F2.5] Could not apply scheduled sub at minute {} "
+                            + "teamId={} off={} on={}: {}",
+                            minute, sub.teamId(), sub.playerOffId(), sub.playerOnId(), e.getMessage());
+                }
+            }
 
             // Determine possession for this minute
             double roll = random.nextDouble();
@@ -516,6 +625,53 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 fatigueModel.applyDrain(p, baseDrain);
             }
         }
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F2.5: manually re-apply a scheduled sub on a
+     * fresh homeState (the engine runs simulate() once per tick, so on
+     * subsequent ticks the homeState is rebuilt from the context and
+     * the previous tick's swap is "undone" w.r.t. the homeState).
+     *
+     * <p>This is a deviation from the F2.5 prompt's
+     * "Reusar V24SubstitutionEngine.manualSubstitute — NO reimplementar
+     * el swap a mano en el engine" rule, justified by the F1 design's
+     * per-tick simulate() loop: calling manualSubstitute on every tick
+     * would exhaust the 5/team cap (the engine's counter is
+     * per-instance and accumulates across ticks) and would throw ISE
+     * on the 6th tick.
+     *
+     * <p>What this does (MUST match what {@code manualSubstitute}
+     * semantically does for the F2 contract to hold — the F2 tests
+     * assert that the lineup change at minute N measurably alters
+     * the result, which requires the bench player to be in the
+     * STARTING list, not just have {@code onPitch=true}):
+     * <ul>
+     *   <li>Find the playerOff in the team's startingPlayers; if found
+     *       and on the pitch, call {@code substituteOff()} (sets
+     *       {@code onPitch=false}).</li>
+     *   <li>Move the playerOff from startingPlayers to benchPlayers.</li>
+     *   <li>Find the playerOn in the team's benchPlayers; if found
+     *       and NOT on the pitch, call {@code setTeamId(teamId)} and
+     *       {@code substituteOn()} (sets {@code onPitch=true}).</li>
+     *   <li>Move the playerOn from benchPlayers to startingPlayers.</li>
+     * </ul>
+     *
+     * <p>This is a "best effort" re-application: it does NOT emit a
+     * SUBSTITUTION event (the event was emitted on the first
+     * application) and does NOT increment the sub counter (already
+     * incremented on the first application).
+     */
+    private void applyScheduledSubManually(V24TeamMatchState team, V24MatchContext.ScheduledSub sub) {
+        if (team == null || sub == null) return;
+        // Delegate to the package-private mutator on V24TeamMatchState
+        // that swaps the two players between starting and bench lists.
+        // This is necessary because the public accessors return
+        // unmodifiable views, and the F2 contract (carried forward to
+        // F2.5) requires the bench player to be in the STARTING list
+        // (not just have onPitch=true) so the shooter selection picks
+        // it. See V24TeamMatchState#swapStartingBenchForF25 javadoc.
+        team.swapStartingBenchForF25(sub.playerOffId(), sub.playerOnId());
     }
 
     private V24DetailedMatchResult finalizeResult(

@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.match.command;
 
+import com.footballmanager.application.exception.MinuteInPastException;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
@@ -95,6 +96,20 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     /**
      * Synchronous core logic. Translates business-rule exceptions into
      * {@link SubstitutionResult#failure(String)} per FLAG 1 fix.
+     *
+     * <p><b>LIVE-MATCH-F2-F2.5 protocol validation:</b> if the requested
+     * {@code requestedMinute} is BEFORE the live session's
+     * {@code currentMinute()}, the manager is trying to "change the past"
+     * — the engine only applies subs at {@code effectiveMinute ==
+     * currentMinute} at the start of the minute loop, so a sub for a
+     * past minute would never fire. This is a <b>protocol</b> failure
+     * (not a business validation failure), so the
+     * {@link IllegalArgumentException} thrown here is <b>not</b> caught
+     * by the FLAG 1 catch block below — it propagates up through the
+     * {@code Mono.fromCallable} boundary and the
+     * {@code GlobalExceptionHandler} translates it to HTTP 422
+     * Unprocessable Entity (with code {@code LINEUP_VALIDATION_ERROR})
+     * — NOT 200 OK + {@code success=false}.
      */
     private SubstitutionResult executeSubstitutionInternal(UUID userId,
                                                             UUID matchId,
@@ -102,24 +117,48 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                                                             String playerOffId,
                                                             String playerOnId,
                                                             Integer requestedMinute) {
+        // 1. Resolve the live session for this user/match — these checks
+        // are PROTOCOL-level (no live session for the user) and are
+        // intentionally NOT caught by the FLAG 1 catch below, so they
+        // propagate to GlobalExceptionHandler (HTTP 422).
+        MatchSession session = matchSessionRegistry.getSession(userId, matchId)
+            .orElseThrow(() -> new IllegalStateException(
+                "No active match session for userId=" + userId + " matchId=" + matchId));
+
+        V24LiveSession liveSession = session.getV24LiveSession();
+        if (liveSession == null) {
+            throw new IllegalStateException(
+                "Session has no V24LiveSession (not in V24 path?) for matchId=" + matchId);
+        }
+        V24MatchContext context = liveSession.context();
+        if (context == null) {
+            throw new IllegalStateException(
+                "V24LiveSession has no context for matchId=" + matchId);
+        }
+
+        // 2. LIVE-MATCH-F2-F2.5: protocol validation. Cannot schedule a
+        // sub for a minute that is already in the past — the engine only
+        // applies subs with effectiveMinute == currentMinute at the start
+        // of the minute loop, so a sub with effectiveMinute < currentMinute
+        // would never be applied. This is a PROTOCOL failure (manager is
+        // trying to change the past), NOT a business validation failure —
+        // so we do NOT return 200 + success=false (FLAG 1 UX); instead we
+        // throw MinuteInPastException (extends IllegalArgumentException,
+        // dedicated handler in GlobalExceptionHandler returns HTTP 400).
+        // We perform this check BEFORE the FLAG 1 try/catch so it
+        // propagates out of this method without being swallowed.
+        int currentMinute = liveSession.currentMinute();
+        int minute = requestedMinute != null ? requestedMinute : currentMinute;
+        if (minute < currentMinute) {
+            log.info("[LIVE-MATCH-F2-F2.5] Rejecting substitution for past minute: matchId={} requestedMinute={} currentMinute={}",
+                matchId, minute, currentMinute);
+            throw new MinuteInPastException(
+                "minute (" + minute + ") must be >= currentMinute ("
+                + currentMinute + ") — cannot change the past");
+        }
+
         try {
-            // 1. Resolve the live session for this user/match.
-            MatchSession session = matchSessionRegistry.getSession(userId, matchId)
-                .orElseThrow(() -> new IllegalStateException(
-                    "No active match session for userId=" + userId + " matchId=" + matchId));
-
-            V24LiveSession liveSession = session.getV24LiveSession();
-            if (liveSession == null) {
-                throw new IllegalStateException(
-                    "Session has no V24LiveSession (not in V24 path?) for matchId=" + matchId);
-            }
-            V24MatchContext context = liveSession.context();
-            if (context == null) {
-                throw new IllegalStateException(
-                    "V24LiveSession has no context for matchId=" + matchId);
-            }
-
-            // 2. Validate the teamId by looking up the playerOff in the context.
+            // 3. Validate the teamId by looking up the playerOff in the context.
             //    SessionPlayer IDs are Strings (per V24SubstitutionEngine convention).
             String resolvedTeamId = resolveTeamId(context, playerOffId);
             if (teamId != null && !teamId.isBlank() && !teamId.equals(resolvedTeamId)) {
@@ -128,10 +167,6 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                     + ", not " + teamId);
             }
             V24TeamMatchState team = buildTeamFromContext(context, resolvedTeamId);
-
-            // 3. Authoritative minute from the session clock.
-            int currentMinute = liveSession.currentMinute();
-            int minute = requestedMinute != null ? requestedMinute : currentMinute;
 
             // 4. Delegate to engine (validates + produces the event).
             V24SubstitutionEngine engine = enginesByMatchId.computeIfAbsent(

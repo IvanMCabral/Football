@@ -105,6 +105,65 @@ public class V24TeamMatchState {
     public TeamStyle style() { return style; }
     public List<V24PlayerMatchState> startingPlayers() { return Collections.unmodifiableList(startingPlayers); }
     public List<V24PlayerMatchState> benchPlayers() { return Collections.unmodifiableList(benchPlayers); }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F2.5: package-private mutator that swaps two
+     * players between the starting and bench lists of this team. Used
+     * by the F2.5 scheduled-sub apply path in V24DetailedMatchEngine
+     * when re-applying a sub on a fresh homeState (the engine runs
+     * simulate() once per tick, so on subsequent ticks the homeState
+     * is rebuilt from the context and the previous tick's swap is
+     * "undone" w.r.t. the homeState).
+     *
+     * <p>The public {@link #startingPlayers()} and {@link #benchPlayers()}
+     * accessors return unmodifiable views, so this method provides the
+     * only way to mutate the lists in-place. The public API is unchanged
+     * — callers that want to read the lists still get unmodifiable
+     * views.
+     *
+     * <p>What this does:
+     * <ul>
+     *   <li>Find {@code playerOffId} in the starting list; remove it and
+     *       call {@code substituteOff()} (sets onPitch=false).</li>
+     *   <li>Find {@code playerOnId} in the bench list; remove it, set
+     *       its teamId, and call {@code substituteOn()} (sets
+     *       onPitch=true).</li>
+     *   <li>Append the off player to the bench list and the on player
+     *       to the starting list.</li>
+     * </ul>
+     *
+     * @param playerOffId sessionPlayerId of the player going off (NOT NULL)
+     * @param playerOnId  sessionPlayerId of the player coming on (NOT NULL)
+     * @return true if both players were found and swapped; false otherwise
+     */
+    boolean swapStartingBenchForF25(String playerOffId, String playerOnId) {
+        if (playerOffId == null || playerOnId == null) return false;
+        V24PlayerMatchState offPlayer = null;
+        for (V24PlayerMatchState p : startingPlayers) {
+            if (p != null && playerOffId.equals(p.sessionPlayerId())) {
+                offPlayer = p;
+                break;
+            }
+        }
+        V24PlayerMatchState onPlayer = null;
+        for (V24PlayerMatchState p : benchPlayers) {
+            if (p != null && playerOnId.equals(p.sessionPlayerId())) {
+                onPlayer = p;
+                break;
+            }
+        }
+        if (offPlayer == null || onPlayer == null) {
+            return false;
+        }
+        startingPlayers.remove(offPlayer);
+        benchPlayers.remove(onPlayer);
+        offPlayer.substituteOff();
+        onPlayer.setTeamId(teamId);
+        onPlayer.substituteOn();
+        benchPlayers.add(offPlayer);
+        startingPlayers.add(onPlayer);
+        return true;
+    }
     public int goals() { return goals; }
     public double xg() { return xg; }
     public int shots() { return shots; }

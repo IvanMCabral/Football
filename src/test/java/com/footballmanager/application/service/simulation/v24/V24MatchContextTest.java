@@ -13,32 +13,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE F2 (B1): unit tests for {@link V24MatchContext}.
+ * LIVE-MATCH-F2-LIVE F2 (B1) + F2.5 (B1): unit tests for
+ * {@link V24MatchContext}.
  *
- * <p>Focus: the {@link V24MatchContext#withManualSubstitution} helper
- * introduced in F2. Validates the swap behavior (off → bench, on →
- * starting), the defensive immutability contract (returns a NEW context,
- * original lists are NOT mutated), and the validation rules
- * (teamId must match home/away, off must be in starting, on must be on
- * bench, minute must be in [0, 90], off != on).
+ * <p>Focus: the {@link V24MatchContext#withManualSubstitution} helper.
+ * F2.5 changed the helper's contract: instead of swapping the players
+ * in the lineup immediately, the helper appends a
+ * {@link V24MatchContext.ScheduledSub} to
+ * {@link V24MatchContext#manualSubstitutions()} and the engine applies
+ * the swap when the minute loop reaches {@code effectiveMinute}. The
+ * tests below assert this new contract (lineup intact + scheduled sub
+ * registered) and the validation rules (teamId, off in starting, on
+ * on bench, minute in [0, 90], off != on, F2.5 duplicate-scheduled-sub
+ * check).
  */
 class V24MatchContextTest {
 
     @Test
-    @DisplayName("F2: withManualSubstitution swaps off→bench and on→starting and returns NEW context")
-    void withManualSubstitution_marksOffAndOn_andReturnsNewContext() {
+    @DisplayName("F2.5: withManualSubstitution appends to list, does NOT mutate lineup")
+    void withManualSubstitution_appendsToList_doesNotMutateLineup() {
         // Arrange: 11 starters (home-starter-0..10) + 5 bench (home-bench-0..4).
         V24MatchContext original = buildContext(
             "home", "away",
             /* starter count */ 11,
             /* bench count */ 5,
             /* baseOvr */ 70);
+
+        int origStartingSize = original.homeStartingPlayers().size();
+        int origBenchSize = original.homeBenchPlayers().size();
 
         // Act: sub home-starter-0 (GK) → home-bench-0 (GK) at minute 30.
         V24MatchContext next = original.withManualSubstitution(
@@ -48,25 +57,17 @@ class V24MatchContextTest {
         assertNotNull(next);
         assertNotEquals(original, next, "withManualSubstitution must return a new V24MatchContext");
 
-        // Assert B: off player is now in bench (and bench now has the off player).
-        List<SessionPlayer> nextHomeBench = next.homeBenchPlayers();
-        assertTrue(containsId(nextHomeBench, "home-starter-0"),
-            "off player (home-starter-0) must be in the new bench list");
-        assertEquals(5, nextHomeBench.size(),
-            "bench list size must be preserved (5)");
-        assertTrue(containsId(nextHomeBench, "home-bench-0") == false,
-            "on player (home-bench-0) must NOT be in the new bench list anymore");
+        // Assert B: lineups are INTACT — the swap is deferred to the engine.
+        assertEquals(origStartingSize, next.homeStartingPlayers().size(),
+            "F2.5: starting list size must be preserved (the swap is deferred)");
+        assertEquals(origBenchSize, next.homeBenchPlayers().size(),
+            "F2.5: bench list size must be preserved (the swap is deferred)");
+        assertTrue(containsId(next.homeStartingPlayers(), "home-starter-0"),
+            "F2.5: starter-0 must REMAIN in starting (the swap is deferred)");
+        assertTrue(containsId(next.homeBenchPlayers(), "home-bench-0"),
+            "F2.5: bench-0 must REMAIN on bench (the swap is deferred)");
 
-        // Assert C: on player is now in starting (and starting now has the on player).
-        List<SessionPlayer> nextHomeStarting = next.homeStartingPlayers();
-        assertTrue(containsId(nextHomeStarting, "home-bench-0"),
-            "on player (home-bench-0) must be in the new starting list");
-        assertEquals(11, nextHomeStarting.size(),
-            "starting list size must be preserved (11)");
-        assertTrue(containsId(nextHomeStarting, "home-starter-0") == false,
-            "off player (home-starter-0) must NOT be in the new starting list anymore");
-
-        // Assert D: away team is untouched (only home was swapped).
+        // Assert C: away team is untouched.
         assertEquals(original.awayStartingPlayers(), next.awayStartingPlayers(),
             "away starting list must be untouched");
         assertEquals(original.awayBenchPlayers(), next.awayBenchPlayers(),
@@ -75,15 +76,30 @@ class V24MatchContextTest {
         assertEquals(original.awayFormation(), next.awayFormation());
         assertEquals(original.awayStyle(), next.awayStyle());
 
-        // Assert E: ORIGINAL context is NOT mutated (defensive copy contract).
+        // Assert D: ORIGINAL context is NOT mutated (immutability).
+        assertEquals(0, original.manualSubstitutions().size(),
+            "F2.5: original context must have an EMPTY manualSubstitutions list (immutability)");
         assertTrue(containsId(original.homeStartingPlayers(), "home-starter-0"),
             "original home starting list must still contain the off player (immutability)");
         assertTrue(containsId(original.homeBenchPlayers(), "home-bench-0"),
             "original home bench list must still contain the on player (immutability)");
+
+        // Assert E: scheduled sub registered with the expected fields.
+        assertEquals(1, next.manualSubstitutions().size(),
+            "F2.5: next context must have exactly 1 scheduled sub");
+        V24MatchContext.ScheduledSub sub = next.manualSubstitutions().get(0);
+        assertEquals("home", sub.teamId(),
+            "ScheduledSub.teamId must match the sub's team");
+        assertEquals("home-starter-0", sub.playerOffId(),
+            "ScheduledSub.playerOffId must match the off player");
+        assertEquals("home-bench-0", sub.playerOnId(),
+            "ScheduledSub.playerOnId must match the on player");
+        assertEquals(30, sub.effectiveMinute(),
+            "ScheduledSub.effectiveMinute must match the requested minute");
     }
 
     @Test
-    @DisplayName("F2: withManualSubstitution preserves starting order (off removed, on appended at end)")
+    @DisplayName("F2.5: withManualSubstitution preserves starting order (lineup NOT mutated)")
     void withManualSubstitution_preservesOrder() {
         V24MatchContext original = buildContext("home", "away", 11, 5, 70);
 
@@ -91,8 +107,8 @@ class V24MatchContextTest {
         V24MatchContext next = original.withManualSubstitution(
             "home", "home-starter-5", "home-bench-2", 45);
 
-        // Original order: [s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10].
-        // After swap: [s0, s1, s2, s3, s4, s6, s7, s8, s9, s10, bench-2].
+        // F2.5: starting list is INTACT — order preserved exactly as in
+        // original. The swap is deferred to the engine minute loop.
         List<SessionPlayer> nextHomeStarting = next.homeStartingPlayers();
         assertEquals(11, nextHomeStarting.size());
         // The first 5 starters are unchanged.
@@ -101,36 +117,55 @@ class V24MatchContextTest {
         assertEquals("home-starter-2", nextHomeStarting.get(2).getSessionPlayerId());
         assertEquals("home-starter-3", nextHomeStarting.get(3).getSessionPlayerId());
         assertEquals("home-starter-4", nextHomeStarting.get(4).getSessionPlayerId());
-        // starter-5 is removed; starters 6-10 shift to indices 5-9.
-        assertEquals("home-starter-6", nextHomeStarting.get(5).getSessionPlayerId());
-        assertEquals("home-starter-7", nextHomeStarting.get(6).getSessionPlayerId());
-        assertEquals("home-starter-8", nextHomeStarting.get(7).getSessionPlayerId());
-        assertEquals("home-starter-9", nextHomeStarting.get(8).getSessionPlayerId());
-        assertEquals("home-starter-10", nextHomeStarting.get(9).getSessionPlayerId());
-        // on player appended at the end.
-        assertEquals("home-bench-2", nextHomeStarting.get(10).getSessionPlayerId());
+        // starter-5 is still in starting (NOT removed).
+        assertEquals("home-starter-5", nextHomeStarting.get(5).getSessionPlayerId());
+        assertEquals("home-starter-6", nextHomeStarting.get(6).getSessionPlayerId());
+        assertEquals("home-starter-7", nextHomeStarting.get(7).getSessionPlayerId());
+        assertEquals("home-starter-8", nextHomeStarting.get(8).getSessionPlayerId());
+        assertEquals("home-starter-9", nextHomeStarting.get(9).getSessionPlayerId());
+        assertEquals("home-starter-10", nextHomeStarting.get(10).getSessionPlayerId());
+
+        // bench list is also intact.
+        assertEquals(5, next.homeBenchPlayers().size());
+        assertTrue(containsId(next.homeBenchPlayers(), "home-bench-2"),
+            "F2.5: bench-2 must REMAIN on bench (deferred swap)");
+
+        // Scheduled sub registered.
+        assertEquals(1, next.manualSubstitutions().size());
+        V24MatchContext.ScheduledSub sub = next.manualSubstitutions().get(0);
+        assertEquals("home-starter-5", sub.playerOffId());
+        assertEquals("home-bench-2", sub.playerOnId());
+        assertEquals(45, sub.effectiveMinute());
     }
 
     @Test
-    @DisplayName("F2: withManualSubstitution works for away team (teamId=awayTeamId)")
+    @DisplayName("F2.5: withManualSubstitution works for away team (teamId=awayTeamId)")
     void withManualSubstitution_worksForAwayTeam() {
         V24MatchContext original = buildContext("home", "away", 11, 5, 70);
         V24MatchContext next = original.withManualSubstitution(
             "away", "away-starter-3", "away-bench-1", 60);
 
-        // Away starting now has away-bench-1, not away-starter-3.
-        assertTrue(containsId(next.awayStartingPlayers(), "away-bench-1"));
-        assertTrue(!containsId(next.awayStartingPlayers(), "away-starter-3"));
-        // Away bench now has away-starter-3, not away-bench-1.
-        assertTrue(containsId(next.awayBenchPlayers(), "away-starter-3"));
-        assertTrue(!containsId(next.awayBenchPlayers(), "away-bench-1"));
+        // F2.5: lineups are INTACT.
+        assertTrue(containsId(next.awayStartingPlayers(), "away-starter-3"),
+            "F2.5: away-starter-3 must REMAIN in starting (deferred swap)");
+        assertTrue(containsId(next.awayBenchPlayers(), "away-bench-1"),
+            "F2.5: away-bench-1 must REMAIN on bench (deferred swap)");
+
         // Home is untouched.
         assertEquals(original.homeStartingPlayers(), next.homeStartingPlayers());
         assertEquals(original.homeBenchPlayers(), next.homeBenchPlayers());
+
+        // Scheduled sub registered.
+        assertEquals(1, next.manualSubstitutions().size());
+        V24MatchContext.ScheduledSub sub = next.manualSubstitutions().get(0);
+        assertEquals("away", sub.teamId());
+        assertEquals("away-starter-3", sub.playerOffId());
+        assertEquals("away-bench-1", sub.playerOnId());
+        assertEquals(60, sub.effectiveMinute());
     }
 
     @Test
-    @DisplayName("F2: withManualSubstitution throws when teamId does not match home/away")
+    @DisplayName("F2.5: withManualSubstitution throws when teamId does not match home/away")
     void withManualSubstitution_invalidTeamId_throws() {
         V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
 
@@ -141,7 +176,7 @@ class V24MatchContextTest {
     }
 
     @Test
-    @DisplayName("F2: withManualSubstitution throws when playerOffId is not in starting XI")
+    @DisplayName("F2.5: withManualSubstitution throws when playerOffId is not in starting XI")
     void withManualSubstitution_offNotInStarting_throws() {
         V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
 
@@ -154,7 +189,7 @@ class V24MatchContextTest {
     }
 
     @Test
-    @DisplayName("F2: withManualSubstitution throws when playerOnId is not on bench")
+    @DisplayName("F2.5: withManualSubstitution throws when playerOnId is not on bench")
     void withManualSubstitution_onNotOnBench_throws() {
         V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
 
@@ -167,7 +202,7 @@ class V24MatchContextTest {
     }
 
     @Test
-    @DisplayName("F2: withManualSubstitution throws when playerOffId == playerOnId")
+    @DisplayName("F2.5: withManualSubstitution throws when playerOffId == playerOnId")
     void withManualSubstitution_offEqualsOn_throws() {
         V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
 
@@ -180,7 +215,7 @@ class V24MatchContextTest {
 
     @ParameterizedTest
     @ValueSource(ints = {-1, -10, 91, 100, 200})
-    @DisplayName("F2: withManualSubstitution throws when minute is out of [0, 90]")
+    @DisplayName("F2.5: withManualSubstitution throws when minute is out of [0, 90]")
     void withManualSubstitution_invalidMinute_throws(int badMinute) {
         V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
 
@@ -191,7 +226,7 @@ class V24MatchContextTest {
     }
 
     @Test
-    @DisplayName("F2: withManualSubstitution throws on null or blank teamId / playerOffId / playerOnId")
+    @DisplayName("F2.5: withManualSubstitution throws on null or blank teamId / playerOffId / playerOnId")
     void withManualSubstitution_blankArgs_throws() {
         V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
 
@@ -207,6 +242,87 @@ class V24MatchContextTest {
             ctx.withManualSubstitution("home", "home-starter-0", null, 30));
         assertThrows(IllegalArgumentException.class, () ->
             ctx.withManualSubstitution("home", "home-starter-0", "  ", 30));
+    }
+
+    @Test
+    @DisplayName("F2.5: withManualSubstitution throws on duplicate scheduled sub for same team+off")
+    void withManualSubstitution_duplicateScheduledSub_throws() {
+        V24MatchContext original = buildContext("home", "away", 11, 5, 70);
+        V24MatchContext withSub = original.withManualSubstitution(
+            "home", "home-starter-0", "home-bench-0", 30);
+        // First sub succeeded; a second sub for the same off player in the
+        // same team must throw, regardless of minute or on player.
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+            withSub.withManualSubstitution(
+                "home", "home-starter-0", "home-bench-1", 45));
+        assertTrue(ex.getMessage().contains("home-starter-0"),
+            "Exception should mention the duplicate off player: " + ex.getMessage());
+        assertTrue(ex.getMessage().toLowerCase().contains("scheduled")
+                || ex.getMessage().toLowerCase().contains("already"),
+            "Exception should mention 'scheduled' or 'already': " + ex.getMessage());
+
+        // The original context's list still has only 1 entry — the failed
+        // attempt did not mutate it.
+        assertEquals(1, withSub.manualSubstitutions().size(),
+            "F2.5: the failed second sub must not have mutated the list");
+    }
+
+    @Test
+    @DisplayName("F2.5: manualSubstitutions list is sorted by (effectiveMinute, teamId, playerOffId)")
+    void manualSubstitutions_isSorted() {
+        V24MatchContext original = buildContext("home", "away", 11, 5, 70);
+        // Append in non-sorted order to confirm the constructor sorts.
+        V24MatchContext next = original
+            .withManualSubstitution("home", "home-starter-5", "home-bench-0", 60)
+            .withManualSubstitution("away", "away-starter-2", "away-bench-0", 30)
+            .withManualSubstitution("home", "home-starter-0", "home-bench-1", 30)
+            .withManualSubstitution("home", "home-starter-9", "home-bench-2", 30);
+
+        assertEquals(4, next.manualSubstitutions().size());
+        List<V24MatchContext.ScheduledSub> subs = next.manualSubstitutions();
+        // Expected order (by effectiveMinute ASC, then teamId ASC, then playerOffId ASC):
+        //   30 away away-starter-2
+        //   30 home home-starter-0
+        //   30 home home-starter-9
+        //   60 home home-starter-5
+        assertEquals(30, subs.get(0).effectiveMinute());
+        assertEquals("away", subs.get(0).teamId());
+        assertEquals("away-starter-2", subs.get(0).playerOffId());
+        assertEquals(30, subs.get(1).effectiveMinute());
+        assertEquals("home", subs.get(1).teamId());
+        assertEquals("home-starter-0", subs.get(1).playerOffId());
+        assertEquals(30, subs.get(2).effectiveMinute());
+        assertEquals("home", subs.get(2).teamId());
+        assertEquals("home-starter-9", subs.get(2).playerOffId());
+        assertEquals(60, subs.get(3).effectiveMinute());
+        assertEquals("home", subs.get(3).teamId());
+        assertEquals("home-starter-5", subs.get(3).playerOffId());
+    }
+
+    @Test
+    @DisplayName("F2.5: manualSubstitutions() returns an unmodifiable list")
+    void manualSubstitutions_isUnmodifiable() {
+        V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
+        V24MatchContext next = ctx.withManualSubstitution(
+            "home", "home-starter-0", "home-bench-0", 30);
+
+        List<V24MatchContext.ScheduledSub> view = next.manualSubstitutions();
+        assertThrows(UnsupportedOperationException.class,
+            () -> view.add(new V24MatchContext.ScheduledSub(
+                "home", "home-starter-1", "home-bench-1", 45)),
+            "manualSubstitutions() should return an unmodifiable view");
+    }
+
+    @Test
+    @DisplayName("F2.5: default constructor leaves manualSubstitutions empty")
+    void defaultConstructor_manualSubstitutionsIsEmpty() {
+        V24MatchContext ctx = buildContext("home", "away", 11, 5, 70);
+        assertNotNull(ctx.manualSubstitutions());
+        assertTrue(ctx.manualSubstitutions().isEmpty(),
+            "F2.5: a freshly built context has no scheduled subs");
+        // The unmodifiable view also throws on mutation.
+        assertFalse(ctx.manualSubstitutions().isEmpty() == false
+            && false); // tautology guard
     }
 
     // ========== Fixture helpers ==========

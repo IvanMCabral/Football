@@ -241,7 +241,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             userId, matchId, homeTeamUuid, awayTeamUuid, treatmentSession);
 
         String body = """
-            {"playerOffId":"home-starter-9","playerOnId":"home-bench-4","minute":null}
+            {"playerOffId":"home-starter-10","playerOnId":"home-bench-4","minute":null}
             """;
 
         // Act: POST substitution.
@@ -266,7 +266,8 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         // With identical players the result would be identical; the F2 test
         // fixture (see makePlayers in V24LiveSessionTest) gives bench players
         // a different attribute profile so the swap measurably affects the
-        // engine's draw consumption and goal output.
+        // engine's draw consumption and goal output. F2.5: the swap uses
+        // ATT starter → WINGER bench (position-compatible).
         boolean homeGoalsDiffer = baselineHomeGoals != treatmentHomeGoals;
         boolean awayGoalsDiffer = baselineAwayGoals != treatmentAwayGoals;
         org.junit.jupiter.api.Assertions.assertTrue(
@@ -277,6 +278,102 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             + "Either the mutateContext+replayFromMinute wire is not reaching the engine, "
             + "or the bench players in the test fixture have identical attributes to "
             + "the starters (the swap is then a no-op for the engine).");
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F2.5 (B4 / T3.4): a POST with
+     * {@code minute < liveSession.currentMinute()} is a protocol-level
+     * failure (the manager is trying to change the past). The use case
+     * throws {@link com.footballmanager.application.exception.MinuteInPastException}
+     * which the dedicated handler in {@code GlobalExceptionHandler}
+     * translates to HTTP 400 BAD_REQUEST with body
+     * {@code {"code": "MINUTE_IN_PAST", "message": "..."}}. NOT 200 +
+     * {@code success=false} (FLAG 1 UX for business validation) and NOT
+     * 422 (lineup validation).
+     */
+    @Test
+    @DisplayName("F2.5 E2E: POST with minute < currentMinute returns 400 BAD_REQUEST (D-protocolo)")
+    void substitute_pastMinute_returns400() {
+        // Arrange: register a MatchSession with a V24LiveSession that has
+        // already advanced past minute 0. After tick(), currentMinute=1.
+        String homeTeamId = "home-f2-5-past";
+        String awayTeamId = "away-f2-5-past";
+        UUID userId = UUID.randomUUID();
+        UUID matchId = UUID.randomUUID();
+        UUID homeTeamUuid = UUID.randomUUID();
+        UUID awayTeamUuid = UUID.randomUUID();
+
+        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        V24LiveSession liveSession = new V24LiveSession(context, 7777L);
+        liveSession.tick(); // currentMinute=1
+
+        matchSessionRegistry.getOrCreateSessionWithV24(
+            userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
+
+        // Request with minute=0, which is BEFORE currentMinute=1.
+        // This is the protocol failure: the engine would never apply
+        // a sub for a past minute.
+        String body = """
+            {"playerOffId":"home-starter-0","playerOnId":"home-bench-0","minute":0}
+            """;
+
+        webTestClient.mutateWith(mockUser(userId.toString()))
+            .post().uri("/api/v1/match-engine/matches/{id}/substitutions", matchId.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .exchange()
+            .expectStatus().isBadRequest()
+            .expectBody()
+            .jsonPath("$.code").isEqualTo("MINUTE_IN_PAST")
+            .jsonPath("$.message").value(org.hamcrest.Matchers.containsString("cannot change the past"))
+            .jsonPath("$.message").value(org.hamcrest.Matchers.containsString("minute (0)"))
+            .jsonPath("$.message").value(org.hamcrest.Matchers.containsString("currentMinute (1)"));
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F2.5 (B4 / T3.4 follow-up): a POST with
+     * {@code minute == liveSession.currentMinute()} is a valid request
+     * (the sub is applied "right now" from the live match clock
+     * perspective). It must NOT be rejected as 400 — it should follow
+     * the regular FLAG 1 / happy path (200 OK with success=true,
+     * substitutionsRemaining decremented).
+     *
+     * <p>This guards against an off-by-one in the
+     * {@code minute < currentMinute} check (using {@code <=} instead of
+     * {@code <}).
+     */
+    @Test
+    @DisplayName("F2.5 E2E: POST with minute == currentMinute is accepted (not rejected as past)")
+    void substitute_currentMinute_isAccepted() {
+        // Arrange: register a MatchSession with currentMinute=1.
+        String homeTeamId = "home-f2-5-curr";
+        String awayTeamId = "away-f2-5-curr";
+        UUID userId = UUID.randomUUID();
+        UUID matchId = UUID.randomUUID();
+        UUID homeTeamUuid = UUID.randomUUID();
+        UUID awayTeamUuid = UUID.randomUUID();
+
+        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        V24LiveSession liveSession = new V24LiveSession(context, 8888L);
+        liveSession.tick(); // currentMinute=1
+
+        matchSessionRegistry.getOrCreateSessionWithV24(
+            userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
+
+        // Request with minute=1 (== currentMinute). Must succeed.
+        String body = """
+            {"playerOffId":"home-starter-0","playerOnId":"home-bench-0","minute":1}
+            """;
+
+        webTestClient.mutateWith(mockUser(userId.toString()))
+            .post().uri("/api/v1/match-engine/matches/{id}/substitutions", matchId.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.success").isEqualTo(true)
+            .jsonPath("$.error").doesNotExist();
     }
 
     // ========== Fixture helpers (FLAG 1 happy path) ==========

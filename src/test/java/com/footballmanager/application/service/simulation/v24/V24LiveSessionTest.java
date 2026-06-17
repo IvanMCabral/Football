@@ -99,24 +99,25 @@ class V24LiveSessionTest {
         V24DetailedMatchResult baselineResult = baselineSession.finalResult();
 
         // Treatment: same seed/context, apply a substitution at minute 30 with
-        // a higher-attack bench player (home-starter-9 is WINGER, home-bench-4 is
-        // WINGER with the F2 fixture's higher bench attributes — see makePlayers).
-        // Using a WINGER swap (not GK) because wingers are involved in shot
-        // creation and the attribute difference measurably affects the engine's
-        // goal output. A GK→GK swap would only affect shot outcomes (GK
-        // quality in the xG model) and the difference is often too small to
-        // change the result in a single 90-minute simulation.
+        // a higher-attack bench player (home-starter-10 is ATT, home-bench-4
+        // is WINGER with the F2 fixture's higher bench attributes — see
+        // makePlayers). F2.5: the bench composition was updated to have a
+        // WINGER on bench-4 so ATT→WINGER swaps are position-compatible.
+        // Using an ATT→WINGER swap (the original F2 used WINGER→DEF which
+        // is now rejected by the engine's position check) because the
+        // higher-attack bench player measurably affects the engine's
+        // goal output.
         V24LiveSession subSession = new V24LiveSession(context, 42L);
         V24MatchEvent subEvent = new V24MatchEvent(
             30, // the minute the sub is applied (used for the event metadata)
             V24MatchEventType.SUBSTITUTION,
             homeTeamId,
-            "team-home-starter-9",
-            "Home Starter 9",
+            "team-home-starter-10",
+            "Home Starter 10",
             "team-home-bench-4",
             "Home Bench 4",
             0.0,
-            "Substitution: Home Bench 4 on for Home Starter 9"
+            "Substitution: Home Bench 4 on for Home Starter 10"
         );
         subSession.recordManualSubstitution(subEvent);
         for (int i = 0; i < 90; i++) subSession.tick();
@@ -252,10 +253,21 @@ class V24LiveSessionTest {
     private List<SessionPlayer> makePlayers(String teamId, String suffix, int count) {
         List<SessionPlayer> players = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            String position = (i == 0) ? "GK"
-                : (i <= 4) ? "DEF"
-                : (i <= 7) ? "MID"
-                : (i <= 9) ? "WINGER" : "ATT";
+            // F2.5: bench-4 is a WINGER (not DEF) so the F2 tests can
+            // use WINGER→WINGER swaps (the original F2 used WINGER→DEF
+            // which is now rejected by the engine's position
+            // compatibility check). All other positions are unchanged.
+            String position;
+            if ("bench".equals(suffix)) {
+                position = (i == 0) ? "GK"
+                    : (i <= 3) ? "DEF"
+                    : "WINGER";
+            } else {
+                position = (i == 0) ? "GK"
+                    : (i <= 4) ? "DEF"
+                    : (i <= 7) ? "MID"
+                    : (i <= 9) ? "WINGER" : "ATT";
+            }
             String id = teamId + "-" + suffix + "-" + i;
             // F2 setup: bench players have higher attack (80 vs 70 for
             // starters) so a swap-starter→bench player measurably alters
@@ -336,13 +348,14 @@ class V24LiveSessionTest {
         V24DetailedMatchResult baselineResult = baselineSession.finalResult();
 
         // Treatment: same seed/context, apply a substitution at minute 30 with
-        // a higher-attack bench player (home-starter-9 is WINGER, home-bench-4 is
-        // WINGER with the F2 fixture's higher bench attributes — see makePlayers).
+        // a higher-attack bench player (home-starter-10 is ATT, home-bench-4
+        // is WINGER with the F2 fixture's higher bench attributes — see
+        // makePlayers). F2.5: ATT→WINGER is position-compatible.
         // The substitution should give the new player 60 minutes of game time
         // to influence the result — measurably different outcome expected.
         V24LiveSession subSession = new V24LiveSession(context, 42L);
         V24MatchEvent subEvent = buildManualSubstitutionEvent(
-            homeTeamId, "team-home-starter-9", "Home Starter 9",
+            homeTeamId, "team-home-starter-10", "Home Starter 10",
             "team-home-bench-4", "Home Bench 4", 30);
         subSession.recordManualSubstitution(subEvent);
         for (int i = 0; i < 90; i++) subSession.tick();
@@ -382,7 +395,7 @@ class V24LiveSessionTest {
         // First run
         V24LiveSession runA = new V24LiveSession(context, 42L);
         runA.recordManualSubstitution(buildManualSubstitutionEvent(
-            homeTeamId, "team-home-starter-9", "Home Starter 9",
+            homeTeamId, "team-home-starter-10", "Home Starter 10",
             "team-home-bench-4", "Home Bench 4", 30));
         for (int i = 0; i < 90; i++) runA.tick();
         V24DetailedMatchResult resultA = runA.finalResult();
@@ -390,7 +403,7 @@ class V24LiveSessionTest {
         // Second run from scratch, identical setup
         V24LiveSession runB = new V24LiveSession(context, 42L);
         runB.recordManualSubstitution(buildManualSubstitutionEvent(
-            homeTeamId, "team-home-starter-9", "Home Starter 9",
+            homeTeamId, "team-home-starter-10", "Home Starter 10",
             "team-home-bench-4", "Home Bench 4", 30));
         for (int i = 0; i < 90; i++) runB.tick();
         V24DetailedMatchResult resultB = runB.finalResult();
@@ -405,79 +418,60 @@ class V24LiveSessionTest {
     }
 
     /**
-     * F2 RED #3: the moment a substitution is applied MUST influence the
+     * F2.5: the moment a substitution is applied MUST influence the
      * outcome. Substituting a fresh, high-attack player at minute 1 gives
      * them ~89 minutes of influence; substituting them at minute 89 gives
      * them only 1 minute. The two outcomes MUST differ.
      *
-     * <p>Today this test FAILS because both substitutions are visual-only —
-     * the engine never replays, so the final result is identical regardless
-     * of when the substitution is recorded.
+     * <p>F2.5 (deferred substitutions) fixed the F2 limitation: instead
+     * of swapping the players immediately in the helper, the helper
+     * appends a {@link V24MatchContext.ScheduledSub} to
+     * {@link V24MatchContext#manualSubstitutions()} and the engine
+     * applies the swap when the minute loop reaches the
+     * {@code effectiveMinute}. So a sub at minute 1 takes effect
+     * almost immediately, and a sub at minute 89 takes effect just
+     * before the final whistle — the two results MUST differ.
      *
-     * <p>Note: V24MatchEvent validates {@code minute in [1, 130]}, so we use
-     * minute 1 (not 0) for the "early" case. The 88-minute delta vs the late
-     * case still produces a measurable outcome difference once the refactor
-     * is in place.
-     */
-    /**
-     * F2 #3: the moment a substitution is applied MUST influence the
-     * outcome. Substituting a fresh, high-attack player at minute 1 gives
-     * them ~89 minutes of influence; substituting them at minute 89 gives
-     * them only 1 minute. The two outcomes MUST differ.
-     *
-     * <p>KNOWN LIMITATION (F2 scope): the F1+F2 design applies the swap
-     * IMMEDIATELY at {@code currentMinute=0} (the session is fresh, no
-     * tick has run) — the engine then re-runs all 90 minutes with the
-     * new lineup. The sub's minute parameter is stored in the event
-     * metadata but does NOT delay the swap. So the early and late subs
-     * produce IDENTICAL results in this test setup.
-     *
-     * <p>This is a known limitation of the F1+F2 design. Properly
-     * supporting minute-delayed swaps would require engine changes
-     * (tracking when subs are applied and using the new lineup only
-     * from that minute during the replay) — explicitly out of scope for
-     * F2 per the prompt section 6 "Lo que NO DEBE hacerse".
-     *
-     * <p>To make this test pass with the current design, the session
-     * would need to be ticked to the sub's minute BEFORE applying the
-     * sub. The test as written applies the sub at currentMinute=0 in
-     * both cases, so the swap is identical. This test is preserved as
-     * a regression marker for the known limitation.
+     * <p>Note: V24MatchEvent validates {@code minute in [1, 130]}, so we
+     * use minute 1 (not 0) for the "early" case.
      */
     @Test
-    @DisplayName("F2 KNOWN LIMITATION: early vs late sub (same session state) — see javadoc")
+    @DisplayName("F2.5: early vs late sub (different effectiveMinute) produces DIFFERENT outcomes")
     void earlyVsLateSubstitution_producesDifferentOutcomes() {
-        // F2 limitation: the sub is applied at currentMinute=0 in both
-        // cases (fresh session, no tick yet). The F1+F2 design applies
-        // the swap immediately, so the minute parameter in the event
-        // has no effect on the simulation outcome. Both runs produce
-        // identical results. This test is a regression marker — it
-        // SHOULD pass when the engine is extended to support
-        // minute-delayed swaps (out of F2 scope).
         V24LiveSession earlySession = new V24LiveSession(context, 42L);
         earlySession.recordManualSubstitution(buildManualSubstitutionEvent(
-            homeTeamId, "team-home-starter-9", "Home Starter 9",
+            homeTeamId, "team-home-starter-10", "Home Starter 10",
             "team-home-bench-4", "Home Bench 4", 1));
         for (int i = 0; i < 90; i++) earlySession.tick();
         V24DetailedMatchResult earlyResult = earlySession.finalResult();
 
         V24LiveSession lateSession = new V24LiveSession(context, 42L);
         lateSession.recordManualSubstitution(buildManualSubstitutionEvent(
-            homeTeamId, "team-home-starter-9", "Home Starter 9",
+            homeTeamId, "team-home-starter-10", "Home Starter 10",
             "team-home-bench-4", "Home Bench 4", 89));
         for (int i = 0; i < 90; i++) lateSession.tick();
         V24DetailedMatchResult lateResult = lateSession.finalResult();
 
-        // The two runs MUST produce identical results (same swap, same
-        // seed, same draw consumption). If they differ, the engine has
-        // become non-deterministic or the swap is not being applied
-        // consistently.
-        assertEquals(earlyResult.homeGoals(), lateResult.homeGoals(),
-            "F2 determinism violation: early vs late sub should produce same homeGoals "
-            + "(F2 limitation: swap is applied at currentMinute=0 in both cases)");
-        assertEquals(earlyResult.awayGoals(), lateResult.awayGoals(),
-            "F2 determinism violation: early vs late sub should produce same awayGoals "
-            + "(F2 limitation: swap is applied at currentMinute=0 in both cases)");
+        // F2.5: the two runs MUST produce DIFFERENT results. The
+        // effectiveMinute=1 sub fires at minute 1 (88 minutes of
+        // influence), the effectiveMinute=89 sub fires at minute 89
+        // (1 minute of influence). The 88-minute delta must be
+        // measurable in the engine's goal output. If the results were
+        // identical, the F2.5 deferred-sub wire is broken: either the
+        // helper is still mutating the lineup immediately, or the
+        // engine is not applying the scheduled sub at the right
+        // minute.
+        // F2.5 note: ATT→WINGER (position-compatible, higher-attack bench).
+        assertNotEquals(earlyResult.homeGoals(), lateResult.homeGoals(),
+            "F2.5 violated: early (effectiveMinute=1) vs late (effectiveMinute=89) sub "
+            + "produced IDENTICAL homeGoals. Deferred-sub wire is broken — either the "
+            + "helper is mutating the lineup immediately, or the engine is not applying "
+            + "the scheduled sub at the right minute. early=" + earlyResult.homeGoals()
+            + ", late=" + lateResult.homeGoals());
+        assertNotEquals(earlyResult.awayGoals(), lateResult.awayGoals(),
+            "F2.5 violated: early (effectiveMinute=1) vs late (effectiveMinute=89) sub "
+            + "produced IDENTICAL awayGoals. Deferred-sub wire is broken. early="
+            + earlyResult.awayGoals() + ", late=" + lateResult.awayGoals());
     }
 
     /**
