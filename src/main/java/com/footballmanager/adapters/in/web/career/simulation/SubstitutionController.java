@@ -4,6 +4,7 @@ import com.footballmanager.adapters.in.web.career.simulation.dto.SubstitutionReq
 import com.footballmanager.adapters.in.web.career.simulation.dto.SubstitutionResultDTO;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.domain.port.in.match.SubstitutionCommandUseCase;
+import com.footballmanager.domain.port.in.match.SubstitutionResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,14 +29,26 @@ import java.util.UUID;
  *
  * <p>Endpoint: {@code POST /api/v1/match-engine/matches/{matchId}/substitutions}
  * <p>Body: {@link SubstitutionRequestDTO}
- * <p>Response: 200 OK + {@link SubstitutionResultDTO}
+ * <p>Response: 200 OK + {@link SubstitutionResultDTO} (with {@code success=true}
+ * or {@code success=false} depending on validation outcome)
  *
- * <p>Error mapping:
+ * <p>FLAG 1 UX fix: the controller now uses {@code .map()} to forward the
+ * use case's real {@link SubstitutionResult} (with
+ * {@code substitutionsRemaining} and {@code minuteApplied}) instead of the
+ * previous hardcoded {@code ok(0, 0)} placeholder. The frontend can now
+ * decrement its local counter from this value and show the correct minute
+ * in the snackbar / dialog UI.
+ *
+ * <p>Error mapping (FLAG 1 UX):
  * <ul>
- *   <li>{@link IllegalArgumentException} (player not found, etc.) → 400 BAD_REQUEST</li>
- *   <li>{@link IllegalStateException} (max subs reached, player already subbed, match
- *       finished, etc.) → 409 CONFLICT</li>
- *   <li>other errors → 500 via the global error handler</li>
+ *   <li>Request-shape errors (invalid UUID, blank playerOffId/playerOnId,
+ *       null body) → 400 BAD_REQUEST with a {@code SubstitutionResultDTO}
+ *       carrying {@code success=false} (controller-level validation,
+ *       short-circuited before the use case runs).</li>
+ *   <li>Use case validation failures (no session, player not found, max subs
+ *       reached, etc.) → 200 OK with {@code success=false} and a descriptive
+ *       {@code error} (FLAG 1 fix; was previously 409 CONFLICT).</li>
+ *   <li>Unexpected errors (NPE, DB, etc.) → 500 via the generic catch-all.</li>
  * </ul>
  */
 @Slf4j
@@ -78,24 +91,27 @@ public class SubstitutionController {
         log.info("[LIVE-MATCH-F1] Substitution request received: matchId={} userId={} off={} on={}",
             matchUuid, userId, request.playerOffId(), request.playerOnId());
 
+        // FLAG 1 UX fix: use case returns Mono<SubstitutionResult>; we forward the
+        // real substitutionsRemaining + minuteApplied via .map() instead of the
+        // hardcoded ok(0, 0) placeholder. Use case validation failures are caught
+        // internally and returned as success=false; only infrastructure errors
+        // (NPE, DB, etc.) propagate as Mono.error and are mapped to 500 below.
         return substitutionCommandUseCase.executeSubstitution(
                 userId, matchUuid,
                 /* teamId= */ null, // inferred by the use case
                 request.playerOffId(),
                 request.playerOnId(),
                 request.minute())
-            .then(Mono.fromSupplier(() -> {
-                // We don't have the engine's "substitutionsRemaining" here without an extra
-                // round-trip; the result DTO carries the engine's counter.
-                // For Phase 1 POC, the frontend can re-fetch from /match-engine/matches/{id}
-                // to get the latest state. Return success=200 with a minimal success DTO.
-                return ResponseEntity.ok(SubstitutionResultDTO.ok(0, 0));
-            }))
-            .onErrorResume(IllegalArgumentException.class, e ->
-                Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(SubstitutionResultDTO.error(e.getMessage()))))
-            .onErrorResume(IllegalStateException.class, e ->
-                Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(SubstitutionResultDTO.error(e.getMessage()))));
+            .map(result -> ResponseEntity.ok(new SubstitutionResultDTO(
+                result.success(),
+                result.minuteApplied(),
+                result.substitutionsRemaining(),
+                result.error())))
+            .onErrorResume(e -> {
+                log.error("[LIVE-MATCH-F1] Unexpected error during substitution for matchId={}",
+                    matchUuid, e);
+                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(SubstitutionResultDTO.error("Internal error: " + e.getMessage())));
+            });
     }
 }

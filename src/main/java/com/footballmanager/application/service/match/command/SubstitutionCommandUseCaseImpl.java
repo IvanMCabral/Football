@@ -11,6 +11,7 @@ import com.footballmanager.application.service.simulation.v24.V24TeamMatchState;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.port.in.match.SubstitutionCommandUseCase;
+import com.footballmanager.domain.port.in.match.SubstitutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,23 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@code Map<UUID matchId, V24SubstitutionEngine>} for the duration of the
  * match so each match has its own counter. The map is cleared when the match
  * finishes (see {@link #onMatchFinished(UUID)}).
+ *
+ * <p><b>FLAG 1 UX fix:</b> this method NEVER throws
+ * {@link IllegalArgumentException}/{@link IllegalStateException} for business
+ * validation. Those exceptions (raised by the engine for missing players,
+ * max subs reached, already-subbed, etc.) are caught and translated into a
+ * {@link SubstitutionResult#failure(String)} so the controller can forward a
+ * uniform 200 OK + {@code success=false} body to the frontend. Only
+ * genuinely unexpected runtime errors (NPE, DB, etc.) propagate as
+ * {@code Mono.error} for the global handler to surface as 500.
+ *
+ * <p>Success result fields are populated from authoritative sources:
+ * <ul>
+ *   <li>{@code substitutionsRemaining} from
+ *       {@code engine.substitutionsRemaining(resolvedTeamId)} (post-substitution).</li>
+ *   <li>{@code minuteApplied} from {@code liveSession.currentMinute()}, or the
+ *       caller-supplied {@code requestedMinute} when non-null.</li>
+ * </ul>
  */
 @Service
 public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCase {
@@ -53,13 +71,38 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     }
 
     @Override
-    public Mono<Void> executeSubstitution(UUID userId,
-                                         UUID matchId,
-                                         String teamId,
-                                         String playerOffId,
-                                         String playerOnId,
-                                         Integer requestedMinute) {
-        return Mono.fromCallable(() -> {
+    public Mono<SubstitutionResult> executeSubstitution(UUID userId,
+                                                        UUID matchId,
+                                                        String teamId,
+                                                        String playerOffId,
+                                                        String playerOnId,
+                                                        Integer requestedMinute) {
+        return Mono.fromCallable(() -> executeSubstitutionInternal(
+                userId, matchId, teamId, playerOffId, playerOnId, requestedMinute))
+            .doOnSuccess(result -> {
+                if (result.success()) {
+                    log.debug("[LIVE-MATCH-F1] Substitution persisted, {} subs remaining, minute={}",
+                        result.substitutionsRemaining(), result.minuteApplied());
+                } else {
+                    log.warn("[LIVE-MATCH-F1] Substitution validation failed for matchId={}: {}",
+                        matchId, result.error());
+                }
+            })
+            .doOnError(e -> log.error("[LIVE-MATCH-F1] Unexpected error during substitution for matchId={}",
+                matchId, e));
+    }
+
+    /**
+     * Synchronous core logic. Translates business-rule exceptions into
+     * {@link SubstitutionResult#failure(String)} per FLAG 1 fix.
+     */
+    private SubstitutionResult executeSubstitutionInternal(UUID userId,
+                                                            UUID matchId,
+                                                            String teamId,
+                                                            String playerOffId,
+                                                            String playerOnId,
+                                                            Integer requestedMinute) {
+        try {
             // 1. Resolve the live session for this user/match.
             MatchSession session = matchSessionRegistry.getSession(userId, matchId)
                 .orElseThrow(() -> new IllegalStateException(
@@ -98,15 +141,17 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // 5. Inject the event into the live session's accumulatedEvents.
             liveSession.recordManualSubstitution(event);
 
+            int remaining = engine.substitutionsRemaining(resolvedTeamId);
             log.info("[LIVE-MATCH-F1] Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",
-                matchId, resolvedTeamId, playerOffId, playerOnId, minute,
-                engine.substitutionsRemaining(resolvedTeamId));
+                matchId, resolvedTeamId, playerOffId, playerOnId, minute, remaining);
 
-            return engine.substitutionsRemaining(resolvedTeamId);
-        })
-            .doOnSuccess(remaining -> log.debug("[LIVE-MATCH-F1] Substitution persisted, {} subs remaining", remaining))
-            .doOnError(e -> log.warn("[LIVE-MATCH-F1] Substitution failed for matchId={}: {}", matchId, e.getMessage()))
-            .then();
+            return SubstitutionResult.ok(minute, remaining);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            // FLAG 1 UX fix: validation failures are NOT thrown to the controller;
+            // they're returned as a failure result so the frontend gets a uniform
+            // snackbar shape regardless of which validator rejected the request.
+            return SubstitutionResult.failure(e.getMessage());
+        }
     }
 
     /**
