@@ -119,12 +119,21 @@ TeamOverallCalculator integration en V23 engine path — **OBSOLETO**. Los 4 sub
 ### ❌ REMOVIDO — V23 Phase 6C (TeamStyle user-configurable)
 "TeamStyle user-configurable" — **REMOVIDO de la cola**. Phase 6A y 6B (enum + simulación experimental) están mergeados desde V23. **El aspecto "user-configurable" (UI + persistencia + API) nunca fue implementado formalmente** — no hay plan V23 que lo cubra, y `V23_SIMULATION_ENGINE_STATUS.md` NO lista Phase 6C en los completados. Los planes V23 (`V23_PHASE6_TACTICS_STYLE_MODIFIERS_PLAN.md`, `V23_PHASE6B_TACTICAL_STYLE_INTEGRATION_PLAN.md`) solo cubren 6A y 6B; el "user-configurable" no aparece. Si en el futuro se quiere, debería ser un **ticket V24-side separado** (agregar `teamStyle` field a `SessionTeam` con backward-compat Redis JSON, endpoint, UI dropdown, integración con `V24MatchContextFactory`). El enum `TeamStyle` actual se usa internamente en V24 pero sin user-config.
 
+### ❌ OBSOLETO — P1b
+Career mutations edge cases (~10% restante) — **OBSOLETO**. El commit `5a92227` (mergeado fast-forward a master el 2026-06-16, tag local `P1b` pusheado a origin el 2026-06-17) ya cerró el ticket: 58 tests nuevos en 5 archivos (3 new + 2 modified), +600 insertions, 0 deletions, 0 cambios en `src/main/`. Archivos:
+- `LiveRoundMutationTrackingTest.java` (NEW) — 5 tests: constructor, sets vacíos, accepts adds, independence, concurrent adds.
+- `V24CareerMutationPolicyTest.java` (NEW) — 22 tests: master gate, 4 derived getters × 4 combinaciones (TT/TF/FT/FF), raw getters, cross-flag independence, all-true, all-false, toString.
+- `V24CareerMutationResultTest.java` (NEW) — 19 tests: factories, defensive copy, null safety, partial logic, getters, toString.
+- `V24FormMutationApplierTest.java` (MODIFIED, +10) — B1 (4 tests de clamp en MAX=99 / MIN=1) + B2 (6 tests de rating discretization boundaries 8.0/7.0/6.5/5.5/5.0).
+- `V24DisciplineMutationApplierTest.java` (MODIFIED, +2) — B3 (yellowCards null + 1 yellow = 1, no threshold) + B4 (yellowCards=10 + 1 yellow = 11 → 6, threshold fires).
+
+Verificaciones: `mvn test focused scope v24` = 103/103 verde; `mvn test` full = 991 tests, 0 fail, 62 errors pre-existentes de infra (Redis no corriendo, no regresión). MANAGER review 🟢 GO. SENIOR report final: `reporte-senior-p1b-final.md`.
+
 ### Cola priorizada
 
 | # | Tag | Descripción | Severidad |
 |---|---|---|---|
 | 1 | P1a | Match detail UI polish (~15% restante) | 🟡 media |
-| 3 | P1b | Career mutations edge cases (~10% restante) | 🟡 media |
 | 6 | V24D7+2 | E2E coverage 36% → 80% | 🟡 media |
 | 9 | JSON 401 | Centralizar body hardcoded en SecurityConfig + GlobalExceptionHandler | 🟢 baja |
 
@@ -140,7 +149,7 @@ TeamOverallCalculator integration en V23 engine path — **OBSOLETO**. Los 4 sub
 | Área | % | Comentario |
 |---|---|---|
 | V24 engine | 100% | U4 pusheado, λ empírico en target |
-| Career mutations | 90% | Completo MVP, falta edge cases |
+| Career mutations | 100% | P1b cerrado (commit `5a92227`, +58 tests, 0 production changes) |
 | Stats | 90% | Completo MVP |
 | Lineups backend | 95% | U1+U2 cierran blockers |
 | Lineups frontend | 99% | U3+U3.5+T2+V24D11 pusheados |
@@ -155,7 +164,7 @@ TeamOverallCalculator integration en V23 engine path — **OBSOLETO**. Los 4 sub
 | Security audit | 100% | ~20 commits: games auth + IDOR + ControllerHelper + JSON consistente + WWW-Authenticate + audit 8 permitAll + .env securizado + credenciales rotadas |
 | GameEntity deserialization | 100% | V24D12.2 — smoke GO |
 | /career/events performance | 100% | V24D13-1 — SSE heartbeat 15s |
-| **MVP jugable estimado** | **99.9%** | Todos los bugs P0/P1 cerrados. Pendientes: UX-6, P1a/P1b, JSON 401, V24D7+2, V23 features |
+| **MVP jugable estimado** | **99.9%** | Todos los bugs P0/P1 cerrados. Pendientes: UX-6, P1a, JSON 401, V24D7+2, V23 features |
 
 ---
 
