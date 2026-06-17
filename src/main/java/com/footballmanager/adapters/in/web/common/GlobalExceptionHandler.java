@@ -75,11 +75,7 @@ public class GlobalExceptionHandler {
      * dedicated 'please log in again' banner on UNAUTHORIZED codes.
      */
     @ExceptionHandler(UnauthorizedException.class)
-    public Mono<ResponseEntity<Map<String, Object>>> handleUnauthorized(UnauthorizedException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", "UNAUTHORIZED");
-        body.put("message", ex.getMessage());
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
+    public Mono<ResponseEntity<ErrorResponseBody>> handleUnauthorized(UnauthorizedException ex) {
         return Mono.just(
             ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 // V24D12.1.2: add WWW-Authenticate: Bearer header (RFC 7235)
@@ -87,7 +83,7 @@ public class GlobalExceptionHandler {
                 // SecurityConfig entry point (V24D12.1.1).
                 .header("WWW-Authenticate", "Bearer")
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                .body(body)
+                .body(ErrorResponseBody.unauthorized(ex.getMessage()))
         );
     }
 }
