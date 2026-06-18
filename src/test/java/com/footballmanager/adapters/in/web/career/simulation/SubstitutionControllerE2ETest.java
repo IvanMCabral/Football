@@ -247,7 +247,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             userId, matchId, homeTeamUuid, awayTeamUuid, treatmentSession);
 
         String body = """
-            {"playerOffId":"home-starter-10","playerOnId":"home-bench-4","minute":null}
+            {"playerOffId":"home-f2-starter-1","playerOnId":"home-f2-bench-1","minute":null}
             """;
 
         // Act: POST substitution.
@@ -319,8 +319,14 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         // Request with minute=0, which is BEFORE currentMinute=1.
         // This is the protocol failure: the engine would never apply
         // a sub for a past minute.
+        // V24D13-2 (F4.3): homeTeamId="home-f2-5-past" so the generated
+        // player IDs are "home-f2-5-past-starter-0" / "-bench-0", not
+        // "home-starter-0" / "home-bench-0". The substitution use case
+        // checks requestedMinute < currentMinute BEFORE validating the
+        // player IDs, so this test would still pass even with mismatched
+        // IDs, but aligning the IDs makes the fixture consistent.
         String body = """
-            {"playerOffId":"home-starter-0","playerOnId":"home-bench-0","minute":0}
+            {"playerOffId":"home-f2-5-past-starter-0","playerOnId":"home-f2-5-past-bench-0","minute":0}
             """;
 
         webTestClient.mutateWith(mockUser(userId.toString()))
@@ -367,8 +373,10 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         // Request with minute=1 (== currentMinute). Must succeed.
+        // V24D13-2 (F4.3): homeTeamId="home-f2-5-curr" so the generated
+        // player IDs are "home-f2-5-curr-starter-0" / "-bench-0".
         String body = """
-            {"playerOffId":"home-starter-0","playerOnId":"home-bench-0","minute":1}
+            {"playerOffId":"home-f2-5-curr-starter-0","playerOnId":"home-f2-5-curr-bench-0","minute":1}
             """;
 
         webTestClient.mutateWith(mockUser(userId.toString()))

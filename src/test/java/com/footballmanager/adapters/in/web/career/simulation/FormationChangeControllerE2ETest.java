@@ -183,7 +183,15 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         // 4-4-2 formation using the 11 home starters
-        String body = build442Body(homeTeamId + "-p");
+        // V24D13-2 (F4.3): buildHappyPathContext() generates player IDs as
+        // "{homeTeamId}{0..10}" (e.g. "home0", "home1" ...) via
+        // makePlayers(prefix, count) where prefix = homeTeamId. The body
+        // must use the same prefix to match what the controller sees in
+        // the live session's roster. Previously this line used
+        // homeTeamId + "-p" (yielding "home-p0" .. "home-p10") which
+        // mismatched the generated IDs and made the controller respond
+        // 400 "formation must contain exactly 1 GK, got 0".
+        String body = build442Body(homeTeamId);
 
         // Act + Assert
         webTestClient.mutateWith(mockUser(userId.toString()))
