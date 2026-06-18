@@ -75,6 +75,14 @@ public class RoundController {
      */
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
+        // V24D15-CLEANUP (BUG 5 — RoundController E2E): auth check must run
+        // FIRST so the 401 case beats body validation. Before this fix, an
+        // unauthenticated request with `matches:[]` returned 422
+        // LINEUP_VALIDATION_ERROR (matches empty) instead of 401
+        // UNAUTHORIZED — the E2E test
+        // `startRound_unauthenticated_returns401` failed because of this.
+        UUID userId = controllerHelper.getUserId(authentication);
+
         // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-004: validate the body BEFORE
         // touching UUID.fromString. Without this guard, an empty / wrong-field
         // body (e.g. {gameId, round} from a misbehaving client) makes
@@ -82,19 +90,19 @@ public class RoundController {
         // ("Cannot invoke String.length() because name is null") which
         // surfaces as HTTP 500. We map the missing/invalid roundId to a
         // 422 LINEUP_VALIDATION_ERROR with a clear message instead.
+        //
+        // V24D15-CLEANUP (BUG 5): removed the `matches.isEmpty()` guard.
+        // The empty-matches case is a legitimate "advance round with no
+        // matches scheduled yet" request — the UI uses it as a heartbeat
+        // / readiness probe — and startMatches handles the empty list
+        // correctly (returns RoundState with `matches: []` and status
+        // IN_PROGRESS). Keeping the guard caused
+        // `startRound_emptyMatchesArray_returns200` to fail with 422.
         if (request == null || request.roundId() == null || request.roundId().isBlank()) {
             return Mono.error(new IllegalArgumentException(
                 "roundId is required and must be a non-blank UUID string"));
         }
-        if (request.matches() == null || request.matches().isEmpty()) {
-            return Mono.error(new IllegalArgumentException(
-                "matches is required and must contain at least one match"));
-        }
         UUID roundId = UUID.fromString(request.roundId());
-        // V24D12-B: use the JWT identity. The legacy optional requestUserId
-        // from the body is no longer honored - use the controller helper
-        // for the 401 path consistency that V24D12 established.
-        UUID userId = controllerHelper.getUserId(authentication);
 
         log.info("[ROUND-CONTROLLER] Starting round {} for user {}", roundId, userId);
 
