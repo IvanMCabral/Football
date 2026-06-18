@@ -178,13 +178,21 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // (engine.manualSubstitute) is still needed because it produces
             // the V24MatchEvent and enforces the per-team substitution limit
             // (5 subs / team), but its mutations to the local V24TeamMatchState
-            // are LOST when the method returns. mutateContext + withManualSubstitution
-            // persist the swap in the live session's effective context, and
-            // the next replay (triggered by mutateContext itself, from the
-            // current minute) rebuilds the V24TeamMatchState from the
-            // swapped SessionPlayer lists.
-            liveSession.mutateContext(ctx -> ctx.withManualSubstitution(
-                resolvedTeamId, playerOffId, playerOnId, minute));
+            // are LOST when the method returns.
+            //
+            // LIVE-MATCH-F5.2 BUG-011: pass the event with REAL player names
+            // (playerOff.name() / playerOn.name() populated by
+            // V24SubstitutionEngine.manualSubstitute) to
+            // V24LiveSession.recordManualSubstitution() so the SSE stream
+            // surfaces the actual names ("Vinícius Jr.") instead of the
+            // generic "Player 7 RMA" placeholder. The previous code called
+            // mutateContext() directly, which dropped the event entirely
+            // (the engine replay from minute N+1 replaced engineTimeline
+            // and the new engine run did not know about the manual sub).
+            // recordManualSubstitution does the mutateContext internally
+            // (preserving the F2 replay contract) AND appends the event to
+            // manualEvents, which is preserved across replays.
+            liveSession.recordManualSubstitution(event);
 
             int remaining = engine.substitutionsRemaining(resolvedTeamId);
             log.info("[LIVE-MATCH-F2-F2] Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",
