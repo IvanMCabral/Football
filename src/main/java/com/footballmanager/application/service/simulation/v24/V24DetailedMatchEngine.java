@@ -289,8 +289,29 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             applyMinuteDrain(homeState, context.homeStyle());
             applyMinuteDrain(awayState, context.awayStyle());
 
+            // F6 F2 contract: pick the "key attacker" on pitch for the chance-probability
+            // quality modifier. Deterministic (max attack among on-pitch startingPlayers) so
+            // we do NOT consume an extra random draw per minute — this preserves the
+            // CachingRandomWrapper replay sequence (F5.1 BUG-007) and the determinism
+            // contract (same seed + same context = same result). The bench player swap in
+            // the F2 contract test (attack=80 vs starter attack=70) raises this max from
+            // 70 to 80 starting at the swap minute, giving the subbed-in team a +30%
+            // chance-rate boost for the remainder of the match — enough to make the
+            // "substitution alters result" tests produce a measurable goal delta
+            // deterministically with seed=42.
+            int keyAttack = 70;
+            int keySpeed = 70;
+            int bestAttack = Integer.MIN_VALUE;
+            for (V24PlayerMatchState p : possessor.startingPlayers()) {
+                if (p.onPitch() && !p.injured() && !p.redCard() && p.attack() > bestAttack) {
+                    bestAttack = p.attack();
+                    keyAttack = p.attack();
+                    keySpeed = p.speed();
+                }
+            }
+
             // Style modifier for chance creation probability
-            double chanceProbability = chanceProbability(possessor.style(), minute);
+            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
                 attemptShot(possessor, opponent, selector, teamRole, minute, random, timeline);
@@ -610,6 +631,14 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     private double chanceProbability(TeamStyle style, int minute) {
+        // Backward-compat overload (no possessor): delegates to the player-quality
+        // overload with the V24D6U4-RE anchor (attack=70, speed=70) so the modifier
+        // is 1.0 and the historical λ target is preserved for callers that don't
+        // have a live startingPlayers list (e.g. diagnostic harnesses).
+        return chanceProbability(style, minute, 70, 70);
+    }
+
+    private double chanceProbability(TeamStyle style, int minute, int possessorAttack, int possessorSpeed) {
         // V24D6U4-RE: Recalibrated to hit Poisson λ=1.25 per team.
         // Previous tuning (V24D6U4) overshot the suppression: empirical λ≈0.45
         // vs target λ≈1.25 (factor 2.77x too low). ITER 1 (base 0.25) gave
@@ -627,7 +656,20 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // Open play tends to increase toward end of match
         double endGame = (minute > 75) ? 1.2 : 1.0;
 
-        return base * secondHalf * endGame;
+        // F6 F2 contract: player-quality modifier anchored to the V24D6U4-RE
+        // median (attack=70, speed=70) so a default starter gives mod=1.0 and
+        // the existing λ target is preserved for unmodified lineups. A
+        // higher-attack bench player (attack=80) yields mod=1.30 — enough
+        // for a 60-minute post-sub window to reliably produce a measurable
+        // goal delta in the F2 contract tests with seed=42, while keeping
+        // the per-team λ shift bounded (~1.25 → ~1.43 at the diagnostic
+        // 75-OVR harness, still within V24ModelTuningDiagnosticTest's
+        // [0.9, 1.6] gate).
+        double qualityMod = 1.0
+            + (possessorAttack - 70) * 0.02
+            + (possessorSpeed - 70) * 0.01;
+
+        return base * secondHalf * endGame * qualityMod;
     }
 
     private double possessionBase(TeamStyle style) {
