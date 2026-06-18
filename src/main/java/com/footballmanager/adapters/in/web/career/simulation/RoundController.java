@@ -270,19 +270,25 @@ public class RoundController {
             // applied. The SubstitutionCommandUseCaseImpl hook will append
             // subs to this state as the manager makes changes. Cleaned up
             // in handleMatchFinished.
-            try {
-                String careerId = career.getData().getCareerId();
-                BaselineState baseline = BaselineState.empty(careerId, seed, context);
-                baselineStoragePort.save(careerId, baseline);
-                log.info("[F6-MATCH-COMPARE] BaselineState saved for matchId={}, careerId={}, seed={}",
-                        matchId, careerId, seed);
-            } catch (Exception e) {
-                // Baseline persistence failure must NOT block the match
-                // start — the live path can still run, just the compare
-                // endpoint will 404 for this match.
-                log.warn("[F6-MATCH-COMPARE] Failed to save baseline for matchId={}: {}",
-                        matchId, e.getMessage());
-            }
+            //
+            // V24D15-CLEANUP (BUG_COMPARE_404): storage port now returns
+            // Mono<Void>. We subscribe on a bounded-elastic scheduler and
+            // log a warn on failure — baseline persistence MUST NOT block
+            // the live match start (the compare endpoint will simply 404
+            // for that match if Redis is down).
+            String careerId = career.getData().getCareerId();
+            BaselineState baseline = BaselineState.empty(careerId, seed, context);
+            baselineStoragePort.save(careerId, baseline)
+                    .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                    .doOnSuccess(v -> log.info(
+                            "[F6-MATCH-COMPARE] BaselineState saved for matchId={}, careerId={}, seed={}",
+                            matchId, careerId, seed))
+                    .onErrorResume(e -> {
+                        log.warn("[F6-MATCH-COMPARE] Failed to save baseline for matchId={}: {}",
+                                matchId, e.getMessage());
+                        return reactor.core.publisher.Mono.empty();
+                    })
+                    .subscribe();
 
             return session;
         } catch (Exception e) {
@@ -336,16 +342,23 @@ public class RoundController {
             // match (good — there's no "after the fact" state to compare
             // against). The TTL 7d would also expire it eventually, but
             // explicit cleanup is cleaner.
-            try {
-                String matchId = result.snapshot().matchId().toString();
-                String careerId = career.getData().getCareerId();
-                baselineStoragePort.delete(careerId, matchId);
-                log.info("[F6-MATCH-COMPARE] BaselineState deleted for matchId={}, careerId={}",
-                        matchId, careerId);
-            } catch (Exception e) {
-                log.warn("[F6-MATCH-COMPARE] Failed to delete baseline on match finish: {}",
-                        e.getMessage());
-            }
+            //
+            // V24D15-CLEANUP (BUG_COMPARE_404): storage port delete is now
+            // Mono<Void>. Failure is non-fatal (TTL will reap it) but we
+            // log warn so a sustained Redis outage is visible.
+            String matchId = result.snapshot().matchId().toString();
+            String careerId = career.getData().getCareerId();
+            baselineStoragePort.delete(careerId, matchId)
+                    .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                    .doOnSuccess(v -> log.info(
+                            "[F6-MATCH-COMPARE] BaselineState deleted for matchId={}, careerId={}",
+                            matchId, careerId))
+                    .onErrorResume(e -> {
+                        log.warn("[F6-MATCH-COMPARE] Failed to delete baseline on match finish: {}",
+                                e.getMessage());
+                        return reactor.core.publisher.Mono.empty();
+                    })
+                    .subscribe();
         } else {
             events = new java.util.ArrayList<>(result.snapshot().events());
         }

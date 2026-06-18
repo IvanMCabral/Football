@@ -206,32 +206,41 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // compare endpoint can replay the match with the same sub
             // sequence. We do this AFTER liveSession.recordManualSubstitution
             // so the live state is updated first.
-            try {
-                String careerId = session.getCurrentState() != null
-                        ? session.getCurrentState().careerId() : null;
-                if (careerId != null && !careerId.isBlank()) {
-                    Optional<BaselineState> optBaseline =
-                            baselineStoragePort.findByMatchId(careerId, matchId.toString());
-                    if (optBaseline.isPresent()) {
-                        BaselineState updated = optBaseline.get().withAppendedSub(
-                                new AppliedSubstitution(resolvedTeamId, playerOffId, playerOnId, minute));
-                        baselineStoragePort.save(careerId, updated);
-                        log.info("[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
-                                matchId, minute, updated.subs().size());
-                    } else {
-                        // No baseline exists (legacy path, or V24 path
-                        // failed to capture it at match start). Not an
-                        // error — the live path still works.
-                        log.debug("[F6-MATCH-COMPARE] No BaselineState found for matchId={}, sub not appended",
-                                matchId);
-                    }
+            //
+            // V24D15-CLEANUP (BUG_COMPARE_404): baselineStoragePort.save
+            // now returns Mono<Void>. We subscribe on a bounded-elastic
+            // scheduler and surface failures as a warn log so the live
+            // sub flow is never blocked by Redis hiccups.
+            String careerId = session.getCurrentState() != null
+                    ? session.getCurrentState().careerId() : null;
+            if (careerId != null && !careerId.isBlank()) {
+                Optional<BaselineState> optBaseline =
+                        baselineStoragePort.findByMatchId(careerId, matchId.toString());
+                if (optBaseline.isPresent()) {
+                    BaselineState updated = optBaseline.get().withAppendedSub(
+                            new AppliedSubstitution(resolvedTeamId, playerOffId, playerOnId, minute));
+                    baselineStoragePort.save(careerId, updated)
+                            .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                            .doOnSuccess(v -> log.info(
+                                    "[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
+                                    matchId, minute, updated.subs().size()))
+                            .onErrorResume(baselineEx -> {
+                                // Baseline update failure must NOT fail the
+                                // substitution — the live path is the source
+                                // of truth, baseline is a best-effort compare
+                                // cache.
+                                log.warn("[F6-MATCH-COMPARE] Failed to update baseline for matchId={}: {}",
+                                        matchId, baselineEx.getMessage());
+                                return reactor.core.publisher.Mono.empty();
+                            })
+                            .subscribe();
+                } else {
+                    // No baseline exists (legacy path, or V24 path
+                    // failed to capture it at match start). Not an
+                    // error — the live path still works.
+                    log.debug("[F6-MATCH-COMPARE] No BaselineState found for matchId={}, sub not appended",
+                            matchId);
                 }
-            } catch (Exception baselineEx) {
-                // Baseline update failure must NOT fail the substitution —
-                // the live path is the source of truth, baseline is a
-                // best-effort compare cache.
-                log.warn("[F6-MATCH-COMPARE] Failed to update baseline for matchId={}: {}",
-                        matchId, baselineEx.getMessage());
             }
 
             int remaining = engine.substitutionsRemaining(resolvedTeamId);
