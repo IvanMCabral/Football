@@ -6,8 +6,11 @@ import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.career.SeasonAdvancementService;
+import com.footballmanager.application.service.domain.GameService;
+import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.port.in.career.AdvanceRoundUseCase;
 import com.footballmanager.domain.port.in.career.ContinueSeasonUseCase;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,6 +27,7 @@ import java.util.UUID;
  * Endpoints que modifican estado: POST, DELETE
  * Ruta base: /api/v1/career
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/career")
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -37,16 +41,23 @@ public class CareerCommandController {
     // engine itself is `synchronized` + idempotent (RoundEngine.pauseAll
     // / resumeAll early-return if already in the requested state).
     private final RoundEngineRegistry roundEngineRegistry;
+    // V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): wire GameService so the
+    // career-start flow also persists a Game entity sharing the career's
+    // UUID. Without this, the dashboard's /games/{careerId} navigation
+    // always 404s (Game entity never created).
+    private final GameService gameService;
 
     public CareerCommandController(
             ControllerHelper controllerHelper,
             CareerSessionService sessionService,
             SeasonAdvancementService seasonAdvancementService,
-            RoundEngineRegistry roundEngineRegistry) {
+            RoundEngineRegistry roundEngineRegistry,
+            GameService gameService) {
         this.controllerHelper = controllerHelper;
         this.sessionService = sessionService;
         this.seasonAdvancementService = seasonAdvancementService;
         this.roundEngineRegistry = roundEngineRegistry;
+        this.gameService = gameService;
     }
 
     /**
@@ -65,6 +76,10 @@ public class CareerCommandController {
                 ? request.teamsPerDivision()
                 : 5;
 
+        final String leagueId = request.leagueId();
+        final String difficulty = request.difficulty();
+        final String gameSpeed = request.gameSpeed();
+
         return sessionService.startNewCareer(
                         userId,
                         request.leagueId(),
@@ -72,7 +87,21 @@ public class CareerCommandController {
                         request.difficulty(),
                         request.gameSpeed(),
                         effectiveTeamsPerDivision
-                ).then();
+                )
+                // V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): after the
+                // career is initialized, also persist a Game entity that
+                // shares the career's UUID. Best-effort — if Redis fails,
+                // we log warn and return success anyway so the live match
+                // flow is never blocked.
+                .flatMap(career -> gameService.createGameFromCareer(
+                                career, leagueId, difficulty, gameSpeed, effectiveTeamsPerDivision)
+                        .doOnError(err -> log.warn(
+                                "[V24D15-CLEANUP] Failed to persist Game entity "
+                                        + "after career start for userId={}: {}",
+                                userId, err.getMessage()))
+                        .onErrorResume(err -> Mono.empty())
+                        .then(Mono.just(career)))
+                .then();
     }
 
     /**
@@ -83,7 +112,39 @@ public class CareerCommandController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> resetCareer(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        return sessionService.deleteCareer(userId).then();
+        return sessionService.deleteCareer(userId)
+                // V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): also delete the
+                // Game entity that mirrors the career. Best-effort — we
+                // already cleared the CareerSave; deleting the Game is
+                // housekeeping so the dashboard does not show a phantom
+                // game pointing to a deleted career.
+                .then(Mono.defer(() -> {
+                    // We don't know the careerId post-delete (it may have
+                    // been wiped from the cache). For simplicity, look up
+                    // the Game entity by userId only (the Game has the
+                    // same UUID as the career that was just deleted — so
+                    // findByUserId should return at most one entry).
+                    return gameService.getAllGames(userId)
+                            .collectList()
+                            .flatMap(games -> {
+                                if (games.isEmpty()) {
+                                    return Mono.empty();
+                                }
+                                // Delete each Game entity (typically one).
+                                return reactor.core.publisher.Flux.fromIterable(games)
+                                        .flatMap(game -> gameService.deleteGame(
+                                                userId,
+                                                com.footballmanager.domain.model.valueobject.GameId.of(
+                                                        game.getId().getValue())))
+                                        .then();
+                            })
+                            .doOnError(err -> log.warn(
+                                    "[V24D15-CLEANUP] Failed to delete Game entity "
+                                            + "after career reset for userId={}: {}",
+                                    userId, err.getMessage()))
+                            .onErrorResume(err -> Mono.empty());
+                }))
+                .then();
     }
 
     /**
