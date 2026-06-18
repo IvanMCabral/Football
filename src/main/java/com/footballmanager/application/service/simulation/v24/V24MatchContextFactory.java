@@ -205,6 +205,21 @@ public final class V24MatchContextFactory {
      * Try CareerSave.teamStarting11 (LineupController writes Map.Entry<teamId, List<playerId&gt;).
      * Returns null if not found or too few entries — signals fallback.
      * Throws if entries exist but contain null/blank/unknown playerId.
+     *
+     * <p>LIVE-MATCH-F5.2 BUG-003 defensive fix: if the teamStarting11 has
+     * at least one stale player ID (player not found in CareerSave.playerManager
+     * anymore), we treat the teamStarting11 as untrustworthy and return null
+     * so the caller falls back to {@link #deriveStartingXIfromSquad}. This
+     * scenario occurs when the orchestrator's per-round mutations
+     * (suspensions, injuries, sales) remove a player from the playerManager
+     * between rounds, leaving teamStarting11 with dangling references. The
+     * old behaviour threw an IAE that bubbled up to a 422 LINEUP_VALIDATION_ERROR,
+     * blocking Fecha 2+. The new behaviour recovers gracefully by using the
+     * squad (the players currently in the team) as the source of truth.
+     *
+     * <p>Behaviour is unchanged for the happy path (teamStarting11 has all
+     * valid IDs) and for fully missing teamStarting11 (returns null as
+     * before, caller falls back to squad derivation).
      */
     private List<SessionPlayer> resolveFromStarting11OrNull(
             CareerSave career, String teamId, String teamLabel) {
@@ -228,17 +243,46 @@ public final class V24MatchContextFactory {
         }
 
         List<SessionPlayer> resolved = new ArrayList<>();
+        int staleCount = 0;
         for (String pid : ids) {
             if (pid == null || pid.isBlank()) {
+                // Null/blank entries in teamStarting11 are clearly invalid
+                // user data; preserve the original IAE so the user can fix
+                // their lineup explicitly.
                 throw new IllegalArgumentException(
                         teamLabel + " starting XI contains null/blank playerId for teamId: " + teamId);
             }
             SessionPlayer p = career.getSessionPlayer(pid);
             if (p == null) {
-                throw new IllegalArgumentException(
-                        teamLabel + " starting XI player not found: " + pid);
+                // BUG-003 defensive fix: stale reference — the player was
+                // removed from the playerManager between rounds. Count it
+                // and continue; if ALL entries are stale we fall back to
+                // the squad (via returning null), otherwise we accept the
+                // partial lineup.
+                staleCount++;
+                continue;
             }
             resolved.add(p);
+        }
+        if (staleCount > 0) {
+            org.slf4j.LoggerFactory.getLogger(V24MatchContextFactory.class).warn(
+                "[BUG-003] teamStarting11 for teamId={} has {} stale playerId(s) "
+                + "(player removed from playerManager between rounds). "
+                + "Resolved {}/{} — falling back to squad derivation to ensure "
+                + "a complete 11-player starting XI.",
+                teamId, staleCount, resolved.size(), ids.size());
+            // BUG-003 fix: ANY stale reference means the teamStarting11
+            // is partially invalid; fall back to deriveStartingXIfromSquad
+            // to ensure a complete 11-player starting XI. Partial lineups
+            // (e.g. 10 valid + 1 stale) would short the team by 1 player,
+            // which the engine would then complain about at runtime.
+            return null;
+        }
+        if (resolved.size() < min) {
+            // The teamStarting11 had too few entries (already validated
+            // above for > min, so this means it's between 0 and min). Fall
+            // back to the squad so the match can still start.
+            return null;
         }
         return resolved;
     }
