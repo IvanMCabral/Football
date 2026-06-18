@@ -3,6 +3,9 @@ package com.footballmanager.application.service.match.command;
 import com.footballmanager.application.exception.MinuteInPastException;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
+import com.footballmanager.application.service.simulation.v24.AppliedSubstitution;
+import com.footballmanager.application.service.simulation.v24.BaselineState;
+import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
@@ -21,6 +24,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,10 +69,14 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     private static final Logger log = LoggerFactory.getLogger(SubstitutionCommandUseCaseImpl.class);
 
     private final MatchSessionRegistry matchSessionRegistry;
+    private final BaselineStateStoragePort baselineStoragePort;
     private final Map<UUID, V24SubstitutionEngine> enginesByMatchId = new ConcurrentHashMap<>();
 
-    public SubstitutionCommandUseCaseImpl(MatchSessionRegistry matchSessionRegistry) {
+    public SubstitutionCommandUseCaseImpl(
+            MatchSessionRegistry matchSessionRegistry,
+            BaselineStateStoragePort baselineStoragePort) {
         this.matchSessionRegistry = matchSessionRegistry;
+        this.baselineStoragePort = baselineStoragePort;
     }
 
     @Override
@@ -193,6 +201,38 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // (preserving the F2 replay contract) AND appends the event to
             // manualEvents, which is preserved across replays.
             liveSession.recordManualSubstitution(event);
+
+            // F6 Sprint 2: append this sub to the BaselineState so the
+            // compare endpoint can replay the match with the same sub
+            // sequence. We do this AFTER liveSession.recordManualSubstitution
+            // so the live state is updated first.
+            try {
+                String careerId = session.getCurrentState() != null
+                        ? session.getCurrentState().careerId() : null;
+                if (careerId != null && !careerId.isBlank()) {
+                    Optional<BaselineState> optBaseline =
+                            baselineStoragePort.findByMatchId(careerId, matchId.toString());
+                    if (optBaseline.isPresent()) {
+                        BaselineState updated = optBaseline.get().withAppendedSub(
+                                new AppliedSubstitution(resolvedTeamId, playerOffId, playerOnId, minute));
+                        baselineStoragePort.save(careerId, updated);
+                        log.info("[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
+                                matchId, minute, updated.subs().size());
+                    } else {
+                        // No baseline exists (legacy path, or V24 path
+                        // failed to capture it at match start). Not an
+                        // error — the live path still works.
+                        log.debug("[F6-MATCH-COMPARE] No BaselineState found for matchId={}, sub not appended",
+                                matchId);
+                    }
+                }
+            } catch (Exception baselineEx) {
+                // Baseline update failure must NOT fail the substitution —
+                // the live path is the source of truth, baseline is a
+                // best-effort compare cache.
+                log.warn("[F6-MATCH-COMPARE] Failed to update baseline for matchId={}: {}",
+                        matchId, baselineEx.getMessage());
+            }
 
             int remaining = engine.substitutionsRemaining(resolvedTeamId);
             log.info("[LIVE-MATCH-F2-F2] Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",

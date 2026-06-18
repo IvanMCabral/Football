@@ -11,6 +11,8 @@ import com.footballmanager.application.service.match.MatchManagementService;
 import com.footballmanager.application.service.simulation.LeagueSimulator;
 import com.footballmanager.application.service.simulation.MatchResultProcessor;
 import com.footballmanager.application.service.simulation.MatchSimulationOrchestrator;
+import com.footballmanager.application.service.simulation.v24.BaselineState;
+import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
@@ -54,6 +56,9 @@ public class RoundController {
     private final CareerSessionService careerSessionService;
     private final V24MatchContextFactory v24ContextFactory;
     private final LeagueSimulator leagueSimulator;
+    // F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): stores the pre-subs
+    // BaselineState at match start, deletes it on match finish.
+    private final BaselineStateStoragePort baselineStoragePort;
     // V24D12-B: use ControllerHelper for userId extraction; replaces the
     // copy-paste getUserIdFromAuth helper that accepted an optional
     // requestUserId from the body and threw IAE on auth failure.
@@ -260,6 +265,25 @@ public class RoundController {
 
             V24LiveSession session = new V24LiveSession(context, seed);
             log.info("[ROUND-CONTROLLER] V24LiveSession created for match {} with seed {}", matchId, seed);
+
+            // F6 Sprint 2: capture the baseline state BEFORE any sub is
+            // applied. The SubstitutionCommandUseCaseImpl hook will append
+            // subs to this state as the manager makes changes. Cleaned up
+            // in handleMatchFinished.
+            try {
+                String careerId = career.getData().getCareerId();
+                BaselineState baseline = BaselineState.empty(careerId, seed, context);
+                baselineStoragePort.save(careerId, baseline);
+                log.info("[F6-MATCH-COMPARE] BaselineState saved for matchId={}, careerId={}, seed={}",
+                        matchId, careerId, seed);
+            } catch (Exception e) {
+                // Baseline persistence failure must NOT block the match
+                // start — the live path can still run, just the compare
+                // endpoint will 404 for this match.
+                log.warn("[F6-MATCH-COMPARE] Failed to save baseline for matchId={}: {}",
+                        matchId, e.getMessage());
+            }
+
             return session;
         } catch (Exception e) {
             log.error("[ROUND-CONTROLLER] Failed to create V24LiveSession for match {}, falling back to legacy: {}", matchId, e.getMessage());
@@ -306,6 +330,22 @@ public class RoundController {
                     result.snapshot().score().away(),
                     tracking
             );
+
+            // F6 Sprint 2: clean up the BaselineState now that the live
+            // detail is persisted. The compare endpoint will 404 for this
+            // match (good — there's no "after the fact" state to compare
+            // against). The TTL 7d would also expire it eventually, but
+            // explicit cleanup is cleaner.
+            try {
+                String matchId = result.snapshot().matchId().toString();
+                String careerId = career.getData().getCareerId();
+                baselineStoragePort.delete(careerId, matchId);
+                log.info("[F6-MATCH-COMPARE] BaselineState deleted for matchId={}, careerId={}",
+                        matchId, careerId);
+            } catch (Exception e) {
+                log.warn("[F6-MATCH-COMPARE] Failed to delete baseline on match finish: {}",
+                        e.getMessage());
+            }
         } else {
             events = new java.util.ArrayList<>(result.snapshot().events());
         }
