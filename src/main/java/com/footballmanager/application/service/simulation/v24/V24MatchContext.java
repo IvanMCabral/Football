@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -86,20 +88,20 @@ public final class V24MatchContext {
      * deterministic.
      */
     public V24MatchContext(
-            String matchId,
-            String homeTeamId,
-            String awayTeamId,
-            SessionTeam homeTeam,
-            SessionTeam awayTeam,
-            List<SessionPlayer> homeStartingPlayers,
-            List<SessionPlayer> awayStartingPlayers,
-            List<SessionPlayer> homeBenchPlayers,
-            List<SessionPlayer> awayBenchPlayers,
-            String homeFormation,
-            String awayFormation,
-            TeamStyle homeStyle,
-            TeamStyle awayStyle,
-            List<ScheduledSub> manualSubstitutions) {
+            @JsonProperty("matchId") String matchId,
+            @JsonProperty("homeTeamId") String homeTeamId,
+            @JsonProperty("awayTeamId") String awayTeamId,
+            @JsonProperty("homeTeam") SessionTeam homeTeam,
+            @JsonProperty("awayTeam") SessionTeam awayTeam,
+            @JsonProperty("homeStartingPlayers") List<SessionPlayer> homeStartingPlayers,
+            @JsonProperty("awayStartingPlayers") List<SessionPlayer> awayStartingPlayers,
+            @JsonProperty("homeBenchPlayers") List<SessionPlayer> homeBenchPlayers,
+            @JsonProperty("awayBenchPlayers") List<SessionPlayer> awayBenchPlayers,
+            @JsonProperty("homeFormation") String homeFormation,
+            @JsonProperty("awayFormation") String awayFormation,
+            @JsonProperty("homeStyle") TeamStyle homeStyle,
+            @JsonProperty("awayStyle") TeamStyle awayStyle,
+            @JsonProperty("manualSubstitutions") List<ScheduledSub> manualSubstitutions) {
         if (matchId == null || matchId.isBlank()) {
             throw new IllegalArgumentException("matchId must not be blank");
         }
@@ -195,19 +197,19 @@ public final class V24MatchContext {
         return copy;
     }
 
-    public String matchId() { return matchId; }
-    public String homeTeamId() { return homeTeamId; }
-    public String awayTeamId() { return awayTeamId; }
-    public SessionTeam homeTeam() { return homeTeam; }
-    public SessionTeam awayTeam() { return awayTeam; }
-    public List<SessionPlayer> homeStartingPlayers() { return homeStartingPlayers; }
-    public List<SessionPlayer> awayStartingPlayers() { return awayStartingPlayers; }
-    public List<SessionPlayer> homeBenchPlayers() { return homeBenchPlayers; }
-    public List<SessionPlayer> awayBenchPlayers() { return awayBenchPlayers; }
-    public String homeFormation() { return homeFormation; }
-    public String awayFormation() { return awayFormation; }
-    public TeamStyle homeStyle() { return homeStyle; }
-    public TeamStyle awayStyle() { return awayStyle; }
+    @JsonProperty("matchId") public String matchId() { return matchId; }
+    @JsonProperty("homeTeamId") public String homeTeamId() { return homeTeamId; }
+    @JsonProperty("awayTeamId") public String awayTeamId() { return awayTeamId; }
+    @JsonProperty("homeTeam") public SessionTeam homeTeam() { return homeTeam; }
+    @JsonProperty("awayTeam") public SessionTeam awayTeam() { return awayTeam; }
+    @JsonProperty("homeStartingPlayers") public List<SessionPlayer> homeStartingPlayers() { return homeStartingPlayers; }
+    @JsonProperty("awayStartingPlayers") public List<SessionPlayer> awayStartingPlayers() { return awayStartingPlayers; }
+    @JsonProperty("homeBenchPlayers") public List<SessionPlayer> homeBenchPlayers() { return homeBenchPlayers; }
+    @JsonProperty("awayBenchPlayers") public List<SessionPlayer> awayBenchPlayers() { return awayBenchPlayers; }
+    @JsonProperty("homeFormation") public String homeFormation() { return homeFormation; }
+    @JsonProperty("awayFormation") public String awayFormation() { return awayFormation; }
+    @JsonProperty("homeStyle") public TeamStyle homeStyle() { return homeStyle; }
+    @JsonProperty("awayStyle") public TeamStyle awayStyle() { return awayStyle; }
 
     /**
      * LIVE-MATCH-F2-LIVE F2.5: read-only view of the deferred manual
@@ -217,6 +219,7 @@ public final class V24MatchContext {
      * <p>Returned as {@link Collections#unmodifiableList(java.util.List)};
      * mutating the returned list throws {@link UnsupportedOperationException}.
      */
+    @JsonProperty("manualSubstitutions")
     public List<ScheduledSub> manualSubstitutions() {
         return Collections.unmodifiableList(manualSubstitutions);
     }
