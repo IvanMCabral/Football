@@ -64,9 +64,11 @@ import java.util.function.UnaryOperator;
  *       event cache.</li>
  *   <li>{@link #finalResult()} uses the cached {@code V24DetailedMatchResult}
  *       when available (B3 of F1).</li>
- *   <li>{@code homePossession()}/{@code awayPossession()} read from the
- *       cached engine result (real possession ticks), no longer static
- *       per-style (B3 of F1).</li>
+ *   <li>{@code homePossession}/{@code awayPossession} (in the snapshot)
+ *       are now derived from the eventsSoFar subset in {@link #buildSnapshot()}
+ *       (LIVE-MATCH-F5.2 BUG-010), so the live UI shows possession that
+ *       changes minute-by-minute instead of the final 56%/44% from the
+ *       first tick onward.</li>
  * </ul>
  */
 public final class V24LiveSession {
@@ -213,29 +215,51 @@ public final class V24LiveSession {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F1 B3 — bug colateral 1 fix.
-     *
-     * <p>Previously returned a STATIC per-style constant (e.g. 50% for
-     * BALANCED). Now reads the engine's real possessionTicks counter from
-     * the cached engine result. Falls back to 50/50 only if no engine run
-     * has happened yet (first tick not yet executed).
+     * LIVE-MATCH-F5.2 BUG-010: home/away possession in the live snapshot is
+     * now derived from the eventsSoFar subset in {@link #buildSnapshot()}
+     * (see {@link #derivePossessionFromEvents}). The previous
+     * {@code homePossession()}/{@code awayPossession()} private helpers
+     * that read from the cached engine result have been removed because
+     * the cached result is the FINAL possession, not the per-minute value.
      */
-    private int homePossession() {
-        if (cachedResult != null) {
-            return cachedResult.homePossession();
-        }
-        return 50;
-    }
 
-    private int awayPossession() {
-        if (cachedResult != null) {
-            return cachedResult.awayPossession();
-        }
-        return 50;
-    }
+    /**
+     * LIVE-MATCH-F5.2 BUG-009: event types considered "noise" for the
+     * user-facing live UI. The engine still emits them to the internal
+     * timeline (and to the persistence path) — they are ONLY filtered
+     * from the snapshot that goes out via SSE. The threshold of "important
+     * events" per match (measured by Iván in F5.1) is ~30-50; without this
+     * filter, the engine produces ~50-80 events per match with V24D6U4.
+     */
+    private static final java.util.Set<V24MatchEventType> NOISE_EVENTS = java.util.Set.of(
+        V24MatchEventType.CHANCE_CREATED,
+        V24MatchEventType.OFFSIDE,
+        V24MatchEventType.CORNER,
+        V24MatchEventType.FOUL,
+        V24MatchEventType.MISS,
+        V24MatchEventType.BLOCK
+        // Note: SHOT is kept (the spec says "SHOT_ON_TARGET (incluye saves y goals)"
+        // — we keep SHOT separately so the UI can still distinguish a shot off
+        // target from a chance created). SAVE is kept because it represents a
+        // visible event (the goalkeeper stopped a shot on target).
+    );
 
     /**
      * Build the current snapshot from accumulated state.
+     *
+     * <p>LIVE-MATCH-F5.2 BUG-009: filter {@link #NOISE_EVENTS} from the
+     * events list returned to the SSE consumer. Possession and goals are
+     * STILL derived from the un-filtered {@code eventsSoFar} (the noise
+     * events are part of the possession story), so the score and
+     * possession remain accurate. Only the visible UI event list is
+     * trimmed.
+     *
+     * <p>LIVE-MATCH-F5.2 BUG-010: derive {@code homePossession} and
+     * {@code awayPossession} from the {@code eventsSoFar} subset (i.e.
+     * the events that occurred up to {@code currentMinute}), NOT from
+     * the cached engine result. The previous behaviour returned the
+     * FINAL possession at every tick, so the live UI showed 56% / 44%
+     * (the final value) even at minute 2.
      */
     private V24LiveSnapshot buildSnapshot() {
         // Return engine events that occurred up to currentMinute, plus
@@ -266,6 +290,27 @@ public final class V24LiveSession {
             }
         }
 
+        // LIVE-MATCH-F5.2 BUG-010: derive possession from the eventsSoFar
+        // subset, NOT from the cached engine result (which is the FINAL
+        // value). We count team-attributed events as a proxy for possession
+        // activity. The formula is the ratio of home team-attributed events
+        // to the total team-attributed events in the visible window, with
+        // a defensive 50/50 default when no team-attributed events exist
+        // yet (minute 0-1).
+        int homePossession = derivePossessionFromEvents(eventsSoFar, true);
+        int awayPossession = 100 - homePossession;
+
+        // LIVE-MATCH-F5.2 BUG-009: filter NOISE_EVENTS for the SSE payload.
+        // The eventsSoFar list (used for score + possession calculation
+        // above) is NOT filtered — possession needs the full picture. The
+        // list that goes to the consumer (eventsForSse) is the trimmed one.
+        List<V24MatchEvent> eventsForSse = new ArrayList<>(eventsSoFar.size());
+        for (V24MatchEvent e : eventsSoFar) {
+            if (!NOISE_EVENTS.contains(e.type())) {
+                eventsForSse.add(e);
+            }
+        }
+
         return new V24LiveSnapshot(
                 effectiveContext.matchId(),
                 currentMinute,
@@ -274,14 +319,61 @@ public final class V24LiveSession {
                 effectiveContext.homeTeamId(),
                 effectiveContext.awayTeamId(),
                 finished,
-                eventsSoFar,
-                homePossession(),
-                awayPossession(),
+                eventsForSse,
+                homePossession,
+                awayPossession,
                 effectiveContext.homeStyle() != null ? effectiveContext.homeStyle().name() : null,
                 effectiveContext.awayStyle() != null ? effectiveContext.awayStyle().name() : null,
                 effectiveContext.homeFormation(),
                 effectiveContext.awayFormation()
         );
+    }
+
+    /**
+     * LIVE-MATCH-F5.2 BUG-010: derive the home possession percentage (0-100)
+     * from the visible-events subset. The formula counts team-attributed
+     * events in {@code eventsSoFar} and computes the home team's share of
+     * the total. Events without a {@code teamId} are skipped (rare; e.g.
+     * some TACTICAL_CHANGE events don't have one).
+     *
+     * <p>Returns 50 when no team-attributed events are present (minute 0-1
+     * with no engine activity yet) so the UI never shows 0%/100% or NaN.
+     *
+     * @param eventsSoFar all events up to currentMinute (un-filtered; the
+     *                    noise filter only affects the SSE payload, not
+     *                    this calculation)
+     * @param isHome      true to return home possession, false for away
+     * @return the possession percentage rounded to the nearest integer
+     */
+    private int derivePossessionFromEvents(List<V24MatchEvent> eventsSoFar, boolean isHome) {
+        int homeCount = 0;
+        int awayCount = 0;
+        for (V24MatchEvent e : eventsSoFar) {
+            if (e.teamId() == null) {
+                continue;
+            }
+            if (e.type() == V24MatchEventType.SUBSTITUTION
+                || e.type() == V24MatchEventType.TACTICAL_CHANGE) {
+                // Sub/tactical events are not "possession" indicators —
+                // they happen during a stoppage, not while a team is
+                // actually playing.
+                continue;
+            }
+            if (e.teamId().equals(effectiveContext.homeTeamId())) {
+                homeCount++;
+            } else if (e.teamId().equals(effectiveContext.awayTeamId())) {
+                awayCount++;
+            }
+        }
+        int total = homeCount + awayCount;
+        if (total == 0) {
+            return 50;
+        }
+        if (isHome) {
+            return (int) Math.round(homeCount * 100.0 / total);
+        } else {
+            return (int) Math.round(awayCount * 100.0 / total);
+        }
     }
 
     /**
