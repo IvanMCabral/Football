@@ -1,81 +1,82 @@
 # NEXT.md — Estado del proyecto (ancla viva)
 
-> **Última actualización:** 2026-06-16 12:53 ART
+> **Última actualización:** 2026-06-18 20:15 ART (post-F6 Sprint 2 merge + pre-Sprint CLEANUP)
 > **Mantenedor:** Iván (con Mavis como copiloto de prompts)
 > **Propósito:** Único punto de verdad sobre "dónde estamos parados". Se actualiza al cerrar cada tag.
-> **Actualizado por:** SENIOR + Mavis root tras cierre de V24D14 (housekeeping documental)
+> **Actualizado por:** MANAGER-football en Fase 0 del sprint CLEANUP (housekeeping del ancla, no tocó código).
 
 ---
 
 ## Estado actual verificado (no de memoria — leído de `git log` / `git status`)
 
 ### Backend (root: `D:\ProyectosOpenCode\MANAGER`)
-- **Branch activa:** `chore/v24d14-housekeeping` (preparado para merge a master tras smoke GO)
-- **HEAD local y remote:** `9efa3d7 chore: update NEXT.md — UX-6 BYE Indicator closed, UX cleanup 100%, P1a next` ✅ **PUSHEADO a origin/master**
-- **Commits nuevos post-anterior NEXT.md (1 commit + 1 tag en preparación):**
-  - `9efa3d7` — Update NEXT.md con UX-6 BYE Indicator closed
-  - `dfaf2d6` — V24D14 housekeeping: sincronizar NEXT.md con HEAD, limpiar runbook §8 (D-5 OBSOLETO), gitignore frontend `src/assets/` (assets muertos no integrados al build)
-- **Working tree:** limpio
-- **Tests:** 933/933 PASS, 0 FAIL, 0 ERROR, 0 SKIPPED
-- **Smoke V24D12.2:** 🟢 **GO** por Mavis root — `GET /games/{id}` → 200 post-fix
+- **Branch activa:** `master` (lista para sprint CLEANUP)
+- **HEAD local y remote:** `b1952f5 feat(v24): F6 Match Compare endpoint -- GET /careers/{id}/matches/{id}/compare` ✅ PUSHEADO a origin/master
+- **Últimos 8 commits post-anterior NEXT.md:**
+  - `b1952f5` — F6 Match Compare endpoint
+  - `15b035b` — F6 Match Compare endpoint [hooks reales]
+  - `0ff7991` — F6 Match Compare service (DTOs + replay + diff)
+  - `363e981` — F6 Match Compare foundation (BaselineState storage TTL 7d)
+  - `1ff1225` — F6 F2 contract fix (player-quality modifier to chanceProbability)
+  - `60f9de2` — F5.3.4 test E2E pause/resume round
+  - `f8ca76e` — F5.3.2 BUG-015 back (pause/resume round endpoints)
+  - `6aa0292` — F5.2 BUG-009 + BUG-010 (filter noise events + derive possession)
+- **Working tree:** `MANAGER_TEAM_RUNBOOK.md` modificado + archivos untracked (planes V23, scripts, browser helpers, tests viejos en `ciberfootbolt_local/tests/`). NO contaminar con el sprint CLEANUP.
+- **Tests:** **1350 tests / 6 FAIL / 0 errors / 0 skipped** (con `DB_PASSWORD` + `REDIS_PASSWORD` exportadas, ver runbook §11.1)
+- **6 FAIL conocidos (objetivo del sprint CLEANUP):**
+  - 3 `RoundControllerE2ETest` (controllers vs contratos desincronizados post-V24D13-2)
+  - 1 `CachingRandomWrapperTest.invalidateFromIndex_preservesPrefixDiscardsSuffix` (BUG-007 F5.1 fragility)
+  - 2 `V24LiveSessionTest.recordManualSubstitution_altersResult*` (NUEVOS post V24D6U4-RE recalibración)
+- **Smoke REVISOR F6 Sprint 2:** 🔴 **NO-GO** (BACK `/compare` 404 a pesar de detail OK). Causa raíz identificada: `BaselineStateRedisAdapter.save()` swallowea excepciones.
 
 ### Frontend (sub-repo: `D:\ProyectosOpenCode\MANAGER\front-ciber\project`)
 - **Branch activa:** `mvp-1`
-- **HEAD local y remote:** `aad2b8f feat(ux): UX-6 BYE indicator — frontend components` ✅ PUSHEADO a origin/mvp-1
-- **Working tree:** untracked `src/assets/` (resuelto en V24D14 con gitignore)
-- **Build:** ng build SUCCESS (0 errors)
+- **HEAD local y remote:** `0e8aaa6 test(match-detail): F6 Match Compare -- service + page specs` ✅ PUSHEADO a origin/mvp-1
+- **Últimos 7 commits:**
+  - `0e8aaa6` — F6 Match Compare tests
+  - `80cee80` — F6 Match Compare source
+  - `c7e704a` — F5.3.3 fix (pause BEFORE dialog.open race-condition)
+  - `339004e` — F5.3.4 specs (BUG-015 front)
+  - `0d6e95b` — F5.3.3 feat (pause/resume round when modal opens)
+  - `465c281` — F5.3.1 revert (BUG-012 remove auto-advance)
+  - `c6f582b` — F5.2 BUG-012 (auto-advance, luego revertido)
+- **Working tree:** limpio (sin cambios tracked).
+- **Build:** ng build SUCCESS.
+- **Tests:** 4 FAIL pre-existentes (objetivo sprint CLEANUP):
+  - 3 `MatchComparePageComponent` (Zone.js ProxyZone no se establece)
+  - 1 `SeasonStatsTabComponent` (scope contract scope=team + teamId=non-empty)
 
 ### Tags creados y pusheados (todos)
-- ✅ **V24D14 (dfaf2d6)** — Housekeeping: sincronizar NEXT.md, borrar V24D12-D-5 del runbook §8, gitignore `src/assets/` (assets muertos no integrados al build).
-- ✅ **UX-6 (66a0a32 + aad2b8f)** — BYE indicator en fixture: backend DTOs `RoundFixturesWithBye` + `AllRoundsWithBye`, endpoints `GET /career/fixtures/round/{round}` y `GET /career/fixtures/round-with-bye`, frontend round-live + round-summary + dashboard-fixture-modal con badge BYE.
-- ✅ **V24D12.2 (d442403)** — `@NoArgsConstructor` + `@Setter` en `GameEntity` para deserialización Jackson (GameEntity no tenía constructor público sin args → 404 silencioso en `GET /games/{id}`).
-- ✅ **V24D13 (b3e25cb)** — Update NEXT.md con estado V24D12-D-6 + V24D13-1.
-- ✅ **V24D13-1 (819ec49)** — SSE heartbeat cada 15s en `CareerNotificationService` (`/career/events` ya no cuelga 30s+).
-- ✅ **V24D12-D-6 (dffe02a + 6e9ab8e)** — `RedisConfig.java` con `@Value` para leer password de `application-local.yml` + archivo `application-local.yml` con credenciales rotadas (gitignored).
-- ✅ **V24D12-D-4 (ee27111)** — crear `docs/rotar-credenciales.md` + fix path reference en `docs/SETUP.md`.
-- ✅ **V24D12-D-3 (4355012)** — `docs/SETUP.md` con lista de env vars y setup procedure.
-- ✅ **V24D12-D-2 (dbab109)** — agregar `.env` a `.gitignore` + `git rm --cached .env`.
-- ✅ **V24D12-D-1 (9588056)** — crear `.env.example` template con 18 env vars.
-- ✅ **V24D12-C-3 (9c98aec)** — 3 comentarios justificativos en `/world`, `/leagues`, `/match-engine`.
-- ✅ **V24D12-C.2 (470a5a8)** — revertir C-2 broken + documentar limitación Spring Security WebFlux.
-- ✅ **V24D12-C-1 (8219552)** — cerrar `permitAll` mismatch en `/players`, `/matches`, `/career`.
-- ✅ **V24D12-B-2 (530bf53)** — `collectList + isEmpty` check para `getAllGames` + `getStandings`.
-- ✅ **V24D12-B-1 (57b4ddc)** — refactor de 4 controllers a `ControllerHelper.getUserId()`.
-- ✅ **V24D12.1.2 (2f72b8c)** — `WWW-Authenticate: Bearer` en `@ExceptionHandler(UnauthorizedException)`.
-- ✅ **V24D12.1.1 (07867e9)** — `WWW-Authenticate: Bearer` en `authenticationEntryPoint`.
-- ✅ **V24D12.1 (080f702)** — JSON consistente en TODOS los 401.
-- ✅ **V24D12-3 (a006e2b)** — ControllerHelper dedup en 6 career controllers.
-- ✅ **V24D12-2 (26fc94f)** — IDOR fix en `getGamesByUserId`.
-- ✅ **V24D12-1 (1177b0e)** — `permitAll` → `authenticated` en `/api/v1/games/**`.
-- ✅ **V24D11.2 (872fee9)** — dashboard console.log leftovers + 6 tooltips squad buttons.
-- ✅ **V24D11.1 (b7fadaa)** — mini-CTA href target fix.
-- ✅ **V24D11 (1134e39)** — UX cleanup 5 items.
-- ✅ **V24D10.5 (e2b7884)** — fix 500 NPE → 401 en GameController.
-- ✅ **V24D10 (d2f52e7 + 511f19b + 1ed9b94)** — BUG-002/003 fixes.
-- ✅ **V24D9 (6a2896c + cbab590)** — BUG-001 Register auto-login.
-- ✅ **V24D8-BUG-002/003/004** — placeholder names + squad vacío.
-- ✅ **V24D7 (92d1097)** — E2E HTTP coverage: 11 test classes, 9 controllers, 36% E2E coverage.
-- ✅ V24D6U6 / U5 / U4 / T2 / U3.5 / U3 / U2 / U1 — releases previos.
 
-### Últimos 10 commits backend
-```
-9efa3d7 chore: update NEXT.md — UX-6 BYE Indicator closed, UX cleanup 100%, P1a next
-66a0a32 feat: UX-6 BYE indicator — backend DTOs, services and endpoints
-aad2b8f feat: UX-6 BYE indicator — frontend components
-e6529cc chore: update NEXT.md — V24D12.2 + V24D13-1 + V24D12-D-6 closed
-d442403 fix: add @NoArgsConstructor and @Setter to GameEntity for Jackson deserialization
-b3e25cb chore: V24D13 update NEXT.md with V24D12-D-6 + V24D13-1 status
-6e9ab8e chore(security): V24D12-D-6 add application-local.yml with rotated credentials (gitignored)
-dffe02a fix(security): V24D12-D-6 make RedisConfig read password from YAML
-819ec49 fix(perf): V24D13-1 add SSE heartbeat every 15s in CareerNotificationService
-ee27111 chore(security): V24D12-D-4 create docs/rotar-credenciales.md and fix path reference
-```
+- ✅ **V24D14-LIVE-F6-MATCH-COMPARE** — 4 commits del F6 Sprint 2 (363e981, 0ff7991, 15b035b, b1952f5). **Backend merged a master pero smoke REVISOR NO-GO** — fix pendiente en sprint CLEANUP.
+- ✅ **V24D14-LIVE-F6-F2-CONTRACT-FIX** — `1ff1225` player-quality modifier to chanceProbability.
+- ✅ **V24D14-LIVE-F5.3-LECTURA-A** — F5.3 Lectura A fixes (BUG-012 revert + BUG-015 pause/resume).
+- ✅ **V24D14-LIVE-F5.2** — F5.2 fixes (BUG-009/010/011/012).
+- ✅ **V24D14-LIVE-F5.1** — F5.1 fixes (BUG-004/007/008).
+- ✅ **V24D14-LIVE-F3.0** — F3 POC frontend.
+- ✅ **V24D7-V24D6U4-RE** — Recalibración V24 model a Poisson λ=1.25 (commit `864b4f2`). **Causó 2 tests V24LiveSession FAIL nuevos.**
+- ✅ **V24D14** — Housekeeping (NEXT.md sync, runbook §8 cleanup, gitignore `src/assets/`).
+- ✅ **V24D14-LIVE-F2** + **V24D14-LIVE-F2.5** — F2 F2.5 contract + deferred substitutions.
+- ✅ **V24D13-2** — FIX-001 (refactor `startMatches` 100% reactivo, respetar 4xx protocol semantics).
+- ✅ **V24D13-1** — SSE heartbeat 15s en CareerNotificationService (`/career/events` no cuelga 30s+).
+- ✅ **V24D12.2** — `@NoArgsConstructor` + `@Setter` en `GameEntity` (deserialization Jackson).
+- ✅ **V24D12-D-6** — RedisConfig + application-local.yml con credenciales rotadas.
+- ✅ **V24D12-B/C/D** — ControllerHelper dedup, permitAll → authenticated, .env securizado, docs.
+- ✅ **V24D12.1 / 12.1.1 / 12.1.2** — JSON consistente en TODOS los 401 + WWW-Authenticate: Bearer.
+- ✅ **V24D11.2 / V24D11.1 / V24D11** — UX cleanup (5 items + dashboard console + mini-CTA).
+- ✅ **V24D10.5 / V24D10** — BUG-002/003 fixes + NPE → 401 en GameController.
+- ✅ **V24D9** — BUG-001 Register auto-login.
+- ✅ **V24D8-BUG-002/003/004** — placeholder names + squad vacío + seed real player names.
+- ✅ **V24D7** — E2E HTTP coverage 36% (11 test classes, 9 controllers).
+- ✅ **V24D6U6/U5/U4/T2/U3.5/U3/U2/U1** — releases previos.
+- ✅ **UX-6** — BYE indicator en fixture (backend + frontend).
+- ✅ **P1b** — Career mutations edge cases (58 tests nuevos, 0 production changes, mergeado fast-forward a master).
 
 ---
 
 ## Seguridad — 100% CERRADA ✅
 
-**V24D12 + V24D12.1 + V24D12.1.1 + V24D12.1.2 + V24D12-B + V24D12-C + V24D12-D + V24D12-D-6 + V24D12.2 + UX-6 = ~22 commits en master**
+**V24D12 + V24D12.1 + V24D12.1.1 + V24D12.1.2 + V24D12-B + V24D12-C + V24D12-D + V24D12-D-6 + V24D12.2 + UX-6 + F5.x + F6.x = ~30 commits en master**
 
 - Contrato uniforme: HTTP 401 + `WWW-Authenticate: Bearer` + `Content-Type: application/json` + body `{code, message, status}` en TODOS los endpoints protegidos.
 - IDOR fix en `getGamesByUserId`.
@@ -84,63 +85,79 @@ ee27111 chore(security): V24D12-D-4 create docs/rotar-credenciales.md and fix pa
 - 8 `permitAll()` auditados y documentados.
 - `.env` no trackeado + credenciales rotadas en `application-local.yml` (gitignored).
 - `RedisConfig` con password leído del YAML.
-- Tests: 933/933 PASS.
+- F6 Sprint 2: nuevo path `/api/v1/careers/{id}/matches/{id}/compare` para baseline-vs-live diff (BUG en baseline persistencia — sprint CLEANUP).
 
 ---
 
-## Cola de trabajo (post-V24D12.2 cerrado)
+## Cola priorizada — Sprint CLEANUP (post-F6 Sprint 2)
 
-### Features cerradas ✅
-- ✅ **UX-6:** BYE indicator en fixture — backend DTOs + endpoints + frontend round-live + round-summary + dashboard-fixture-modal. MANAGER review 🟢 GO.
+### 🔴 CRÍTICOS (bloquean features)
 
-### Bugs cerrados ✅
-- ✅ **V24D12.2:** `GET /games/{id}` 404 → `@NoArgsConstructor` + `@Setter` en `GameEntity`. smoke GO.
+| # | Tag | Bug | Effort | Riesgo |
+|---|---|---|---|---|
+| 1 | V24D15-CLEANUP-1 | **BUG_COMPARE_404** (F6 Sprint 2) — `/compare` 404 a pesar de `/detail` 200. Causa: `BaselineStateRedisAdapter.save()` swallowea excepciones | 1-2 días (β reactivo) | medio |
+| 2 | V24D15-CLEANUP-2 | **BUG_GAME_DASHBOARD_404** (pre-existente) — `/games/{gameId}` 404, partido NO se persiste como Game entity. 3 hipótesis (regresión / caso edge / feature). Investigación runtime primero | 4-8 h | medio-alto |
+
+### 🟡 MENORES (UX / deuda técnica)
+
+| # | Tag | Bug | Effort | Riesgo |
+|---|---|---|---|---|
+| 3 | V24D15-CLEANUP-3 | **BUG_COMPARE_UX** (F6 Sprint 2) — frontend falta `catchError(() => of(null))` en `MatchCompareApiService.getMatchCompare()` | 5 min | cero |
+| 4 | V24D15-CLEANUP-4 | **3 tests FAIL MatchComparePageComponent** — Zone.js ProxyZone no se establece con `waitForAsync/fakeAsync` + `of()` | 2-4 h | bajo |
+| 5 | V24D15-CLEANUP-5 | **3 tests FAIL RoundControllerE2ETest** — post-V24D13-2 contratos desincronizados | 1-2 h | bajo |
+| 6 | V24D15-CLEANUP-6 | **1 test FAIL CachingRandomWrapperTest.invalidateFromIndex_preservesPrefixDiscardsSuffix** — BUG-007 F5.1 fragility | 2-4 h | bajo |
+| 7 | V24D15-CLEANUP-7 | **2 tests FAIL V24LiveSessionTest.recordManualSubstitution_altersResult*** — víctimas recalibración V24D6U4-RE | 1-2 h | bajo |
+| 8 | V24D15-CLEANUP-8 | **1 test FAIL SeasonStatsTabComponent** — scope contract | 1-2 h | bajo |
+| 9 | V24D15-CLEANUP-9 | **BUG-003 E2E reproducer** (F5.2) — squad fallback funciona pero no hay E2E test que reproduzca 422 | 2-3 h | bajo |
+| 10 | V24D15-CLEANUP-10 | **BUG-009 spec threshold** (F5.2) — noise events filter sin threshold concreto en spec | 1 h | cero |
+| 11 | V24D15-CLEANUP-11 | **Browser MCP memory leak** (F5.2) — workaround en runbook + `--max-duration 25m` | 15 min | cero |
+
+### 🟢 OBSERVACIONES (limpieza opcional)
+
+| # | Tag | Item | Effort | Decisión |
+|---|---|---|---|---|
+| 12 | V24D15-CLEANUP-12 | **110 console.log/error/warn en frontend** — limpieza selectiva top 8 archivos | 2-4 h | D5 ✓ |
+| 13 | V24D15-CLEANUP-13 | **Velocidad round 90'→3min wall time** — comportamiento pre-existente, DOCUMENTAR (no fix) | 30 min | D4 ✓ |
+| 14 | V24D15-CLEANUP-14 | **TODOs en código legacy** (`DefaultMatchCommandApplier`, `MatchFinishService`, `MatchCommandHandler`) — confirmar si V24 los usa; si no → ticket separado | 15 min | out scope si V24 no los usa |
+
+### Effort total estimado
+
+| Fase | Items | Effort |
+|---|---|---|
+| Fase 0 (housekeeping NEXT.md) | hecho por MANAGER | 15 min ✓ |
+| Fase 1 (CRÍTICOS backend) | 2 | 1-2 días |
+| Fase 2 (UX + Front tests) | 2 | 3-5 h |
+| Fase 3 (Tests FAIL back) | 3 | 4-8 h |
+| Fase 4 (Tests FAIL front) | 1 | 1-2 h |
+| Fase 5 (Pre-F6 bugs) | 3 | 3-4 h |
+| Fase 6 (Console cleanup) | 1 | 2-4 h |
+| Fase 7 (Validación mvn+ng test + smoke) | infra | 1-2 h |
+| **TOTAL sprint CLEANUP** | **14 items** | **~6-9 días SENIOR** |
+
+---
+
+## Bugs cerrados ✅
+
+- ✅ **V24D12.2:** `GET /games/{id}` 404 → `@NoArgsConstructor` + `@Setter` en `GameEntity`. Smoke GO en su momento.
 - ✅ **V24D13-1:** `/career/events` cuelgue 30s+ → SSE heartbeat 15s en `CareerNotificationService`.
 - ✅ **V24D12-D-6:** `.env` con credenciales → `application-local.yml` con credenciales rotadas (gitignored) + `RedisConfig` con `@Value`.
+- ✅ **F5.x BUG-004/007/008/009/010/011/012/015:** corregidos en F5.1-F5.3 y mergeados a master.
+- ✅ **F6 Sprint 1 contract fix (1ff1225):** player-quality modifier agregado a `chanceProbability`.
+- ✅ **F6 Sprint 2 código mergeado** a master (4 commits + 1 contract) — **smoke NO-GO pendiente**, fix en sprint CLEANUP.
+- ✅ **V24D6U4-RE recalibración** (864b4f2): λ de 0.45 a 1.22 (target 1.25). Tests ajustados pendientes.
+- ✅ **UX-6:** BYE indicator en fixture.
+- ✅ **P1b:** Career mutations edge cases (58 tests nuevos).
 
-### ❌ OBSOLETO — V24D12-D-5
-Alinear `.env` legacy con `.env.example` — **OBSOLETO**. `V24D12-D-6` creó `application-local.yml` que reemplaza completamente el `.env` legacy. El ticket pierde sentido.
+---
 
-### ❌ OBSOLETO — R3/R4
-Custom `ErrorWebExceptionHandler` para 404 con body JSON en `/games/tournament/{id}/status` y `/games/champion/{id}` — **OBSOLETO**. V24D12-B.2 (commit `530bf53`) ya cerró el problema: los 3 endpoints concernés (`tournament-status`, `standings`, `champion` en `/api/v1/games/{id}/...`) ahora retornan 404 con body vacío (o 200 con defaults para `tournament-status`) usando `.notFound().build()` explícito. El comentario stale en `GameController.java` líneas 161-168 puede limpiarse como drive-by pero no es un ticket.
+## ❌ OBSOLETO (de F4)
 
-### ❌ OBSOLETO — NG8113
-Warnings NG8113 en `squad-management.component.ts` (4 imports no usados: FixtureModalComponent, StandingsModalComponent, PalmaresDialogComponent, PromotionsDialogComponent) — **OBSOLETO**. El commit `f3dd8f8` (2026-06-16 15:01 ART) ya removió los 4 dialog components del `imports: []` array. Los TypeScript imports (líneas 10-13) se mantienen porque son necesarios para `this.dialog.open(SomeComponent, ...)`. `ng build` actual no emite ningún NG8113. `MatDialog.open()` no requiere template-import en el array `imports: []` (los componentes se pasan como referencias de tipo, no se referencian en el template).
-
-### ❌ OBSOLETO — V23 Phase 10C
-TeamOverallCalculator integration en V23 engine path — **OBSOLETO**. Los 4 subphases (10C1, 10C2, 10C3, 10C4) están mergeados a master:
-- 10C1 (`05597ab`): `LeagueSimulator.calculateTeamOVR()` delega a `TeamOverallCalculator`.
-- 10C2 (`a430e96`): V23 engine path detrás de feature flag `useV23LeagueEngine`.
-- 10C3 (`268188f`): externalización del flag via `SimulationConfig`.
-- 10C4 (`b290ca6`): LeagueSimulator dual-path tests.
-
-**832 tests verde** per `V23_SIMULATION_ENGINE_STATUS.md`. **V23 engine preservado** detrás del flag para compat, no se borra. **`TeamOverallCalculator` utility** (`application/service/domain/`) sigue vivo y reusable si V24 lo necesita en el futuro. **V24 vs V23:** V24 es el default (`useV24DetailedEngine=true`), V23 es legacy preservado vía flag. Phase 10C es integración V23-side; V24 no usa OVR-based simulation.
-
-### ❌ REMOVIDO — V23 Phase 6C (TeamStyle user-configurable)
-"TeamStyle user-configurable" — **REMOVIDO de la cola**. Phase 6A y 6B (enum + simulación experimental) están mergeados desde V23. **El aspecto "user-configurable" (UI + persistencia + API) nunca fue implementado formalmente** — no hay plan V23 que lo cubra, y `V23_SIMULATION_ENGINE_STATUS.md` NO lista Phase 6C en los completados. Los planes V23 (`V23_PHASE6_TACTICS_STYLE_MODIFIERS_PLAN.md`, `V23_PHASE6B_TACTICAL_STYLE_INTEGRATION_PLAN.md`) solo cubren 6A y 6B; el "user-configurable" no aparece. Si en el futuro se quiere, debería ser un **ticket V24-side separado** (agregar `teamStyle` field a `SessionTeam` con backward-compat Redis JSON, endpoint, UI dropdown, integración con `V24MatchContextFactory`). El enum `TeamStyle` actual se usa internamente en V24 pero sin user-config.
-
-### ❌ OBSOLETO — P1b
-Career mutations edge cases (~10% restante) — **OBSOLETO**. El commit `5a92227` (mergeado fast-forward a master el 2026-06-16, tag local `P1b` pusheado a origin el 2026-06-17) ya cerró el ticket: 58 tests nuevos en 5 archivos (3 new + 2 modified), +600 insertions, 0 deletions, 0 cambios en `src/main/`. Archivos:
-- `LiveRoundMutationTrackingTest.java` (NEW) — 5 tests: constructor, sets vacíos, accepts adds, independence, concurrent adds.
-- `V24CareerMutationPolicyTest.java` (NEW) — 22 tests: master gate, 4 derived getters × 4 combinaciones (TT/TF/FT/FF), raw getters, cross-flag independence, all-true, all-false, toString.
-- `V24CareerMutationResultTest.java` (NEW) — 19 tests: factories, defensive copy, null safety, partial logic, getters, toString.
-- `V24FormMutationApplierTest.java` (MODIFIED, +10) — B1 (4 tests de clamp en MAX=99 / MIN=1) + B2 (6 tests de rating discretization boundaries 8.0/7.0/6.5/5.5/5.0).
-- `V24DisciplineMutationApplierTest.java` (MODIFIED, +2) — B3 (yellowCards null + 1 yellow = 1, no threshold) + B4 (yellowCards=10 + 1 yellow = 11 → 6, threshold fires).
-
-Verificaciones: `mvn test focused scope v24` = 103/103 verde; `mvn test` full = 991 tests, 0 fail, 62 errors pre-existentes de infra (Redis no corriendo, no regresión). MANAGER review 🟢 GO. SENIOR report final: `reporte-senior-p1b-final.md`.
-
-### Cola priorizada
-
-| # | Tag | Descripción | Severidad |
-|---|---|---|---|
-| 1 | P1a | Match detail UI polish (~15% restante) | 🟡 media |
-| 6 | V24D7+2 | E2E coverage 36% → 80% | 🟡 media |
-| 9 | JSON 401 | Centralizar body hardcoded en SecurityConfig + GlobalExceptionHandler | 🟢 baja |
-
-### Deuda técnica identificada
-- HTTP/E2E coverage puede subir de 36% a 80% (V24D7+2)
-- `recentActivities: RecentActivity[] = []` declarado pero vacío en `dashboard.component.ts` (decisión "segura" V24D11)
-- JSON de 401 hardcoded en 2 lugares — frágil ante cambios de shape
+- ❌ **OBSOLETO — V24D12-D-5** — Alinear `.env` legacy con `.env.example` (reemplazado por V24D12-D-6).
+- ❌ **OBSOLETO — R3/R4** — Custom ErrorWebExceptionHandler para 404 (V24D12-B.2 cerró).
+- ❌ **OBSOLETO — NG8113** — Warnings squad-management.component.ts (commit `f3dd8f8` cerró).
+- ❌ **OBSOLETO — V23 Phase 10C** — TeamOverallCalculator integración V23 path (mergeado desde 10C1-10C4).
+- ❌ **REMOVIDO — V23 Phase 6C** — TeamStyle user-configurable (nunca implementado, no aparece en planes V23).
+- ❌ **OBSOLETO — P1b** — Career mutations edge cases (cerrado por `5a92227`, +58 tests).
 
 ---
 
@@ -148,23 +165,25 @@ Verificaciones: `mvn test focused scope v24` = 103/103 verde; `mvn test` full = 
 
 | Área | % | Comentario |
 |---|---|---|
-| V24 engine | 100% | U4 pusheado, λ empírico en target |
-| Career mutations | 100% | P1b cerrado (commit `5a92227`, +58 tests, 0 production changes) |
+| V24 engine | 100% | U4 + recalibración V24D6U4-RE pusheados |
+| Career mutations | 100% | P1b cerrado (commit `5a92227`) |
 | Stats | 90% | Completo MVP |
 | Lineups backend | 95% | U1+U2 cierran blockers |
-| Lineups frontend | 99% | U3+U3.5+T2+V24D11 pusheados |
+| Lineups frontend | 99% | U3+U3.5+T2+V24D11+F5.3 pusheados |
 | Match detail UI | 85% | Disparos, ratings, timeline OK |
 | Lifecycle end-of-round | 95% | R2+T2 cierran suspension decrement |
 | Roster depth | 100% | U5 pusheado (La Liga seed, 20 equipos reales) |
-| Balance tuning | 100% | U4 pusheado, smoke GO |
+| Balance tuning | 100% | U4 + V24D6U4-RE pusheados, λ en target |
+| LIVE-MATCH (pause/resume/subs/formation) | 95% | F5.3 GO; F6 compare pendiente fix |
 | HTTP/E2E tests | 36% E2E | 11 test classes, 9 controllers |
-| Auth flow | 100% | V24D9 BUG-001 fix |
+| Auth flow | 100% | V24D9 BUG-001 fix + V24D12 audit |
 | Bug fixes smoke v4 | 100% | V24D10 BUG-002/003 + V24D10.5 BUG-500 |
-| UX cleanup | 95% | V24D11 5 items. Pendiente: UX-6 BYE |
-| Security audit | 100% | ~20 commits: games auth + IDOR + ControllerHelper + JSON consistente + WWW-Authenticate + audit 8 permitAll + .env securizado + credenciales rotadas |
-| GameEntity deserialization | 100% | V24D12.2 — smoke GO |
-| /career/events performance | 100% | V24D13-1 — SSE heartbeat 15s |
-| **MVP jugable estimado** | **99.9%** | Todos los bugs P0/P1 cerrados. Pendientes: UX-6, P1a, JSON 401, V24D7+2, V23 features |
+| UX cleanup | 95% | V24D11 + UX-6 + console cleanup pendiente |
+| Security audit | 100% | ~30 commits: games auth + IDOR + ControllerHelper + JSON consistente + WWW-Authenticate + audit 8 permitAll + .env securizado |
+| GameEntity deserialization | 100% | V24D12.2 |
+| /career/events performance | 100% | V24D13-1 |
+| /compare endpoint (compare baseline-vs-live) | **50%** | código mergeado a master, smoke NO-GO (BUG_COMPARE_404) |
+| **MVP jugable estimado** | **99.9%** | Solo falta CLEANUP sprint para subir a 99.95% |
 
 ---
 
@@ -174,13 +193,17 @@ Verificaciones: `mvn test focused scope v24` = 103/103 verde; `mvn test` full = 
 - Push solo con autorización explícita de Iván
 - Reportes en `.md` vía `cat <<EOF` o python (una sola escritura, no edición incremental)
 - Mensajes de commit en inglés conventional; planes y reportes en español
+- Sprint CLEANUP: NO inflar scope (D1=β, D2=investigar runtime, D3=ajustar tests, D4=documentar, D5=console cleanup, D6=NEXT.md housekeeping hecho)
 
 ## Branches en remote (informativo)
-- `master` ← release limpia con MVP completo (HEAD `9efa3d7`, pusheado a `origin/master`)
-- `mvp-1` ← branch de trabajo front (HEAD `aad2b8f`, pusheado a `origin/mvp-1`)
+
+- `master` ← release limpia con MVP completo (HEAD `b1952f5`, pusheado a `origin/master`)
+- `mvp-1` ← branch de trabajo front (HEAD `0e8aaa6`, pusheado a `origin/mvp-1`)
 - `feature/v23-poisson-goal-model` (paralelo V23)
 - `feature/v33-tactical-chance-quality` (paralelo)
 - `mvp-1-performance-cleanup` → mergeado en master
+- `test/p1b-career-mutations-edges`, `test/v24d7plus2-*` (branches de tests paralelos)
+- `chore/v24d14-housekeeping`, `chore/json-401-centralize`, `chore/ng8113-obsolete-housekeeping`, `chore/r3r4-obsolete-housekeeping`, `chore/v23-legacy-cleanup` → mergeados a master
 
 ---
 
@@ -196,73 +219,27 @@ Si en una sesión nueva Mavis no lee este archivo, pedirselo explícitamente:
 
 ---
 
-## Tickets nuevos (post-V24D14)
+## Observaciones documentadas (V24D15-CLEANUP — Fase 8, 2026-06-18 20:50 ART)
 
-### 🟢 V24D6U4-RE — Recalibrar V24 model a su propio target λ=1.25
+### Velocidad round (pre-existente, NO fix)
+- **Comportamiento actual:** un partido de 90' tarda ~3 minutos wall-time en correr end-to-end (medido en smoke F3/F5). Esto NO es un bug — es el resultado del wall-clock-per-minute configurado en `simulation.use-v24-detailed-engine` (default = 2s por minuto simulado).
+- **Pre-existente:** documentado desde V24D6U4-RE. Aplica a TODOS los matches (no solo V24), tanto en live como en replay.
+- **Smoke scope para REVISOR:** NO validar timing estricto. El smoke acepta que un partido de 90' demore entre 2.5 y 4 minutos wall-time. Si excede 5 min → flag para investigación (posible degradación de performance).
+- **Workaround (si Iván quiere más rápido):** cambiar `simulation.wall-clock-per-minute=1000` en `application-local.yml` → 1 segundo por minuto simulado (partido completo en ~90 segundos). NO aplicado por defecto para mantener el "feel" del juego.
 
-**Detectado en:** LIVE-MATCH-F2-LIVE F2.5 (2026-06-17) durante cierre de 2 tests RED.
-
-**Síntoma:** `V24ShotXgCalculator.java:39-40` declara target `Poisson λ=1.25` para goals/team, pero el código actual produce `λ≈0.36` (calculado: ~5 shots/team × 7% conversion). Resultado: P(0 goles) = 70% por equipo, P(0-0) = 49% por partido. La mayoría de los partidos son 0-0, lo cual hace que los tests de "substitution alters homeGoals" sean estadísticamente poco confiables (P(pasa con seed=42) ≈ 0).
-
-**Causa raíz:** tuning insuficiente de `chanceProbability` (BALANCED = 0.10, debería ser ~0.20) y `goalThreshold` (`xg / 0.40`, debería ser `xg / 0.55`). El comment aspiracional nunca se validó empíricamente con tests reales.
-
-**Por qué NO en F2.5:** la F2.5 contract es "el sub fires at the right minute" (verificado con asserts sobre `subMinute` y `subCount`, no sobre `homeGoals`). Recalibrar el modelo es un epic aparte (afecta TODOS los tests V24, requiere revisar distribuciones de chance creation, onTarget, conversion, xG, etc.) — no es scope de LIVE-MATCH-F2-LIVE.
-
-**Estimate:** 1-2 días (tocar `chanceProbability` + `goalThreshold` + recalibrar V24D6U4 distribution targets + revalidar 1056 tests V24 + posiblemente ajustar tests F2 tests que dependían del tuning anterior).
-
-**Workaround aplicado en F2.5:** cambiar assertions de "homeGoals/awayGoals differ" a "el engine emits SUBSTITUTION event at the effectiveMinute" (test del F2.5 contract puro, no del F2 contract). Más robusto y no depende del tuning.
-
-**ESTADO 2026-06-17 19:42 ART — RESUELTO localmente, pendiente commit/push con aprobación de Mavis root.**
-
-**Cambios aplicados (commit en working tree, no pusheado):**
-
-| Parámetro                                    | PRE (master) | POST (V24D6U4-RE) | Δ |
-|----------------------------------------------|--------------|-------------------|---|
-| `chanceProbability` ATTACKING                | 0.13         | 0.42              | ×3.23 |
-| `chanceProbability` POSSESSION               | 0.11         | 0.38              | ×3.45 |
-| `chanceProbability` COUNTER                  | 0.10         | 0.35              | ×3.5  |
-| `chanceProbability` DEFENSIVE                | 0.08         | 0.28              | ×3.5  |
-| `chanceProbability` BALANCED                 | 0.10         | 0.35              | ×3.5  |
-| `onTarget` base                              | 0.18         | 0.30              | ×1.67 |
-| `goalThreshold` divisor                      | 0.40         | 0.60              | ÷1.5  |
-
-**Resultado empírico (N=1000 seeds, BALANCED × BALANCED, OVR=75):**
-
-| Métrica                     | PRE        | POST       | Target  |
-|-----------------------------|------------|------------|---------|
-| λ home                      | 0.435      | 1.199      | 1.25    |
-| λ away                      | 0.468      | 1.247      | 1.25    |
-| **λ avg**                   | **0.452**  | **1.223**  | **1.25** ✓ |
-| P(0) per team               | 64.0%      | 29.25%     | ~29% ✓ |
-| P(1) per team               | 28.25%     | 35.9%      | ~36% ✓ |
-| P(2) per team               | 6.55%      | 22.7%      | ~22% ✓ |
-| P(3+) per team              | 1.25%      | 12.15%     | ~13% ✓ |
-| P(0-0) match                | 40.1%      | 10.0%      | ~8.2% (in [6%, 12%]) ✓ |
-| Avg shots/team              | 4.84       | 17.27      | (informational) |
-| Avg xG/team                 | 0.301      | 1.078      | (informational) |
-| Goals/shot                  | 0.093      | 0.071      | (informational) |
-
-**Validación de tests (`mvn test` full, 1317 tests):**
-- PRE-cambio: 1 fail (V24ModelTuningDiagnosticTest, esperado), 100 errors (Redis infra pre-existente)
-- POST-cambio: 0 fail, 100 errors (mismos Redis infra pre-existentes — ninguno introducido por la recalibración)
-- **Confirmado: 100% de los errors son `RedisConnectionFailureException` / `NOAUTH Authentication required`** (infra, no del engine).
-- 957/957 V24-side tests verde, incluido el nuevo `V24ModelTuningDiagnosticTest`.
-
-**Test nuevo creado:**
-`src/test/java/com/footballmanager/application/simulation/v24/V24ModelTuningDiagnosticTest.java`
-- N=1000 simulaciones BALANCED × BALANCED, OVR=75
-- Imprime histograma completo a stdout
-- Assertions de regression guard: λ ∈ [0.9, 1.6], P(0) ∈ [20%, 40%] (anchos para no flakear con minor tweaks)
-- Sirve como baseline histórico Y regression check futuro
-
-**Tests NO ajustados:** ninguno. Los 832+ tests V24+V23 originales no dependían del goal output específico (asserts sobre possession, shots, xG, eventos, mutations, formations, substitutions — todos pasan con el nuevo λ).
-
-**Archivos modificados:**
-- `src/main/java/com/footballmanager/application/service/simulation/v24/V24DetailedMatchEngine.java` — 3 hunks (chanceProbability + onTarget + goalThreshold + comments)
-- `src/test/java/com/footballmanager/application/service/simulation/v24/V24ModelTuningDiagnosticTest.java` (NEW)
-
-**Pendiente:** commit + push + tag `V24D7-V24D6U4-RE` (sugerido) — esperando aprobación de Mavis root.
+### TODOs legacy (DefaultMatchCommandApplier, MatchFinishService, MatchCommandHandler)
+- **Confirmado por grep call-sites (Fase 8):** ninguno de los 3 archivos con TODOs legacy es usado por el path V24 (que va por `SubstitutionCommandUseCaseImpl` + `V24LiveSession` + `RoundController`).
+  - `MatchFinishService` — 0 call sites en `src/main/java` (huérfano).
+  - `DefaultMatchCommandApplier` — 0 call sites en `src/main/java` (huérfano).
+  - `MatchCommandHandler` — usado por `ExecuteMatchCommandUseCaseImpl`, `MatchTickService`, `MatchSession` (legacy pre-V24, NO V24).
+- **Decisión:** out of scope para sprint CLEANUP. Ticket separado si Iván quiere limpieza (recomendado — el código es V23 legacy que ya no se ejecuta en runtime).
+- **TODOs documentados:**
+  - `DefaultMatchCommandApplier.java:55` — "Implementar lógica de sustitución cuando se definan las reglas de negocio"
+  - `DefaultMatchCommandApplier.java:59` — "Implementar lógica de mentalidad cuando se definan las reglas de negocio"
+  - `MatchFinishService.java:65` — "Obtener seasonKey desde Match o Game"
+  - `MatchFinishService.java:99` — "Implementar cuando se defina la estructura de mentalidad"
+  - `MatchCommandHandler.java:99,164` — "Implementar" (sin contexto)
 
 ---
 
-*NEXT.md actualizado por SENIOR tras cierre de V24D6U4-RE (cambios en working tree, pendiente push).*
+*NEXT.md actualizado por MANAGER-football en Fase 0 del sprint CLEANUP (2026-06-18 20:15 ART). Próxima actualización al cerrar V24D15-CLEANUP.*
