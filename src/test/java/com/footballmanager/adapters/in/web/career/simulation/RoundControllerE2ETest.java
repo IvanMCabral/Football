@@ -26,16 +26,17 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * {@code worldTeamId} (NOT {@code id}) for WorldTeam and {@code realLeagueId} (NOT {@code id})
  * for WorldLeague.
  *
- * <p><b>KNOWN FINDING (V24D13-2 candidate):</b> RoundController.java:100 calls
- * {@code careerSessionService.getCareerFromCache(userId).block()} on a reactor thread.
- * In parallel scheduler threads this throws
- * {@code IllegalStateException("block() not supported in thread parallel-N")},
- * which the {@code GlobalExceptionHandler} maps to HTTP 422 with
- * {@code code: "LINEUP_STATE_ERROR"}. Test #5 ({@code startRound_emptyMatchesArray_returns200})
- * works around this by calling {@code seedFirstFixtureMatch(userId)} first, which
- * forces a reactor thread context switch. The proper fix is in
- * {@code RoundController} (use {@code Mono.fromCallable(...).subscribeOn(Schedulers.boundedElastic())}
- * or similar); out of scope for this ticket.
+ * <p><b>FIXED (V24D13-2):</b> {@code RoundController.startMatches} used to call
+ * {@code careerSessionService.getCareerFromCache(userId).block()} on a reactor
+ * thread, which throws {@code IllegalStateException("block() not supported in
+ * thread parallel-N")}. The GlobalExceptionHandler mapped that to HTTP 422
+ * LINEUP_STATE_ERROR, blocking the live smoke (posesión animándose, sustitución
+ * en vivo). The fix loads CareerSave reactively via
+ * {@code careerSessionService.getCareerFromCache(userId).switchIfEmpty(Mono.error(...))}
+ * and dispatches per-match side effects inside {@code doOnNext}. The controller's
+ * {@code onErrorResume} was also tightened to propagate IAE/ISE to
+ * GlobalExceptionHandler (preserving the 4xx semantic codes) and only convert
+ * genuinely unexpected errors to 500.
  *
  * <p><b>Error semantics:</b> {@code GlobalExceptionHandler} (a {@code @RestControllerAdvice})
  * intercepts BEFORE the controller's {@code onErrorResume} and returns 422 with
@@ -283,16 +284,10 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/match-engine/rounds/start with empty matches array — 200 with empty list (workaround: seedFirstFixtureMatch first)")
+    @DisplayName("POST /api/v1/match-engine/rounds/start with empty matches array — 200 with empty list")
     void startRound_emptyMatchesArray_returns200() {
         String userId = uniqueUserId();
         seedCareerAndGame(userId);
-
-        // Workaround: seedFirstFixtureMatch forces a reactor thread change that
-        // avoids the .block()-in-parallel-thread IllegalStateException in
-        // RoundController.java:100. See KNOWN FINDING in the class-level Javadoc
-        // (V24D13-2 candidate). The proper fix is in the controller itself.
-        seedFirstFixtureMatch(userId);
 
         String body = String.format(
             "{\"roundId\":\"%s\",\"userId\":\"%s\",\"matches\":[]}",

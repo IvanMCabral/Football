@@ -81,7 +81,18 @@ public class RoundController {
         return startMatches(roundId, userId, request)
             .map(initialState -> ResponseEntity.ok(initialState))
             .onErrorResume(e -> {
-                log.error("[ROUND-CONTROLLER] Error starting round {}: {}", request.roundId(), e.getMessage(), e);
+                // V24D13-2 (FIX-001): protocol-level exceptions (IllegalStateException
+                // from missing career/session, IllegalArgumentException from invalid
+                // roundId UUID, MinuteInPastException from F2.5) must propagate to
+                // GlobalExceptionHandler so the frontend gets the right 4xx semantic
+                // code (422 LINEUP_STATE_ERROR, 422 LINEUP_VALIDATION_ERROR, 400
+                // MINUTE_IN_PAST). Only genuinely unexpected errors (NPE, DB, etc.)
+                // are mapped to 500 here.
+                if (e instanceof IllegalStateException
+                        || e instanceof IllegalArgumentException) {
+                    return Mono.error(e);
+                }
+                log.error("[ROUND-CONTROLLER] Unexpected error starting round {}: {}", request.roundId(), e.getMessage(), e);
                 return Mono.just(ResponseEntity.internalServerError().build());
             });
     }
@@ -90,92 +101,100 @@ public class RoundController {
         RoundEngine roundEngine = new RoundEngine(roundId);
         log.info("[ROUND-CONTROLLER] Created RoundEngine for roundId: {}", roundId);
 
-        List<UUID> matchIds = new ArrayList<>();
         final int totalMatches = request.matches().size();
         final AtomicInteger matchesFinished = new AtomicInteger(0);
         final List<MatchResultProcessor.MatchResultInfo> matchResults =
                 Collections.synchronizedList(new ArrayList<>());
 
-        // V24D6M11: Load CareerSave once for all matches — needed for V24MatchContext construction
-        CareerSave career = careerSessionService.getCareerFromCache(userId).block();
-        if (career == null) {
-            log.error("[ROUND-CONTROLLER] CareerSave not found for user {}", userId);
-            return Mono.error(new IllegalStateException("Career not found for user: " + userId));
-        }
-        log.info("[ROUND-CONTROLLER] CareerSave loaded for V24 context construction");
-        // [V24D6M11-TRACE] Log careerId for E2E tracing
-        String traceCareerId = career.getData().getCareerId();
-        log.info("[V24D6M11-TRACE] RoundController careerId={}, roundId={}", traceCareerId, roundId);
+        // V24D13-2 (FIX-001): the previous implementation called
+        // {@code careerSessionService.getCareerFromCache(userId).block()} here,
+        // which throws {@code IllegalStateException("block() not supported in
+        // thread parallel-N")} on Reactor parallel threads. The exception is
+        // caught by {@code GlobalExceptionHandler} and surfaced to the
+        // frontend as HTTP 422 LINEUP_STATE_ERROR, blocking the live smoke
+        // (posesión animándose, sustitución en vivo). The fix loads the
+        // CareerSave reactively via {@code flatMap}; the per-match side
+        // effects (startMatch subscribe, engine registration, lifecycle
+        // tracking) are dispatched inside {@code doOnNext} and run on the
+        // Reactor scheduler, never blocking the caller thread.
+        return careerSessionService.getCareerFromCache(userId)
+            .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
+            .doOnNext(career -> {
+                log.info("[ROUND-CONTROLLER] CareerSave loaded for V24 context construction");
+                // [V24D6M11-TRACE] Log careerId for E2E tracing
+                String traceCareerId = career.getData().getCareerId();
+                log.info("[V24D6M11-TRACE] RoundController careerId={}, roundId={}", traceCareerId, roundId);
 
-        // V24D6R2: Initialize per-round tracking for lifecycle decrement
-        int currentRound = career.getTournamentState().getCurrentRound();
-        int currentSeason = career.getSeasonManager().getCurrentSeason();
-        LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
-        capturePreRoundState(career, tracking);
+                // V24D6R2: Initialize per-round tracking for lifecycle decrement
+                int currentRound = career.getTournamentState().getCurrentRound();
+                int currentSeason = career.getSeasonManager().getCurrentSeason();
+                LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
+                capturePreRoundState(career, tracking);
 
-        // Iniciar todos los partidos
-        for (StartRoundRequest.MatchInfo matchInfo : request.matches()) {
-            UUID matchId = UUID.fromString(matchInfo.matchId());
-            UUID homeTeamId = UUID.fromString(matchInfo.homeTeamId());
-            UUID awayTeamId = UUID.fromString(matchInfo.awayTeamId());
+                // Iniciar todos los partidos
+                for (StartRoundRequest.MatchInfo matchInfo : request.matches()) {
+                    UUID matchId = UUID.fromString(matchInfo.matchId());
+                    UUID homeTeamId = UUID.fromString(matchInfo.homeTeamId());
+                    UUID awayTeamId = UUID.fromString(matchInfo.awayTeamId());
 
-            matchIds.add(matchId);
-            log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
+                    log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
 
-            // V24D6M11: Build V24LiveSession if useV24DetailedEngine is enabled
-            V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
+                    // V24D6M11: Build V24LiveSession if useV24DetailedEngine is enabled
+                    V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
 
-            if (v24LiveSession != null) {
-                // V24 path — use MatchFinishedResult callback
-                matchManagementService.startMatch(
-                        userId,
-                        matchId,
-                        homeTeamId,
-                        awayTeamId,
-                        result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
-                        v24LiveSession)
-                    .subscribe();
-            } else {
-                // Legacy path — use MatchStateSnapshot callback
-                matchManagementService.startMatch(
-                        userId,
-                        matchId,
-                        homeTeamId,
-                        awayTeamId,
-                        finalState -> {
-                            matchResults.add(new MatchResultProcessor.MatchResultInfo(
-                                    matchId.toString(),
-                                    finalState.score().home(),
-                                    finalState.score().away(),
-                                    new ArrayList<>(finalState.events())
-                            ));
+                    if (v24LiveSession != null) {
+                        // V24 path — use MatchFinishedResult callback
+                        matchManagementService.startMatch(
+                                userId,
+                                matchId,
+                                homeTeamId,
+                                awayTeamId,
+                                result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
+                                v24LiveSession)
+                            .subscribe();
+                    } else {
+                        // Legacy path — use MatchStateSnapshot callback
+                        matchManagementService.startMatch(
+                                userId,
+                                matchId,
+                                homeTeamId,
+                                awayTeamId,
+                                finalState -> {
+                                    matchResults.add(new MatchResultProcessor.MatchResultInfo(
+                                            matchId.toString(),
+                                            finalState.score().home(),
+                                            finalState.score().away(),
+                                            new ArrayList<>(finalState.events())
+                                    ));
 
-                            int finished = matchesFinished.incrementAndGet();
-                            log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", matchId, finished, totalMatches);
+                                    int finished = matchesFinished.incrementAndGet();
+                                    log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", matchId, finished, totalMatches);
 
-                            if (finished == totalMatches) {
-                                log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
-                                roundEngine.emitCompletedState();
-                                orchestrator.processMatchDayResults(userId.toString(), matchResults)
-                                        .subscribe();
-                            }
-                        })
-                    .subscribe();
-            }
+                                    if (finished == totalMatches) {
+                                        log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
+                                        roundEngine.emitCompletedState();
+                                        orchestrator.processMatchDayResults(userId.toString(), matchResults)
+                                                .subscribe();
+                                    }
+                                })
+                            .subscribe();
+                    }
 
-            MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId);
-            log.info("[ROUND-CONTROLLER] Got MatchEngine for match {}: {}", matchId, matchEngine != null ? "OK" : "NULL");
-            roundEngine.registerMatch(matchId, matchEngine);
-        }
+                    MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId);
+                    log.info("[ROUND-CONTROLLER] Got MatchEngine for match {}: {}", matchId, matchEngine != null ? "OK" : "NULL");
+                    roundEngine.registerMatch(matchId, matchEngine);
+                }
 
-        roundEngineRegistry.register(roundId, roundEngine);
-        log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
-        roundEngine.start();
-        log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}", roundEngine.isRunning());
-
-        // Construir estado inicial
-        return Flux.fromIterable(matchIds)
-            .flatMap(matchId -> matchManagementService.getMatchState(userId, matchId))
+                roundEngineRegistry.register(roundId, roundEngine);
+                log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
+                roundEngine.start();
+                log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}", roundEngine.isRunning());
+            })
+            .flatMapMany(career -> Flux.fromIterable(request.matches()))
+            .flatMap(matchInfo -> {
+                UUID matchId = UUID.fromString(matchInfo.matchId());
+                return matchManagementService.getMatchState(userId, matchId);
+            })
             .collectList()
             .map(matchStates -> {
                 RoundState initialState = new RoundState(
