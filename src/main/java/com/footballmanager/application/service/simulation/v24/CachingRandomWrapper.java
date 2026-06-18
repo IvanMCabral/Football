@@ -56,14 +56,50 @@ public class CachingRandomWrapper extends Random {
     private final List<Double> doubleCache = new ArrayList<>(16384);
 
     /**
+     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: pointer to the next draw to be
+     * returned by {@link #nextDouble()}. Initialized to 0. The wrapper
+     * replays cached draws by leaving this pointer at the end of the
+     * previous engine run; the caller (V24LiveSession.tick) calls
+     * {@link #rewind()} before each engine call to make the engine see
+     * the same draws on every tick. Mutations route through
+     * {@link #invalidateFromIndex(int)} which truncates the cache and
+     * resets this pointer to the truncation point.
+     */
+    private int consumedIndex = 0;
+
+    /**
      * Persistent cache of every {@code nextInt(int bound)} draw: the bound and
      * the value drawn. Used by tests for debugging; the engine itself only
      * needs the double stream.
      */
     private final List<int[]> intCache = new ArrayList<>(1024);
 
+    /**
+     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: index of the next int-draw to be
+     * returned by {@link #nextInt(int)}. Like {@link #consumedIndex} but
+     * for the int stream.
+     */
+    private int consumedIntIndex = 0;
+
     public CachingRandomWrapper(long seed) {
         this.inner = new Random(seed);
+    }
+
+    /**
+     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: rewind the draw pointer to 0 so
+     * the next {@code engine.simulate(...)} call replays the same doubles
+     * in the same order. This is what makes the live score stable across
+     * ticks — the engine sees the exact same RNG stream on every call
+     * (no flicker).
+     *
+     * <p>The cache itself is not cleared; only the read pointer resets.
+     * New draws (consumed on the first call after the rewind) come from
+     * the cache, so the engine deterministically produces the same result
+     * on every tick.
+     */
+    public synchronized void rewind() {
+        this.consumedIndex = 0;
+        this.consumedIntIndex = 0;
     }
 
     /**
@@ -75,6 +111,16 @@ public class CachingRandomWrapper extends Random {
      * the wrapper "forget everything from minute M onwards — we are about to
      * re-run the engine and want it to use new draws".
      *
+     * <p>LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: resets {@link #consumedIndex}
+     * to 0 (not {@code index}) so the next engine call REPLAYS the
+     * truncated prefix (the draws before the truncation point) and then
+     * CONSUMES new draws for the suffix. This is the F1 B3 design's
+     * intended behaviour: same context + no mutations = same draws =
+     * same result every tick. After a {@code mutateContext} →
+     * {@code replayFromMinute(M)} call, the engine replays draws
+     * [0, cacheIndex.indexForMinute(M)) and produces new draws for the
+     * rest, so the suffix reflects the mutated context.
+     *
      * @param index the new cache size (in doubles). If {@code index >= size},
      *              this is a no-op.
      */
@@ -83,6 +129,8 @@ public class CachingRandomWrapper extends Random {
             throw new IllegalArgumentException("index must be >= 0, got " + index);
         }
         if (index >= doubleCache.size()) {
+            // No truncation needed. Leave consumedIndex as-is so the next
+            // call resumes from where the previous engine call left off.
             return;
         }
         // subList + clear is the canonical ArrayList truncation pattern.
@@ -94,16 +142,37 @@ public class CachingRandomWrapper extends Random {
         // For LIVE-MATCH-F2-LIVE Fase 1 we wipe from the start once the double
         // cache is invalidated past the first int-draw.
         intCache.clear();
+        // BUG-007: rewind the read pointer to 0 so the next engine call
+        // replays the truncated prefix and then consumes new draws for the
+        // rest. Combined with rewind() in tick(), this gives the F1 B3
+        // design's intended determinism: same context + no mutations =
+        // same draws = same result every tick.
+        this.consumedIndex = 0;
+        this.consumedIntIndex = 0;
     }
 
     /**
-     * Delegate {@code nextDouble()} to the inner Random, persist the value,
-     * and return it. Hot path — kept lean (no logging, no allocation).
+     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: return the next double from the
+     * cache if the cache has an unconsumed entry at {@link #consumedIndex}.
+     * Otherwise consume a fresh double from the inner Random, append it to
+     * the cache, and return it. The replay-vs-play decision is automatic
+     * based on whether the cache has been populated.
+     *
+     * <p>Hot path — kept lean (no logging, no allocation on replay).
      */
     @Override
     public synchronized double nextDouble() {
+        if (consumedIndex < doubleCache.size()) {
+            // Replay: return the previously-cached draw. Same engine call →
+            // same draws → same result. No allocation.
+            double cached = doubleCache.get(consumedIndex);
+            consumedIndex++;
+            return cached;
+        }
+        // Play: consume a new draw and persist it for future replays.
         double v = inner.nextDouble();
         doubleCache.add(v);
+        consumedIndex++;
         return v;
     }
 

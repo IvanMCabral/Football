@@ -155,9 +155,17 @@ public final class V24LiveSession {
      * Advance simulation by one tick (one match minute).
      *
      * <p>Calls {@code engine.simulate(effectiveContext, cachedRandom)} on
-     * every tick. With the {@link CachingRandomWrapper}, the same context
-     * and no mutations produce the SAME draw sequence every call, so this
-     * is deterministic — re-running is idempotent.
+     * every tick. The {@link CachingRandomWrapper} replays the same cached
+     * doubles on every call (LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007), so the
+     * engine sees the IDENTICAL draw sequence on every tick when no
+     * mutation has happened — the live score is stable across ticks
+     * (no flicker).
+     *
+     * <p>For mutations, {@link #mutateContext} calls
+     * {@link CachingRandomWrapper#invalidateFromIndex(int)} which truncates
+     * the cache from a given minute onward, so the next engine call sees
+     * the same prefix + new draws. The F2 substitution contract is
+     * preserved (manual subs still alter the result).
      *
      * <p>Cost: one full simulation per tick. Empirically &lt; 5ms (F1 metric).
      *
@@ -171,6 +179,12 @@ public final class V24LiveSession {
         // LIVE-MATCH-F2-LIVE F1 B3: every tick runs the engine through the
         // caching wrapper. The wrapper captures every draw so future
         // mutateContext() calls can replay from the right minute.
+        // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: rewind the wrapper before
+        // the engine call so the engine replays the SAME cached draws
+        // (the previous BUG-007 behavior was that the wrapper consumed a
+        // fresh batch of doubles on every call, producing a different
+        // timeline per tick and a flickering score in the F3 live UI).
+        cachedRandom.rewind();
         V24DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom);
         this.cachedResult = result;
         this.homeGoals = result.homeGoals();
@@ -281,6 +295,12 @@ public final class V24LiveSession {
     public V24DetailedMatchResult finalResult() {
         if (cachedResult == null) {
             // No tick has happened yet — run once and cache.
+            // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: rewind the wrapper first
+            // so the engine consumes from the start of the cache. After
+            // this first call, the cache is populated and the next
+            // engine call (from tick() or replayFromMinute()) will replay
+            // the same draws for determinism.
+            cachedRandom.rewind();
             this.cachedResult = engine.simulate(effectiveContext, cachedRandom);
             this.homeGoals = cachedResult.homeGoals();
             this.awayGoals = cachedResult.awayGoals();
