@@ -370,6 +370,36 @@ mavis cron self <name> --every 10m --prompt "..."
 mavis cron delete mavis <name>
 ```
 
+### 11.1 Correr `mvn test` (cheat sheet E2E)
+
+**Regla:** desde V24D12-D (rotacion de credenciales, 2026-06-15), `mvn test` requiere **AMBAS** env vars exportadas antes de invocarse. Sin ellas, los 19 test classes E2E fallan con `NOAUTH Authentication required` en `AbstractIntegrationTest.cleanRedis:61` (línea 64 original con `.block()`).
+
+- `DB_PASSWORD` — la test DB `football_manager_test` requiere la password rotada de V24D12-D-6 (`Mgr2026Rot!Secure#`).
+- `REDIS_PASSWORD` — Redis DB 15 (test) requiere la password rotada de V24D12-D (`MgrRedis2026!Rotate#Secure`).
+
+**Forma recomendada** (idempotente, ambos tests):
+
+```powershell
+# Suite completa (1319 tests):
+powershell -ExecutionPolicy Bypass -File D:\ProyectosOpenCode\MANAGER\run-game-controller-tests.ps1
+
+# Un test especifico:
+powershell -ExecutionPolicy Bypass -File D:\ProyectosOpenCode\MANAGER\run-game-controller-tests.ps1 -Test "RoundControllerE2ETest"
+```
+
+**Forma manual** (si necesitas copiar/pegar en otra terminal):
+
+```powershell
+$env:DB_PASSWORD = "Mgr2026Rot!Secure#"
+$env:REDIS_PASSWORD = "MgrRedis2026!Rotate#Secure"
+Set-Location D:\ProyectosOpenCode\MANAGER
+mvn test
+```
+
+**Sintoma de error tipico** (F3 → F4): 1319 tests / 0 failures / **100 errors** (19 clases E2E con `RedisConnectionFailure Unable to connect to Redis` → `NOAUTH Authentication required`). Significa siempre que falta una de las dos env vars.
+
+**Estado esperado con env vars correctas + Redis UP**: `Tests run: 1319, Failures: 0, Errors: 0, Skipped: 0`. Si quedan failures/errors, ver F4 reporte en `C:\Users\ichu_\.mavis\agents\senior-football\workspace\reporte-f4-investigacion.md`.
+
 ---
 
 *Fin del runbook. Ivan pidio este archivo 2026-06-14 22:41 ART — actualizar en cada cambio.*
