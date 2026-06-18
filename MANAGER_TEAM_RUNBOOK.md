@@ -338,7 +338,13 @@ _(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-
 - **Senales de "se trabo"** (en cualquier agente): manda un ACK inicial pero no completa la tarea en 1-2 min, o manda reportes parciales, o se queda sin output por 5+ min. Accion: `mavis session abort` + dejar que Mavis lo haga.
 - **Si en algun momento se quiere re-intentar:** NO vale la pena. El modelo es el mismo. Mejor invertir el tiempo en otra cosa.
 
-### 10.13 Regla: Mavis ejecuta la rotacion de credenciales (Ivan 2026-06-15)
+### 10.15 Gotcha: Browser MCP memory leak despues de 25-30 min de polling SSE continuo (2026-06-18)
+- **Problema:** El Browser MCP (Chromium-1208 via `mavis browser tool` o Playwright directo) acumula memoria RAM durante sesiones largas de polling SSE. Despues de ~25-30 min de un smoke que hace `page.waitForSelector` o polling periodico contra `/api/v1/match-engine/round/{roundId}/live`, el browser se cuelga o devuelve timeouts.
+- **Sintoma:** `Browser MCP tool call timeout` o respuestas vacias del browser. RAM del proceso `chrome.exe` supera 1.5 GB.
+- **Confirmado:** No es bug del proyecto (backend SSE funciona correcto via `curl`). Es el MCP el que pierde el event loop o se queda sin memoria.
+- **Workaround (V24D15-CLEANUP):** durante smokes de REVISOR que polleen SSE por mas de 20 min, **refrescar el browser MCP cada 20-25 min** cerrando y reabriendo el tab, o usar `--max-duration 25m` en el scope del smoke. Si el smoke es < 20 min (la mayoria), no es necesario.
+- **Aplicar a:** REVISOR (smokes visuales). Manager/Senior no usan Browser MCP directamente.
+- **TODO futuro (out of scope V24D15-CLEANUP):** investigar si es bug conocido de Playwright 1.49 o del MCP wrapper de mavis. De momento, workaround operativo.
 - **Por que:** Ivan decidio 2026-06-15 14:43 que el no confirma ni ejecuta la rotacion de credenciales (Postgres `ALTER USER`, Redis `CONFIG SET requirepass`, JWT `openssl rand -base64 64`). La rotacion queda como responsabilidad de Mavis root, que la puede delegar a MANAGER (analisis) o SENIOR (ejecucion) segun el caso. Los valores reales NUNCA se transmiten por chat (canal inseguro). Script copy-paste ready en `docs/rotar-credenciales.md` (repo, trackeado) o en `workspace/rotar-credenciales.md` (workspace de agentes, no trackeado).
 - **Cuando aplica:** cada vez que se commitea algo que referencia credenciales reales (`.env`, configs de infra, secrets en codigo), o como parte de un fix de seguridad (tipo V24D12-D).
 - **Workflow sugerido:** MANAGER redacta el procedimiento de rotacion → Mavis lo revisa → SENIOR o Mavis lo ejecutan en infra → Ivan autoriza el push final → smoke REVISOR valida.
@@ -399,6 +405,35 @@ mvn test
 **Sintoma de error tipico** (F3 → F4): 1319 tests / 0 failures / **100 errors** (19 clases E2E con `RedisConnectionFailure Unable to connect to Redis` → `NOAUTH Authentication required`). Significa siempre que falta una de las dos env vars.
 
 **Estado esperado con env vars correctas + Redis UP**: `Tests run: 1319, Failures: 0, Errors: 0, Skipped: 0`. Si quedan failures/errors, ver F4 reporte en `C:\Users\ichu_\.mavis\agents\senior-football\workspace\reporte-f4-investigacion.md`.
+
+---
+
+## 12. agent.md de los agentes custom (2026-06-18)
+
+**Contexto:** los agentes custom (manager-football, senior-football, revisor-football) son `isBuiltin: false, creationSource: "auto"`. Su system prompt real NO viene del package, hay que escribirlo en `C:\Users\ichu_\.mavis\agents\<agente>\agent.md`. Si el archivo está vacío o no existe, el agente arranca sin instrucciones de dominio y puede inventar scope o fallar tareas.
+
+**Regla:** todos los agentes custom DEBEN tener `agent.md` con:
+- **Rol** (1 línea)
+- **NO hace** (lista de cosas que NO debe hacer)
+- **Proyecto** (paths absolutos, runbook, tags)
+- **Jerarquía** (a quién reporta, de quién recibe, a quién manda)
+- **Workflow** de la tarea típica
+- **Reglas duras** (lo que NO se rompe)
+- **Gotchas** del proyecto
+- **Comandos útiles**
+
+**Archivos actuales (2026-06-18):**
+- `C:\Users\ichu_\.mavis\agents\manager-football\agent.md` — rol: analista, redacta prompts, revisa diffs. NO toca código, NO push.
+- `C:\Users\ichu_\.mavis\agents\senior-football\agent.md` — rol: ejecutor, escribe código, hace commits locales. NO push sin OK Iván + REVISOR GO.
+- `C:\Users\ichu_\.mavis\agents\revisor-football\agent.md` — rol: smoke tester visual con Playwright MCP. NO toca código, NO reinicia stack.
+
+**Por qué importa (lección F5.3 2026-06-18):** MANAGER arrancó sin `agent.md`, inventó scope (Trade-off-001 de un ticket de cola viejo), no respetó la decisión de Iván (Lectura A = revertir pre-F5.2 + BUG-015). Tuve que cerrar 2 sesiones y armar el system prompt yo mismo desde Mavis. Después de aplicar agent.md, las próximas sesiones de MANAGER ya tendrán el rol claro.
+
+**Si se agrega un agente custom nuevo:** escribir `agent.md` ANTES de spawnear la primera sesión. Sin system prompt, falla.
+
+**PERSONA.md** (opcional): personalidad/voz del agente. Si se quiere, escribir a `C:\Users\ichu_\.mavis\agents\<agente>\PERSONA.md`. Si no, el agente habla "neutro" (sin estilo).
+
+**Validar que está aplicado:** el `mavis agent info <agente>` muestra el stub built-in siempre ("# Role / This file defines your system prompt..."). Eso es el placeholder, NO el contenido real. El contenido real se lee del `agent.md` al instanciar la sesión. Para verificar que el archivo está bien, leerlo directamente.
 
 ---
 
