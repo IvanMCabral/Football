@@ -224,13 +224,33 @@ public final class V24LiveSession {
      */
 
     /**
-     * LIVE-MATCH-F5.2 BUG-009: event types considered "noise" for the
-     * user-facing live UI. The engine still emits them to the internal
-     * timeline (and to the persistence path) — they are ONLY filtered
-     * from the snapshot that goes out via SSE. The threshold of "important
-     * events" per match (measured by Iván in F5.1) is ~30-50; without this
-     * filter, the engine produces ~50-80 events per match with V24D6U4.
+     * LIVE-MATCH-F5.2 BUG-009 + V24D15-CLEANUP: event types considered
+     * "noise" for the user-facing live UI. The engine still emits them
+     * to the internal timeline (and to the persistence path) — they are
+     * ONLY filtered from the snapshot that goes out via SSE.
+     *
+     * <p>The implicit "importance threshold" measured by Iván in F5.1 is
+     * <b>~30-50 important events per match</b>: without this filter the
+     * V24D6U4 engine produces ~50-80 events per match, of which only
+     * ~30-50 are "interesting" for a manager watching live (goals, shots,
+     * subs, cards, possession-relevant events). The six types below
+     * constitute the filtered set — each one represents a transient
+     * micro-event the manager does NOT need to see tick-by-tick.
+     *
+     * <p>{@link #NOISE_EVENT_THRESHOLD_MIN} is the minimum number of
+     * filtered types. If a future change drops the Set size below this
+     * floor, the BUG-009 contract is at risk (too many noisy events
+     * reaching the SSE consumer) and the team should review the
+     * filter list explicitly rather than accept a silent regression.
+     *
+     * <p>Note: SHOT is kept (the spec says "SHOT_ON_TARGET (incluye
+     * saves y goals)" — we keep SHOT separately so the UI can still
+     * distinguish a shot off target from a chance created). SAVE is
+     * kept because it represents a visible event (the goalkeeper stopped
+     * a shot on target).
      */
+    public static final int NOISE_EVENT_THRESHOLD_MIN = 6;
+
     private static final java.util.Set<V24MatchEventType> NOISE_EVENTS = java.util.Set.of(
         V24MatchEventType.CHANCE_CREATED,
         V24MatchEventType.OFFSIDE,
@@ -238,11 +258,24 @@ public final class V24LiveSession {
         V24MatchEventType.FOUL,
         V24MatchEventType.MISS,
         V24MatchEventType.BLOCK
-        // Note: SHOT is kept (the spec says "SHOT_ON_TARGET (incluye saves y goals)"
-        // — we keep SHOT separately so the UI can still distinguish a shot off
-        // target from a chance created). SAVE is kept because it represents a
-        // visible event (the goalkeeper stopped a shot on target).
     );
+
+    /**
+     * V24D15-CLEANUP (BUG-009 spec threshold): sanity check the noise
+     * filter Set size at class-load time. If a future refactor drops
+     * the Set below the documented minimum, fail fast — better to
+     * crash at startup than to ship a regression where 60+ events per
+     * match flood the SSE consumer.
+     */
+    static {
+        if (NOISE_EVENTS.size() < NOISE_EVENT_THRESHOLD_MIN) {
+            throw new IllegalStateException(
+                "NOISE_EVENTS Set shrunk below the BUG-009 threshold: "
+                    + "expected at least " + NOISE_EVENT_THRESHOLD_MIN
+                    + " filtered types, found " + NOISE_EVENTS.size()
+                    + ". Review the F5.2 noise filter contract before shipping.");
+        }
+    }
 
     /**
      * Build the current snapshot from accumulated state.

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * LIVE-MATCH-F5.2 BUG-009 regression test.
@@ -79,6 +80,28 @@ class V24LiveSessionEventFilterTest {
         assertTrue(noiseTypes.isEmpty(),
             "BUG-009 violated: SSE payload contains NOISE_EVENTS: " + noiseTypes
             + ". These should be filtered out by the buildSnapshot() filter.");
+    }
+
+    @Test
+    @DisplayName("V24D15-CLEANUP: NOISE_EVENT_THRESHOLD_MIN constant is honoured (Set size >= 6)")
+    void noiseEventThresholdMin_constantIsHonoured() throws Exception {
+        // Read the constant via reflection so the test breaks if the field is
+        // ever renamed. We don't want to couple to the field name in the
+        // assertion — the contract is "the Set is at least 6 types big".
+        java.lang.reflect.Field thresholdField = V24LiveSession.class
+            .getDeclaredField("NOISE_EVENT_THRESHOLD_MIN");
+        thresholdField.setAccessible(true);
+        int threshold = (int) thresholdField.get(null);
+        assertTrue(threshold >= 6,
+            "NOISE_EVENT_THRESHOLD_MIN must be >= 6 (F5.2 measured ~30-50 important "
+                + "events per match, filtering out ~6 categories). Found: " + threshold);
+
+        // Verify the Set size matches. Indirectly: spawn a V24LiveSession
+        // and trigger the static initializer to confirm it doesn't throw.
+        // (The static initializer throws if size < threshold; if the class
+        //  loaded successfully, the contract holds.)
+        V24LiveSession session = new V24LiveSession(buildContext(), 42L);
+        assertNotNull(session);
     }
 
     @Test
