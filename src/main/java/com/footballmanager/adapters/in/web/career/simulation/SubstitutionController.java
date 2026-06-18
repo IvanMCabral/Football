@@ -109,6 +109,19 @@ public class SubstitutionController {
                 result.substitutionsRemaining(),
                 result.error())))
             .onErrorResume(e -> {
+                // V24D13-2 (F4.4): protocol-level exceptions (IllegalStateException
+                // for "no active match session" / missing V24LiveSession / missing
+                // context, IllegalArgumentException — and its subclass
+                // MinuteInPastException — for "minute in past") must propagate to
+                // GlobalExceptionHandler so the frontend gets the right 4xx
+                // semantic code (422 LINEUP_STATE_ERROR, 400 MINUTE_IN_PAST).
+                // Only genuinely unexpected errors (NPE, DB, etc.) are mapped to
+                // 500 here. The previous implementation swallowed all errors and
+                // returned 500, hiding the F2.5 protocol semantics from the front.
+                if (e instanceof IllegalStateException
+                        || e instanceof IllegalArgumentException) {
+                    return Mono.error(e);
+                }
                 log.error("[LIVE-MATCH-F2-F2] Unexpected error during substitution for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

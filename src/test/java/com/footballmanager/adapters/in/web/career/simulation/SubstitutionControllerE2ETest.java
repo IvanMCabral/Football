@@ -135,7 +135,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST with auth + valid matchId but no live session — 200 OK with success=false (FLAG 1 UX)")
+    @DisplayName("POST with auth + valid matchId but no live session — 422 LINEUP_STATE_ERROR (F2.5 protocol semantics)")
     void substitute_noSession_returns200WithFailure() {
         String userId = UUID.randomUUID().toString();
         String matchId = UUID.randomUUID().toString();
@@ -143,21 +143,27 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             {"playerOffId":"off","playerOnId":"on","minute":null}
             """;
 
-        // FLAG 1 UX fix: the use case now catches "No active match session" and
-        // returns a SubstitutionResult.failure(...) instead of throwing. The
-        // controller maps it to 200 OK with success=false + descriptive error.
-        // Previous behavior was 409 CONFLICT.
+        // V24D13-2 (F4.4): contract update from FLAG 1 UX to F2.5 protocol semantics.
+        // Previously (FLAG 1): the controller's onErrorResume caught the
+        // IllegalStateException from the use case and returned 200 OK with
+        // success=false + descriptive error (front showed a snackbar).
+        // Now (F2.5): "no active match session" is a protocol-level failure
+        // (the manager is trying to mutate state that doesn't exist), so the
+        // use case propagates the IllegalStateException, GlobalExceptionHandler
+        // translates it to HTTP 422 LINEUP_STATE_ERROR, and the front can show
+        // a dedicated banner distinguishing it from business validation
+        // failures. The substitutionCommandUseCase now propagates the ISE
+        // (and MinuteInPastException) so the dedicated handlers in
+        // GlobalExceptionHandler can produce the right 4xx codes.
         webTestClient.mutateWith(mockUser(userId))
             .post().uri("/api/v1/match-engine/matches/{id}/substitutions", matchId)
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .exchange()
-            .expectStatus().isOk()
+            .expectStatus().isEqualTo(422)
             .expectBody()
-            .jsonPath("$.success").isEqualTo(false)
-            .jsonPath("$.minuteApplied").isEqualTo(0)
-            .jsonPath("$.substitutionsRemaining").isEqualTo(0)
-            .jsonPath("$.error").value(org.hamcrest.Matchers.containsString("No active match session"));
+            .jsonPath("$.code").isEqualTo("LINEUP_STATE_ERROR")
+            .jsonPath("$.message").value(org.hamcrest.Matchers.containsString("No active match session"));
     }
 
     @Test
