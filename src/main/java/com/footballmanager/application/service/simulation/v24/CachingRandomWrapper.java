@@ -111,15 +111,23 @@ public class CachingRandomWrapper extends Random {
      * the wrapper "forget everything from minute M onwards — we are about to
      * re-run the engine and want it to use new draws".
      *
-     * <p>LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: resets {@link #consumedIndex}
-     * to 0 (not {@code index}) so the next engine call REPLAYS the
-     * truncated prefix (the draws before the truncation point) and then
-     * CONSUMES new draws for the suffix. This is the F1 B3 design's
-     * intended behaviour: same context + no mutations = same draws =
-     * same result every tick. After a {@code mutateContext} →
-     * {@code replayFromMinute(M)} call, the engine replays draws
-     * [0, cacheIndex.indexForMinute(M)) and produces new draws for the
-     * rest, so the suffix reflects the mutated context.
+     * <p>V24D15-CLEANUP (BUG 6 — CachingRandomWrapper): the read pointer
+     * ({@link #consumedIndex}) is reset to {@code index} (the truncation
+     * point), not 0. The previous {@code consumedIndex = 0} implementation
+     * caused the wrapper to REPLAY the preserved prefix instead of
+     * continuing with fresh draws — breaking the
+     * {@code invalidateFromIndex_preservesPrefixDiscardsSuffix} contract
+     * (cacheSize stayed at {@code index} after the next
+     * {@code nextDouble()}, not {@code index + 1}). After this fix the
+     * cache behaves as documented: first {@code index} draws preserved,
+     * draws beyond {@code index} discarded, subsequent draws appended.
+     *
+     * <p>The F1 B3 replay-on-tick determinism is unaffected: the engine
+     * calls {@link #rewind()} before each tick, which sets
+     * {@code consumedIndex = 0} regardless. invalidateFromIndex now
+     * controls the BOUNDARY between the preserved prefix and the
+     * about-to-be-produced suffix; rewind() controls the read pointer
+     * for the engine call.
      *
      * @param index the new cache size (in doubles). If {@code index >= size},
      *              this is a no-op.
@@ -142,12 +150,15 @@ public class CachingRandomWrapper extends Random {
         // For LIVE-MATCH-F2-LIVE Fase 1 we wipe from the start once the double
         // cache is invalidated past the first int-draw.
         intCache.clear();
-        // BUG-007: rewind the read pointer to 0 so the next engine call
-        // replays the truncated prefix and then consumes new draws for the
-        // rest. Combined with rewind() in tick(), this gives the F1 B3
-        // design's intended determinism: same context + no mutations =
-        // same draws = same result every tick.
-        this.consumedIndex = 0;
+        // V24D15-CLEANUP: reset the read pointer to the truncation point
+        // so the next nextDouble() call produces a NEW draw (the cache
+        // is exhausted at `index`, so consumedIndex == index → the play
+        // branch in nextDouble() fires and a new value is appended at
+        // position `index`). Without this, consumedIndex was 0 and the
+        // wrapper replayed the entire preserved prefix on every call.
+        this.consumedIndex = index;
+        // consumedIntIndex has no consumer in the engine (nextInt is
+        // delegate-only, never replay), so resetting to 0 is harmless.
         this.consumedIntIndex = 0;
     }
 
