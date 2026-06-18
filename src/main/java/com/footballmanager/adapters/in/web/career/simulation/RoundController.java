@@ -70,6 +70,21 @@ public class RoundController {
      */
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
+        // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-004: validate the body BEFORE
+        // touching UUID.fromString. Without this guard, an empty / wrong-field
+        // body (e.g. {gameId, round} from a misbehaving client) makes
+        // `UUID.fromString(null)` throw a raw NPE
+        // ("Cannot invoke String.length() because name is null") which
+        // surfaces as HTTP 500. We map the missing/invalid roundId to a
+        // 422 LINEUP_VALIDATION_ERROR with a clear message instead.
+        if (request == null || request.roundId() == null || request.roundId().isBlank()) {
+            return Mono.error(new IllegalArgumentException(
+                "roundId is required and must be a non-blank UUID string"));
+        }
+        if (request.matches() == null || request.matches().isEmpty()) {
+            return Mono.error(new IllegalArgumentException(
+                "matches is required and must contain at least one match"));
+        }
         UUID roundId = UUID.fromString(request.roundId());
         // V24D12-B: use the JWT identity. The legacy optional requestUserId
         // from the body is no longer honored - use the controller helper
