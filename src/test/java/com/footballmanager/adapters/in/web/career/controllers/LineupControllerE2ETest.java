@@ -1,6 +1,7 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
@@ -451,5 +452,46 @@ class LineupControllerE2ETest {
             .expectStatus().isOk()
             .expectBody()
             .jsonPath("$.players.length()").isEqualTo(11);
+    }
+
+    @Test
+    @DisplayName("MVP1-lineup-cancha-1.5: GET /current — slots[] poblado después de auto-select (F2 read path)")
+    void getCurrent_returnsSlots_afterAutoSelect() {
+        // Simula el flujo MVP1-lineup-cancha-1.5: el back's autoSelectLineup
+        // ahora persiste subdivision map (F1), por lo que GET /current debe
+        // retornar el LineupDTO con slots[] poblado de 11 entries.
+        List<LineupSlotDTO> slots = List.of(
+            new LineupSlotDTO("p1",  "GK-1"),
+            new LineupSlotDTO("p2",  "S22-1"),
+            new LineupSlotDTO("p3",  "S22-2"),
+            new LineupSlotDTO("p4",  "S23-2"),
+            new LineupSlotDTO("p5",  "S24-3"),
+            new LineupSlotDTO("p6",  "S13-2"),
+            new LineupSlotDTO("p7",  "S14-2"),
+            new LineupSlotDTO("p8",  "S15-2"),
+            new LineupSlotDTO("p9",  "S04-1"),
+            new LineupSlotDTO("p10", "S05-2"),
+            new LineupSlotDTO("p11", "S06-3")
+        );
+        LineupDTO lineupWithSlots = new LineupDTO(
+            "4-3-3", lineupWith11Players().players(), false, List.of(), slots);
+
+        when(lineupQueryUseCase.getCurrentLineup(eq(TEST_USER_ID)))
+            .thenReturn(Mono.just(lineupWithSlots));
+
+        webTestClient.mutateWith(
+                org.springframework.security.test.web.reactive.server
+                    .SecurityMockServerConfigurers.mockUser(TEST_USER_ID.toString()))
+            .get().uri("/api/v1/career/lineup/current")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.formation").isEqualTo("4-3-3")
+            .jsonPath("$.players.length()").isEqualTo(11)
+            .jsonPath("$.slots.length()").isEqualTo(11)
+            .jsonPath("$.slots[0].playerId").isEqualTo("p1")
+            .jsonPath("$.slots[0].subdivisionId").isEqualTo("GK-1")
+            .jsonPath("$.slots[10].playerId").isEqualTo("p11")
+            .jsonPath("$.slots[10].subdivisionId").isEqualTo("S06-3");
     }
 }

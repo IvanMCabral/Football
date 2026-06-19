@@ -95,13 +95,21 @@ public class UserPlayerManagementUseCaseImpl implements UserPlayerManagementUseC
 
     @Override
     public Mono<List<SessionPlayer>> getUserSquad(UUID userId) {
-        return sessionService.getCareer(userId)
+        // MVP1-lineup-cancha-1.5 FIX (F5): usar getCareerFromCache en lugar de
+        // getCareer. Si Redis está momentarily sin la career (después de un
+        // save/invalidate race), getCareerFromCache retorna Mono.empty()
+        // (continueCareer NO lanza IllegalStateException). Esto evita el 422
+        // que GlobalExceptionHandler mapeaba desde el IllegalStateException
+        // viejo. Para mantener semántica amigable con el front, traducimos
+        // Mono.empty() a Mono.just([]) vía defaultIfEmpty.
+        return sessionService.getCareerFromCache(userId)
             .map(career -> {
                 String userTeamId = career.getUserSessionTeamId();
                 if (userTeamId == null) {
                     return List.<SessionPlayer>of();
                 }
                 return career.getTeamSquad(userTeamId);
-            });
+            })
+            .defaultIfEmpty(List.of());
     }
 }

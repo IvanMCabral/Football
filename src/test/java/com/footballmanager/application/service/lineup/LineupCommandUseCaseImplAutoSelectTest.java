@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -39,7 +40,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper);
+        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper, new FormationService());
     }
 
     private SessionPlayer makePlayer(String id, String name, String position, int overall, int energy, boolean injured, boolean suspended, int suspensionRemainingMatches) {

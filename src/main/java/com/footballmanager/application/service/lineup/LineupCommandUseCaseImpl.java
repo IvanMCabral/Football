@@ -1,10 +1,13 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.FormationDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.FormationPositionDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
@@ -40,6 +43,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     private final CareerRepository careerRepository;
     private final LineupHelper lineupHelper;
+    private final FormationService formationService;
 
     @Override
     public Mono<LineupDTO> autoSelectLineup(UUID userId, String formationCode) {
@@ -59,6 +63,16 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     .map(SessionPlayer::getSessionPlayerId)
                     .toList();
                 career.getTeamStarting11().put(userTeamId, lineupIds);
+
+                // MVP1-lineup-cancha-1.5: persist subdivision map so that
+                // re-opening the modal restores exact slot assignments
+                // (vs. role-match fallback that only fills GK + first 2 CB).
+                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, lineup);
+                if (slotMap.isEmpty()) {
+                    career.getTeamStarting11Subdivision().remove(userTeamId);
+                } else {
+                    career.getTeamStarting11Subdivision().put(userTeamId, slotMap);
+                }
 
                 return careerRepository.save(career)
                     .thenReturn(buildLineupDTO(lineup, formation, warnings));
@@ -314,5 +328,47 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             return false;
         }
         return true;
+    }
+
+    /**
+     * MVP1-lineup-cancha-1.5: Build the subdivision map for an auto-selected
+     * lineup. The role-match uses EXACT match between {@code player.position}
+     * and {@code formationPosition.role} — this mirrors the front's
+     * {@code applyLineupToSlots} (lines 1158-1170) so the back and the front
+     * compute the same subdivisionId for the same (lineup, formation) pair.
+     *
+     * <p>If a position has no matching player (short-handed squad), the
+     * corresponding subdivision slot is left unassigned; the front's
+     * role-match fallback in {@code loadSquadFromBackend} handles the rest.
+     */
+    private Map<String, String> buildAutoSelectSlotMap(Formation formation, List<SessionPlayer> lineup) {
+        if (formationService == null) {
+            return Map.of();
+        }
+        FormationDTO formationDto = formationService.getFormationByName(formation.getCode());
+        if (formationDto == null || formationDto.positions() == null) {
+            return Map.of();
+        }
+        Map<String, String> slotMap = new HashMap<>();
+        Set<String> usedPlayerIds = new HashSet<>();
+        for (FormationPositionDTO pos : formationDto.positions()) {
+            String role = pos.role();
+            String subdivisionId = pos.subdivisionId();
+            if (role == null || subdivisionId == null || subdivisionId.isBlank()) {
+                continue;
+            }
+            for (SessionPlayer player : lineup) {
+                String playerId = player.getSessionPlayerId();
+                if (playerId == null || usedPlayerIds.contains(playerId)) {
+                    continue;
+                }
+                if (role.equals(player.getPosition())) {
+                    slotMap.put(subdivisionId, playerId);
+                    usedPlayerIds.add(playerId);
+                    break;
+                }
+            }
+        }
+        return slotMap;
     }
 }

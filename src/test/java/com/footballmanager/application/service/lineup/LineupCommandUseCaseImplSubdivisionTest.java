@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -50,7 +51,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper);
+        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper, new FormationService());
     }
 
     private SessionPlayer makeHealthy(String id, String name, String position) {
@@ -319,5 +320,158 @@ class LineupCommandUseCaseImplSubdivisionTest {
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
         assertNull(teamSlots,
             "El overload legacy NO debe escribir subdivision map (backward compat)");
+    }
+
+    // ========== MVP1-lineup-cancha-1.5: autoSelect persiste subdivision map ==========
+
+    /**
+     * MVP1-lineup-cancha-1.5: para 4-4-2, el back debe persistir los 11
+     * subdivisionIds con EXACT role match entre player.position y pos.role,
+     * alineado con el front's applyLineupToSlots.
+     *
+     * <p>4-4-2 formation positions (FormationService):
+     * <pre>
+     *   GK-1 → GK, S22-1 → LB, S22-2 → CB, S23-2 → CB, S24-3 → RB,
+     *   S16-1 → LM, S16-2 → CM, S17-2 → CM, S18-3 → RM,
+     *   S05-2 → ST, S05-3 → ST
+     * </pre>
+     */
+    @Test
+    @DisplayName("MVP1-lineup-cancha-1.5: autoSelectLineup 4-4-2 persiste subdivision map con 11 entries")
+    void autoSelect_4_4_2_persistsSubdivisionMap() {
+        CareerSave career = makeCareer(makeFullSquad442());
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor.capture());
+        CareerSave saved = captor.getValue();
+
+        Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots, "teamStarting11Subdivision map debe estar poblada");
+        assertEquals(11, teamSlots.size(), "Debe haber 11 entries para 4-4-2 full lineup");
+
+        // Exact role match: GK → GK-1, LB → S22-1, etc.
+        assertTrue(teamSlots.containsKey("GK-1"),  "GK-1 debe estar asignado");
+        assertTrue(teamSlots.containsKey("S22-1"), "LB → S22-1");
+        assertTrue(teamSlots.containsKey("S22-2"), "CB → S22-2");
+        assertTrue(teamSlots.containsKey("S23-2"), "CB → S23-2");
+        assertTrue(teamSlots.containsKey("S24-3"), "RB → S24-3");
+        assertTrue(teamSlots.containsKey("S16-1"), "LM → S16-1");
+        assertTrue(teamSlots.containsKey("S16-2"), "CM → S16-2");
+        assertTrue(teamSlots.containsKey("S17-2"), "CM → S17-2");
+        assertTrue(teamSlots.containsKey("S18-3"), "RM → S18-3");
+        assertTrue(teamSlots.containsKey("S05-2"), "ST → S05-2");
+        assertTrue(teamSlots.containsKey("S05-3"), "ST → S05-3");
+    }
+
+    /**
+     * MVP1-lineup-cancha-1.5: para 4-3-3, los subdivisionIds son distintos
+     * (la MID line tiene 3 CM en posiciones distintas) y el ATT line usa
+     * LW/ST/RW. Verificar que el back produce los IDs correctos.
+     *
+     * <p>4-3-3 formation positions (FormationService):
+     * <pre>
+     *   GK-1 → GK, S22-1 → LB, S22-2 → CB, S23-2 → CB, S24-3 → RB,
+     *   S13-2 → CM, S14-2 → CM, S15-2 → CM,
+     *   S04-1 → LW, S05-2 → ST, S06-3 → RW
+     * </pre>
+     */
+    @Test
+    @DisplayName("MVP1-lineup-cancha-1.5: autoSelectLineup 4-3-3 persiste subdivision map con 11 entries")
+    void autoSelect_4_3_3_persistsSubdivisionMap() {
+        // Squad específico para 4-3-3: GK + LB + 2 CB + RB + 3 CM + LW + ST + RW
+        List<SessionPlayer> squad433 = List.of(
+            makeHealthy("gk-433", "GK 433", "GK"),
+            makeHealthy("lb-433", "LB 433", "LB"),
+            makeHealthy("cb1-433", "CB A 433", "CB"),
+            makeHealthy("cb2-433", "CB B 433", "CB"),
+            makeHealthy("rb-433", "RB 433", "RB"),
+            makeHealthy("cm1-433", "CM A 433", "CM"),
+            makeHealthy("cm2-433", "CM B 433", "CM"),
+            makeHealthy("cm3-433", "CM C 433", "CM"),
+            makeHealthy("lw-433", "LW 433", "LW"),
+            makeHealthy("st-433", "ST 433", "ST"),
+            makeHealthy("rw-433", "RW 433", "RW")
+        );
+
+        CareerSave career = makeCareer(squad433);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor.capture());
+        CareerSave saved = captor.getValue();
+
+        Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots, "teamStarting11Subdivision map debe estar poblada");
+        // 4-3-3: GK + LB + 2 CB + RB + 3 CM + LW + ST + RW = 11 slots
+        assertEquals(11, teamSlots.size(), "Debe haber 11 entries para 4-3-3 full lineup");
+
+        // Verificar las posiciones específicas del 4-3-3
+        assertTrue(teamSlots.containsKey("GK-1"),  "GK-1");
+        assertTrue(teamSlots.containsKey("S22-1"), "LB → S22-1");
+        assertTrue(teamSlots.containsKey("S22-2"), "CB → S22-2");
+        assertTrue(teamSlots.containsKey("S23-2"), "CB → S23-2");
+        assertTrue(teamSlots.containsKey("S24-3"), "RB → S24-3");
+        assertTrue(teamSlots.containsKey("S13-2"), "CM (left) → S13-2");
+        assertTrue(teamSlots.containsKey("S14-2"), "CM (center) → S14-2");
+        assertTrue(teamSlots.containsKey("S15-2"), "CM (right) → S15-2");
+        assertTrue(teamSlots.containsKey("S04-1"), "LW → S04-1");
+        assertTrue(teamSlots.containsKey("S05-2"), "ST → S05-2");
+        assertTrue(teamSlots.containsKey("S06-3"), "RW → S06-3");
+    }
+
+    /**
+     * MVP1-lineup-cancha-1.5: si ya existía un subdivision map de una formación
+     * anterior (4-3-3), un nuevo auto-select con otra formación (4-4-2) debe
+     * SOBREESCRIBIR el map con los IDs de la nueva formación.
+     */
+    @Test
+    @DisplayName("MVP1-lineup-cancha-1.5: autoSelectLineup sobreescribe subdivision map previo")
+    void autoSelect_overwritesPreviousMap() {
+        CareerSave career = makeCareer(makeFullSquad442());
+
+        // Pre-popular con subdivisionIds de 4-3-3 (que NO existen en 4-4-2).
+        Map<String, Map<String, String>> preExisting = new HashMap<>();
+        Map<String, String> oldSlots = new HashMap<>();
+        oldSlots.put("S04-1", "old-lw");  // LW slot del 4-3-3
+        oldSlots.put("S05-2", "old-st");  // ST slot del 4-3-3
+        oldSlots.put("S13-2", "old-cm");  // CM slot del 4-3-3
+        preExisting.put(TEAM_ID, oldSlots);
+        career.setTeamStarting11Subdivision(preExisting);
+
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor.capture());
+        CareerSave saved = captor.getValue();
+
+        Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertEquals(11, teamSlots.size(), "Debe tener 11 entries de 4-4-2 (no las 3 viejas)");
+
+        // Los slots viejos del 4-3-3 NO deben quedar (S04-1 era LW-only en 4-3-3)
+        assertFalse(teamSlots.containsKey("S04-1"),
+            "S04-1 (LW en 4-3-3) no debe quedar en un map de 4-4-2");
+        assertFalse(teamSlots.containsKey("S13-2"),
+            "S13-2 (CM en 4-3-3) no debe quedar en un map de 4-4-2");
+
+        // Los slots del 4-4-2 deben estar presentes
+        assertTrue(teamSlots.containsKey("S22-1"), "LB → S22-1 (formación 4-4-2)");
+        assertTrue(teamSlots.containsKey("S05-2"), "ST → S05-2 (formación 4-4-2)");
     }
 }
