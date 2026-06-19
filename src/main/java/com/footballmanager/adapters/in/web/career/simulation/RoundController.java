@@ -345,28 +345,30 @@ public class RoundController {
                     tracking
             );
 
-            // F6 Sprint 2: clean up the BaselineState now that the live
-            // detail is persisted. The compare endpoint will 404 for this
-            // match (good — there's no "after the fact" state to compare
-            // against). The TTL 7d would also expire it eventually, but
-            // explicit cleanup is cleaner.
-            //
-            // V24D15-CLEANUP (BUG_COMPARE_404): storage port delete is now
-            // Mono<Void>. Failure is non-fatal (TTL will reap it) but we
-            // log warn so a sustained Redis outage is visible.
-            String matchId = result.snapshot().matchId().toString();
-            String careerId = career.getData().getCareerId();
-            baselineStoragePort.delete(careerId, matchId)
-                    .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
-                    .doOnSuccess(v -> log.info(
-                            "[F6-MATCH-COMPARE] BaselineState deleted for matchId={}, careerId={}",
-                            matchId, careerId))
-                    .onErrorResume(e -> {
-                        log.warn("[F6-MATCH-COMPARE] Failed to delete baseline on match finish: {}",
-                                e.getMessage());
-                        return reactor.core.publisher.Mono.empty();
-                    })
-                    .subscribe();
+            // V24D15-CLEANUP (BUG_COMPARE_404 — ROOT CAUSE FIX): the previous
+            // code deleted the BaselineState here as "cleanup". That
+            // broke the /compare endpoint: the manager goes to match
+            // detail → click "Comparar" AFTER the match has finished,
+            // but by then the baseline was already gone and the
+            // endpoint returned 404.
+//
+// The F6 Sprint 2 design (BaselineStateStoragePort TTL 7d) explicitly
+// expects the baseline to outlive the match — that way the manager
+// can compare "what would have happened" vs "what happened with my
+// subs" up to 7 days later. Deleting it here contradicted that
+// contract and was the actual root cause of BUG_COMPARE_404 (Phase 1
+// refactor of the save() didn't matter because the save worked; the
+// delete-after-match was wiping the baseline before the UI could
+// request the comparison).
+//
+// Fix: KEEP the baseline after match finish. It expires naturally
+// via TTL 7d. After 7d the compare endpoint returns 404 — that's the
+// documented contract.
+//
+// The only call site of baselineStoragePort.delete in the codebase
+// is here, so removing it has no other side effects.
+            log.info("[F6-MATCH-COMPARE] BaselineState PRESERVED for matchId={}, careerId={} (TTL 7d, compare endpoint will use it)",
+                    result.snapshot().matchId(), career.getData().getCareerId());
         } else {
             events = new java.util.ArrayList<>(result.snapshot().events());
         }
