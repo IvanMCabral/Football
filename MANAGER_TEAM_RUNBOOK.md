@@ -76,14 +76,25 @@
 
 ### 4.2 Procedimiento canónico para Mavis (3 fases, NUNCA en el mismo turno)
 
-**FASE 1 — LANZAR (turno del trigger). Exactamente 3 pasos, en este orden:**
+**REGLA DURA (2026-06-18, Iván):** **PRIMERO el cron, DESPUÉS el bash, DESPUÉS avanzar.** Sin el cron activo, NO se puede avanzar al siguiente paso. Esto evita que Mavis se trabe testeando puertos o lanzando bash sin un watchdog que confirme UP.
 
-Paso 1 — lanzar el script:
-```bash
-bash -c "cd '/c/Users/ichu_/Desktop' && nohup bash reiniciar.sh > /tmp/mgr-rstr.log 2>&1 &"
+Si Mavis rompe esta regla (lanza bash primero o testea puertos en el mismo turno del bash), Iván lo corrige explícitamente con "te trabaste" o "primero cron, después bash". Mavis DEBE documentar la regla en su agent.md y aplicarla sin excepciones.
+
+**FASE 1 — LANZAR (turno del trigger). Exactamente 3 pasos, en este orden ESTRICTO:**
+
+Paso 1 — crear el cron PRIMERO (sin esto, no se puede avanzar):
+```
+mavis cron self check-stack-after-XXX --every 1m --prompt "PRIMER TICK (mensaje VISIBLE al usuario, NO mavis-progress, NO gate-discipline, SIEMPRE avisar al usuario): testea puertos 5432/6379/8080/4200 con Test-NetConnection (4200 también ::1 por IPv6). Si los 4 UP -> reportar 'stack UP, OK' al usuario (mensaje VISIBLE) + mavis cron delete mavis check-stack-after-XXX + spawn REVISOR. Si DOWN -> leer /tmp/mgr-rstr-XXX.log y reportar (mensaje VISIBLE). SIGUIENTES TICKS: gate-discipline normal (skip silencioso si no hay cambio)."
 ```
 
-Paso 2 — crear el cron:
+**REGLA SUBSIDIARIA (2026-06-18, Iván):** El PRIMER TICK del cron SIEMPRE notifica al usuario con mensaje VISIBLE (sin gate-discipline). Los siguientes ticks skipean silenciosos si no hay cambio. Esto evita que Iván quede esperando sin saber si el bash corrió.
+
+Paso 2 — lanzar el script bash DESPUÉS:
+```bash
+cmd.exe /c "start /B bash /c/Users/ichu_/Desktop/start_manager_full.sh > /tmp/mgr-rstr-XXX.log 2>&1"
+```
+
+Paso 3 — NUNCA Test-NetConnection en el mismo turno (Mavis se traba). El cron del primer tick confirma UP y se autodestruye.
 ```
 mavis cron self check-stack-after-restart --every 1m --prompt "PRIMER TICK (mensaje VISIBLE al usuario): testea puertos 5432/6379/8080/4200 con Test-NetConnection. Si los 4 UP -> 'stack UP, paso a REVISOR' + mavis cron delete mavis check-stack-after-restart. Si DOWN -> leer /tmp/mgr-rstr.log + reportar error. SIGUIENTES TICKS: solo si el estado cambió."
 ```
