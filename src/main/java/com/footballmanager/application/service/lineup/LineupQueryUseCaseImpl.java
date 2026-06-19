@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -10,13 +11,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Implementación de UseCase para consultas del lineup.
+ *
+ * <p>MVP1-lineup-cancha-1: si el {@code CareerSave.teamStarting11Subdivision}
+ * tiene slots persistidos para el team, los incluye en la respuesta.
+ * Si está vacío o ausente, retorna {@code slots=[]} (backward compat — el front
+ * infiere los slots del role del jugador).
  */
 @Service
 @RequiredArgsConstructor
@@ -65,6 +73,25 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             ))
             .toList();
 
-        return new LineupDTO(formationCode, playerDTOs, true);
+        List<LineupSlotDTO> slots = buildSlotsFromSubdivisionMap(career, userTeamId);
+
+        return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots);
+    }
+
+    private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {
+        Map<String, Map<String, String>> allSlots = career.getTeamStarting11Subdivision();
+        if (allSlots == null) {
+            return List.of();
+        }
+        Map<String, String> teamSlots = allSlots.get(userTeamId);
+        if (teamSlots == null || teamSlots.isEmpty()) {
+            return List.of();
+        }
+
+        List<LineupSlotDTO> result = new ArrayList<>(teamSlots.size());
+        for (Map.Entry<String, String> entry : teamSlots.entrySet()) {
+            result.add(new LineupSlotDTO(entry.getValue(), entry.getKey()));
+        }
+        return result;
     }
 }

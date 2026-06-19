@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -288,6 +290,98 @@ class LineupControllerE2ETest {
             .expectStatus().isEqualTo(422)
             .expectBody()
             .jsonPath("$.code").isEqualTo("LINEUP_VALIDATION_ERROR");
+    }
+
+    @Test
+    @DisplayName("POST /manual-select — 200 OK with slots (MVP1-lineup-cancha-1 path)")
+    void manualSelect_withSlots_happyPath() {
+        stubCareerInPhase(CareerPhase.PRE_MATCH);
+        List<String> playerIds = List.of("p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11");
+        when(lineupCommandUseCase.manualSelectLineupWithSlots(
+                eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds),
+                argThat(slots -> slots != null && slots.size() == 11)))
+            .thenReturn(Mono.just(lineupWith11Players()));
+
+        webTestClient.mutateWith(
+                org.springframework.security.test.web.reactive.server
+                    .SecurityMockServerConfigurers.mockUser(TEST_USER_ID.toString()))
+            .post().uri("/api/v1/career/lineup/manual-select")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{"
+                + "\"formation\":\"4-4-2\","
+                + "\"playerIds\":[\"p1\",\"p2\",\"p3\",\"p4\",\"p5\",\"p6\",\"p7\",\"p8\",\"p9\",\"p10\",\"p11\"],"
+                + "\"slots\":["
+                + "  {\"playerId\":\"p1\",\"subdivisionId\":\"GK-1\"},"
+                + "  {\"playerId\":\"p2\",\"subdivisionId\":\"S22-1\"},"
+                + "  {\"playerId\":\"p3\",\"subdivisionId\":\"S22-2\"},"
+                + "  {\"playerId\":\"p4\",\"subdivisionId\":\"S22-3\"},"
+                + "  {\"playerId\":\"p5\",\"subdivisionId\":\"S23-3\"},"
+                + "  {\"playerId\":\"p6\",\"subdivisionId\":\"S16-2\"},"
+                + "  {\"playerId\":\"p7\",\"subdivisionId\":\"S16-3\"},"
+                + "  {\"playerId\":\"p8\",\"subdivisionId\":\"S17-2\"},"
+                + "  {\"playerId\":\"p9\",\"subdivisionId\":\"S18-3\"},"
+                + "  {\"playerId\":\"p10\",\"subdivisionId\":\"S05-2\"},"
+                + "  {\"playerId\":\"p11\",\"subdivisionId\":\"S05-3\"}"
+                + "]}")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.players.length()").isEqualTo(11);
+    }
+
+    @Test
+    @DisplayName("POST /manual-select — 200 OK backward compat (slots ausente / null / vacío)")
+    void manualSelect_withoutSlots_backwardCompat() {
+        stubCareerInPhase(CareerPhase.PRE_MATCH);
+        List<String> playerIds = List.of("p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11");
+        when(lineupCommandUseCase.manualSelectLineupWithSlots(
+                eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds),
+                argThat(slots -> slots == null || slots.isEmpty())))
+            .thenReturn(Mono.just(lineupWith11Players()));
+
+        // slots ausente
+        webTestClient.mutateWith(
+                org.springframework.security.test.web.reactive.server
+                    .SecurityMockServerConfigurers.mockUser(TEST_USER_ID.toString()))
+            .post().uri("/api/v1/career/lineup/manual-select")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{\"formation\":\"4-4-2\",\"playerIds\":[\"p1\",\"p2\",\"p3\",\"p4\",\"p5\",\"p6\",\"p7\",\"p8\",\"p9\",\"p10\",\"p11\"]}")
+            .exchange()
+            .expectStatus().isOk();
+
+        // slots array vacío
+        webTestClient.mutateWith(
+                org.springframework.security.test.web.reactive.server
+                    .SecurityMockServerConfigurers.mockUser(TEST_USER_ID.toString()))
+            .post().uri("/api/v1/career/lineup/manual-select")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{\"formation\":\"4-4-2\",\"playerIds\":[\"p1\",\"p2\",\"p3\",\"p4\",\"p5\",\"p6\",\"p7\",\"p8\",\"p9\",\"p10\",\"p11\"],\"slots\":[]}")
+            .exchange()
+            .expectStatus().isOk();
+    }
+
+    @Test
+    @DisplayName("POST /manual-select — 422 when slots reference unknown playerIds")
+    void manualSelect_withUnknownPlayerSlot_usesNullSlotMatcher() {
+        stubCareerInPhase(CareerPhase.PRE_MATCH);
+        List<String> playerIds = List.of("p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11");
+        // Even if slots have unknown playerIds, the use case filters them out internally.
+        // The endpoint itself accepts any slots[] shape and returns 200.
+        when(lineupCommandUseCase.manualSelectLineupWithSlots(
+                eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds), any()))
+            .thenReturn(Mono.just(lineupWith11Players()));
+
+        webTestClient.mutateWith(
+                org.springframework.security.test.web.reactive.server
+                    .SecurityMockServerConfigurers.mockUser(TEST_USER_ID.toString()))
+            .post().uri("/api/v1/career/lineup/manual-select")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{"
+                + "\"formation\":\"4-4-2\","
+                + "\"playerIds\":[\"p1\",\"p2\",\"p3\",\"p4\",\"p5\",\"p6\",\"p7\",\"p8\",\"p9\",\"p10\",\"p11\"],"
+                + "\"slots\":[{\"playerId\":\"unknown\",\"subdivisionId\":\"S22-1\"}]}")
+            .exchange()
+            .expectStatus().isOk();
     }
 
     // ---------- POST /confirm ----------

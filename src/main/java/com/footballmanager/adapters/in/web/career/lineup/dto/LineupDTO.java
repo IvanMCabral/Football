@@ -12,16 +12,28 @@ import java.util.List;
  * has been saved yet). When the lineup is below
  * {@code TARGET_LINEUP_PLAYERS}, the response carries a non-empty
  * {@code warnings} list.
+ *
+ * <p>MVP1-lineup-cancha-1: el campo {@code slots} es opcional y lista las
+ * asignaciones playerId → subdivisionId persistidas. Si está vacío o ausente,
+ * el front debe inferir los slots del role del jugador (backward compat).
  */
 public record LineupDTO(
     String formation,
     List<PlayerLineupDTO> players,
     boolean confirmed,
-    List<LineupWarningDTO> warnings
+    List<LineupWarningDTO> warnings,
+    List<LineupSlotDTO> slots
 ) {
 
+    /** Compact ctor legacy (4 args) — slots null. */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed) {
-        this(formation, players, confirmed, List.of());
+        this(formation, players, confirmed, List.of(), List.of());
+    }
+
+    /** Compact ctor (4 args, sin slots). */
+    public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
+                     List<LineupWarningDTO> warnings) {
+        this(formation, players, confirmed, warnings, List.of());
     }
 
     public LineupDTO {
@@ -30,6 +42,9 @@ public record LineupDTO(
         }
         if (warnings == null) {
             warnings = List.of();
+        }
+        if (slots == null) {
+            slots = List.of();
         }
         // Only validate size when non-empty. Empty list is the "no lineup saved" state.
         if (!players.isEmpty()) {
@@ -48,5 +63,6 @@ public record LineupDTO(
         // Defensive copy of mutable lists to preserve immutability of the record
         players = List.copyOf(players);
         warnings = List.copyOf(warnings);
+        slots = List.copyOf(slots);
     }
 }

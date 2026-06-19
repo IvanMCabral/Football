@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
@@ -15,8 +16,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -64,6 +67,14 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     @Override
     public Mono<LineupDTO> manualSelectLineup(UUID userId, String formationCode, List<String> playerIds) {
+        // Backward compat: legacy callers sin slots.
+        return manualSelectLineupWithSlots(userId, formationCode, playerIds, List.of());
+    }
+
+    @Override
+    public Mono<LineupDTO> manualSelectLineupWithSlots(UUID userId, String formationCode,
+                                                      List<String> playerIds,
+                                                      List<LineupSlotDTO> slots) {
         Formation formation = Formation.fromString(formationCode);
 
         if (playerIds.size() < LineupRules.MIN_AVAILABLE_PLAYERS) {
@@ -111,6 +122,37 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 }
 
                 career.getTeamStarting11().put(userTeamId, playerIds);
+
+                // MVP1-lineup-cancha-1: persist subdivisionId per slot.
+                // Si slots está vacío o es null, NO escribir el subdivision map
+                // (mantiene backward compat — el front puede leer lineups viejos
+                // con subdivisionId inferred on-the-fly desde el role).
+                if (slots != null && !slots.isEmpty()) {
+                    Map<String, String> slotMap = new HashMap<>();
+                    for (LineupSlotDTO slot : slots) {
+                        if (slot.subdivisionId() == null || slot.subdivisionId().isBlank()) {
+                            continue;
+                        }
+                        if (slot.playerId() == null || slot.playerId().isBlank()) {
+                            continue;
+                        }
+                        if (!playerIds.contains(slot.playerId())) {
+                            // Slot referencia un playerId no incluido en este lineup — ignorar.
+                            continue;
+                        }
+                        // Si dos slots intentan usar el mismo subdivisionId, el último gana.
+                        // (Validar duplicados de subdivision se hace en read path; el write
+                        // path tolera el caso porque el modal nunca debería mandarlo.)
+                        slotMap.put(slot.subdivisionId(), slot.playerId());
+                    }
+                    if (!slotMap.isEmpty()) {
+                        career.getTeamStarting11Subdivision().put(userTeamId, slotMap);
+                    } else {
+                        // Si todos los slots fueron inválidos, limpiamos el entry
+                        // existente para no dejar datos stale.
+                        career.getTeamStarting11Subdivision().remove(userTeamId);
+                    }
+                }
 
                 return careerRepository.save(career)
                     .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings));

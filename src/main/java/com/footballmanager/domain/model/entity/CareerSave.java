@@ -28,6 +28,14 @@ public class CareerSave {
     private CareerPlayerManager playerManager = new CareerPlayerManager();
     private CareerSeasonManager seasonManager = new CareerSeasonManager();
     private Map<String, List<String>> teamStarting11 = new HashMap<>();
+    /**
+     * MVP1-lineup-cancha-1: subdivisionId por jugador (mapa interno:
+     * teamId → { subdivisionId → playerId }). Paralelo a
+     * {@link #teamStarting11} — no lo reemplaza. Si está vacío o ausente
+     * para un team, se infiere on-the-fly del role del jugador (backward
+     * compat con lineups viejos).
+     */
+    private Map<String, Map<String, String>> teamStarting11Subdivision = new HashMap<>();
     private TournamentState tournamentState = new TournamentState();
 
     // Setters requeridos para deserialización JSON
@@ -41,6 +49,9 @@ public class CareerSave {
         this.teamStarting11.clear();
         this.teamStarting11.putAll(starting11);
     }
+    public void setTeamStarting11Subdivision(Map<String, Map<String, String>> slots) {
+        this.teamStarting11Subdivision = (slots == null) ? new HashMap<>() : new HashMap<>(slots);
+    }
     public void setTournamentState(TournamentState state) { this.tournamentState = state; }
 
     // ========== Core accessors (for services) ==========
@@ -50,6 +61,12 @@ public class CareerSave {
     public CareerPlayerManager getPlayerManager() { return playerManager; }
     public CareerSeasonManager getSeasonManager() { return seasonManager; }
     public Map<String, List<String>> getTeamStarting11() { return teamStarting11; }
+    public Map<String, Map<String, String>> getTeamStarting11Subdivision() {
+        if (teamStarting11Subdivision == null) {
+            teamStarting11Subdivision = new HashMap<>();
+        }
+        return teamStarting11Subdivision;
+    }
     public TournamentState getTournamentState() { return tournamentState; }
 
     // ========== Metadata convenience ==========
@@ -125,6 +142,10 @@ public class CareerSave {
     public void removePlayer(String sessionPlayerId) {
         playerManager.removePlayer(sessionPlayerId);
         playerManager.removePlayerFromAllStarting11(teamStarting11, sessionPlayerId);
+        // MVP1-lineup-cancha-1: también limpiar de subdivision map (si estaba).
+        for (Map<String, String> slots : teamStarting11Subdivision.values()) {
+            slots.entrySet().removeIf(e -> sessionPlayerId.equals(e.getValue()));
+        }
         teamManager.removePlayerFromAllSquads(sessionPlayerId);
         data.touch();
     }

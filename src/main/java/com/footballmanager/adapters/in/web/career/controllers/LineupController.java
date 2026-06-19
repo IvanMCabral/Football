@@ -55,7 +55,13 @@ public class LineupController {
     /**
      * Selección manual del Starting XI
      * POST /api/v1/career/lineup/manual-select
-     * Body: { "formation": "4-4-2", "playerIds": ["id1", "id2", ...] }
+     * Body: { "formation": "4-4-2", "playerIds": ["id1", "id2", ...],
+     *         "slots": [{ "playerId": "id1", "subdivisionId": "S22-1" }, ...] }
+     *
+     * <p>El campo {@code slots} es opcional. Si está presente, persiste
+     * la subdivisionId por jugador (sprint MVP1-lineup-cancha-1).
+     * Si está ausente, se aplica backward compat: el front infiere
+     * subdivisionId del role del jugador.
      */
     @PostMapping("/manual-select")
     public Mono<LineupDTO> manualSelectLineup(@RequestBody ManualSelectRequest request,
@@ -69,7 +75,11 @@ public class LineupController {
                     return Mono.error(new IllegalStateException(
                         "No se puede modificar lineup. La fase actual es " + phase + ". Solo se permite en PRE_MATCH o WAITING_USER."));
                 }
-                return lineupCommandUseCase.manualSelectLineup(userId, request.formation(), request.playerIds());
+                return lineupCommandUseCase.manualSelectLineupWithSlots(
+                    userId,
+                    request.formation(),
+                    request.playerIds(),
+                    request.slots());
             });
     }
 
