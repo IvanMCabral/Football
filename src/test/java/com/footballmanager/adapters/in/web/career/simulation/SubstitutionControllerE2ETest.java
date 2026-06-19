@@ -227,7 +227,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         String homeTeamId = "home-f2";
         String awayTeamId = "away-f2";
         V24MatchContext baselineContext = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession baselineSession = new V24LiveSession(baselineContext, 99999L);
+        V24LiveSession baselineSession = new V24LiveSession(baselineContext, 12345L);
         for (int i = 0; i < 90; i++) baselineSession.tick();
         int baselineHomeGoals = baselineSession.finalResult().homeGoals();
         int baselineAwayGoals = baselineSession.finalResult().awayGoals();
@@ -240,7 +240,12 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         UUID awayTeamUuid = UUID.randomUUID();
 
         V24MatchContext treatmentContext = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession treatmentSession = new V24LiveSession(treatmentContext, 99999L);
+        // V24D15-CLEANUP: was seed 99999L — switched to 12345L because seed 99999
+        // produced baseline 0-2 == treatment 0-2 deterministically (the engine
+        // path with that seed and a DEF→DEF bench swap yields the same goals
+        // regardless of the sub). Seed 12345 produces 1-1 vs 3-4 with the same
+        // fixture. All other seeds tested (42, 123, 9999) also show differences.
+        V24LiveSession treatmentSession = new V24LiveSession(treatmentContext, 12345L);
         treatmentSession.tick(); // currentMinute=1 (so replay can fire from minute 1)
 
         matchSessionRegistry.getOrCreateSessionWithV24(
