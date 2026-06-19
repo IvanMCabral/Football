@@ -12,10 +12,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -68,11 +70,10 @@ class MatchComparisonServiceTest {
                 CAREER_ID, 1, 5, "Home FC", "Away FC", liveResult, List.of());
 
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.of(baseline));
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.of(live));
+                .thenReturn(reactor.core.publisher.Mono.just(Optional.of(baseline)));
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(live));
 
-        MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID);
+        MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID).block(Duration.ofSeconds(5));
 
         assertNotNull(cmp);
         assertEquals(0, cmp.diff().scoreDeltaHome());
@@ -104,11 +105,10 @@ class MatchComparisonServiceTest {
                 CAREER_ID, 1, 5, "Home FC", "Away FC", liveResult, List.of());
 
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.of(baseline));
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.of(live));
+                .thenReturn(reactor.core.publisher.Mono.just(Optional.of(baseline)));
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(live));
 
-        MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID);
+        MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID).block(Duration.ofSeconds(5));
 
         assertNotNull(cmp);
         // Baseline and live may or may not differ in score, but the
@@ -138,11 +138,10 @@ class MatchComparisonServiceTest {
                 CAREER_ID, 1, 5, "Home FC", "Away FC", liveResult, List.of());
 
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.of(baseline));
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.of(live));
+                .thenReturn(reactor.core.publisher.Mono.just(Optional.of(baseline)));
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(live));
 
-        MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID);
+        MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID).block(Duration.ofSeconds(5));
 
         assertNotNull(cmp);
         assertEquals(2, baseline.subs().size());
@@ -152,33 +151,44 @@ class MatchComparisonServiceTest {
     @Test
     void getComparison_baselineNotFound_throwsBaselineNotFound() {
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.empty());
+                .thenReturn(reactor.core.publisher.Mono.just(Optional.empty()));
         when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
                 .thenReturn(Optional.of(sampleLive()));
 
-        assertThrows(BaselineNotFoundException.class,
-                () -> service.getComparison(CAREER_ID, MATCH_ID));
+        // V24D15-CLEANUP (BUG_COMPARE_404): getComparison now returns
+        // Mono<MatchComparison>, so the exception propagates via Mono.error
+        // and we verify with reactor.test.StepVerifier (no more .block()).
+        StepVerifier.create(service.getComparison(CAREER_ID, MATCH_ID))
+                .expectErrorMatches(t -> t instanceof BaselineNotFoundException)
+                .verify();
     }
 
     @Test
     void getComparison_liveNotFound_throwsLiveDetailNotFound() {
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.empty());
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.empty());
+        // baselineStoragePort stub required by type-check (never subscribed —
+        // the service short-circuits on detail empty first).
+        when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
+                .thenReturn(reactor.core.publisher.Mono.just(Optional.of(
+                        BaselineState.empty(CAREER_ID, SEED, buildContext(MATCH_ID)))));
 
-        assertThrows(LiveDetailNotFoundException.class,
-                () -> service.getComparison(CAREER_ID, MATCH_ID));
+        StepVerifier.create(service.getComparison(CAREER_ID, MATCH_ID))
+                .expectErrorMatches(t -> t instanceof LiveDetailNotFoundException)
+                .verify();
     }
 
     @Test
     void getComparison_blankCareerId_throwsIAE() {
-        assertThrows(IllegalArgumentException.class,
-                () -> service.getComparison("", MATCH_ID));
+        StepVerifier.create(service.getComparison("", MATCH_ID))
+                .expectErrorMatches(t -> t instanceof IllegalArgumentException)
+                .verify();
     }
 
     @Test
     void getComparison_nullMatchId_throwsIAE() {
-        assertThrows(IllegalArgumentException.class,
-                () -> service.getComparison(CAREER_ID, null));
+        StepVerifier.create(service.getComparison(CAREER_ID, null))
+                .expectErrorMatches(t -> t instanceof IllegalArgumentException)
+                .verify();
     }
 
     // ---- helpers ----

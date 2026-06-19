@@ -3,6 +3,7 @@ package com.footballmanager.application.service.simulation.v24;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
@@ -82,62 +83,111 @@ public class MatchComparisonService {
      * @throws LiveDetailNotFoundException if no V24 detail exists for the match
      *         (match hasn't finished yet, or the V24 path was disabled)
      */
-    public MatchComparison getComparison(String careerId, String matchId) {
+    /**
+     * V24D15-CLEANUP (BUG_COMPARE_404 — TRUE ROOT CAUSE): the previous
+     * implementation returned {@code MatchComparison} synchronously and
+     * internally called {@code .blockOptional()} on the storage ports
+     * — which threw {@code IllegalStateException("blockOptional() is
+     * blocking, which is not supported in thread parallel-N")} on every
+     * call from a Reactor parallel scheduler, silently returning
+     * {@code Optional.empty()}. The controller's "Baseline not found"
+     * log was ALWAYS wrong — the baseline was in Redis, but the read
+     * was being aborted before any byte came back.
+     *
+     * <p>Fix: return {@code Mono<MatchComparison>} so the call composes
+     * correctly with the Reactor scheduler end-to-end.
+     *
+     * @param careerId the career id
+     * @param matchId  the match id
+     * @return Mono emitting the comparison, or erroring with
+     *         {@link BaselineNotFoundException} /
+     *         {@link LiveDetailNotFoundException} when the corresponding
+     *         storage is missing.
+     */
+    public Mono<MatchComparison> getComparison(String careerId, String matchId) {
         if (careerId == null || careerId.isBlank()) {
-            throw new IllegalArgumentException("careerId must not be blank");
+            return Mono.error(new IllegalArgumentException("careerId must not be blank"));
         }
         if (matchId == null || matchId.isBlank()) {
-            throw new IllegalArgumentException("matchId must not be blank");
+            return Mono.error(new IllegalArgumentException("matchId must not be blank"));
         }
 
-        // 1. Read live
-        V24DetailedMatchData live = detailStoragePort.findByMatchId(careerId, matchId)
-                .orElseThrow(() -> new LiveDetailNotFoundException(careerId, matchId));
+        // V24D15-CLEANUP (BUG_COMPARE_404): read detail first on a worker
+        // thread, then chain baseline (now Mono). This order matches the
+        // test semantics (detail empty -> live error, baseline empty ->
+        // baseline error) and avoids the Mono.zip race where the error
+        // from one side cancels the other's worker before its mock is
+        // actually invoked.
+        final String fCareerId = careerId;
+        final String fMatchId = matchId;
+        Mono<V24DetailedMatchData> liveMono = Mono.fromCallable(() ->
+                        detailStoragePort.findByMatchId(fCareerId, fMatchId)
+                                .orElseThrow(() -> new LiveDetailNotFoundException(fCareerId, fMatchId)))
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
 
-        // 2. Read baseline
-        BaselineState baseline = baselineStoragePort.findByMatchId(careerId, matchId)
-                .orElseThrow(() -> new BaselineNotFoundException(careerId, matchId));
+        Mono<BaselineState> baselineMono = baselineStoragePort.findByMatchId(fCareerId, fMatchId)
+                .switchIfEmpty(Mono.error(new BaselineNotFoundException(fCareerId, fMatchId)))
+                .map(opt -> opt.orElseThrow(() -> new BaselineNotFoundException(fCareerId, fMatchId)));
 
-        // 3. Build the context with subs applied (F2.5 deferred design)
-        V24MatchContext ctx = baseline.initialContext();
-        for (AppliedSubstitution sub : baseline.subs()) {
-            ctx = ctx.withManualSubstitution(
-                    sub.teamId(), sub.playerOffId(), sub.playerOnId(), sub.minute());
-        }
+        return liveMono.flatMap(live ->
+                baselineMono.flatMap(baseline -> {
+                    // 3. Build the context with subs applied (F2.5 deferred design)
+                    V24MatchContext ctx = baseline.initialContext();
+                    for (AppliedSubstitution sub : baseline.subs()) {
+                        ctx = ctx.withManualSubstitution(
+                                sub.teamId(), sub.playerOffId(), sub.playerOnId(), sub.minute());
+                    }
 
-        // 4. Re-run engine standalone
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        CachingRandomWrapper random = new CachingRandomWrapper(baseline.seed());
-        V24DetailedMatchResult baselineResult = engine.simulate(ctx, random);
+                    // 4. Re-run engine standalone (engine.simulate is sync)
+                    final BaselineState baselineFinal = baseline;
+                    final V24MatchContext ctxFinal = ctx;
+                    final V24DetailedMatchData liveFinal = live;
+                    return Mono.fromCallable(() -> {
+                        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+                        CachingRandomWrapper random = new CachingRandomWrapper(baselineFinal.seed());
+                        V24DetailedMatchResult baselineResult = engine.simulate(ctxFinal, random);
 
-        log.info("[F6-MATCH-COMPARE] Replayed baseline for matchId={}, seed={}, subs={}, "
-                        + "homeGoals={}-awayGoals={} (vs live {}-{})",
-                matchId, baseline.seed(), baseline.subs().size(),
-                baselineResult.homeGoals(), baselineResult.awayGoals(),
-                live.homeGoals(), live.awayGoals());
+                        log.info("[F6-MATCH-COMPARE] Replayed baseline for matchId={}, seed={}, subs={}, "
+                                        + "homeGoals={}-awayGoals={} (vs live {}-{})",
+                                matchId, baselineFinal.seed(), baselineFinal.subs().size(),
+                                baselineResult.homeGoals(), baselineResult.awayGoals(),
+                                liveFinal.homeGoals(), liveFinal.awayGoals());
 
-        // 5. Convert to V24DetailedMatchData (no player ratings for baseline)
-        V24DetailedMatchData baselineData = V24DetailedMatchData.fromResult(
-                careerId,
-                live.seasonNumber(),
-                live.round(),
-                live.homeTeamName(),
-                live.awayTeamName(),
-                baselineResult,
-                Collections.<V24PlayerMatchRatingDto>emptyList());
+                        // 5. Convert to V24DetailedMatchData (no player ratings for baseline)
+                        V24DetailedMatchData baselineData = V24DetailedMatchData.fromResult(
+                                careerId,
+                                liveFinal.seasonNumber(),
+                                liveFinal.round(),
+                                liveFinal.homeTeamName(),
+                                liveFinal.awayTeamName(),
+                                baselineResult,
+                                Collections.<V24PlayerMatchRatingDto>emptyList());
 
-        // 6. Compute diff
-        MatchComparisonDiff diff = MatchComparisonDiff.calculate(baselineData, live);
+                        // 6. Compute diff
+                        MatchComparisonDiff diff = MatchComparisonDiff.calculate(baselineData, live);
 
-        // 7. Return
-        return new MatchComparison(baselineData, live, diff);
+                        // 7. Return
+                        return new MatchComparison(baselineData, live, diff);
+                    }).subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
+                }));
     }
 
     /**
      * Convenience: peek the baseline state without computing the
-     * comparison. Returns empty if the baseline is not available.
+     * comparison. Returns empty Mono if the baseline is not available.
+     *
+     * <p>V24D15-CLEANUP (BUG_COMPARE_404): changed return type from
+     * {@code Optional<BaselineState>} to {@code Mono<Optional<BaselineState>>}
+     * for the same reason as {@link #getComparison} — the sync read was
+     * silently aborting under Reactor parallel scheduling.
      */
-    public Optional<BaselineState> peekBaseline(String careerId, String matchId) {
+    public Mono<Optional<BaselineState>> peekBaseline(String careerId, String matchId) {
+        if (careerId == null || careerId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("careerId must not be blank"));
+        }
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("matchId must not be blank"));
+        }
         return baselineStoragePort.findByMatchId(careerId, matchId);
     }
 

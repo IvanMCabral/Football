@@ -54,15 +54,31 @@ public interface BaselineStateStoragePort {
      */
     Mono<Void> save(String careerId, BaselineState state);
 
-    /**
+/**
      * Retrieve the baseline state for a match.
      *
-     * @param careerId  the career this match belongs to
+     * <p>V24D15-CLEANUP (BUG_COMPARE_404 — true root cause): this method
+     * is called from Reactor non-blocking threads (parallel-N). The
+     * previous {@code Optional<BaselineState>} return type FORCED the
+     * adapter to use {@code .blockOptional(...)} which threw
+     * {@code IllegalStateException("blockOptional() is blocking, which
+     * is not supported in thread parallel-N")} on every call from a
+     * Reactor parallel scheduler — silently caught and converted to
+     * {@code Optional.empty()}, making the /compare endpoint 404 even
+     * when the baseline existed in Redis.
+     *
+     * <p>Fix: return {@code Mono<Optional<BaselineState>>} so the call
+     * composes correctly with the Reactor scheduler. Empty {@code Mono}
+     * means Redis failure; present {@code Mono<Optional.empty()>} means
+     * "not found in Redis"; present {@code Mono<Optional.of(state)>}
+     * means "found".
+     *
+     * @param careerId  the career the match belongs to
      * @param matchId   the match identifier
-     * @return Optional containing the baseline state if found, empty otherwise
+     * @return Mono emitting Optional.of(state) on hit, Optional.empty() on miss
      * @throws IllegalArgumentException if careerId or matchId is null
      */
-    Optional<BaselineState> findByMatchId(String careerId, String matchId);
+    Mono<Optional<BaselineState>> findByMatchId(String careerId, String matchId);
 
     /**
      * Delete the baseline state for a single match. Called from

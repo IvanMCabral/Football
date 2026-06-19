@@ -151,29 +151,38 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
     }
 
     @Override
-    public Optional<BaselineState> findByMatchId(String careerId, String matchId) {
+    public Mono<Optional<BaselineState>> findByMatchId(String careerId, String matchId) {
+        // V24D15-CLEANUP (BUG_COMPARE_404 — TRUE ROOT CAUSE): the previous
+        // implementation used .blockOptional(Duration.ofSeconds(5)) which
+        // throws IllegalStateException("blockOptional() is blocking, which
+        // is not supported in thread parallel-N") on every call from a
+        // Reactor parallel scheduler (which is exactly where the controller
+        // calls from). The exception was silently caught by the try/catch
+        // and returned Optional.empty(), so the controller's "Baseline
+        // not found" log was ALWAYS wrong — the baseline was in Redis,
+        // but the read was being aborted before any byte came back.
+        //
+        // Fix: return Mono<Optional<BaselineState>> so the call composes
+        // correctly with the Reactor scheduler. Empty Mono means Redis
+        // failure; present Mono<Optional.empty()> means "not found";
+        // present Mono<Optional.of(state)> means "found".
         if (careerId == null || careerId.isBlank()) {
-            throw new IllegalArgumentException("careerId must not be blank");
+            return Mono.error(new IllegalArgumentException("careerId must not be blank"));
         }
         if (matchId == null || matchId.isBlank()) {
-            throw new IllegalArgumentException("matchId must not be blank");
+            return Mono.error(new IllegalArgumentException("matchId must not be blank"));
         }
         String key = buildKey(careerId, matchId);
-        try {
-            BaselineState state = redisTemplate.opsForValue()
-                    .get(key)
-                    .timeout(WRITE_TIMEOUT)
-                    .doOnError(e -> log.warn(
-                            "[F6-BASELINE-REDIS] Failed to read baseline key={}: {}",
-                            key, e.getMessage()))
-                    .onErrorResume(e -> Mono.empty())
-                    .blockOptional(Duration.ofSeconds(5))
-                    .orElse(null);
-            return Optional.ofNullable(state);
-        } catch (Exception e) {
-            log.warn("[F6-BASELINE-REDIS] Failed to read baseline key={}: {}", key, e.getMessage());
-            return Optional.empty();
-        }
+        return redisTemplate.opsForValue()
+                .get(key)
+                .timeout(WRITE_TIMEOUT)
+                .doOnError(e -> log.warn(
+                        "[F6-BASELINE-REDIS] Failed to read baseline key={}: {}",
+                        key, e.getMessage()))
+                .onErrorResume(e -> Mono.empty())
+                .map(Optional::ofNullable)
+                .switchIfEmpty(Mono.just(Optional.empty()))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @Override

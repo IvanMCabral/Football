@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -214,8 +215,18 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             String careerId = session.getCurrentState() != null
                     ? session.getCurrentState().careerId() : null;
             if (careerId != null && !careerId.isBlank()) {
-                Optional<BaselineState> optBaseline =
-                        baselineStoragePort.findByMatchId(careerId, matchId.toString());
+                // V24D15-CLEANUP (BUG_COMPARE_404): findByMatchId now returns
+                // Mono<Optional<...>> (the sync version silently aborted under
+                // Reactor parallel scheduling). Use blockOptional on a
+                // bounded-elastic scheduler so the block() runs off the
+                // caller's thread (V24LiveSession.recordManualSubstitution is
+                // called from the same controller flow that hits the
+                // /compare endpoint).
+                Optional<BaselineState> optBaseline = baselineStoragePort
+                        .findByMatchId(careerId, matchId.toString())
+                        .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                        .blockOptional(Duration.ofSeconds(5))
+                        .orElse(Optional.empty());
                 if (optBaseline.isPresent()) {
                     BaselineState updated = optBaseline.get().withAppendedSub(
                             new AppliedSubstitution(resolvedTeamId, playerOffId, playerOnId, minute));

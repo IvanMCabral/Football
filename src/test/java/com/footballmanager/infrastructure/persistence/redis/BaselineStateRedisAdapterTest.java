@@ -90,7 +90,13 @@ class BaselineStateRedisAdapterTest {
 
         StepVerifier.create(adapter.save("career-abc", sampleState))
                 .verifyComplete();
-        Optional<BaselineState> found = adapter.findByMatchId("career-abc", "match-001");
+        // V24D15-CLEANUP (BUG_COMPARE_404): findByMatchId now returns Mono;
+        // block with a bounded-elastic subscribe so the test doesn't run
+        // on a Reactor parallel thread.
+        Optional<BaselineState> found = adapter.findByMatchId("career-abc", "match-001")
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                .blockOptional(java.time.Duration.ofSeconds(5))
+                .orElse(Optional.empty());
 
         assertTrue(found.isPresent());
         assertEquals("match-001", found.get().matchId());
@@ -120,7 +126,13 @@ class BaselineStateRedisAdapterTest {
         when(reactiveValueOps.get(anyString())).thenReturn(Mono.empty());
         lenient().when(redisTemplate.opsForValue()).thenReturn(reactiveValueOps);
 
-        Optional<BaselineState> found = adapter.findByMatchId("career-abc", "nonexistent");
+        // V24D15-CLEANUP (BUG_COMPARE_404): findByMatchId now returns Mono;
+        // block with a bounded-elastic subscribe so the test doesn't run
+        // on a Reactor parallel thread.
+        Optional<BaselineState> found = adapter.findByMatchId("career-abc", "nonexistent")
+                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                .blockOptional(java.time.Duration.ofSeconds(5))
+                .orElse(Optional.empty());
 
         assertTrue(found.isEmpty());
     }

@@ -125,22 +125,29 @@ public class V24DetailedMatchController {
             return Mono.just(ResponseEntity.notFound().build());
         }
 
-        try {
-            MatchComparison cmp = matchComparisonService.getComparison(careerId, matchId);
-            return Mono.just(ResponseEntity.ok((Object) cmp));
-        } catch (BaselineNotFoundException e) {
-            log.info("[F6-MATCH-COMPARE] Baseline not found for careerId={}, matchId={}",
-                    careerId, matchId);
-            return Mono.just(ResponseEntity.notFound().build());
-        } catch (LiveDetailNotFoundException e) {
-            log.info("[F6-MATCH-COMPARE] Live detail not found for careerId={}, matchId={}",
-                    careerId, matchId);
-            return Mono.just(ResponseEntity.notFound().build());
-        } catch (IllegalArgumentException e) {
-            log.warn("[F6-MATCH-COMPARE] Invalid argument for careerId={}, matchId={}: {}",
-                    careerId, matchId, e.getMessage());
-            return Mono.just(ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage())));
-        }
+        // V24D15-CLEANUP (BUG_COMPARE_404): getComparison now returns
+        // Mono<MatchComparison> so it composes correctly with the Reactor
+        // scheduler (the sync version was silently aborting under Reactor
+        // parallel scheduling — blockOptional() threw IllegalStateException
+        // which was caught and turned into Optional.empty, making the
+        // endpoint return 404 even when the baseline was in Redis).
+        return matchComparisonService.getComparison(careerId, matchId)
+                .map(cmp -> ResponseEntity.ok((Object) cmp))
+                .onErrorResume(BaselineNotFoundException.class, e -> {
+                    log.info("[F6-MATCH-COMPARE] Baseline not found for careerId={}, matchId={}",
+                            careerId, matchId);
+                    return Mono.just(ResponseEntity.notFound().build());
+                })
+                .onErrorResume(LiveDetailNotFoundException.class, e -> {
+                    log.info("[F6-MATCH-COMPARE] Live detail not found for careerId={}, matchId={}",
+                            careerId, matchId);
+                    return Mono.just(ResponseEntity.notFound().build());
+                })
+                .onErrorResume(IllegalArgumentException.class, e -> {
+                    log.warn("[F6-MATCH-COMPARE] Invalid argument for careerId={}, matchId={}: {}",
+                            careerId, matchId, e.getMessage());
+                    return Mono.just(ResponseEntity.badRequest()
+                            .body(Map.of("error", e.getMessage())));
+                });
     }
 }
