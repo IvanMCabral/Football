@@ -442,6 +442,95 @@ _(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-
 
 ---
 
+## 10b. V24D20-TESTHARNESS — harness de smoke comparativo (2026-06-20)
+
+**Para quién:** REVISOR (corre smokes Bloque A/B) + Iván (verifica empíricamente si formación/random afecta resultado).
+
+**Qué es:** 5 endpoints REST en `/api/v1/test-harness/career/*` (gated a `@Profile({"dev","local","test"})`). Permiten a un test crear carrera custom, sobreescribir fixtures, resetear lesiones, cambiar formación, y dumpear state — sin tocar el motor V24.
+
+### Endpoints (todos con JWT auth)
+
+```bash
+# 1) Crear carrera custom (wipe + start con teamsPerDivision configurable)
+curl -X POST http://localhost:8080/api/v1/test-harness/career/create-custom \
+  -H "Authorization: Bearer $JWT" -H "Content-Type: application/json" \
+  -d '{"leagueId":"la-liga-1","teamId":"real-madrid","difficulty":"EASY","gameSpeed":"NORMAL","teamsPerDivision":2}'
+
+# 2) Reemplazar fixtures (mismo rival × N rondas = Bloque B)
+curl -X POST http://localhost:8080/api/v1/test-harness/career/replace-fixtures \
+  -H "Authorization: Bearer $JWT" -H "Content-Type: application/json" \
+  -d '[{"homeTeamId":"<userTeamId>","awayTeamId":"<rivalId>","round":1},{"homeTeamId":"<userTeamId>","awayTeamId":"<rivalId>","round":2}]'
+
+# 3) Resetear lesiones/suspensiones (squad sano pre-smoke)
+curl -X POST http://localhost:8080/api/v1/test-harness/career/reset-injuries \
+  -H "Authorization: Bearer $JWT"
+
+# 4) Cambiar formación (CRÍTICO: persiste en BOTH SessionTeam.formation AND teamStarting11Formation map)
+curl -X POST http://localhost:8080/api/v1/test-harness/career/set-formation \
+  -H "Authorization: Bearer $JWT" -H "Content-Type: application/json" \
+  -d '{"formation":"3-5-2"}'
+
+# 5) Snapshot del estado actual (para diff pre/post smoke)
+curl -X GET http://localhost:8080/api/v1/test-harness/career/snapshot \
+  -H "Authorization: Bearer $JWT"
+```
+
+### Flujo Bloque A (mismo rival × 4 formaciones → ¿varía resultado?)
+
+```bash
+# 1. Custom con 2 teams (RM vs BAR), división chica para iterar rápido
+curl -X POST .../create-custom -d '{...,"teamsPerDivision":2}'
+
+# 2. Por cada formación (4-3-3, 4-4-2, 3-5-2, 5-3-2):
+for FORM in 4-3-3 4-4-2 3-5-2 5-3-2; do
+  curl -X POST .../set-formation -d "{\"formation\":\"$FORM\"}"
+  curl -X POST .../replace-fixtures -d '[{"homeTeamId":"<RM>","awayTeamId":"<BAR>","round":1}]'
+  # Disparar simulación via endpoints normales (RoundController, MatchEngineController)
+  # Capturar resultado, comparar con las otras 3 formaciones
+done
+```
+
+### Flujo Bloque B (misma formación × 3 corridas mismo rival → ¿random cambia?)
+
+```bash
+# Mismo set-formation
+curl -X POST .../set-formation -d '{"formation":"4-3-3"}'
+
+# Mismo rival pero 3 fixtures distintos (rounds 1, 2, 3) — cada uno = corrida fresh
+curl -X POST .../replace-fixtures -d '[
+  {"homeTeamId":"<RM>","awayTeamId":"<BAR>","round":1},
+  {"homeTeamId":"<RM>","awayTeamId":"<BAR>","round":2},
+  {"homeTeamId":"<RM>","awayTeamId":"<BAR>","round":3}
+]'
+
+# Disparar las 3 rondas, capturar resultados
+# Si seed=42 está activo (application-test.yml), resultados son reproducibles
+```
+
+### Determinismo (seed)
+
+`application-test.yml` setea `app.simulation.random-seed: 42` para reproducibilidad. Sin este flag, default `0` = random real (no determinístico — útil para Bloque B si queremos ver varianza).
+
+Para forzar seed runtime: editar `application-local.yml` y reiniciar el back. NO hay endpoint runtime para cambiar seed (decisión out-of-scope).
+
+### Out-of-scope (NO se hace)
+
+- Modificar V24MatchEngine (sagrado).
+- UI nueva (es API-only, REVISOR usa curl/HTTP).
+- Persistir datos de test en prod (todo gateado por `@Profile`).
+- Endpoint runtime para cambiar seed (sprint siguiente si REVISOR lo pide).
+
+### Tests automatizados (cubren el harness, NO la simulación)
+
+- `TestHarnessUseCaseImplTest` — 9 unit tests (Mockito). Incluye regression guard para BUG_FORMATION_PERSIST_IGNORED (sprint 1.7).
+- `TestHarnessControllerE2ETest` — 8 E2E tests (Spring + WebTestClient). Cubre HTTP wiring, auth, profile gating, response shape.
+
+### Lo que REVISOR corre (smoke real, no automatizado)
+
+El flow completo (createCustom + setFormation + replaceFixtures + simulate 4 rondas + comparar resultados) NO está automatizado — es responsabilidad de REVISOR correrlo via HTTP contra el back con profile `dev` activo, y reportar resultados a Iván.
+
+---
+
 ## 11. Comandos utiles (cheat sheet)
 
 ```bash
