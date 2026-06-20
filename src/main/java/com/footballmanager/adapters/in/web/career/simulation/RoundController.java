@@ -335,6 +335,17 @@ public class RoundController {
             log.info("[ROUND-CONTROLLER] V24 match finished, {} timeline events for persistence", events.size());
 
             // V24D6R2: Persist V24 detail to Redis via LeagueSimulator with live tracking
+            // V24D20-SANDBOX-V2-MVP BUG #3: trace the careerId + matchId that
+            // are about to be persisted so a future 404 on GET /detail can
+            // be diffed against the query trace in V24DetailedMatchRedisAdapter.
+            log.info("[V24-DETAIL-CALLSITE-PERSIST] careerId={}, matchId={}, "
+                    + "homeGoals={}, awayGoals={}, homeTeamId={}, awayTeamId={}",
+                career.getData().getCareerId(),
+                result.snapshot().matchId(),
+                result.snapshot().score().home(),
+                result.snapshot().score().away(),
+                result.snapshot().homeTeamId(),
+                result.snapshot().awayTeamId());
             leagueSimulator.persistV24DetailForLiveMatch(
                     career,
                     result.v24Result(),
