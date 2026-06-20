@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * V24B: Minute-by-minute match simulation with real xG, possession, and player attribution.
@@ -33,6 +34,19 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     // the per-minute loop. The level is DEBUG so the per-match log volume
     // stays bounded (≤ 5 subs/team/match → ≤ 10 lines/match).
     private static final Logger log = LoggerFactory.getLogger(V24DetailedMatchEngine.class);
+
+    // V24D20-SANDBOX-V2-MVP BUG #4: instrumentation to detect xG/goals
+    // divergence. Counts every addGoal() call. If the counter drifts
+    // from the number of GOAL events in the timeline, the divergence
+    // hypothesis (a: double-counted addGoal, b: non-GOAL event counted
+    // as goal) is confirmed. The counter is static so it accumulates
+    // across the JVM lifetime, which is the right granularity for
+    // surfacing divergence in smoke runs (≥1 match).
+    //
+    // REMOVE: when the divergence is confirmed and fixed, drop the
+    // counter and the conditional log. Tag the cleanup commit with
+    // V24D20-SANDBOX-V2-MVP-CLEANUP.
+    private static final AtomicInteger goalAdditions = new AtomicInteger(0);
 
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
     private final V24FatigueModel fatigueModel = new V24FatigueModel();
@@ -507,6 +521,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             isGoal = random.nextDouble() < (xg / 0.60); // scale: 0.60 xG = ~50% goal
             if (isGoal) {
                 possessor.addGoal();
+                // V24D20-SANDBOX-V2-MVP BUG #4: increment the addGoal counter
+                // so finalizeResult can detect divergence between addGoal
+                // calls and GOAL events in the timeline.
+                int n = goalAdditions.incrementAndGet();
+                log.debug("[V24-XG-COUNTER] addGoal called; counter={}, minute={}, xg={}",
+                    n, minute, xg);
                 // V24D6O-fix: count goal as a shot on target so homeShots/awayShots
                 // (used in the Stats summary) is consistent with the Shot Map total.
                 // A goal is by definition a shot that hit the target and went in.
@@ -755,6 +775,38 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         int totalPoss = homePossTicks + awayPossTicks;
         int homePoss = totalPoss > 0 ? (int) Math.round(100.0 * homePossTicks / totalPoss) : 50;
         int awayPoss = 100 - homePoss;
+
+        // V24D20-SANDBOX-V2-MVP BUG #4: divergence check between addGoal()
+        // counter and the number of GOAL events actually in the timeline.
+        // If they drift, the engine is double-counting addGoal OR some
+        // non-GOAL event is being counted as a goal. The counter is a
+        // JVM-lifetime static so we compare incrementally (per match):
+        // the local goals count from the timeline must match
+        // home.goals() + away.goals() (which are also updated from
+        // addGoal).
+        long goalsInTimeline = timeline.events().stream()
+            .filter(e -> e.type() == V24MatchEventType.GOAL)
+            .count();
+        int totalPossessedGoals = home.goals() + away.goals();
+        if (goalsInTimeline != totalPossessedGoals) {
+            log.warn("[V24-XG-DIVERGENCE] matchId={}, homeGoals={}, awayGoals={}, "
+                    + "goalsInTimeline={}, counter={}, divergence={}",
+                ctx.matchId(),
+                home.goals(), away.goals(),
+                goalsInTimeline, goalAdditions.get(),
+                totalPossessedGoals - goalsInTimeline);
+        }
+        double homeXg = home.xg();
+        double awayXg = away.xg();
+        int totalGoals = totalPossessedGoals;
+        // Heuristic outlier check: total goals > 5x total xG is suspicious.
+        if (totalGoals > 0 && (homeXg + awayXg) > 0
+            && totalGoals > 5 * (homeXg + awayXg)) {
+            log.warn("[V24-XG-DIVERGENCE-OUTLIER] matchId={}, goals={} ({}x), xG={}, homeXg={}, awayXg={}",
+                ctx.matchId(), totalGoals,
+                String.format("%.2f", totalGoals / (homeXg + awayXg)),
+                homeXg + awayXg, homeXg, awayXg);
+        }
 
         String summary = String.format("%s %d - %d %s",
                 ctx.homeTeam().getName(),
