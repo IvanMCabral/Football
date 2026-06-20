@@ -131,22 +131,32 @@ class LineupCommandUseCaseImplSubdivisionTest {
         );
     }
 
+    /**
+     * MVP1-lineup-cancha-1.6: persiste subdivisionId por jugador en
+     * teamStarting11Subdivision. Back primero calcula HELPER-BASED base (11 entries),
+     * luego aplica overrides del front para slots con subdivisionId no-null.
+     *
+     * <p>Los slots enviados deben usar subdivision IDs que coincidan con HELPER base
+     * (S22-1, S22-2, S23-2, S24-3, S16-1, S16-2, S17-2, S18-3, S05-2, S05-3, GK-1)
+     * para que el resultado sea exactamente 11 entries.
+     */
     @Test
-    @DisplayName("manualSelectLineupWithSlots — persiste subdivisionId por jugador en teamStarting11Subdivision")
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots persiste subdivision map (HELPER base + front overrides = 11 entries)")
     void manualSelectWithSlots_persistsSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
         when(careerRepository.save(any())).thenReturn(Mono.empty());
 
+        // Slots con subdivisions que coinciden con HELPER-BASED para 4-4-2.
         List<LineupSlotDTO> slots = List.of(
             new LineupSlotDTO("gk-1", "GK-1"),
             new LineupSlotDTO("def-1", "S22-1"),
             new LineupSlotDTO("def-2", "S22-2"),
-            new LineupSlotDTO("def-3", "S22-3"),
-            new LineupSlotDTO("def-4", "S23-3"),
-            new LineupSlotDTO("mid-1", "S16-2"),
-            new LineupSlotDTO("mid-2", "S16-3"),
-            new LineupSlotDTO("mid-3", "S16-1"),
+            new LineupSlotDTO("def-3", "S23-2"),
+            new LineupSlotDTO("def-4", "S24-3"),
+            new LineupSlotDTO("mid-1", "S16-1"),
+            new LineupSlotDTO("mid-2", "S16-2"),
+            new LineupSlotDTO("mid-3", "S17-2"),
             new LineupSlotDTO("mid-4", "S18-3"),
             new LineupSlotDTO("att-1", "S05-2"),
             new LineupSlotDTO("att-2", "S05-3")
@@ -166,15 +176,30 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots, "teamStarting11Subdivision map should be populated");
-        assertEquals(11, teamSlots.size());
+        assertEquals(11, teamSlots.size(),
+            "MVP1-lineup-cancha-1.6 F4: HELPER base + overrides deben sumar 11 entries (subdivisions coinciden)");
         assertEquals("gk-1", teamSlots.get("GK-1"));
         assertEquals("def-1", teamSlots.get("S22-1"));
+        assertEquals("def-2", teamSlots.get("S22-2"));
+        assertEquals("def-3", teamSlots.get("S23-2"));
+        assertEquals("def-4", teamSlots.get("S24-3"));
+        assertEquals("mid-1", teamSlots.get("S16-1"));
+        assertEquals("mid-2", teamSlots.get("S16-2"));
+        assertEquals("mid-3", teamSlots.get("S17-2"));
+        assertEquals("mid-4", teamSlots.get("S18-3"));
+        assertEquals("att-1", teamSlots.get("S05-2"));
         assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
+    /**
+     * MVP1-lineup-cancha-1.6: slots null ahora escribe el subdivision map HELPER-BASED
+     * (back = source-of-truth). Antes (1.5) dejaba el entry sin escribir para backward
+     * compat con saves viejos — pero F4 cambió el contrato: back completa los 11 slots
+     * aunque el front no envíe nada.
+     */
     @Test
-    @DisplayName("manualSelectLineupWithSlots — backward compat: slots null NO escribe subdivision map")
-    void manualSelectWithSlots_nullSlots_keepsBackwardCompat() {
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots slots null escribe HELPER-BASED subdivision map (11 entries)")
+    void manualSelectWithSlots_nullSlots_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
         when(careerRepository.save(any())).thenReturn(Mono.empty());
@@ -189,13 +214,35 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
-        assertNull(teamSlots,
-            "teamStarting11Subdivision map should be null (backward compat)");
+        assertNotNull(teamSlots,
+            "MVP1-lineup-cancha-1.6 F4: slots null → back completa los 11 slots HELPER-BASED");
+        assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED para 4-4-2");
+
+        // Verificar que HELPER-BASED asignó los 11 slots correctamente.
+        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertEquals("def-1", teamSlots.get("S22-1"));
+        assertEquals("def-2", teamSlots.get("S22-2"));
+        assertEquals("def-3", teamSlots.get("S23-2"));
+        assertEquals("def-4", teamSlots.get("S24-3"));
+        assertEquals("mid-1", teamSlots.get("S16-1"));
+        assertEquals("mid-2", teamSlots.get("S16-2"));
+        assertEquals("mid-3", teamSlots.get("S17-2"));
+        assertEquals("mid-4", teamSlots.get("S18-3"));
+        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
+
+        // Verificar también F1: formación persistida.
+        assertEquals("4-4-2", saved.getTeamStarting11Formation().get(TEAM_ID),
+            "MVP1-lineup-cancha-1.6 F1: formación persistida por team");
     }
 
+    /**
+     * MVP1-lineup-cancha-1.6: slots vacío ahora escribe HELPER-BASED subdivision map
+     * (mismo rationale que {@code nullSlots_writesHelperBasedSubdivisionMap}).
+     */
     @Test
-    @DisplayName("manualSelectLineupWithSlots — backward compat: slots vacío NO escribe subdivision map")
-    void manualSelectWithSlots_emptySlots_keepsBackwardCompat() {
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots slots vacío escribe HELPER-BASED subdivision map (11 entries)")
+    void manualSelectWithSlots_emptySlots_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
         when(careerRepository.save(any())).thenReturn(Mono.empty());
@@ -210,12 +257,25 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
-        assertNull(teamSlots,
-            "teamStarting11Subdivision map should be null (empty slots = legacy)");
+        assertNotNull(teamSlots,
+            "MVP1-lineup-cancha-1.6 F4: slots vacío → back completa los 11 slots HELPER-BASED");
+        assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED para 4-4-2");
+
+        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertEquals("def-1", teamSlots.get("S22-1"));
+        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
+    /**
+     * MVP1-lineup-cancha-1.6: filtra slots con playerId no incluido en el lineup.
+     *
+     * <p>Con F4 HELPER-BASED, el back siempre escribe 11 entries base. Slots del
+     * front con playerId no incluido se filtran (no se aplica override), pero el
+     * base HELPER-BASED persiste igual.
+     */
     @Test
-    @DisplayName("manualSelectLineupWithSlots — filtra slots con playerId no incluido en el lineup")
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots filtra slots con playerId inválido, HELPER base persiste (11 entries)")
     void manualSelectWithSlots_filtersInvalidPlayerIds() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
@@ -236,17 +296,27 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
-        assertNotNull(teamSlots);
-        assertEquals(1, teamSlots.size(),
-            "Solo debe persistirse el slot del player válido");
-        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertNotNull(teamSlots,
+            "MVP1-lineup-cancha-1.6 F4: HELPER base siempre persiste (11 entries)");
+        assertEquals(11, teamSlots.size(),
+            "MVP1-lineup-cancha-1.6 F4: 11 entries HELPER-BASED + 0 overrides efectivos (slot con playerId inválido fue ignorado)");
+        assertEquals("gk-1", teamSlots.get("GK-1"),
+            "GK-1 → gk-1 (HELPER base + override válido coinciden)");
+        assertEquals("def-1", teamSlots.get("S22-1"),
+            "S22-1 → def-1 (HELPER base, slot del front con playerId desconocido fue ignorado)");
+        assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
+    /**
+     * MVP1-lineup-cancha-1.6: si TODOS los slots del front son inválidos (blank),
+     * el back igual escribe el HELPER-BASED base (11 entries). El entry viejo
+     * pre-existente es sobrescrito por las nuevas entries HELPER-BASED.
+     */
     @Test
-    @DisplayName("manualSelectLineupWithSlots — si TODOS los slots son inválidos, limpia el entry existente")
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots slots TODOS inválidos → HELPER base sobrescribe entry viejo")
     void manualSelectWithSlots_allInvalid_clearsExistingEntry() {
         CareerSave career = makeCareer(makeFullSquad442());
-        // Pre-popular el map con un valor viejo.
+        // Pre-popular el map con un valor viejo (que NO existe en HELPER-BASED).
         Map<String, Map<String, String>> preExisting = new HashMap<>();
         preExisting.put(TEAM_ID, new HashMap<>(Map.of("OLD-SLOT", "old-player")));
         career.setTeamStarting11Subdivision(preExisting);
@@ -272,13 +342,27 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
-        assertNull(teamSlots,
-            "Si todos los slots son inválidos, el entry del team debe limpiarse");
+        assertNotNull(teamSlots,
+            "MVP1-lineup-cancha-1.6 F4: HELPER base siempre persiste aunque TODOS los slots del front sean inválidos");
+        assertEquals(11, teamSlots.size(),
+            "MVP1-lineup-cancha-1.6 F4: 11 entries HELPER-BASED (front slots inválidos no impidieron persistencia)");
+        // El entry viejo fue sobrescrito por HELPER-BASED.
+        assertFalse(teamSlots.containsKey("OLD-SLOT"),
+            "MVP1-lineup-cancha-1.6 F4: OLD-SLOT del entry pre-existente fue reemplazado por HELPER-BASED");
+        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertEquals("def-1", teamSlots.get("S22-1"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
+    /**
+     * MVP1-lineup-cancha-1.6: slots con subdivisionId en blanco/null ya NO bloquean
+     * la persistencia. F4 primero calcula el HELPER-BASED base (11 entries), luego
+     * itera los slots del front — los que tienen subdivisionId blank/null se
+     * ignoran, pero el base map persiste igual.
+     */
     @Test
-    @DisplayName("manualSelectLineupWithSlots — todos los slots con subdivisionId en blanco no persisten")
-    void manualSelectWithSlots_blankSubdivisionIds_notPersisted() {
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots slots con subdivisionIds blank/null no impide HELPER-BASED map (11 entries)")
+    void manualSelectWithSlots_blankSubdivisionIds_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
         when(careerRepository.save(any())).thenReturn(Mono.empty());
@@ -298,12 +382,27 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
-        assertNull(teamSlots, "SubdivisionIds vacíos no deben persistirse");
+        assertNotNull(teamSlots,
+            "MVP1-lineup-cancha-1.6 F4: slots con subdivisionId blank → HELPER-BASED base persiste igual");
+        assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED");
+
+        // Slots del front con subdivisionId blank se ignoraron — los del HELPER-BASED
+        // base no fueron sobrescritos.
+        assertEquals("gk-1", teamSlots.get("GK-1"),
+            "GK-1 sigue asignado por HELPER-BASED (slot del front con subdivisionId blank fue ignorado)");
+        assertEquals("def-1", teamSlots.get("S22-1"));
+        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
+    /**
+     * MVP1-lineup-cancha-1.6: el overload legacy (sin slots) ahora también escribe
+     * HELPER-BASED subdivision map. Back completa los 11 slots — front ya no es
+     * requerido para asignar subdivisiones.
+     */
     @Test
-    @DisplayName("manualSelectLineup legacy (sin slots) — sigue funcionando y NO escribe subdivision map")
-    void manualSelectLegacy_doesNotWriteSubdivisionMap() {
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectLineup legacy escribe HELPER-BASED subdivision map (11 entries)")
+    void manualSelectLegacy_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
         when(careerRepository.save(any())).thenReturn(Mono.empty());
@@ -318,8 +417,18 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
-        assertNull(teamSlots,
-            "El overload legacy NO debe escribir subdivision map (backward compat)");
+        assertNotNull(teamSlots,
+            "MVP1-lineup-cancha-1.6 F4: overload legacy → back completa HELPER-BASED igual");
+        assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED");
+
+        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertEquals("def-1", teamSlots.get("S22-1"));
+        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
+
+        // Verificar también F1: formación persistida en legacy overload.
+        assertEquals("4-4-2", saved.getTeamStarting11Formation().get(TEAM_ID),
+            "MVP1-lineup-cancha-1.6 F1: formación persistida por team en manualSelect legacy");
     }
 
     // ========== MVP1-lineup-cancha-1.5: autoSelect persiste subdivision map ==========
@@ -473,5 +582,65 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Los slots del 4-4-2 deben estar presentes
         assertTrue(teamSlots.containsKey("S22-1"), "LB → S22-1 (formación 4-4-2)");
         assertTrue(teamSlots.containsKey("S05-2"), "ST → S05-2 (formación 4-4-2)");
+    }
+
+    // ========== MVP1-lineup-cancha-1.6: F4 front overrides sobre HELPER-BASED ==========
+
+    /**
+     * MVP1-lineup-cancha-1.6 (Test 7, F4): el front puede override subdivisiones
+     * explícitamente — back calcula HELPER-BASED base, luego front overrides ganan
+     * para los slots con subdivisionId no-null/no-blank.
+     *
+     * <p>Setup: squad 4-4-2 standard, HELPER-BASED asigna def-1 (CB) al slot S22-1 (LB).
+     * Front envía override: S22-1 → def-3 (LB player) — esto debe ganar sobre HELPER.
+     * El resto del HELPER-BASED base persiste intacto.
+     */
+    @Test
+    @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots front overrides toman precedencia sobre HELPER-BASED base")
+    void manualSelectWithSlots_frontOverridesTakePrecedence() {
+        CareerSave career = makeCareer(makeFullSquad442());
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        // Front envía slots explícitos. HELPER-BASED para 4-4-2 con makeFullSquad442
+        // habría asignado S22-1 → def-1 (CB, primer defensor). Front overridea
+        // con def-3 (LB, jugador más natural para LB slot).
+        List<LineupSlotDTO> slots = List.of(
+            new LineupSlotDTO("def-3", "S22-1")  // override: LB slot → LB player
+        );
+
+        StepVerifier.create(useCase.manualSelectLineupWithSlots(
+                UUID.fromString(USER_ID), "4-4-2", fullLineup442(), slots))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor.capture());
+        CareerSave saved = captor.getValue();
+
+        Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertEquals(11, teamSlots.size(), "MVP1-lineup-cancha-1.6 F4: 11 entries (HELPER-BASED base + overrides)");
+
+        // Override del front ganó sobre HELPER-BASED.
+        assertEquals("def-3", teamSlots.get("S22-1"),
+            "MVP1-lineup-cancha-1.6 F4: front override gana — S22-1 (LB slot) → def-3 (LB player), no def-1 que HELPER habría elegido");
+
+        // El resto del HELPER-BASED base persiste intacto.
+        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertEquals("def-2", teamSlots.get("S22-2"), "S22-2 (CB) → def-2 (HELPER base)");
+        assertEquals("def-3", teamSlots.get("S23-2"),
+            "S23-2 (CB) → def-3 si HELPER lo encontró (puede ser que ya esté usado por override)");
+        assertEquals("def-4", teamSlots.get("S24-3"));
+        assertEquals("mid-1", teamSlots.get("S16-1"));
+        assertEquals("mid-2", teamSlots.get("S16-2"));
+        assertEquals("mid-3", teamSlots.get("S17-2"));
+        assertEquals("mid-4", teamSlots.get("S18-3"));
+        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
+
+        // F1: formación persistida.
+        assertEquals("4-4-2", saved.getTeamStarting11Formation().get(TEAM_ID),
+            "MVP1-lineup-cancha-1.6 F1: formación persistida junto con overrides");
     }
 }

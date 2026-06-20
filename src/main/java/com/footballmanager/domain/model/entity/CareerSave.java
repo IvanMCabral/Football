@@ -36,6 +36,16 @@ public class CareerSave {
      * compat con lineups viejos).
      */
     private Map<String, Map<String, String>> teamStarting11Subdivision = new HashMap<>();
+    /**
+     * MVP1-lineup-cancha-1.6: formation code persistido por team
+     * (teamId → formation code, ej. "4-3-3"). El front puede cambiar la
+     * formación sin reasignar jugadores — sin este campo, {@code getCurrentLineup}
+     * recomputaba la formación contando DEF/MID/ATT de la lineup persistida
+     * (que seguía siendo la original) y devolvía el código viejo. Si está
+     * vacío o ausente para un team (saves de sprint 1.5 o anteriores), se
+     * hace fallback a {@code lineupHelper.inferFormation(lineup)} en read path.
+     */
+    private Map<String, String> teamStarting11Formation = new HashMap<>();
     private TournamentState tournamentState = new TournamentState();
 
     // Setters requeridos para deserialización JSON
@@ -52,6 +62,9 @@ public class CareerSave {
     public void setTeamStarting11Subdivision(Map<String, Map<String, String>> slots) {
         this.teamStarting11Subdivision = (slots == null) ? new HashMap<>() : new HashMap<>(slots);
     }
+    public void setTeamStarting11Formation(Map<String, String> formation) {
+        this.teamStarting11Formation = (formation == null) ? new HashMap<>() : new HashMap<>(formation);
+    }
     public void setTournamentState(TournamentState state) { this.tournamentState = state; }
 
     // ========== Core accessors (for services) ==========
@@ -66,6 +79,17 @@ public class CareerSave {
             teamStarting11Subdivision = new HashMap<>();
         }
         return teamStarting11Subdivision;
+    }
+    /**
+     * MVP1-lineup-cancha-1.6: formación persistida por team. Devuelve
+     * un mapa vacío si el save es viejo (no contiene el campo) —
+     * el read path hace fallback a {@code lineupHelper.inferFormation}.
+     */
+    public Map<String, String> getTeamStarting11Formation() {
+        if (teamStarting11Formation == null) {
+            teamStarting11Formation = new HashMap<>();
+        }
+        return teamStarting11Formation;
     }
     public TournamentState getTournamentState() { return tournamentState; }
 
