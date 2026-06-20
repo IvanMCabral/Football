@@ -4,7 +4,7 @@
 >
 > **Mantenedor:** Mavis (root) — actualizar cada vez que se cree/aborte un agente, se cambie un ID, o se aprenda un workflow nuevo.
 >
-> **Ultima actualizacion:** 2026-06-16 ART — restart: nohup → cron → mensaje texto obligatorio → terminar turno. Eliminado Start-Sleep 60 del turno launch. Fix bug "Ran 2 command(s) colgado".
+> **Ultima actualizacion:** 2026-06-19 ART — corrección crítica: el shell de Mavis es PowerShell, no bash. Comando de restart reescrito con Start-Process nativo. Sintaxis bash (nohup/&/disown) PROHIBIDA en el tool de terminal.
 
 ---
 
@@ -69,69 +69,64 @@
 
 ### 4.1 Script oficial unico
 
-- **Path:** `C:\Users\ichu_\Desktop\start_manager_full.sh` (script principal con git-check). Tambien existe `reiniciar.sh` que mata por nombre + llama a este, pero para el flujo Mavis se usa `start_manager_full.sh` directo (asi el git-check es self-contained).
+- **Path:** `C:\Users\ichu_\Desktop\start_manager_full.sh` (script principal con git-check). Script único — antes existía `reiniciar.sh` como wrapper pero fue borrado el 2026-06-19 por redundante.
 - **Que hace:** git-check contra `D:\temp\manager-state\last-restart-commit` → si cambio, mata + restart. Si no, skipea en 5s.
 - **BUG IPv6 FIXEADO (2026-06-16):** Angular a veces binds en `::1` (IPv6) y `Get-NetTCPConnection` no lo detecta en `127.0.0.1` (IPv4) → skipeaba restart del frontend aunque el proceso viejo siguiera vivo. **Fix aplicado:** el script ahora mata los PIDs guardados en `${PID_DIR}/frontend.pid` ANTES de verificar puertos.
 - **Wrapper Windows v4:** `C:\Users\ichu_\Desktop\start_manager_full.bat` — `start /B bash start_manager_full.sh` desacopla el bash.exe. Sale en <1s.
 
-### 4.2 Procedimiento canónico para Mavis (3 fases, NUNCA en el mismo turno)
+### 4.2 Procedimiento canónico para Mavis (PowerShell nativo, fire-and-forget con Start-Job)
 
-**REGLA DURA (2026-06-18, Iván):** **PRIMERO el cron, DESPUÉS el bash, DESPUÉS avanzar.** Sin el cron activo, NO se puede avanzar al siguiente paso. Esto evita que Mavis se trabe testeando puertos o lanzando bash sin un watchdog que confirme UP.
+**Descubrimiento crítico (2026-06-19):** el tool de terminal de Mavis es PowerShell, no bash. Además, el tool bash de OpenCode rastrea cualquier proceso hijo directo del shell que invoca y no retorna hasta que termine. Esto descartó:
+- Sintaxis bash (`nohup`, `&`, `< /dev/null`, `disown`) — rompe el parser de PowerShell.
+- `Start-Process` con o sin `-PassThru` — el tool bash queda "Running" durante los 60-90s del script.
+- `cmd /c "start /B bash ..."` — desacopla bash.exe del cmd.exe pero el tool bash igual espera.
 
-Si Mavis rompe esta regla (lanza bash primero o testea puertos en el mismo turno del bash), Iván lo corrige explícitamente con "te trabaste" o "primero cron, después bash". Mavis DEBE documentar la regla en su agent.md y aplicarla sin excepciones.
+**Único mecanismo que desacopla realmente: PowerShell `Start-Job`**, que crea un BackgroundJob sin relación padre-hijo rastreable por el tool bash. Retorna inmediato.
 
-**FASE 1 — LANZAR (turno del trigger). Exactamente 3 pasos, en este orden ESTRICTO:**
+**Comando obligatorio:**
 
-Paso 1 — crear el cron PRIMERO (sin esto, no se puede avanzar):
-```
-mavis cron self check-stack-after-XXX --every 1m --prompt "PRIMER TICK (mensaje VISIBLE al usuario, NO mavis-progress, NO gate-discipline, SIEMPRE avisar al usuario): testea puertos 5432/6379/8080/4200 con Test-NetConnection (4200 también ::1 por IPv6). Si los 4 UP -> reportar 'stack UP, OK' al usuario (mensaje VISIBLE) + mavis cron delete mavis check-stack-after-XXX + spawn REVISOR. Si DOWN -> leer /tmp/mgr-rstr-XXX.log y reportar (mensaje VISIBLE). SIGUIENTES TICKS: gate-discipline normal (skip silencioso si no hay cambio)."
-```
-
-**REGLA SUBSIDIARIA (2026-06-18, Iván):** El PRIMER TICK del cron SIEMPRE notifica al usuario con mensaje VISIBLE (sin gate-discipline). Los siguientes ticks skipean silenciosos si no hay cambio. Esto evita que Iván quede esperando sin saber si el bash corrió.
-
-Paso 2 — lanzar el script bash DESPUÉS:
-```bash
-cmd.exe /c "start /B bash /c/Users/ichu_/Desktop/start_manager_full.sh > /tmp/mgr-rstr-XXX.log 2>&1"
+```powershell
+Write-Host "Lanzando restart..."
+Start-Job -ScriptBlock { bash.exe /c/Users/ichu_/Desktop/start_manager_full.sh > /tmp/mgr-rstr.log 2>&1 }
+Write-Host "Restart lanzado via PowerShell Start-Job. Job corriendo en background, tool bash retornó inmediato. Esperando tu próxima."
 ```
 
-Paso 3 — NUNCA Test-NetConnection en el mismo turno (Mavis se traba). El cron del primer tick confirma UP y se autodestruye.
-```
-mavis cron self check-stack-after-restart --every 1m --prompt "PRIMER TICK (mensaje VISIBLE al usuario): testea puertos 5432/6379/8080/4200 con Test-NetConnection. Si los 4 UP -> 'stack UP, paso a REVISOR' + mavis cron delete mavis check-stack-after-restart. Si DOWN -> leer /tmp/mgr-rstr.log + reportar error. SIGUIENTES TICKS: solo si el estado cambió."
-```
+**PROHIBIDO:** sintaxis bash de backgrounding (`nohup`, `&`, `< /dev/null`, `disown`) en el tool de terminal de Mavis. `Start-Process` también está descartado por el tracking del tool bash.
 
-Paso 3 — OBLIGATORIO: escribir mensaje de texto al usuario y terminar el turno:
-> "Restart lanzado ✓. Cron activo cada 1 min para verificar los 4 puertos. Cuando levante te confirmo."
+**Procedimiento completo (incluye cron poll 1min para auto-verificar UP):**
+1. Ejecutar el bloque PowerShell de arriba (Start-Job + Write-Host).
+2. En el mismo turno, crear el cron poll de 1 minuto:
+   ```bash
+   mavis cron self check-stack-after-restart --every 1m --prompt "PRIMER TICK (mensaje VISIBLE al usuario, NO mavis-progress): testea puertos 5432/6379/8080/4200 con Test-NetConnection (4200 tambien ::1 por IPv6). Si los 4 UP -> reportar 'stack UP, listo para REVISOR' al usuario + mavis cron delete mavis check-stack-after-restart. Si DOWN -> leer /tmp/mgr-rstr.log + reportar. SIGUIENTES TICKS: gate-discipline (skip silencioso)."
+   ```
+3. Mensaje corto al usuario: "Restart disparado vía Start-Job. Cron activo cada 1 min para confirmar UP."
+4. Cerrar el turno. Sin polling adicional en este turno.
+5. Verificación de puertos la hace el cron (cuando dispare) o cuando Iván pregunte.
 
-**SIN el paso 3, Mavis queda colgado.** El modelo no termina el turno solo después de ejecutar comandos — necesita escribir texto. Esta es la causa del bug donde el usuario ve "Ran 2 command(s)" y Mavis no responde más.
-
-NO hacer Start-Sleep. NO hacer Test-NetConnection en este turno. NO esperar el cron.
+**Validado en producción:** 2026-06-19, Mavis lo ejecutó con éxito y el tool bash retornó inmediato.
 
 ---
 
-**FASE 2 — VERIFICAR (cuando el cron dispara o cuando Iván pregunta):**
+**VERIFICAR (cuando Iván pregunta, en un turno posterior):**
 
 ```powershell
-$pg = (Test-NetConnection localhost -Port 5432 -InformationLevel Quiet) -eq 'True'
-$rd = (Test-NetConnection localhost -Port 6379 -InformationLevel Quiet) -eq 'True'
-$be = (Test-NetConnection localhost -Port 8080 -InformationLevel Quiet) -eq 'True'
-$fe = (Test-NetConnection localhost -Port 4200 -InformationLevel Quiet) -eq 'True'
-Write-Host "PG=$pg Redis=$rd Backend=$be Frontend=$fe"
+Test-NetConnection -ComputerName localhost -Port 5432 -InformationLevel Quiet
+Test-NetConnection -ComputerName localhost -Port 6379 -InformationLevel Quiet
+Test-NetConnection -ComputerName localhost -Port 8080 -InformationLevel Quiet
+Test-NetConnection -ComputerName "::1" -Port 4200 -InformationLevel Quiet
 ```
 
-Si los 4 `True` → reportar al usuario + `mavis communication send` a REVISOR + eliminar cron.
-Si alguno `False` → leer logs + reportar error + dejar cron activo.
+Si los 4 `True` → reportar "stack UP" al usuario. Recién después pasar la tarea a REVISOR (si aplica).
+Si alguno `False` → leer `/tmp/mgr-rstr.log` + reportar error.
 
-**FASE 3 — CERRAR.** Una vez confirmado UP estable, `mavis cron delete mavis check-stack-after-restart` (idempotente).
-
-### 4.3 Procedimiento alternativo (kill manual + bash directo, sin reiniciar.sh)
+### 4.3 Procedimiento alternativo (kill manual + bash directo)
 
 ```powershell
-# Solo si reiniciar.sh no esta o falla. Misma idea, otra ruta.
+# Solo si start_manager_full.sh falla o se quiere mas control.
 Get-Process java,mvn -ErrorAction SilentlyContinue | Where-Object {$_.StartTime -lt (Get-Date).AddMinutes(-3)} | Stop-Process -Force
 Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.Path -like '*front-ciber*'} | Stop-Process -Force
 Start-Sleep -Seconds 2
-powershell -ExecutionPolicy Bypass -File "C:\Users\ichu_\Desktop\restart-stack-v2.ps1" 2>$null; Write-Host "OK"
-# Devolver control al toque. NO Start-Sleep en el mismo turno. Verificacion 1 minuto despues.
+# Despues usar el mismo comando PowerShell del §4.2 (Start-Process nativo)
 ```
 
 ### 4.3b Fix IPv6 bind en start_manager_full.sh (2026-06-16)
@@ -171,14 +166,39 @@ sleep 2
 ### 4.5 Reglas duras del restart
 
 1. **Path bash:** siempre `/c/Users/ichu_/Desktop` (Git Bash portable). NO `/d/...`, NO `/mnt/c/...`, NO `C:\...` con backslashes.
-2. **NUNCA** ejecutar el `.bat`/`.sh` en foreground — siempre via `restart-stack-v2.ps1` (Start-Process desacoplado) o `nohup ... &`.
+2. **NUNCA** ejecutar el `.bat`/`.sh` en foreground — siempre via PowerShell `Start-Job` (ver §4.2). NO usar `Start-Process`, NO `cmd /c start /B`, NO `nohup ... &` (todas quedan "Running" en el tool bash de OpenCode durante los 60-90s del script).
 3. **NUNCA** mirar `bat-out.log` ni `bat-err.log` mientras corre. El polling a los 4 puertos es la unica fuente de verdad.
-4. **NUNCA** esperar output interactivo. `restart-stack-v2.ps1` devuelve en <1s.
-5. **NUNCA lanzar + verificar en el mismo turno.** Procedimiento: nohup → cron → mensaje de texto al usuario → terminar turno. El cron hace la verificación ~1 min después. NO Start-Sleep, NO Test-NetConnection en el turno del launch. **El paso de escribir el mensaje de texto después del cron es OBLIGATORIO** — sin él Mavis queda colgado (bug detectado 2026-06-16). Decisión de Iván.
+4. **NUNCA** esperar output interactivo. `Start-Job` retorna inmediato sin esperar al script.
+5. **SIEMPRE crear el cron poll 1min** después del Start-Job (ver §4.2) — Iván prefiere este flujo para auto-verificar UP sin tener que esperar a preguntarle.
 6. **Matar PIDs viejos por edad:** `StartTime -lt (Get-Date).AddMinutes(-3)`. NO -10 (era muy permisivo y mataba procesos legitimos).
 7. **Matar node solo del front-ciber:** `Where-Object {$_.Path -like '*front-ciber*'}`. NO matar node del MCP de Mavis.
-8. **Si en 60s los 4 puertos NO estan UP** → leer logs y reportar.
+8. **Si en 60s los 4 puertos NO estan UP** → leer `/tmp/mgr-rstr.log` y reportar.
 9. **Fix IPv6 bind (2026-06-16):** `start_manager_full.sh` ahora mata los PIDs guardados en los PID files ANTES de verificar puertos. Esto resuelve el bug donde Angular binds en `::1` (IPv6) y `Get-NetTCPConnection` no lo detecta en IPv4 (`127.0.0.1`), causando skip incorrecto del restart del frontend.
+
+### 4.6 Como avanzar después del UP
+
+Una vez que el cron poll confirma `stack UP` (o Iván pregunta y Mavis valida los 4 puertos), el flujo continúa así:
+
+1. **Mavis reporta "stack UP, listo para REVISOR"** a Iván en el chat.
+2. **Si hay sprint activo esperando smoke** → Mavis spawn REVISOR con scope del smoke (ruta al scope `.md` en workspace de REVISOR + career/matchId si aplica).
+3. **REVISOR ejecuta el smoke** y reporta GO/NO-GO.
+4. **Si REVISOR GO:**
+   - Mavis reporta a Iván con TL;DR + lista de commits pendientes de push + paths de evidencia.
+   - **Espera OK literal de Iván** antes de pedir push a SENIOR (regla SENIOR #1: Iván OK + smoke GO = condición necesaria para push).
+   - Mavis spawn SENIOR con task de push (`git push origin <branch>` + tags).
+   - SENIOR empuja + reporta con `evidencia-push-<tag>.md`.
+5. **Si REVISOR NO-GO:**
+   - Mavis reporta a Iván con causa raíz + fix sugerido.
+   - Mavis devuelve sprint al agente correspondiente:
+     - Si bug del front → MANAGER re-evalúa scope, escribe nuevo prompt SENIOR-grade, ciclo repite.
+     - Si bug del back → idem.
+     - Si bug de infra (ej. Redis auth, script start_manager_full.sh) → Mavis arregla directamente y vuelve a restart.
+6. **Si no hay sprint activo** → Mavis pregunta a Iván qué sigue.
+
+**Reglas duras:**
+- NUNCA push sin Iván OK literal (regla SENIOR #1).
+- NUNCA skip del smoke REVISOR — es la verificación en vivo que valida el wire UI y network.
+- NUNCA delegar el restart a REVISOR/SENIOR/MANAGER — el restart lo hace Mavis root siempre (§4.2).
 
 ---
 
@@ -342,9 +362,9 @@ _(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-
 - **Si se quiere mantener la division de roles:** NO necesario forzar `isBuiltin`. Solo crear la sesion custom spawneada desde root y ya aparece en el panel.
 
 ### 10.11 Leccion: agente REINICIADOR ELIMINADO 2026-06-15 (no recrear)
-- **Problema raiz (10 versiones, v1-v10):** cuando el agente REINICIADOR recibia la tarea de ejecutar `reiniciar.sh` y reportar, en vez de ejecutar **mandaba un ACK inicial** y se quedaba en standby, o **se quedaba cargando skills**, o **esperaba confirmacion** que nadie le iba a dar. El bug es del modelo MiniMax-M3, NO del script. El script `reiniciar.sh` (v1) es correcto y Mavis lo ejecuta sin problema.
+- **Problema raiz (10 versiones, v1-v10):** cuando el agente REINICIADOR recibia la tarea de ejecutar el script de restart y reportar, en vez de ejecutar **mandaba un ACK inicial** y se quedaba en standby, o **se quedaba cargando skills**, o **esperaba confirmacion** que nadie le iba a dar. El bug es del modelo MiniMax-M3, NO del script. El script `start_manager_full.sh` es correcto y Mavis lo ejecuta sin problema.
 - **Por que no se arreglo en 10 intentos:** el patron se repite aunque el prompt diga "ejecuta primero, no ACK". El agente, al ser una sesion hija, tiene el mismo modelo de fondo. Cambiar el prompt, el agent.md, o la complejidad del script no cambia el comportamiento. Solo cambia quien lo ejecuta.
-- **Lo que SI funciona: Mavis (root) ejecuta `bash /c/Users/ichu_/Desktop/start_manager_full.sh` directo** desde la sesion root (sale en ~10s con git-check). El script matea los PIDs guardados antes de verificar puertos (fix IPv6 2026-06-16), asi que no hay stale bindings. Despues `Start-Sleep 60` + `Test-NetConnection` a los 4 puertos y reportar al usuario.
+- **Lo que SI funciona: Mavis (root) ejecuta el comando PowerShell `Start-Process`** del §4.2 desde la sesion root. El script matea los PIDs guardados antes de verificar puertos (fix IPv6 2026-06-16), asi que no hay stale bindings. Verificación de puertos se hace después solo si Iván pregunta.
 - **Mavis valida la parte automatizable** (puertos, endpoints sin auth con Invoke-WebRequest) y **delega el smoke visual a REVISOR**. No mezcle roles.
 - **Senales de "se trabo"** (en cualquier agente): manda un ACK inicial pero no completa la tarea en 1-2 min, o manda reportes parciales, o se queda sin output por 5+ min. Accion: `mavis session abort` + dejar que Mavis lo haga.
 - **Si en algun momento se quiere re-intentar:** NO vale la pena. El modelo es el mismo. Mejor invertir el tiempo en otra cosa.
