@@ -78,11 +78,15 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         }
 
         career.getTournamentState().setFixtures(newFixtures);
-        career.getTournamentState().setTotalRounds(maxRound);
         career.getTournamentState().setCurrentRound(1);
         career.getTournamentState().setFinished(false);
         career.getTournamentState().setCareerPhase(CareerPhase.PRE_MATCH);
         career.getTournamentState().initializeStandings(career.getAllSessionTeams());
+        // V24D20-SANDBOX-V2-MVP BUG #2: setTotalRounds is the LAST write so
+        // any future side-effect on setFixtures / setCurrentRound /
+        // setFinished / setCareerPhase / initializeStandings cannot clobber
+        // it. The invariant is totalRounds == max(fixtures.round).
+        career.getTournamentState().setTotalRounds(maxRound);
 
         log.info("[V24D20-TESTHARNESS] replaceFixtures userId={} count={} maxRound={}",
             career.getUserId(), fixtures.size(), maxRound);

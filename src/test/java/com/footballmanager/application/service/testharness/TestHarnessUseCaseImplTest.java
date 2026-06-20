@@ -116,6 +116,42 @@ class TestHarnessUseCaseImplTest {
         verify(careerRepository, never()).save(any());
     }
 
+    // ========== BUG #2: totalRounds must equal max(fixtures.round) after replaceFixtures
+    //
+    // Even though the in-memory state is correct today (setTotalRounds
+    // is called inside executeReplaceFixtures), the previous order put
+    // setTotalRounds EARLY in the sequence — any future side-effect in
+    // setFixtures / initializeStandings / setCareerPhase would clobber
+    // it. The fix moves setTotalRounds to be the LAST call so the
+    // invariant totalRounds == max(fixtures.round) holds even if a new
+    // side-effect is added to an intermediate call.
+    //
+    // Test: 4 fixtures across 4 rounds → totalRounds must be 4.
+    @Test
+    @DisplayName("replaceFixtures: totalRounds == fixtures.size() (BUG #2 regression guard)")
+    void replaceFixtures_totalRoundsEqualsFixtureCount() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        List<CustomFixture> fixtures = List.of(
+            new CustomFixture("user-team-id", "rival-1", 1, null),
+            new CustomFixture("user-team-id", "rival-2", 2, null),
+            new CustomFixture("user-team-id", "rival-3", 3, null),
+            new CustomFixture("user-team-id", "rival-4", 4, null)
+        );
+
+        useCase.replaceFixtures(USER_ID, fixtures)
+            .as(StepVerifier::create)
+            .verifyComplete();
+
+        assertThat(career.getTournamentState().getTotalRounds())
+            .as("totalRounds MUST equal max(round) after replaceFixtures (BUG #2)")
+            .isEqualTo(4);
+        assertThat(career.getTournamentState().getFixtures()).hasSize(4);
+    }
+
     // ========== resetInjuries ==========
 
     @Test
