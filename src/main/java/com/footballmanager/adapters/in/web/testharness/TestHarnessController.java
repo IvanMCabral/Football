@@ -1,0 +1,187 @@
+package com.footballmanager.adapters.in.web.testharness;
+
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
+import com.footballmanager.adapters.in.web.testharness.dto.CareerSnapshotResponse;
+import com.footballmanager.adapters.in.web.testharness.dto.CreateCustomCareerRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.CustomFixtureDTO;
+import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
+import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
+import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * V24D20-TESTHARNESS — REST controller exposing the smoke-test harness.
+ *
+ * <p>Base path: {@code /api/v1/test-harness/career}.
+ *
+ * <p><b>Profile-gated</b> to {@code dev | local | test} — the bean is not
+ * registered in {@code prod}, so the endpoints return 404 (Spring's default
+ * for unmapped paths) without any extra guard. This guarantees no exposure
+ * to production traffic.
+ *
+ * <p><b>Auth:</b> same JWT path as {@code CareerCommandController} —
+ * {@code controllerHelper.getUserId(authentication)}. The harness is for
+ * internal smoke use only (REVISOR + local exploration), so the
+ * profile-gate is the primary access control.
+ *
+ * <p><b>Endpoints:</b>
+ * <ol>
+ *   <li>{@code POST /create-custom} — wipe + start fresh career</li>
+ *   <li>{@code POST /replace-fixtures} — overwrite tournament fixtures</li>
+ *   <li>{@code POST /reset-injuries} — clear squad injury flags</li>
+ *   <li>{@code POST /set-formation} — change user formation</li>
+ *   <li>{@code GET /snapshot} — dump current state for pre/post diff</li>
+ * </ol>
+ */
+@RestController
+@RequestMapping("/api/v1/test-harness/career")
+@Profile({"dev", "local", "test"})
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RequiredArgsConstructor
+@Slf4j
+public class TestHarnessController {
+
+    private final TestHarnessUseCase testHarnessUseCase;
+    private final ControllerHelper controllerHelper;
+
+    /**
+     * POST /api/v1/test-harness/career/create-custom
+     * Wipes the existing career (if any) and starts a fresh one with
+     * caller-controlled {@code leagueId}, {@code teamId}, {@code difficulty},
+     * {@code gameSpeed}, {@code teamsPerDivision}. After start, automatically
+     * clears any injury flags the new squad might inherit (defensive —
+     * new squads should be pristine anyway).
+     */
+    @PostMapping("/create-custom")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<ResponseEntity<Map<String, Object>>> createCustom(
+            @RequestBody CreateCustomCareerRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        int teamsPerDivision = request.teamsPerDivision() != null
+            ? request.teamsPerDivision()
+            : 5;
+
+        return testHarnessUseCase.createCustom(
+                userId, request.leagueId(), request.teamId(),
+                request.difficulty(), request.gameSpeed(), teamsPerDivision)
+            .<ResponseEntity<Map<String, Object>>>map(career -> {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("careerId", career.getCareerId());
+                body.put("userSessionTeamId", career.getUserSessionTeamId());
+                body.put("totalRounds", career.getTournamentState().getTotalRounds());
+                body.put("currentRound", career.getTournamentState().getCurrentRound());
+                body.put("teamsPerDivision", teamsPerDivision);
+                body.put("message", "Custom career created — squad is healthy");
+                return ResponseEntity.status(HttpStatus.CREATED).body(body);
+            });
+    }
+
+    /**
+     * POST /api/v1/test-harness/career/replace-fixtures
+     * Overwrites the current tournament fixtures with a caller-provided list.
+     * Resets {@code currentRound=1}, {@code finished=false},
+     * {@code careerPhase=PRE_MATCH}, and rebuilds empty standings.
+     */
+    @PostMapping("/replace-fixtures")
+    public Mono<ResponseEntity<Map<String, Object>>> replaceFixtures(
+            @RequestBody List<CustomFixtureDTO> fixturesDto,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        List<CustomFixture> specs = fixturesDto.stream()
+            .map(dto -> new CustomFixture(
+                dto.homeTeamId(),
+                dto.awayTeamId(),
+                dto.round(),
+                dto.matchId() != null ? dto.matchId().toString() : null))
+            .toList();
+
+        return testHarnessUseCase.replaceFixtures(userId, specs)
+            .<ResponseEntity<Map<String, Object>>>then(Mono.fromSupplier(() -> {
+                int maxRound = specs.stream().mapToInt(CustomFixture::round).max().orElse(1);
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("fixtureCount", specs.size());
+                body.put("maxRound", maxRound);
+                body.put("currentRound", 1);
+                body.put("message", "Fixtures replaced — currentRound=1, totalRounds=" + maxRound);
+                return ResponseEntity.ok(body);
+            }));
+    }
+
+    /**
+     * POST /api/v1/test-harness/career/reset-injuries
+     * Clears injury/suspension/yellow/red flags across the entire squad
+     * (not just the starting 11). Idempotent — safe to call on a healthy
+     * squad.
+     */
+    @PostMapping("/reset-injuries")
+    public Mono<ResponseEntity<Map<String, Object>>> resetInjuries(
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        return testHarnessUseCase.resetInjuries(userId)
+            .<ResponseEntity<Map<String, Object>>>then(Mono.fromSupplier(() -> {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("message", "Injury/suspension/yellow/red flags cleared across squad");
+                return ResponseEntity.ok(body);
+            }));
+    }
+
+    /**
+     * POST /api/v1/test-harness/career/set-formation
+     * Changes the user team's formation. Persists to BOTH
+     * {@code SessionTeam.formation} AND {@code teamStarting11Formation} map
+     * (the V24 engine reads from the latter — sprint 1.7 regression fix).
+     */
+    @PostMapping("/set-formation")
+    public Mono<ResponseEntity<Map<String, Object>>> setFormation(
+            @RequestBody SetFormationRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        return testHarnessUseCase.setFormation(userId, request.formation())
+            .<ResponseEntity<Map<String, Object>>>then(Mono.fromSupplier(() -> {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("formation", request.formation());
+                body.put("message", "Formation persisted to SessionTeam AND teamStarting11Formation map");
+                return ResponseEntity.ok(body);
+            }));
+    }
+
+    /**
+     * GET /api/v1/test-harness/career/snapshot
+     * Returns the current career state — REVISOR uses this to verify
+     * pre/post smoke diffs. Includes computed squad health summary.
+     */
+    @GetMapping("/snapshot")
+    public Mono<ResponseEntity<CareerSnapshotResponse>> snapshot(
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        return testHarnessUseCase.snapshot(userId)
+            .<ResponseEntity<CareerSnapshotResponse>>map(
+                career -> ResponseEntity.ok(CareerSnapshotResponse.from(career)));
+    }
+}
