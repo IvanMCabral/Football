@@ -4,7 +4,7 @@
 >
 > **Mantenedor:** Mavis (root) — actualizar cada vez que se cree/aborte un agente, se cambie un ID, o se aprenda un workflow nuevo.
 >
-> **Ultima actualizacion:** 2026-06-19 ART — corrección crítica: el shell de Mavis es PowerShell, no bash. Comando de restart reescrito con Start-Process nativo. Sintaxis bash (nohup/&/disown) PROHIBIDA en el tool de terminal.
+> **Ultima actualizacion:** 2026-06-20 ART — agregado §4.7 "Limpieza de sesiones y crons staled". Cierre definitivo (close, irreversible) de sesiones que compres solo archivan.
 
 ---
 
@@ -199,6 +199,66 @@ Una vez que el cron poll confirma `stack UP` (o Iván pregunta y Mavis valida lo
 - NUNCA push sin Iván OK literal (regla SENIOR #1).
 - NUNCA skip del smoke REVISOR — es la verificación en vivo que valida el wire UI y network.
 - NUNCA delegar el restart a REVISOR/SENIOR/MANAGER — el restart lo hace Mavis root siempre (§4.2).
+
+### 4.7 Limpieza de sesiones y crons staled (2026-06-20)
+
+Las sesiones se acumulan: agentes que terminaron y quedaron idle, agentes que se trabaron sin reportar, crons que ya cumplieron su watchdog. **Limpieza periódica es tarea de Mavis root**, no de los agentes. Iván la pidió explícita cuando ve la lista llena.
+
+#### Comandos clave
+
+```powershell
+# Ver crons activos
+mavis cron list mavis
+
+# Borrar UN cron
+mavis cron delete mavis <cron-name>
+
+# Archivar UNA sesion (reversible, queda oculta de la lista activa)
+mavis session compress <sessionId>
+
+# Borrar DEFINITIVO (irreversible — usar cuando Iván dice "sigo viendolas")
+mavis session close <sessionId>
+```
+
+#### Diferencia crítica: `compress` vs `close`
+
+| Comando | Qué hace | Iván la ve? | Reversible? |
+|---|---|---|---|
+| `compress` | Archiva — oculta de la lista activa | **SÍ** (sigue visible) | Sí (`mavis session messages <id>` la recupera) |
+| `close` | Borra definitivamente | NO | NO — irrecuperable |
+
+**Regla:** Si Iván dice "sigo viendolas", usar `close`. `compress` no alcanza.
+
+#### Procedimiento de limpieza (cuando Iván lo pide)
+
+```powershell
+# 1. Listar sesiones activas de cada agente (3 agentes: manager/senior/revisor)
+mavis session list manager-football
+mavis session list senior-football
+mavis session list revisor-football
+
+# 2. Para cada sesion staled/finished que NO este laburando:
+mavis session close <sessionId>     # irreversible — desaparece
+
+# 3. Borrar crons viejos (despues de que su watchdog termino)
+mavis cron list mavis                # ver
+mavis cron delete mavis <cron-name>  # borrar
+
+# 4. Verificar limpieza
+mavis cron list mavis                # count debe ser 0 si no hay async pendiente
+```
+
+#### Cuándo limpiar
+
+- Cuando Iván dice "borra los staled" / "sigo viendolas" / "limpia".
+- Al cerrar un sprint (Mavis revisa sesiones staled antes de empezar el próximo).
+- Cuando la lista de `mavis session list` muestra >10 sesiones, muchas con status `finished` hace días.
+
+#### Anti-patrón aprendido (2026-06-20)
+
+`compress` archiva pero la sesión sigue apareciendo en la lista visible de Iván (UI muestra sesiones archivadas con tilde). Iván se enoja porque "sigo viendolas". **Para que desaparezca de verdad, `close` (irreversible).**
+
+NO confundir: cuando una sesión **acaba de terminar su trabajo útil** y todavía la queremos consultar, usar `compress`. Cuando **ya no la necesitamos nunca más**, usar `close`.
 
 ---
 
