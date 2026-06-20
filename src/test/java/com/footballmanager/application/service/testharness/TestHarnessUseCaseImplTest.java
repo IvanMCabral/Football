@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -238,6 +239,94 @@ class TestHarnessUseCaseImplTest {
     void customFixture_invalidRound_throws() {
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () ->
             new CustomFixture("home", "away", 0, null));
+    }
+
+    // ========== cache invalidation (V24D20-SANDBOX-V2-MVP BUG #1) ==========
+    //
+    // Root cause: TestHarnessUseCaseImpl.executeSetFormation / executeReplaceFixtures /
+    // executeResetInjuries write to Redis via careerRepository.save(career) but
+    // NEVER invalidate CareerSessionService.careerCache. The next
+    // careerSessionService.getCareerFromCache(userId) returns the stale
+    // CareerSave from the in-memory cache, so the V24 engine sees the OLD
+    // formation / fixtures / injury state, not the new one.
+    //
+    // Fix: every save in the test harness must invalidate the cache.
+    // Regression guard: these tests fail (red) BEFORE the fix is applied.
+
+    @Test
+    @DisplayName("setFormation: invalidates CareerSessionService cache after save (BUG #1)")
+    void setFormation_invalidatesCache() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.setFormation(USER_ID, "5-3-2")
+            .as(StepVerifier::create)
+            .verifyComplete();
+
+        verify(careerSessionService, times(1)).invalidateCache(USER_ID);
+    }
+
+    @Test
+    @DisplayName("replaceFixtures: invalidates CareerSessionService cache after save (BUG #1)")
+    void replaceFixtures_invalidatesCache() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        List<CustomFixture> fixtures = List.of(
+            new CustomFixture("user-team-id", "rival-1", 1, null),
+            new CustomFixture("user-team-id", "rival-2", 2, null)
+        );
+
+        useCase.replaceFixtures(USER_ID, fixtures)
+            .as(StepVerifier::create)
+            .verifyComplete();
+
+        verify(careerSessionService, times(1)).invalidateCache(USER_ID);
+    }
+
+    @Test
+    @DisplayName("resetInjuries: invalidates CareerSessionService cache after save (BUG #1)")
+    void resetInjuries_invalidatesCache() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.resetInjuries(USER_ID)
+            .as(StepVerifier::create)
+            .verifyComplete();
+
+        verify(careerSessionService, times(1)).invalidateCache(USER_ID);
+    }
+
+    @Test
+    @DisplayName("createCustom: invalidates cache (deleteCareer does it internally, "
+        + "plus resetInjuries after fix) (BUG #1)")
+    void createCustom_invalidatesCache() {
+        when(careerSessionService.deleteCareer(USER_ID))
+            .thenReturn(Mono.empty());
+        when(careerSessionService.startNewCareer(
+                eq(USER_ID), anyString(), anyString(),
+                anyString(), anyString(), anyInt()))
+            .thenReturn(Mono.just(career));
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.createCustom(USER_ID, "league-1", "team-1", "EASY", "NORMAL", 3)
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+
+        // deleteCareer internally invalidates; after the fix, the inner
+        // executeResetInjuries will invalidate again. Either way, the
+        // contract "createCustom leaves the cache invalidated" is held.
+        verify(careerSessionService, atLeastOnce()).invalidateCache(USER_ID);
     }
 
     // ========== helpers ==========

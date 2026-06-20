@@ -87,7 +87,13 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         log.info("[V24D20-TESTHARNESS] replaceFixtures userId={} count={} maxRound={}",
             career.getUserId(), fixtures.size(), maxRound);
 
-        return careerRepository.save(career).then();
+        // V24D20-SANDBOX-V2-MVP BUG #1: invalidate CareerSessionService cache
+        // so the next getCareerFromCache(userId) returns the updated career,
+        // not the stale in-memory copy. Without this, the V24 engine sees
+        // the OLD fixtures.
+        return careerRepository.save(career)
+            .then(Mono.fromRunnable(() ->
+                careerSessionService.invalidateCache(career.getUserId())));
     }
 
     // ========== resetInjuries ==========
@@ -131,7 +137,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         log.info("[V24D20-TESTHARNESS] resetInjuries userId={} squadSize={} cleared={}",
             career.getUserId(), squad.size(), cleared);
 
-        return careerRepository.save(career).then();
+        // V24D20-SANDBOX-V2-MVP BUG #1: invalidate cache after save
+        return careerRepository.save(career)
+            .then(Mono.fromRunnable(() ->
+                careerSessionService.invalidateCache(career.getUserId())));
     }
 
     // ========== setFormation ==========
@@ -186,7 +195,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         log.info("[V24D20-TESTHARNESS] setFormation userId={} team={} formation={}",
             career.getUserId(), userSessionTeamId, formation);
 
-        return careerRepository.save(career).then();
+        // V24D20-SANDBOX-V2-MVP BUG #1: invalidate cache after save
+        return careerRepository.save(career)
+            .then(Mono.fromRunnable(() ->
+                careerSessionService.invalidateCache(career.getUserId())));
     }
 
     // ========== createCustom ==========
