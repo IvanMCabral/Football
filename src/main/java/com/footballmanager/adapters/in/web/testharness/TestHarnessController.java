@@ -4,7 +4,9 @@ import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.adapters.in.web.testharness.dto.CareerSnapshotResponse;
 import com.footballmanager.adapters.in.web.testharness.dto.CreateCustomCareerRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.CustomFixtureDTO;
+import com.footballmanager.adapters.in.web.testharness.dto.ReplayMatchRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
+import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,8 @@ import java.util.UUID;
  *   <li>{@code POST /reset-injuries} — clear squad injury flags</li>
  *   <li>{@code POST /set-formation} — change user formation</li>
  *   <li>{@code GET /snapshot} — dump current state for pre/post diff</li>
+ *   <li>{@code POST /match/{matchId}/replay} — re-simulate a single match
+ *       with a new (caller-provided or auto) seed. V24D20-SANDBOX-V2-MVP.</li>
  * </ol>
  */
 @RestController
@@ -183,5 +187,32 @@ public class TestHarnessController {
         return testHarnessUseCase.snapshot(userId)
             .<ResponseEntity<CareerSnapshotResponse>>map(
                 career -> ResponseEntity.ok(CareerSnapshotResponse.from(career)));
+    }
+
+    /**
+     * V24D20-SANDBOX-V2-MVP F5: POST /api/v1/test-harness/career/match/{matchId}/replay
+     * Re-simulates a single match with a new seed. The matchId must
+     * exist in the current tournament fixtures; the fixture is reset
+     * to PENDING, re-simulated via the V24 engine, and the new result
+     * is persisted (along with cache invalidation).
+     *
+     * <p>Body is optional. Pass {@code {"seed": 12345}} for a
+     * reproducible replay. Without a body (or with {@code seed=null}),
+     * the UseCase uses {@code System.currentTimeMillis()} (NOT
+     * reproducible across runs).
+     *
+     * <p>Returns the updated {@link MatchFixture} in the body.
+     */
+    @PostMapping("/match/{matchId}/replay")
+    public Mono<ResponseEntity<MatchFixture>> replayMatch(
+            @PathVariable String matchId,
+            @RequestBody(required = false) ReplayMatchRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        Long seedOverride = (request != null) ? request.seed() : null;
+
+        return testHarnessUseCase.replayMatch(userId, matchId, seedOverride)
+            .map(ResponseEntity::ok);
     }
 }

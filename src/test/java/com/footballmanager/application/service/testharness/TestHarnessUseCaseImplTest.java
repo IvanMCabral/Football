@@ -1,10 +1,16 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,11 +26,13 @@ import reactor.test.StepVerifier;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -54,28 +62,66 @@ class TestHarnessUseCaseImplTest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-
-    @InjectMocks private TestHarnessUseCaseImpl useCase;
+    @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    // V24D20-SANDBOX-V2-MVP F5: use the REAL V24MatchContextFactory so
+    // build() produces a context with valid homeTeam/awayTeam. A mocked
+    // factory would return a context with null teams, which causes
+    // V24TeamMatchState.create to throw NPE("team must not be null").
+    // We construct useCase manually in setUp() to inject the real
+    // factory (Mockito's @InjectMocks doesn't play well with non-mock
+    // fields in this JUnit/Mockito version).
+    private V24MatchContextFactory v24ContextFactory;
+    private TestHarnessUseCaseImpl useCase;
 
     private CareerSave career;
 
     @BeforeEach
     void setUp() {
+        v24ContextFactory = new V24MatchContextFactory();
+        useCase = new TestHarnessUseCaseImpl(
+            careerRepository, careerSessionService,
+            v24ContextFactory, v24StoragePort);
+
         career = new CareerSave();
         career.setUserId(USER_ID);
         career.setUserSessionTeamId("user-team-id");
 
-        // Add 3 players to the user team with various flags to test resetInjuries
-        SessionPlayer p1 = playerWithInjury("p1");
-        SessionPlayer p2 = playerWithSuspension("p2");
-        SessionPlayer p3 = healthyPlayer("p3");
+        // Add 11 players to the user team — first 3 have injury/suspension
+        // flags to test resetInjuries, the rest are healthy. The V24
+        // engine requires MIN_AVAILABLE_PLAYERS=7 in the starting list,
+        // so we need 11 total to match the engine's expectation.
+        List<SessionPlayer> userPlayers = new java.util.ArrayList<>();
+        userPlayers.add(playerWithInjury("u-p1"));
+        userPlayers.add(playerWithSuspension("u-p2"));
+        for (int i = 3; i <= 11; i++) {
+            userPlayers.add(healthyPlayer("u-p" + i));
+        }
         SessionTeam userTeam = new SessionTeam();
         userTeam.setSessionTeamId("user-team-id");
         userTeam.setFormation("4-3-3");
 
-        // Wire player to team via reflection (since the squad wiring is
-        // complex and we want to test the resetInjuries logic in isolation).
-        wireSquad(career, "user-team-id", List.of(p1, p2, p3));
+        // Add 11 players to the rival team (all healthy). The V24 engine
+        // needs MIN_AVAILABLE_PLAYERS=7 to start a match.
+        List<SessionPlayer> rivalPlayers = new java.util.ArrayList<>();
+        for (int i = 1; i <= 11; i++) {
+            rivalPlayers.add(healthyPlayer("r-p" + i));
+        }
+        SessionTeam rivalTeam = new SessionTeam();
+        rivalTeam.setSessionTeamId("rival-1");
+        rivalTeam.setFormation("4-4-2");
+
+        // Wire players to teams via reflection.
+        wireSquad(career, "user-team-id", userPlayers);
+        wireSquad(career, "rival-1", rivalPlayers);
+
+        // Seed the tournament with a single completed fixture so replayMatch
+        // has something to operate on. The fixture is COMPLETED with a
+        // placeholder result; replayMatch should reset it to PENDING,
+        // re-simulate, and set the new result.
+        MatchFixture completed = new MatchFixture(
+            "match-001", "user-team-id", "rival-1", 1);
+        completed.complete(new MatchFixture.MatchResultData(0, 0, 0, 0, 0, 0));
+        career.getTournamentState().setFixtures(List.of(completed));
     }
 
     // ========== replaceFixtures ==========
@@ -363,6 +409,94 @@ class TestHarnessUseCaseImplTest {
         // executeResetInjuries will invalidate again. Either way, the
         // contract "createCustom leaves the cache invalidated" is held.
         verify(careerSessionService, atLeastOnce()).invalidateCache(USER_ID);
+    }
+
+    // ========== replayMatch (V24D20-SANDBOX-V2-MVP F5) ==========
+
+    @Test
+    @DisplayName("replayMatch: null matchId returns Mono.error")
+    void replayMatch_nullMatchId_returnsError() {
+        useCase.replayMatch(USER_ID, null, 42L)
+            .as(StepVerifier::create)
+            .expectErrorMatches(t -> t instanceof IllegalArgumentException)
+            .verify();
+
+        verify(careerRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("replayMatch: unknown matchId returns Mono.error")
+    void replayMatch_unknownMatchId_returnsError() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+
+        useCase.replayMatch(USER_ID, "match-doesnt-exist", 42L)
+            .as(StepVerifier::create)
+            .expectErrorMatches(t -> t instanceof IllegalArgumentException)
+            .verify();
+
+        verify(careerRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("replayMatch: with seed override, fixture is reset, re-simulated, "
+        + "result updated, saved + cache invalidated (BUG #1 follow-through)")
+    void replayMatch_withSeedOverride_resetsAndResimulates() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        // v24ContextFactory is the REAL factory (not mocked) — see setUp().
+        // It builds a valid V24MatchContext from the career + fixture + teams,
+        // which lets V24DetailedMatchEngine.simulate() run end-to-end.
+
+        // UseCase doesn't see the result of the simulation directly (the
+        // engine runs internally). The match we control: the fixture's
+        // status goes PENDING → COMPLETED with a non-zero result.
+        useCase.replayMatch(USER_ID, "match-001", 42L)
+            .as(StepVerifier::create)
+            .assertNext(f -> {
+                // Fixture is the same object (mutated in place)
+                assertThat(f.getMatchId()).isEqualTo("match-001");
+                assertThat(f.getStatus())
+                    .as("after replay, fixture is COMPLETED again")
+                    .isEqualTo(MatchStatus.COMPLETED);
+                assertThat(f.getResult())
+                    .as("after replay, fixture has a new MatchResultData")
+                    .isNotNull();
+                // The internal engine may or may not produce goals with the
+                // stubbed context — we just verify the status is COMPLETED
+                // and the result is non-null. The homeGoals/awayGoals are
+                // engine-dependent.
+            })
+            .verifyComplete();
+
+        // Cache invalidated (BUG #1 follow-through)
+        verify(careerSessionService, times(1)).invalidateCache(USER_ID);
+        // Save called
+        verify(careerRepository, times(1)).save(career);
+        // Old V24 detail cleared
+        verify(v24StoragePort, times(1)).deleteByMatchId(
+            org.mockito.ArgumentMatchers.anyString(), eq("match-001"));
+    }
+
+    @Test
+    @DisplayName("replayMatch: null seed uses System.currentTimeMillis (no override)")
+    void replayMatch_nullSeed_stillCompletes() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.replayMatch(USER_ID, "match-001", null)
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+
+        // Save was called (proves the flow reached save + cache invalidation)
+        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).invalidateCache(USER_ID);
     }
 
     // ========== helpers ==========

@@ -1,6 +1,11 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -16,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -43,6 +49,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
+    // V24D20-SANDBOX-V2-MVP F5: replay endpoint dependencies
+    private final V24MatchContextFactory v24ContextFactory;
+    private final V24DetailedMatchStoragePort v24StoragePort;
 
     // ========== replaceFixtures ==========
 
@@ -244,5 +253,92 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 }
                 return Mono.just(optionalCareer.get());
             });
+    }
+
+    // ========== replayMatch (V24D20-SANDBOX-V2-MVP F5) ==========
+
+    @Override
+    public Mono<MatchFixture> replayMatch(UUID userId, String matchId, Long seedOverride) {
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("matchId is required"));
+        }
+        long seed = (seedOverride != null) ? seedOverride : System.currentTimeMillis();
+
+        log.info("[V24D20-SANDBOX-V2-MVP] replayMatch userId={}, matchId={}, seed={}",
+            userId, matchId, seed);
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " — call create-custom first")))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                CareerSave career = optionalCareer.get();
+                return executeReplayMatch(career, matchId, seed);
+            });
+    }
+
+    private Mono<MatchFixture> executeReplayMatch(CareerSave career, String matchId, long seed) {
+        MatchFixture fixture = career.getTournamentState().getFixtures().stream()
+            .filter(f -> f.getMatchId().equals(matchId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Match not found in current tournament: " + matchId));
+
+        // 1. Reset the fixture to PENDING (was COMPLETED from the original
+        // simulation). The new V24 simulation will set it back to COMPLETED
+        // via fixture.complete() below.
+        fixture.reset();
+
+        // 2. Build the V24 context and re-simulate.
+        SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
+        SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
+        if (home == null || away == null) {
+            return Mono.error(new IllegalStateException(
+                "SessionTeam not found for match " + matchId
+                + " (home=" + fixture.getHomeTeamId()
+                + ", away=" + fixture.getAwayTeamId() + ")"));
+        }
+
+        V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        V24DetailedMatchResult result = engine.simulate(context, new Random(seed));
+
+        // 3. Update the fixture with the new result. possession and shots
+        // default to 0 in the replay path — the V24 detail endpoint exposes
+        // the rich per-minute data for full breakdowns.
+        MatchFixture.MatchResultData resultData = new MatchFixture.MatchResultData(
+            result.homeGoals(), result.awayGoals(), 0, 0, 0, 0);
+        fixture.complete(resultData);
+
+        // 4. Update standings with the new result. This will double-count if
+        // the original result was already applied (the standings were
+        // updated when the match first finished). Known limitation of MVP
+        // replay — the manager should reset-injuries + replace-fixtures to
+        // get a clean state if standings correctness is required.
+        career.getTournamentState().updateStandingsWithResult(fixture);
+
+        // 5. Best-effort: clear the old V24 detail from Redis so the next
+        // GET /detail returns the new result, not the old one.
+        try {
+            String careerId = career.getData().getCareerId();
+            v24StoragePort.deleteByMatchId(careerId, matchId);
+        } catch (Exception e) {
+            log.warn("[V24D20-SANDBOX-V2-MVP] replayMatch: failed to clear old V24 detail "
+                + "for matchId={}, continuing (replay is best-effort): {}",
+                matchId, e.getMessage());
+        }
+
+        log.info("[V24D20-SANDBOX-V2-MVP] replayMatch complete: matchId={}, "
+            + "newResult=({}-{}), seed={}",
+            matchId, result.homeGoals(), result.awayGoals(), seed);
+
+        // 6. Persist + invalidate cache (same pattern as the other endpoints)
+        return careerRepository.save(career)
+            .then(Mono.fromRunnable(() ->
+                careerSessionService.invalidateCache(career.getUserId())))
+            .thenReturn(fixture);
     }
 }

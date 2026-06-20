@@ -52,4 +52,26 @@ public interface V24DetailedMatchStoragePort {
      * @throws IllegalArgumentException if careerId is null
      */
     void deleteByCareerId(String careerId);
+
+    /**
+     * V24D20-SANDBOX-V2-MVP: Delete a single match detail by (careerId, matchId).
+     * Used by the test-harness replay endpoint to clear the stale V24
+     * detail so the next GET /detail returns the new result, not the old.
+     *
+     * <p>Default implementation is a no-op so existing adapters don't
+     * have to override. The Redis adapter overrides it.
+     *
+     * @param careerId  the career this match belongs to
+     * @param matchId   the match identifier
+     * @throws IllegalArgumentException if careerId or matchId is null
+     */
+    default void deleteByMatchId(String careerId, String matchId) {
+        if (careerId == null || careerId.isBlank()) {
+            throw new IllegalArgumentException("careerId must not be blank");
+        }
+        if (matchId == null || matchId.isBlank()) {
+            throw new IllegalArgumentException("matchId must not be blank");
+        }
+        // No-op default — Redis adapter overrides
+    }
 }

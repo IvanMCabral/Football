@@ -215,4 +215,31 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             // ignore
         }
     }
+
+    /**
+     * V24D20-SANDBOX-V2-MVP: Delete a single match detail by (careerId, matchId).
+     * Used by the test-harness replay endpoint to clear the stale V24
+     * detail. Best-effort: errors are logged, not thrown.
+     */
+    @Override
+    public void deleteByMatchId(String careerId, String matchId) {
+        if (careerId == null || careerId.isBlank()) {
+            throw new IllegalArgumentException("careerId must not be blank");
+        }
+        if (matchId == null || matchId.isBlank()) {
+            throw new IllegalArgumentException("matchId must not be blank");
+        }
+        String key = buildKey(careerId, matchId);
+        try {
+            CompletableFuture.runAsync(() ->
+                    redisTemplate.delete(key).block(), executor)
+                    .get(5, TimeUnit.SECONDS);
+            log.info("[V24-DETAIL-DELETE] key={}, careerId={}, matchId={}",
+                key, careerId, matchId);
+        } catch (Exception e) {
+            // Best-effort — log and continue
+            log.warn("[V24-REDIS] Failed to delete match detail key={}, careerId={}, matchId={}: {}",
+                key, careerId, matchId, e.getMessage());
+        }
+    }
 }

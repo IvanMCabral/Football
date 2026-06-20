@@ -67,6 +67,20 @@ public class MatchFixture {
         this.status = MatchStatus.COMPLETED;
         this.result = Objects.requireNonNull(result, "result cannot be null");
     }
+
+    /**
+     * V24D20-SANDBOX-V2-MVP: Reset a completed fixture back to PENDING
+     * with no result. Used by the test-harness replay endpoint so the
+     * fixture can be re-simulated (the {@link #complete(MatchResultData)}
+     * method throws if the status is already COMPLETED).
+     *
+     * <p>After {@code reset()}, the fixture is back to its initial
+     * post-construction state and can be completed again.
+     */
+    public void reset() {
+        this.status = MatchStatus.PENDING;
+        this.result = null;
+    }
     
     /**
      * Marca el fixture como en progreso (live match)

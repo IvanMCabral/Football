@@ -1,6 +1,7 @@
 package com.footballmanager.domain.port.in.testharness;
 
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.valueobject.MatchFixture;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -46,6 +47,24 @@ public interface TestHarnessUseCase {
                                   String difficulty, String gameSpeed, int teamsPerDivision);
 
     Mono<CareerSave> snapshot(UUID userId);
+
+    /**
+     * V24D20-SANDBOX-V2-MVP: Re-simulate a single match with a new
+     * (caller-provided or auto-generated) seed. Resets the fixture to
+     * PENDING, re-runs the V24 engine, persists the new result, and
+     * updates the CareerSave + invalidates the cache.
+     *
+     * <p>Used by REVISOR to run "what-if" experiments without creating
+     * a new fixture (the matchId is preserved).
+     *
+     * @param userId       the career owner
+     * @param matchId      the match to replay (must exist in the current
+     *                     tournament fixtures)
+     * @param seedOverride optional seed; if null, {@code System.currentTimeMillis()}
+     *                     is used (non-deterministic across runs)
+     * @return the updated {@link MatchFixture} with the new result
+     */
+    Mono<MatchFixture> replayMatch(UUID userId, String matchId, Long seedOverride);
 
     /**
      * Spec for a custom fixture in {@link #replaceFixtures}.
