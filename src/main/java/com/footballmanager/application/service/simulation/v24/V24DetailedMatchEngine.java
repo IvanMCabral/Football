@@ -281,6 +281,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // counters are also keyed by the same UUID below, so the substitution
             // limit (5/team) is now enforced correctly.
             String teamRole = homeHasPossession ? context.homeTeamId() : context.awayTeamId();
+            // V24D14-LIVE-FIX-1.7: formation-aware shooter/assist selection.
+            // Resolved from the match context (which is built by V24MatchContextFactory
+            // preferring career.teamStarting11Formation with fallback to SessionTeam).
+            String formation = homeHasPossession ? context.homeFormation() : context.awayFormation();
 
             // Accumulate possession
             possessor.addPossessionTick();
@@ -314,12 +318,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
-                attemptShot(possessor, opponent, selector, teamRole, minute, random, timeline);
+                attemptShot(possessor, opponent, selector, formation, teamRole, minute, random, timeline);
             }
 
             // Chance created event (broader than shot)
             if (random.nextDouble() < chanceProbability * 0.6) {
-                var creator = selector.selectShooter(possessor.startingPlayers());
+                var creator = selector.selectShooter(possessor.startingPlayers(), formation);
                 if (creator.isPresent()) {
                     V24PlayerMatchState c = creator.get();
                     timeline.addEvent(new V24MatchEvent(
@@ -440,12 +444,13 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             V24TeamMatchState possessor,
             V24TeamMatchState opponent,
             V24PlayerSelector selector,
+            String formation,
             String teamRole,
             int minute,
             Random random,
             V24MatchTimeline timeline) {
 
-        var shooterOpt = selector.selectShooter(possessor.startingPlayers());
+        var shooterOpt = selector.selectShooter(possessor.startingPlayers(), formation);
         if (shooterOpt.isEmpty()) return;
 
         V24PlayerMatchState shooter = shooterOpt.get();
@@ -459,7 +464,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         // Get assist provider via V24AssistModel
         var assistOpt = assistModel.selectAssistProvider(
-                possessor.startingPlayers(), shooter, null, possessor.style(), random);
+                possessor.startingPlayers(), shooter, formation, possessor.style(), random);
         String assistPlayerId = assistOpt.map(V24PlayerMatchState::sessionPlayerId).orElse(null);
         String assistPlayerName = assistOpt.map(V24PlayerMatchState::name).orElse(null);
 

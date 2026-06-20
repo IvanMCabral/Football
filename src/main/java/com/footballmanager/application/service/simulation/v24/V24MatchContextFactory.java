@@ -99,8 +99,17 @@ public final class V24MatchContextFactory {
         List<SessionPlayer> homeBench = deriveBench(career, homeTeamId, homeStarters);
         List<SessionPlayer> awayBench = deriveBench(career, awayTeamId, awayStarters);
 
-        String homeFormation = homeTeam.getFormation();
-        String awayFormation = awayTeam.getFormation();
+        // V24D14-LIVE-FIX-1.7: prefer the persisted formation from CareerSave (set by
+        // LineupCommandUseCaseImpl.autoSelectLineup / manualSelectLineupWithSlots, sprint 1.6).
+        // Fall back to SessionTeam.getFormation() for backward compat with saves from sprint 1.5
+        // or earlier that pre-date the teamStarting11Formation map.
+        Map<String, String> persistedFormations = career.getTeamStarting11Formation();
+        String homeFormation = (persistedFormations != null && persistedFormations.containsKey(homeTeamId))
+                ? persistedFormations.get(homeTeamId)
+                : homeTeam.getFormation();
+        String awayFormation = (persistedFormations != null && persistedFormations.containsKey(awayTeamId))
+                ? persistedFormations.get(awayTeamId)
+                : awayTeam.getFormation();
 
         return new V24MatchContext(
                 matchId,
