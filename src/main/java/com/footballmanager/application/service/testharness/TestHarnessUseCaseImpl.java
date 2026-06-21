@@ -1,11 +1,13 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -328,6 +330,50 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         } catch (Exception e) {
             log.warn("[V24D20-SANDBOX-V2-MVP] replayMatch: failed to clear old V24 detail "
                 + "for matchId={}, continuing (replay is best-effort): {}",
+                matchId, e.getMessage());
+        }
+
+        // V24D21-SANDBOX-V2-MVP-F7 (BUG_REPLAY_NO_PERSIST): persist the NEW
+        // V24 detail built from the re-simulation result. Without this, the
+        // existing deleteByMatchId above leaves Redis empty and the next
+        // GET /api/v1/careers/{careerId}/matches/{matchId}/detail returns
+        // 404 — blocking the "what-if" smoke (replay with a changed
+        // formation needs the new timeline / shot map / xG to compare
+        // against the original).
+        //
+        // Mirrors LeagueSimulator.persistV24Detail() — same factory call
+        // (V24DetailedMatchData.fromResult) and same storage port.
+        // Player ratings are passed empty: the assembler lives inside
+        // LeagueSimulator and replay currently has no per-player rating
+        // derivation. This is a known limitation; a follow-up sprint
+        // should extract V24PlayerRatingsAssembler so replay can reuse it.
+        // Best-effort: a Redis failure logs a warning but does NOT fail
+        // the replay — the fixture result is still saved to MongoDB and
+        // the manager can re-run replay once Redis recovers.
+        try {
+            String careerId = career.getData().getCareerId();
+            Integer seasonNumber = career.getCurrentSeason();
+            Integer round = fixture.getRound();
+            String homeTeamName = home.getName() != null ? home.getName() : "";
+            String awayTeamName = away.getName() != null ? away.getName() : "";
+
+            V24DetailedMatchData newDetail = V24DetailedMatchData.fromResult(
+                careerId,
+                seasonNumber,
+                round,
+                homeTeamName,
+                awayTeamName,
+                result,
+                List.<V24PlayerMatchRatingDto>of()
+            );
+
+            v24StoragePort.save(careerId, newDetail);
+            log.info("[V24D21-SANDBOX-V2-MVP] replayMatch: persisted new V24 detail "
+                + "for matchId={}, careerId={}, homeGoals={}, awayGoals={}",
+                matchId, careerId, result.homeGoals(), result.awayGoals());
+        } catch (Exception e) {
+            log.warn("[V24D21-SANDBOX-V2-MVP] replayMatch: failed to persist new V24 "
+                + "detail for matchId={}, continuing (replay is best-effort): {}",
                 matchId, e.getMessage());
         }
 
