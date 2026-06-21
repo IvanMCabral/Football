@@ -413,8 +413,7 @@ class PlayerSeasonStatsAggregatorTest {
                 1, 0, 1.0, 0.5,
                 5, 3, 55, 45,
                 List.of(), playerRatings,
-                "summary", "V24", 1, java.time.Instant.now()
-        );
+                "summary", "V24", 1, java.time.Instant.now(), null, null);
     }
 
     private V24DetailedMatchData makeDetailWithNullRatings(
@@ -426,8 +425,7 @@ class PlayerSeasonStatsAggregatorTest {
                 1, 0, 1.0, 0.5,
                 5, 3, 55, 45,
                 List.of(), null,
-                "summary", "V24", 1, java.time.Instant.now()
-        );
+                "summary", "V24", 1, java.time.Instant.now(), null, null);
     }
 
     private V24DetailedMatchData makeDetailWithCustomRatings(
@@ -440,7 +438,6 @@ class PlayerSeasonStatsAggregatorTest {
                 1, 0, 1.0, 0.5,
                 5, 3, 55, 45,
                 List.of(), playerRatings,
-                "summary", "V24", 1, java.time.Instant.now()
-        );
+                "summary", "V24", 1, java.time.Instant.now(), null, null);
     }
 }

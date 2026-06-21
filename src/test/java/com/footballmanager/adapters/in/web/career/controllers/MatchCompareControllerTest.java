@@ -138,7 +138,7 @@ class MatchCompareControllerTest {
                 2, 1, 1.8, 0.9,
                 12, 8, 55, 45,
                 List.of(), List.of(),
-                "Live", "V24", 1, Instant.now());
+                "Live", "V24", 1, Instant.now(), null, null);
         V24DetailedMatchData baseline = new V24DetailedMatchData(
                 MATCH_ID, CAREER_ID, 1, 5,
                 "home-id", "away-id",
@@ -146,7 +146,7 @@ class MatchCompareControllerTest {
                 1, 0, 1.0, 0.5,
                 8, 5, 50, 50,
                 List.of(), List.of(),
-                "Baseline", "V24", 1, Instant.now());
+                "Baseline", "V24", 1, Instant.now(), null, null);
         MatchComparisonDiff diff = MatchComparisonDiff.calculate(baseline, live);
         return new MatchComparison(baseline, live, diff);
     }

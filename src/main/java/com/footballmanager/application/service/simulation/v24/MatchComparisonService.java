@@ -154,12 +154,21 @@ public class MatchComparisonService {
                                 liveFinal.homeGoals(), liveFinal.awayGoals());
 
                         // 5. Convert to V24DetailedMatchData (no player ratings for baseline)
+                        // V24D24-F1.2: pass formations from the replayed context
+                        // (same as what was used in the live match, so the diff
+                        // stays formation-consistent).
+                        String homeFormation = ctxFinal.homeTeam() != null
+                                ? ctxFinal.homeTeam().getFormation() : null;
+                        String awayFormation = ctxFinal.awayTeam() != null
+                                ? ctxFinal.awayTeam().getFormation() : null;
                         V24DetailedMatchData baselineData = V24DetailedMatchData.fromResult(
                                 careerId,
                                 liveFinal.seasonNumber(),
                                 liveFinal.round(),
                                 liveFinal.homeTeamName(),
                                 liveFinal.awayTeamName(),
+                                homeFormation,
+                                awayFormation,
                                 baselineResult,
                                 Collections.<V24PlayerMatchRatingDto>emptyList());
 

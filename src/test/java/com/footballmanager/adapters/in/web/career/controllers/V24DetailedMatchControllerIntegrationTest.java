@@ -71,8 +71,7 @@ class V24DetailedMatchControllerIntegrationTest {
                         ev(80, "GOAL", AWAY, 0.15)
                 ),
                 List.of(),
-                "Home win 2-1", "V24", 1, Instant.now()
-        );
+                "Home win 2-1", "V24", 1, Instant.now(), null, null);
     }
 
     // ============== /detail ==============
@@ -292,8 +291,7 @@ class V24DetailedMatchControllerIntegrationTest {
                         ev(40, "GOAL", HOME, 0.25)
                 ),
                 List.of(),
-                "match", "V24", 1, Instant.now()
-        );
+                "match", "V24", 1, Instant.now(), null, null);
         when(queryService.isApiEnabled()).thenReturn(true);
         when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(d));
 
@@ -337,8 +335,7 @@ class V24DetailedMatchControllerIntegrationTest {
                 0, 0, 0.0, 0.0,
                 0, 0, 50, 50,
                 List.of(), List.of(),
-                "no events", "V24", 1, Instant.now()
-        );
+                "no events", "V24", 1, Instant.now(), null, null);
         when(queryService.isApiEnabled()).thenReturn(true);
         when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(d));
 

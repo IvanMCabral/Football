@@ -342,8 +342,7 @@ class PlayerSeasonStatsQueryServiceTest {
                 1, 0, 1.0, 0.5,
                 5, 3, 55, 45,
                 List.of(), playerRatings,
-                "summary", "V24", 1, java.time.Instant.now()
-        );
+                "summary", "V24", 1, java.time.Instant.now(), null, null);
     }
 
     /**

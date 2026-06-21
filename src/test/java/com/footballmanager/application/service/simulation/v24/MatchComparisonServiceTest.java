@@ -245,6 +245,6 @@ class MatchComparisonServiceTest {
                 1, 0, 1.2, 0.5,
                 10, 6, 55, 45,
                 List.of(), List.of(),
-                "Sample", "V24", 1, Instant.now());
+                "Sample", "V24", 1, Instant.now(), null, null);
     }
 }

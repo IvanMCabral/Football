@@ -60,8 +60,7 @@ class V24DetailedMatchRedisAdapterTest {
                 2, 1, 1.8, 0.9,
                 12, 8, 55, 45,
                 timeline, ratings,
-                "Home win 2-1", "V24", 1, Instant.now()
-        );
+                "Home win 2-1", "V24", 1, Instant.now(), null, null);
 
         lenient().when(redisTemplate.opsForValue()).thenReturn(reactiveValueOps);
     }
@@ -139,8 +138,7 @@ class V24DetailedMatchRedisAdapterTest {
                 1, 2, 0.5, 1.4,
                 6, 14, 35, 65,
                 List.of(), List.of(),
-                "Away win 2-1", "V24", 1, Instant.now()
-        );
+                "Away win 2-1", "V24", 1, Instant.now(), null, null);
 
         when(reactiveValueOps.set(anyString(), any())).thenReturn(Mono.just(true));
         when(reactiveValueOps.get("career:career-abc:match-detail:match-123")).thenReturn(Mono.just(sampleDetail));
@@ -221,8 +219,7 @@ class V24DetailedMatchRedisAdapterTest {
                 1, 0, 1.2, 0.4,
                 8, 5, 60, 40,
                 timeline, ratings,
-                "Home win 1-0", "V24", 1, Instant.now()
-        );
+                "Home win 1-0", "V24", 1, Instant.now(), null, null);
 
         when(reactiveValueOps.set(anyString(), any())).thenReturn(Mono.just(true));
         when(reactiveValueOps.get(anyString())).thenReturn(Mono.just(detail));
@@ -257,8 +254,7 @@ class V24DetailedMatchRedisAdapterTest {
                 0, 1, 0.3, 1.2,
                 5, 10, 40, 60,
                 List.of(), List.of(),
-                "Away win 1-0", "V24", 1, Instant.now()
-        );
+                "Away win 1-0", "V24", 1, Instant.now(), null, null);
         when(redisTemplate.keys(pattern)).thenReturn(Flux.fromIterable(List.of(
                 "career:career-abc:match-detail:match-123",
                 "career:career-abc:match-detail:match-456"
@@ -323,8 +319,7 @@ class V24DetailedMatchRedisAdapterTest {
             1, 1, 1.2, 0.8,
             8, 6, 50, 50,
             List.of(), List.of(),
-            "Draw 1-1", "V24", 1, Instant.now()
-        );
+            "Draw 1-1", "V24", 1, Instant.now(), null, null);
         V24DetailedMatchData m3 = new V24DetailedMatchData(
             "match-A3", "career-abc", 1, 3,
             "home-team", "away-team",
@@ -332,8 +327,7 @@ class V24DetailedMatchRedisAdapterTest {
             0, 2, 0.4, 1.6,
             5, 12, 40, 60,
             List.of(), List.of(),
-            "Away win 0-2", "V24", 1, Instant.now()
-        );
+            "Away win 0-2", "V24", 1, Instant.now(), null, null);
 
         // Mock set: any key/value → success
         when(reactiveValueOps.set(anyString(), any())).thenReturn(Mono.just(true));
@@ -407,8 +401,7 @@ class V24DetailedMatchRedisAdapterTest {
                 2, 1, 2.1, 0.9,
                 14, 7, 58, 42,
                 timeline, ratings,
-                "Home win 2-1", "V24", 1, createdAt
-        );
+                "Home win 2-1", "V24", 1, createdAt, null, null);
 
         // Mock: keys returns the key, set succeeds, get returns the saved object
         String key = "career:" + careerId + ":match-detail:" + matchId;

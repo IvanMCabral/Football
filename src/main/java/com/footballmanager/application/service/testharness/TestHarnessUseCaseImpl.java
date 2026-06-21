@@ -356,6 +356,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             Integer round = fixture.getRound();
             String homeTeamName = home.getName() != null ? home.getName() : "";
             String awayTeamName = away.getName() != null ? away.getName() : "";
+            // V24D24-F1.2: capture formations from the SessionTeam at replay
+            // time so the persisted detail reflects what formation was active
+            // when the replay ran. Falls back to null for "—" in UI.
+            String homeFormation = home.getFormation();
+            String awayFormation = away.getFormation();
 
             V24DetailedMatchData newDetail = V24DetailedMatchData.fromResult(
                 careerId,
@@ -363,6 +368,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 round,
                 homeTeamName,
                 awayTeamName,
+                homeFormation,
+                awayFormation,
                 result,
                 List.<V24PlayerMatchRatingDto>of()
             );
