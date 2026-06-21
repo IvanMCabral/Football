@@ -478,8 +478,13 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double rawShooterQuality = selector.shooterQuality(shooter);
         double shooterQuality = fatigueModel.applyFatigueToQuality(rawShooterQuality, shooter);
 
-        // Determine shot location
-        V24ShotLocation location = selectShotLocation(possessor.style(), random);
+        // V24D23-A: shot location is now formation-aware. Formation shifts the
+        // distribution (e.g. 4-3-3 has more PENALTY_AREA_WIDE shots via wingers,
+        // 3-5-2 has fewer wide shots via the back-three, 4-2-3-1 concentrates
+        // in the six-yard box via the single striker). This amplifies the
+        // formation-driven xG variation beyond the ~5% shooter-share shift that
+        // the V24PlayerSelector alone provides.
+        V24ShotLocation location = selectShotLocation(possessor.style(), formation, random);
 
         // Get assist provider via V24AssistModel
         var assistOpt = assistModel.selectAssistProvider(
@@ -585,47 +590,135 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         }
     }
 
-    private V24ShotLocation selectShotLocation(TeamStyle style, Random random) {
-        double roll = random.nextDouble();
+    // V24D23-A: ordered array mirroring V24ShotLocation.values() — used by
+    // the weighted-distribution selectShotLocation. Index 0 = SIX_YARD_BOX,
+    // index 1 = PENALTY_AREA_CENTER, ..., index 4 = LONG_RANGE.
+    private static final V24ShotLocation[] LOCATIONS = V24ShotLocation.values();
+
+    // V24D23-A: shared V24FormationParser instance. Per R3 in the sprint
+    // doc, allocating per-minute would add GC pressure; static-final keeps
+    // it bounded to one parser per engine instance (and one engine per
+    // V24LiveSession).
+    private static final V24FormationParser FORMATION_PARSER = new V24FormationParser();
+
+    /**
+     * V24D23-A: formation-aware shot location selection. Combines the
+     * {@link TeamStyle} baseline distribution with a formation-driven
+     * modifier, so two teams with the same style but different formations
+     * (e.g. 4-3-3 vs 4-4-2) produce measurably different shot location
+     * distributions. This amplifies the xG variation that was previously
+     * limited to the ~5% shooter-share shift from V24PlayerSelector.
+     *
+     * <p>Algorithm: weighted draw over {@link #LOCATIONS} using
+     * {@link #computeLocationWeights(TeamStyle, String)} as the weight
+     * vector. Weights are not normalized — the cumulative-sum loop in
+     * this method normalizes them implicitly via {@code roll < cum}.
+     *
+     * @param style     the team's tactical style (ATTACKING, POSSESSION, COUNTER,
+     *                  DEFENSIVE, BALANCED); never null
+     * @param formation formation string in canonical form (e.g. "4-3-3",
+     *                  "3-5-2", "4-2-3-1"); null/blank falls back to BALANCED_DEFAULT
+     *                  (4-4-2) so unknown formations degrade gracefully
+     * @param random    the per-shot RNG; one {@code nextDouble()} is consumed per call
+     * @return the chosen shot location for this attempt
+     */
+    private V24ShotLocation selectShotLocation(TeamStyle style, String formation, Random random) {
+        double[] weights = computeLocationWeights(style, formation);
+        double total = weights[0] + weights[1] + weights[2] + weights[3] + weights[4];
+        // Guard against pathological totals (should never happen — every weight is positive)
+        if (total <= 0.0) return V24ShotLocation.PENALTY_AREA_CENTER;
+        double roll = random.nextDouble() * total;
+        double cum = 0.0;
+        for (int i = 0; i < LOCATIONS.length; i++) {
+            cum += weights[i];
+            if (roll < cum) return LOCATIONS[i];
+        }
+        // Floating-point fallback for the boundary case (roll == total).
+        return LOCATIONS[LOCATIONS.length - 1];
+    }
+
+    /**
+     * V24D23-A: compute the 5-element weight vector for shot-location
+     * selection. Index 0 = SIX_YARD_BOX, 1 = PENALTY_AREA_CENTER,
+     * 2 = PENALTY_AREA_WIDE, 3 = OUTSIDE_BOX, 4 = LONG_RANGE.
+     *
+     * <p>Pipeline: baseline BALANCED weights → multiply by style shift
+     * → multiply by formation-specific modifiers. The result is NOT
+     * normalized; {@link #selectShotLocation(TeamStyle, String, Random)}
+     * handles normalization via its cumulative-sum loop.
+     *
+     * <p>Baseline (BALANCED) shares: 25% six, 27% center, 20% wide,
+     * 18% outside, 10% long. These match the pre-V24D23-A hardcoded
+     * BALANCED thresholds so the regression profile (style=BALANCED,
+     * formation=4-4-2) keeps producing the same overall xG distribution
+     * for a 4-4-2 squad — the formation modifiers above the baseline
+     * are what make 4-3-3 vs 4-2-3-1 distinguishable.
+     */
+    private double[] computeLocationWeights(TeamStyle style, String formation) {
+        // Baseline (BALANCED) — preserved from pre-V24D23-A for regression continuity.
+        double[] w = { 0.25, 0.27, 0.20, 0.18, 0.10 };
+
+        // Style shift
+        double[] shift = styleLocationShift(style);
+        for (int i = 0; i < w.length; i++) {
+            w[i] *= shift[i];
+        }
+
+        // Formation shift. The parser is the shared static-final instance
+        // (R3 mitigation); a null/blank formation degrades to BALANCED_DEFAULT
+        // (4-4-2) so unknown formations do not crash the engine.
+        V24FormationParser.V24Formation f = FORMATION_PARSER.parse(formation);
+        if (f.hasWingers()) {
+            // 4-3-3, 3-4-3: wingers cut inside → more PENALTY_AREA_WIDE,
+            // less SIX_YARD_BOX (more dispersion from wide positions).
+            w[2] *= 1.25;  // PENALTY_AREA_WIDE +25%
+            w[0] *= 0.90;  // SIX_YARD_BOX -10%
+        }
+        if (f.defenders() == 3) {
+            // 3-5-2, 3-4-3: three centre-backs do not overlap the wings →
+            // fewer wide shots, more central concentration.
+            w[2] *= 0.50;  // PENALTY_AREA_WIDE -50%
+            w[1] *= 1.15;  // PENALTY_AREA_CENTER +15%
+        }
+        if (f.forwards() == 1) {
+            // 4-2-3-1 (and 4-3-3 per the parser, which also has forwards=1):
+            // single striker stays close to goal → more SIX_YARD_BOX,
+            // fewer LONG_RANGE (no long-range solo runs).
+            w[0] *= 1.30;  // SIX_YARD_BOX +30%
+            w[4] *= 0.70;  // LONG_RANGE -30%
+        }
+        if (f.forwards() == 2) {
+            // 4-4-2, 3-5-2: two strikers occupy the central channel →
+            // more PENALTY_AREA_CENTER.
+            w[1] *= 1.20;  // PENALTY_AREA_CENTER +20%
+        }
+        return w;
+    }
+
+    /**
+     * V24D23-A: per-style location-distribution ratios. Each entry is a
+     * multiplicative shift applied to the BALANCED baseline in
+     * {@link #computeLocationWeights(TeamStyle, String)}.
+     *
+     * <p>These ratios were derived from the pre-V24D23-A hardcoded
+     * cumulative thresholds in this method's previous switch-based
+     * implementation, then rounded to 2 decimals. They preserve the
+     * pre-sprint distribution for ATTACKING/POSSESSION/COUNTER/DEFENSIVE
+     * styles (so the regression profile holds for style-only changes) and
+     * isolate the formation axis as the new variable.
+     */
+    private double[] styleLocationShift(TeamStyle style) {
         return switch (style) {
-            case ATTACKING -> {
-                // More inside-box attempts
-                if (roll < 0.40) yield V24ShotLocation.SIX_YARD_BOX;
-                if (roll < 0.70) yield V24ShotLocation.PENALTY_AREA_CENTER;
-                if (roll < 0.85) yield V24ShotLocation.PENALTY_AREA_WIDE;
-                if (roll < 0.95) yield V24ShotLocation.OUTSIDE_BOX;
-                yield V24ShotLocation.LONG_RANGE;
-            }
-            case POSSESSION -> {
-                if (roll < 0.30) yield V24ShotLocation.SIX_YARD_BOX;
-                if (roll < 0.60) yield V24ShotLocation.PENALTY_AREA_CENTER;
-                if (roll < 0.78) yield V24ShotLocation.PENALTY_AREA_WIDE;
-                if (roll < 0.92) yield V24ShotLocation.OUTSIDE_BOX;
-                yield V24ShotLocation.LONG_RANGE;
-            }
-            case COUNTER -> {
-                // More long-range and outside-box (fast breaks)
-                if (roll < 0.18) yield V24ShotLocation.SIX_YARD_BOX;
-                if (roll < 0.40) yield V24ShotLocation.PENALTY_AREA_CENTER;
-                if (roll < 0.60) yield V24ShotLocation.PENALTY_AREA_WIDE;
-                if (roll < 0.82) yield V24ShotLocation.OUTSIDE_BOX;
-                yield V24ShotLocation.LONG_RANGE;
-            }
-            case DEFENSIVE -> {
-                // Prefer long-range and outside-box
-                if (roll < 0.10) yield V24ShotLocation.SIX_YARD_BOX;
-                if (roll < 0.25) yield V24ShotLocation.PENALTY_AREA_CENTER;
-                if (roll < 0.45) yield V24ShotLocation.PENALTY_AREA_WIDE;
-                if (roll < 0.72) yield V24ShotLocation.OUTSIDE_BOX;
-                yield V24ShotLocation.LONG_RANGE;
-            }
-            default -> { // BALANCED
-                if (roll < 0.25) yield V24ShotLocation.SIX_YARD_BOX;
-                if (roll < 0.52) yield V24ShotLocation.PENALTY_AREA_CENTER;
-                if (roll < 0.72) yield V24ShotLocation.PENALTY_AREA_WIDE;
-                if (roll < 0.90) yield V24ShotLocation.OUTSIDE_BOX;
-                yield V24ShotLocation.LONG_RANGE;
-            }
+            // More inside-box attempts (ATTACKING style piles pressure on the box)
+            case ATTACKING -> new double[] { 1.60, 1.11, 0.85, 0.50, 0.30 };
+            // Slow build-up, balanced penetration
+            case POSSESSION -> new double[] { 1.20, 1.11, 0.90, 0.56, 0.30 };
+            // Fast breaks, more long-range and outside-box
+            case COUNTER -> new double[] { 0.72, 1.11, 0.90, 0.94, 0.60 };
+            // Prefer long-range and outside-box (defensive, low block)
+            case DEFENSIVE -> new double[] { 0.40, 0.93, 0.90, 1.22, 0.90 };
+            // Baseline — no shift
+            default -> new double[] { 1.00, 1.00, 1.00, 1.00, 1.00 };
         };
     }
 
