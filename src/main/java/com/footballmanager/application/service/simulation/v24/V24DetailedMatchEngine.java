@@ -356,7 +356,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // V24C2: Foul / yellow card / red card using discipline model
-            var potentialFouler = selector.selectShooter(possessor.startingPlayers());
+            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency with
+            // attemptShot/chanceCreated (shooter/assist paths already formation-aware).
+            var potentialFouler = selector.selectShooter(possessor.startingPlayers(), formation);
             if (potentialFouler.isPresent()) {
                 V24PlayerMatchState f = potentialFouler.get();
                 boolean defending = !homeHasPossession; // fouler is on defending side when opponent has possession
@@ -383,7 +385,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // V24C3: Injury event using injury model
-            var potentialInjured = selector.selectShooter(possessor.startingPlayers());
+            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency.
+            var potentialInjured = selector.selectShooter(possessor.startingPlayers(), formation);
             if (potentialInjured.isPresent()) {
                 V24PlayerMatchState p = potentialInjured.get();
                 // highIntensityAction=false here; shots/fouls/chances already covered by their own drains
@@ -403,8 +406,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // Corner (when possession is near goal but no shot)
+            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency.
             if (random.nextDouble() < 0.035) {
-                var player = selector.selectShooter(possessor.startingPlayers());
+                var player = selector.selectShooter(possessor.startingPlayers(), formation);
                 if (player.isPresent()) {
                     timeline.addEvent(new V24MatchEvent(
                             minute,
@@ -420,8 +424,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // Offside (when team is pushing forward)
+            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency.
             if (random.nextDouble() < 0.04 && possessor.style() != TeamStyle.DEFENSIVE) {
-                var player = selector.selectShooter(possessor.startingPlayers());
+                var player = selector.selectShooter(possessor.startingPlayers(), formation);
                 if (player.isPresent()) {
                     timeline.addEvent(new V24MatchEvent(
                             minute,
