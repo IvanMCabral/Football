@@ -531,6 +531,81 @@ El flow completo (createCustom + setFormation + replaceFixtures + simulate 4 ron
 
 ---
 
+## 10c. V24D20-SANDBOX-V2-MVP — 4 bug fixes + endpoint replay (2026-06-20)
+
+**Para quién:** REVISOR (corre smokes que necesitan formación propagada, A3-404 trace, xG no outlier) + Iván (verifica empíricamente los 4 bugs del sprint).
+
+**Qué es:** sobre el harness 10b, este sprint fixeó 4 bugs que bloqueaban el smoke comparativo y agregó 1 endpoint replay para experimentación "rápida" (re-simular un partido YA JUGADO con nueva formación/seed sin crear fixture nuevo).
+
+### Bugs fixeados
+
+| Bug | Root cause | Fix | Regresion guard |
+|---|---|---|---|
+| **#1 FORMATION_NOT_PROPAGATED** | `TestHarnessUseCaseImpl` save() no invalidaba `CareerSessionService.careerCache` — el engine veía la formación VIEJA | Inyectar `careerSessionService.invalidateCache(career.getUserId())` después de cada `careerRepository.save()` en executeReplaceFixtures / executeResetInjuries / executeSetFormation | 4 unit tests nuevos en `TestHarnessUseCaseImplTest` (red→green) |
+| **#2 TOTALROUNDS_NOT_PERSISTED** | `setTotalRounds` era la 2da llamada en `executeReplaceFixtures` — vulnerable a side-effects futuros | Reorder: `setTotalRounds` es la ÚLTIMA escritura (post-initializeStandings) | 1 unit test nuevo `replaceFixtures_totalRoundsEqualsFixtureCount` |
+| **#3 V24_DETAIL_404_A3** | Sin traces; hipótesis = careerId/matchId mismatch en algún path | Trace logs en save/find/callsite (RoundController + V24DetailedMatchRedisAdapter) | 1 unit test nuevo `threeMatchesInSameCareer_allFindable` (3 fixtures, all findable) |
+| **#4 XG_GOALS_DIVERGENCE_A1** | Threshold `xg/0.60` permite 100% conversion para xG≥0.60; outliers posibles con shots de high-xG | Instrumentation: `static AtomicInteger goalAdditions` + warn en divergence (counter vs GOAL events) + warn en outlier 5x | 1 unit test nuevo `noMatchHasGoalsGreaterThan5xXg` (10 matches, no outlier) |
+
+**CLEANUP TODO (sprint futuro):** eliminar el counter `goalAdditions` y los warns de divergence/outlier cuando BUG #4 se confirme fixed. Tag: `V24D20-SANDBOX-V2-MVP-CLEANUP`.
+
+### Endpoint nuevo
+
+```bash
+# POST /api/v1/test-harness/career/match/{matchId}/replay
+# Body opcional: { "seed": 12345 }  // null = System.currentTimeMillis() (no reproducible)
+# Response 200: el MatchFixture actualizado con el nuevo resultado
+curl -X POST http://localhost:8080/api/v1/test-harness/career/match/match-001/replay \
+  -H "Authorization: Bearer $JWT" -H "Content-Type: application/json" \
+  -d '{"seed":99999}'
+
+# Sin body → seed = System.currentTimeMillis() (cambia entre corridas)
+curl -X POST http://localhost:8080/api/v1/test-harness/career/match/match-001/replay \
+  -H "Authorization: Bearer $JWT"
+```
+
+El replay:
+1. Resetea el fixture a PENDING (era COMPLETED).
+2. Re-simula via `V24DetailedMatchEngine` con el seed (caller-provided o auto).
+3. Persiste el nuevo resultado + actualiza standings.
+4. Limpia el V24 detail viejo en Redis (best-effort).
+5. Save + invalidar cache (mismo pattern que los otros endpoints).
+
+**Limitaciones MVP (conocidas, documentadas):**
+- Standings double-count: el resultado original ya estaba en standings; replay aplica el nuevo encima. Para state limpio, REVISOR debe correr `replace-fixtures` antes de replay.
+- V24 detail delete es best-effort (errores se loggean, no se tiran).
+
+### Flujo "replay con formación cambiada" (REVISOR what-if)
+
+```bash
+# 1. Create-custom + replace-fixtures con 1 partido
+curl -X POST .../create-custom -d '{...,"teamsPerDivision":2}'
+curl -X POST .../replace-fixtures -d '[{"matchId":"match-X","homeTeamId":"<H>","awayTeamId":"<A>","round":1}]'
+
+# 2. Snapshot pre-replay (capturar resultado original)
+curl -X GET .../snapshot > pre.json
+
+# 3. Set formation + replay
+curl -X POST .../set-formation -d '{"formation":"3-5-2"}'
+curl -X POST .../match/match-X/replay -d '{"seed":99999}'
+
+# 4. Snapshot post-replay (diff vs pre.json)
+curl -X GET .../snapshot > post.json
+diff pre.json post.json
+```
+
+### Tests automatizados
+
+- `TestHarnessUseCaseImplTest` — 18 unit tests (Mockito + real V24 engine). 4 nuevos BUG #1 + 1 nuevo BUG #2 + 4 nuevos replayMatch.
+- `V24DetailedMatchRedisAdapterTest` — 17 tests. 1 nuevo BUG #3 regression guard.
+- `V24DetailedMatchEngineDeterminismTest` — 2 tests. 1 nuevo BUG #4 outlier check.
+- `TestHarnessControllerE2ETest` — 8 E2E tests (HTTP wiring intacto).
+
+### Profile gating
+
+Todos los endpoints siguen gated a `@Profile({"dev","local","test"})`. En `prod` retornan 404 (sin guard explícito, default Spring para unmapped path).
+
+---
+
 ## 11. Comandos utiles (cheat sheet)
 
 ```bash
