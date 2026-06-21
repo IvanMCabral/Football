@@ -4,8 +4,10 @@ import com.footballmanager.application.service.simulation.v24.MatchComparison;
 import com.footballmanager.application.service.simulation.v24.MatchComparisonService;
 import com.footballmanager.application.service.simulation.v24.MatchComparisonService.BaselineNotFoundException;
 import com.footballmanager.application.service.simulation.v24.MatchComparisonService.LiveDetailNotFoundException;
+import com.footballmanager.application.service.simulation.v24.TimelineSnapshotBuilder;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchQueryService;
+import com.footballmanager.application.service.simulation.v24.V24TimelineSnapshot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -149,5 +151,63 @@ public class V24DetailedMatchController {
                     return Mono.just(ResponseEntity.badRequest()
                             .body(Map.of("error", e.getMessage())));
                 });
+    }
+
+    /**
+     * V24D24: GET /api/v1/careers/{careerId}/matches/{matchId}/timeline?minute={N}
+     *
+     * <p>Returns a partial snapshot of the stored match data filtered up to
+     * and including minute N. Used by the test-harness UI timeline scrubber.
+     * Pure derivation from the stored timeline — no re-simulation, no cache.
+     *
+     * <p>Feature-gated: returns 404 when
+     * {@code app.simulation.v24.expose-detail-api=false} (same flag as
+     * {@code /detail} and {@code /compare}).
+     *
+     * <p>Returns 400 if:
+     * <ul>
+     *   <li>{@code careerId} or {@code matchId} is blank.</li>
+     *   <li>{@code minute} is null, negative, or &gt; 130 (engine range).</li>
+     * </ul>
+     *
+     * <p>Returns 404 if:
+     * <ul>
+     *   <li>Feature flag is disabled.</li>
+     *   <li>No detail stored for the given matchId.</li>
+     * </ul>
+     */
+    @GetMapping("/{careerId}/matches/{matchId}/timeline")
+    public Mono<ResponseEntity<Object>> getTimeline(
+            @PathVariable String careerId,
+            @PathVariable String matchId,
+            @RequestParam(name = "minute", required = true) Integer minute) {
+
+        if (careerId == null || careerId.isBlank()) {
+            return Mono.just(ResponseEntity.badRequest()
+                    .body(Map.of("error", "careerId must not be blank")));
+        }
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.just(ResponseEntity.badRequest()
+                    .body(Map.of("error", "matchId must not be blank")));
+        }
+        if (minute == null || minute < 0 || minute > 130) {
+            return Mono.just(ResponseEntity.badRequest()
+                    .body(Map.of("error", "minute must be between 0 and 130")));
+        }
+
+        if (!queryService.isApiEnabled()) {
+            log.debug("[V24D24] Timeline API disabled, returning 404 for careerId={}, matchId={}",
+                    careerId, matchId);
+            return Mono.just(ResponseEntity.notFound().build());
+        }
+
+        V24DetailedMatchData detail = queryService.findDetail(careerId, matchId)
+                .orElse(null);
+        if (detail == null) {
+            return Mono.just(ResponseEntity.notFound().build());
+        }
+
+        V24TimelineSnapshot snapshot = TimelineSnapshotBuilder.build(detail, minute);
+        return Mono.just(ResponseEntity.ok((Object) snapshot));
     }
 }
