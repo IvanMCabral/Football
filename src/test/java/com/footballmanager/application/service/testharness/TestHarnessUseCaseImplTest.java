@@ -39,6 +39,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -151,9 +152,25 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("replaceFixtures: empty list returns Mono.error")
-    void replaceFixtures_emptyList_returnsError() {
+    @DisplayName("replaceFixtures: empty list returns Mono.empty() (no-op)")
+    void replaceFixtures_emptyList_returnsNoOp() {
         useCase.replaceFixtures(USER_ID, List.of())
+            .as(StepVerifier::create)
+            .verifyComplete();
+
+        // V24D24.1: empty list = no-op, NO tocar repo ni cache
+        verify(careerRepository, never()).findById(anyString());
+        verify(careerRepository, never()).save(any());
+        verifyNoInteractions(careerSessionService);
+    }
+
+    // V24D24.1 — null guard regression. The empty-list path is now a
+    // no-op, but null must still be rejected (it is a genuine client
+    // error and should produce a 400, not a silent skip).
+    @Test
+    @DisplayName("replaceFixtures: null list returns Mono.error (V24D24.1 null guard)")
+    void replaceFixtures_nullList_returnsError() {
+        useCase.replaceFixtures(USER_ID, null)
             .as(StepVerifier::create)
             .expectErrorMatches(t -> t instanceof IllegalArgumentException)
             .verify();

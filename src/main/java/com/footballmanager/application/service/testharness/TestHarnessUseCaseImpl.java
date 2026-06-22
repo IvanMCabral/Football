@@ -59,8 +59,19 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
     @Override
     public Mono<Void> replaceFixtures(UUID userId, List<CustomFixture> fixtures) {
-        if (fixtures == null || fixtures.isEmpty()) {
-            return Mono.error(new IllegalArgumentException("fixtures must be a non-empty list"));
+        // V24D24.1 — BUG_TESTHARNESS_REPLACE_FIXTURES_REJECTS_EMPTY:
+        // null guard stays (genuine client-error → 400), empty list is
+        // treated as a no-op so the test-harness frontend can "skip
+        // replacement" when the preset builder returns [] (F2 scope
+        // placeholder). Without this, the smoke REVISOR cannot drive the
+        // single-match preset path.
+        if (fixtures == null) {
+            return Mono.error(new IllegalArgumentException("fixtures must be a non-null list"));
+        }
+        if (fixtures.isEmpty()) {
+            log.info("[V24D24.1] replaceFixtures userId={} no-op (empty list, 0 fixtures to replace)",
+                userId);
+            return Mono.empty();
         }
 
         return careerRepository.findById(userId.toString())
