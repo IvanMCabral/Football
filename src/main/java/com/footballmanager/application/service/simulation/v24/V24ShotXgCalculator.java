@@ -25,13 +25,14 @@ public class V24ShotXgCalculator {
     private static final double INSIDE_BOX_DISTANCE = 16.0; // meters from goal line
     private static final double SIX_YARD_BOX_DISTANCE = 8.0;
 
-    public double calculateXg(V24ShotQuality quality) {
+    public double calculateXg(V24ShotQuality quality, String formation) {
         double xg = baseXg(quality.location())
                 * shooterMultiplier(quality.shooterQuality())
                 * assistMultiplier(quality.assistQuality())
                 * defensiveMultiplier(quality.defensivePressure())
                 * goalkeeperMultiplier(quality.goalkeeperQuality())
-                * styleMultiplier(quality.tacticModifier());
+                * styleMultiplier(quality.tacticModifier())
+                * formationXgModifier(formation);
 
         return clamp(xg);
     }
@@ -48,6 +49,46 @@ public class V24ShotXgCalculator {
             case OUTSIDE_BOX -> 0.04;
             case LONG_RANGE -> 0.02;
         };
+    }
+
+    /**
+     * V25D25: Formation-specific xG modifier (BUG_FORMATION_GOAL_NOOP fix).
+     *
+     * <p>Goal: make formation affect goal outcomes beyond the small
+     * shot-location distribution shift that V24D23-A introduced. The
+     * per-shot xG chain already includes shooter / assist / defense /
+     * goalkeeper / style modifiers; adding the formation modifier as a
+     * final multiplicative term amplifies the inter-formation xG delta
+     * so it crosses the Bernoulli goal-noise floor (ΔxG formation ≥ 0.3
+     * per team per match vs the ~0.05-0.13 from V24D23-A's location-only
+     * approach, which was 1σ below the per-match Bernoulli noise of
+     * ~1.28 stddev on goals).
+     *
+     * <p>Modifier values (v2, derived from tactical literature — see
+     * MANAGER analisis-v25d25.md Section 3 Option (a)):
+     * <ul>
+     *   <li>4-4-2 baseline → 1.03 (forwards=2 only fires)</li>
+     *   <li>4-3-3 → 1.10 (hasWingers)</li>
+     *   <li>4-2-3-1 → 1.12 (forwards=1 + midfielders>=4)</li>
+     *   <li>3-5-2 → 0.88 (defenders=3 -0.15, forwards=2 +0.03)</li>
+     *   <li>5-3-2 → 0.78 (isBackFive -0.25, forwards=2 +0.03)</li>
+     *   <li>3-4-3 → 1.07 (hasWingers +0.10, defenders=3 -0.15, forwards=1 +midfielders>=4 +0.12)</li>
+     * </ul>
+     *
+     * <p>Edge: null/empty/unrecognized formation string → parser falls
+     * back to 4-4-2 (BALANCED_DEFAULT) → modifier=1.03, deterministic.
+     * Floor of 0.1 prevents any path from collapsing xG to zero.
+     */
+    private double formationXgModifier(String formation) {
+        V24FormationParser parser = new V24FormationParser();
+        V24FormationParser.V24Formation f = parser.parse(formation);
+        double mod = 1.0;
+        if (f.hasWingers()) mod += 0.10;       // 4-3-3, 3-4-3
+        if (f.defenders() == 3) mod -= 0.15;   // 3-5-2, 3-4-3
+        if (f.isBackFive()) mod -= 0.25;       // 5-3-2
+        if (f.forwards() == 1 && f.midfielders() >= 4) mod += 0.12; // 4-2-3-1, 4-3-3
+        if (f.forwards() == 2) mod += 0.03;    // 4-4-2, 3-5-2
+        return Math.max(0.1, mod);
     }
 
     private double shooterMultiplier(double shooterQuality) {
