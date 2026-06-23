@@ -64,6 +64,13 @@ class TestHarnessUseCaseImplTest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
+    // resetRound() use case (the previous 4-arg constructor was extended
+    // with this dependency). Mockito's default `@Mock` is good enough
+    // because the only method the resetRound path calls on the registry
+    // is `hasEngine` (returns false) — the unit tests below never trigger
+    // the engine-eviction branch.
+    @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
     // V24D20-SANDBOX-V2-MVP F5: use the REAL V24MatchContextFactory so
     // build() produces a context with valid homeTeam/awayTeam. A mocked
     // factory would return a context with null teams, which causes
@@ -81,7 +88,7 @@ class TestHarnessUseCaseImplTest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort);
+            v24ContextFactory, v24StoragePort, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);

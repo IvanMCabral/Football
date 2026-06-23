@@ -70,6 +70,9 @@ class TestHarnessReplayPersistsDetailE2ETest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
+    // resetRound() use case. Default `@Mock` is fine.
+    @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
     // Real factory so V24MatchContext has valid teams (a mock would return
     // null teams and the engine's V24TeamMatchState.create would NPE).
@@ -84,7 +87,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort);
+            v24ContextFactory, v24StoragePort, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);

@@ -51,6 +51,9 @@ class V24FormationShotLocationDiagnostic {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
+    // resetRound() use case. Default `@Mock` is fine for the diagnostic.
+    @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
     private V24MatchContextFactory v24ContextFactory;
     private TestHarnessUseCaseImpl useCase;
@@ -60,7 +63,7 @@ class V24FormationShotLocationDiagnostic {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort);
+            v24ContextFactory, v24StoragePort, matchEngineRegistry);
     }
 
     @Test

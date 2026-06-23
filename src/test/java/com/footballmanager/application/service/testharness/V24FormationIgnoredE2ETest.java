@@ -92,6 +92,11 @@ class V24FormationIgnoredE2ETest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
+    // resetRound() use case. Default `@Mock` returns false from
+    // hasEngine, which is what these replay tests want (no live engine
+    // to evict).
+    @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
     // Real factory so build() produces a valid V24MatchContext. A mock would
     // return null teams/players and the engine would NPE in V24TeamMatchState.create.
@@ -103,7 +108,7 @@ class V24FormationIgnoredE2ETest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort);
+            v24ContextFactory, v24StoragePort, matchEngineRegistry);
     }
 
     // ========== Test 1 — formation change produces different result with same seed ==========

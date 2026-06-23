@@ -67,6 +67,32 @@ public interface TestHarnessUseCase {
     Mono<MatchFixture> replayMatch(UUID userId, String matchId, Long seedOverride);
 
     /**
+     * V24D24.3-HOTFIX: Reset every fixture of a round back to PENDING,
+     * clear its {@link MatchFixture.MatchResultData}, remove the cached
+     * {@code MatchSession} from {@code MatchEngineRegistry} so the next
+     * {@code /match-engine/rounds/start} call creates a fresh engine
+     * (the previous engine returned its cached session and the V24
+     * simulation never re-ran — see
+     * {@code MatchEngineRegistry.startEngine} line 25-30 and
+     * {@code MatchFixture.startSimulation} line 88-93), and clear the
+     * V24 detail entries from Redis.
+     *
+     * <p>Designed to be called by the test-harness frontend RIGHT BEFORE
+     * {@code /match-engine/rounds/start} so {@code "Simulate round"} is
+     * idempotent — same input (roundId, formations, seed) always
+     * produces a fresh simulation rather than re-reading the cached
+     * result.
+     *
+     * @param userId  the career owner
+     * @param roundId deterministic round UUID (matches what
+     *                {@code FixtureQueryHelper.deriveRoundId} produced)
+     * @return a Mono completing when the reset is persisted; emits an
+     *         error if no fixture of the round is in COMPLETED state
+     *         (nothing to reset) or the round is unknown.
+     */
+    Mono<Void> resetRound(UUID userId, String roundId);
+
+    /**
      * Spec for a custom fixture in {@link #replaceFixtures}.
      *
      * @param matchId optional — if {@code null}, a new UUID is generated

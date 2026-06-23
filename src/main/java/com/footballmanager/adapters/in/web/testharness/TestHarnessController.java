@@ -5,6 +5,7 @@ import com.footballmanager.adapters.in.web.testharness.dto.CareerSnapshotRespons
 import com.footballmanager.adapters.in.web.testharness.dto.CreateCustomCareerRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.CustomFixtureDTO;
 import com.footballmanager.adapters.in.web.testharness.dto.ReplayMatchRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.ResetRoundRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
@@ -47,6 +48,9 @@ import java.util.UUID;
  *   <li>{@code GET /snapshot} — dump current state for pre/post diff</li>
  *   <li>{@code POST /match/{matchId}/replay} — re-simulate a single match
  *       with a new (caller-provided or auto) seed. V24D20-SANDBOX-V2-MVP.</li>
+ *   <li>{@code POST /reset-round} — reset every fixture of a round back
+ *       to PENDING, evict cached MatchSessions, clear V24 details.
+ *       V24D24.3-HOTFIX. Makes {@code "Simulate round"} idempotent.</li>
  * </ol>
  */
 @RestController
@@ -214,5 +218,45 @@ public class TestHarnessController {
 
         return testHarnessUseCase.replayMatch(userId, matchId, seedOverride)
             .map(ResponseEntity::ok);
+    }
+
+    /**
+     * V24D24.3-HOTFIX: POST /api/v1/test-harness/career/reset-round
+     * Resets every fixture of a round back to PENDING, evicts the
+     * cached {@code MatchSession} for each match from
+     * {@code MatchEngineRegistry}, and clears the V24 detail entries
+     * from Redis. After this call, {@code /match-engine/rounds/start}
+     * with the same roundId will run a fresh V24 simulation (instead
+     * of returning the cached completed result from the previous run).
+     *
+     * <p>Body: {@code {"roundId": "<uuid>"}} — the deterministic round
+     * UUID hydrated by {@code /career/fixtures/round-with-bye} and
+     * carried in {@code TestHarnessMatchRow.roundId}.
+     *
+     * <p>The frontend calls this RIGHT BEFORE
+     * {@code /match-engine/rounds/start} so the {@code "Simulate round"}
+     * button is idempotent.
+     *
+     * <p>Response: 200 OK with a small body summarising the reset
+     * (roundId, fixturesReset, enginesRemoved, detailsCleared).
+     */
+    @PostMapping("/reset-round")
+    public Mono<ResponseEntity<Map<String, Object>>> resetRound(
+            @RequestBody ResetRoundRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        log.info("[V24D24.3-HOTFIX] reset-round userId={} roundId={}",
+            userId, request.roundId());
+
+        return testHarnessUseCase.resetRound(userId, request.roundId())
+            .<ResponseEntity<Map<String, Object>>>then(Mono.fromSupplier(() -> {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("roundId", request.roundId());
+                body.put("message", "Round reset — fixtures back to PENDING, engines evicted, V24 details cleared");
+                return ResponseEntity.ok(body);
+            }));
     }
 }

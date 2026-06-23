@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.testharness;
 
+import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
@@ -54,6 +55,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     // V24D20-SANDBOX-V2-MVP F5: replay endpoint dependencies
     private final V24MatchContextFactory v24ContextFactory;
     private final V24DetailedMatchStoragePort v24StoragePort;
+    // V24D24.3-HOTFIX: resetRound needs to evict cached MatchSessions so
+    // the next /match-engine/rounds/start call rebuilds the engine from
+    // scratch (see MatchEngineRegistry.startEngine line 25-30 for the
+    // guard we're working around).
+    private final MatchEngineRegistry matchEngineRegistry;
 
     // ========== replaceFixtures ==========
 
@@ -404,5 +410,190 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())))
             .thenReturn(fixture);
+    }
+
+    // ========== resetRound (V24D24.3-HOTFIX) ==========
+
+    @Override
+    public Mono<Void> resetRound(UUID userId, String roundId) {
+        if (roundId == null || roundId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("roundId is required and must be non-blank"));
+        }
+        log.info("[V24D24.3-HOTFIX] resetRound userId={}, roundId={}",
+            userId, roundId);
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " — call create-custom first")))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                CareerSave career = optionalCareer.get();
+                return executeResetRound(career, roundId);
+            });
+    }
+
+    /**
+     * V24D24.3-HOTFIX core implementation. Resets every fixture of the
+     * given round so the next {@code /match-engine/rounds/start} call
+     * runs a fresh V24 simulation. Concretely, for every fixture in the
+     * round we:
+     *
+     * <ol>
+     *   <li>Call {@code fixture.reset()} — clears status=COMPLETED →
+     *       PENDING and nulls the result. Without this step,
+     *       {@code MatchFixture.startSimulation} (line 88-93) throws
+     *       "Match can only start from PENDING state".</li>
+     *   <li>Call {@code matchEngineRegistry.stopAndRemoveEngine} — evicts
+     *       the cached {@code MatchSession} so the next
+     *       {@code engineRegistry.startEngine} call rebuilds from
+     *       scratch. Without this step, the registry returns the old
+     *       session (which has already finished) and the new
+     *       simulation never starts.</li>
+     *   <li>Call {@code v24StoragePort.deleteByMatchId} — clears the V24
+     *       detail (timeline / shot map / xG) from Redis so the next
+     *       {@code GET /detail} returns the new simulation's events,
+     *       not the old one.</li>
+     * </ol>
+     *
+     * <p>The reverse-update is deliberately omitted: re-running the same
+     * round does not change career-level standings here (the smoke
+     * harness accepts that "standings drift" is the cost of true
+     * determinism; REVISOR can call {@code replace-fixtures} for a
+     * clean state if needed). This matches the documented limitation
+     * of {@code replayMatch}.
+     */
+    private Mono<Void> executeResetRound(CareerSave career, String roundId) {
+        String careerId = career.getCareerId();
+        int totalRounds = career.getTournamentState().getTotalRounds();
+        int round = deriveRoundFromUuid(roundId, careerId, totalRounds);
+        if (round < 1) {
+            return Mono.error(new IllegalArgumentException(
+                "roundId " + roundId + " does not match any round of career " + careerId
+                + " (1.." + totalRounds + ")"));
+        }
+
+        List<MatchFixture> roundFixtures = new ArrayList<>();
+        for (MatchFixture f : career.getTournamentState().getFixtures()) {
+            if (f.getRound() == round) {
+                roundFixtures.add(f);
+            }
+        }
+
+        if (roundFixtures.isEmpty()) {
+            return Mono.error(new IllegalStateException(
+                "No fixtures found for round " + round
+                + " (career has " + career.getTournamentState().getFixtures().size()
+                + " fixtures across " + totalRounds + " rounds)"));
+        }
+
+        int resetCount = 0;
+        int removedEngines = 0;
+        int clearedDetails = 0;
+        UUID userId = career.getUserId();
+
+        for (MatchFixture fixture : roundFixtures) {
+            String matchId = fixture.getMatchId();
+            boolean wasCompleted = fixture.isCompleted();
+            fixture.reset();
+            resetCount++;
+
+            // Stop & remove the cached MatchSession so the next
+            // /match-engine/rounds/start gets a fresh engine.
+            try {
+                if (matchEngineRegistry.hasEngine(userId, UUID.fromString(matchId))) {
+                    matchEngineRegistry.stopAndRemoveEngine(userId, UUID.fromString(matchId));
+                    removedEngines++;
+                }
+            } catch (Exception e) {
+                log.warn("[V24D24.3-HOTFIX] resetRound: failed to remove engine for matchId={}: {}",
+                    matchId, e.getMessage());
+            }
+
+            // Clear the old V24 detail from Redis (best-effort — a
+            // Redis failure logs a warning but does NOT fail the reset,
+            // so a stale Redis state is preferable to blocking the
+            // smoke flow).
+            try {
+                v24StoragePort.deleteByMatchId(careerId, matchId);
+                clearedDetails++;
+            } catch (Exception e) {
+                log.warn("[V24D24.3-HOTFIX] resetRound: failed to clear V24 detail for matchId={}: {}",
+                    matchId, e.getMessage());
+            }
+
+            log.info("[V24D24.3-HOTFIX] resetRound matchId={} round={} wasCompleted={}",
+                matchId, fixture.getRound(), wasCompleted);
+        }
+
+        // V24D24.3-HOTFIX (BUG_ORCHESTRATOR_SKIPS_NON_CURRENT_ROUND):
+        // The MatchSimulationOrchestrator.processResultsInternal early-returns
+        // when `firstFixture.getRound() != careerCurrentRound` (line 126-128 of
+        // MatchSimulationOrchestrator.java). After running several rounds, the
+        // career's `currentRound` may be 4 while the manager is now re-simulating
+        // round 1 — the orchestrator would silently skip the result-persistence
+        // and the fixtures would stay PENDING in Mongo (despite the V24 detail
+        // being updated in Redis).
+        //
+        // Fix: rewind `currentRound` to the round being re-simulated so the
+        // orchestrator's round-equality guard passes. The test-harness is the
+        // ONLY caller of this method (it's @Profile-gated) and the manager
+        // accepts the "rewind" cost (it just means the next natural advance
+        // step will be `round + 1` instead of whatever the previous current
+        // was — the smoke accepts that the tournament may finish earlier than
+        // the stored totalRounds on a rewind-reset).
+        int previousCurrentRound = career.getTournamentState().getCurrentRound();
+        if (previousCurrentRound != round) {
+            log.info("[V24D24.3-HOTFIX] resetRound rewinding currentRound: {} -> {} "
+                + "(orchestrator only processes currentRound={} matchResults)",
+                previousCurrentRound, round, round);
+            career.getTournamentState().setCurrentRound(round);
+        }
+        // Force the career back into PRE_MATCH so the round engine is allowed
+        // to start a new round. (The orchestrator would normally set
+        // careerPhase=WAITING_USER after a round finishes, blocking a re-run.)
+        career.getTournamentState().setCareerPhase(
+            com.footballmanager.domain.model.entity.CareerPhase.PRE_MATCH);
+
+        log.info("[V24D24.3-HOTFIX] resetRound complete careerId={} roundId={} round={} resetFixtures={} removedEngines={} clearedDetails={} rewoundFrom={}",
+            careerId, roundId, round, resetCount, removedEngines, clearedDetails, previousCurrentRound);
+
+        return careerRepository.save(career)
+            .then(Mono.fromRunnable(() ->
+                careerSessionService.invalidateCache(career.getUserId())));
+    }
+
+    /**
+     * V24D24.3-HOTFIX: roundId is a deterministic UUID derived from
+     * (careerId, round) via {@code FixtureQueryHelper.deriveRoundId}.
+     * Since we don't have a direct lookup index for roundId, we
+     * recover the round number by enumerating all possible rounds and
+     * matching the UUID. With {@code totalRounds <= 38} (typical
+     * tournament) this is cheap.
+     *
+     * <p>If we ever extend the tournament beyond 38 rounds, this should
+     * be replaced with a direct UUID→round index or by storing the
+     * roundId on the fixture.
+     *
+     * @return 1-based round number, or -1 if no match found
+     */
+    private int deriveRoundFromUuid(String roundId, String careerId, int totalRounds) {
+        try {
+            UUID target = UUID.fromString(roundId);
+            for (int r = 1; r <= totalRounds; r++) {
+                String candidate = com.footballmanager.application.service.query.FixtureQueryHelper
+                    .deriveRoundId(careerId, r);
+                if (candidate != null && candidate.equals(target.toString())) {
+                    return r;
+                }
+            }
+            return -1;
+        } catch (Exception e) {
+            log.warn("[V24D24.3-HOTFIX] deriveRoundFromUuid failed for roundId={}, careerId={}: {}",
+                roundId, careerId, e.getMessage());
+            return -1;
+        }
     }
 }
