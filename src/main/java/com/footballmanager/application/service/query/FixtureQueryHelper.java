@@ -26,6 +26,26 @@ public final class FixtureQueryHelper {
         return teamNames;
     }
 
+    /**
+     * V24D24.3-FIX: Extract the distinct set of team IDs that appear as home or away
+     * across the given fixtures. Used to build a complete teamNames map that covers
+     * cross-division fixtures injected via test-harness {@code replaceFixtures}.
+     *
+     * <p>Previously, callers passed {@code userDivision.getTeamIds()} which missed
+     * any team from another division present in the round's fixtures — the fallback
+     * {@link #getTeamName(Map, String)} returned the UUID, leaking raw IDs to the UI
+     * (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
+     */
+    public static Set<String> extractTeamIdsFromFixtures(Collection<MatchFixture> fixtures) {
+        if (fixtures == null || fixtures.isEmpty()) return Set.of();
+        Set<String> teamIds = new HashSet<>();
+        for (MatchFixture f : fixtures) {
+            if (f.getHomeTeamId() != null) teamIds.add(f.getHomeTeamId());
+            if (f.getAwayTeamId() != null) teamIds.add(f.getAwayTeamId());
+        }
+        return teamIds;
+    }
+
     public static String getTeamName(Map<String, String> teamNames, String teamId) {
         return teamNames.getOrDefault(teamId, teamId);
     }

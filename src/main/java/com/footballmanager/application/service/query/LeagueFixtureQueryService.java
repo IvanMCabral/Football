@@ -73,6 +73,13 @@ public class LeagueFixtureQueryService {
                 division.getDivisionId().equals(career.getUserDivision().getDivisionId());
 
         Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, divisionTeamIds);
+        // V24D24.3-FIX (defense in depth): BUG_FIXTURES_TEAM_NAMES_UUID_V2. Although
+        // buildRoundInfosSimple filters fixtures to this division, build teamNames from
+        // the union of divisionTeamIds AND any teamId appearing in the supplied fixtures,
+        // so a future caller that passes cross-division fixtures doesn't leak UUIDs.
+        Set<String> fixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(allFixtures);
+        Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, fixtureTeamIds);
+        teamNames.putAll(extraNames);
         List<RoundInfo> rounds = FixtureQueryHelper.buildRoundInfosSimple(allFixtures, teamNames, divisionTeamIds, totalRounds, career.getCareerId());
 
         return new DivisionFixtures(
@@ -92,6 +99,13 @@ public class LeagueFixtureQueryService {
                 .filter(f -> f.getRound() == targetRound)
                 .filter(f -> divisionTeamIds.contains(f.getHomeTeamId()) && divisionTeamIds.contains(f.getAwayTeamId()))
                 .toList();
+
+        // V24D24.3-FIX (defense in depth): BUG_FIXTURES_TEAM_NAMES_UUID_V2.
+        // Extend teamNames from the actual filtered fixtures so even if the division
+        // filter above is loosened in the future, every team in the response resolves.
+        Set<String> fixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures);
+        Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, fixtureTeamIds);
+        teamNames.putAll(extraNames);
 
         List<LeagueMatchInfo> matches = fixtures.stream().map(f -> {
             int homeOvr = calculateSessionTeamOvr(career, f.getHomeTeamId());

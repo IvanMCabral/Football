@@ -1,7 +1,11 @@
 package com.footballmanager.application.service.query;
 
+import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -75,5 +79,29 @@ class FixtureQueryHelperTest {
     void deriveRoundId_nullCareerId_returnsNull() {
         assertNull(FixtureQueryHelper.deriveRoundId(null, 1),
                 "Null careerId must yield null — ad-hoc helper callers pass null careerId");
+    }
+
+    // ========== V24D24.3-FIX: extractTeamIdsFromFixtures ==========
+
+    @Test
+    @DisplayName("extractTeamIdsFromFixtures — collects home+away from all fixtures, deduplicates")
+    void extractTeamIdsFromFixtures_collectsAllTeamIds() {
+        MatchFixture f1 = new MatchFixture("m1", "team-A", "team-B", 1);
+        MatchFixture f2 = new MatchFixture("m2", "team-B", "team-C", 1);  // team-B repeated
+        MatchFixture f3 = new MatchFixture("m3", "team-D", "team-A", 2);  // team-A repeated
+
+        Set<String> ids = FixtureQueryHelper.extractTeamIdsFromFixtures(List.of(f1, f2, f3));
+
+        assertEquals(Set.of("team-A", "team-B", "team-C", "team-D"), ids,
+                "Must collect every home/away team, deduplicated, across all fixtures");
+    }
+
+    @Test
+    @DisplayName("extractTeamIdsFromFixtures — null/empty input → empty set (no NPE)")
+    void extractTeamIdsFromFixtures_nullOrEmpty_returnsEmpty() {
+        assertEquals(Set.of(), FixtureQueryHelper.extractTeamIdsFromFixtures(null),
+                "Null input must yield empty set, never NPE");
+        assertEquals(Set.of(), FixtureQueryHelper.extractTeamIdsFromFixtures(List.of()),
+                "Empty list must yield empty set");
     }
 }
