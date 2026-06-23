@@ -67,21 +67,19 @@ public final class FixtureQueryHelper {
     }
 
     public static MatchInfo toMatchInfo(MatchFixture f, Map<String, String> teamNames, String careerId) {
-        return new MatchInfo(
-                f.getMatchId(),
-                f.getHomeTeamId(),
-                getTeamName(teamNames, f.getHomeTeamId()),
-                f.getAwayTeamId(),
-                getTeamName(teamNames, f.getAwayTeamId()),
-                f.getRound(),
-                f.getStatus() != null ? f.getStatus().name() : "PENDING",
-                f.getResult() != null ? f.getResult().getHomeGoals() : null,
-                f.getResult() != null ? f.getResult().getAwayGoals() : null,
-                null, null, null,
-                deriveRoundId(careerId, f.getRound())
-        );
+        return toMatchInfo(f, teamNames, (String) null);
     }
 
+    /**
+     * V24D24.6: MatchInfo overload that hydrates {@code homeFormation} /
+     * {@code awayFormation} from {@code career.getTeamStarting11Formation()}
+     * (the V24 engine's source of truth for formations — see
+     * {@code TestHarnessUseCaseImpl.executeSetFormation}). Also computes
+     * xG metrics (which the {@code String careerId} overload cannot
+     * because it has no access to the career). Nullable formations: a
+     * team may not have a formation recorded yet (e.g. brand-new career
+     * before any {@code set-formation} call, or a BYE team).
+     */
     public static MatchInfo toMatchInfo(MatchFixture f, Map<String, String> teamNames, CareerSave career) {
         if (career == null) {
             return toMatchInfo(f, teamNames, (String) null);
@@ -95,6 +93,8 @@ public final class FixtureQueryHelper {
             var lambdas = com.footballmanager.application.service.domain.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
             metrics = com.footballmanager.domain.model.valueobject.MatchQualityMetrics.fromLambdas(lambdas);
         }
+        String homeFormation = resolveFormation(career, f.getHomeTeamId());
+        String awayFormation = resolveFormation(career, f.getAwayTeamId());
         return new MatchInfo(
                 f.getMatchId(),
                 f.getHomeTeamId(),
@@ -108,8 +108,34 @@ public final class FixtureQueryHelper {
                 metrics != null ? metrics.homeXg() : null,
                 metrics != null ? metrics.awayXg() : null,
                 metrics != null ? metrics.totalXg() : null,
-                deriveRoundId(career.getCareerId(), f.getRound())
+                deriveRoundId(career.getCareerId(), f.getRound()),
+                homeFormation,
+                awayFormation
         );
+    }
+
+    /**
+     * V24D24.6: read a team's formation from the V24 engine's source of
+     * truth ({@code career.getTeamStarting11Formation()}). Falls back to
+     * {@code sessionTeam.getFormation()} if the map is empty (e.g. legacy
+     * career created before the map was introduced in V24D24). Returns
+     * null if neither source has a value — the UI renders "—" for null.
+     */
+    private static String resolveFormation(CareerSave career, String teamId) {
+        if (teamId == null) return null;
+        Map<String, String> formations = career.getTeamStarting11Formation();
+        String fromMap = (formations != null) ? formations.get(teamId) : null;
+        if (fromMap != null && !fromMap.isBlank()) {
+            return fromMap;
+        }
+        com.footballmanager.domain.model.entity.SessionTeam team = career.getSessionTeam(teamId);
+        if (team != null) {
+            String fromTeam = team.getFormation();
+            if (fromTeam != null && !fromTeam.isBlank()) {
+                return fromTeam;
+            }
+        }
+        return null;
     }
 
     private static int calculateSessionTeamOvr(CareerSave career, String teamId) {

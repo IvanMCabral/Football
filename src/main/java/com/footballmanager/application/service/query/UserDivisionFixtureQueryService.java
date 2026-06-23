@@ -34,27 +34,9 @@ public class UserDivisionFixtureQueryService {
             Set<String> teamIdsInFixtures = FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures);
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, teamIdsInFixtures);
 
-            return fixtures.stream().map(f -> {
-                int homeOvr = calculateSessionTeamOvr(career, f.getHomeTeamId());
-                int awayOvr = calculateSessionTeamOvr(career, f.getAwayTeamId());
-                var lambdas = com.footballmanager.application.service.domain.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
-                var metrics = com.footballmanager.domain.model.valueobject.MatchQualityMetrics.fromLambdas(lambdas);
-                return new MatchInfo(
-                        f.getMatchId(),
-                        f.getHomeTeamId(),
-                        teamNames.get(f.getHomeTeamId()),
-                        f.getAwayTeamId(),
-                        teamNames.get(f.getAwayTeamId()),
-                        f.getRound(),
-                        f.getStatus() != null ? f.getStatus().name() : "PENDING",
-                        f.getResult() != null ? f.getResult().getHomeGoals() : null,
-                        f.getResult() != null ? f.getResult().getAwayGoals() : null,
-                        metrics.homeXg(),
-                        metrics.awayXg(),
-                        metrics.totalXg(),
-                        FixtureQueryHelper.deriveRoundId(career.getCareerId(), f.getRound())
-                );
-            }).toList();
+            return fixtures.stream()
+                .map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career))
+                .toList();
         });
     }
 
@@ -130,7 +112,7 @@ public class UserDivisionFixtureQueryService {
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, teamIdsInFixtures);
             List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
 
-            List<MatchInfo> matches = fixtures.stream().map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career.getCareerId())).toList();
+            List<MatchInfo> matches = fixtures.stream().map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career)).toList();
             String byeTeam = FixtureQueryHelper.findByeTeam(fixtures, teamIds, teamNames);
             return new RoundFixturesWithBye(round, matches, byeTeam);
         });
@@ -141,7 +123,7 @@ public class UserDivisionFixtureQueryService {
         return Mono.fromCallable(() -> {
             Division userDivision = career.getUserDivision();
             if (userDivision == null) {
-                return new AllRoundsWithBye(List.of());
+                return new AllRoundsWithBye(List.of(), null);
             }
 
             TournamentState tournamentState = career.getTournamentState();
@@ -165,12 +147,12 @@ public class UserDivisionFixtureQueryService {
                         .filter(f -> f.getRound() == currentRound)
                         .toList();
                 List<MatchInfo> matches = roundFixtures.stream()
-                        .map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career.getCareerId()))
+                        .map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career))
                         .toList();
                 String byeTeam = FixtureQueryHelper.findByeTeam(roundFixtures, teamIds, teamNames);
                 rounds.add(new RoundFixturesWithBye(currentRound, matches, byeTeam));
             }
-            return new AllRoundsWithBye(rounds);
+            return new AllRoundsWithBye(rounds, career.getUserSessionTeamId());
         });
     }
 }

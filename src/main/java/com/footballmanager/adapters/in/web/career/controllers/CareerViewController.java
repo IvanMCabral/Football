@@ -145,7 +145,7 @@ public class CareerViewController {
         UUID userId = controllerHelper.getUserId(auth);
         return sessionService.getCareerFromCache(userId)
                 .flatMap(fixtureQueryService::getAllUserDivisionFixturesWithBye)
-                .switchIfEmpty(Mono.just(new FixtureQueryDtos.AllRoundsWithBye(List.of())));
+                .switchIfEmpty(Mono.just(new FixtureQueryDtos.AllRoundsWithBye(List.of(), null)));
     }
 
     /**
