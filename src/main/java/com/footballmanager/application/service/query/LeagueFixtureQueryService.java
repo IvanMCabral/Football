@@ -73,7 +73,7 @@ public class LeagueFixtureQueryService {
                 division.getDivisionId().equals(career.getUserDivision().getDivisionId());
 
         Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, divisionTeamIds);
-        List<RoundInfo> rounds = FixtureQueryHelper.buildRoundInfosSimple(allFixtures, teamNames, divisionTeamIds, totalRounds);
+        List<RoundInfo> rounds = FixtureQueryHelper.buildRoundInfosSimple(allFixtures, teamNames, divisionTeamIds, totalRounds, career.getCareerId());
 
         return new DivisionFixtures(
                 division.getDivisionId().toString(),
@@ -110,7 +110,8 @@ public class LeagueFixtureQueryService {
                     f.getResult() != null ? f.getResult().getAwayGoals() : null,
                     metrics.homeXg(),
                     metrics.awayXg(),
-                    metrics.totalXg()
+                    metrics.totalXg(),
+                    FixtureQueryHelper.deriveRoundId(career.getCareerId(), f.getRound())
             );
         }).toList();
 

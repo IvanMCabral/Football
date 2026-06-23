@@ -47,7 +47,8 @@ public class UserDivisionFixtureQueryService {
                         f.getResult() != null ? f.getResult().getAwayGoals() : null,
                         metrics.homeXg(),
                         metrics.awayXg(),
-                        metrics.totalXg()
+                        metrics.totalXg(),
+                        FixtureQueryHelper.deriveRoundId(career.getCareerId(), f.getRound())
                 );
             }).toList();
         });
@@ -85,7 +86,7 @@ public class UserDivisionFixtureQueryService {
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
             List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
             List<RoundInfo> rounds = FixtureQueryHelper.buildRoundInfosWithPhase(
-                    tournamentState.getFixtures(), teamNames, teamIds, totalRounds, roundsWithBye);
+                    tournamentState.getFixtures(), teamNames, teamIds, totalRounds, roundsWithBye, career.getCareerId());
 
             List<TeamInfo> teamsList = userDivision.getTeamIds().stream()
                     .map(teamId -> career.getSessionTeam(teamId))
@@ -115,7 +116,7 @@ public class UserDivisionFixtureQueryService {
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
             List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
 
-            List<MatchInfo> matches = fixtures.stream().map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames)).toList();
+            List<MatchInfo> matches = fixtures.stream().map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career.getCareerId())).toList();
             String byeTeam = FixtureQueryHelper.findByeTeam(fixtures, teamIds, teamNames);
             return new RoundFixturesWithBye(round, matches, byeTeam);
         });
@@ -144,7 +145,7 @@ public class UserDivisionFixtureQueryService {
                         .filter(f -> f.getRound() == currentRound)
                         .toList();
                 List<MatchInfo> matches = roundFixtures.stream()
-                        .map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames))
+                        .map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career.getCareerId()))
                         .toList();
                 String byeTeam = FixtureQueryHelper.findByeTeam(roundFixtures, teamIds, teamNames);
                 rounds.add(new RoundFixturesWithBye(currentRound, matches, byeTeam));

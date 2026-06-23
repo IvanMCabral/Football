@@ -4,6 +4,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.footballmanager.application.service.query.FixtureQueryDtos.*;
@@ -29,7 +30,23 @@ public final class FixtureQueryHelper {
         return teamNames.getOrDefault(teamId, teamId);
     }
 
-    public static MatchInfo toMatchInfo(MatchFixture f, Map<String, String> teamNames) {
+    /**
+     * V24D24.2: Deriva un roundId determinístico (UUID v3 sobre nameUUIDFromBytes)
+     * a partir de (careerId, round). Esto permite que el front llame a
+     * {@code POST /api/v1/match-engine/rounds/start} con el roundId que el back
+     * ya conoce, sin necesidad de registrarlo antes.
+     *
+     * <p>Para matches dentro de un round ya registrado como engine vivo, se
+     * prefiere el roundId real del registry; este método es el fallback
+     * determinístico para rounds futuros / pasados.
+     */
+    public static String deriveRoundId(String careerId, int round) {
+        if (careerId == null) return null;
+        String key = "roundId|" + careerId + "|" + round;
+        return UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
+    public static MatchInfo toMatchInfo(MatchFixture f, Map<String, String> teamNames, String careerId) {
         return new MatchInfo(
                 f.getMatchId(),
                 f.getHomeTeamId(),
@@ -40,13 +57,14 @@ public final class FixtureQueryHelper {
                 f.getStatus() != null ? f.getStatus().name() : "PENDING",
                 f.getResult() != null ? f.getResult().getHomeGoals() : null,
                 f.getResult() != null ? f.getResult().getAwayGoals() : null,
-                null, null, null
+                null, null, null,
+                deriveRoundId(careerId, f.getRound())
         );
     }
 
     public static MatchInfo toMatchInfo(MatchFixture f, Map<String, String> teamNames, CareerSave career) {
         if (career == null) {
-            return toMatchInfo(f, teamNames);
+            return toMatchInfo(f, teamNames, (String) null);
         }
         com.footballmanager.domain.model.entity.SessionTeam homeTeam = career.getSessionTeam(f.getHomeTeamId());
         com.footballmanager.domain.model.entity.SessionTeam awayTeam = career.getSessionTeam(f.getAwayTeamId());
@@ -69,7 +87,8 @@ public final class FixtureQueryHelper {
                 f.getResult() != null ? f.getResult().getAwayGoals() : null,
                 metrics != null ? metrics.homeXg() : null,
                 metrics != null ? metrics.awayXg() : null,
-                metrics != null ? metrics.totalXg() : null
+                metrics != null ? metrics.totalXg() : null,
+                deriveRoundId(career.getCareerId(), f.getRound())
         );
     }
 
@@ -90,7 +109,7 @@ public final class FixtureQueryHelper {
         return count > 0 ? totalOvr / count : 70;
     }
 
-    public static LeagueMatchInfo toLeagueMatchInfo(MatchFixture f, Map<String, String> teamNames) {
+    public static LeagueMatchInfo toLeagueMatchInfo(MatchFixture f, Map<String, String> teamNames, String careerId) {
         return new LeagueMatchInfo(
                 f.getMatchId().toString(),
                 f.getHomeTeamId(),
@@ -101,12 +120,13 @@ public final class FixtureQueryHelper {
                 f.getStatus().name(),
                 f.getResult() != null ? f.getResult().getHomeGoals() : null,
                 f.getResult() != null ? f.getResult().getAwayGoals() : null,
-                null, null, null
+                null, null, null,
+                deriveRoundId(careerId, f.getRound())
         );
     }
 
-    public static List<MatchInfo> toMatchInfoList(List<MatchFixture> fixtures, Map<String, String> teamNames) {
-        return fixtures.stream().map(f -> toMatchInfo(f, teamNames)).toList();
+    public static List<MatchInfo> toMatchInfoList(List<MatchFixture> fixtures, Map<String, String> teamNames, String careerId) {
+        return fixtures.stream().map(f -> toMatchInfo(f, teamNames, careerId)).toList();
     }
 
     public static String findByeTeam(List<MatchFixture> roundFixtures, List<String> teamIds, Map<String, String> teamNames) {
@@ -120,21 +140,21 @@ public final class FixtureQueryHelper {
     }
 
     public static List<RoundInfo> buildRoundInfosWithPhase(List<MatchFixture> allFixtures,
-            Map<String, String> teamNames, List<String> teamIds, int totalRounds, int idaRounds) {
+            Map<String, String> teamNames, List<String> teamIds, int totalRounds, int idaRounds, String careerId) {
         List<RoundInfo> rounds = new ArrayList<>();
         for (int r = 1; r <= totalRounds; r++) {
             final int currentRound = r;
             boolean isIda = currentRound <= idaRounds;
             List<MatchFixture> roundFixtures = allFixtures.stream().filter(f -> f.getRound() == currentRound).toList();
             String byeTeamName = findByeTeam(roundFixtures, teamIds, teamNames);
-            List<MatchInfo> matches = toMatchInfoList(roundFixtures, teamNames);
+            List<MatchInfo> matches = toMatchInfoList(roundFixtures, teamNames, careerId);
             rounds.add(new RoundInfo(r, isIda ? "IDA" : "VUELTA", isIda ? "Primera Vuelta" : "Segunda Vuelta", matches, byeTeamName, matches.size()));
         }
         return rounds;
     }
 
     public static List<RoundInfo> buildRoundInfosSimple(List<MatchFixture> allFixtures,
-            Map<String, String> teamNames, Set<String> divisionTeamIds, int totalRounds) {
+            Map<String, String> teamNames, Set<String> divisionTeamIds, int totalRounds, String careerId) {
         List<RoundInfo> rounds = new ArrayList<>();
         for (int r = 1; r <= totalRounds; r++) {
             final int currentRound = r;
@@ -143,7 +163,7 @@ public final class FixtureQueryHelper {
                     .filter(f -> divisionTeamIds.contains(f.getHomeTeamId()) && divisionTeamIds.contains(f.getAwayTeamId()))
                     .toList();
             String byeTeamName = findByeTeam(roundFixtures, new ArrayList<>(divisionTeamIds), teamNames);
-            List<MatchInfo> matches = toMatchInfoList(roundFixtures, teamNames);
+            List<MatchInfo> matches = toMatchInfoList(roundFixtures, teamNames, careerId);
             rounds.add(new RoundInfo(currentRound, null, null, matches, byeTeamName, matches.size()));
         }
         return rounds;
