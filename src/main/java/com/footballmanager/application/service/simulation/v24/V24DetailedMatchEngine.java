@@ -506,7 +506,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 styleToModifier(possessor.style())
         );
 
-        double xg = xgCalculator.calculateXg(quality);
+        double xg = xgCalculator.calculateXg(quality, formation);
         possessor.addXg(xg);
 
         // V24C1: Action drain for shot attempt
