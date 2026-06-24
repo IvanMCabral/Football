@@ -284,6 +284,88 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 careerSessionService.invalidateCache(career.getUserId())));
     }
 
+    // ========== injectPlayerStats (V25D29) ==========
+
+    /**
+     * V25D29: mutate one SessionPlayer's stats in the persisted career. Null
+     * stat args are left unchanged. Bounds-checked to {@code [0, 99]} (V25D25
+     * engine convention).
+     *
+     * <p>Note: mutates a {@code SessionPlayer} inside the {@code
+     * career.allSessionPlayers} map (engine reads from there). Mutates ALL
+     * copies of the player — both the team-roster copy AND any bench copy
+     * with the same {@code sessionPlayerId}.
+     */
+    @Override
+    public Mono<Void> injectPlayerStats(UUID userId, String playerId,
+                                       Integer attack, Integer defense,
+                                       Integer technique, Integer speed,
+                                       Integer stamina, Integer mentality) {
+        if (playerId == null || playerId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("playerId must be non-blank"));
+        }
+
+        // Bounds check. Reject out-of-range values BEFORE the career load so
+        // we don't partially mutate the career.
+        String rangeErr = validateStatRanges(attack, defense, technique, speed, stamina, mentality);
+        if (rangeErr != null) {
+            return Mono.error(new IllegalArgumentException(rangeErr));
+        }
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId)))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                CareerSave career = optionalCareer.get();
+                return executeInjectPlayerStats(career, playerId,
+                    attack, defense, technique, speed, stamina, mentality);
+            });
+    }
+
+    private static String validateStatRanges(Integer attack, Integer defense,
+                                              Integer technique, Integer speed,
+                                              Integer stamina, Integer mentality) {
+        Integer[] stats = {attack, defense, technique, speed, stamina, mentality};
+        String[] names = {"attack", "defense", "technique", "speed", "stamina", "mentality"};
+        for (int i = 0; i < stats.length; i++) {
+            Integer v = stats[i];
+            if (v != null && (v < 0 || v > 99)) {
+                return names[i] + " out of range [0, 99]: " + v;
+            }
+        }
+        return null;
+    }
+
+    private Mono<Void> executeInjectPlayerStats(CareerSave career, String playerId,
+                                                 Integer attack, Integer defense,
+                                                 Integer technique, Integer speed,
+                                                 Integer stamina, Integer mentality) {
+        SessionPlayer target = career.getSessionPlayers().get(playerId);
+        if (target == null) {
+            return Mono.error(new IllegalArgumentException(
+                "Player not found in current career: " + playerId
+                + " (available: " + career.getSessionPlayers().size() + " players)"));
+        }
+        StringBuilder logMsg = new StringBuilder();
+        if (attack != null) { target.setAttack(attack); logMsg.append(" attack=").append(attack); }
+        if (defense != null) { target.setDefense(defense); logMsg.append(" defense=").append(defense); }
+        if (technique != null) { target.setTechnique(technique); logMsg.append(" technique=").append(technique); }
+        if (speed != null) { target.setSpeed(speed); logMsg.append(" speed=").append(speed); }
+        if (stamina != null) { target.setStamina(stamina); logMsg.append(" stamina=").append(stamina); }
+        if (mentality != null) { target.setMentality(mentality); logMsg.append(" mentality=").append(mentality); }
+
+        log.info("[V25D29-TESTHARNESS] injectPlayerStats userId={} player={} ({}){}",
+            career.getUserId(), playerId, target.getName(), logMsg);
+
+        return careerRepository.save(career)
+            .then(Mono.fromRunnable(() ->
+                careerSessionService.invalidateCache(career.getUserId())));
+    }
+
     // ========== createCustom ==========
 
     @Override

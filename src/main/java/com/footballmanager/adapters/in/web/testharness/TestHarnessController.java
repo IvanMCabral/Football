@@ -6,6 +6,7 @@ import com.footballmanager.adapters.in.web.testharness.dto.CreateCustomCareerReq
 import com.footballmanager.adapters.in.web.testharness.dto.CustomFixtureDTO;
 import com.footballmanager.adapters.in.web.testharness.dto.ReplayMatchRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.ResetRoundRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.InjectPlayerStatsRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetStyleRequest;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
@@ -202,6 +203,41 @@ public class TestHarnessController {
                 body.put("success", true);
                 body.put("style", request.style());
                 body.put("message", "Style persisted to SessionTeam; V24 engine will use it on next replay");
+                return ResponseEntity.ok(body);
+            }));
+    }
+
+    /**
+     * V25D29: POST /api/v1/test-harness/career/inject-player-stats
+     * Mutates one SessionPlayer's stats in the persisted career. Null fields
+     * are left unchanged. Bounds-checked to {@code [0, 99]} (V25D25 engine convention).
+     *
+     * <p>Engine reads updated stats on next replay via {@code aggregateAttackerStat}
+     * (top-5 attackers by attack stat) and {@code aggregateDefenderStat}
+     * (DEF + GK avg of defense+mentality). Those feed
+     * {@code formationOffensiveModifier} and {@code formationDefensiveModifier}
+     * respectively. Mutating stats changes the formation effect magnitude.
+     *
+     * <p>Side-quest of V25D27 REVISOR smoke: enables empirical validation of
+     * Axis 2 (player stats amplify formation effect).
+     */
+    @PostMapping("/inject-player-stats")
+    public Mono<ResponseEntity<Map<String, Object>>> injectPlayerStats(
+            @RequestBody InjectPlayerStatsRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        return testHarnessUseCase.injectPlayerStats(
+                userId, request.playerId(),
+                request.attack(), request.defense(),
+                request.technique(), request.speed(),
+                request.stamina(), request.mentality())
+            .<ResponseEntity<Map<String, Object>>>then(Mono.fromSupplier(() -> {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("playerId", request.playerId());
+                body.put("message", "Player stats mutated; V24 engine will use them via aggregateAttackerStat/aggregateDefenderStat on next replay");
                 return ResponseEntity.ok(body);
             }));
     }

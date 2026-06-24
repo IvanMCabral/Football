@@ -48,6 +48,15 @@ public interface TestHarnessUseCase {
     // Persists to SessionTeam.style; engine reads it via V24MatchContextFactory.build() in replay path.
     Mono<Void> setStyle(UUID userId, TeamStyle style);
 
+    // V25D29: mutate SessionPlayer stats (attack/defense/technique/speed/stamina/mentality)
+    // for a specific player in the current career. Null fields are left unchanged.
+    // Persists to Redis; engine reads updated stats on next replay via aggregateAttackerStat /
+    // aggregateDefenderStat which feed formationOffensiveModifier / formationDefensiveModifier.
+    Mono<Void> injectPlayerStats(UUID userId, String playerId,
+                                 Integer attack, Integer defense,
+                                 Integer technique, Integer speed,
+                                 Integer stamina, Integer mentality);
+
     Mono<CareerSave> createCustom(UUID userId, String worldLeagueId, String worldTeamId,
                                   String difficulty, String gameSpeed, int teamsPerDivision);
 
