@@ -1,5 +1,9 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
+
+import java.util.Map;
+
 /**
  * V24B: Computes expected goals (xG) for a shot using multi-factor model.
  *
@@ -12,6 +16,11 @@ package com.footballmanager.application.service.simulation.v24;
  *   <li>Goalkeeper quality</li>
  *   <li>Team style modifier (attacking = higher, defensive = lower)</li>
  * </ul>
+ *
+ * <p>V25D32-F4: overload 9-args agrega skill levels del shooter y GK + heights
+ * como plumbing para que V25D33-V25D34 los use. V25D32 NO impact el engine —
+ * el overload 5-args delega al 9-args con {@code Map.of()} y {@code null},
+ * manteniendo el resultado bit-a-bit identico al V25D31.
  *
  * <p>Output clamped to [0.01, 0.60] (V24D6U4 tuned from 0.80).
  */
@@ -35,23 +44,34 @@ public class V24ShotXgCalculator {
     }
 
     /**
-     * V25D27: Full xG calculation with formation × stats and defensive formation.
+     * V25D32-F4: Backward-compatible 5-args overload (delega al 9-args con
+     * skill maps vacias y heights null). Engine NO impact en V25D32 — el
+     * resultado es bit-a-bit identico al overload 5-args previo.
+     */
+    public double calculateXg(V24ShotQuality quality, String formation,
+                              String opponentFormation,
+                              double possessorAttack, double opponentDefense) {
+        return calculateXg(quality, formation, opponentFormation,
+                possessorAttack, opponentDefense,
+                Map.of(), null,    // shooter: sin skills, sin height
+                Map.of(), null);   // gk: sin skills, sin height
+    }
+
+    /**
+     * V25D32-F4: overload 9-args con skill levels + heights del shooter y GK.
+     * V25D32 NO usa los nuevos params — son plumbing para V25D33-V25D34.
+     *
+     * <p>V25D27: Full xG calculation with formation × stats and defensive formation.
      *
      * <p>Pipeline: baseXg × shooter × assist × defensive × gk × style ×
      *   formationOffensive(possFormation, possessorAttack) ×
      *   formationDefensive(opponentFormation, opponentDefense).
      *
-     * <p>The two formation modifiers are the V25D27 innovation:
-     * <ul>
-     *   <li>{@code formationOffensive} (was {@code formationXgModifier}): the
-     *       possessor's formation amplifies (or dampens) shots based on the
-     *       team's attack quality. Elite attackers in a 4-3-3 produce more
-     *       xG than the same formation with weak attackers.
-     *   <li>{@code formationDefensive}: the opponent's formation modulates
-     *       how much xG it concedes. A 5-3-2 (back-five) reduces xG conceded
-     *       by 25% baseline; an elite defensive unit pushes that to ~70%.
-     *       A 4-3-3 (wingers don't track back) increases xG conceded by 15%.
-     * </ul>
+     * <p>Las nuevas params (shooterSkills, shooterHeightCm, gkSkills, gkHeightCm)
+     * son IGNORADAS en V25D32 — el engine aun no las usa. La intencion es que
+     * V25D33-V25D34 las lean aqui para modular xG segun PlayerSkill/height.
+     * El overload 5-args (V25D27) delega a este con defaults Map.of() / null,
+     * garantizando backwards compat bit-a-bit.
      *
      * @param quality shot context (location, shooter, assist, pressure, GK, style)
      * @param formation the POSSESSOR's formation (e.g. "4-3-3")
@@ -60,10 +80,16 @@ public class V24ShotXgCalculator {
      *                        players (avg of top-5 attackers, [0-99])
      * @param opponentDefense aggregate defense stat of the opponent's
      *                        defending players (avg of defenders + GK mentality, [0-99])
+     * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable, V25D32 lo ignora)
+     * @param shooterHeightCm height del shooter en cm (nullable, V25D32 lo ignora)
+     * @param gkSkills sparse map de PlayerSkill levels del GK (nullable, V25D32 lo ignora)
+     * @param gkHeightCm height del GK en cm (nullable, V25D32 lo ignora)
      */
     public double calculateXg(V24ShotQuality quality, String formation,
                               String opponentFormation,
-                              double possessorAttack, double opponentDefense) {
+                              double possessorAttack, double opponentDefense,
+                              Map<PlayerSkill, Integer> shooterSkills, Integer shooterHeightCm,
+                              Map<PlayerSkill, Integer> gkSkills, Integer gkHeightCm) {
         double baseXgVal = baseXg(quality.location());
         double shooterMult = shooterMultiplier(quality.shooterQuality());
         double assistMult = assistMultiplier(quality.assistQuality());
@@ -78,6 +104,9 @@ public class V24ShotXgCalculator {
         // i.e. 20% less). V25D27 first version multiplied, which inverted the intent
         // (5-3-2 received MORE goals than 4-3-3). Confirmed by smoke: avg_AG for
         // 5-3-2 was 4.40 (highest) vs 4-3-3 at 2.97 (lowest) — wrong direction.
+        //
+        // V25D32-F4: shooterSkills/shooterHeightCm/gkSkills/gkHeightCm son
+        // IGNORADOS en este overload. Engine NO impact. V25D33-V25D34 los usaran.
         double xg = baseXgVal * shooterMult * assistMult * defMult * gkMult * styleMult
                 * offFormMod / defFormMod;
 

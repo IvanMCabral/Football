@@ -1,12 +1,21 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
  * Mutable per-player match state, copied from SessionPlayer at match start.
  * SessionPlayer itself is NOT mutated.
+ *
+ * <p>V25D32-F4: agregados {@code heightCm} y {@code skillLevels} como plumbing
+ * para que V25D33 pueda consumirlos en el engine. V25D32 NO usa estos fields —
+ * se copian del SessionPlayer para que esten disponibles cuando el engine
+ * (V25D33-V25D34) los lea via {@code V24ShotXgCalculator} overload 9-args.
  */
 public class V24PlayerMatchState {
 
@@ -32,11 +41,18 @@ public class V24PlayerMatchState {
     private boolean injured;
     private boolean onPitch;
 
+    // V25D32-F4: height + skill metadata. Copiados del SessionPlayer (sparse map,
+    // unmodifiable view). Engine en V25D33 leera esto via el overload 9-args de
+    // V24ShotXgCalculator.calculateXg(...). Por ahora el engine NO los usa.
+    private final Integer heightCm;
+    private final Map<PlayerSkill, Integer> skillLevels;
+
     private V24PlayerMatchState(
             String sessionPlayerId, String teamId, String name, String position,
             int attack, int defense, int technique, int speed, int stamina, int mentality,
             int currentStamina, int form, int yellowCards, boolean redCard,
-            boolean injured, boolean onPitch) {
+            boolean injured, boolean onPitch,
+            Integer heightCm, Map<PlayerSkill, Integer> skillLevels) {
         this.sessionPlayerId = sessionPlayerId;
         this.teamId = teamId;
         this.name = name;
@@ -53,6 +69,12 @@ public class V24PlayerMatchState {
         this.redCard = redCard;
         this.injured = injured;
         this.onPitch = onPitch;
+        this.heightCm = heightCm;
+        // Defensive copy: el SessionPlayer tiene unmodifiable view, pero copiamos
+        // para que mutaciones del caller (que son null) no afecten nuestro state.
+        this.skillLevels = (skillLevels == null || skillLevels.isEmpty())
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(new HashMap<>(skillLevels));
     }
 
     public static V24PlayerMatchState fromSessionPlayer(SessionPlayer player, String teamId) {
@@ -75,7 +97,9 @@ public class V24PlayerMatchState {
                 intOr(player.getForm(), 50),
                 0, false,
                 player.getInjured() != null && player.getInjured(),
-                true  // onPitch initially
+                true,  // onPitch initially
+                player.getHeightCm(),         // V25D32-F4
+                player.getSkillLevels()       // V25D32-F4 (already unmodifiable)
         );
     }
 
@@ -100,6 +124,10 @@ public class V24PlayerMatchState {
     public boolean redCard() { return redCard; }
     public boolean injured() { return injured; }
     public boolean onPitch() { return onPitch; }
+
+    // V25D32-F4: height + skill accessors (read-only).
+    public Integer heightCm() { return heightCm; }
+    public Map<PlayerSkill, Integer> skillLevels() { return skillLevels; }
 
     // Setters (for match simulation mutability)
     public void setTeamId(String teamId) { this.teamId = teamId; }
