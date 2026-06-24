@@ -2,6 +2,7 @@ package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
@@ -226,6 +227,56 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         log.info("[V24D20-TESTHARNESS] setFormation userId={} team={} formation={}",
             career.getUserId(), userSessionTeamId, formation);
+
+        // V24D20-SANDBOX-V2-MVP BUG #1: invalidate cache after save
+        return careerRepository.save(career)
+            .then(Mono.fromRunnable(() ->
+                careerSessionService.invalidateCache(career.getUserId())));
+    }
+
+    // ========== setStyle (V25D28) ==========
+
+    /**
+     * V25D28: set the user team's tactical style (BALANCED, ATTACKING, DEFENSIVE,
+     * COUNTER, POSSESSION). Persists to {@code SessionTeam.style} so that the
+     * V24 engine can read it via {@link com.footballmanager.application.service.simulation.v24.V24MatchContextFactory#build}
+     * in the test-harness replay path.
+     *
+     * <p>Note: unlike {@code setFormation}, the engine does NOT read style from
+     * {@code teamStarting11Formation} map — style is a single per-team value, so
+     * persisting it on SessionTeam directly is sufficient (consistent with the
+     * pre-V24D14 sprint 1.5 save format).
+     */
+    public Mono<Void> setStyle(UUID userId, TeamStyle style) {
+        if (style == null) {
+            return Mono.error(new IllegalArgumentException("style must be non-null"));
+        }
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId)))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                CareerSave career = optionalCareer.get();
+                return executeSetStyle(career, style);
+            });
+    }
+
+    private Mono<Void> executeSetStyle(CareerSave career, TeamStyle style) {
+        String userSessionTeamId = career.getUserSessionTeamId();
+
+        SessionTeam userTeam = career.getSessionTeam(userSessionTeamId);
+        if (userTeam == null) {
+            return Mono.error(new IllegalStateException(
+                "User session team not found: " + userSessionTeamId));
+        }
+        userTeam.setStyle(style);
+
+        log.info("[V25D28-TESTHARNESS] setStyle userId={} team={} style={}",
+            career.getUserId(), userSessionTeamId, style);
 
         // V24D20-SANDBOX-V2-MVP BUG #1: invalidate cache after save
         return careerRepository.save(career)

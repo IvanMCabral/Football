@@ -1,5 +1,6 @@
 package com.footballmanager.domain.port.in.testharness;
 
+import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import reactor.core.publisher.Mono;
@@ -42,6 +43,10 @@ public interface TestHarnessUseCase {
     Mono<Void> resetInjuries(UUID userId);
 
     Mono<Void> setFormation(UUID userId, String formation);
+
+    // V25D28: change the user team's tactical style (BALANCED/ATTACKING/DEFENSIVE/COUNTER/POSSESSION).
+    // Persists to SessionTeam.style; engine reads it via V24MatchContextFactory.build() in replay path.
+    Mono<Void> setStyle(UUID userId, TeamStyle style);
 
     Mono<CareerSave> createCustom(UUID userId, String worldLeagueId, String worldTeamId,
                                   String difficulty, String gameSpeed, int teamsPerDivision);

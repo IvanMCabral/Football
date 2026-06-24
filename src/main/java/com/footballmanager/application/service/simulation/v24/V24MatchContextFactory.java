@@ -57,7 +57,24 @@ public final class V24MatchContextFactory {
             SessionTeam homeTeam,
             SessionTeam awayTeam,
             long seed) {
-        return buildWithStyles(career, fixture, homeTeam, awayTeam, null, null, seed);
+        // V25D28: when caller does not pass explicit styles (replay path from
+        // test-harness), fall back to the styles persisted on the SessionTeam.
+        // This lets the test-harness set-style endpoint (POST /test-harness/career/set-style)
+        // actually drive the engine's style-aware chanceProbability, possessionBase,
+        // and styleToModifier paths.
+        //
+        // We have to read the styles BEFORE delegating to buildWithStyles, so
+        // validateInputs (which checks for null homeTeam/awayTeam) would NPE on
+        // us if homeTeam/awayTeam were null. Manually check those here.
+        if (career == null) throw new IllegalArgumentException("career must be non-null");
+        if (fixture == null) throw new IllegalArgumentException("fixture must be non-null");
+        if (homeTeam == null) throw new IllegalArgumentException("homeTeam must be non-null");
+        if (awayTeam == null) throw new IllegalArgumentException("awayTeam must be non-null");
+        return buildWithStyles(
+            career, fixture, homeTeam, awayTeam,
+            homeTeam.getStyle(),
+            awayTeam.getStyle(),
+            seed);
     }
 
     /**

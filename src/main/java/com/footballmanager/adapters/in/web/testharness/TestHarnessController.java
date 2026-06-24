@@ -7,6 +7,7 @@ import com.footballmanager.adapters.in.web.testharness.dto.CustomFixtureDTO;
 import com.footballmanager.adapters.in.web.testharness.dto.ReplayMatchRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.ResetRoundRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.SetStyleRequest;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
@@ -173,6 +174,34 @@ public class TestHarnessController {
                 body.put("success", true);
                 body.put("formation", request.formation());
                 body.put("message", "Formation persisted to SessionTeam AND teamStarting11Formation map");
+                return ResponseEntity.ok(body);
+            }));
+    }
+
+    /**
+     * V25D28: POST /api/v1/test-harness/career/set-style
+     * Changes the user team's tactical style (BALANCED, ATTACKING, DEFENSIVE,
+     * COUNTER, POSSESSION). Persists to {@code SessionTeam.style}. The V24
+     * engine reads this in {@code V24MatchContextFactory.build()} when no
+     * explicit style is passed (test-harness replay path).
+     *
+     * <p>Side-quest of V25D27 REVISOR smoke: enables empirical validation of
+     * Axis 3 (style effect) without having to use the live-match
+     * {@code /match-engine/matches/{id}/style} endpoint.
+     */
+    @PostMapping("/set-style")
+    public Mono<ResponseEntity<Map<String, Object>>> setStyle(
+            @RequestBody SetStyleRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        return testHarnessUseCase.setStyle(userId, request.style())
+            .<ResponseEntity<Map<String, Object>>>then(Mono.fromSupplier(() -> {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("style", request.style());
+                body.put("message", "Style persisted to SessionTeam; V24 engine will use it on next replay");
                 return ResponseEntity.ok(body);
             }));
     }
