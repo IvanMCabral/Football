@@ -1,5 +1,7 @@
 package com.footballmanager.infrastructure.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.footballmanager.adapters.in.web.common.ErrorResponseBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +24,10 @@ import reactor.core.publisher.Mono;
 @EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    // V24D14-JSON401: ObjectMapper injected via Lombok @RequiredArgsConstructor
+    // to serialize the centralized ErrorResponseBody record.
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
 
     public static void addCorsHeaders(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
@@ -63,7 +68,37 @@ public class SecurityConfig {
                     String method = exchange.getRequest().getMethod().name();
                     addCorsHeaders(exchange);
                     exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-                    return exchange.getResponse().setComplete();
+                    // V24D12.1.1: add WWW-Authenticate: Bearer header (RFC 7235)
+                    exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
+                    // V24D12.1: write a consistent JSON body for 401, matching the
+                    // GlobalExceptionHandler.handleUnauthorized() contract. Without
+                    // this, the Spring default entry point returns 401 with body
+                    // empty (just WWW-Authenticate: Bearer), which is inconsistent
+                    // with the JSON that the controller helper path produces. We
+                    // re-use the same body shape and code value so the client can
+                    // parse 401s uniformly regardless of where the rejection
+                    // originated (security filter vs UnauthorizedException handler).
+                    exchange.getResponse().getHeaders().setContentType(
+                        org.springframework.http.MediaType.APPLICATION_JSON);
+                    // V24D14-JSON401: serialize via ObjectMapper instead of hardcoded
+                    // string. ErrorResponseBody record is shared with
+                    // GlobalExceptionHandler.handleUnauthorized() so the two 401
+                    // paths produce byte-equivalent JSON.
+                    ErrorResponseBody body = ErrorResponseBody.unauthorized(
+                        "Unauthorized: no user id in authentication");
+                    String json;
+                    try {
+                        json = objectMapper.writeValueAsString(body);
+                    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                        // Should not happen with a simple record, but defensive
+                        // guard in case Jackson config is changed in the future.
+                        throw new RuntimeException("Failed to serialize 401 ErrorResponseBody", e);
+                    }
+                    return exchange.getResponse().writeWith(
+                        reactor.core.publisher.Mono.just(exchange.getResponse()
+                            .bufferFactory()
+                            .wrap(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                    ).then();
                 })
                 .accessDeniedHandler((exchange, ex) -> {
                     String path = exchange.getRequest().getPath().toString();
@@ -78,15 +113,60 @@ public class SecurityConfig {
                 .pathMatchers("/api/v1/auth/**").permitAll()
                 .pathMatchers("/api/v1/health").permitAll()
                 .pathMatchers("/actuator/health").permitAll()
-                .pathMatchers("/api/v1/players", "/api/v1/players/**").permitAll()
-                .pathMatchers("/api/v1/matches", "/api/v1/matches/**").permitAll()
+                .pathMatchers("/api/v1/players", "/api/v1/players/**").authenticated()
+                .pathMatchers("/api/v1/matches", "/api/v1/matches/**").authenticated()
+                // V24D12-C.2: /api/v1/teams and /api/v1/fixtures are dead
+                // paths (no controller backs them in the codebase). We keep
+                // them as permitAll() intentionally: Spring Security WebFlux
+                // cannot distinguish "public path with no resource" (404)
+                // from "protected path with no auth" (401) without an
+                // explicit permitAll() entry. If we removed these, the
+                // security filter would cut with 401 BEFORE the routing
+                // ran, and clients would get 401 instead of the
+                // contractually correct 404 "path does not exist".
+                // Trade-off accepted: 2 historical permitAll() entries as
+                // implicit documentation of dead paths. See
+                // V24D12-C.2 prompt for full analysis of the
+                // 3 alternative options we considered and rejected.
                 .pathMatchers("/api/v1/teams", "/api/v1/teams/**").permitAll()
-                .pathMatchers("/api/v1/career", "/api/v1/career/**").permitAll()
+                .pathMatchers("/api/v1/career", "/api/v1/career/**").authenticated()
+                // V24D12-C-3: /api/v1/world stays permitAll intentionally. The
+                // setup flow (create leagues, teams, players, seed La Liga via
+                // /api/v1/world/seed-la-liga) must be reachable BEFORE any user
+                // exists. PlayerCommandController and TeamCommandController
+                // receive userId from the request BODY (not Authentication)
+                // because the world must be seedable without an authenticated
+                // session. WorldQueryController exposes the WorldSnapshot
+                // (leagues, teams, players) read-only to the team-selection
+                // dropdown in the front, which the user sees before creating
+                // a career. Not a security risk: the world is global reference
+                // data, not per-user data.
                 .pathMatchers("/api/v1/world", "/api/v1/world/**").permitAll()
+                // V24D12-C-3: /api/v1/leagues stays permitAll intentionally.
+                // LeagueController (non-reactive) is an empty legacy class
+                // with no endpoints (only a constructor). LeagueControllerReactive
+                // (the actual traffic, 10 endpoints) enforces auth in-code via
+                // ControllerHelper.getUserId() (post-V24D12-B-1), so unauthenticated
+                // calls return 401 at the controller level. The 401 contract
+                // (V24D12.1 + V24D12.1.1 + V24D12.1.2) is preserved for any path
+                // that reaches a controller. The permitAll() is a no-op defense
+                // layer for the empty legacy class, kept to match the explicit
+                // pattern from V24D12.1.1.
                 .pathMatchers("/api/v1/leagues", "/api/v1/leagues/**").permitAll()
+                // V24D12-C-3: /api/v1/match-engine stays permitAll intentionally.
+                // MatchController (non-reactive, pause/resume/stop) uses userId=null
+                // for internal/admin match control. MatchEngineController.streamRoundState
+                // is a public SSE broadcast (real-time round state for any client
+                // watching the match) and does not require auth. MatchEngineController
+                // (pauseMatch/resumeMatch/stopMatch) and RoundController.startRound
+                // enforce auth in-code via ControllerHelper.getUserId() (post-V24D12-B-1),
+                // so unauthenticated calls return 401 at the controller level. The
+                // 401 contract is preserved for protected paths. The SSE public
+                // broadcast is the design intent: clients should be able to watch
+                // a live match without authenticating first.
                 .pathMatchers("/api/v1/match-engine", "/api/v1/match-engine/**").permitAll()
                 .pathMatchers("/api/v1/fixtures", "/api/v1/fixtures/**").permitAll()
-                .pathMatchers("/api/v1/games", "/api/v1/games/**").permitAll()
+                .pathMatchers("/api/v1/games", "/api/v1/games/**").authenticated()
                 .pathMatchers("/api/v1/dashboard/**").authenticated()
                 .anyExchange().authenticated()
             )

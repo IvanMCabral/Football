@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.career.simulation;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.engine.model.RoundState;
 import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -28,6 +30,10 @@ public class MatchEngineController {
 
     private final RoundEngineRegistry roundEngineRegistry;
     private final MatchManagementService matchManagementService;
+    // V24D12-B: use ControllerHelper for userId extraction; replaces the
+    // copy-paste getUserIdFromAuth helper that accepted an optional
+    // requestUserId and threw IAE on auth failure.
+    private final ControllerHelper controllerHelper;
 
     /**
      * GET /api/v1/match-engine/rounds/{roundId}/stream
@@ -66,7 +72,7 @@ public class MatchEngineController {
         log.info("[MATCH-CONTROLLER] pauseMatch called for matchId: {}", matchId);
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        UUID userId = getUserIdFromAuth(authentication, null);
+        UUID userId = controllerHelper.getUserId(authentication);
         log.info("[MATCH-CONTROLLER] userId: {}", userId);
 
         return matchManagementService.pauseMatch(userId, matchIdUuid)
@@ -90,7 +96,7 @@ public class MatchEngineController {
         log.info("[MATCH-CONTROLLER] resumeMatch called for matchId: {}", matchId);
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        UUID userId = getUserIdFromAuth(authentication, null);
+        UUID userId = controllerHelper.getUserId(authentication);
         log.info("[MATCH-CONTROLLER] userId: {}", userId);
 
         return matchManagementService.resumeMatch(userId, matchIdUuid)
@@ -114,7 +120,7 @@ public class MatchEngineController {
         log.info("[MATCH-CONTROLLER] stopMatch called for matchId: {}", matchId);
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        UUID userId = getUserIdFromAuth(authentication, null);
+        UUID userId = controllerHelper.getUserId(authentication);
         log.info("[MATCH-CONTROLLER] userId: {}", userId);
 
         return matchManagementService.stopMatch(userId, matchIdUuid)
@@ -127,13 +133,52 @@ public class MatchEngineController {
             });
     }
 
-    private UUID getUserIdFromAuth(Authentication authentication, String requestUserId) {
-        if (requestUserId != null) {
-            return UUID.fromString(requestUserId);
+    // ========== LIVE-MATCH-F5.3.2 BUG-015: helper matchId -> roundId ==========
+
+    /**
+     * GET /api/v1/match-engine/matches/{matchId}/roundId
+     *
+     * Resolves the roundId for a given matchId using
+     * {@link RoundEngineRegistry#getRoundIdByMatchId(UUID)}.
+     *
+     * <p>LIVE-MATCH-F5.3.3 BUG-015: the front-end opens the substitution
+     * / formation modal from a {@code MatchState} (which carries
+     * {@code matchId} but NOT {@code roundId}). To pause/resume the
+     * round when the modal opens, the front-end needs to resolve
+     * {@code roundId} from {@code matchId}. The
+     * {@code MatchEngineService} caches the result on the client, so
+     * this endpoint is hit only when the cache misses.
+     *
+     * <p>Returns 200 with {@code {matchId, roundId}} when the match is
+     * registered, 404 when it is not (the round has been unregistered
+     * after completion). 400 when the matchId is not a valid UUID.
+     */
+    @GetMapping("/matches/{matchId}/roundId")
+    public Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatch(
+            @PathVariable String matchId) {
+        log.debug("[MATCH-CONTROLLER] getRoundIdForMatch called for matchId: {}", matchId);
+        UUID matchIdUuid;
+        try {
+            matchIdUuid = UUID.fromString(matchId);
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.badRequest().body(Map.of(
+                "error", "matchId is not a valid UUID",
+                "matchId", matchId
+            )));
         }
-        if (authentication != null && authentication.getName() != null) {
-            return UUID.fromString(authentication.getName());
-        }
-        throw new IllegalArgumentException("User ID not available from authentication or request");
+
+        return Mono.fromSupplier(() -> {
+            UUID roundId = roundEngineRegistry.getRoundIdByMatchId(matchIdUuid);
+            if (roundId == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "error", "match is not registered in any active round",
+                    "matchId", matchId
+                ));
+            }
+            return ResponseEntity.ok(Map.of(
+                "matchId", matchId,
+                "roundId", roundId.toString()
+            ));
+        });
     }
 }

@@ -6,7 +6,6 @@ import com.footballmanager.domain.ports.in.career.CreateCareerSnapshotUseCase;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
 import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -26,7 +25,6 @@ import java.util.UUID;
  * - No contiene lógica de negocio de cloning (delegado a CreateCareerSnapshotUseCase)
  * - No carga datos de SQL/Redis directamente (delegado a BuildWorldViewUseCase)
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StartCareerUseCaseImpl implements StartCareerUseCase {
@@ -40,7 +38,7 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
                                   String difficulty, String gameSpeed, int teamsPerDivision) {
         UUID leagueId = UUID.fromString(worldLeagueId);
 
-        // Paso 0: Eliminar carrera anterior para evitar duplicación
+        // Paso 0: Eliminar carrera anterior para evitar duplicación de datos
         return careerRepository.deleteById(userId.toString())
                 // Paso 1: Construir WorldView
                 .then(buildWorldViewUseCase.build(userId))

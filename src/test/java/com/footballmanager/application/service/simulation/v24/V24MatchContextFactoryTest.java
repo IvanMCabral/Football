@@ -218,15 +218,26 @@ class V24MatchContextFactoryTest {
         // Unknown playerId in explicit starting XI is still rejected.
         CareerSave career = makeCareer("career-9", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
-        // Inject a bad player ID into home starting XI
+        // LIVE-MATCH-F5.2 BUG-003 fix: inject a bad player ID into home
+        // starting XI. The new behavior treats this as a stale reference
+        // (the player was removed from the playerManager between rounds)
+        // and falls back to deriveStartingXIfromSquad. The factory should
+        // NOT throw IAE — instead it should resolve the home starting XI
+        // from the squad (15 home players, take first 11).
         career.getTeamStarting11().get("home-t1").set(0, "unknown-player-id");
         MatchFixture fixture = makeFixture("match-9", "home-t1", "away-t2", 1);
         SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-3-3");
         SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> factory.build(career, fixture, homeTeam, awayTeam, 0L));
-        assertTrue(ex.getMessage().contains("not found") || ex.getMessage().contains("unknown"));
+        // F5.2 BUG-003: should NOT throw IAE. Falls back to squad.
+        V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
+        // Assert the home XI was derived from the squad (first 11 of 15 players).
+        // The exact IDs depend on the makePlayers helper, but the SIZE
+        // is the important assertion: 11 starters, not 10 (the unknown
+        // ID was filtered, then the squad took over to fill the gap).
+        assertEquals(11, ctx.homeStartingPlayers().size(),
+            "BUG-003 fix: expected 11 home starters via squad fallback, got "
+            + ctx.homeStartingPlayers().size());
     }
 
     @Test

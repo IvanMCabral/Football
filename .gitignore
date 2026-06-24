@@ -18,3 +18,13 @@ target/
 # Treat front-ciber/project as a nested git repository, not as files of the
 # backend/root repo. Ignoring the whole tree prevents accidental mixed commits.
 front-ciber/project/
+
+# V24D12-D-2: .env files contain real credentials (DB, Redis, JWT).
+# Never track them in git. Use .env.example as template.
+.env
+.env.local
+.env.*.local
+
+# V24D12-D-6: application-local.yml contains real rotated credentials.
+# Keep secrets out of git even for local dev profiles.
+src/main/resources/application-local.yml

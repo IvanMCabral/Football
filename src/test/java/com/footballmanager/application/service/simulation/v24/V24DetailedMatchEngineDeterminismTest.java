@@ -41,6 +41,47 @@ class V24DetailedMatchEngineDeterminismTest {
         assertEquals(r1.timeline().size(), r2.timeline().size(), "timeline size identical");
     }
 
+    /**
+     * V24D20-SANDBOX-V2-MVP BUG #4: run 10 matches with different seeds
+     * and assert no outlier (total goals > 5x total xG). The original
+     * smoke failure was A1: xG 1.777 → 0-7 (7 goals from 1.777 xG is
+     * ≈3.9x — borderline; with the new divergence instrumentation we
+     * want a hard guard).
+     *
+     * <p>The V24DetailedMatchEngine logs a [V24-XG-DIVERGENCE-OUTLIER]
+     * warn when the heuristic is breached; this test surfaces that as
+     * a hard failure.
+     */
+    @Test
+    void noMatchHasGoalsGreaterThan5xXg() {
+        V24MatchContext ctx = buildContext("xg-outlier-1", 75, 75);
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+
+        for (int seed = 1; seed <= 10; seed++) {
+            V24DetailedMatchResult r = engine.simulate(ctx, seed);
+            int totalGoals = r.homeGoals() + r.awayGoals();
+            double totalXg = r.homeXg() + r.awayXg();
+
+            // Sanity: goals >= 0 and xG >= 0 (always true by construction)
+            assertTrue(totalGoals >= 0, "goals must be non-negative (seed=" + seed + ")");
+            assertTrue(totalXg >= 0, "xG must be non-negative (seed=" + seed + ")");
+
+            // Heuristic: no match has goals > 5x xG. If a match has 0
+            // xG AND >0 goals, also flag (impossible unless bug).
+            if (totalXg > 0) {
+                double ratio = (double) totalGoals / totalXg;
+                assertTrue(ratio <= 5.0,
+                    "BUG #4: seed=" + seed + " has goals=" + totalGoals
+                    + " xG=" + String.format("%.3f", totalXg)
+                    + " ratio=" + String.format("%.2f", ratio)
+                    + " (>5x outlier, possible xG/goals divergence)");
+            } else if (totalGoals > 0) {
+                fail("BUG #4: seed=" + seed + " has goals=" + totalGoals
+                    + " but xG=0 (impossible — every goal should have xG from a shot)");
+            }
+        }
+    }
+
     // ========== Fixture helpers ==========
 
     private V24MatchContext buildContext(String matchId, int homeOvr, int awayOvr) {

@@ -1,9 +1,13 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.FormationDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.FormationPositionDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
@@ -15,8 +19,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -37,6 +43,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     private final CareerRepository careerRepository;
     private final LineupHelper lineupHelper;
+    private final FormationService formationService;
 
     @Override
     public Mono<LineupDTO> autoSelectLineup(UUID userId, String formationCode) {
@@ -57,6 +64,22 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     .toList();
                 career.getTeamStarting11().put(userTeamId, lineupIds);
 
+                // MVP1-lineup-cancha-1.5: persist subdivision map so that
+                // re-opening the modal restores exact slot assignments
+                // (vs. role-match fallback that only fills GK + first 2 CB).
+                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, lineup);
+                if (slotMap.isEmpty()) {
+                    career.getTeamStarting11Subdivision().remove(userTeamId);
+                } else {
+                    career.getTeamStarting11Subdivision().put(userTeamId, slotMap);
+                }
+
+                // MVP1-lineup-cancha-1.6: persist formation code so that
+                // getCurrentLineup returns the actual formation the user
+                // selected (not the one inferred from DEF/MID/ATT counts
+                // of the lineup, which stays as the previous formation).
+                career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
+
                 return careerRepository.save(career)
                     .thenReturn(buildLineupDTO(lineup, formation, warnings));
             });
@@ -64,6 +87,14 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     @Override
     public Mono<LineupDTO> manualSelectLineup(UUID userId, String formationCode, List<String> playerIds) {
+        // Backward compat: legacy callers sin slots.
+        return manualSelectLineupWithSlots(userId, formationCode, playerIds, List.of());
+    }
+
+    @Override
+    public Mono<LineupDTO> manualSelectLineupWithSlots(UUID userId, String formationCode,
+                                                      List<String> playerIds,
+                                                      List<LineupSlotDTO> slots) {
         Formation formation = Formation.fromString(formationCode);
 
         if (playerIds.size() < LineupRules.MIN_AVAILABLE_PLAYERS) {
@@ -111,6 +142,43 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 }
 
                 career.getTeamStarting11().put(userTeamId, playerIds);
+
+                // MVP1-lineup-cancha-1.6: persist formation code so that
+                // getCurrentLineup returns the actual formation the user
+                // selected (same rationale as autoSelectLineup above).
+                career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
+
+                // MVP1-lineup-cancha-1.6: persist subdivision map using
+                // HELPER-BASED match (back is source-of-truth for slot
+                // assignments). Front overrides apply on top for slots the
+                // user assigned explicitly (manual drag-drop). Si el front
+                // no envía slots, back completa los 11 slots vía helper.
+                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, selectedPlayers);
+                if (slots != null && !slots.isEmpty()) {
+                    // Override con lo que el front envió explícitamente
+                    // (autoridad del front si el usuario asignó manualmente).
+                    for (LineupSlotDTO slot : slots) {
+                        if (slot.subdivisionId() == null || slot.subdivisionId().isBlank()) {
+                            continue;
+                        }
+                        if (slot.playerId() == null || slot.playerId().isBlank()) {
+                            continue;
+                        }
+                        if (!playerIds.contains(slot.playerId())) {
+                            // Slot referencia un playerId no incluido en este lineup — ignorar.
+                            continue;
+                        }
+                        // Si dos slots intentan usar el mismo subdivisionId, el último gana.
+                        slotMap.put(slot.subdivisionId(), slot.playerId());
+                    }
+                }
+                if (!slotMap.isEmpty()) {
+                    career.getTeamStarting11Subdivision().put(userTeamId, slotMap);
+                } else {
+                    // Si HELPER-BASED no produjo nada (short-handed lineup),
+                    // limpiamos el entry existente para no dejar datos stale.
+                    career.getTeamStarting11Subdivision().remove(userTeamId);
+                }
 
                 return careerRepository.save(career)
                     .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings));
@@ -272,5 +340,66 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             return false;
         }
         return true;
+    }
+
+    /**
+     * MVP1-lineup-cancha-1.6: Build the subdivision map using HELPER-BASED
+     * role match — GK is exact, defensive roles (LB/CB/RB/LWB/RWB) match via
+     * {@code lineupHelper.isDefender}, midfield roles (CDM/CM/CAM/LM/RM/LW/RW)
+     * via {@code lineupHelper.isMidfielder}, and attacking roles (CF/ST)
+     * via {@code lineupHelper.isAttacker}.
+     *
+     * <p>HELPER-BASED is a super-set of the EXACT-match used in 1.5: it
+     * matches every player the EXACT-match would, plus players with
+     * compatible-but-not-identical positions (e.g. a CB player filling a
+     * LB slot — both are defenders per the helper). For a real-world squad
+     * like Real Madrid with mixed positions (CB/LB/RB/CDM/CAM/LW/ST/RW),
+     * EXACT match only filled 5-7 of the 11 slots; HELPER-BASED fills all 11.
+     *
+     * <p>Back is source-of-truth for slot assignments (F4 manual-select also
+     * uses this method, with front overrides applied on top). The front's
+     * re-open modal restores slots verbatim from the persisted subdivision
+     * map (no role-match fallback), so back/front cannot diverge.
+     *
+     * <p>If a position has no compatible player (short-handed squad), the
+     * corresponding subdivision slot is left unassigned.
+     */
+    private Map<String, String> buildAutoSelectSlotMap(Formation formation, List<SessionPlayer> lineup) {
+        if (formationService == null) {
+            return Map.of();
+        }
+        FormationDTO formationDto = formationService.getFormationByName(formation.getCode());
+        if (formationDto == null || formationDto.positions() == null) {
+            return Map.of();
+        }
+        Map<String, String> slotMap = new HashMap<>();
+        Set<String> usedPlayerIds = new HashSet<>();
+        for (FormationPositionDTO pos : formationDto.positions()) {
+            String role = pos.role();
+            String subdivisionId = pos.subdivisionId();
+            if (role == null || subdivisionId == null || subdivisionId.isBlank()) {
+                continue;
+            }
+            for (SessionPlayer player : lineup) {
+                String playerId = player.getSessionPlayerId();
+                if (playerId == null || usedPlayerIds.contains(playerId)) {
+                    continue;
+                }
+                // Helper-based match: GK exacto, DEF/MID/ATT por helper.
+                boolean matches = switch (role) {
+                    case "GK" -> "GK".equals(player.getPosition());
+                    case "LB", "CB", "RB", "LWB", "RWB" -> lineupHelper.isDefender(player.getPosition());
+                    case "CDM", "CM", "CAM", "LM", "RM", "LW", "RW" -> lineupHelper.isMidfielder(player.getPosition());
+                    case "CF", "ST" -> lineupHelper.isAttacker(player.getPosition());
+                    default -> false;
+                };
+                if (matches) {
+                    slotMap.put(subdivisionId, playerId);
+                    usedPlayerIds.add(playerId);
+                    break;
+                }
+            }
+        }
+        return slotMap;
     }
 }

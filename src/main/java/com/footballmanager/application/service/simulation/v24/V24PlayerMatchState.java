@@ -13,7 +13,12 @@ public class V24PlayerMatchState {
     private final String sessionPlayerId;
     private String teamId;
     private final String name;
-    private final String position;
+    // LIVE-MATCH-F2-LIVE F5 (B2): 'position' is NO LONGER final. A tactical
+    // formation change can move a player to a different slot; the
+    // TacticalChangeService drives the position reassignment through this
+    // setter (validation: NOT NULL — compatibility with the new formation
+    // is the service's responsibility, not the player's).
+    private String position;
     private final int attack;
     private final int defense;
     private final int technique;
@@ -98,6 +103,28 @@ public class V24PlayerMatchState {
 
     // Setters (for match simulation mutability)
     public void setTeamId(String teamId) { this.teamId = teamId; }
+
+    // ========== LIVE-MATCH-F2-LIVE F5 (B2): tactical position reassignment ==========
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B2): replace the player's on-pitch position slot.
+     * Validates non-null. The setter does NOT validate compatibility with the
+     * current formation — that is the caller's responsibility
+     * (TacticalChangeService picks a slot that fits the new formation).
+     *
+     * <p>Used only when a manager changes formation mid-match and a player
+     * must be reassigned to a different slot. For all other mutations
+     * (drain stamina, yellow card, etc.) the existing setters remain in use.
+     *
+     * @param position new position (NOT NULL, e.g. "GK", "DEF", "MID", "ATT", "WINGER")
+     * @throws IllegalArgumentException if position is null
+     */
+    public void setPosition(String position) {
+        if (position == null || position.isBlank()) {
+            throw new IllegalArgumentException("position must not be null or blank");
+        }
+        this.position = position;
+    }
 
     public void drainStamina(int amount) {
         currentStamina = Math.max(0, currentStamina - amount);

@@ -16,8 +16,13 @@ public class V24TeamMatchState {
 
     private final String teamId;
     private final String name;
-    private final String formation;
-    private final TeamStyle style;
+    // LIVE-MATCH-F2-LIVE F5 (B1): 'formation' and 'style' are NO LONGER final.
+    // They are mutable so a manager can change formation/style mid-match.
+    // Setters validate (NOT NULL for style; for formation, the new value
+    // must parse via V24FormationParser into 10 outfield players).
+    // Other fields stay final — only these two are touched by tactical changes.
+    private String formation;
+    private TeamStyle style;
     private final List<V24PlayerMatchState> startingPlayers;
     private final List<V24PlayerMatchState> benchPlayers;
 
@@ -100,11 +105,127 @@ public class V24TeamMatchState {
     public TeamStyle style() { return style; }
     public List<V24PlayerMatchState> startingPlayers() { return Collections.unmodifiableList(startingPlayers); }
     public List<V24PlayerMatchState> benchPlayers() { return Collections.unmodifiableList(benchPlayers); }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F2.5: package-private mutator that swaps two
+     * players between the starting and bench lists of this team. Used
+     * by the F2.5 scheduled-sub apply path in V24DetailedMatchEngine
+     * when re-applying a sub on a fresh homeState (the engine runs
+     * simulate() once per tick, so on subsequent ticks the homeState
+     * is rebuilt from the context and the previous tick's swap is
+     * "undone" w.r.t. the homeState).
+     *
+     * <p>The public {@link #startingPlayers()} and {@link #benchPlayers()}
+     * accessors return unmodifiable views, so this method provides the
+     * only way to mutate the lists in-place. The public API is unchanged
+     * — callers that want to read the lists still get unmodifiable
+     * views.
+     *
+     * <p>What this does:
+     * <ul>
+     *   <li>Find {@code playerOffId} in the starting list; remove it and
+     *       call {@code substituteOff()} (sets onPitch=false).</li>
+     *   <li>Find {@code playerOnId} in the bench list; remove it, set
+     *       its teamId, and call {@code substituteOn()} (sets
+     *       onPitch=true).</li>
+     *   <li>Append the off player to the bench list and the on player
+     *       to the starting list.</li>
+     * </ul>
+     *
+     * @param playerOffId sessionPlayerId of the player going off (NOT NULL)
+     * @param playerOnId  sessionPlayerId of the player coming on (NOT NULL)
+     * @return true if both players were found and swapped; false otherwise
+     */
+    boolean swapStartingBenchForF25(String playerOffId, String playerOnId) {
+        if (playerOffId == null || playerOnId == null) return false;
+        V24PlayerMatchState offPlayer = null;
+        for (V24PlayerMatchState p : startingPlayers) {
+            if (p != null && playerOffId.equals(p.sessionPlayerId())) {
+                offPlayer = p;
+                break;
+            }
+        }
+        V24PlayerMatchState onPlayer = null;
+        for (V24PlayerMatchState p : benchPlayers) {
+            if (p != null && playerOnId.equals(p.sessionPlayerId())) {
+                onPlayer = p;
+                break;
+            }
+        }
+        if (offPlayer == null || onPlayer == null) {
+            return false;
+        }
+        startingPlayers.remove(offPlayer);
+        benchPlayers.remove(onPlayer);
+        offPlayer.substituteOff();
+        onPlayer.setTeamId(teamId);
+        onPlayer.substituteOn();
+        benchPlayers.add(offPlayer);
+        startingPlayers.add(onPlayer);
+        return true;
+    }
     public int goals() { return goals; }
     public double xg() { return xg; }
     public int shots() { return shots; }
     public int shotsOnTarget() { return shotsOnTarget; }
     public int possessionTicks() { return possessionTicks; }
+
+    // ========== LIVE-MATCH-F2-LIVE F5 (B1): validated mutators ==========
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B1): replace the team's tactical style.
+     * Validates non-null. After mutation, the teamState is in an
+     * "in-flight" state until {@link V24LiveSession#replayFromMinute(int)}
+     * recomputes the engine. The setter itself does NOT trigger a replay —
+     * callers (e.g. {@code TacticalChangeService}) drive the replay through
+     * the live session.
+     *
+     * @param style new tactical style (NOT NULL)
+     * @throws IllegalArgumentException if style is null
+     */
+    public void setStyle(TeamStyle style) {
+        if (style == null) {
+            throw new IllegalArgumentException("style must not be null");
+        }
+        this.style = style;
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B1): replace the team's formation string.
+     * Validates that the formation parses via {@link V24FormationParser}
+     * into 10 outfield players. Null and blank are rejected.
+     *
+     * <p>Per the F5 spec (section 2 D-formation): the rule is 10-11 players
+     * in valid positions. Since formation is a code (e.g. "4-4-2") and the
+     * engine always pairs it with 1 GK, a parseable code that yields
+     * {@code outfieldPlayers() == 10} is the proxy for "11 total". A 10-player
+     * starting XI (e.g. an expulsion) is handled by the engine upstream and
+     * is not enforced here.
+     *
+     * @param formation new formation code (NOT NULL, NOT BLANK, parseable)
+     * @throws IllegalArgumentException if formation is null/blank/unparseable
+     */
+    public void setFormation(String formation) {
+        if (formation == null || formation.isBlank()) {
+            throw new IllegalArgumentException("formation must not be null or blank");
+        }
+        // Match V24FormationParser normalization: trim + collapse whitespace + em-dash to hyphen.
+        // If the parser falls back to the BALANCED_DEFAULT ("4-4-2") for unparseable input,
+        // the normalized input will not match the parsed raw — that's our rejection signal.
+        String normalized = formation.trim().replaceAll("\\s+", "").replace('\u2013', '-');
+        V24FormationParser parser = new V24FormationParser();
+        V24FormationParser.V24Formation parsed = parser.parse(formation);
+        if (!normalized.equals(parsed.raw())) {
+            throw new IllegalArgumentException(
+                "formation must parse into a valid tactical code, got '" + formation + "'");
+        }
+        if (parsed.outfieldPlayers() != 10) {
+            throw new IllegalArgumentException(
+                "formation must have 10 outfield players (1 GK is implicit), got "
+                + parsed.outfieldPlayers() + " for '" + formation + "'");
+        }
+        this.formation = parsed.raw();
+    }
 
     public void addGoal() { goals++; }
     public void addXg(double amount) { xg += amount; }

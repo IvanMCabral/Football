@@ -1,5 +1,6 @@
 package com.footballmanager.adapters.in.web.career.simulation;
 
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.engine.match.MatchEngine;
 import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.engine.model.RoundState;
@@ -10,6 +11,8 @@ import com.footballmanager.application.service.match.MatchManagementService;
 import com.footballmanager.application.service.simulation.LeagueSimulator;
 import com.footballmanager.application.service.simulation.MatchResultProcessor;
 import com.footballmanager.application.service.simulation.MatchSimulationOrchestrator;
+import com.footballmanager.application.service.simulation.v24.BaselineState;
+import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
@@ -53,6 +56,13 @@ public class RoundController {
     private final CareerSessionService careerSessionService;
     private final V24MatchContextFactory v24ContextFactory;
     private final LeagueSimulator leagueSimulator;
+    // F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): stores the pre-subs
+    // BaselineState at match start, deletes it on match finish.
+    private final BaselineStateStoragePort baselineStoragePort;
+    // V24D12-B: use ControllerHelper for userId extraction; replaces the
+    // copy-paste getUserIdFromAuth helper that accepted an optional
+    // requestUserId from the body and threw IAE on auth failure.
+    private final ControllerHelper controllerHelper;
 
     /** V24D6M11: When true, matches use V24DetailedMatchEngine via V24LiveSession. */
     @Value("${simulation.use-v24-detailed-engine:true}")
@@ -65,15 +75,52 @@ public class RoundController {
      */
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
+        // V24D15-CLEANUP (BUG 5 — RoundController E2E): auth check must run
+        // FIRST so the 401 case beats body validation. Before this fix, an
+        // unauthenticated request with `matches:[]` returned 422
+        // LINEUP_VALIDATION_ERROR (matches empty) instead of 401
+        // UNAUTHORIZED — the E2E test
+        // `startRound_unauthenticated_returns401` failed because of this.
+        UUID userId = controllerHelper.getUserId(authentication);
+
+        // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-004: validate the body BEFORE
+        // touching UUID.fromString. Without this guard, an empty / wrong-field
+        // body (e.g. {gameId, round} from a misbehaving client) makes
+        // `UUID.fromString(null)` throw a raw NPE
+        // ("Cannot invoke String.length() because name is null") which
+        // surfaces as HTTP 500. We map the missing/invalid roundId to a
+        // 422 LINEUP_VALIDATION_ERROR with a clear message instead.
+        //
+        // V24D15-CLEANUP (BUG 5): removed the `matches.isEmpty()` guard.
+        // The empty-matches case is a legitimate "advance round with no
+        // matches scheduled yet" request — the UI uses it as a heartbeat
+        // / readiness probe — and startMatches handles the empty list
+        // correctly (returns RoundState with `matches: []` and status
+        // IN_PROGRESS). Keeping the guard caused
+        // `startRound_emptyMatchesArray_returns200` to fail with 422.
+        if (request == null || request.roundId() == null || request.roundId().isBlank()) {
+            return Mono.error(new IllegalArgumentException(
+                "roundId is required and must be a non-blank UUID string"));
+        }
         UUID roundId = UUID.fromString(request.roundId());
-        UUID userId = getUserIdFromAuth(authentication, request.userId());
 
         log.info("[ROUND-CONTROLLER] Starting round {} for user {}", roundId, userId);
 
         return startMatches(roundId, userId, request)
             .map(initialState -> ResponseEntity.ok(initialState))
             .onErrorResume(e -> {
-                log.error("[ROUND-CONTROLLER] Error starting round {}: {}", request.roundId(), e.getMessage(), e);
+                // V24D13-2 (FIX-001): protocol-level exceptions (IllegalStateException
+                // from missing career/session, IllegalArgumentException from invalid
+                // roundId UUID, MinuteInPastException from F2.5) must propagate to
+                // GlobalExceptionHandler so the frontend gets the right 4xx semantic
+                // code (422 LINEUP_STATE_ERROR, 422 LINEUP_VALIDATION_ERROR, 400
+                // MINUTE_IN_PAST). Only genuinely unexpected errors (NPE, DB, etc.)
+                // are mapped to 500 here.
+                if (e instanceof IllegalStateException
+                        || e instanceof IllegalArgumentException) {
+                    return Mono.error(e);
+                }
+                log.error("[ROUND-CONTROLLER] Unexpected error starting round {}: {}", request.roundId(), e.getMessage(), e);
                 return Mono.just(ResponseEntity.internalServerError().build());
             });
     }
@@ -82,92 +129,100 @@ public class RoundController {
         RoundEngine roundEngine = new RoundEngine(roundId);
         log.info("[ROUND-CONTROLLER] Created RoundEngine for roundId: {}", roundId);
 
-        List<UUID> matchIds = new ArrayList<>();
         final int totalMatches = request.matches().size();
         final AtomicInteger matchesFinished = new AtomicInteger(0);
         final List<MatchResultProcessor.MatchResultInfo> matchResults =
                 Collections.synchronizedList(new ArrayList<>());
 
-        // V24D6M11: Load CareerSave once for all matches — needed for V24MatchContext construction
-        CareerSave career = careerSessionService.getCareerFromCache(userId).block();
-        if (career == null) {
-            log.error("[ROUND-CONTROLLER] CareerSave not found for user {}", userId);
-            return Mono.error(new IllegalStateException("Career not found for user: " + userId));
-        }
-        log.info("[ROUND-CONTROLLER] CareerSave loaded for V24 context construction");
-        // [V24D6M11-TRACE] Log careerId for E2E tracing
-        String traceCareerId = career.getData().getCareerId();
-        log.info("[V24D6M11-TRACE] RoundController careerId={}, roundId={}", traceCareerId, roundId);
+        // V24D13-2 (FIX-001): the previous implementation called
+        // {@code careerSessionService.getCareerFromCache(userId).block()} here,
+        // which throws {@code IllegalStateException("block() not supported in
+        // thread parallel-N")} on Reactor parallel threads. The exception is
+        // caught by {@code GlobalExceptionHandler} and surfaced to the
+        // frontend as HTTP 422 LINEUP_STATE_ERROR, blocking the live smoke
+        // (posesión animándose, sustitución en vivo). The fix loads the
+        // CareerSave reactively via {@code flatMap}; the per-match side
+        // effects (startMatch subscribe, engine registration, lifecycle
+        // tracking) are dispatched inside {@code doOnNext} and run on the
+        // Reactor scheduler, never blocking the caller thread.
+        return careerSessionService.getCareerFromCache(userId)
+            .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
+            .doOnNext(career -> {
+                log.info("[ROUND-CONTROLLER] CareerSave loaded for V24 context construction");
+                // [V24D6M11-TRACE] Log careerId for E2E tracing
+                String traceCareerId = career.getData().getCareerId();
+                log.info("[V24D6M11-TRACE] RoundController careerId={}, roundId={}", traceCareerId, roundId);
 
-        // V24D6R2: Initialize per-round tracking for lifecycle decrement
-        int currentRound = career.getTournamentState().getCurrentRound();
-        int currentSeason = career.getSeasonManager().getCurrentSeason();
-        LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
-        capturePreRoundState(career, tracking);
+                // V24D6R2: Initialize per-round tracking for lifecycle decrement
+                int currentRound = career.getTournamentState().getCurrentRound();
+                int currentSeason = career.getSeasonManager().getCurrentSeason();
+                LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
+                capturePreRoundState(career, tracking);
 
-        // Iniciar todos los partidos
-        for (StartRoundRequest.MatchInfo matchInfo : request.matches()) {
-            UUID matchId = UUID.fromString(matchInfo.matchId());
-            UUID homeTeamId = UUID.fromString(matchInfo.homeTeamId());
-            UUID awayTeamId = UUID.fromString(matchInfo.awayTeamId());
+                // Iniciar todos los partidos
+                for (StartRoundRequest.MatchInfo matchInfo : request.matches()) {
+                    UUID matchId = UUID.fromString(matchInfo.matchId());
+                    UUID homeTeamId = UUID.fromString(matchInfo.homeTeamId());
+                    UUID awayTeamId = UUID.fromString(matchInfo.awayTeamId());
 
-            matchIds.add(matchId);
-            log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
+                    log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
 
-            // V24D6M11: Build V24LiveSession if useV24DetailedEngine is enabled
-            V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
+                    // V24D6M11: Build V24LiveSession if useV24DetailedEngine is enabled
+                    V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
 
-            if (v24LiveSession != null) {
-                // V24 path — use MatchFinishedResult callback
-                matchManagementService.startMatch(
-                        userId,
-                        matchId,
-                        homeTeamId,
-                        awayTeamId,
-                        result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
-                        v24LiveSession)
-                    .subscribe();
-            } else {
-                // Legacy path — use MatchStateSnapshot callback
-                matchManagementService.startMatch(
-                        userId,
-                        matchId,
-                        homeTeamId,
-                        awayTeamId,
-                        finalState -> {
-                            matchResults.add(new MatchResultProcessor.MatchResultInfo(
-                                    matchId.toString(),
-                                    finalState.score().home(),
-                                    finalState.score().away(),
-                                    new ArrayList<>(finalState.events())
-                            ));
+                    if (v24LiveSession != null) {
+                        // V24 path — use MatchFinishedResult callback
+                        matchManagementService.startMatch(
+                                userId,
+                                matchId,
+                                homeTeamId,
+                                awayTeamId,
+                                result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
+                                v24LiveSession)
+                            .subscribe();
+                    } else {
+                        // Legacy path — use MatchStateSnapshot callback
+                        matchManagementService.startMatch(
+                                userId,
+                                matchId,
+                                homeTeamId,
+                                awayTeamId,
+                                finalState -> {
+                                    matchResults.add(new MatchResultProcessor.MatchResultInfo(
+                                            matchId.toString(),
+                                            finalState.score().home(),
+                                            finalState.score().away(),
+                                            new ArrayList<>(finalState.events())
+                                    ));
 
-                            int finished = matchesFinished.incrementAndGet();
-                            log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", matchId, finished, totalMatches);
+                                    int finished = matchesFinished.incrementAndGet();
+                                    log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", matchId, finished, totalMatches);
 
-                            if (finished == totalMatches) {
-                                log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
-                                roundEngine.emitCompletedState();
-                                orchestrator.processMatchDayResults(userId.toString(), matchResults)
-                                        .subscribe();
-                            }
-                        })
-                    .subscribe();
-            }
+                                    if (finished == totalMatches) {
+                                        log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
+                                        roundEngine.emitCompletedState();
+                                        orchestrator.processMatchDayResults(userId.toString(), matchResults)
+                                                .subscribe();
+                                    }
+                                })
+                            .subscribe();
+                    }
 
-            MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId);
-            log.info("[ROUND-CONTROLLER] Got MatchEngine for match {}: {}", matchId, matchEngine != null ? "OK" : "NULL");
-            roundEngine.registerMatch(matchId, matchEngine);
-        }
+                    MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId);
+                    log.info("[ROUND-CONTROLLER] Got MatchEngine for match {}: {}", matchId, matchEngine != null ? "OK" : "NULL");
+                    roundEngine.registerMatch(matchId, matchEngine);
+                }
 
-        roundEngineRegistry.register(roundId, roundEngine);
-        log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
-        roundEngine.start();
-        log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}", roundEngine.isRunning());
-
-        // Construir estado inicial
-        return Flux.fromIterable(matchIds)
-            .flatMap(matchId -> matchManagementService.getMatchState(userId, matchId))
+                roundEngineRegistry.register(roundId, roundEngine);
+                log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
+                roundEngine.start();
+                log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}", roundEngine.isRunning());
+            })
+            .flatMapMany(career -> Flux.fromIterable(request.matches()))
+            .flatMap(matchInfo -> {
+                UUID matchId = UUID.fromString(matchInfo.matchId());
+                return matchManagementService.getMatchState(userId, matchId);
+            })
             .collectList()
             .map(matchStates -> {
                 RoundState initialState = new RoundState(
@@ -218,6 +273,31 @@ public class RoundController {
 
             V24LiveSession session = new V24LiveSession(context, seed);
             log.info("[ROUND-CONTROLLER] V24LiveSession created for match {} with seed {}", matchId, seed);
+
+            // F6 Sprint 2: capture the baseline state BEFORE any sub is
+            // applied. The SubstitutionCommandUseCaseImpl hook will append
+            // subs to this state as the manager makes changes. Cleaned up
+            // in handleMatchFinished.
+            //
+            // V24D15-CLEANUP (BUG_COMPARE_404): storage port now returns
+            // Mono<Void>. We subscribe on a bounded-elastic scheduler and
+            // log a warn on failure — baseline persistence MUST NOT block
+            // the live match start (the compare endpoint will simply 404
+            // for that match if Redis is down).
+            String careerId = career.getData().getCareerId();
+            BaselineState baseline = BaselineState.empty(careerId, seed, context);
+            baselineStoragePort.save(careerId, baseline)
+                    .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                    .doOnSuccess(v -> log.info(
+                            "[F6-MATCH-COMPARE] BaselineState saved for matchId={}, careerId={}, seed={}",
+                            matchId, careerId, seed))
+                    .onErrorResume(e -> {
+                        log.warn("[F6-MATCH-COMPARE] Failed to save baseline for matchId={}: {}",
+                                matchId, e.getMessage());
+                        return reactor.core.publisher.Mono.empty();
+                    })
+                    .subscribe();
+
             return session;
         } catch (Exception e) {
             log.error("[ROUND-CONTROLLER] Failed to create V24LiveSession for match {}, falling back to legacy: {}", matchId, e.getMessage());
@@ -255,6 +335,17 @@ public class RoundController {
             log.info("[ROUND-CONTROLLER] V24 match finished, {} timeline events for persistence", events.size());
 
             // V24D6R2: Persist V24 detail to Redis via LeagueSimulator with live tracking
+            // V24D20-SANDBOX-V2-MVP BUG #3: trace the careerId + matchId that
+            // are about to be persisted so a future 404 on GET /detail can
+            // be diffed against the query trace in V24DetailedMatchRedisAdapter.
+            log.info("[V24-DETAIL-CALLSITE-PERSIST] careerId={}, matchId={}, "
+                    + "homeGoals={}, awayGoals={}, homeTeamId={}, awayTeamId={}",
+                career.getData().getCareerId(),
+                result.snapshot().matchId(),
+                result.snapshot().score().home(),
+                result.snapshot().score().away(),
+                result.snapshot().homeTeamId(),
+                result.snapshot().awayTeamId());
             leagueSimulator.persistV24DetailForLiveMatch(
                     career,
                     result.v24Result(),
@@ -264,6 +355,31 @@ public class RoundController {
                     result.snapshot().score().away(),
                     tracking
             );
+
+            // V24D15-CLEANUP (BUG_COMPARE_404 — ROOT CAUSE FIX): the previous
+            // code deleted the BaselineState here as "cleanup". That
+            // broke the /compare endpoint: the manager goes to match
+            // detail → click "Comparar" AFTER the match has finished,
+            // but by then the baseline was already gone and the
+            // endpoint returned 404.
+//
+// The F6 Sprint 2 design (BaselineStateStoragePort TTL 7d) explicitly
+// expects the baseline to outlive the match — that way the manager
+// can compare "what would have happened" vs "what happened with my
+// subs" up to 7 days later. Deleting it here contradicted that
+// contract and was the actual root cause of BUG_COMPARE_404 (Phase 1
+// refactor of the save() didn't matter because the save worked; the
+// delete-after-match was wiping the baseline before the UI could
+// request the comparison).
+//
+// Fix: KEEP the baseline after match finish. It expires naturally
+// via TTL 7d. After 7d the compare endpoint returns 404 — that's the
+// documented contract.
+//
+// The only call site of baselineStoragePort.delete in the codebase
+// is here, so removing it has no other side effects.
+            log.info("[F6-MATCH-COMPARE] BaselineState PRESERVED for matchId={}, careerId={} (TTL 7d, compare endpoint will use it)",
+                    result.snapshot().matchId(), career.getData().getCareerId());
         } else {
             events = new java.util.ArrayList<>(result.snapshot().events());
         }
@@ -331,16 +447,6 @@ public class RoundController {
         public record MatchInfo(String matchId, String homeTeamId, String awayTeamId) {}
     }
 
-    private UUID getUserIdFromAuth(Authentication authentication, String requestUserId) {
-        if (requestUserId != null) {
-            return UUID.fromString(requestUserId);
-        }
-        if (authentication != null && authentication.getName() != null) {
-            return UUID.fromString(authentication.getName());
-        }
-        throw new IllegalArgumentException("User ID not available from authentication or request");
-    }
-
     /**
      * V24D6M11: Convert V24MatchEventType to domain MatchEvent.EventType.
      * Every V24MatchEventType maps explicitly — no lossy fallbacks.
@@ -365,6 +471,8 @@ public class RoundController {
             case CORNER -> com.footballmanager.domain.model.entity.MatchEvent.EventType.CORNER;
             case OFFSIDE -> com.footballmanager.domain.model.entity.MatchEvent.EventType.OFFSIDE;
             case SUBSTITUTION -> com.footballmanager.domain.model.entity.MatchEvent.EventType.SUBSTITUTION;
+            // LIVE-MATCH-F2-LIVE F5: tactical change maps 1:1.
+            case TACTICAL_CHANGE -> com.footballmanager.domain.model.entity.MatchEvent.EventType.TACTICAL_CHANGE;
         };
     }
 }

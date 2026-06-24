@@ -48,6 +48,11 @@ public final class V24DetailedMatchData {
     private final String engineVersion;
     private final int schemaVersion;
     private final Instant createdAt;
+    // V24D24-F1.2: nullable formations — partidos viejos en Redis deserializan
+    // con null (Jackson rellena con null al agregar @JsonProperty). UI muestra
+    // "—" cuando es null. Riesgo BAJO (additive).
+    private final String homeFormation;
+    private final String awayFormation;
 
     @JsonCreator
     public V24DetailedMatchData(
@@ -72,7 +77,9 @@ public final class V24DetailedMatchData {
             @JsonProperty("summary") String summary,
             @JsonProperty("engineVersion") String engineVersion,
             @JsonProperty("schemaVersion") int schemaVersion,
-            @JsonProperty("createdAt") Instant createdAt) {
+            @JsonProperty("createdAt") Instant createdAt,
+            @JsonProperty("homeFormation") String homeFormation,
+            @JsonProperty("awayFormation") String awayFormation) {
         this.matchId = matchId; // Null/no-blank validation done in fromResult() factory
         this.careerId = careerId; // Null/no-blank validation done in fromResult() factory
         this.seasonNumber = seasonNumber;
@@ -110,11 +117,21 @@ public final class V24DetailedMatchData {
         this.engineVersion = (engineVersion != null) ? engineVersion : "V24";
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
+        // V24D24-F1.2: nullable — partidos viejos en Redis no tienen estos campos.
+        // Jackson rellena con null al deserializar JSON sin los campos.
+        this.homeFormation = (homeFormation != null && !homeFormation.isBlank()) ? homeFormation : null;
+        this.awayFormation = (awayFormation != null && !awayFormation.isBlank()) ? awayFormation : null;
     }
 
     /**
      * Factory to build V24DetailedMatchData from a V24DetailedMatchResult and player ratings.
      * shotCoordinate will be null in timeline events until V24D3C attaches coordinates to events.
+     *
+     * <p>V24D24-F1.2: delegating overload for back-compat with the 31 existing
+     * call sites in {@code LeagueSimulator}, {@code MatchComparisonService},
+     * {@code TestHarnessUseCaseImpl} and tests. Passes {@code null, null} for
+     * {@code homeFormation}/{@code awayFormation} so partidos viejos written
+     * before this change keep working unchanged.
      */
     public static V24DetailedMatchData fromResult(
             String careerId,
@@ -122,6 +139,31 @@ public final class V24DetailedMatchData {
             Integer round,
             String homeTeamName,
             String awayTeamName,
+            V24DetailedMatchResult result,
+            List<V24PlayerMatchRatingDto> playerRatings) {
+        return fromResult(careerId, seasonNumber, round,
+                homeTeamName, awayTeamName,
+                null, null,
+                result, playerRatings);
+    }
+
+    /**
+     * V24D24-F1.2: Overload that accepts formation strings. Use this when
+     * the formations of the home/away teams are available in the call
+     * context (e.g. {@code LeagueSimulator.persistV24Detail} reads them
+     * from {@code SessionTeam.getFormation()}). Pass {@code null} when
+     * formation info is not available — the detail will deserialize with
+     * {@code homeFormation = awayFormation = null} and the UI renders
+     * "—".
+     */
+    public static V24DetailedMatchData fromResult(
+            String careerId,
+            Integer seasonNumber,
+            Integer round,
+            String homeTeamName,
+            String awayTeamName,
+            String homeFormation,
+            String awayFormation,
             V24DetailedMatchResult result,
             List<V24PlayerMatchRatingDto> playerRatings) {
         Objects.requireNonNull(careerId, "careerId must not be null");
@@ -164,8 +206,9 @@ public final class V24DetailedMatchData {
                 result.summary(),
                 "V24",
                 1,
-                Instant.now()
-        );
+                Instant.now(),
+                homeFormation,
+                awayFormation);
     }
 
     // Getters
@@ -191,6 +234,10 @@ public final class V24DetailedMatchData {
     @JsonProperty("engineVersion") public String engineVersion() { return engineVersion; }
     @JsonProperty("schemaVersion") public int schemaVersion() { return schemaVersion; }
     @JsonProperty("createdAt") public Instant createdAt() { return createdAt; }
+    // V24D24-F1.2: nullable formations — partidos viejos written before this
+    // change deserialize con null. La UI muestra "—".
+    @JsonProperty("homeFormation") public String homeFormation() { return homeFormation; }
+    @JsonProperty("awayFormation") public String awayFormation() { return awayFormation; }
 
     @Override
     public boolean equals(Object o) {
@@ -212,7 +259,9 @@ public final class V24DetailedMatchData {
                 && Objects.equals(summary, that.summary)
                 && Objects.equals(engineVersion, that.engineVersion)
                 && schemaVersion == that.schemaVersion
-                && Objects.equals(createdAt, that.createdAt);
+                && Objects.equals(createdAt, that.createdAt)
+                && Objects.equals(homeFormation, that.homeFormation)
+                && Objects.equals(awayFormation, that.awayFormation);
     }
 
     @Override
@@ -220,13 +269,19 @@ public final class V24DetailedMatchData {
         return Objects.hash(matchId, careerId, seasonNumber, round, homeTeamId, awayTeamId,
                 homeGoals, awayGoals, homeXg, awayXg, homeShots, awayShots,
                 homePossession, awayPossession, timeline, playerRatings, summary,
-                engineVersion, schemaVersion, createdAt);
+                engineVersion, schemaVersion, createdAt, homeFormation, awayFormation);
     }
 
     @Override
     public String toString() {
-        return "V24DetailedMatchData{matchId=%s, careerId=%s, %s %d-%d %s, xG %.2f-%.2f}"
+        String formationPart = "";
+        if (homeFormation != null || awayFormation != null) {
+            formationPart = ", formation %s/%s".formatted(
+                    homeFormation != null ? homeFormation : "—",
+                    awayFormation != null ? awayFormation : "—");
+        }
+        return "V24DetailedMatchData{matchId=%s, careerId=%s, %s %d-%d %s, xG %.2f-%.2f%s}"
                 .formatted(matchId, careerId, homeTeamName, homeGoals, awayGoals, awayTeamName,
-                        homeXg, awayXg);
+                        homeXg, awayXg, formationPart);
     }
 }

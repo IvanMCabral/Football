@@ -1,6 +1,8 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.application.service.domain.TeamStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -20,6 +22,9 @@ import java.util.*;
  * Deterministic: same state + same context = identical result.
  */
 public final class V24SubstitutionEngine {
+
+    // LIVE-MATCH-F2-LIVE F5 (B6): logger for the formation-respecting substitution check.
+    private static final Logger log = LoggerFactory.getLogger(V24SubstitutionEngine.class);
 
     private static final int DEFAULT_MAX_SUBS = 5;
 
@@ -103,6 +108,20 @@ public final class V24SubstitutionEngine {
     private Optional<V24MatchEvent> makeSubstitution(V24TeamMatchState team, V24PlayerMatchState subOff, int minute) {
         String teamId = team.teamId();
 
+        // LIVE-MATCH-F2-LIVE F5 (B6): validate that the current formation has a
+        // slot for the OFF player's position. If the manager has tactically
+        // changed to a formation that no longer has a slot for the position
+        // being vacated, this is a no-op (the engine has no place to put the
+        // sub-on). This is the "bug colateral" the F5 spec calls out: before
+        // F5, the engine used a cached formation that did not reflect the
+        // manager's mid-match tactical choice.
+        if (!formationHasSlotForPosition(team.formation(), subOff.position())) {
+            log.debug("[LIVE-MATCH-F2-LIVE F5] V24SubstitutionEngine.attemptSubstitution: "
+                + "current formation '{}' has no slot for position '{}' on team {} — skipping",
+                team.formation(), subOff.position(), teamId);
+            return Optional.empty();
+        }
+
         V24PlayerMatchState subOn = selectBenchPlayer(team.benchPlayers(), subOff.position());
         if (subOn == null) {
             return Optional.empty();
@@ -133,6 +152,32 @@ public final class V24SubstitutionEngine {
                 0.0,
                 description
         ));
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B6): does the given formation string (e.g. "3-5-2")
+     * have at least one slot for the given position (e.g. "DEF")? Reads the
+     * live {@code team.formation()} on every call (NOT a cached value) so a
+     * mid-match tactical change is reflected in the next substitution attempt.
+     *
+     * <p>Implementation: parse the formation with {@link V24FormationParser}
+     * and check the per-position counts.
+     */
+    private boolean formationHasSlotForPosition(String formation, String position) {
+        if (formation == null || formation.isBlank() || position == null || position.isBlank()) {
+            // Defensive default: allow the substitution (the engine's existing
+            // position-compatibility check will reject incompatible pairs).
+            return true;
+        }
+        V24FormationParser.V24Formation parsed = new V24FormationParser().parse(formation);
+        return switch (position) {
+            case "GK" -> true; // every formation has exactly 1 GK
+            case "DEF" -> parsed.defenders() > 0;
+            case "MID" -> parsed.midfielders() > 0 || parsed.attackingMidfielders() > 0;
+            case "WINGER" -> parsed.wingers() > 0;
+            case "ATT" -> parsed.forwards() > 0;
+            default -> true; // unknown position — let the existing validator handle it
+        };
     }
 
     private Optional<V24PlayerMatchState> findCandidate(List<V24PlayerMatchState> players,
@@ -207,5 +252,149 @@ public final class V24SubstitutionEngine {
 
     private boolean isSubstitutedOn(String playerId) {
         return substitutedOnPlayerIds.contains(playerId);
+    }
+
+    // ========== LIVE-MATCH-F1-POC: manual substitution API ==========
+
+    /**
+     * LIVE-MATCH-F1-POC: manual substitution initiated by the user from the UI.
+     *
+     * <p>Phase 1 POC: this method does NOT alter the match result (per D1=B).
+     * The {@code V24LiveSession} caches events as the engine ticks through its
+     * pre-simulated timeline; injecting this event makes it visible in the next
+     * SSE snapshot but does NOT recompute goals/xG. The proper engine refactor
+     * (live recomputation) is deferred to Phase 2.
+     *
+     * <p>Validations (same as auto {@link #attemptSubstitution} but with explicit IDs):
+     * <ul>
+     *   <li>{@code team} and player IDs must be non-null/non-blank.</li>
+     *   <li>The team must have substitutions remaining (max 5 per teamId).</li>
+     *   <li>{@code playerOffId} must be on the pitch and not already substituted off.</li>
+     *   <li>{@code playerOffId} must not be injured or red-carded.</li>
+     *   <li>{@code playerOnId} must be on the bench, not red-carded, not already substituted on.</li>
+     *   <li>{@code minute} must be between 1 and 130.</li>
+     * </ul>
+     *
+     * @param team        the team performing the substitution
+     * @param playerOffId sessionPlayerId of the player going off
+     * @param playerOnId  sessionPlayerId of the bench player coming on
+     * @param minute      the match minute when the substitution happens
+     * @return the {@link V24MatchEvent} recording the substitution
+     * @throws IllegalArgumentException for invalid input (null team, blank IDs, out-of-range minute)
+     * @throws IllegalStateException    for business rule violations
+     *         (max subs reached, player already subbed, injured, red-carded, etc.)
+     */
+    public V24MatchEvent manualSubstitute(V24TeamMatchState team,
+                                          String playerOffId,
+                                          String playerOnId,
+                                          int minute) {
+        if (team == null) {
+            throw new IllegalArgumentException("team must not be null");
+        }
+        if (playerOffId == null || playerOffId.isBlank()) {
+            throw new IllegalArgumentException("playerOffId must not be blank");
+        }
+        if (playerOnId == null || playerOnId.isBlank()) {
+            throw new IllegalArgumentException("playerOnId must not be blank");
+        }
+        if (minute < 1 || minute > 130) {
+            throw new IllegalArgumentException("minute must be between 1 and 130, got " + minute);
+        }
+
+        String teamId = team.teamId();
+
+        if (!hasSubstitutionsRemaining(teamId)) {
+            throw new IllegalStateException(
+                "Team " + teamId + " has no substitutions remaining (max " + maxSubstitutions + ")");
+        }
+
+        // Find subOff in starting players
+        V24PlayerMatchState subOff = team.startingPlayers().stream()
+            .filter(p -> p.sessionPlayerId().equals(playerOffId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                "Player " + playerOffId + " not found in starting lineup of team " + teamId));
+
+        // Validate subOff state
+        if (!subOff.onPitch()) {
+            throw new IllegalStateException(
+                "Player " + playerOffId + " is not on the pitch");
+        }
+        if (subOff.redCard()) {
+            throw new IllegalStateException(
+                "Player " + playerOffId + " is red-carded and cannot be substituted");
+        }
+        if (subOff.injured()) {
+            throw new IllegalStateException(
+                "Player " + playerOffId + " is injured and cannot be substituted");
+        }
+        if (isSubstitutedOff(playerOffId)) {
+            throw new IllegalStateException(
+                "Player " + playerOffId + " has already been substituted off");
+        }
+
+        // Find subOn in bench players
+        V24PlayerMatchState subOn = team.benchPlayers().stream()
+            .filter(p -> p.sessionPlayerId().equals(playerOnId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                "Player " + playerOnId + " not found on the bench of team " + teamId));
+
+        // Validate subOn state
+        if (subOn.onPitch()) {
+            throw new IllegalStateException(
+                "Player " + playerOnId + " is on the pitch already, not on the bench");
+        }
+        if (subOn.redCard()) {
+            throw new IllegalStateException(
+                "Player " + playerOnId + " is red-carded and cannot come on");
+        }
+        if (isSubstitutedOn(playerOnId)) {
+            throw new IllegalStateException(
+                "Player " + playerOnId + " has already been substituted on");
+        }
+
+        // Position compatibility check
+        if (!subOff.position().equals(subOn.position())
+                && !isCompatiblePosition(subOff.position(), subOn.position())) {
+            throw new IllegalStateException(
+                "Player " + playerOnId + " (position " + subOn.position()
+                + ") cannot substitute for " + playerOffId
+                + " (position " + subOff.position() + ")");
+        }
+
+        // Mark both players
+        substitutedOffPlayerIds.add(subOff.sessionPlayerId());
+        substitutedOnPlayerIds.add(subOn.sessionPlayerId());
+
+        // Mutate state
+        subOff.substituteOff();
+        subOn.setTeamId(teamId);
+        subOn.substituteOn();
+
+        // Increment counter
+        substitutionsUsed.merge(teamId, 1, Integer::sum);
+
+        String description = "Substitution: " + subOn.name() + " on for " + subOff.name();
+
+        return new V24MatchEvent(
+            minute,
+            V24MatchEventType.SUBSTITUTION,
+            teamId,
+            subOff.sessionPlayerId(),
+            subOff.name(),
+            subOn.sessionPlayerId(),
+            subOn.name(),
+            0.0,
+            description
+        );
+    }
+
+    /**
+     * LIVE-MATCH-F1-POC: public exposure of {@code isSubstitutedOff} for tests and
+     * downstream consumers that need to query the engine state without subclassing.
+     */
+    public boolean isSubstitutedOffPublic(String playerId) {
+        return isSubstitutedOff(playerId);
     }
 }

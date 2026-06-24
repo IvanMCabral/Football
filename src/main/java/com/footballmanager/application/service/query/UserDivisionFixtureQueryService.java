@@ -28,28 +28,15 @@ public class UserDivisionFixtureQueryService {
 
             TournamentState tournamentState = career.getTournamentState();
             List<MatchFixture> fixtures = tournamentState.getFixturesForRound(round);
-            Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
+            // V24D24.3-FIX: build teamNames from the actual fixtures of this round so
+            // cross-division fixtures injected via test-harness replaceFixtures resolve
+            // to real names instead of falling back to UUIDs (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
+            Set<String> teamIdsInFixtures = FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures);
+            Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, teamIdsInFixtures);
 
-            return fixtures.stream().map(f -> {
-                int homeOvr = calculateSessionTeamOvr(career, f.getHomeTeamId());
-                int awayOvr = calculateSessionTeamOvr(career, f.getAwayTeamId());
-                var lambdas = com.footballmanager.application.service.domain.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
-                var metrics = com.footballmanager.domain.model.valueobject.MatchQualityMetrics.fromLambdas(lambdas);
-                return new MatchInfo(
-                        f.getMatchId(),
-                        f.getHomeTeamId(),
-                        teamNames.get(f.getHomeTeamId()),
-                        f.getAwayTeamId(),
-                        teamNames.get(f.getAwayTeamId()),
-                        f.getRound(),
-                        f.getStatus() != null ? f.getStatus().name() : "PENDING",
-                        f.getResult() != null ? f.getResult().getHomeGoals() : null,
-                        f.getResult() != null ? f.getResult().getAwayGoals() : null,
-                        metrics.homeXg(),
-                        metrics.awayXg(),
-                        metrics.totalXg()
-                );
-            }).toList();
+            return fixtures.stream()
+                .map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career))
+                .toList();
         });
     }
 
@@ -83,9 +70,15 @@ public class UserDivisionFixtureQueryService {
             int totalRounds = roundsWithBye * 2;
 
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
+            // V24D24.3-FIX: extend teamNames with any cross-division teams present in the
+            // tournament fixtures — defensive merge so getAll() resolves names for ALL matches
+            // returned, not just user-division matches (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
+            Set<String> allFixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(tournamentState.getFixtures());
+            Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, allFixtureTeamIds);
+            teamNames.putAll(extraNames);
             List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
             List<RoundInfo> rounds = FixtureQueryHelper.buildRoundInfosWithPhase(
-                    tournamentState.getFixtures(), teamNames, teamIds, totalRounds, roundsWithBye);
+                    tournamentState.getFixtures(), teamNames, teamIds, totalRounds, roundsWithBye, career.getCareerId());
 
             List<TeamInfo> teamsList = userDivision.getTeamIds().stream()
                     .map(teamId -> career.getSessionTeam(teamId))
@@ -100,5 +93,66 @@ public class UserDivisionFixtureQueryService {
 
     private AllFixturesResponse createEmptyResponse() {
         return new AllFixturesResponse("", 0, List.of(), List.of(), Map.of(), new DivisionConfig(0, 0, false, 0, 0));
+    }
+
+    // UX-6: BYE indicator — single round with bye info
+    public Mono<RoundFixturesWithBye> getRoundWithBye(CareerSave career, int round) {
+        return Mono.fromCallable(() -> {
+            Division userDivision = career.getUserDivision();
+            if (userDivision == null) {
+                return new RoundFixturesWithBye(round, List.of(), null);
+            }
+
+            TournamentState tournamentState = career.getTournamentState();
+            List<MatchFixture> fixtures = tournamentState.getFixturesForRound(round);
+            // V24D24.3-FIX: include cross-division teams from this round's fixtures
+            // (BUG_FIXTURES_TEAM_NAMES_UUID_V2). user-division set ⊂ fixture set,
+            // so this is a superset and never shrinks the map.
+            Set<String> teamIdsInFixtures = FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures);
+            Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, teamIdsInFixtures);
+            List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
+
+            List<MatchInfo> matches = fixtures.stream().map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career)).toList();
+            String byeTeam = FixtureQueryHelper.findByeTeam(fixtures, teamIds, teamNames);
+            return new RoundFixturesWithBye(round, matches, byeTeam);
+        });
+    }
+
+    // UX-6: BYE indicator — all rounds with bye info
+    public Mono<AllRoundsWithBye> getAllRoundsWithBye(CareerSave career) {
+        return Mono.fromCallable(() -> {
+            Division userDivision = career.getUserDivision();
+            if (userDivision == null) {
+                return new AllRoundsWithBye(List.of(), null);
+            }
+
+            TournamentState tournamentState = career.getTournamentState();
+            int numTeams = userDivision.getTeamCount();
+            int roundsWithBye = (numTeams % 2 == 0) ? numTeams - 1 : numTeams;
+            int totalRounds = roundsWithBye * 2;
+
+            Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
+            // V24D24.3-FIX: extend teamNames with cross-division teams present in any round
+            // (BUG_FIXTURES_TEAM_NAMES_UUID_V2). One career-wide map, not per-round, so a
+            // single round with cross-division fixtures doesn't leak UUIDs.
+            Set<String> allFixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(tournamentState.getFixtures());
+            Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, allFixtureTeamIds);
+            teamNames.putAll(extraNames);
+            List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
+
+            List<RoundFixturesWithBye> rounds = new ArrayList<>();
+            for (int r = 1; r <= totalRounds; r++) {
+                final int currentRound = r;
+                List<MatchFixture> roundFixtures = tournamentState.getFixtures().stream()
+                        .filter(f -> f.getRound() == currentRound)
+                        .toList();
+                List<MatchInfo> matches = roundFixtures.stream()
+                        .map(f -> FixtureQueryHelper.toMatchInfo(f, teamNames, career))
+                        .toList();
+                String byeTeam = FixtureQueryHelper.findByeTeam(roundFixtures, teamIds, teamNames);
+                rounds.add(new RoundFixturesWithBye(currentRound, matches, byeTeam));
+            }
+            return new AllRoundsWithBye(rounds, career.getUserSessionTeamId());
+        });
     }
 }

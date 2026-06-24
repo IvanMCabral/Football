@@ -289,4 +289,89 @@ class V24FormMutationApplierTest {
         assertEquals(51, career.getPlayerManager().getSessionPlayer("p1").getForm());
         assertEquals(48, career.getPlayerManager().getSessionPlayer("p2").getForm());
     }
+
+    // ========== P1b B1: Form clamp boundaries (MAX=99, MIN=1) ==========
+
+    @Test
+    void formClampAtMax_alreadyAt99_staysAt99() {
+        // form=99 + delta+3 would be 102 → must clamp to 99
+        CareerSave career = careerWithPlayerInStartingXI("p1", 99);
+        // 3 goals → rating >= 8.0 → delta +3
+        V24DetailedMatchResult res = resultWithTimeline(goalEvent("p1", 30), goalEvent("p1", 60), goalEvent("p1", 75));
+        V24CareerMutationPolicy p = policy(true, false, false, false, true);
+        assertEquals(1, applier.applyForm(career, res, p));
+        assertEquals(99, career.getPlayerManager().getSessionPlayer("p1").getForm());
+    }
+
+    @Test
+    void formClampAtMax_from98_clampsTo99() {
+        // form=98 + delta+3 would be 101 → must clamp to 99 (was formClampedAtMax in original suite; here we re-state the assertion explicitly per B1 spec)
+        CareerSave career = careerWithPlayerInStartingXI("p1", 98);
+        V24DetailedMatchResult res = resultWithTimeline(goalEvent("p1", 30), goalEvent("p1", 60), goalEvent("p1", 75));
+        V24CareerMutationPolicy p = policy(true, false, false, false, true);
+        assertEquals(1, applier.applyForm(career, res, p));
+        assertEquals(99, career.getPlayerManager().getSessionPlayer("p1").getForm());
+    }
+
+    @Test
+    void formClampAtMin_alreadyAt1_staysAt1() {
+        // form=1 + delta-2 would be -1 → must clamp to 1
+        CareerSave career = careerWithPlayerInStartingXI("p1", 1);
+        V24DetailedMatchResult res = resultWithTimeline(
+                new V24MatchEvent(30, V24MatchEventType.RED_CARD, "team-A", "p1", "Player", null, null, 0.0, "Red")
+        );
+        V24CareerMutationPolicy p = policy(true, false, false, false, true);
+        assertEquals(1, applier.applyForm(career, res, p));
+        assertEquals(1, career.getPlayerManager().getSessionPlayer("p1").getForm());
+    }
+
+    @Test
+    void formClampAtMin_from2_clampsTo1() {
+        // form=2 + delta-2 would be 0 → must clamp to 1
+        CareerSave career = careerWithPlayerInStartingXI("p1", 2);
+        V24DetailedMatchResult res = resultWithTimeline(
+                new V24MatchEvent(30, V24MatchEventType.RED_CARD, "team-A", "p1", "Player", null, null, 0.0, "Red")
+        );
+        V24CareerMutationPolicy p = policy(true, false, false, false, true);
+        assertEquals(1, applier.applyForm(career, res, p));
+        assertEquals(1, career.getPlayerManager().getSessionPlayer("p1").getForm());
+    }
+
+    // ========== P1b B2: Form rating discretization boundaries ==========
+    // Direct unit tests of computeDelta() — package-private, accessible from same package.
+    // Tests the exact >= boundaries: 8.0/7.0/6.5/5.5/5.0. If someone changes a >= to >, tests detect it.
+
+    @Test
+    void computeDelta_ratingAt8_returnsPlus3() {
+        assertEquals(3, applier.computeDelta(8.0));
+    }
+
+    @Test
+    void computeDelta_justBelow8_returnsPlus2() {
+        // 7.9999 < 8.0 → falls to next bucket → +2
+        assertEquals(2, applier.computeDelta(7.9999));
+    }
+
+    @Test
+    void computeDelta_ratingAt7_returnsPlus2() {
+        assertEquals(2, applier.computeDelta(7.0));
+    }
+
+    @Test
+    void computeDelta_justBelow7_returnsPlus1() {
+        // 6.9999 < 7.0 → falls to next bucket → +1
+        assertEquals(1, applier.computeDelta(6.9999));
+    }
+
+    @Test
+    void computeDelta_ratingAt5_5_returnsZero() {
+        // 5.5 is exactly the >=5.5 threshold, which is the zero-delta bucket
+        assertEquals(0, applier.computeDelta(5.5));
+    }
+
+    @Test
+    void computeDelta_ratingAt5_returnsMinus1() {
+        // 5.0 is the >=5.0 boundary, -1 bucket
+        assertEquals(-1, applier.computeDelta(5.0));
+    }
 }

@@ -25,6 +25,16 @@ public final class V24LiveSnapshot {
     private final List<V24MatchEvent> allEvents;
     private final int homePossession;
     private final int awayPossession;
+    // LIVE-MATCH-F3-UI-LIVE BE1: live style + formation per team so the F3 UI
+    // can render them in real time. Values come from effectiveContext.homeStyle()
+    // (TeamStyle.name() = BALANCED/ATTACKING/DEFENSIVE/COUNTER/POSSESSION) and
+    // effectiveContext.homeFormation() (String like "4-4-2"). Nullable for the
+    // initial tick before the first style/formation is established — defaults
+    // to "BALANCED" / "4-4-2" so the UI never breaks.
+    private final String homeStyle;
+    private final String awayStyle;
+    private final String homeFormation;
+    private final String awayFormation;
 
     public V24LiveSnapshot(
             String matchId,
@@ -37,6 +47,39 @@ public final class V24LiveSnapshot {
             List<V24MatchEvent> allEvents,
             int homePossession,
             int awayPossession) {
+        this(matchId, minute, homeGoals, awayGoals, homeTeamId, awayTeamId,
+             finished, allEvents, homePossession, awayPossession,
+             "BALANCED", "BALANCED", "4-4-2", "4-4-2");
+    }
+
+    /**
+     * LIVE-MATCH-F3-UI-LIVE BE1: full constructor including live style and
+     * formation per team. The new fields default to "BALANCED" / "4-4-2" via
+     * the legacy constructor so existing callers (e.g. tests) keep working
+     * unchanged.
+     *
+     * @param homeStyle      effective style of the home team (TeamStyle.name()).
+     *                       Nullable — falls back to "BALANCED" if null/blank.
+     * @param awayStyle      effective style of the away team. Nullable.
+     * @param homeFormation  effective formation of the home team (e.g. "4-4-2").
+     *                       Nullable — falls back to "4-4-2" if null/blank.
+     * @param awayFormation  effective formation of the away team. Nullable.
+     */
+    public V24LiveSnapshot(
+            String matchId,
+            int minute,
+            int homeGoals,
+            int awayGoals,
+            String homeTeamId,
+            String awayTeamId,
+            boolean finished,
+            List<V24MatchEvent> allEvents,
+            int homePossession,
+            int awayPossession,
+            String homeStyle,
+            String awayStyle,
+            String homeFormation,
+            String awayFormation) {
         this.matchId = matchId;
         this.minute = minute;
         this.homeGoals = homeGoals;
@@ -47,6 +90,10 @@ public final class V24LiveSnapshot {
         this.allEvents = allEvents != null ? List.copyOf(allEvents) : List.of();
         this.homePossession = homePossession;
         this.awayPossession = awayPossession;
+        this.homeStyle = (homeStyle != null && !homeStyle.isBlank()) ? homeStyle : "BALANCED";
+        this.awayStyle = (awayStyle != null && !awayStyle.isBlank()) ? awayStyle : "BALANCED";
+        this.homeFormation = (homeFormation != null && !homeFormation.isBlank()) ? homeFormation : "4-4-2";
+        this.awayFormation = (awayFormation != null && !awayFormation.isBlank()) ? awayFormation : "4-4-2";
     }
 
     public String matchId() { return matchId; }
@@ -59,4 +106,8 @@ public final class V24LiveSnapshot {
     public List<V24MatchEvent> allEvents() { return allEvents; }
     public int homePossession() { return homePossession; }
     public int awayPossession() { return awayPossession; }
+    public String homeStyle() { return homeStyle; }
+    public String awayStyle() { return awayStyle; }
+    public String homeFormation() { return homeFormation; }
+    public String awayFormation() { return awayFormation; }
 }

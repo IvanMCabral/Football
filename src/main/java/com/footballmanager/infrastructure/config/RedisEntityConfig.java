@@ -67,6 +67,20 @@ public class RedisEntityConfig {
                 com.footballmanager.application.service.simulation.v24.V24DetailedMatchData.class);
     }
 
+    /**
+     * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): dedicated template for
+     * {@code BaselineState} snapshots. Separate from
+     * {@code v24DetailedMatchDataRedisTemplate} because the key namespace
+     * ({@code match-baseline:}) and TTL (7d) differ from the live-detail
+     * store.
+     */
+    @Bean
+    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.v24.BaselineState> v24MatchBaselineStateRedisTemplate(
+            ReactiveRedisConnectionFactory connectionFactory) {
+        return createTemplate(connectionFactory,
+                com.footballmanager.application.service.simulation.v24.BaselineState.class);
+    }
+
     private <T> ReactiveRedisTemplate<String, T> createTemplate(
             ReactiveRedisConnectionFactory connectionFactory, Class<T> entityClass) {
         StringRedisSerializer keySerializer = new StringRedisSerializer();

@@ -314,6 +314,8 @@ public class LeagueSimulator {
      * V24D5C: Persist V24DetailedMatchData snapshot to Redis via storage port.
      * V24D5F: Persist V24 detailed match data including per-player ratings.
      * Player ratings are derived from CareerSave starting XI + match timeline.
+     * V24D24-F1.2: also captures the home/away formations from the live
+     * SessionTeam so the UI can show what formation was active at match time.
      * Best-effort: failures are logged and do not fail the match/round.
      */
     private void persistV24Detail(CareerSave career, MatchFixture fixture,
@@ -328,12 +330,18 @@ public class LeagueSimulator {
             List<V24PlayerMatchRatingDto> playerRatings =
                     v24PlayerRatingsAssembler.assemblePlayerRatings(career, fixture, v24Result);
 
+            // V24D24-F1.2: capture formations from live SessionTeam
+            String homeFormation = resolveFormation(career, fixture.getHomeTeamId());
+            String awayFormation = resolveFormation(career, fixture.getAwayTeamId());
+
             V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
                     careerId,
                     seasonNumber,
                     round,
                     homeTeamName,
                     awayTeamName,
+                    homeFormation,
+                    awayFormation,
                     v24Result,
                     playerRatings
             );
@@ -970,12 +978,18 @@ public class LeagueSimulator {
             List<V24PlayerMatchRatingDto> playerRatings =
                     v24PlayerRatingsAssembler.assemblePlayerRatings(career, playerFixture, v24Result);
 
+            // V24D24-F1.2: capture formations from live SessionTeam
+            String homeFormation = resolveFormation(career, homeTeamId);
+            String awayFormation = resolveFormation(career, awayTeamId);
+
             V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
                     careerId,
                     seasonNumber,
                     round,
                     homeTeamName,
                     awayTeamName,
+                    homeFormation,
+                    awayFormation,
                     v24Result,
                     playerRatings
             );
@@ -1075,12 +1089,18 @@ public class LeagueSimulator {
             List<V24PlayerMatchRatingDto> playerRatings =
                     v24PlayerRatingsAssembler.assemblePlayerRatings(career, playerFixture, v24Result);
 
+            // V24D24-F1.2: capture formations from live SessionTeam
+            String homeFormation = resolveFormation(homeTeam);
+            String awayFormation = resolveFormation(awayTeam);
+
             V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
                     careerId,
                     seasonNumber,
                     round,
                     homeTeamName,
                     awayTeamName,
+                    homeFormation,
+                    awayFormation,
                     v24Result,
                     playerRatings
             );
@@ -1126,6 +1146,33 @@ public class LeagueSimulator {
                 homeGoals,
                 awayGoals
         );
+    }
+
+    // ========== V24D24-F1.2 helpers ==========
+
+    /**
+     * V24D24-F1.2: Resolve the formation string for a team by id, looking
+     * up the {@link SessionTeam} in the {@link CareerSave}. Returns null if
+     * the team is not present (caller's UI will show "—"). Defensive against
+     * null/blank ids to keep the persistence path best-effort.
+     */
+    private String resolveFormation(CareerSave career, String teamId) {
+        if (career == null || teamId == null || teamId.isBlank()) {
+            return null;
+        }
+        return resolveFormation(career.getSessionTeam(teamId));
+    }
+
+    /**
+     * V24D24-F1.2: Resolve the formation from a {@link SessionTeam} directly.
+     * Returns null if the team is null or the formation is null/blank.
+     */
+    private String resolveFormation(SessionTeam team) {
+        if (team == null) {
+            return null;
+        }
+        String formation = team.getFormation();
+        return (formation != null && !formation.isBlank()) ? formation : null;
     }
 
     // ========== OVR Calculation (Phase 10C1) ==========

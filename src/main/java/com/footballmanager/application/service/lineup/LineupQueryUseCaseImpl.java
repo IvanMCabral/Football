@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -10,13 +11,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Implementación de UseCase para consultas del lineup.
+ *
+ * <p>MVP1-lineup-cancha-1: si el {@code CareerSave.teamStarting11Subdivision}
+ * tiene slots persistidos para el team, los incluye en la respuesta.
+ * Si está vacío o ausente, retorna {@code slots=[]} (backward compat — el front
+ * infiere los slots del role del jugador).
  */
 @Service
 @RequiredArgsConstructor
@@ -47,7 +55,9 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             .filter(Objects::nonNull)
             .toList();
 
-        String formationCode = lineupHelper.inferFormation(lineup);
+        // MVP1-lineup-cancha-1.6: leer formación persistida con fallback a
+        // inferFormation para saves viejos que no tienen teamStarting11Formation.
+        String formationCode = readPersistedFormation(career, userTeamId, lineup);
 
         List<PlayerLineupDTO> playerDTOs = lineup.stream()
             .map(p -> new PlayerLineupDTO(
@@ -65,6 +75,43 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             ))
             .toList();
 
-        return new LineupDTO(formationCode, playerDTOs, true);
+        List<LineupSlotDTO> slots = buildSlotsFromSubdivisionMap(career, userTeamId);
+
+        return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots);
+    }
+
+    private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {
+        Map<String, Map<String, String>> allSlots = career.getTeamStarting11Subdivision();
+        if (allSlots == null) {
+            return List.of();
+        }
+        Map<String, String> teamSlots = allSlots.get(userTeamId);
+        if (teamSlots == null || teamSlots.isEmpty()) {
+            return List.of();
+        }
+
+        List<LineupSlotDTO> result = new ArrayList<>(teamSlots.size());
+        for (Map.Entry<String, String> entry : teamSlots.entrySet()) {
+            result.add(new LineupSlotDTO(entry.getValue(), entry.getKey()));
+        }
+        return result;
+    }
+
+    /**
+     * MVP1-lineup-cancha-1.6: lee la formación persistida para el team.
+     * Si el save es viejo (no tiene teamStarting11Formation, o el team no
+     * tiene entry) → fallback a {@code lineupHelper.inferFormation(lineup)}.
+     * Esto preserva el comportamiento de 1.5 y anteriores para saves previos
+     * sin requerir migración explícita.
+     */
+    private String readPersistedFormation(CareerSave career, String userTeamId, List<SessionPlayer> lineup) {
+        Map<String, String> formationMap = career.getTeamStarting11Formation();
+        String persisted = (formationMap != null) ? formationMap.get(userTeamId) : null;
+        if (persisted != null && !persisted.isBlank()) {
+            return persisted;
+        }
+        // Backward compat: careerSave sin teamStarting11Formation (saves viejos
+        // de sprints 1.5 o anteriores) → inferir del role distribution.
+        return lineupHelper.inferFormation(lineup);
     }
 }

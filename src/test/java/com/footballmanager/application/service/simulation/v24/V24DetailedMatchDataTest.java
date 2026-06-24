@@ -1,5 +1,8 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -23,8 +26,7 @@ class V24DetailedMatchDataTest {
                 55, 45,
                 List.of(), List.of(),
                 "Home win 2-1",
-                "V24", 1, Instant.now()
-        );
+                "V24", 1, Instant.now(), null, null);
 
         assertEquals("match-123", detail.matchId());
         assertEquals("career-abc", detail.careerId());
@@ -57,8 +59,7 @@ class V24DetailedMatchDataTest {
                 10, 5,
                 60, 40,
                 List.of(), List.of(),
-                "summary", null, 0, null
-        );
+                "summary", null, 0, null, null, null);
 
         assertEquals("V24", detail.engineVersion());
         assertEquals(0, detail.schemaVersion());
@@ -74,8 +75,7 @@ class V24DetailedMatchDataTest {
         var detail = new V24DetailedMatchData(
                 "m", "c", null, null, "h", "a", "H", "A",
                 0, 0, 0, 0, 0, 0, 0, 0,
-                original, List.of(), "", "V24", 1, Instant.now()
-        );
+                original, List.of(), "", "V24", 1, Instant.now(), null, null);
 
         // Original list modifications do not affect stored copy
         original.add(new V24MatchEventDto(20, "SHOT", "home", "p2", "P2", null, null, 0.1, "", null));
@@ -94,8 +94,7 @@ class V24DetailedMatchDataTest {
         var detail = new V24DetailedMatchData(
                 "m", "c", null, null, "h", "a", "H", "A",
                 0, 0, 0, 0, 0, 0, 0, 0,
-                List.of(), original, "", "V24", 1, Instant.now()
-        );
+                List.of(), original, "", "V24", 1, Instant.now(), null, null);
 
         // Original list modifications do not affect stored copy
         original.add(new V24PlayerMatchRatingDto("p2", "P2", "t", "DEF", 6.0, 0, 0, 0, 0, 0, 0, 0, 0, false, false));
@@ -233,5 +232,148 @@ class V24DetailedMatchDataTest {
 
         assertNotNull(detail.playerRatings());
         assertEquals(0, detail.playerRatings().size());
+    }
+
+    // ============== V24D24-F1.2: formation fields ==============
+
+    @Test
+    void fromResultConFormationNull_delegatingOverload_devuelveFormationNull() {
+        // V24D24-F1.2: the back-compat overload (no formation params) must
+        // still work for the 31 existing call sites, and formation must be null.
+        var result = V24DetailedMatchResult.builder()
+                .matchId("match-FN")
+                .homeTeamId("h").awayTeamId("a")
+                .build();
+
+        var detail = V24DetailedMatchData.fromResult(
+                "career-FN", 1, 1, "Home", "Away", result, List.of()
+        );
+
+        assertNull(detail.homeFormation());
+        assertNull(detail.awayFormation());
+    }
+
+    @Test
+    void fromResultConFormationNew_overload_propagatesFormations() {
+        // V24D24-F1.2: the new overload that accepts formation strings must
+        // propagate them to the constructed DTO.
+        var result = V24DetailedMatchResult.builder()
+                .matchId("match-FP")
+                .homeTeamId("h").awayTeamId("a")
+                .build();
+
+        var detail = V24DetailedMatchData.fromResult(
+                "career-FP", 1, 1, "Home", "Away",
+                "4-3-3", "4-4-2",
+                result, List.of()
+        );
+
+        assertEquals("4-3-3", detail.homeFormation());
+        assertEquals("4-4-2", detail.awayFormation());
+    }
+
+    @Test
+    void constructorTreatsBlankFormationAsNull() {
+        // V24D24-F1.2: a blank string in the formation field is normalized
+        // to null so the UI renders "—" instead of an empty cell.
+        var detail = new V24DetailedMatchData(
+                "m", "c", 1, 1, "h", "a", "H", "A",
+                0, 0, 0.0, 0.0, 0, 0, 50, 50,
+                List.of(), List.of(), "", "V24", 1, Instant.now(),
+                "  ", null);
+
+        assertNull(detail.homeFormation());
+        assertNull(detail.awayFormation());
+    }
+
+    @Test
+    void equalsAndHashCode_includeFormation() {
+        var result = V24DetailedMatchResult.builder()
+                .matchId("match-EQ")
+                .homeTeamId("h").awayTeamId("a")
+                .build();
+
+        var baseWithNull = V24DetailedMatchData.fromResult(
+                "career-EQ", 1, 1, "H", "A", null, null, result, List.of());
+        var baseWith433 = V24DetailedMatchData.fromResult(
+                "career-EQ", 1, 1, "H", "A", "4-3-3", "4-4-2", result, List.of());
+        var sameAs433 = V24DetailedMatchData.fromResult(
+                "career-EQ", 1, 1, "H", "A", "4-3-3", "4-4-2", result, List.of());
+        var differentFormation = V24DetailedMatchData.fromResult(
+                "career-EQ", 1, 1, "H", "A", "3-5-2", "4-4-2", result, List.of());
+
+        // Same formation → equal
+        assertEquals(baseWith433, sameAs433);
+        assertEquals(baseWith433.hashCode(), sameAs433.hashCode());
+
+        // Null vs populated → NOT equal
+        assertNotEquals(baseWithNull, baseWith433);
+
+        // Different formation → NOT equal
+        assertNotEquals(baseWith433, differentFormation);
+    }
+
+    @Test
+    void jacksonDeserialization_handlesNullFormation() throws Exception {
+        // V24D24-F1.2: JSON from partidos viejos (Redis pre-F1.2) has no
+        // homeFormation/awayFormation fields. Jackson must deserialize with
+        // null and the UI must show "—".
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        String jsonOld = """
+                {
+                  "matchId": "m-1",
+                  "careerId": "c-1",
+                  "seasonNumber": 1,
+                  "round": 5,
+                  "homeTeamId": "h",
+                  "awayTeamId": "a",
+                  "homeTeamName": "H",
+                  "awayTeamName": "A",
+                  "homeGoals": 1,
+                  "awayGoals": 0,
+                  "homeXg": 0.5,
+                  "awayXg": 0.3,
+                  "homeShots": 5,
+                  "awayShots": 3,
+                  "homePossession": 55,
+                  "awayPossession": 45,
+                  "timeline": [],
+                  "playerRatings": [],
+                  "summary": "old",
+                  "engineVersion": "V24",
+                  "schemaVersion": 1,
+                  "createdAt": "2026-06-20T10:00:00Z"
+                }
+                """;
+
+        V24DetailedMatchData detail = mapper.readValue(jsonOld, V24DetailedMatchData.class);
+        assertNull(detail.homeFormation(), "old JSON without homeFormation must deserialize to null");
+        assertNull(detail.awayFormation(), "old JSON without awayFormation must deserialize to null");
+    }
+
+    @Test
+    void jacksonRoundtrip_preservesFormation() throws Exception {
+        // V24D24-F1.2: new detail with formations must roundtrip through Jackson
+        // without losing the values.
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        var detail = new V24DetailedMatchData(
+                "m-rt", "c-rt", 1, 1, "h", "a", "H", "A",
+                1, 0, 0.5, 0.3, 5, 3, 55, 45,
+                List.of(), List.of(), "rt", "V24", 1, Instant.parse("2026-06-20T10:00:00Z"),
+                "4-3-3", "4-4-2"
+        );
+
+        String json = mapper.writeValueAsString(detail);
+        V24DetailedMatchData deserialized = mapper.readValue(json, V24DetailedMatchData.class);
+
+        assertEquals("4-3-3", deserialized.homeFormation());
+        assertEquals("4-4-2", deserialized.awayFormation());
+        assertEquals(detail, deserialized);
     }
 }

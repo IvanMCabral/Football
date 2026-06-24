@@ -342,4 +342,179 @@ class V24SubstitutionEngineTest {
         };
     }
 
+    // ========== LIVE-MATCH-F1-POC: manualSubstitute tests ==========
+
+    @Test
+    void manualSubstitute_validPair_returnsEventAndMutatesState() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState subOff = team.startingPlayers().get(0);
+        V24PlayerMatchState subOn = team.benchPlayers().get(0); // GK, same position as subOff[0]
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        V24MatchEvent event = engine.manualSubstitute(
+            team, subOff.sessionPlayerId(), subOn.sessionPlayerId(), 70);
+
+        assertNotNull(event);
+        assertEquals(V24MatchEventType.SUBSTITUTION, event.type());
+        assertEquals(subOff.sessionPlayerId(), event.playerId());
+        assertEquals(subOn.sessionPlayerId(), event.relatedPlayerId());
+        assertEquals(70, event.minute());
+        // Player state mutated
+        assertFalse(subOff.onPitch(), "Substituted-off player should be off pitch");
+        assertTrue(subOn.onPitch(), "Substituted-on player should be on pitch");
+        // Counter incremented
+        assertEquals(1, engine.substitutionsUsed("team-1"));
+        assertEquals(MAX_SUBS - 1, engine.substitutionsRemaining("team-1"));
     }
+
+    @Test
+    void manualSubstitute_offPlayerInjured_throwsIllegalState() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState injured = team.startingPlayers().get(0);
+        injured.injure();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        assertThrows(IllegalStateException.class,
+            () -> engine.manualSubstitute(team, injured.sessionPlayerId(),
+                team.benchPlayers().get(0).sessionPlayerId(), 70));
+    }
+
+    @Test
+    void manualSubstitute_offPlayerAlreadySubstitutedOff_throwsIllegalState() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState subOff = team.startingPlayers().get(0);
+        V24PlayerMatchState subOn = team.benchPlayers().get(0);
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        // First substitution succeeds
+        engine.manualSubstitute(team, subOff.sessionPlayerId(), subOn.sessionPlayerId(), 70);
+        // Second attempt with the same off player should fail
+        assertThrows(IllegalStateException.class,
+            () -> engine.manualSubstitute(team, subOff.sessionPlayerId(),
+                team.benchPlayers().get(1).sessionPlayerId(), 75));
+    }
+
+    @Test
+    void manualSubstitute_maxSubsReached_throwsIllegalState() {
+        V24TeamMatchState team = makeTeam();
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(2); // tighter limit
+
+        // First substitution
+        engine.manualSubstitute(team,
+            team.startingPlayers().get(0).sessionPlayerId(),
+            team.benchPlayers().get(0).sessionPlayerId(), 30);
+
+        // Second substitution (different players)
+        engine.manualSubstitute(team,
+            team.startingPlayers().get(1).sessionPlayerId(),
+            team.benchPlayers().get(1).sessionPlayerId(), 50);
+
+        // Third attempt should fail (max 2 reached)
+        assertThrows(IllegalStateException.class,
+            () -> engine.manualSubstitute(team,
+                team.startingPlayers().get(2).sessionPlayerId(),
+                team.benchPlayers().get(2).sessionPlayerId(), 70));
+    }
+
+    @Test
+    void manualSubstitute_nullOrBlankIds_throwsIllegalArgument() {
+        V24TeamMatchState team = makeTeam();
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, null, "bench-0", 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "", "bench-0", 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", null, 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", "  ", 70));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", "bench-0", 0));
+        assertThrows(IllegalArgumentException.class,
+            () -> engine.manualSubstitute(team, "starter-0", "bench-0", 131));
+    }
+
+    @Test
+    void isSubstitutedOffPublic_returnsCorrectValue() {
+        V24TeamMatchState team = makeTeam();
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        // SessionPlayer.custom generates a random sessionPlayerId, so we
+        // capture the actual id of starter-0 rather than hardcoding the name.
+        String starterId = team.startingPlayers().get(0).sessionPlayerId();
+
+        // Initially false
+        assertFalse(engine.isSubstitutedOffPublic(starterId));
+        // After substitution, true
+        engine.manualSubstitute(team,
+            starterId,
+            team.benchPlayers().get(0).sessionPlayerId(), 70);
+        assertTrue(engine.isSubstitutedOffPublic(starterId));
+    }
+
+    // ========== LIVE-MATCH-F2-LIVE F5 (B7): formation-respecting substitution ==========
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B7): the B6 bug colateral fix. When the
+     * formation has been tactically changed mid-match to a layout that
+     * does NOT have a slot for the OFF player's position, the engine
+     * must skip the substitution (not produce a SUBSTITUTION event that
+     * would reference a non-existent slot).
+     *
+     * <p>Scenario: start with a 4-3-3 team (has GK + 4 DEF + 3 MID + 2 WINGER + 1 ATT).
+     * Tactically change formation to 3-5-2 (GK + 3 DEF + 5 MID + 2 ATT — no WINGER slot).
+     * A WINGER becomes "very tired" → attemptSubstitution should NOT produce
+     * a substitution event because 3-5-2 has no WINGER slot to fill.
+     */
+    @Test
+    void attemptSubstitution_respectsCurrentFormation_skipsWhenNoSlot() {
+        V24TeamMatchState team = makeTeam(); // starts at 4-3-3
+
+        // Mid-match tactical change: switch to 3-5-2 (no WINGER slot).
+        team.setFormation("3-5-2");
+
+        // Make a WINGER very tired so they become a substitution candidate.
+        V24PlayerMatchState winger = team.startingPlayers().stream()
+            .filter(p -> "WINGER".equals(p.position()))
+            .findFirst()
+            .orElseThrow();
+        winger.drainStamina(100); // stamina = 0 → very tired
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        // Bug colateral fix: with no WINGER slot in 3-5-2, the engine must skip.
+        assertTrue(event.isEmpty(),
+            "Substitution must be skipped when current formation has no slot for the OFF position");
+        // Sub counter is NOT incremented (no actual sub happened).
+        assertEquals(0, engine.substitutionsUsed(team.teamId()),
+            "Substitution counter must not increment on a no-op skip");
+    }
+
+    /**
+     * LIVE-MATCH-F2-LIVE F5 (B7): positive path. After tactically changing
+     * to a formation that DOES have a slot for the OFF player's position,
+     * the substitution proceeds normally.
+     */
+    @Test
+    void attemptSubstitution_respectsCurrentFormation_proceedsWhenSlotExists() {
+        V24TeamMatchState team = makeTeam(); // starts at 4-3-3
+
+        // Mid-match tactical change: stay in 4-3-3 (or any DEF-supporting layout).
+        // Make a DEF very tired — 4-3-3 has 4 DEF slots, so the substitution should proceed.
+        team.setFormation("4-3-3");
+
+        V24PlayerMatchState def = team.startingPlayers().stream()
+            .filter(p -> "DEF".equals(p.position()))
+            .findFirst()
+            .orElseThrow();
+        def.drainStamina(100); // very tired
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        // Sanity: 4-3-3 has DEF slots, so the substitution should fire.
+        assertTrue(event.isPresent(),
+            "Substitution must proceed when current formation has a slot for the OFF position");
+    }
+}

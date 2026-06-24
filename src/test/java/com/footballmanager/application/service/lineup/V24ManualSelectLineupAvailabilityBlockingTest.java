@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -49,7 +50,7 @@ class V24ManualSelectLineupAvailabilityBlockingTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new LineupCommandUseCaseImpl(careerRepository, new LineupHelper());
+        useCase = new LineupCommandUseCaseImpl(careerRepository, new LineupHelper(), new FormationService());
     }
 
     @Test

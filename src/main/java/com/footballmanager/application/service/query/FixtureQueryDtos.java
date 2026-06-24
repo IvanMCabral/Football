@@ -22,7 +22,14 @@ public final class FixtureQueryDtos {
             Integer awayGoals,
             Double homeXG,
             Double awayXG,
-            Double totalXG
+            Double totalXG,
+            String roundId,
+            // V24D24.6: formation snapshot for each team (read from
+            // career.teamStarting11Formation which is the V24 engine's
+            // source of truth). Nullable: a team may not have a formation
+            // recorded yet (e.g. brand-new career, BYE team).
+            String homeFormation,
+            String awayFormation
     ) {}
 
     public record RoundInfo(
@@ -83,7 +90,8 @@ public final class FixtureQueryDtos {
             Integer awayGoals,
             Double homeXG,
             Double awayXG,
-            Double totalXG
+            Double totalXG,
+            String roundId
     ) {}
 
     public record LeagueDivisionFixtures(
@@ -92,5 +100,22 @@ public final class FixtureQueryDtos {
             Boolean isUserDivision,
             List<LeagueMatchInfo> fixtures,
             Boolean hasBye
+    ) {}
+
+    // UX-6: BYE indicator DTOs
+    public record RoundFixturesWithBye(
+            Integer round,
+            List<MatchInfo> matches,
+            String byeTeam
+    ) {}
+
+    public record AllRoundsWithBye(
+            List<RoundFixturesWithBye> rounds,
+            // V24D24.6: the user's team id, hydrated from
+            // career.getUserSessionTeamId(). The frontend uses this to
+            // highlight the user-controllable team in the test-harness
+            // Panel B (formations snapshot). Nullable: a fresh career
+            // may not have a user team assigned yet.
+            String userSessionTeamId
     ) {}
 }

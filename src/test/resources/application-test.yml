@@ -1,0 +1,81 @@
+# V24D7 — Test profile (P0 HTTP/E2E tests setup)
+# Activated with: @ActiveProfiles("test")
+#
+# This profile is ISOLATED from the running dev backend:
+#   - DB: football_manager_test (separate database, same Postgres instance)
+#   - Redis: database 15 (the dev backend uses database 0)
+#   - Flyway: DISABLED (the test DB is pre-initialized from a dump of football_manager)
+#   - Server: RANDOM_PORT (assigned by Spring TestContext, never clashes with :8080)
+#
+# DO NOT use this profile for the running dev backend.
+# DO NOT modify application.yaml / application-local.yml / application-v24-mutations.yml
+# to support this profile — keep test concerns in this file only.
+
+spring:
+  # Reuse the dev DB credentials, point at the TEST database
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
+    username: ${DB_USER:postgres}
+    # Default intentionally empty: tests must run with DB_PASSWORD set
+    # explicitly (see run-game-controller-tests.ps1). Hardcoding 'postgres'
+    # here silently breaks the smoke whenever the test DB is rotated.
+    password: ${DB_PASSWORD:}
+    pool:
+      initial-size: 2
+      max-size: 5
+      max-idle-time: 5m
+      validation-query: SELECT 1
+
+  # Flyway is disabled in tests: the football_manager_test DB is pre-initialized
+  # from a pg_dump of the dev DB. The dump lives at
+  #   ciberfootbolt_local/tests/db_test_dump.sql
+  # (regenerate with: pg_dump -U postgres -h localhost -d football_manager --no-owner ... > db_test_dump.sql)
+  flyway:
+    enabled: false
+
+  # Use Redis database 15 so the dev backend (DB 0) and tests don't collide.
+  # The ReactiveRedisConnectionFactory is auto-configured from these properties.
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 15
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 5
+          max-idle: 3
+          min-idle: 1
+          max-wait: -1ms
+        shutdown-timeout: 100ms
+
+  # Test-side JPA / SQL init: leave alone
+  jpa:
+    defer-datasource-initialization: false
+
+# Use the same V24 engine as dev (read-only) so behaviour matches
+app:
+  simulation:
+    league:
+      use-v23-engine: false
+      use-v24-detailed-engine: true
+    v24:
+      mutate-career-state: false
+      persist-injuries: false
+      persist-fatigue: false
+      persist-discipline: false
+      persist-form: false
+      persist-detail: true
+      expose-detail-api: true
+
+# Quieter logging during tests — keep R2DBC/Redis noise low
+logging:
+  level:
+    root: WARN
+    com.footballmanager: INFO
+    org.springframework.r2dbc: WARN
+    org.springframework.data.r2dbc: WARN
+    org.springframework.data.redis: WARN
+    io.r2dbc.postgresql: WARN
+    org.flywaydb: ERROR

@@ -133,6 +133,8 @@ public final class LiveMatchEventToV24Converter {
             case CORNER -> V24MatchEventType.CORNER;
             case OFFSIDE -> V24MatchEventType.OFFSIDE;
             case SUBSTITUTION -> V24MatchEventType.SUBSTITUTION;
+            // LIVE-MATCH-F2-LIVE F5: 1:1 mapping for tactical-change events.
+            case TACTICAL_CHANGE -> V24MatchEventType.TACTICAL_CHANGE;
             case CARD -> {
                 String desc = liveEvent.getDescription() != null ? liveEvent.getDescription().toLowerCase() : "";
                 if (desc.contains("red") || desc.contains("roja")) {

@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import org.springframework.beans.factory.annotation.Value;
 import java.time.Duration;
 
 /**
@@ -29,12 +30,24 @@ public class RedisConfig {
     private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration SHUTDOWN_TIMEOUT = Duration.ofSeconds(5);
 
+    @Value("${spring.data.redis.host:localhost}")
+    private String redisHost;
+
+    @Value("${spring.data.redis.port:6379}")
+    private int redisPort;
+
+    @Value("${spring.data.redis.password:}")
+    private String redisPassword;
+
     @Bean
     @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName("localhost");
-        redisConfig.setPort(6379);
+        redisConfig.setHostName(redisHost);
+        redisConfig.setPort(redisPort);
+        if (redisPassword != null && !redisPassword.isBlank()) {
+            redisConfig.setPassword(redisPassword);
+        }
 
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
             .commandTimeout(COMMAND_TIMEOUT)

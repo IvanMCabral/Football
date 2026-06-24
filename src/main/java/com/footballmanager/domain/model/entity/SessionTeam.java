@@ -2,6 +2,7 @@ package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.footballmanager.application.service.domain.TeamStyle;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -24,6 +25,12 @@ public class SessionTeam {
     private String country;
     private BigDecimal budget;
     private String formation;
+
+    // V25D28: tactical style for match simulation. Persisted on the SessionTeam
+    // so the V24 engine can read it via V24MatchContextFactory.build() when the
+    // caller does not pass an explicit style (test-harness replay path).
+    private TeamStyle style;
+
     @JsonAlias("coachName")
     private String managerName;
 
@@ -147,6 +154,7 @@ public class SessionTeam {
     public String getCountry() { return country; }
     public BigDecimal getBudget() { return budget; }
     public String getFormation() { return formation; }
+    public TeamStyle getStyle() { return (style != null) ? style : TeamStyle.BALANCED; }
     public String getManagerName() { return managerName; }
     public String getCoachName() { return managerName; }
     public Integer getMorale() { return morale; }
@@ -164,6 +172,7 @@ public class SessionTeam {
     public void setCountry(String country) { this.country = country; }
     public void setBudget(BigDecimal budget) { this.budget = budget; }
     public void setFormation(String formation) { this.formation = formation; }
+    public void setStyle(TeamStyle style) { this.style = style; }
     public void setManagerName(String name) { this.managerName = name; }
     public void setMorale(Integer morale) { this.morale = morale; }
     public void setReputation(Integer reputation) { this.reputation = reputation; }

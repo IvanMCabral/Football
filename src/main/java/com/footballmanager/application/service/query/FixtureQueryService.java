@@ -35,4 +35,13 @@ public class FixtureQueryService {
     public Mono<List<LeagueDivisionFixtures>> getLeagueFixtures(CareerSave career, Integer round) {
         return leagueService.getLeagueFixtures(career, round);
     }
+
+    // UX-6: BYE indicator
+    public Mono<RoundFixturesWithBye> getUserDivisionFixturesByRoundWithBye(CareerSave career, int round) {
+        return userDivisionService.getRoundWithBye(career, round);
+    }
+
+    public Mono<AllRoundsWithBye> getAllUserDivisionFixturesWithBye(CareerSave career) {
+        return userDivisionService.getAllRoundsWithBye(career);
+    }
 }

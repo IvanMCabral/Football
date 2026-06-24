@@ -76,10 +76,19 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("detail.matchId must not be blank");
         }
         String key = buildKey(careerId, matchId);
+        // V24D20-SANDBOX-V2-MVP BUG #3: trace the careerId+matchId at save
+        // time so we can diff against findByMatchId if A3 (3rd match) ever
+        // returns 404. The hypothesis is that A3 is persisted with a
+        // different careerId or matchId than what the frontend uses.
+        log.info("[V24-DETAIL-PERSIST] save key={}, careerId={}, matchId={}, "
+                + "homeGoals={}, awayGoals={}",
+            key, careerId, matchId, detail.homeGoals(), detail.awayGoals());
         try {
             CompletableFuture.runAsync(() ->
                     redisTemplate.opsForValue().set(key, detail).block(), executor)
                     .get(5, TimeUnit.SECONDS);
+            log.info("[V24-DETAIL-PERSIST-SUCCESS] key={}, careerId={}, matchId={}",
+                key, careerId, matchId);
         } catch (Exception e) {
             // Redis unavailable — log and continue rather than crashing the round
             log.error("[V24-REDIS] Failed to save match detail key={}, careerId={}, matchId={}: {}",
@@ -97,12 +106,20 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("matchId must not be blank");
         }
         String key = buildKey(careerId, matchId);
+        // V24D20-SANDBOX-V2-MVP BUG #3: trace the lookup so we can diff
+        // against save and detect key mismatches that cause 404s.
+        log.info("[V24-DETAIL-QUERY] findByMatchId key={}, careerId={}, matchId={}",
+            key, careerId, matchId);
         try {
             V24DetailedMatchData data = CompletableFuture.supplyAsync(() ->
                     redisTemplate.opsForValue().get(key).block(), executor)
                     .get(5, TimeUnit.SECONDS);
+            log.info("[V24-DETAIL-QUERY-RESULT] key={}, found={}",
+                key, data != null);
             return Optional.ofNullable(data);
         } catch (Exception e) {
+            log.warn("[V24-DETAIL-QUERY-FAILED] key={}, careerId={}, matchId={}, error={}",
+                key, careerId, matchId, e.getMessage());
             return Optional.empty();
         }
     }
@@ -196,6 +213,33 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
                     .get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             // ignore
+        }
+    }
+
+    /**
+     * V24D20-SANDBOX-V2-MVP: Delete a single match detail by (careerId, matchId).
+     * Used by the test-harness replay endpoint to clear the stale V24
+     * detail. Best-effort: errors are logged, not thrown.
+     */
+    @Override
+    public void deleteByMatchId(String careerId, String matchId) {
+        if (careerId == null || careerId.isBlank()) {
+            throw new IllegalArgumentException("careerId must not be blank");
+        }
+        if (matchId == null || matchId.isBlank()) {
+            throw new IllegalArgumentException("matchId must not be blank");
+        }
+        String key = buildKey(careerId, matchId);
+        try {
+            CompletableFuture.runAsync(() ->
+                    redisTemplate.delete(key).block(), executor)
+                    .get(5, TimeUnit.SECONDS);
+            log.info("[V24-DETAIL-DELETE] key={}, careerId={}, matchId={}",
+                key, careerId, matchId);
+        } catch (Exception e) {
+            // Best-effort — log and continue
+            log.warn("[V24-REDIS] Failed to delete match detail key={}, careerId={}, matchId={}: {}",
+                key, careerId, matchId, e.getMessage());
         }
     }
 }

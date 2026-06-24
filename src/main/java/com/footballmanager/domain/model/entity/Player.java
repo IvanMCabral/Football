@@ -122,6 +122,21 @@ public class Player {
         this.updatedAt = Instant.now();
     }
 
+    /**
+     * V24D8-BUG-002 Capa 3: retorna una nueva instancia de Player con el nombre actualizado,
+     * preservando el resto del estado (id, age, position, attributes, energy, injury, createdAt).
+     * El Player original queda intacto (inmutabilidad). Para persistir el rename, usar
+     * {@code playerRepository.save(userId, this.rename(newName))}.
+     */
+    public Player rename(String newName) {
+        return Player.reconstruct(
+                this.id, newName, this.age, this.position,
+                this.attributes, this.marketValue,
+                this.energy, this.injuryState, this.injured,
+                this.createdAt, Instant.now()
+        );
+    }
+
     public PlayerId getId() { return id; }
     public String getName() { return name; }
     public int getAge() { return age; }

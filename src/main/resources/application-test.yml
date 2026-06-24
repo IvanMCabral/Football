@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+# V24D20-TESTHARNESS — seed determinístico del Random para tests E2E
+# reproducibles. Antes estaba hardcoded a 42L en SimulationConfig; ahora
+# se lee de property. Default 42L acá preserva el comportamiento de los
+# tests existentes (V24LiveSession, V24MatchEngine) que asumen seed 42.
+app:
+  simulation:
+    random-seed: 42

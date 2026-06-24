@@ -1,10 +1,14 @@
 package com.footballmanager.application.service.world;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.model.entity.Player;
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.domain.ports.out.player.PlayerRepository;
+import org.springframework.r2dbc.core.DatabaseClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -17,7 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * V24D6U5: LaLigaSeedService — Puebla el WorldSnapshot de un usuario con La Liga 2024/25 real.
@@ -42,6 +49,9 @@ public class LaLigaSeedService {
 
     private final WorldSnapshotService snapshotService;
     private final ObjectMapper objectMapper;
+    private final RedisWorldRepository worldRepository;
+    private final PlayerRepository playerRepository;
+    private final DatabaseClient databaseClient;
 
     /**
      * Ejecuta el seed para el usuario indicado. Crea/actualiza la league, los 20 equipos
@@ -74,8 +84,17 @@ public class LaLigaSeedService {
         // UPSERT players: agrupar por team-name para asignar worldTeamId
         List<WorldPlayer> createdOrUpdated = ensurePlayers(snapshot, seed, teamsByName);
 
-        // Persistir snapshot
+        // Capa 3: persiste nombres reales y team_squad en PostgreSQL para que BuildWorldViewUseCase
+        // encuentre los jugadores reales (no placeholders) cuando reconstruya el WorldView después del seed
+        persistPlayerNamesInPostgres(userId, createdOrUpdated);
+
+        // Capa 2: forzar regeneración del WorldSnapshot borrando el snapshot viejo de Redis
+        // después del save. Así, un próximo getOrCreateSnapshot reconstruirá desde el state real.
         return snapshotService.saveSnapshot(snapshot)
+                .flatMap(saved -> worldRepository.deleteByUserId(userId)
+                        .doOnNext(deleted -> log.info("[LA-LIGA-SEED] snapshot invalidated for rebuild, userId={}, deleted={}", userId, deleted))
+                        .thenReturn(saved))
+                .doOnSuccess(s -> log.info("[LA-LIGA-SEED] snapshot regenerated for userId={}", userId))
                 .map(saved -> {
                     long durationMs = System.currentTimeMillis() - start;
                     int teamsCount = teamsByName.size();
@@ -84,6 +103,116 @@ public class LaLigaSeedService {
                             userId, teamsCount, playersCount, durationMs);
                     return new SeedResult(seed.league().name(), teamsCount, playersCount, durationMs);
                 });
+    }
+
+    /**
+     * V24D8-BUG-004 fix: para cada WorldPlayer con realPlayerId (origin REAL),
+     * persiste la Player entity completa en PostgreSQL. Esto asegura que cuando
+     * BuildWorldViewUseCase rebuild el snapshot desde Postgres (después de que
+     * el seed borra el snapshot de Redis), los players tienen los nombres reales
+     * y no placeholders.
+     *
+     * <p>Ejecuta BLOCKING para garantizar que Postgres tenga los datos ANTES de que
+     * career/start intente rebuild el WorldView desde la base.
+     */
+    private void persistPlayerNamesInPostgres(UUID userId, List<WorldPlayer> players) {
+        // Clean up old team_squad entries for La Liga teams so only seeded players are returned
+        // team_squad is global (no userId) and was populated with placeholder players
+        Set<UUID> laLigaTeamIds = players.stream()
+                .filter(wp -> wp.getWorldTeamId() != null)
+                .map(wp -> {
+                    try { return UUID.fromString(wp.getWorldTeamId()); } catch (Exception e) { return null; }
+                })
+                .filter(Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        if (!laLigaTeamIds.isEmpty()) {
+            try {
+                databaseClient.sql("DELETE FROM team_squad WHERE team_id = ANY(:teamIds)")
+                        .bind("teamIds", laLigaTeamIds.toArray(UUID[]::new))
+                        .fetch().rowsUpdated().block();
+                log.info("[LA-LIGA-SEED] cleaned team_squad for {} teams", laLigaTeamIds.size());
+            } catch (Exception e) {
+                log.warn("[LA-LIGA-SEED] failed to clean team_squad: {}", e.getMessage());
+            }
+        }
+        int skipped = 0, inserted = 0, squadEntries = 0, errors = 0;
+        java.time.Instant now = java.time.Instant.now();
+        for (WorldPlayer wp : players) {
+            if (wp.getRealPlayerId() == null) {
+                skipped++;
+                continue;
+            }
+            UUID realPlayerId = wp.getRealPlayerId();
+            String newName = wp.getName();
+            try {
+                String posName = mapPosition(wp.getPosition()).name();
+                int att = wp.getBaseAttack() != null ? wp.getBaseAttack() : 50;
+                int def = wp.getBaseDefense() != null ? wp.getBaseDefense() : 50;
+                int tech = wp.getBaseTechnique() != null ? wp.getBaseTechnique() : 50;
+                int spd = wp.getBaseSpeed() != null ? wp.getBaseSpeed() : 50;
+                int sta = wp.getBaseStamina() != null ? wp.getBaseStamina() : 50;
+                int men = wp.getBaseMentality() != null ? wp.getBaseMentality() : 50;
+                int age = wp.getAge() != null ? wp.getAge() : 25;
+                java.math.BigDecimal mv = wp.getBaseMarketValue() != null
+                        ? wp.getBaseMarketValue()
+                        : java.math.BigDecimal.valueOf(5_000_000L);
+
+                databaseClient.sql("""
+                    INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at)
+                    VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :mv, :energy, :injured, :createdAt, :updatedAt)
+                    ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+                    """)
+                    .bind("id", realPlayerId)
+                    .bind("name", newName)
+                    .bind("age", age)
+                    .bind("position", posName)
+                    .bind("attack", att)
+                    .bind("defense", def)
+                    .bind("technique", tech)
+                    .bind("speed", spd)
+                    .bind("stamina", sta)
+                    .bind("mentality", men)
+                    .bind("mv", mv)
+                    .bind("energy", 100)
+                    .bind("injured", false)
+                    .bind("createdAt", now)
+                    .bind("updatedAt", now)
+                    .fetch()
+                    .rowsUpdated()
+                    .block();
+
+                // Also insert team_squad entry so TeamPlayerLoader finds these players by teamId
+                if (wp.getWorldTeamId() != null) {
+                    try {
+                        UUID worldTeamId = UUID.fromString(wp.getWorldTeamId());
+                        databaseClient.sql("""
+                            INSERT INTO team_squad (team_id, player_id)
+                            VALUES (:teamId, :playerId)
+                            ON CONFLICT DO NOTHING
+                            """)
+                            .bind("teamId", worldTeamId)
+                            .bind("playerId", realPlayerId)
+                            .fetch()
+                            .rowsUpdated()
+                            .block();
+                        squadEntries++;
+                    } catch (Exception sqle) {
+                        // ignore squad insert errors
+                    }
+                }
+
+                inserted++;
+            } catch (Exception e) {
+                String msg = e.getMessage() != null ? e.getMessage() : "";
+                if (!msg.contains("players_pkey") && !msg.contains("duplicate key")) {
+                    errors++;
+                    if (errors <= 3) {
+                        log.warn("[LA-LIGA-SEED] INSERT non-pk error: id={}, name={}, error={}", realPlayerId, newName, msg);
+                    }
+                }
+            }
+        }
+        log.info("[LA-LIGA-SEED] postgres persist: total={}, inserted={}, squadEntries={}, skipped={}, errors={}", players.size(), inserted, squadEntries, skipped, errors);
     }
 
     // ========== League ==========
@@ -232,6 +361,7 @@ public class LaLigaSeedService {
     }
 
     private void updatePlayerFromDto(WorldPlayer p, LaLigaSeedData.PlayerDto dto, WorldTeam team) {
+        p.setName(dto.name());
         p.setWorldTeamId(team.getWorldTeamId());
         p.setAge(dto.age());
         p.setPosition(dto.position());
@@ -262,6 +392,37 @@ public class LaLigaSeedService {
 
     private static int safe(Integer v) {
         return v == null ? 50 : v;
+    }
+
+    /**
+     * Mapea posición del JSON seed a Player.Position enum.
+     * El JSON puede tener variantes (MID, ATT, WINGER) que no existen en el enum.
+     */
+    private static Player.Position mapPosition(String pos) {
+        if (pos == null) return Player.Position.CM;
+        return switch (pos.toUpperCase()) {
+            case "GK" -> Player.Position.GK;
+            case "LB" -> Player.Position.LB;
+            case "CB" -> Player.Position.CB;
+            case "RB" -> Player.Position.RB;
+            case "LWB" -> Player.Position.LWB;
+            case "RWB" -> Player.Position.RWB;
+            case "CDM", "MID" -> Player.Position.CDM;
+            case "CM" -> Player.Position.CM;
+            case "CAM" -> Player.Position.CAM;
+            case "LM" -> Player.Position.LM;
+            case "RM" -> Player.Position.RM;
+            case "LW", "RW", "WINGER" -> Player.Position.LW;
+            case "CF", "ATT" -> Player.Position.CF;
+            case "ST" -> Player.Position.ST;
+            default -> {
+                try {
+                    yield Player.Position.valueOf(pos.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    yield Player.Position.CM;
+                }
+            }
+        };
     }
 
     /**
