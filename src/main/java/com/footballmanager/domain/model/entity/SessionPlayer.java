@@ -1,8 +1,12 @@
 package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -45,6 +49,16 @@ public class SessionPlayer {
 
     // Origin
     private SessionPlayerOrigin origin;
+
+    // V25D31 - Physical + skill metadata
+    private Integer heightCm;
+    private Map<PlayerSkill, Integer> skillLevels;
+
+    // V25D31 - Bounds for skills and height
+    private static final int MIN_SKILL_LEVEL = 0;
+    private static final int MAX_SKILL_LEVEL = 99;
+    private static final int MIN_HEIGHT_CM = 160;
+    private static final int MAX_HEIGHT_CM = 210;
 
     public enum SessionPlayerOrigin { CLONED, CUSTOM, RANDOM }
 
@@ -130,6 +144,8 @@ public class SessionPlayer {
         this.redCards = 0;
         this.suspended = false;
         this.suspensionRemainingMatches = 0;
+        // V25D31: skill map default empty (sparse). Height remains null until seeder/clone sets it.
+        this.skillLevels = new HashMap<>();
     }
 
     // ========== Business Logic ==========
@@ -188,6 +204,64 @@ public class SessionPlayer {
     public Boolean getSuspended() { return suspended != null ? suspended : false; }
     public Integer getSuspensionRemainingMatches() { return suspensionRemainingMatches != null ? suspensionRemainingMatches : 0; }
     public SessionPlayerOrigin getOrigin() { return origin; }
+
+    // ========== V25D31 - Height + Skills ==========
+
+    public Integer getHeightCm() { return heightCm; }
+
+    public void setHeightCm(Integer heightCm) {
+        if (heightCm == null) {
+            this.heightCm = null;
+            return;
+        }
+        if (heightCm < MIN_HEIGHT_CM || heightCm > MAX_HEIGHT_CM) {
+            throw new IllegalArgumentException(
+                    "heightCm must be between " + MIN_HEIGHT_CM + " and " + MAX_HEIGHT_CM);
+        }
+        this.heightCm = heightCm;
+    }
+
+    /**
+     * Returns a defensive read-only view of the skill levels map.
+     * Sparse map: only contains skills with level > 0.
+     */
+    public Map<PlayerSkill, Integer> getSkillLevels() {
+        return skillLevels == null
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(skillLevels);
+    }
+
+    public int getSkillLevel(PlayerSkill skill) {
+        if (skill == null || skillLevels == null) return 0;
+        Integer level = skillLevels.get(skill);
+        return level == null ? 0 : level;
+    }
+
+    /**
+     * Sets the level of a single skill. Bounds-checked to [0, 99].
+     * Values > MAX throw IAE; negative values throw IAE.
+     * Setting to 0 is allowed (and effectively removes the entry from the sparse map).
+     */
+    public void setSkillLevel(PlayerSkill skill, Integer value) {
+        if (skill == null) {
+            throw new IllegalArgumentException("skill cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("skill level cannot be null");
+        }
+        if (value < MIN_SKILL_LEVEL || value > MAX_SKILL_LEVEL) {
+            throw new IllegalArgumentException(
+                    "Skill level must be between " + MIN_SKILL_LEVEL + " and " + MAX_SKILL_LEVEL);
+        }
+        if (skillLevels == null) {
+            skillLevels = new HashMap<>();
+        }
+        if (value == 0) {
+            skillLevels.remove(skill);
+        } else {
+            skillLevels.put(skill, value);
+        }
+    }
 
     // ========== Setters ==========
 
