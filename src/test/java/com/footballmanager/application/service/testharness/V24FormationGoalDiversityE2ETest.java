@@ -94,6 +94,11 @@ class V24FormationGoalDiversityE2ETest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    // V25D25: MatchEngineRegistry mock required by the TestHarnessUseCaseImpl
+    // constructor extended in V24D24.4-HOTFIX (commit ab94a19). Default @Mock
+    // returns false from hasEngine, which is fine for the replay tests below
+    // (none of them exercise the reset-round path).
+    @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
     private V24MatchContextFactory v24ContextFactory;
     private TestHarnessUseCaseImpl useCase;
@@ -103,7 +108,7 @@ class V24FormationGoalDiversityE2ETest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort);
+            v24ContextFactory, v24StoragePort, matchEngineRegistry);
     }
 
     // ========== Test 1 — formation-diversity acceptance criterion ==========
