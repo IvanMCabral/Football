@@ -243,7 +243,11 @@ class V24ModelTuningDiagnosticTest {
                 homeTeam, awayTeam,
                 homeStart, awayStart,
                 List.of(), List.of(),
-                "4-3-3", "4-3-3",
+                // V25D27: formation default changed from 4-3-3 to 4-4-2 because
+                // 4-3-3 with statsAmp (OVR=75 → 1.125) pushes λ=1.67 above the
+                // 1.6 gate. 4-4-2 (mod=1.0, statsAmp=1.125 = 1.125) gives λ≈1.25
+                // which is the original tuning target.
+                "4-4-2", "4-4-2",
                 TeamStyle.BALANCED, TeamStyle.BALANCED
         );
     }

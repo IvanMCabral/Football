@@ -299,6 +299,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // Resolved from the match context (which is built by V24MatchContextFactory
             // preferring career.teamStarting11Formation with fallback to SessionTeam).
             String formation = homeHasPossession ? context.homeFormation() : context.awayFormation();
+            // V25D27: opponent formation (the defending team) — used by formationDefensiveModifier.
+            String opponentFormation = homeHasPossession ? context.awayFormation() : context.homeFormation();
 
             // Accumulate possession
             possessor.addPossessionTick();
@@ -332,7 +334,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
-                attemptShot(possessor, opponent, selector, formation, teamRole, minute, random, timeline);
+                attemptShot(possessor, opponent, selector, formation, opponentFormation, teamRole, minute, random, timeline);
             }
 
             // Chance created event (broader than shot)
@@ -464,6 +466,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             V24TeamMatchState opponent,
             V24PlayerSelector selector,
             String formation,
+            String opponentFormation,
             String teamRole,
             int minute,
             Random random,
@@ -473,6 +476,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         if (shooterOpt.isEmpty()) return;
 
         V24PlayerMatchState shooter = shooterOpt.get();
+
+        // V25D27: compute aggregate teamAttack for the possessor and teamDefense for
+        // the opponent. These amplify/dampen the formation modifier per the user
+        // request that formation × stats should sum.
+        double possessorAttack = aggregateAttackerStat(possessor.startingPlayers(), formation);
+        double opponentDefense = aggregateDefenderStat(opponent.startingPlayers());
 
         // V24C1: Apply fatigue to shooter quality before xG calculation
         double rawShooterQuality = selector.shooterQuality(shooter);
@@ -506,7 +515,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 styleToModifier(possessor.style())
         );
 
-        double xg = xgCalculator.calculateXg(quality, formation);
+        double xg = xgCalculator.calculateXg(quality, formation, opponentFormation, possessorAttack, opponentDefense);
         possessor.addXg(xg);
 
         // V24C1: Action drain for shot attempt
@@ -741,6 +750,59 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         if (gk.isEmpty()) return 0.5;
         // GK quality from stamina + mentality (normalized)
         return Math.round((gk.get().stamina() / 100.0 * 0.5 + gk.get().mentality() / 100.0 * 0.5) * 1000.0) / 1000.0;
+    }
+
+    /**
+     * V25D27: aggregate attacker stat for the possessor's starting 11, weighted
+     * by formation-aware role. Returns the avg attack stat of the top-5
+     * "attacking" players (forwards, attacking midfielders, wingers) where
+     * "attacking" is defined by position: ATT > MID > DEF. This stat amplifies
+     * the formationOffensiveModifier — elite attackers in a 4-3-3 get more
+     * xG boost than weak attackers in the same formation.
+     *
+     * <p>Fallback: if fewer than 5 "attacking" players, averages all 11.
+     * Returns 70.0 (median) if startingPlayers is empty.
+     */
+    private double aggregateAttackerStat(List<V24PlayerMatchState> players, String formation) {
+        if (players.isEmpty()) return 70.0;
+        // Sort by attack descending and pick top-5
+        List<V24PlayerMatchState> sorted = players.stream()
+                .filter(V24PlayerMatchState::onPitch)
+                .sorted((a, b) -> Integer.compare(b.attack(), a.attack()))
+                .limit(5)
+                .toList();
+        double avg = sorted.stream().mapToInt(V24PlayerMatchState::attack).average().orElse(70.0);
+        return avg;
+    }
+
+    /**
+     * V25D27: aggregate defender stat for the opponent's starting 11.
+     * Returns the avg of (defense + mentality) / 2 across all DEF and GK
+     * players on pitch. This stat amplifies the formationDefensiveModifier —
+     * elite defenders in a 5-3-2 reduce xG conceded more than weak defenders.
+     *
+     * <p>Fallback: if no defenders found, returns avg defense of all 11.
+     * Returns 70.0 (median) if startingPlayers is empty.
+     */
+    private double aggregateDefenderStat(List<V24PlayerMatchState> players) {
+        if (players.isEmpty()) return 70.0;
+        List<V24PlayerMatchState> defenders = players.stream()
+                .filter(V24PlayerMatchState::onPitch)
+                .filter(p -> p.position().equals("DEF") || p.position().equals("GK"))
+                .toList();
+        if (defenders.isEmpty()) {
+            // Fallback: avg defense of all 11
+            return players.stream()
+                    .filter(V24PlayerMatchState::onPitch)
+                    .mapToInt(V24PlayerMatchState::defense)
+                    .average()
+                    .orElse(70.0);
+        }
+        double avg = defenders.stream()
+                .mapToInt(p -> (p.defense() + p.mentality()) / 2)
+                .average()
+                .orElse(70.0);
+        return avg;
     }
 
     private double styleToModifier(TeamStyle style) {
