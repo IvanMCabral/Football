@@ -28,3 +28,4 @@ front-ciber/project/
 # V24D12-D-6: application-local.yml contains real rotated credentials.
 # Keep secrets out of git even for local dev profiles.
 src/main/resources/application-local.yml
+src/main/resources/application-local.properties
