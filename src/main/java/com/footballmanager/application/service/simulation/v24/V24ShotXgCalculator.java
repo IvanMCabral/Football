@@ -83,7 +83,7 @@ public class V24ShotXgCalculator {
         V24FormationParser parser = new V24FormationParser();
         V24FormationParser.V24Formation f = parser.parse(formation);
         double mod = 1.0;
-        if (f.hasWingers()) mod += 0.10;       // 4-3-3, 3-4-3
+        if (f.hasWingers()) mod += 0.07;       // 4-3-3, 3-4-3 (V25D25.2: tightened from 0.10 for lambda gate margin)
         if (f.defenders() == 3) mod -= 0.15;   // 3-5-2, 3-4-3
         if (f.isBackFive()) mod -= 0.25;       // 5-3-2
         if (f.forwards() == 1 && f.midfielders() >= 4) mod += 0.12; // 4-2-3-1, 4-3-3
