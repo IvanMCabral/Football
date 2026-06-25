@@ -64,14 +64,50 @@ public class SessionPlayer {
 
     // ========== Factory Methods ==========
 
-    // Alias for backward compatibility
+    // Alias for backward compatibility (V25D33-F0-mapping: delegates to height+skills-aware overload with nulls)
     public static SessionPlayer cloneFromWorldPlayer(String worldPlayerId, String name,
             String position, Integer age, Integer overall, String currentTeamId) {
-        return fromWorldPlayer(worldPlayerId, name, position, age, overall);
+        return fromWorldPlayer(worldPlayerId, name, position, age, overall, null, null);
+    }
+
+    // V25D33-F0-mapping: overload with height + skill propagation from WorldPlayer
+    // (V25D32 SENIOR flag: WorldPlayer -> SessionPlayer mapping was leaking height/skills).
+    // Existing 5-arg overload delegates here with null/empty so behavior is bit-a-bit
+    // preserved for callers that do not yet propagate the new fields.
+    public static SessionPlayer cloneFromWorldPlayer(String worldPlayerId, String name,
+            String position, Integer age, Integer overall, String currentTeamId,
+            Integer heightCm, Map<PlayerSkill, Integer> skillLevels) {
+        return fromWorldPlayer(worldPlayerId, name, position, age, overall, heightCm, skillLevels);
     }
 
     public static SessionPlayer fromWorldPlayer(String worldPlayerId, String name,
             String position, Integer age, Integer overall) {
+        return fromWorldPlayer(worldPlayerId, name, position, age, overall, null, null);
+    }
+
+    /**
+     * V25D33-F0-mapping: full factory with height + skill propagation.
+     *
+     * <p>Replaces the pre-V25D33 factory that silently dropped {@code heightCm}
+     * and {@code skillLevels} from the {@link WorldPlayer}. The V25D32
+     * {@code LaLigaSeedService} sets these on WorldPlayer (top-20 heights
+     * hardcoded + curated skills for top-5), but the clone into SessionPlayer
+     * was losing them. With V25D33 the clone propagates both, so the engine
+     * can read them via {@link V24PlayerMatchState#heightCm()} and
+     * {@link V24PlayerMatchState#skillLevels()}.
+     *
+     * <p>Null/empty inputs are normalized:
+     * <ul>
+     *   <li>{@code heightCm=null} → SessionPlayer.heightCm remains null (sparse).</li>
+     *   <li>{@code skillLevels=null or empty} → SessionPlayer.skillLevels is empty map
+     *       (engine treats absent skills as 0).</li>
+     *   <li>Defensive copy on {@code skillLevels} so caller mutations cannot
+     *       leak into the SessionPlayer's sparse map.</li>
+     * </ul>
+     */
+    public static SessionPlayer fromWorldPlayer(String worldPlayerId, String name,
+            String position, Integer age, Integer overall,
+            Integer heightCm, Map<PlayerSkill, Integer> skillLevels) {
         SessionPlayer p = new SessionPlayer();
         p.sessionPlayerId = worldPlayerId;
         p.worldPlayerId = worldPlayerId;
@@ -82,6 +118,21 @@ public class SessionPlayer {
         p.setAttributesFromOverall(overall);
         p.initDefaults();
         p.origin = SessionPlayerOrigin.CLONED;
+        // V25D33-F0-mapping: propagate physical + skill metadata via the
+        // bounds-checked setters. setHeightCm accepts null; setSkillLevel is
+        // per-entry so we iterate the (possibly null/empty) map defensively.
+        if (heightCm != null) {
+            p.setHeightCm(heightCm);
+        }
+        if (skillLevels != null && !skillLevels.isEmpty()) {
+            for (Map.Entry<PlayerSkill, Integer> e : skillLevels.entrySet()) {
+                if (e.getKey() != null && e.getValue() != null) {
+                    // setSkillLevel bounds-checks [0,99] and removes zero entries
+                    // (sparse map). Defensive copy already done by WorldPlayer.getSkillLevels().
+                    p.setSkillLevel(e.getKey(), e.getValue());
+                }
+            }
+        }
         return p;
     }
 
