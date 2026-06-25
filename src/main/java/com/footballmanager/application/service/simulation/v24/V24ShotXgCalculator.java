@@ -15,12 +15,19 @@ import java.util.Map;
  *   <li>Defensive pressure (opponent defense + mentality)</li>
  *   <li>Goalkeeper quality</li>
  *   <li>Team style modifier (attacking = higher, defensive = lower)</li>
+ *   <li>V25D33-F1: HEADER skill multiplier, gated on
+ *       {@link V24ShotEventType} (only on CORNER / CROSS shots)</li>
  * </ul>
  *
  * <p>V25D32-F4: overload 9-args agrega skill levels del shooter y GK + heights
  * como plumbing para que V25D33-V25D34 los use. V25D32 NO impact el engine —
  * el overload 5-args delega al 9-args con {@code Map.of()} y {@code null},
  * manteniendo el resultado bit-a-bit identico al V25D31.
+ *
+ * <p>V25D33-F1: overload 10-args agrega {@code V24ShotEventType eventSubType}
+ * para gating del HEADER multiplier. El overload 9-args delega al 10-args
+ * con {@code V24ShotEventType.OPEN_PLAY} (default), preservando el contrato
+ * V25D32 bit-a-bit para callers existentes — HEADER NO aplica en OPEN_PLAY.
  *
  * <p>Output clamped to [0.01, 0.60] (V24D6U4 tuned from 0.80).
  */
@@ -67,11 +74,12 @@ public class V24ShotXgCalculator {
      *   formationOffensive(possFormation, possessorAttack) ×
      *   formationDefensive(opponentFormation, opponentDefense).
      *
-     * <p>Las nuevas params (shooterSkills, shooterHeightCm, gkSkills, gkHeightCm)
-     * son IGNORADAS en V25D32 — el engine aun no las usa. La intencion es que
-     * V25D33-V25D34 las lean aqui para modular xG segun PlayerSkill/height.
-     * El overload 5-args (V25D27) delega a este con defaults Map.of() / null,
-     * garantizando backwards compat bit-a-bit.
+     * <p>V25D33-F1: este overload ahora delega al overload 10-args con
+     * {@code V24ShotEventType.OPEN_PLAY} (default). Mantiene el contrato
+     * V25D32 bit-a-bit porque (a) HEADER NO aplica en OPEN_PLAY y (b)
+     * el overload 10-args solo agrega el HEADER multiplier en F1 (WALL llega
+     * en F3). Para que callers existentes (V24DetailedMatchEngine) obtengan
+     * HEADER/CORNER, deberan pasar al overload 10-args explicitamente.
      *
      * @param quality shot context (location, shooter, assist, pressure, GK, style)
      * @param formation the POSSESSOR's formation (e.g. "4-3-3")
@@ -90,6 +98,62 @@ public class V24ShotXgCalculator {
                               double possessorAttack, double opponentDefense,
                               Map<PlayerSkill, Integer> shooterSkills, Integer shooterHeightCm,
                               Map<PlayerSkill, Integer> gkSkills, Integer gkHeightCm) {
+        // V25D33-F1: 9-args overload delega al 10-args con OPEN_PLAY default.
+        // Bit-a-bit backward compat con V25D32: HEADER no aplica fuera de
+        // CORNER/CROSS, y WALL todavia no esta implementado (F3).
+        return calculateXg(quality, formation, opponentFormation,
+                possessorAttack, opponentDefense,
+                shooterSkills, shooterHeightCm, gkSkills, gkHeightCm,
+                V24ShotEventType.OPEN_PLAY);
+    }
+
+    /**
+     * V25D33-F1: overload 10-args que agrega {@code V24ShotEventType eventSubType}
+     * para gating del HEADER multiplier.
+     *
+     * <p>V25D33-F1 implementation:
+     * <ul>
+     *   <li>HEADER multiplier ({@code 1.0 + skill/200.0}) se aplica SOLO
+     *       cuando {@code eventSubType ∈ {CORNER, CROSS}}. En OPEN_PLAY el
+     *       multiplier es 1.0 (sin cambio).</li>
+     *   <li>El 9-args overload delega a este con OPEN_PLAY, preservando el
+     *       resultado V25D32 bit-a-bit para callers legacy.</li>
+     * </ul>
+     *
+     * <p>V25D33-F3 (futuro): WALL divisor sobre xG cuando gkSkills contiene
+     * PlayerSkill.WALL. NO implementado en este commit — se agrega en F3 con
+     * un commit separado.
+     *
+     * <p>Calibration del HEADER multiplier (spec V25D33):
+     * <ul>
+     *   <li>HEADER=0 → multiplier = 1.0 (sin cambio)</li>
+     *   <li>HEADER=80 → multiplier = 1.40 (+40%)</li>
+     *   <li>HEADER=99 → multiplier = 1.495 (+49.5%)</li>
+     * </ul>
+     *
+     * @param quality shot context (location, shooter, assist, pressure, GK, style)
+     * @param formation the POSSESSOR's formation (e.g. "4-3-3")
+     * @param opponentFormation the DEFENDING team's formation (e.g. "5-3-2")
+     * @param possessorAttack aggregate attack stat of the possessor's attacking
+     *                        players (avg of top-5 attackers, [0-99])
+     * @param opponentDefense aggregate defense stat of the opponent's
+     *                        defending players (avg of defenders + GK mentality, [0-99])
+     * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable;
+     *                      absent → treat as 0)
+     * @param shooterHeightCm height del shooter en cm (nullable; V25D33-F1 lo ignora,
+     *                        reservado para V25D34)
+     * @param gkSkills sparse map de PlayerSkill levels del GK (nullable;
+     *                  V25D33-F1 lo ignora, F3 lo usara para WALL divisor)
+     * @param gkHeightCm height del GK en cm (nullable; V25D33-F1 lo ignora)
+     * @param eventSubType origen del shot (OPEN_PLAY default). HEADER multiplier
+     *                      se aplica SOLO cuando es CORNER o CROSS.
+     */
+    public double calculateXg(V24ShotQuality quality, String formation,
+                              String opponentFormation,
+                              double possessorAttack, double opponentDefense,
+                              Map<PlayerSkill, Integer> shooterSkills, Integer shooterHeightCm,
+                              Map<PlayerSkill, Integer> gkSkills, Integer gkHeightCm,
+                              V24ShotEventType eventSubType) {
         double baseXgVal = baseXg(quality.location());
         double shooterMult = shooterMultiplier(quality.shooterQuality());
         double assistMult = assistMultiplier(quality.assistQuality());
@@ -104,11 +168,20 @@ public class V24ShotXgCalculator {
         // i.e. 20% less). V25D27 first version multiplied, which inverted the intent
         // (5-3-2 received MORE goals than 4-3-3). Confirmed by smoke: avg_AG for
         // 5-3-2 was 4.40 (highest) vs 4-3-3 at 2.97 (lowest) — wrong direction.
-        //
-        // V25D32-F4: shooterSkills/shooterHeightCm/gkSkills/gkHeightCm son
-        // IGNORADOS en este overload. Engine NO impact. V25D33-V25D34 los usaran.
+
+        // V25D33-F1: HEADER multiplier gated on eventSubType. Only applies on
+        // CORNER or CROSS shots — open-play shots are unchanged. Missing/null
+        // HEADER skill is treated as 0 (multiplier stays 1.0).
+        double headerMult = 1.0;
+        if (eventSubType == V24ShotEventType.CORNER || eventSubType == V24ShotEventType.CROSS) {
+            int headerSkill = (shooterSkills != null && shooterSkills.get(PlayerSkill.HEADER) != null)
+                    ? shooterSkills.get(PlayerSkill.HEADER)
+                    : 0;
+            headerMult = 1.0 + (headerSkill / 200.0);
+        }
+
         double xg = baseXgVal * shooterMult * assistMult * defMult * gkMult * styleMult
-                * offFormMod / defFormMod;
+                * offFormMod / defFormMod * headerMult;
 
         return clamp(xg);
     }
