@@ -2,6 +2,7 @@ package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -319,19 +320,29 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // chance-rate boost for the remainder of the match — enough to make the
             // "substitution alters result" tests produce a measurable goal delta
             // deterministically with seed=42.
+            //
+            // V25D33-F2: also extract the key attacker's DRIBBLER skill (0 if absent)
+            // so chanceProbability can apply the 1v1 multiplier. Sparse map access via
+            // V24PlayerMatchState.getSkillLevel — same null-safe semantics as
+            // SessionPlayer.getSkillLevel.
             int keyAttack = 70;
             int keySpeed = 70;
+            int keyDribbler = 0;
             int bestAttack = Integer.MIN_VALUE;
             for (V24PlayerMatchState p : possessor.startingPlayers()) {
                 if (p.onPitch() && !p.injured() && !p.redCard() && p.attack() > bestAttack) {
                     bestAttack = p.attack();
                     keyAttack = p.attack();
                     keySpeed = p.speed();
+                    keyDribbler = p.getSkillLevel(PlayerSkill.DRIBBLER);
                 }
             }
 
             // Style modifier for chance creation probability
-            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed);
+            // V25D33-F2: pass keyDribbler so the 5-args overload can apply the
+            // 1v1 gambeta multiplier. With skill=0 (absent or random player)
+            // the multiplier is 1.0 → bit-a-bit identical to the 4-args baseline.
+            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
                 attemptShot(possessor, opponent, selector, formation, opponentFormation, teamRole, minute, random, timeline);
@@ -820,10 +831,18 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // overload with the V24D6U4-RE anchor (attack=70, speed=70) so the modifier
         // is 1.0 and the historical λ target is preserved for callers that don't
         // have a live startingPlayers list (e.g. diagnostic harnesses).
-        return chanceProbability(style, minute, 70, 70);
+        return chanceProbability(style, minute, 70, 70, 0);
     }
 
     private double chanceProbability(TeamStyle style, int minute, int possessorAttack, int possessorSpeed) {
+        // V25D33-F2: backward-compat overload delegates to the new 5-args with
+        // dribblerSkill=0. Preserves V25D32 baseline for diagnostic harnesses
+        // that don't have a live keyAttacker reference.
+        return chanceProbability(style, minute, possessorAttack, possessorSpeed, 0);
+    }
+
+    private double chanceProbability(TeamStyle style, int minute, int possessorAttack,
+                                     int possessorSpeed, int dribblerSkill) {
         // V24D6U4-RE: Recalibrated to hit Poisson λ=1.25 per team.
         // Previous tuning (V24D6U4) overshot the suppression: empirical λ≈0.45
         // vs target λ≈1.25 (factor 2.77x too low). ITER 1 (base 0.25) gave
@@ -854,7 +873,18 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             + (possessorAttack - 70) * 0.02
             + (possessorSpeed - 70) * 0.01;
 
-        return base * secondHalf * endGame * qualityMod;
+        // V25D33-F2: DRIBBLER 1v1 multiplier. Spec values:
+        //   DRIBBLER=0  -> multiplier 1.000 (no change — bit-a-bit compat)
+        //   DRIBBLER=50 -> multiplier 1.167 (+16.7%)
+        //   DRIBBLER=95 -> multiplier 1.317 (+31.7%)
+        // Applied AFTER qualityMod so the existing F6 F2 contract (subbing in
+        // a higher-attack player shifts λ) is preserved bit-a-bit when
+        // DRIBBLER=0. DRIBBLER is multiplicative on chanceProbability — i.e.
+        // a key attacker with DRIBBLER=95 produces ~31.7% more shot attempts
+        // than one with DRIBBLER=0, ceteris paribus.
+        double dribblerMult = 1.0 + (dribblerSkill / 300.0);
+
+        return base * secondHalf * endGame * qualityMod * dribblerMult;
     }
 
     private double possessionBase(TeamStyle style) {

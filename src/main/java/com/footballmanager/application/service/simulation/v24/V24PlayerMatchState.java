@@ -129,6 +129,20 @@ public class V24PlayerMatchState {
     public Integer heightCm() { return heightCm; }
     public Map<PlayerSkill, Integer> skillLevels() { return skillLevels; }
 
+    /**
+     * V25D33-F2: convenience accessor for a single skill level. Mirrors
+     * {@link SessionPlayer#getSkillLevel(PlayerSkill)} for the same null-safe
+     * semantics — returns 0 when the skill is absent, the map is null, or the
+     * skill is not present in the sparse map. Used by the engine to read
+     * DRIBBLER (F2), WALL (F3), and other Tier-1 skills without scattering
+     * null-checks across the per-minute loop.
+     */
+    public int getSkillLevel(PlayerSkill skill) {
+        if (skill == null || skillLevels == null || skillLevels.isEmpty()) return 0;
+        Integer level = skillLevels.get(skill);
+        return level == null ? 0 : level;
+    }
+
     // Setters (for match simulation mutability)
     public void setTeamId(String teamId) { this.teamId = teamId; }
 
