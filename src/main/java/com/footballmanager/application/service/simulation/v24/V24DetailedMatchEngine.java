@@ -494,6 +494,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double possessorAttack = aggregateAttackerStat(possessor.startingPlayers(), formation);
         double opponentDefense = aggregateDefenderStat(opponent.startingPlayers());
 
+        // V25D33-F3: locate the opponent's on-pitch GK so we can pass their
+        // skill map (WALL) and height to calculateXg. Reuses the same
+        // filter as the existing gkQuality() helper, but returns the
+        // V24PlayerMatchState so we can read skillLevels + heightCm.
+        V24PlayerMatchState opponentGk = findGkOnPitch(opponent.startingPlayers());
+
         // V24C1: Apply fatigue to shooter quality before xG calculation
         double rawShooterQuality = selector.shooterQuality(shooter);
         double shooterQuality = fatigueModel.applyFatigueToQuality(rawShooterQuality, shooter);
@@ -526,7 +532,21 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 styleToModifier(possessor.style())
         );
 
-        double xg = xgCalculator.calculateXg(quality, formation, opponentFormation, possessorAttack, opponentDefense);
+        // V25D33-F3: call the 10-args overload of calculateXg so WALL divisor
+        // (and any future GK skill) is honored. Pass the shooter's own skill
+        // map + height (for HEADER on corner/cross shots in V25D34) and the
+        // opponent GK's skill map + height (for WALL divisor here, AERIAL in
+        // V25D34). eventSubType = OPEN_PLAY (default) — the engine doesn't yet
+        // model "shot from corner" relationships (V25D34 scope). When the
+        // gkSkills map is null or WALL is absent, the divisor stays 1.0 and
+        // the result is bit-a-bit identical to the V25D32 baseline.
+        double xg = xgCalculator.calculateXg(
+                quality, formation, opponentFormation,
+                possessorAttack, opponentDefense,
+                shooter.skillLevels(), shooter.heightCm(),
+                opponentGk != null ? opponentGk.skillLevels() : null,
+                opponentGk != null ? opponentGk.heightCm() : null,
+                V24ShotEventType.OPEN_PLAY);
         possessor.addXg(xg);
 
         // V24C1: Action drain for shot attempt
@@ -761,6 +781,25 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         if (gk.isEmpty()) return 0.5;
         // GK quality from stamina + mentality (normalized)
         return Math.round((gk.get().stamina() / 100.0 * 0.5 + gk.get().mentality() / 100.0 * 0.5) * 1000.0) / 1000.0;
+    }
+
+    /**
+     * V25D33-F3: locate the on-pitch GK for a team's starting 11 and return
+     * their {@link V24PlayerMatchState}. Returns {@code null} when no on-pitch
+     * GK is present (short-handed team) — the caller passes {@code null} to
+     * {@code calculateXg(...)} which keeps the WALL divisor at 1.0 (no
+     * reduction in xG, bit-a-bit compat with the V25D32 baseline).
+     *
+     * <p>Filter is identical to {@link #gkQuality}: position="GK" AND
+     * onPitch=true. Picks the FIRST such player in iteration order; this
+     * matches the {@code gkQuality} helper's behavior so the two paths
+     * never disagree about which GK is "in goal" for a given shot.
+     */
+    private V24PlayerMatchState findGkOnPitch(List<V24PlayerMatchState> players) {
+        return players.stream()
+                .filter(p -> p.position().equals("GK") && p.onPitch())
+                .findFirst()
+                .orElse(null);
     }
 
     /**

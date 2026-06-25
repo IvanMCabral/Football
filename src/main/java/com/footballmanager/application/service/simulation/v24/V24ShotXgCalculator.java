@@ -17,6 +17,7 @@ import java.util.Map;
  *   <li>Team style modifier (attacking = higher, defensive = lower)</li>
  *   <li>V25D33-F1: HEADER skill multiplier, gated on
  *       {@link V24ShotEventType} (only on CORNER / CROSS shots)</li>
+ *   <li>V25D33-F3: WALL skill divisor on xG (reduces xG when GK has WALL).</li>
  * </ul>
  *
  * <p>V25D32-F4: overload 9-args agrega skill levels del shooter y GK + heights
@@ -28,6 +29,11 @@ import java.util.Map;
  * para gating del HEADER multiplier. El overload 9-args delega al 10-args
  * con {@code V24ShotEventType.OPEN_PLAY} (default), preservando el contrato
  * V25D32 bit-a-bit para callers existentes — HEADER NO aplica en OPEN_PLAY.
+ *
+ * <p>V25D33-F3: WALL divisor se aplica cuando {@code gkSkills} contiene
+ * {@link PlayerSkill#WALL}. Como DIVISOR (1.0 / (1.0 + skill/150.0)) — mas
+ * WALL → menos xG. Sigue el memory lesson "modifier de proteccion/reduccion
+ * va como DIVISOR, no multiplicador" (V25D27.1 — formationDefensiveModifier).
  *
  * <p>Output clamped to [0.01, 0.60] (V24D6U4 tuned from 0.80).
  */
@@ -120,15 +126,29 @@ public class V24ShotXgCalculator {
      *       resultado V25D32 bit-a-bit para callers legacy.</li>
      * </ul>
      *
-     * <p>V25D33-F3 (futuro): WALL divisor sobre xG cuando gkSkills contiene
-     * PlayerSkill.WALL. NO implementado en este commit — se agrega en F3 con
-     * un commit separado.
+     * <p>V25D33-F3 implementation:
+     * <ul>
+     *   <li>WALL divisor ({@code 1.0 / (1.0 + skill/150.0)}) se aplica cuando
+     *       {@code gkSkills} contiene {@link PlayerSkill#WALL}. WALL=0 (o skill
+     *       ausente) → divisor = 1.0 (sin cambio). WALL=99 → divisor ≈ 0.602
+     *       (≈40% menos xG).</li>
+     *   <li>WALL es un DIVISOR (no multiplicador) siguiendo el memory lesson
+     *       de V25D27.1 — modifiers de proteccion/reduccion siempre van como
+     *       DIVISOR. WALL=92 → xg /= 1.613 (-38%); WALL=99 → xg /= 1.66 (-40%).</li>
+     * </ul>
      *
-     * <p>Calibration del HEADER multiplier (spec V25D33):
+     * <p>Calibration del HEADER multiplier (spec V25D33-F1):
      * <ul>
      *   <li>HEADER=0 → multiplier = 1.0 (sin cambio)</li>
      *   <li>HEADER=80 → multiplier = 1.40 (+40%)</li>
      *   <li>HEADER=99 → multiplier = 1.495 (+49.5%)</li>
+     * </ul>
+     *
+     * <p>Calibration del WALL divisor (spec V25D33-F3):
+     * <ul>
+     *   <li>WALL=0 → divisor = 1.0 (sin cambio)</li>
+     *   <li>WALL=92 → divisor = 1 / (1 + 92/150) = 1/1.613 ≈ 0.620 (-38%)</li>
+     *   <li>WALL=99 → divisor = 1 / (1 + 99/150) = 1/1.660 ≈ 0.602 (-39.8%)</li>
      * </ul>
      *
      * @param quality shot context (location, shooter, assist, pressure, GK, style)
@@ -139,12 +159,13 @@ public class V24ShotXgCalculator {
      * @param opponentDefense aggregate defense stat of the opponent's
      *                        defending players (avg of defenders + GK mentality, [0-99])
      * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable;
-     *                      absent → treat as 0)
-     * @param shooterHeightCm height del shooter en cm (nullable; V25D33-F1 lo ignora,
+     *                      absent → treat as 0; F1 reads HEADER, V25D34 will read
+     *                      SHOOTER + others)
+     * @param shooterHeightCm height del shooter en cm (nullable; V25D33 lo ignora,
      *                        reservado para V25D34)
      * @param gkSkills sparse map de PlayerSkill levels del GK (nullable;
-     *                  V25D33-F1 lo ignora, F3 lo usara para WALL divisor)
-     * @param gkHeightCm height del GK en cm (nullable; V25D33-F1 lo ignora)
+     *                  F3 reads WALL; V25D34 will read AERIAL + others)
+     * @param gkHeightCm height del GK en cm (nullable; V25D33 lo ignora)
      * @param eventSubType origen del shot (OPEN_PLAY default). HEADER multiplier
      *                      se aplica SOLO cuando es CORNER o CROSS.
      */
@@ -180,8 +201,20 @@ public class V24ShotXgCalculator {
             headerMult = 1.0 + (headerSkill / 200.0);
         }
 
+        // V25D33-F3: WALL divisor on xG. Memory lesson "modifier de proteccion
+        // /reduccion va como DIVISOR" (V25D27.1 — formationDefensiveModifier).
+        // WALL=0 o skill ausente → divisor = 1.0 (sin cambio). WALL=99 →
+        // divisor = 1 + 99/150 = 1.66 → xg / 1.66 ≈ xg * 0.602 (≈40% menos
+        // xG). Aplicado DESPUES del HEADER multiplier para que HEADER (shooter)
+        // y WALL (GK) compongan en cualquier combinacion.
+        double wallDivisor = 1.0;
+        if (gkSkills != null && gkSkills.get(PlayerSkill.WALL) != null) {
+            int wallSkill = gkSkills.get(PlayerSkill.WALL);
+            wallDivisor = 1.0 + (wallSkill / 150.0);
+        }
+
         double xg = baseXgVal * shooterMult * assistMult * defMult * gkMult * styleMult
-                * offFormMod / defFormMod * headerMult;
+                * offFormMod / defFormMod * headerMult / wallDivisor;
 
         return clamp(xg);
     }

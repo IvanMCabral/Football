@@ -54,23 +54,28 @@ class V24ShotXgCalculatorPlumbingTest {
     }
 
     @Test
-    void overload9Args_ignoresSkillsAndHeightsInV25D32() {
-        // V25D32-F4: el engine NO impact — los nuevos params (shooterSkills,
-        // shooterHeightCm, gkSkills, gkHeightCm) son IGNORADOS. Si pasas skills
-        // o heights distintos, el resultado es el mismo que sin ellos.
+    void overload9Args_nonImplementedSkills_remainIgnored() {
+        // V25D33-F3 update: only HEADER (F1) and WALL (F3) are implemented.
+        // Skills deferred to V25D34 (PLAYMAKER, AERIAL, MARKER, TACKLER,
+        // SHOOTER, PASSER, SPEEDSTER) must STILL produce identical results
+        // when passed via 9-args. This test replaces the V25D32-F4 "ignores
+        // all skills" check with the V25D33 contract: only HEADER + WALL
+        // change behavior.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
 
         double xgEmpty = calc.calculateXg(BASELINE_QUALITY, "4-3-3", "4-4-2", 70.0, 70.0,
                 Map.of(), null, Map.of(), null);
 
-        // Skills con levels altos (no deberia afectar)
+        // Skills deferred to V25D34 (no engine impact en F1/F2/F3)
         Map<PlayerSkill, Integer> shooterSkills = new HashMap<>();
+        shooterSkills.put(PlayerSkill.PLAYMAKER, 99);
+        shooterSkills.put(PlayerSkill.MARKER, 99);
+        shooterSkills.put(PlayerSkill.TACKLER, 99);
         shooterSkills.put(PlayerSkill.SHOOTER, 99);
-        shooterSkills.put(PlayerSkill.DRIBBLER, 99);
+        shooterSkills.put(PlayerSkill.PASSER, 99);
         shooterSkills.put(PlayerSkill.SPEEDSTER, 99);
 
         Map<PlayerSkill, Integer> gkSkills = new HashMap<>();
-        gkSkills.put(PlayerSkill.WALL, 99);
         gkSkills.put(PlayerSkill.AERIAL, 99);
 
         double xgWithSkills = calc.calculateXg(BASELINE_QUALITY, "4-3-3", "4-4-2", 70.0, 70.0,
@@ -78,9 +83,34 @@ class V24ShotXgCalculatorPlumbingTest {
                 gkSkills, 195);      // GK alto
 
         assertEquals(xgEmpty, xgWithSkills, 0.0001,
-                "V25D32 NO usa skills/height — el resultado debe ser identico aunque "
-                + "se pasen valores extremos. Si esto cambia, V25D33 empezo a usarlos "
-                + "y hay que coordinar con Mavis root.");
+                "V25D33-F1/F3: skills NO implementados (PLAYMAKER, MARKER, "
+                + "TACKLER, SHOOTER, PASSER, SPEEDSTER, AERIAL) deben seguir "
+                + "sin impacto. Si esto cambia, V25D34 los empezo a usar.");
+    }
+
+    @Test
+    void overload9Args_withWall99_reducesXgByWallDivisor() {
+        // V25D33-F3: WALL=99 en gkSkills debe REDUCIR el xG via divisor.
+        // El 9-args overload delega al 10-args con OPEN_PLAY (HEADER gated off)
+        // + gkSkills={WALL:99}, por lo que el WALL divisor SI aplica.
+        V24ShotXgCalculator calc = new V24ShotXgCalculator();
+
+        double xgNoWall = calc.calculateXg(BASELINE_QUALITY, "4-3-3", "4-4-2", 70.0, 70.0,
+                Map.of(), null, Map.of(), null);
+
+        Map<PlayerSkill, Integer> gkSkills = new HashMap<>();
+        gkSkills.put(PlayerSkill.WALL, 99);
+
+        double xgWithWall = calc.calculateXg(BASELINE_QUALITY, "4-3-3", "4-4-2", 70.0, 70.0,
+                Map.of(), null, gkSkills, null);
+
+        // WALL=99 → divisor = 1/(1+99/150) = 1/1.66 ≈ 0.602
+        // El xG sin clamp es baseline × 0.602. Pero el clamp [0.01, 0.60]
+        // puede saturar el resultado — verificamos que es <= baseline y >= 0.01.
+        assertTrue(xgWithWall < xgNoWall,
+                "WALL=99 debe REDUCIR xG (actual: noWall=" + xgNoWall + " withWall=" + xgWithWall + ")");
+        assertTrue(xgWithWall >= 0.01, "xG debe seguir >= 0.01 (clamp floor)");
+        assertTrue(xgWithWall <= 0.60, "xG debe seguir <= 0.60 (clamp ceiling)");
     }
 
     @Test
