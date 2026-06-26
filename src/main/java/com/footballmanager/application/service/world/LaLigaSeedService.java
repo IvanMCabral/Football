@@ -54,24 +54,32 @@ public class LaLigaSeedService {
     private final PlayerRepository playerRepository;
     private final DatabaseClient databaseClient;
 
-    /**
-     * V25D32-F3: generador deterministico de heights para los 386 players del seed
-     * que NO tienen heightCm hardcoded en el JSON. Mismo seed → mismo height, lo
-     * que hace la persistencia en Postgres idempotente para esos fields.
-     */
-    private final PlayerAttributesGenerator attributesGenerator = new PlayerAttributesGenerator();
+    // V25D36-F4: PlayerAttributesGenerator YA NO es un field compartido.
+    // Antes era un singleton de Spring con Random(seed) interno. java.util.Random
+    // NO es thread-safe — dos requests concurrentes de executeSeed() podían
+    // intercalarse los bits de nextDouble() y generar heights corruptos (0 o
+    // valores fuera del rango normal). Ahora se instancia PER-CALL dentro de
+    // execute() y se pasa por parametro a applySeed/ensurePlayers/create/update.
+    // Reproducibilidad per-seed preservada: cada llamada arranca con
+    // PlayerAttributesGenerator.DEFAULT_SEED = 20240624L → misma secuencia.
 
     /**
      * Ejecuta el seed para el usuario indicado. Crea/actualiza la league, los 20 equipos
      * y los jugadores de La Liga 2024/25 en el WorldSnapshot del usuario.
      *
+     * <p>V25D36-F4: cada llamada instancia su propio {@link PlayerAttributesGenerator}
+     * (Random thread-safe via per-call). Ver {@link #applySeed}.
+     *
      * @return Mono con el resumen del seed (counts y duración)
      */
     public Mono<SeedResult> execute(UUID userId) {
         long start = System.currentTimeMillis();
+        // V25D36-F4: instanciar generator PER-CALL para evitar compartir Random
+        // entre invocaciones concurrentes del seed (thread-safety).
+        PlayerAttributesGenerator attributesGenerator = new PlayerAttributesGenerator();
         return loadSeedData()
                 .flatMap(seed -> snapshotService.getSnapshot(userId)
-                        .flatMap(snapshot -> applySeed(userId, snapshot, seed, start)));
+                        .flatMap(snapshot -> applySeed(userId, snapshot, seed, attributesGenerator, start)));
     }
 
     private Mono<LaLigaSeedData> loadSeedData() {
@@ -82,7 +90,8 @@ public class LaLigaSeedService {
         });
     }
 
-    private Mono<SeedResult> applySeed(UUID userId, WorldSnapshot snapshot, LaLigaSeedData seed, long start) {
+    private Mono<SeedResult> applySeed(UUID userId, WorldSnapshot snapshot, LaLigaSeedData seed,
+                                        PlayerAttributesGenerator attributesGenerator, long start) {
         // Asegurar league "La Liga 2024/25"
         UUID realLeagueId = ensureLeague(snapshot, seed);
 
@@ -90,7 +99,7 @@ public class LaLigaSeedService {
         Map<String, WorldTeam> teamsByName = ensureTeams(snapshot, seed, realLeagueId);
 
         // UPSERT players: agrupar por team-name para asignar worldTeamId
-        List<WorldPlayer> createdOrUpdated = ensurePlayers(snapshot, seed, teamsByName);
+        List<WorldPlayer> createdOrUpdated = ensurePlayers(snapshot, seed, teamsByName, attributesGenerator);
 
         // Capa 3: persiste nombres reales y team_squad en PostgreSQL para que BuildWorldViewUseCase
         // encuentre los jugadores reales (no placeholders) cuando reconstruya el WorldView después del seed
@@ -325,7 +334,8 @@ public class LaLigaSeedService {
     // ========== Players ==========
 
     private List<WorldPlayer> ensurePlayers(WorldSnapshot snapshot, LaLigaSeedData seed,
-                                            Map<String, WorldTeam> teamsByName) {
+                                            Map<String, WorldTeam> teamsByName,
+                                            PlayerAttributesGenerator attributesGenerator) {
         if (snapshot.getWorldPlayers() == null) {
             snapshot.setWorldPlayers(new HashMap<>());
         }
@@ -345,10 +355,10 @@ public class LaLigaSeedService {
             String key = (team.getWorldTeamId() + "|" + dto.name()).toLowerCase();
             WorldPlayer existing = existingByKey.get(key);
             if (existing != null) {
-                updatePlayerFromDto(existing, dto, team);
+                updatePlayerFromDto(existing, dto, team, attributesGenerator);
                 affected.add(existing);
             } else {
-                WorldPlayer created = createPlayerFromDto(dto, team);
+                WorldPlayer created = createPlayerFromDto(dto, team, attributesGenerator);
                 snapshot.getWorldPlayers().put(created.getWorldPlayerId(), created);
                 affected.add(created);
             }
@@ -366,7 +376,8 @@ public class LaLigaSeedService {
         return map;
     }
 
-    private WorldPlayer createPlayerFromDto(LaLigaSeedData.PlayerDto dto, WorldTeam team) {
+    private WorldPlayer createPlayerFromDto(LaLigaSeedData.PlayerDto dto, WorldTeam team,
+                                         PlayerAttributesGenerator attributesGenerator) {
         // realPlayerId determinístico basado en team+name
         UUID realPlayerId = UUID.nameUUIDFromBytes(
                 ("player|" + team.getName() + "|" + dto.name()).getBytes());
@@ -379,11 +390,12 @@ public class LaLigaSeedService {
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), marketValue);
         // V25D32-F3: height + skills. Si el JSON los provee, los usamos. Si no,
         // generamos un height aleatorio con seed fijo (para los 386 no-top-20).
-        applyHeightAndSkillsFromDto(player, dto);
+        applyHeightAndSkillsFromDto(player, dto, attributesGenerator);
         return player;
     }
 
-    private void updatePlayerFromDto(WorldPlayer p, LaLigaSeedData.PlayerDto dto, WorldTeam team) {
+    private void updatePlayerFromDto(WorldPlayer p, LaLigaSeedData.PlayerDto dto, WorldTeam team,
+                                     PlayerAttributesGenerator attributesGenerator) {
         p.setName(dto.name());
         p.setWorldTeamId(team.getWorldTeamId());
         p.setAge(dto.age());
@@ -399,7 +411,7 @@ public class LaLigaSeedService {
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), dto.age()));
         p.setOrigin(WorldPlayer.WorldPlayerOrigin.REAL);
         // V25D32-F3: refrescar height + skills en re-seed (idempotencia).
-        applyHeightAndSkillsFromDto(p, dto);
+        applyHeightAndSkillsFromDto(p, dto, attributesGenerator);
     }
 
     /**
@@ -407,8 +419,12 @@ public class LaLigaSeedService {
      * tiene heightCm, lo usa. Si no, genera uno aleatorio con el generator
      * deterministico. Si el DTO tiene skillLevels (top-5 curated), los aplica.
      * Si no, deja el map vacio (engine en V25D33 aplica defaults).
+     *
+     * <p>V25D36-F4: el {@link PlayerAttributesGenerator} ahora se pasa como
+     * parámetro (per-call instantiation) en lugar de ser un field compartido.
      */
-    private void applyHeightAndSkillsFromDto(WorldPlayer player, LaLigaSeedData.PlayerDto dto) {
+    private void applyHeightAndSkillsFromDto(WorldPlayer player, LaLigaSeedData.PlayerDto dto,
+                                             PlayerAttributesGenerator attributesGenerator) {
         Integer height = dto.heightCm() != null
                 ? dto.heightCm()
                 : attributesGenerator.generateHeightCm();

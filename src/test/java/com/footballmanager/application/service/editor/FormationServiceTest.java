@@ -14,7 +14,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * MVP1-lineup-cancha-1: tests para el servicio de formaciones.
  *
- * <p>Cubre el contrato: 4 formaciones con 11 posiciones cada una
+ * <p>V25D36-F2: ahora 7 formaciones (antes 4) — agregadas 5-3-2, 4-1-4-1 y
+ * 3-4-3 que el engine ya entendía pero que el servicio no exponía.
+ *
+ * <p>Cubre el contrato: 7 formaciones con 11 posiciones cada una
  * (1 GK + outfieldPlayers), subdivisionIds únicos dentro de cada formación,
  * counts de defensores/mediocampistas/atacantes coincidentes con la formación.
  */
@@ -23,15 +26,17 @@ class FormationServiceTest {
     private final FormationService service = new FormationService();
 
     @Test
-    @DisplayName("getAllFormations retorna exactamente 4 formaciones")
-    void returnsExactly4Formations() {
-        assertEquals(4, service.getAllFormations().size());
+    @DisplayName("getAllFormations retorna exactamente 7 formaciones")
+    void returnsExactly7Formations() {
+        assertEquals(7, service.getAllFormations().size());
     }
 
     @Test
-    @DisplayName("Las 4 formaciones esperadas están presentes")
+    @DisplayName("Las 7 formaciones esperadas están presentes")
     void allExpectedFormationsPresent() {
-        Set<String> names = Set.of("4-4-2", "4-3-3", "3-5-2", "4-2-3-1");
+        Set<String> names = Set.of(
+            "4-4-2", "4-3-3", "3-5-2", "4-2-3-1",
+            "5-3-2", "4-1-4-1", "3-4-3");
         Set<String> actual = new HashSet<>();
         for (FormationDTO f : service.getAllFormations()) {
             actual.add(f.name());
@@ -132,6 +137,10 @@ class FormationServiceTest {
         assertNotNull(service.getFormationByName("4-3-3"));
         assertNotNull(service.getFormationByName("3-5-2"));
         assertNotNull(service.getFormationByName("4-2-3-1"));
+        // V25D36-F2: las 3 formations agregadas también son recuperables.
+        assertNotNull(service.getFormationByName("5-3-2"));
+        assertNotNull(service.getFormationByName("4-1-4-1"));
+        assertNotNull(service.getFormationByName("3-4-3"));
     }
 
     @Test
