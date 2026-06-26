@@ -3,9 +3,11 @@ package com.footballmanager.domain.port.in.testharness;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -52,10 +54,22 @@ public interface TestHarnessUseCase {
     // for a specific player in the current career. Null fields are left unchanged.
     // Persists to Redis; engine reads updated stats on next replay via aggregateAttackerStat /
     // aggregateDefenderStat which feed formationOffensiveModifier / formationDefensiveModifier.
+    //
+    // V25D35: extended with two optional fields for the V25D31 physical + skill metadata:
+    //   - heightCm: nullable, [160, 210]; null = leave unchanged (matches SessionPlayer.setHeightCm).
+    //   - skillLevels: nullable sparse Map<PlayerSkill, Integer>; each entry bounds-checked to
+    //     [0, 99]; null OR empty = no-op (does NOT clear existing skills). Setting a skill
+    //     to 0 via the map removes that entry from SessionPlayer's sparse skill map (matches
+    //     SessionPlayer.setSkillLevel(skill, 0) semantics).
+    //
+    // Backward-compat: callers built against V25D29 (only 6 stats) keep working bit-a-bit
+    // when heightCm and skillLevels are null — the UseCase treats both as "leave unchanged".
     Mono<Void> injectPlayerStats(UUID userId, String playerId,
                                  Integer attack, Integer defense,
                                  Integer technique, Integer speed,
-                                 Integer stamina, Integer mentality);
+                                 Integer stamina, Integer mentality,
+                                 Integer heightCm,
+                                 Map<PlayerSkill, Integer> skillLevels);
 
     Mono<CareerSave> createCustom(UUID userId, String worldLeagueId, String worldTeamId,
                                   String difficulty, String gameSpeed, int teamsPerDivision);

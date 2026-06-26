@@ -2,12 +2,15 @@ package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +26,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>Goal resolution (xG threshold)</li>
  *   <li>Player attribution from V24PlayerMatchState</li>
  *   <li>Fatigue, cards, and substitution mechanics</li>
+ * </ul>
+ *
+ * <p>V25D33-V25D34 skill impacts layered on top of the engine (each skill is
+ * applied at its natural pipeline point; no-op when absent or 0):
+ * <ul>
+ *   <li>V25D33-F1: HEADER skill on xG (V24ShotXgCalculator, gated CORNER/CROSS)</li>
+ *   <li>V25D33-F2: DRIBBLER skill on chanceProbability (1v1 multiplier)</li>
+ *   <li>V25D33-F3: WALL skill on xG (GK divisor, V24ShotXgCalculator)</li>
+ *   <li>V25D34-F1: PLAYMAKER skill boosts assistQuality (this engine,
+ *       before xG computation); AERIAL compounds HEADER in calculator;
+ *       SHOOTER adds LONG_RANGE xG bonus in calculator</li>
+ *   <li>V25D34-F2: MARKER + TACKLER defending skills (calculator-level, via
+ *       overload 11-args with defenderSkills aggregated from opponent DEF on-pitch)</li>
+ *   <li>V25D34-F3: SPEEDSTER skill amplifies keySpeed en COUNTER style
+ *       (this engine, chanceProbability 6-args overload); PASSER skill boosts
+ *       possession share (retention rate del poseedor)</li>
  * </ul>
  *
  * <p>Deterministic: same context + same seed = identical result.
@@ -178,7 +197,23 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // Style-influenced possession baselines
         double homePossBase = possessionBase(context.homeStyle());
         double awayPossBase = possessionBase(context.awayStyle());
-        double homeShare = homePossBase / (homePossBase + awayPossBase);
+
+        // V25D34-F3: PASSER boosts possession share (retention rate del
+        // poseedor). El MAX PASSER skill entre los on-pitch players de cada
+        // equipo amplifica su possession base por (1 + skill/300). Formula:
+        //   homePossAdj = homePossBase * (1 + homeMaxPasser/300)
+        //   awayPossAdj = awayPossBase * (1 + awayMaxPasser/300)
+        //   homeShare = homePossAdj / (homePossAdj + awayPossAdj)
+        // PASSER=0 → factor 1.0 → bit-a-bit identico a V25D33 (sin skills).
+        // PASSER=85 (Valverde) → factor 1.283 → +28% retention.
+        // PASSER=99 → factor 1.33 → +33% retention.
+        // Modelo simple: el mejor pasador del equipo aumenta la posesion
+        // compartida (no hay pass accuracy explicito en el engine).
+        int homeMaxPasser = maxPasserSkill(homeState.startingPlayers());
+        int awayMaxPasser = maxPasserSkill(awayState.startingPlayers());
+        double homePossAdj = homePossBase * (1.0 + homeMaxPasser / 300.0);
+        double awayPossAdj = awayPossBase * (1.0 + awayMaxPasser / 300.0);
+        double homeShare = homePossAdj / (homePossAdj + awayPossAdj);
 
         // Player selectors — share the same Random source in replay path,
         // independent Randoms in legacy path (both via simulateWithRandom's args).
@@ -319,19 +354,39 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // chance-rate boost for the remainder of the match — enough to make the
             // "substitution alters result" tests produce a measurable goal delta
             // deterministically with seed=42.
+            //
+            // V25D33-F2: also extract the key attacker's DRIBBLER skill (0 if absent)
+            // so chanceProbability can apply the 1v1 multiplier. Sparse map access via
+            // V24PlayerMatchState.getSkillLevel — same null-safe semantics as
+            // SessionPlayer.getSkillLevel.
+            //
+            // V25D34-F3: also extract SPEEDSTER skill (0 if absent) so
+            // chanceProbability can apply el counter-attack bonus. SPEEDSTER
+            // amplifica keySpeed SOLO cuando possessor.style() == COUNTER —
+            // el bonus no se "apila" si el equipo no esta jugando al
+            // contraataque. Sparse map semantics (skill absent → 0).
             int keyAttack = 70;
             int keySpeed = 70;
+            int keyDribbler = 0;
+            int keySpeedster = 0;
             int bestAttack = Integer.MIN_VALUE;
             for (V24PlayerMatchState p : possessor.startingPlayers()) {
                 if (p.onPitch() && !p.injured() && !p.redCard() && p.attack() > bestAttack) {
                     bestAttack = p.attack();
                     keyAttack = p.attack();
                     keySpeed = p.speed();
+                    keyDribbler = p.getSkillLevel(PlayerSkill.DRIBBLER);
+                    keySpeedster = p.getSkillLevel(PlayerSkill.SPEEDSTER);
                 }
             }
 
             // Style modifier for chance creation probability
-            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed);
+            // V25D33-F2: pass keyDribbler so the 5-args overload can apply the
+            // 1v1 gambeta multiplier. With skill=0 (absent or random player)
+            // the multiplier is 1.0 → bit-a-bit identical to the 4-args baseline.
+            // V25D34-F3: pass keySpeedster so the 6-args overload can apply el
+            // counter-attack speed bonus cuando possessor.style() == COUNTER.
+            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler, keySpeedster);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
                 attemptShot(possessor, opponent, selector, formation, opponentFormation, teamRole, minute, random, timeline);
@@ -483,6 +538,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double possessorAttack = aggregateAttackerStat(possessor.startingPlayers(), formation);
         double opponentDefense = aggregateDefenderStat(opponent.startingPlayers());
 
+        // V25D33-F3: locate the opponent's on-pitch GK so we can pass their
+        // skill map (WALL) and height to calculateXg. Reuses the same
+        // filter as the existing gkQuality() helper, but returns the
+        // V24PlayerMatchState so we can read skillLevels + heightCm.
+        V24PlayerMatchState opponentGk = findGkOnPitch(opponent.startingPlayers());
+
         // V24C1: Apply fatigue to shooter quality before xG calculation
         double rawShooterQuality = selector.shooterQuality(shooter);
         double shooterQuality = fatigueModel.applyFatigueToQuality(rawShooterQuality, shooter);
@@ -503,6 +564,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         // Build shot quality bundle
         double assistQuality = assistOpt.map(selector::assistQuality).orElse(0.3);
+        // V25D34-F1: PLAYMAKER boosts assist quality (vision de juego → mejor
+        // pase). El assist provider con PLAYMAKER skill > 0 multiplica su
+        // assistQuality por (1 + skill/200). El efecto se propaga al assistMult
+        // del V24ShotXgCalculator (0.85 + assistQuality * 0.30). Si no hay
+        // provider (assistOpt.isEmpty) o PLAYMAKER=0/absent, sin cambio —
+        // preserva bit-a-bit el resultado V25D33.
+        if (assistOpt.isPresent()) {
+            int playmakerSkill = assistOpt.get().getSkillLevel(PlayerSkill.PLAYMAKER);
+            assistQuality = playmakerAdjustedAssistQuality(assistQuality, playmakerSkill);
+        }
         double defPressure = defensivePressure(opponent, random);
         double gkQuality = gkQuality(possessor.startingPlayers(), random); // simplified
 
@@ -515,7 +586,32 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 styleToModifier(possessor.style())
         );
 
-        double xg = xgCalculator.calculateXg(quality, formation, opponentFormation, possessorAttack, opponentDefense);
+        // V25D34-F2: aggregate opponent defender skills (MARKER + TACKLER)
+        // from on-pitch DEF position players. Used by the new overload 11-args
+        // de calculateXg para aplicar las defending skills. Si no hay DEF
+        // players on-pitch, el map viene vacio → MARKER y TACKLER no aplican
+        // (no-op, igual que antes).
+        Map<PlayerSkill, Integer> opponentDefenderSkills =
+                aggregateOpponentDefenderSkills(opponent.startingPlayers());
+
+        // V25D34-F2: call the 11-args overload of calculateXg so WALL divisor
+        // (V25D33-F3), AERIAL/SHOOTER (V25D34-F1) and MARKER/TACKLER (V25D34-F2)
+        // are honored. Pass the shooter's own skill map + height (for HEADER on
+        // corner/cross shots + AERIAL compounding + SHOOTER LONG_RANGE), the
+        // opponent GK's skill map + height (for WALL divisor), and the
+        // opponent defender aggregated skills (for MARKER + TACKLER).
+        // eventSubType = OPEN_PLAY (default) — the engine doesn't yet model
+        // "shot from corner" relationships (V25D34 scope). When skill maps are
+        // null or relevant skills are absent, the multipliers stay 1.0 and the
+        // result is bit-a-bit identical to the V25D32 baseline.
+        double xg = xgCalculator.calculateXg(
+                quality, formation, opponentFormation,
+                possessorAttack, opponentDefense,
+                shooter.skillLevels(), shooter.heightCm(),
+                opponentGk != null ? opponentGk.skillLevels() : null,
+                opponentGk != null ? opponentGk.heightCm() : null,
+                V24ShotEventType.OPEN_PLAY,
+                opponentDefenderSkills, null);
         possessor.addXg(xg);
 
         // V24C1: Action drain for shot attempt
@@ -742,6 +838,45 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return Math.min(1.0, basePressure * defMod * randomFactor);
     }
 
+    /**
+     * V25D34-F1: PLAYMAKER skill impact on assist quality.
+     *
+     * <p>Boosts the base assistQuality (normalized 0-1 from technique) by a
+     * factor of {@code 1 + skill/200}. Models "vision de juego y creacion de
+     * juego" — un asistidor con PLAYMAKER=99 ve mejores pases que uno sin
+     * la skill, lo que se traduce en assistQuality mas alto y por lo tanto
+     * xG mas alto en el V24ShotXgCalculator (assistMult = 0.85 + assistQ*0.30).
+     *
+     * <p>No-op behavior:
+     * <ul>
+     *   <li>{@code playmakerSkill <= 0} (skill absent o level 0) → retorna
+     *       {@code base} sin cambio. Esto preserva el resultado V25D33
+     *       bit-a-bit para callers que no setean PLAYMAKER.</li>
+     * </ul>
+     *
+     * <p>Calibration:
+     * <ul>
+     *   <li>PLAYMAKER=0 → adjust factor = 1.0 (sin cambio)</li>
+     *   <li>PLAYMAKER=50 → adjust factor = 1.25 (+25% assistQuality)</li>
+     *   <li>PLAYMAKER=88 (Bellingham) → adjust factor = 1.44 (+44% assistQuality)</li>
+     *   <li>PLAYMAKER=99 → adjust factor = 1.495 (+49.5% assistQuality)</li>
+     * </ul>
+     *
+     * <p>El cap lo pone {@link V24ShotQuality} constructor (clampFinite a
+     * {@code [0.0, 100.0]}), no este metodo — un PLAYMAKER=99 con technique=99
+     * da assistQuality = 1.0 * 1.495 = 1.495 que pasa el clamp (max 100) sin
+     * modificarse, y luego el calculator hace assistMult = 0.85 + 1.495*0.30
+     * = 1.2985.
+     *
+     * @param baseAssistQuality normalized [0, 1] from {@code selector.assistQuality}
+     * @param playmakerSkill PLAYMAKER level (0-99, sparse map semantics)
+     * @return adjusted assistQuality
+     */
+    private double playmakerAdjustedAssistQuality(double baseAssistQuality, int playmakerSkill) {
+        if (playmakerSkill <= 0) return baseAssistQuality;
+        return baseAssistQuality * (1.0 + playmakerSkill / 200.0);
+    }
+
     private double gkQuality(List<V24PlayerMatchState> players, Random random) {
         // Simplified: average GK save quality from position
         var gk = players.stream()
@@ -750,6 +885,25 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         if (gk.isEmpty()) return 0.5;
         // GK quality from stamina + mentality (normalized)
         return Math.round((gk.get().stamina() / 100.0 * 0.5 + gk.get().mentality() / 100.0 * 0.5) * 1000.0) / 1000.0;
+    }
+
+    /**
+     * V25D33-F3: locate the on-pitch GK for a team's starting 11 and return
+     * their {@link V24PlayerMatchState}. Returns {@code null} when no on-pitch
+     * GK is present (short-handed team) — the caller passes {@code null} to
+     * {@code calculateXg(...)} which keeps the WALL divisor at 1.0 (no
+     * reduction in xG, bit-a-bit compat with the V25D32 baseline).
+     *
+     * <p>Filter is identical to {@link #gkQuality}: position="GK" AND
+     * onPitch=true. Picks the FIRST such player in iteration order; this
+     * matches the {@code gkQuality} helper's behavior so the two paths
+     * never disagree about which GK is "in goal" for a given shot.
+     */
+    private V24PlayerMatchState findGkOnPitch(List<V24PlayerMatchState> players) {
+        return players.stream()
+                .filter(p -> p.position().equals("GK") && p.onPitch())
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -805,6 +959,98 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return avg;
     }
 
+    /**
+     * V25D34-F2 helper: aggregate MARKER + TACKLER skill levels from the
+     * opponent's DEF on-pitch players. Used by the V24 engine to feed
+     * {@code V24ShotXgCalculator} (defending side of the duel).
+     *
+     * <p>V25D35: visibility changed from {@code private} to package-private so
+     * the unit test {@code AggregateOpponentDefenderSkillsTest} (same package)
+     * can drive the helper directly without reflection. Reflection-on-private
+     * was the previous fallback and the verifier nit called it out as fragile.
+     * The helper is still single-package-only (no public access), so the
+     * engine's public surface remains unchanged.
+     *
+     * <p><b>NOTE — "visible-for-testing":</b> this method is package-private
+     * solely so the unit test can call it. It is NOT part of the public API of
+     * {@link V24DetailedMatchEngine}. Production callers MUST go through
+     * {@link #simulate(V24MatchContext, java.util.Random)} or one of the other
+     * public entry points. (We don't use Guava's {@code @VisibleForTesting}
+     * because Guava is not on the project's classpath, and we don't use
+     * Spring's {@code org.springframework.lang.VisibleForTesting} because it
+     * is not present in Spring Framework 6.1.x.)
+     *
+     * <p>Contract (unchanged):
+     * <ul>
+     *   <li>Filters to {@code onPitch()} AND {@code position == "DEF"} — MID,
+     *       ATT, FWD and OFF-PITCH players are ignored.</li>
+     *   <li>For each skill (MARKER, TACKLER), computes the average across
+     *       matching DEF on-pitch players and rounds to nearest int with
+     *       {@link Math#round}.</li>
+     *   <li>Sparse map semantics: an avg of {@code 0} (no DEF on-pitch with
+     *       that skill) results in the entry being OMITTED from the returned
+     *       map (not stored as 0). Callers treat absent entries as 0.</li>
+     *   <li>Returns an empty {@code Map.of()} when no DEF on-pitch players
+     *       are present (no averages to compute).</li>
+     * </ul>
+     *
+     * <p>Rationale (defending-only): MARKER es "marcaje al hombre en defensa"
+     * y TACKLER es "entradas y recuperacion" — son skills que define el rol
+     * defensivo. Si en el futuro se quiere incluir MIDs defensivos, se puede
+     * extender el filtro {@code position == "DEF"}.
+     *
+     * @param opponents lista de jugadores del equipo oponente (full starting 11)
+     * @return sparse map con MARKER y/o TACKLER promediados; empty si no hay
+     *         DEF on-pitch o si ninguno tiene esos skills
+     */
+    // visible-for-testing: package-private by V25D35 verifier nit
+    Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(List<V24PlayerMatchState> opponents) {
+        List<V24PlayerMatchState> defsOnPitch = opponents.stream()
+                .filter(V24PlayerMatchState::onPitch)
+                .filter(p -> p.position().equals("DEF"))
+                .toList();
+        if (defsOnPitch.isEmpty()) return Map.of();
+
+        Map<PlayerSkill, Integer> result = new HashMap<>();
+        // MARKER avg
+        double markerAvg = defsOnPitch.stream()
+                .mapToInt(p -> p.getSkillLevel(PlayerSkill.MARKER))
+                .average()
+                .orElse(0.0);
+        if (markerAvg > 0) {
+            result.put(PlayerSkill.MARKER, (int) Math.round(markerAvg));
+        }
+        // TACKLER avg
+        double tacklerAvg = defsOnPitch.stream()
+                .mapToInt(p -> p.getSkillLevel(PlayerSkill.TACKLER))
+                .average()
+                .orElse(0.0);
+        if (tacklerAvg > 0) {
+            result.put(PlayerSkill.TACKLER, (int) Math.round(tacklerAvg));
+        }
+        return result;
+    }
+
+    /**
+     * V25D34-F3: max PASSER skill entre los on-pitch players. Usado para
+     * amplificar la possession share base del equipo. Retorna 0 si no hay
+     * players on-pitch o si ninguno tiene PASSER.
+     *
+     * <p>Sparse map semantics: skill absent → 0 (treated as no skill).
+     * Si todos tienen PASSER=0, retorna 0 → no boost → bit-a-bit identico
+     * a V25D33.
+     *
+     * @param players lista de players del equipo (full starting 11)
+     * @return MAX PASSER skill (0-99) entre on-pitch players
+     */
+    private int maxPasserSkill(List<V24PlayerMatchState> players) {
+        return players.stream()
+                .filter(V24PlayerMatchState::onPitch)
+                .mapToInt(p -> p.getSkillLevel(PlayerSkill.PASSER))
+                .max()
+                .orElse(0);
+    }
+
     private double styleToModifier(TeamStyle style) {
         return switch (style) {
             case ATTACKING -> 1.15;
@@ -820,10 +1066,64 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // overload with the V24D6U4-RE anchor (attack=70, speed=70) so the modifier
         // is 1.0 and the historical λ target is preserved for callers that don't
         // have a live startingPlayers list (e.g. diagnostic harnesses).
-        return chanceProbability(style, minute, 70, 70);
+        return chanceProbability(style, minute, 70, 70, 0, 0);
     }
 
     private double chanceProbability(TeamStyle style, int minute, int possessorAttack, int possessorSpeed) {
+        // V25D33-F2: backward-compat overload delegates to the new 5-args with
+        // dribblerSkill=0. Preserves V25D32 baseline for diagnostic harnesses
+        // that don't have a live keyAttacker reference.
+        return chanceProbability(style, minute, possessorAttack, possessorSpeed, 0, 0);
+    }
+
+    private double chanceProbability(TeamStyle style, int minute, int possessorAttack,
+                                     int possessorSpeed, int dribblerSkill) {
+        // V25D34-F3: backward-compat overload delegates to the new 6-args with
+        // speedsterSkill=0. Preserves V25D33 baseline for callers que no
+        // necesitan SPEEDSTER.
+        return chanceProbability(style, minute, possessorAttack, possessorSpeed,
+                dribblerSkill, 0);
+    }
+
+    /**
+     * V25D34-F3: overload 6-args que agrega {@code speedsterSkill} para aplicar
+     * el SPEEDSTER bonus al keySpeed en counter-attacks. El overload 5-args
+     * delega a este con speedsterSkill=0 (no-op para callers legacy).
+     *
+     * <p>SPEEDSTER bonus: cuando {@code style == COUNTER} y
+     * {@code speedsterSkill > 0}, se agrega {@code speedsterSkill / 3} al
+     * possessorSpeed efectivo. Esto amplifica el qualityMod (que pesa
+     * speed * 0.01). Spec values:
+     * <ul>
+     *   <li>SPEEDSTER=0 o style != COUNTER → no-op (qualityMod unchanged)</li>
+     *   <li>SPEEDSTER=92 (Vinicius) en COUNTER → speed += 30 (integer div
+     *       92/3=30; truncado, NO 30.67) → qualityMod shift = 30 * 0.01 = 0.30
+     *       → chanceProb * 1.30 (+30% en counter-attacks)</li>
+     *   <li>SPEEDSTER=50 en COUNTER → speed += 16 (integer div 50/3=16;
+     *       truncado, NO 16.67) → qualityMod shift = 0.16 → chanceProb * 1.16
+     *       (+16%)</li>
+     *   <li>SPEEDSTER=99 en COUNTER → speed += 33 (integer div 99/3=33) →
+     *       chanceProb * 1.33 (+33%)</li>
+     * </ul>
+     *
+     * <p>V25D35 verifier nit: la mención previa de "30.67 / 16.67 / +30.7% /
+     * +16.7%" era incorrecta — la division es entera (Java {@code int / int}),
+     * no double. El codigo aplica truncamiento. Los unit tests en
+     * {@code V24DetailedMatchEngineSpeedsterTest} ya usaban la formula
+     * correcta {@code (92 / 3) * 0.01}, por lo que el comportamiento real no
+     * cambio; solo la documentacion.
+     *
+     * <p>Gating: SPEEDSTER bonus SOLO aplica en style == COUNTER. En
+     * ATTACKING / POSSESSION / DEFENSIVE / BALANCED, speedsterSkill se ignora
+     * (no es bonus de contraataque, es bonus de velocidad pura en counter).
+     * Modelo simple: "el SPEEDSTER es mas util cuando salis a correr al
+     * espacio" — no compensa con otros styles.
+     *
+     * <p>No-op regression: speedsterSkill=0 → bit-a-bit identico al overload
+     * 5-args (que ya delega al 6-args con 0).
+     */
+    private double chanceProbability(TeamStyle style, int minute, int possessorAttack,
+                                     int possessorSpeed, int dribblerSkill, int speedsterSkill) {
         // V24D6U4-RE: Recalibrated to hit Poisson λ=1.25 per team.
         // Previous tuning (V24D6U4) overshot the suppression: empirical λ≈0.45
         // vs target λ≈1.25 (factor 2.77x too low). ITER 1 (base 0.25) gave
@@ -841,6 +1141,14 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // Open play tends to increase toward end of match
         double endGame = (minute > 75) ? 1.2 : 1.0;
 
+        // V25D34-F3: SPEEDSTER bonus al keySpeed en COUNTER style. Aplicado
+        // ANTES del qualityMod para que el bonus se propague al multiplier.
+        // Si style != COUNTER o speedsterSkill <= 0, no hay cambio.
+        int effectiveSpeed = possessorSpeed;
+        if (style == TeamStyle.COUNTER && speedsterSkill > 0) {
+            effectiveSpeed += speedsterSkill / 3;
+        }
+
         // F6 F2 contract: player-quality modifier anchored to the V24D6U4-RE
         // median (attack=70, speed=70) so a default starter gives mod=1.0 and
         // the existing λ target is preserved for unmodified lineups. A
@@ -852,9 +1160,20 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // [0.9, 1.6] gate).
         double qualityMod = 1.0
             + (possessorAttack - 70) * 0.02
-            + (possessorSpeed - 70) * 0.01;
+            + (effectiveSpeed - 70) * 0.01;
 
-        return base * secondHalf * endGame * qualityMod;
+        // V25D33-F2: DRIBBLER 1v1 multiplier. Spec values:
+        //   DRIBBLER=0  -> multiplier 1.000 (no change — bit-a-bit compat)
+        //   DRIBBLER=50 -> multiplier 1.167 (+16.7%)
+        //   DRIBBLER=95 -> multiplier 1.317 (+31.7%)
+        // Applied AFTER qualityMod so the existing F6 F2 contract (subbing in
+        // a higher-attack player shifts λ) is preserved bit-a-bit when
+        // DRIBBLER=0. DRIBBLER is multiplicative on chanceProbability — i.e.
+        // a key attacker with DRIBBLER=95 produces ~31.7% more shot attempts
+        // than one with DRIBBLER=0, ceteris paribus.
+        double dribblerMult = 1.0 + (dribblerSkill / 300.0);
+
+        return base * secondHalf * endGame * qualityMod * dribblerMult;
     }
 
     private double possessionBase(TeamStyle style) {

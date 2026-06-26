@@ -3,6 +3,8 @@ package com.footballmanager.domain.model.entity;
 import com.footballmanager.domain.model.valueobject.*;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class Player {
@@ -21,6 +23,8 @@ public class Player {
     private final Position position;
     private final BigDecimal marketValue;
     private PlayerAttributes attributes;
+    private Integer heightCm;
+    private Map<PlayerSkill, Integer> skillLevels;
     private int energy;
     private InjuryState injuryState;
     private boolean injured;
@@ -29,6 +33,7 @@ public class Player {
 
     private Player(PlayerId id, String name, int age, Position position,
                    PlayerAttributes attributes, BigDecimal marketValue,
+                   Integer heightCm, Map<PlayerSkill, Integer> skillLevels,
                    int energy, InjuryState injuryState, boolean injured,
                    Instant createdAt, Instant updatedAt) {
         this.id = id;
@@ -36,6 +41,7 @@ public class Player {
         this.position = Objects.requireNonNull(position, "Position cannot be null");
         this.attributes = Objects.requireNonNull(attributes, "Attributes cannot be null");
         this.marketValue = marketValue;
+        this.skillLevels = skillLevels != null ? new HashMap<>(skillLevels) : new HashMap<>();
         this.energy = energy;
         this.injuryState = injuryState != null ? injuryState : InjuryState.HEALTHY;
         this.injured = injured;
@@ -44,11 +50,25 @@ public class Player {
         validateAge(age);
         validateEnergy(energy);
         this.age = age;
+        // V25D31: defer heightCm validation until after age to keep constructor order readable.
+        if (heightCm != null) {
+            setHeightCm(heightCm);
+        }
     }
 
     public static Player create(PlayerId id, String name, int age, Position position,
                                 PlayerAttributes attributes, BigDecimal marketValue) {
+        return create(id, name, age, position, attributes, marketValue, null, null);
+    }
+
+    /**
+     * Factory completa con height + skills (V25D31).
+     */
+    public static Player create(PlayerId id, String name, int age, Position position,
+                                PlayerAttributes attributes, BigDecimal marketValue,
+                                Integer heightCm, Map<PlayerSkill, Integer> skillLevels) {
         return new Player(id, name, age, position, attributes, marketValue,
+                         heightCm, skillLevels,
                          100, InjuryState.HEALTHY, false, Instant.now(), Instant.now());
     }
 
@@ -56,7 +76,20 @@ public class Player {
                               PlayerAttributes attributes, BigDecimal marketValue,
                               int energy, InjuryState injuryState, boolean injured,
                               Instant createdAt, Instant updatedAt) {
+        return reconstruct(id, name, age, position, attributes, marketValue,
+                          null, null, energy, injuryState, injured, createdAt, updatedAt);
+    }
+
+    /**
+     * Reconstruct completo con height + skills (V25D31).
+     */
+    public static Player reconstruct(PlayerId id, String name, int age, Position position,
+                              PlayerAttributes attributes, BigDecimal marketValue,
+                              Integer heightCm, Map<PlayerSkill, Integer> skillLevels,
+                              int energy, InjuryState injuryState, boolean injured,
+                              Instant createdAt, Instant updatedAt) {
         return new Player(id, name, age, position, attributes, marketValue,
+                         heightCm, skillLevels,
                          energy, injuryState, injured, createdAt, updatedAt);
     }
 
@@ -124,7 +157,7 @@ public class Player {
 
     /**
      * V24D8-BUG-002 Capa 3: retorna una nueva instancia de Player con el nombre actualizado,
-     * preservando el resto del estado (id, age, position, attributes, energy, injury, createdAt).
+     * preservando el resto del estado (id, age, position, attributes, height, skills, energy, injury, createdAt).
      * El Player original queda intacto (inmutabilidad). Para persistir el rename, usar
      * {@code playerRepository.save(userId, this.rename(newName))}.
      */
@@ -132,6 +165,7 @@ public class Player {
         return Player.reconstruct(
                 this.id, newName, this.age, this.position,
                 this.attributes, this.marketValue,
+                this.heightCm, this.skillLevels,
                 this.energy, this.injuryState, this.injured,
                 this.createdAt, Instant.now()
         );
@@ -148,6 +182,51 @@ public class Player {
     public boolean isInjured() { return injured; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+
+    // ========== V25D31 - Height + Skills ==========
+
+    public Integer getHeightCm() { return heightCm; }
+
+    public void setHeightCm(Integer heightCm) {
+        if (heightCm != null && (heightCm < 160 || heightCm > 210)) {
+            throw new IllegalArgumentException("heightCm must be between 160 and 210");
+        }
+        this.heightCm = heightCm;
+        this.updatedAt = Instant.now();
+    }
+
+    public Map<PlayerSkill, Integer> getSkillLevels() {
+        return skillLevels == null
+                ? java.util.Collections.emptyMap()
+                : java.util.Collections.unmodifiableMap(skillLevels);
+    }
+
+    public int getSkillLevel(PlayerSkill skill) {
+        if (skill == null || skillLevels == null) return 0;
+        Integer level = skillLevels.get(skill);
+        return level == null ? 0 : level;
+    }
+
+    public void setSkillLevel(PlayerSkill skill, Integer value) {
+        if (skill == null) {
+            throw new IllegalArgumentException("skill cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("skill level cannot be null");
+        }
+        if (value < 0 || value > 99) {
+            throw new IllegalArgumentException("Skill level must be between 0 and 99");
+        }
+        if (skillLevels == null) {
+            skillLevels = new HashMap<>();
+        }
+        if (value == 0) {
+            skillLevels.remove(skill);
+        } else {
+            skillLevels.put(skill, value);
+        }
+        this.updatedAt = Instant.now();
+    }
 
     public int getOverall() {
         int attack = attributes.getAttack();

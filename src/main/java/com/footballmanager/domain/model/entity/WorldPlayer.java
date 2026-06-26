@@ -1,14 +1,26 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
+
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * WorldPlayer - Jugador en el WorldSnapshot.
  * Puede ser REAL (desde PostgreSQL) o CUSTOM (creado por usuario).
- * 
+ *
  * NO es mutable durante el juego.
  * SessionPlayer lo envuelve con estado mutable (energy, form, injuries).
+ *
+ * <p>V25D32-F3: agregados {@code heightCm} y {@code skillLevels} para que el
+ * LaLigaSeedService pueda persistir metadata fisica/skills a Postgres via el
+ * entity layer. Los factories existentes quedan intactos (backward-compat) —
+ * los nuevos campos se setean post-construccion via setters, o quedan null/empty
+ * si el caller no los provee. En V25D33, el mapping WorldPlayer → SessionPlayer
+ * propagara estos campos al engine.
  */
 public class WorldPlayer {
     
@@ -29,7 +41,13 @@ public class WorldPlayer {
     private BigDecimal baseMarketValue;
     
     private WorldPlayerOrigin origin;    // REAL, CUSTOM o RANDOM
-    
+
+    // V25D32-F3: height + skill metadata. Seteados por el seeder si el JSON los
+    // provee; null/empty para players viejos (custom/random) que no tienen data
+    // hardcoded. Engine en V25D33 aplica defaults si son null/empty.
+    private Integer heightCm;
+    private Map<PlayerSkill, Integer> skillLevels;
+
     public enum WorldPlayerOrigin {
         REAL,     // Clonado de PostgreSQL
         CUSTOM,   // Creado por usuario manualmente
@@ -281,5 +299,29 @@ public class WorldPlayer {
 
     public void setOrigin(WorldPlayerOrigin origin) {
         this.origin = origin;
+    }
+
+    // ========== V25D32-F3: Height + Skills ==========
+
+    public Integer getHeightCm() {
+        return heightCm;
+    }
+
+    public void setHeightCm(Integer heightCm) {
+        this.heightCm = heightCm;
+    }
+
+    /**
+     * Read-only view of the skill levels map. Sparse: only contains skills with
+     * level &gt; 0. Null/empty si el seeder no proveyo skills.
+     */
+    public Map<PlayerSkill, Integer> getSkillLevels() {
+        return skillLevels == null
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(skillLevels);
+    }
+
+    public void setSkillLevels(Map<PlayerSkill, Integer> skillLevels) {
+        this.skillLevels = skillLevels != null ? new HashMap<>(skillLevels) : null;
     }
 }

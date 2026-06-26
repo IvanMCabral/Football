@@ -148,13 +148,17 @@ public class SquadQueryUseCaseImpl implements SquadQueryUseCase {
     }
 
     private SessionPlayer convertWorldPlayerToSessionPlayer(WorldPlayer worldPlayer, String teamId) {
+        // V25D33-F0-mapping: propagate height + skills from WorldPlayer so
+        // the squad view exposes them (F5 UI) and the engine can read them.
         return SessionPlayer.cloneFromWorldPlayer(
             worldPlayer.getWorldPlayerId(),
             worldPlayer.getName(),
             worldPlayer.getPosition(),
             worldPlayer.getAge(),
             worldPlayer.calculateOverall(),
-            teamId
+            teamId,
+            worldPlayer.getHeightCm(),
+            worldPlayer.getSkillLevels()
         );
     }
 }

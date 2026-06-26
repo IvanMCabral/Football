@@ -208,9 +208,16 @@ public class TestHarnessController {
     }
 
     /**
-     * V25D29: POST /api/v1/test-harness/career/inject-player-stats
+     * V25D29 + V25D35: POST /api/v1/test-harness/career/inject-player-stats
      * Mutates one SessionPlayer's stats in the persisted career. Null fields
      * are left unchanged. Bounds-checked to {@code [0, 99]} (V25D25 engine convention).
+     *
+     * <p><b>V25D35 extension:</b> the request body can also include
+     * {@code heightCm} (Integer, [160, 210]) and {@code skillLevels}
+     * (sparse {@code Map<PlayerSkill, Integer>}, each entry [0, 99]) to
+     * mutate the V25D31 physical + skill metadata. Both fields are nullable;
+     * absent/null = leave current value unchanged. See
+     * {@link InjectPlayerStatsRequest} for the full spec.
      *
      * <p>Engine reads updated stats on next replay via {@code aggregateAttackerStat}
      * (top-5 attackers by attack stat) and {@code aggregateDefenderStat}
@@ -232,7 +239,9 @@ public class TestHarnessController {
                 userId, request.playerId(),
                 request.attack(), request.defense(),
                 request.technique(), request.speed(),
-                request.stamina(), request.mentality())
+                request.stamina(), request.mentality(),
+                request.heightCm(),
+                request.skillLevels())
             .<ResponseEntity<Map<String, Object>>>then(Mono.fromSupplier(() -> {
                 Map<String, Object> body = new LinkedHashMap<>();
                 body.put("success", true);

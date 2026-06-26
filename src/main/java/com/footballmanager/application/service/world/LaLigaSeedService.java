@@ -7,6 +7,7 @@ import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import org.springframework.r2dbc.core.DatabaseClient;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,13 @@ public class LaLigaSeedService {
     private final RedisWorldRepository worldRepository;
     private final PlayerRepository playerRepository;
     private final DatabaseClient databaseClient;
+
+    /**
+     * V25D32-F3: generador deterministico de heights para los 386 players del seed
+     * que NO tienen heightCm hardcoded en el JSON. Mismo seed → mismo height, lo
+     * que hace la persistencia en Postgres idempotente para esos fields.
+     */
+    private final PlayerAttributesGenerator attributesGenerator = new PlayerAttributesGenerator();
 
     /**
      * Ejecuta el seed para el usuario indicado. Crea/actualiza la league, los 20 equipos
@@ -157,10 +165,19 @@ public class LaLigaSeedService {
                         ? wp.getBaseMarketValue()
                         : java.math.BigDecimal.valueOf(5_000_000L);
 
+                // V25D32-F3: height + skills vienen del WorldPlayer (seteados en
+                // applyHeightAndSkillsFromDto). skillLevels se serializa a JSON
+                // (mismo codec que PlayerEntity).
+                Integer height = wp.getHeightCm();
+                String skillsJson = serializeSkillLevelsOrNull(wp.getSkillLevels());
+
                 databaseClient.sql("""
-                    INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at)
-                    VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :mv, :energy, :injured, :createdAt, :updatedAt)
-                    ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+                    INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
+                    VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :mv, :energy, :injured, :createdAt, :updatedAt, :heightCm, :skillLevelsJson)
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        height_cm = EXCLUDED.height_cm,
+                        skill_levels_json = EXCLUDED.skill_levels_json
                     """)
                     .bind("id", realPlayerId)
                     .bind("name", newName)
@@ -177,6 +194,8 @@ public class LaLigaSeedService {
                     .bind("injured", false)
                     .bind("createdAt", now)
                     .bind("updatedAt", now)
+                    .bind("heightCm", height)
+                    .bind("skillLevelsJson", skillsJson)
                     .fetch()
                     .rowsUpdated()
                     .block();
@@ -354,10 +373,14 @@ public class LaLigaSeedService {
         BigDecimal marketValue = calculateMarketValue(
                 dto.baseAttack(), dto.baseDefense(), dto.baseTechnique(),
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), dto.age());
-        return WorldPlayer.fromRealPlayer(
+        WorldPlayer player = WorldPlayer.fromRealPlayer(
                 realPlayerId, team.getWorldTeamId(), dto.name(), dto.age(), dto.position(),
                 dto.baseAttack(), dto.baseDefense(), dto.baseTechnique(),
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), marketValue);
+        // V25D32-F3: height + skills. Si el JSON los provee, los usamos. Si no,
+        // generamos un height aleatorio con seed fijo (para los 386 no-top-20).
+        applyHeightAndSkillsFromDto(player, dto);
+        return player;
     }
 
     private void updatePlayerFromDto(WorldPlayer p, LaLigaSeedData.PlayerDto dto, WorldTeam team) {
@@ -375,6 +398,29 @@ public class LaLigaSeedService {
                 dto.baseAttack(), dto.baseDefense(), dto.baseTechnique(),
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), dto.age()));
         p.setOrigin(WorldPlayer.WorldPlayerOrigin.REAL);
+        // V25D32-F3: refrescar height + skills en re-seed (idempotencia).
+        applyHeightAndSkillsFromDto(p, dto);
+    }
+
+    /**
+     * V25D32-F3: aplica height + skills al WorldPlayer desde el DTO. Si el DTO
+     * tiene heightCm, lo usa. Si no, genera uno aleatorio con el generator
+     * deterministico. Si el DTO tiene skillLevels (top-5 curated), los aplica.
+     * Si no, deja el map vacio (engine en V25D33 aplica defaults).
+     */
+    private void applyHeightAndSkillsFromDto(WorldPlayer player, LaLigaSeedData.PlayerDto dto) {
+        Integer height = dto.heightCm() != null
+                ? dto.heightCm()
+                : attributesGenerator.generateHeightCm();
+        player.setHeightCm(height);
+
+        // skillLevels: solo si el DTO los provee. NO random para los 386
+        // restantes — el prompt de V25D32 lo desaconseja (ruido en smoke canonico).
+        if (dto.skillLevels() != null && !dto.skillLevels().isEmpty()) {
+            player.setSkillLevels(dto.skillLevels());
+        } else {
+            player.setSkillLevels(null);  // explicit null (vs empty map)
+        }
     }
 
     private static BigDecimal calculateMarketValue(Integer att, Integer def, Integer tech,
@@ -392,6 +438,24 @@ public class LaLigaSeedService {
 
     private static int safe(Integer v) {
         return v == null ? 50 : v;
+    }
+
+    /**
+     * V25D32-F3: serializa un Map&lt;PlayerSkill, Integer&gt; a JSON string para el
+     * INSERT crudo en Postgres. Devuelve null si el map es null o vacio (no string
+     * vacia ni literal "null" — queremos que la columna quede NULL en la DB para
+     * los players sin skills curated).
+     */
+    private String serializeSkillLevelsOrNull(Map<PlayerSkill, Integer> skillLevels) {
+        if (skillLevels == null || skillLevels.isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(skillLevels);
+        } catch (Exception e) {
+            log.warn("[LA-LIGA-SEED] failed to serialize skillLevels: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**

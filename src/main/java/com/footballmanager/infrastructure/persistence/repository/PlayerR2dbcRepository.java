@@ -29,8 +29,8 @@ public interface PlayerR2dbcRepository extends R2dbcRepository<PlayerEntity, UUI
     Flux<PlayerEntity> findAvailable();
 
         @Query("""
-                INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at)
-                VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :marketValue, :energy, :injured, :createdAt, :updatedAt)
+                INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
+                VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :marketValue, :energy, :injured, :createdAt, :updatedAt, :heightCm, :skillLevelsJson)
                 """)
         Mono<Void> insertPlayer(
                 UUID id,
@@ -47,7 +47,9 @@ public interface PlayerR2dbcRepository extends R2dbcRepository<PlayerEntity, UUI
                 int energy,
                 boolean injured,
                 Instant createdAt,
-                Instant updatedAt
+                Instant updatedAt,
+                Integer heightCm,
+                String skillLevelsJson
         );
 
     @Query("""
