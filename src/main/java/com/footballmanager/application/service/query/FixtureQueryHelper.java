@@ -66,8 +66,40 @@ public final class FixtureQueryHelper {
         return UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8)).toString();
     }
 
+    /**
+     * V25D37-F1: Build a {@link MatchInfo} when only the {@code careerId} (string)
+     * is available — no {@link CareerSave} to derive formations / xG from.
+     *
+     * <p>Previous implementation delegated to {@code toMatchInfo(f, teamNames, (String) null)}
+     * which resolved to this same overload (the {@code (String) null} cast disambiguated
+     * from {@code CareerSave} but the resolved signature was still the {@code String careerId}
+     * overload), producing infinite recursion and a {@link StackOverflowError} at runtime
+     * (BUG_STACKOVERFLOW_V25D24_3_F1, surfaced via
+     * {@code UserDivisionFixtureQueryServiceTest.getAll_withCrossDivisionFixture_returnsRealNames}).
+     *
+     * <p>Fix: build the {@link MatchInfo} directly. Formation + xG fields stay {@code null}
+     * because this overload has no access to a {@link CareerSave} — callers that need
+     * formations / xG must use the {@link #toMatchInfo(MatchFixture, Map, CareerSave)}
+     * overload instead.
+     */
     public static MatchInfo toMatchInfo(MatchFixture f, Map<String, String> teamNames, String careerId) {
-        return toMatchInfo(f, teamNames, (String) null);
+        return new MatchInfo(
+                f.getMatchId(),
+                f.getHomeTeamId(),
+                getTeamName(teamNames, f.getHomeTeamId()),
+                f.getAwayTeamId(),
+                getTeamName(teamNames, f.getAwayTeamId()),
+                f.getRound(),
+                f.getStatus() != null ? f.getStatus().name() : "PENDING",
+                f.getResult() != null ? f.getResult().getHomeGoals() : null,
+                f.getResult() != null ? f.getResult().getAwayGoals() : null,
+                null,   // homeXG — requires CareerSave
+                null,   // awayXG — requires CareerSave
+                null,   // totalXG — requires CareerSave
+                deriveRoundId(careerId, f.getRound()),
+                null,   // homeFormation — requires CareerSave
+                null    // awayFormation — requires CareerSave
+        );
     }
 
     /**
