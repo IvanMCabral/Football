@@ -229,6 +229,31 @@ public class Player {
     }
 
     public int getOverall() {
+        int base = computeBaseOverall();
+
+        // V25D39 (Sprint C4): backward compat — if no height and no skills,
+        // return the base formula unchanged. This is the contract that pre-V25D39
+        // callers relied on (and what all existing tests / smoke flows assume).
+        if (heightCm == null && (skillLevels == null || skillLevels.isEmpty())) {
+            return base;
+        }
+
+        int skillBonus = computeSkillBonus();
+        int heightFactor = computeHeightFactor();
+
+        int total = base + skillBonus + heightFactor;
+        // Clamp [0, 99] so the formula can never escape the canonical overall range.
+        return Math.max(0, Math.min(99, total));
+    }
+
+    /**
+     * V25D39 (Sprint C4): original V24 weight-by-position formula (6 base stats).
+     * Extracted into a helper so {@link #getOverall()} can compose it with the
+     * new skill + height adjustments without duplicating the switch.
+     *
+     * <p>Bit-a-bit identical to the pre-V25D39 implementation.
+     */
+    private int computeBaseOverall() {
         int attack = attributes.getAttack();
         int defense = attributes.getDefense();
         int technique = attributes.getTechnique();
@@ -245,6 +270,145 @@ public class Player {
             default -> (attack + defense + technique + speed + stamina + mentality) / 6.0;
         };
         return (int) Math.round(overall);
+    }
+
+    /**
+     * V25D39 (Sprint C4): skill-bonus component of the additive overall formula.
+     *
+     * <p>Sum over each skill present in {@link #skillLevels} of
+     * {@code clampedSkillValue * positionWeight[skill]}, divided by 10 to bound
+     * the total contribution. Skill values outside {@code [0, 99]} are clamped
+     * defensively (callers may have persisted legacy data without bounds).
+     *
+     * <p>Per-position skill weights sum to ~0.65, so the max possible bonus
+     * (all skills at 99) is {@code 99 * 0.65 / 10 ≈ 6.4}. Keeps the contribution
+     * of skills small relative to the 6 base stats — the canonical overall still
+     * tracks the base formula, with skills nudging within a known bounded band.
+     */
+    private int computeSkillBonus() {
+        if (skillLevels == null || skillLevels.isEmpty()) {
+            return 0;
+        }
+        Map<PlayerSkill, Double> weights = skillWeightsFor(position);
+        if (weights.isEmpty()) {
+            return 0;
+        }
+        double sum = 0.0;
+        for (Map.Entry<PlayerSkill, Integer> entry : skillLevels.entrySet()) {
+            Double weight = weights.get(entry.getKey());
+            if (weight == null || entry.getValue() == null) {
+                continue;
+            }
+            int clampedValue = Math.max(0, Math.min(99, entry.getValue()));
+            sum += clampedValue * weight;
+        }
+        return (int) Math.round(sum / 10.0);
+    }
+
+    /**
+     * V25D39 (Sprint C4): height adjustment component of the additive overall
+     * formula. Position-specific (per the C4 design):
+     * <ul>
+     *   <li><b>GK</b>: height &lt; 185 → -1; height &ge; 190 → +1; height &ge; 200 → +2</li>
+     *   <li><b>DEF</b> (LB/CB/RB/LWB/RWB): height &lt; 175 → -2; height &ge; 190 → +2</li>
+     *   <li><b>MID</b> (CDM/CM/CAM/LM/RM): -1 (height &lt; 170) to +1 (height &ge; 190), linear</li>
+     *   <li><b>WINGER</b> (LW/RW): height &lt; 170 → -1; height &ge; 185 → +1</li>
+     *   <li><b>ATT</b> (CF/ST): height &lt; 175 → -2; height &ge; 190 → +2</li>
+     * </ul>
+     *
+     * <p>Out-of-bounds height (&lt; 160 or &gt; 210) is defensively clamped to the
+     * nearest in-range value before lookup, so the formula never escapes [-2, +2].
+     */
+    private int computeHeightFactor() {
+        if (heightCm == null) {
+            return 0;
+        }
+        int h = Math.max(160, Math.min(210, heightCm));
+        return switch (position) {
+            case GK -> {
+                if (h >= 200) yield 2;
+                if (h >= 190) yield 1;
+                if (h < 185) yield -1;
+                yield 0;
+            }
+            case LB, CB, RB, LWB, RWB -> {
+                if (h >= 190) yield 2;
+                if (h < 175) yield -2;
+                yield 0;
+            }
+            case CDM, CM, CAM, LM, RM -> {
+                if (h >= 190) yield 1;
+                if (h < 170) yield -1;
+                yield 0;
+            }
+            case LW, RW -> {
+                // Closed boundary at 170: the task example explicitly tests
+                // "WINGER height=170 → slight height penalty" so a LW exactly
+                // at the 170 cm threshold already triggers the -1 penalty.
+                if (h >= 185) yield 1;
+                if (h <= 170) yield -1;
+                yield 0;
+            }
+            case CF, ST -> {
+                if (h >= 190) yield 2;
+                if (h < 175) yield -2;
+                yield 0;
+            }
+            default -> 0;
+        };
+    }
+
+    /**
+     * V25D39 (Sprint C4): per-position skill weight table.
+     *
+     * <p>Each row sums to ~0.65, so the max skill bonus is bounded at
+     * {@code 99 * 0.65 / 10 ≈ 6.4}. Weights encode domain knowledge of
+     * which skills matter most per archetype:
+     * <ul>
+     *   <li><b>GK</b>: WALL 0.30 (muro), AERIAL 0.15 (juego aereo), TACKLER 0.10 (salidas),
+     *       technique 0.10 (pies)</li>
+     *   <li><b>DEF</b>: MARKER 0.25 (marcaje), AERIAL 0.20 (duelos aereos),
+     *       TACKLER 0.15 (entradas), PASSER 0.05 (salida de balon)</li>
+     *   <li><b>MID</b>: PLAYMAKER 0.30 (vision), PASSER 0.20 (precision),
+     *       TACKLER 0.10 (recuperacion), MARKER 0.05 (cobertura)</li>
+     *   <li><b>WINGER</b>: SPEEDSTER 0.25 (velocidad), DRIBBLER 0.25 (regate),
+     *       PASSER 0.10 (asistencia), SHOOTER 0.05 (tiro)</li>
+     *   <li><b>ATT</b>: SHOOTER 0.25 (gol), HEADER 0.20 (cabeza),
+     *       DRIBBLER 0.10 (regate en area), SPEEDSTER 0.10 (velocidad)</li>
+     * </ul>
+     *
+     * <p>Sum of weights per row: GK 0.65, DEF 0.65, MID 0.65, WINGER 0.65,
+     * ATT 0.65. Uniform upper bound simplifies test arithmetic.
+     */
+    private static Map<PlayerSkill, Double> skillWeightsFor(Position position) {
+        return switch (position) {
+            case GK -> Map.of(
+                PlayerSkill.WALL,      0.30,
+                PlayerSkill.AERIAL,    0.15,
+                PlayerSkill.TACKLER,   0.10,
+                PlayerSkill.PASSER,    0.10);
+            case LB, CB, RB, LWB, RWB -> Map.of(
+                PlayerSkill.MARKER,    0.25,
+                PlayerSkill.AERIAL,    0.20,
+                PlayerSkill.TACKLER,   0.15,
+                PlayerSkill.PASSER,    0.05);
+            case CDM, CM, CAM, LM, RM -> Map.of(
+                PlayerSkill.PLAYMAKER, 0.30,
+                PlayerSkill.PASSER,    0.20,
+                PlayerSkill.TACKLER,   0.10,
+                PlayerSkill.MARKER,    0.05);
+            case LW, RW -> Map.of(
+                PlayerSkill.SPEEDSTER, 0.25,
+                PlayerSkill.DRIBBLER,  0.25,
+                PlayerSkill.PASSER,    0.10,
+                PlayerSkill.SHOOTER,   0.05);
+            case CF, ST -> Map.of(
+                PlayerSkill.SHOOTER,   0.25,
+                PlayerSkill.HEADER,    0.20,
+                PlayerSkill.DRIBBLER,  0.10,
+                PlayerSkill.SPEEDSTER, 0.10);
+            default -> Map.of();
+        };
     }
 
     @Override
