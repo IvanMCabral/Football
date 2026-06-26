@@ -84,16 +84,51 @@ public class MatchControllerReactive {
     }
 
     @PostMapping
-    public Mono<ResponseEntity<MatchDTO>> createMatch(@RequestBody CreateMatchRequest request, Authentication authentication) {
+    public Mono<ResponseEntity<Object>> createMatch(@RequestBody CreateMatchRequest request, Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
 
+        // V25D37-F3: pre-validate the request body before touching UUID.fromString.
+        // Before this fix, an empty/malformed body ({} or missing homeTeamId/awayTeamId)
+        // caused UUID.fromString(null) → NPE → 500 Internal Server Error with the
+        // confusing message "Cannot invoke \"String.length()\" because \"name\" is null"
+        // (BUG_MATCH_DETAIL_NPE_ON_BAD_BODY — actually surfaces on the
+        // {@code POST /api/v1/matches} endpoint, not a /match-detail endpoint).
+        // Now we return 400 Bad Request with a clear, structured error body.
+        if (request == null) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                java.util.Map.of("error", "request body must not be null")));
+        }
+        if (request.homeTeamId() == null || request.homeTeamId().isBlank()) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                java.util.Map.of("error", "homeTeamId must not be blank")));
+        }
+        if (request.awayTeamId() == null || request.awayTeamId().isBlank()) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                java.util.Map.of("error", "awayTeamId must not be blank")));
+        }
+        if (request.scheduledAt() == null) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                java.util.Map.of("error", "scheduledAt must not be null")));
+        }
+
+        UUID homeUuid;
+        UUID awayUuid;
+        try {
+            homeUuid = UUID.fromString(request.homeTeamId());
+            awayUuid = UUID.fromString(request.awayTeamId());
+        } catch (IllegalArgumentException ex) {
+            // Malformed UUID string (non-null, non-blank, but invalid format).
+            return Mono.just(ResponseEntity.badRequest().body(
+                java.util.Map.of("error", "teamIds must be valid UUIDs: " + ex.getMessage())));
+        }
+
         MatchId matchId = MatchId.generate();
-        TeamId homeTeamId = TeamId.of(UUID.fromString(request.homeTeamId()));
-        TeamId awayTeamId = TeamId.of(UUID.fromString(request.awayTeamId()));
+        TeamId homeTeamId = TeamId.of(homeUuid);
+        TeamId awayTeamId = TeamId.of(awayUuid);
 
         Match match = Match.schedule(matchId, homeTeamId, awayTeamId, request.scheduledAt(), 1);
         return matchRepository.save(userId, match)
-            .then(Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(match))));
+            .then(Mono.just(ResponseEntity.status(HttpStatus.CREATED).body((Object) mapToDTO(match))));
     }
 
     @PostMapping("/{matchId}/simulate")
