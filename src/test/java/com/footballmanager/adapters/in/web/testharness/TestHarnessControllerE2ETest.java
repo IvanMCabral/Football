@@ -210,10 +210,16 @@ class TestHarnessControllerE2ETest {
                 anyString(), anyString(), anyInt()))
             .thenReturn(Mono.just(career));
 
+        // V25D38-F2: use valid UUIDs for leagueId/teamId (production path
+        // requires UUIDs — StartCareerUseCaseImpl.start() calls
+        // UUID.fromString(worldLeagueId) which throws IllegalArgumentException
+        // on malformed strings; the V25D38-F2 fix now pre-validates this in
+        // the controller so the client gets a clean 400 instead of a 500 NPE
+        // on null or 422 IAE on malformed strings).
         String body = """
             {
-              "leagueId":"la-liga-1",
-              "teamId":"real-madrid",
+              "leagueId":"4feeb9df-4133-4655-883e-e96894907e7b",
+              "teamId":"8e55b18e-051d-48bd-9763-a35ae3005ac0",
               "difficulty":"EASY",
               "gameSpeed":"NORMAL",
               "teamsPerDivision":2
@@ -245,10 +251,11 @@ class TestHarnessControllerE2ETest {
                 anyString(), anyString(), eq(5)))
             .thenReturn(Mono.just(career));
 
+        // V25D38-F2: use valid UUIDs (see createCustom_happyPath comment).
         String body = """
             {
-              "leagueId":"la-liga-1",
-              "teamId":"real-madrid",
+              "leagueId":"4feeb9df-4133-4655-883e-e96894907e7b",
+              "teamId":"8e55b18e-051d-48bd-9763-a35ae3005ac0",
               "difficulty":"EASY",
               "gameSpeed":"NORMAL"
             }
