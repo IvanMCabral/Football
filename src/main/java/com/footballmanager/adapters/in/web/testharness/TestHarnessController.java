@@ -80,10 +80,64 @@ public class TestHarnessController {
             @RequestBody CreateCustomCareerRequest request,
             Authentication authentication) {
 
-        UUID userId = controllerHelper.getUserId(authentication);
+        // V25D38-F2: pre-validate the request body before touching UUID.fromString
+        // (BUG_NPE_AUDIT — surfaced by the V25D37-F3 follow-up audit).
+        //
+        // Before this fix, an empty body ({}), null leagueId/teamId, or malformed
+        // UUID strings propagated to StartCareerUseCaseImpl.start() which calls
+        // UUID.fromString(null) → NPE → 500 Internal Server Error with the
+        // confusing message "Cannot invoke \"String.length()\" because \"name\" is null"
+        // (same pattern as BUG_MATCH_DETAIL_NPE_ON_BAD_BODY fixed in V25D37-F3).
+        // The audit found this controller was the only sibling left with the bug;
+        // setFormation / setStyle / injectPlayerStats / resetRound return 422
+        // (mapped by GlobalExceptionHandler from IllegalArgumentException) because
+        // the underlying UseCases already null-check their fields.
+        //
+        // Now we return 400 Bad Request with a structured error Map per the
+        // V25D37-F3 pattern.
+        if (request == null) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                Map.of("error", "request body must not be null")));
+        }
+        if (request.leagueId() == null || request.leagueId().isBlank()) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                Map.of("error", "leagueId must not be blank")));
+        }
+        if (request.teamId() == null || request.teamId().isBlank()) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                Map.of("error", "teamId must not be blank")));
+        }
+        if (request.difficulty() == null || request.difficulty().isBlank()) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                Map.of("error", "difficulty must not be blank")));
+        }
+        if (request.gameSpeed() == null || request.gameSpeed().isBlank()) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                Map.of("error", "gameSpeed must not be blank")));
+        }
+        // leagueId/teamId must parse as valid UUIDs — StartCareerUseCaseImpl.start()
+        // calls UUID.fromString(worldLeagueId) which NPEs on null AND throws
+        // IllegalArgumentException on malformed strings. Catch the IAE early
+        // so the client gets a clear 400 instead of a 500 (NPE on null) or
+        // 422 (IAE mapped by GlobalExceptionHandler — inconsistent with siblings
+        // and harder to debug from the frontend).
+        try {
+            UUID.fromString(request.leagueId());
+            UUID.fromString(request.teamId());
+        } catch (IllegalArgumentException ex) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                Map.of("error", "leagueId/teamId must be valid UUIDs: " + ex.getMessage())));
+        }
+
         int teamsPerDivision = request.teamsPerDivision() != null
             ? request.teamsPerDivision()
             : 5;
+        if (teamsPerDivision < 2) {
+            return Mono.just(ResponseEntity.badRequest().body(
+                Map.of("error", "teamsPerDivision must be >= 2 (got " + teamsPerDivision + ")")));
+        }
+
+        UUID userId = controllerHelper.getUserId(authentication);
 
         return testHarnessUseCase.createCustom(
                 userId, request.leagueId(), request.teamId(),
