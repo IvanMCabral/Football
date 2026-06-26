@@ -960,25 +960,51 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D34-F2: aggregate opponent defender skills (MARKER + TACKLER) from
-     * on-pitch DEF position players. Used by {@link V24ShotXgCalculator}
-     * overload 11-args para aplicar las defending skills. Modelo simple —
-     * avg de cada skill entre los DEF on-pitch. Si no hay DEF on-pitch, el
-     * map viene vacio → MARKER y TACKLER no aplican (no-op).
+     * V25D34-F2 helper: aggregate MARKER + TACKLER skill levels from the
+     * opponent's DEF on-pitch players. Used by the V24 engine to feed
+     * {@code V24ShotXgCalculator} (defending side of the duel).
      *
-     * <p>Solo DEF position (no MID, no GK). Rationale: MARKER es "marcaje al
-     * hombre en defensa" y TACKLER es "entradas y recuperacion" — son skills
-     * que define el rol defensivo. Si en el futuro se quiere incluir MIDs
-     * defensivos, se puede extender.
+     * <p>V25D35: visibility changed from {@code private} to package-private so
+     * the unit test {@code AggregateOpponentDefenderSkillsTest} (same package)
+     * can drive the helper directly without reflection. Reflection-on-private
+     * was the previous fallback and the verifier nit called it out as fragile.
+     * The helper is still single-package-only (no public access), so the
+     * engine's public surface remains unchanged.
      *
-     * <p>Sparse map semantics: solo incluimos keys con valor &gt; 0 en el map.
-     * El caller (calculator) trata key ausente como 0 (no-op).
+     * <p><b>NOTE — "visible-for-testing":</b> this method is package-private
+     * solely so the unit test can call it. It is NOT part of the public API of
+     * {@link V24DetailedMatchEngine}. Production callers MUST go through
+     * {@link #simulate(V24MatchContext, java.util.Random)} or one of the other
+     * public entry points. (We don't use Guava's {@code @VisibleForTesting}
+     * because Guava is not on the project's classpath, and we don't use
+     * Spring's {@code org.springframework.lang.VisibleForTesting} because it
+     * is not present in Spring Framework 6.1.x.)
+     *
+     * <p>Contract (unchanged):
+     * <ul>
+     *   <li>Filters to {@code onPitch()} AND {@code position == "DEF"} — MID,
+     *       ATT, FWD and OFF-PITCH players are ignored.</li>
+     *   <li>For each skill (MARKER, TACKLER), computes the average across
+     *       matching DEF on-pitch players and rounds to nearest int with
+     *       {@link Math#round}.</li>
+     *   <li>Sparse map semantics: an avg of {@code 0} (no DEF on-pitch with
+     *       that skill) results in the entry being OMITTED from the returned
+     *       map (not stored as 0). Callers treat absent entries as 0.</li>
+     *   <li>Returns an empty {@code Map.of()} when no DEF on-pitch players
+     *       are present (no averages to compute).</li>
+     * </ul>
+     *
+     * <p>Rationale (defending-only): MARKER es "marcaje al hombre en defensa"
+     * y TACKLER es "entradas y recuperacion" — son skills que define el rol
+     * defensivo. Si en el futuro se quiere incluir MIDs defensivos, se puede
+     * extender el filtro {@code position == "DEF"}.
      *
      * @param opponents lista de jugadores del equipo oponente (full starting 11)
      * @return sparse map con MARKER y/o TACKLER promediados; empty si no hay
      *         DEF on-pitch o si ninguno tiene esos skills
      */
-    private Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(List<V24PlayerMatchState> opponents) {
+    // visible-for-testing: package-private by V25D35 verifier nit
+    Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(List<V24PlayerMatchState> opponents) {
         List<V24PlayerMatchState> defsOnPitch = opponents.stream()
                 .filter(V24PlayerMatchState::onPitch)
                 .filter(p -> p.position().equals("DEF"))
@@ -1070,12 +1096,22 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * speed * 0.01). Spec values:
      * <ul>
      *   <li>SPEEDSTER=0 o style != COUNTER → no-op (qualityMod unchanged)</li>
-     *   <li>SPEEDSTER=92 (Vinicius) en COUNTER → speed += 30.67 →
-     *       qualityMod shift = 30.67 * 0.01 = 0.307 → chanceProb * 1.307
-     *       (+30.7% en counter-attacks)</li>
-     *   <li>SPEEDSTER=50 en COUNTER → speed += 16.67 →
-     *       qualityMod shift = 0.167 → chanceProb * 1.167 (+16.7%)</li>
+     *   <li>SPEEDSTER=92 (Vinicius) en COUNTER → speed += 30 (integer div
+     *       92/3=30; truncado, NO 30.67) → qualityMod shift = 30 * 0.01 = 0.30
+     *       → chanceProb * 1.30 (+30% en counter-attacks)</li>
+     *   <li>SPEEDSTER=50 en COUNTER → speed += 16 (integer div 50/3=16;
+     *       truncado, NO 16.67) → qualityMod shift = 0.16 → chanceProb * 1.16
+     *       (+16%)</li>
+     *   <li>SPEEDSTER=99 en COUNTER → speed += 33 (integer div 99/3=33) →
+     *       chanceProb * 1.33 (+33%)</li>
      * </ul>
+     *
+     * <p>V25D35 verifier nit: la mención previa de "30.67 / 16.67 / +30.7% /
+     * +16.7%" era incorrecta — la division es entera (Java {@code int / int}),
+     * no double. El codigo aplica truncamiento. Los unit tests en
+     * {@code V24DetailedMatchEngineSpeedsterTest} ya usaban la formula
+     * correcta {@code (92 / 3) * 0.01}, por lo que el comportamiento real no
+     * cambio; solo la documentacion.
      *
      * <p>Gating: SPEEDSTER bonus SOLO aplica en style == COUNTER. En
      * ATTACKING / POSSESSION / DEFENSIVE / BALANCED, speedsterSkill se ignora
