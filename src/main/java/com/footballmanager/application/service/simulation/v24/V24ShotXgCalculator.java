@@ -41,9 +41,11 @@ import java.util.Map;
  * con {@code V24ShotEventType.OPEN_PLAY} (default), preservando el contrato
  * V25D32 bit-a-bit para callers existentes — HEADER NO aplica en OPEN_PLAY.
  *
- * <p>V25D33-F3: WALL divisor se aplica cuando {@code gkSkills} contiene
- * {@link PlayerSkill#WALL}. Como DIVISOR (1.0 / (1.0 + skill/150.0)) — mas
- * WALL → menos xG. Sigue el memory lesson "modifier de proteccion/reduccion
+ * <p>V25D33-F3: WALL divisor reduces xG cuando el GK tiene
+ * {@link PlayerSkill#WALL}. WALL divisor: reduces xG by 1/(1 + skill/150).
+ * With WALL=99, xg is divided by 1.66 (~40% reduction).
+ * Stored as divisor value (1+skill/150), then {@code xg = ... / wallDivisor}
+ * (NOT reciprocal). Sigue el memory lesson "modifier de proteccion/reduccion
  * va como DIVISOR, no multiplicador" (V25D27.1 — formationDefensiveModifier).
  *
  * <p>V25D34-F1 (AERIAL): AERIAL compoundea con HEADER en tiros CORNER/CROSS
