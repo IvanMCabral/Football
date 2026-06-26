@@ -528,11 +528,19 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         V24DetailedMatchResult result = engine.simulate(context, new Random(seed));
 
-        // 3. Update the fixture with the new result. possession and shots
-        // default to 0 in the replay path — the V24 detail endpoint exposes
-        // the rich per-minute data for full breakdowns.
+        // 3. Update the fixture with the new result. V25D37-F4: the V24 engine
+        // already computes possession / shots in V24DetailedMatchResult — the
+        // previous implementation passed `0, 0, 0, 0` for those four fields
+        // (an unfinished stub from V24D20-SANDBOX-V2-MVP that never got wired
+        // up), so any replay of a match returned
+        // {homePossession: 0, awayPossession: 0, homeShots: 0, awayShots: 0}
+        // (BUG_REPLAY_POSSESSION_ZERO — reported in V25D37 sprint). Now we
+        // forward the real values from the engine. xG lives on the V24 detail
+        // endpoint and is not stored on the fixture's MatchResultData.
         MatchFixture.MatchResultData resultData = new MatchFixture.MatchResultData(
-            result.homeGoals(), result.awayGoals(), 0, 0, 0, 0);
+            result.homeGoals(), result.awayGoals(),
+            result.homePossession(), result.awayPossession(),
+            result.homeShots(), result.awayShots());
         fixture.complete(resultData);
 
         // 4. Update standings with the new result. This will double-count if
