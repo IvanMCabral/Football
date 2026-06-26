@@ -37,6 +37,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>V25D34-F1: PLAYMAKER skill boosts assistQuality (this engine,
  *       before xG computation); AERIAL compounds HEADER in calculator;
  *       SHOOTER adds LONG_RANGE xG bonus in calculator</li>
+ *   <li>V25D34-F2: MARKER + TACKLER defending skills (calculator-level, via
+ *       overload 11-args with defenderSkills aggregated from opponent DEF on-pitch)</li>
+ *   <li>V25D34-F3: SPEEDSTER skill amplifies keySpeed en COUNTER style
+ *       (this engine, chanceProbability 6-args overload); PASSER skill boosts
+ *       possession share (retention rate del poseedor)</li>
  * </ul>
  *
  * <p>Deterministic: same context + same seed = identical result.
@@ -192,7 +197,23 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // Style-influenced possession baselines
         double homePossBase = possessionBase(context.homeStyle());
         double awayPossBase = possessionBase(context.awayStyle());
-        double homeShare = homePossBase / (homePossBase + awayPossBase);
+
+        // V25D34-F3: PASSER boosts possession share (retention rate del
+        // poseedor). El MAX PASSER skill entre los on-pitch players de cada
+        // equipo amplifica su possession base por (1 + skill/300). Formula:
+        //   homePossAdj = homePossBase * (1 + homeMaxPasser/300)
+        //   awayPossAdj = awayPossBase * (1 + awayMaxPasser/300)
+        //   homeShare = homePossAdj / (homePossAdj + awayPossAdj)
+        // PASSER=0 → factor 1.0 → bit-a-bit identico a V25D33 (sin skills).
+        // PASSER=85 (Valverde) → factor 1.283 → +28% retention.
+        // PASSER=99 → factor 1.33 → +33% retention.
+        // Modelo simple: el mejor pasador del equipo aumenta la posesion
+        // compartida (no hay pass accuracy explicito en el engine).
+        int homeMaxPasser = maxPasserSkill(homeState.startingPlayers());
+        int awayMaxPasser = maxPasserSkill(awayState.startingPlayers());
+        double homePossAdj = homePossBase * (1.0 + homeMaxPasser / 300.0);
+        double awayPossAdj = awayPossBase * (1.0 + awayMaxPasser / 300.0);
+        double homeShare = homePossAdj / (homePossAdj + awayPossAdj);
 
         // Player selectors — share the same Random source in replay path,
         // independent Randoms in legacy path (both via simulateWithRandom's args).
@@ -338,9 +359,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // so chanceProbability can apply the 1v1 multiplier. Sparse map access via
             // V24PlayerMatchState.getSkillLevel — same null-safe semantics as
             // SessionPlayer.getSkillLevel.
+            //
+            // V25D34-F3: also extract SPEEDSTER skill (0 if absent) so
+            // chanceProbability can apply el counter-attack bonus. SPEEDSTER
+            // amplifica keySpeed SOLO cuando possessor.style() == COUNTER —
+            // el bonus no se "apila" si el equipo no esta jugando al
+            // contraataque. Sparse map semantics (skill absent → 0).
             int keyAttack = 70;
             int keySpeed = 70;
             int keyDribbler = 0;
+            int keySpeedster = 0;
             int bestAttack = Integer.MIN_VALUE;
             for (V24PlayerMatchState p : possessor.startingPlayers()) {
                 if (p.onPitch() && !p.injured() && !p.redCard() && p.attack() > bestAttack) {
@@ -348,6 +376,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     keyAttack = p.attack();
                     keySpeed = p.speed();
                     keyDribbler = p.getSkillLevel(PlayerSkill.DRIBBLER);
+                    keySpeedster = p.getSkillLevel(PlayerSkill.SPEEDSTER);
                 }
             }
 
@@ -355,7 +384,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // V25D33-F2: pass keyDribbler so the 5-args overload can apply the
             // 1v1 gambeta multiplier. With skill=0 (absent or random player)
             // the multiplier is 1.0 → bit-a-bit identical to the 4-args baseline.
-            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler);
+            // V25D34-F3: pass keySpeedster so the 6-args overload can apply el
+            // counter-attack speed bonus cuando possessor.style() == COUNTER.
+            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler, keySpeedster);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
                 attemptShot(possessor, opponent, selector, formation, opponentFormation, teamRole, minute, random, timeline);
@@ -974,6 +1005,26 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return result;
     }
 
+    /**
+     * V25D34-F3: max PASSER skill entre los on-pitch players. Usado para
+     * amplificar la possession share base del equipo. Retorna 0 si no hay
+     * players on-pitch o si ninguno tiene PASSER.
+     *
+     * <p>Sparse map semantics: skill absent → 0 (treated as no skill).
+     * Si todos tienen PASSER=0, retorna 0 → no boost → bit-a-bit identico
+     * a V25D33.
+     *
+     * @param players lista de players del equipo (full starting 11)
+     * @return MAX PASSER skill (0-99) entre on-pitch players
+     */
+    private int maxPasserSkill(List<V24PlayerMatchState> players) {
+        return players.stream()
+                .filter(V24PlayerMatchState::onPitch)
+                .mapToInt(p -> p.getSkillLevel(PlayerSkill.PASSER))
+                .max()
+                .orElse(0);
+    }
+
     private double styleToModifier(TeamStyle style) {
         return switch (style) {
             case ATTACKING -> 1.15;
@@ -989,18 +1040,54 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // overload with the V24D6U4-RE anchor (attack=70, speed=70) so the modifier
         // is 1.0 and the historical λ target is preserved for callers that don't
         // have a live startingPlayers list (e.g. diagnostic harnesses).
-        return chanceProbability(style, minute, 70, 70, 0);
+        return chanceProbability(style, minute, 70, 70, 0, 0);
     }
 
     private double chanceProbability(TeamStyle style, int minute, int possessorAttack, int possessorSpeed) {
         // V25D33-F2: backward-compat overload delegates to the new 5-args with
         // dribblerSkill=0. Preserves V25D32 baseline for diagnostic harnesses
         // that don't have a live keyAttacker reference.
-        return chanceProbability(style, minute, possessorAttack, possessorSpeed, 0);
+        return chanceProbability(style, minute, possessorAttack, possessorSpeed, 0, 0);
     }
 
     private double chanceProbability(TeamStyle style, int minute, int possessorAttack,
                                      int possessorSpeed, int dribblerSkill) {
+        // V25D34-F3: backward-compat overload delegates to the new 6-args with
+        // speedsterSkill=0. Preserves V25D33 baseline for callers que no
+        // necesitan SPEEDSTER.
+        return chanceProbability(style, minute, possessorAttack, possessorSpeed,
+                dribblerSkill, 0);
+    }
+
+    /**
+     * V25D34-F3: overload 6-args que agrega {@code speedsterSkill} para aplicar
+     * el SPEEDSTER bonus al keySpeed en counter-attacks. El overload 5-args
+     * delega a este con speedsterSkill=0 (no-op para callers legacy).
+     *
+     * <p>SPEEDSTER bonus: cuando {@code style == COUNTER} y
+     * {@code speedsterSkill > 0}, se agrega {@code speedsterSkill / 3} al
+     * possessorSpeed efectivo. Esto amplifica el qualityMod (que pesa
+     * speed * 0.01). Spec values:
+     * <ul>
+     *   <li>SPEEDSTER=0 o style != COUNTER → no-op (qualityMod unchanged)</li>
+     *   <li>SPEEDSTER=92 (Vinicius) en COUNTER → speed += 30.67 →
+     *       qualityMod shift = 30.67 * 0.01 = 0.307 → chanceProb * 1.307
+     *       (+30.7% en counter-attacks)</li>
+     *   <li>SPEEDSTER=50 en COUNTER → speed += 16.67 →
+     *       qualityMod shift = 0.167 → chanceProb * 1.167 (+16.7%)</li>
+     * </ul>
+     *
+     * <p>Gating: SPEEDSTER bonus SOLO aplica en style == COUNTER. En
+     * ATTACKING / POSSESSION / DEFENSIVE / BALANCED, speedsterSkill se ignora
+     * (no es bonus de contraataque, es bonus de velocidad pura en counter).
+     * Modelo simple: "el SPEEDSTER es mas util cuando salis a correr al
+     * espacio" — no compensa con otros styles.
+     *
+     * <p>No-op regression: speedsterSkill=0 → bit-a-bit identico al overload
+     * 5-args (que ya delega al 6-args con 0).
+     */
+    private double chanceProbability(TeamStyle style, int minute, int possessorAttack,
+                                     int possessorSpeed, int dribblerSkill, int speedsterSkill) {
         // V24D6U4-RE: Recalibrated to hit Poisson λ=1.25 per team.
         // Previous tuning (V24D6U4) overshot the suppression: empirical λ≈0.45
         // vs target λ≈1.25 (factor 2.77x too low). ITER 1 (base 0.25) gave
@@ -1018,6 +1105,14 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // Open play tends to increase toward end of match
         double endGame = (minute > 75) ? 1.2 : 1.0;
 
+        // V25D34-F3: SPEEDSTER bonus al keySpeed en COUNTER style. Aplicado
+        // ANTES del qualityMod para que el bonus se propague al multiplier.
+        // Si style != COUNTER o speedsterSkill <= 0, no hay cambio.
+        int effectiveSpeed = possessorSpeed;
+        if (style == TeamStyle.COUNTER && speedsterSkill > 0) {
+            effectiveSpeed += speedsterSkill / 3;
+        }
+
         // F6 F2 contract: player-quality modifier anchored to the V24D6U4-RE
         // median (attack=70, speed=70) so a default starter gives mod=1.0 and
         // the existing λ target is preserved for unmodified lineups. A
@@ -1029,7 +1124,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // [0.9, 1.6] gate).
         double qualityMod = 1.0
             + (possessorAttack - 70) * 0.02
-            + (possessorSpeed - 70) * 0.01;
+            + (effectiveSpeed - 70) * 0.01;
 
         // V25D33-F2: DRIBBLER 1v1 multiplier. Spec values:
         //   DRIBBLER=0  -> multiplier 1.000 (no change — bit-a-bit compat)
