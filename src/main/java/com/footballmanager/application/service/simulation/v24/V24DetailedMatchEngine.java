@@ -7,8 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -553,21 +555,32 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 styleToModifier(possessor.style())
         );
 
-        // V25D33-F3: call the 10-args overload of calculateXg so WALL divisor
-        // (and any future GK skill) is honored. Pass the shooter's own skill
-        // map + height (for HEADER on corner/cross shots in V25D34) and the
-        // opponent GK's skill map + height (for WALL divisor here, AERIAL in
-        // V25D34). eventSubType = OPEN_PLAY (default) — the engine doesn't yet
-        // model "shot from corner" relationships (V25D34 scope). When the
-        // gkSkills map is null or WALL is absent, the divisor stays 1.0 and
-        // the result is bit-a-bit identical to the V25D32 baseline.
+        // V25D34-F2: aggregate opponent defender skills (MARKER + TACKLER)
+        // from on-pitch DEF position players. Used by the new overload 11-args
+        // de calculateXg para aplicar las defending skills. Si no hay DEF
+        // players on-pitch, el map viene vacio → MARKER y TACKLER no aplican
+        // (no-op, igual que antes).
+        Map<PlayerSkill, Integer> opponentDefenderSkills =
+                aggregateOpponentDefenderSkills(opponent.startingPlayers());
+
+        // V25D34-F2: call the 11-args overload of calculateXg so WALL divisor
+        // (V25D33-F3), AERIAL/SHOOTER (V25D34-F1) and MARKER/TACKLER (V25D34-F2)
+        // are honored. Pass the shooter's own skill map + height (for HEADER on
+        // corner/cross shots + AERIAL compounding + SHOOTER LONG_RANGE), the
+        // opponent GK's skill map + height (for WALL divisor), and the
+        // opponent defender aggregated skills (for MARKER + TACKLER).
+        // eventSubType = OPEN_PLAY (default) — the engine doesn't yet model
+        // "shot from corner" relationships (V25D34 scope). When skill maps are
+        // null or relevant skills are absent, the multipliers stay 1.0 and the
+        // result is bit-a-bit identical to the V25D32 baseline.
         double xg = xgCalculator.calculateXg(
                 quality, formation, opponentFormation,
                 possessorAttack, opponentDefense,
                 shooter.skillLevels(), shooter.heightCm(),
                 opponentGk != null ? opponentGk.skillLevels() : null,
                 opponentGk != null ? opponentGk.heightCm() : null,
-                V24ShotEventType.OPEN_PLAY);
+                V24ShotEventType.OPEN_PLAY,
+                opponentDefenderSkills, null);
         possessor.addXg(xg);
 
         // V24C1: Action drain for shot attempt
@@ -913,6 +926,52 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .average()
                 .orElse(70.0);
         return avg;
+    }
+
+    /**
+     * V25D34-F2: aggregate opponent defender skills (MARKER + TACKLER) from
+     * on-pitch DEF position players. Used by {@link V24ShotXgCalculator}
+     * overload 11-args para aplicar las defending skills. Modelo simple —
+     * avg de cada skill entre los DEF on-pitch. Si no hay DEF on-pitch, el
+     * map viene vacio → MARKER y TACKLER no aplican (no-op).
+     *
+     * <p>Solo DEF position (no MID, no GK). Rationale: MARKER es "marcaje al
+     * hombre en defensa" y TACKLER es "entradas y recuperacion" — son skills
+     * que define el rol defensivo. Si en el futuro se quiere incluir MIDs
+     * defensivos, se puede extender.
+     *
+     * <p>Sparse map semantics: solo incluimos keys con valor &gt; 0 en el map.
+     * El caller (calculator) trata key ausente como 0 (no-op).
+     *
+     * @param opponents lista de jugadores del equipo oponente (full starting 11)
+     * @return sparse map con MARKER y/o TACKLER promediados; empty si no hay
+     *         DEF on-pitch o si ninguno tiene esos skills
+     */
+    private Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(List<V24PlayerMatchState> opponents) {
+        List<V24PlayerMatchState> defsOnPitch = opponents.stream()
+                .filter(V24PlayerMatchState::onPitch)
+                .filter(p -> p.position().equals("DEF"))
+                .toList();
+        if (defsOnPitch.isEmpty()) return Map.of();
+
+        Map<PlayerSkill, Integer> result = new HashMap<>();
+        // MARKER avg
+        double markerAvg = defsOnPitch.stream()
+                .mapToInt(p -> p.getSkillLevel(PlayerSkill.MARKER))
+                .average()
+                .orElse(0.0);
+        if (markerAvg > 0) {
+            result.put(PlayerSkill.MARKER, (int) Math.round(markerAvg));
+        }
+        // TACKLER avg
+        double tacklerAvg = defsOnPitch.stream()
+                .mapToInt(p -> p.getSkillLevel(PlayerSkill.TACKLER))
+                .average()
+                .orElse(0.0);
+        if (tacklerAvg > 0) {
+            result.put(PlayerSkill.TACKLER, (int) Math.round(tacklerAvg));
+        }
+        return result;
     }
 
     private double styleToModifier(TeamStyle style) {

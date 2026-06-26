@@ -24,6 +24,11 @@ import java.util.Map;
  *   <li>V25D34-F1: SHOOTER skill adds xG bonus on {@link V24ShotLocation#LONG_RANGE}
  *       shots only (long-range specialist). Applied AFTER HEADER/AERIAL but
  *       BEFORE WALL divisor so WALL still compounds.</li>
+ *   <li>V25D34-F2: MARKER skill reduces xG (1v1 marcaje). Applied ALWAYS
+ *       (no eventSubType gating) because 1v1 duels happen in any context.</li>
+ *   <li>V25D34-F2: TACKLER skill reduces xG in open play only (gated on
+ *       {@link V24ShotEventType#OPEN_PLAY}). En corners/crosses NO aplica —
+ *       modelo "entradas en juego abierto", no en balon parado.</li>
  * </ul>
  *
  * <p>V25D32-F4: overload 9-args agrega skill levels del shooter y GK + heights
@@ -57,13 +62,31 @@ import java.util.Map;
  * OUTSIDE_BOX) NO reciben bonus aunque tengan SHOOTER alto — modela "el
  * rematador long-range" (Mbappé style).
  *
+ * <p>V25D34-F2 (MARKER + TACKLER): defending skills. Se aplican via el
+ * overload 11-args con {@code defenderSkills}. Este overload 10-args delega
+ * al 11-args con {@code Map.of()} (sin defending skills) → MARKER y TACKLER
+ * NO aplican (no-op para callers legacy que solo pasan hasta 10-args).
+ *
+ * <p>V25D34-F2 (MARKER): 1v1 marcaje. Formula: {@code xg *= (1 - skill/300)}.
+ * MARKER=0 → ×1.0 (no change). MARKER=90 → ×0.70 (-30%). Aplica SIEMPRE
+ * (en cualquier eventSubType) porque los duelos 1v1 ocurren en todo
+ * contexto — corner, cross, open play, penalty.
+ *
+ * <p>V25D34-F2 (TACKLER): entradas en juego abierto. Formula:
+ * {@code xg *= (1 - skill/250)}. TACKLER=0 → ×1.0 (no change). TACKLER=90
+ * → ×0.64 (-36%). Gated en {@link V24ShotEventType#OPEN_PLAY} — en corners
+ * / crosses / penalties NO aplica (las entradas a balon parado son
+ * diferentes y dependen de WALL mas que de TACKLER).
+ *
  * <p>No-op regression (V25D33 baseline preservation):
  * <ul>
  *   <li>AERIAL absent o height &lt; 185 → headerMult no cambia.</li>
  *   <li>SHOOTER absent o location != LONG_RANGE → shooterLongRangeMult = 1.0.</li>
+ *   <li>Overloads 5/9/10-args → delegan al 11-args con {@code Map.of()}
+ *       (sin defender skills) → MARKER y TACKLER no aplican.</li>
  *   <li>Por lo tanto, los overloads 5-args / 9-args / 10-args con OPEN_PLAY
- *       producen resultado bit-a-bit identico a V25D33 cuando shooterSkills
- *       no contiene AERIAL o SHOOTER.</li>
+ *       producen resultado bit-a-bit identico a V25D33 cuando no se pasan
+ *       defending skills.</li>
  * </ul>
  *
  * <p>Output clamped to [0.01, 0.60] (V24D6U4 tuned from 0.80).
@@ -238,6 +261,89 @@ public class V24ShotXgCalculator {
                               Map<PlayerSkill, Integer> shooterSkills, Integer shooterHeightCm,
                               Map<PlayerSkill, Integer> gkSkills, Integer gkHeightCm,
                               V24ShotEventType eventSubType) {
+        // V25D34-F2: delega al overload 11-args con defenderSkills vacios.
+        // MARKER y TACKLER no aplican (no-op para callers legacy que solo
+        // pasan hasta 10-args). Bit-a-bit backward compat con V25D33.
+        return calculateXg(quality, formation, opponentFormation,
+                possessorAttack, opponentDefense,
+                shooterSkills, shooterHeightCm,
+                gkSkills, gkHeightCm,
+                eventSubType,
+                Map.of(), null);
+    }
+
+    /**
+     * V25D34-F2: overload 11-args que agrega {@code defenderSkills} y
+     * {@code defenderHeightCm} para aplicar las defending skills MARKER y
+     * TACKLER. El overload 10-args delega a este con {@code Map.of()} y
+     * {@code null} (no-op para callers que no pasan defending skills).
+     *
+     * <p>{@code defenderSkills} representa el AVG de MARKER y TACKLER de los
+     * defensores (DEF position) en cancha del equipo oponente. El caller
+     * (V24DetailedMatchEngine.attemptShot) agrega via
+     * {@code aggregateOpponentDefenderSkills(...)} antes de invocar este
+     * overload. Modelo simple (no individual 1v1 duel) — si en el futuro
+     * se necesita marcador especifico por atacante, se puede refactor.
+     *
+     * <p>V25D34-F2 implementation:
+     * <ul>
+     *   <li>MARKER multiplier ({@code 1 - skill/300}) se aplica SIEMPRE
+     *       (en cualquier eventSubType) — los duelos 1v1 ocurren en cualquier
+     *       contexto (corner, cross, open play).</li>
+     *   <li>TACKLER multiplier ({@code 1 - skill/250}) se aplica SOLO en
+     *       {@link V24ShotEventType#OPEN_PLAY} — en corners/crosses no hay
+     *       entradas abiertas.</li>
+     *   <li>Ambos se aplican DESPUES del HEADER/AERIAL/SHOOTER y ANTES del
+     *       WALL divisor (orden: ... * headerMult * shooterLongRangeMult
+     *       * markerMult * tacklerMult / wallDivisor).</li>
+     *   <li>Con {@code Map.of()} (defender skills vacios) o MARKER=0 y
+     *       TACKLER=0 → ambos multipliers = 1.0 → resultado identico al
+     *       overload 10-args.</li>
+     * </ul>
+     *
+     * <p>Calibration del MARKER multiplier (spec V25D34-F2):
+     * <ul>
+     *   <li>MARKER=0 → multiplier = 1.0 (sin cambio)</li>
+     *   <li>MARKER=50 → multiplier = 0.833 (-16.7%)</li>
+     *   <li>MARKER=90 → multiplier = 0.70 (-30%)</li>
+     *   <li>MARKER=99 → multiplier = 0.67 (-33%)</li>
+     * </ul>
+     *
+     * <p>Calibration del TACKLER multiplier (spec V25D34-F2):
+     * <ul>
+     *   <li>TACKLER=0 → multiplier = 1.0 (sin cambio)</li>
+     *   <li>TACKLER=50 → multiplier = 0.80 (-20%)</li>
+     *   <li>TACKLER=90 → multiplier = 0.64 (-36%)</li>
+     *   <li>TACKLER=99 → multiplier = 0.604 (-39.6%)</li>
+     * </ul>
+     *
+     * @param quality shot context (location, shooter, assist, pressure, GK, style)
+     * @param formation the POSSESSOR's formation (e.g. "4-3-3")
+     * @param opponentFormation the DEFENDING team's formation (e.g. "5-3-2")
+     * @param possessorAttack aggregate attack stat of the possessor's attacking
+     *                        players (avg of top-5 attackers, [0-99])
+     * @param opponentDefense aggregate defense stat of the opponent's
+     *                        defending players (avg of defenders + GK mentality, [0-99])
+     * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable)
+     * @param shooterHeightCm height del shooter en cm (nullable)
+     * @param gkSkills sparse map de PlayerSkill levels del GK (nullable)
+     * @param gkHeightCm height del GK en cm (nullable)
+     * @param eventSubType origen del shot (OPEN_PLAY default). HEADER y TACKLER
+     *                      tienen gating distinto (HEADER: CORNER/CROSS;
+     *                      TACKLER: OPEN_PLAY only).
+     * @param defenderSkills sparse map de PlayerSkill levels agregados de los
+     *                       defensores del equipo oponente (nullable; empty map =
+     *                       no defending skills). F2 reads MARKER + TACKLER.
+     * @param defenderHeightCm height promedio de los defensores (nullable;
+     *                          reservado para uso futuro; V25D34-F2 no lo usa).
+     */
+    public double calculateXg(V24ShotQuality quality, String formation,
+                              String opponentFormation,
+                              double possessorAttack, double opponentDefense,
+                              Map<PlayerSkill, Integer> shooterSkills, Integer shooterHeightCm,
+                              Map<PlayerSkill, Integer> gkSkills, Integer gkHeightCm,
+                              V24ShotEventType eventSubType,
+                              Map<PlayerSkill, Integer> defenderSkills, Integer defenderHeightCm) {
         double baseXgVal = baseXg(quality.location());
         double shooterMult = shooterMultiplier(quality.shooterQuality());
         double assistMult = assistMultiplier(quality.assistQuality());
@@ -290,6 +396,28 @@ public class V24ShotXgCalculator {
             shooterLongRangeMult = 1.0 + (shooterSkillLevel / 250.0);
         }
 
+        // V25D34-F2: MARKER reduces xG en duelos 1v1 (modelo "avg defender
+        // skill" — no individual duel). Aplica SIEMPRE (en cualquier
+        // eventSubType) porque los duelos 1v1 ocurren en todo contexto.
+        // Formula: markerMult = 1 - skill/300. MARKER=0 o ausente → 1.0.
+        // MARKER=90 → 0.70 (-30%).
+        int markerSkill = (defenderSkills != null && defenderSkills.get(PlayerSkill.MARKER) != null)
+                ? defenderSkills.get(PlayerSkill.MARKER)
+                : 0;
+        double markerMult = 1.0 - (markerSkill / 300.0);
+
+        // V25D34-F2: TACKLER reduces xG en juego abierto. Aplica SOLO en
+        // OPEN_PLAY (no en corners/crosses — ahi manda WALL). Formula:
+        // tacklerMult = 1 - skill/250. TACKLER=0 o ausente → 1.0. TACKLER=90
+        // → 0.64 (-36%).
+        double tacklerMult = 1.0;
+        if (eventSubType == V24ShotEventType.OPEN_PLAY) {
+            int tacklerSkill = (defenderSkills != null && defenderSkills.get(PlayerSkill.TACKLER) != null)
+                    ? defenderSkills.get(PlayerSkill.TACKLER)
+                    : 0;
+            tacklerMult = 1.0 - (tacklerSkill / 250.0);
+        }
+
         // V25D33-F3: WALL divisor on xG. Memory lesson "modifier de proteccion
         // /reduccion va como DIVISOR" (V25D27.1 — formationDefensiveModifier).
         // WALL=0 o skill ausente → divisor = 1.0 (sin cambio). WALL=99 →
@@ -303,7 +431,8 @@ public class V24ShotXgCalculator {
         }
 
         double xg = baseXgVal * shooterMult * assistMult * defMult * gkMult * styleMult
-                * offFormMod / defFormMod * headerMult * shooterLongRangeMult / wallDivisor;
+                * offFormMod / defFormMod * headerMult * shooterLongRangeMult
+                * markerMult * tacklerMult / wallDivisor;
 
         return clamp(xg);
     }
