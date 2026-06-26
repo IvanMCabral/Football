@@ -16,6 +16,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -284,23 +286,45 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 careerSessionService.invalidateCache(career.getUserId())));
     }
 
-    // ========== injectPlayerStats (V25D29) ==========
+    // ========== injectPlayerStats (V25D29 + V25D35 extension) ==========
 
     /**
      * V25D29: mutate one SessionPlayer's stats in the persisted career. Null
      * stat args are left unchanged. Bounds-checked to {@code [0, 99]} (V25D25
      * engine convention).
      *
+     * <p>V25D35 extension: also accepts two optional fields for the V25D31
+     * physical + skill metadata:
+     * <ul>
+     *   <li>{@code heightCm} — nullable; bounds-checked to {@code [160, 210]}
+     *       (matches {@link SessionPlayer#setHeightCm}). Null = leave
+     *       current value unchanged (sparse semantics: setting to null
+     *       would erase it, so null in the request = no-op).</li>
+     *   <li>{@code skillLevels} — nullable sparse {@code Map<PlayerSkill, Integer>};
+     *       each entry is bounds-checked to {@code [0, 99]} (matches
+     *       {@link SessionPlayer#setSkillLevel}). Null OR empty map = no-op
+     *       (does NOT clear existing skills — sparse map semantics).
+     *       Setting a skill to {@code 0} via the map removes that entry
+     *       from the sparse map (bit-a-bit consistent with
+     *       {@code SessionPlayer.setSkillLevel(skill, 0)}).</li>
+     * </ul>
+     *
      * <p>Note: mutates a {@code SessionPlayer} inside the {@code
      * career.allSessionPlayers} map (engine reads from there). Mutates ALL
      * copies of the player — both the team-roster copy AND any bench copy
      * with the same {@code sessionPlayerId}.
+     *
+     * <p>Backward-compat: callers built against V25D29 (only 6 stats + playerId,
+     * with {@code heightCm=null} and {@code skillLevels=null}) keep working
+     * bit-a-bit — the new fields are skipped entirely.
      */
     @Override
     public Mono<Void> injectPlayerStats(UUID userId, String playerId,
                                        Integer attack, Integer defense,
                                        Integer technique, Integer speed,
-                                       Integer stamina, Integer mentality) {
+                                       Integer stamina, Integer mentality,
+                                       Integer heightCm,
+                                       Map<PlayerSkill, Integer> skillLevels) {
         if (playerId == null || playerId.isBlank()) {
             return Mono.error(new IllegalArgumentException("playerId must be non-blank"));
         }
@@ -310,6 +334,25 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         String rangeErr = validateStatRanges(attack, defense, technique, speed, stamina, mentality);
         if (rangeErr != null) {
             return Mono.error(new IllegalArgumentException(rangeErr));
+        }
+        // V25D35: also bounds-check heightCm and skillLevels BEFORE the career load
+        // so out-of-range values reject cleanly without partial mutation. The
+        // SessionPlayer setters (setHeightCm / setSkillLevel) also throw IAE on
+        // out-of-range, but those errors would surface AFTER findById — duplicating
+        // the check here keeps the pre-load validation pattern consistent with
+        // validateStatRanges above.
+        if (heightCm != null && (heightCm < 160 || heightCm > 210)) {
+            return Mono.error(new IllegalArgumentException(
+                "heightCm out of range [160, 210]: " + heightCm));
+        }
+        if (skillLevels != null && !skillLevels.isEmpty()) {
+            for (Map.Entry<PlayerSkill, Integer> e : skillLevels.entrySet()) {
+                if (e.getKey() != null && e.getValue() != null
+                    && (e.getValue() < 0 || e.getValue() > 99)) {
+                    return Mono.error(new IllegalArgumentException(
+                        "Skill level out of range [0, 99] for " + e.getKey() + ": " + e.getValue()));
+                }
+            }
         }
 
         return careerRepository.findById(userId.toString())
@@ -322,7 +365,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 }
                 CareerSave career = optionalCareer.get();
                 return executeInjectPlayerStats(career, playerId,
-                    attack, defense, technique, speed, stamina, mentality);
+                    attack, defense, technique, speed, stamina, mentality,
+                    heightCm, skillLevels);
             });
     }
 
@@ -343,7 +387,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     private Mono<Void> executeInjectPlayerStats(CareerSave career, String playerId,
                                                  Integer attack, Integer defense,
                                                  Integer technique, Integer speed,
-                                                 Integer stamina, Integer mentality) {
+                                                 Integer stamina, Integer mentality,
+                                                 Integer heightCm,
+                                                 Map<PlayerSkill, Integer> skillLevels) {
         SessionPlayer target = career.getSessionPlayers().get(playerId);
         if (target == null) {
             return Mono.error(new IllegalArgumentException(
@@ -358,7 +404,31 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (stamina != null) { target.setStamina(stamina); logMsg.append(" stamina=").append(stamina); }
         if (mentality != null) { target.setMentality(mentality); logMsg.append(" mentality=").append(mentality); }
 
-        log.info("[V25D29-TESTHARNESS] injectPlayerStats userId={} player={} ({}){}",
+        // V25D35: physical + skill metadata. heightCm is sparse (null = leave
+        // current value). skillLevels: null OR empty = no-op; otherwise iterate
+        // each entry through SessionPlayer.setSkillLevel which bounds-checks
+        // [0, 99] and treats 0 as "remove from sparse map".
+        if (heightCm != null) {
+            target.setHeightCm(heightCm);
+            logMsg.append(" heightCm=").append(heightCm);
+        }
+        if (skillLevels != null && !skillLevels.isEmpty()) {
+            int skillCount = 0;
+            for (Map.Entry<PlayerSkill, Integer> entry : skillLevels.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) {
+                    // Skip null entries defensively — Jackson may emit them
+                    // if the caller sent {"HEADER": null} or {"null": 80}.
+                    // SessionPlayer.setSkillLevel would throw IAE on null.
+                    continue;
+                }
+                target.setSkillLevel(entry.getKey(), entry.getValue());
+                skillCount++;
+                logMsg.append(' ').append(entry.getKey()).append('=').append(entry.getValue());
+            }
+            logMsg.append(" (skills=").append(skillCount).append(')');
+        }
+
+        log.info("[V25D35-TESTHARNESS] injectPlayerStats userId={} player={} ({}){}",
             career.getUserId(), playerId, target.getName(), logMsg);
 
         return careerRepository.save(career)
