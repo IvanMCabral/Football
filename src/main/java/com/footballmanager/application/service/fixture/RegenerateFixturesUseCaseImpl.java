@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.fixture;
 
+import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
@@ -26,6 +27,15 @@ public class RegenerateFixturesUseCaseImpl implements RegenerateFixturesUseCase 
 
     private final CareerRepository careerRepository;
     private final FixtureGenerator fixtureGenerator;
+    // V25D37-F2: invalidate the in-memory CareerSessionService cache after
+    // persisting the regenerated career. Without this, the next
+    // getCareerFromCache(userId) returns the stale in-memory CareerSave with
+    // the OLD fixtures, and the frontend keeps seeing pre-regenerate data
+    // until the CareerSessionService ConcurrentHashMap is cleared by some
+    // other path (V24D20-SANDBOX-V2-MVP BUG #1 was the original report on
+    // the same class of bug for replaceFixtures / resetInjuries /
+    // setFormation — this use-case was missed in that round).
+    private final CareerSessionService careerSessionService;
 
     @Override
     public Mono<Void> regenerate(UUID userId) {
@@ -75,6 +85,12 @@ public class RegenerateFixturesUseCaseImpl implements RegenerateFixturesUseCase 
         // Resetear standings
         career.getTournamentState().initializeStandings(career.getAllSessionTeams());
 
-        return careerRepository.save(career);
+        // V25D37-F2: persist FIRST, then invalidate cache — same order as
+        // TestHarnessUseCaseImpl.executeReplaceFixtures (V24D20-SANDBOX-V2-MVP
+        // BUG #1). If we invalidate first and the save fails, we lose both
+        // the new state AND the cached copy.
+        return careerRepository.save(career)
+                .then(Mono.fromRunnable(() ->
+                        careerSessionService.invalidateCache(career.getUserId())));
     }
 }
