@@ -18,6 +18,12 @@ import java.util.Map;
  *   <li>V25D33-F1: HEADER skill multiplier, gated on
  *       {@link V24ShotEventType} (only on CORNER / CROSS shots)</li>
  *   <li>V25D33-F3: WALL skill divisor on xG (reduces xG when GK has WALL).</li>
+ *   <li>V25D34-F1: AERIAL skill COMPOUNDS with HEADER when shooter height
+ *       &ge; 185 cm (tall header specialist). Applied AFTER HEADER, gated on
+ *       CORNER / CROSS like HEADER.</li>
+ *   <li>V25D34-F1: SHOOTER skill adds xG bonus on {@link V24ShotLocation#LONG_RANGE}
+ *       shots only (long-range specialist). Applied AFTER HEADER/AERIAL but
+ *       BEFORE WALL divisor so WALL still compounds.</li>
  * </ul>
  *
  * <p>V25D32-F4: overload 9-args agrega skill levels del shooter y GK + heights
@@ -34,6 +40,31 @@ import java.util.Map;
  * {@link PlayerSkill#WALL}. Como DIVISOR (1.0 / (1.0 + skill/150.0)) — mas
  * WALL → menos xG. Sigue el memory lesson "modifier de proteccion/reduccion
  * va como DIVISOR, no multiplicador" (V25D27.1 — formationDefensiveModifier).
+ *
+ * <p>V25D34-F1 (AERIAL): AERIAL compoundea con HEADER en tiros CORNER/CROSS
+ * cuando {@code shooterHeightCm &ge; 185}. Formula:
+ * {@code headerMult = (1 + headerSkill/200) * (1 + aerialSkill/300)}. Si
+ * HEADER=0 y AERIAL=80 con height=190cm → headerMult = 1.0 × 1.267 = 1.267
+ * (aun con HEADER ausente el AERIAL agrega bonus). Si HEADER=80 y AERIAL=80
+ * con height=190cm → headerMult = 1.4 × 1.267 = 1.774 (+77%). Sin height o
+ * con height &lt; 185 → AERIAL NO aplica.
+ *
+ * <p>V25D34-F1 (SHOOTER): SHOOTER aplica bonus xG SOLO en
+ * {@link V24ShotLocation#LONG_RANGE}. Formula:
+ * {@code shooterLongRangeMult = 1 + shooterSkill/250}. SHOOTER=0 o skill
+ * ausente → multiplier = 1.0 (sin cambio). SHOOTER=90 → multiplier = 1.36
+ * (+36%). El resto de las locations (SIX_YARD_BOX, PENALTY_AREA_*,
+ * OUTSIDE_BOX) NO reciben bonus aunque tengan SHOOTER alto — modela "el
+ * rematador long-range" (Mbappé style).
+ *
+ * <p>No-op regression (V25D33 baseline preservation):
+ * <ul>
+ *   <li>AERIAL absent o height &lt; 185 → headerMult no cambia.</li>
+ *   <li>SHOOTER absent o location != LONG_RANGE → shooterLongRangeMult = 1.0.</li>
+ *   <li>Por lo tanto, los overloads 5-args / 9-args / 10-args con OPEN_PLAY
+ *       producen resultado bit-a-bit identico a V25D33 cuando shooterSkills
+ *       no contiene AERIAL o SHOOTER.</li>
+ * </ul>
  *
  * <p>Output clamped to [0.01, 0.60] (V24D6U4 tuned from 0.80).
  */
@@ -128,13 +159,30 @@ public class V24ShotXgCalculator {
      *
      * <p>V25D33-F3 implementation:
      * <ul>
-     *   <li>WALL divisor ({@code 1.0 / (1.0 + skill/150.0)}) se aplica cuando
+     *   <li>WALL divisor ({@code 1.0 + skill/150.0}) se aplica cuando
      *       {@code gkSkills} contiene {@link PlayerSkill#WALL}. WALL=0 (o skill
-     *       ausente) → divisor = 1.0 (sin cambio). WALL=99 → divisor ≈ 0.602
-     *       (≈40% menos xG).</li>
+     *       ausente) → divisor = 1.0 (sin cambio). WALL=99 → divisor = 1.66
+     *       (xg / 1.66 ≈ xg * 0.602, ≈40% menos xG). Stored as divisor value
+     *       (1+skill/150), then xg = ... / wallDivisor (NOT reciprocal).</li>
      *   <li>WALL es un DIVISOR (no multiplicador) siguiendo el memory lesson
      *       de V25D27.1 — modifiers de proteccion/reduccion siempre van como
      *       DIVISOR. WALL=92 → xg /= 1.613 (-38%); WALL=99 → xg /= 1.66 (-40%).</li>
+     * </ul>
+     *
+     * <p>V25D34-F1 implementation (AERIAL compounding + SHOOTER long-range):
+     * <ul>
+     *   <li>AERIAL ({@code 1.0 + skill/300.0}) MULTIPLICA el HEADER multiplier
+     *       cuando shooter height &ge; 185 cm. Si height &lt; 185 o ausente,
+     *       AERIAL NO aplica. Compounding: HEADER=80 + AERIAL=80 + height=190
+     *       → headerMult = 1.4 × 1.267 = 1.774 (+77%).</li>
+     *   <li>SHOOTER ({@code 1.0 + skill/250.0}) aplica SOLO en
+     *       {@link V24ShotLocation#LONG_RANGE}. SHOOTER=90 en LONG_RANGE →
+     *       shooterLongRangeMult = 1.36 (+36%). El resto de las locations NO
+     *       reciben bonus aunque SHOOTER sea alto.</li>
+     *   <li>Ambos se aplican DESPUES del HEADER multiplier y ANTES del WALL
+     *       divisor — el orden es: shooter/assist/def/gk/style/formation →
+     *       HEADER (×mult) → AERIAL (×mult si aplica) → SHOOTER (×mult si
+     *       aplica) → WALL (/div).</li>
      * </ul>
      *
      * <p>Calibration del HEADER multiplier (spec V25D33-F1):
@@ -144,11 +192,25 @@ public class V24ShotXgCalculator {
      *   <li>HEADER=99 → multiplier = 1.495 (+49.5%)</li>
      * </ul>
      *
+     * <p>Calibration del AERIAL compounding (spec V25D34-F1):
+     * <ul>
+     *   <li>AERIAL=0 o height &lt; 185 → no compounding (headerMult unchanged)</li>
+     *   <li>AERIAL=80, height=190 → headerMult *= 1.267 (+26.7% adicional)</li>
+     *   <li>AERIAL=99, height=190 → headerMult *= 1.33 (+33% adicional)</li>
+     * </ul>
+     *
+     * <p>Calibration del SHOOTER bonus (spec V25D34-F1):
+     * <ul>
+     *   <li>SHOOTER=0 o location != LONG_RANGE → multiplier = 1.0 (sin cambio)</li>
+     *   <li>SHOOTER=90 en LONG_RANGE → multiplier = 1.36 (+36%)</li>
+     *   <li>SHOOTER=99 en LONG_RANGE → multiplier = 1.396 (+39.6%)</li>
+     * </ul>
+     *
      * <p>Calibration del WALL divisor (spec V25D33-F3):
      * <ul>
      *   <li>WALL=0 → divisor = 1.0 (sin cambio)</li>
-     *   <li>WALL=92 → divisor = 1 / (1 + 92/150) = 1/1.613 ≈ 0.620 (-38%)</li>
-     *   <li>WALL=99 → divisor = 1 / (1 + 99/150) = 1/1.660 ≈ 0.602 (-39.8%)</li>
+     *   <li>WALL=92 → divisor = 1 + 92/150 = 1.613 (xg / 1.613 ≈ -38%)</li>
+     *   <li>WALL=99 → divisor = 1 + 99/150 = 1.660 (xg / 1.660 ≈ -39.8%)</li>
      * </ul>
      *
      * @param quality shot context (location, shooter, assist, pressure, GK, style)
@@ -159,8 +221,9 @@ public class V24ShotXgCalculator {
      * @param opponentDefense aggregate defense stat of the opponent's
      *                        defending players (avg of defenders + GK mentality, [0-99])
      * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable;
-     *                      absent → treat as 0; F1 reads HEADER, V25D34 will read
-     *                      SHOOTER + others)
+     *                      absent → treat as 0; V25D33-F1 reads HEADER,
+     *                      V25D34-F1 reads AERIAL (compounding with HEADER)
+     *                      and SHOOTER (LONG_RANGE bonus))
      * @param shooterHeightCm height del shooter en cm (nullable; V25D33 lo ignora,
      *                        reservado para V25D34)
      * @param gkSkills sparse map de PlayerSkill levels del GK (nullable;
@@ -199,6 +262,32 @@ public class V24ShotXgCalculator {
                     ? shooterSkills.get(PlayerSkill.HEADER)
                     : 0;
             headerMult = 1.0 + (headerSkill / 200.0);
+
+            // V25D34-F1: AERIAL compounds with HEADER when shooter height ≥ 185 cm.
+            // Models "jugador alto cabeceador" — el bonus realista cuando un
+            // rematador de cabeza tiene ademas la altura para cabecear en el
+            // punto penal. Si height < 185 o ausente, AERIAL NO aplica (el
+            // jugador cabecea pero no domina el juego aereo).
+            // Gated en el mismo branch CORNER/CROSS que HEADER (no aplica en
+            // open play).
+            int aerialSkill = (shooterSkills != null && shooterSkills.get(PlayerSkill.AERIAL) != null)
+                    ? shooterSkills.get(PlayerSkill.AERIAL)
+                    : 0;
+            if (aerialSkill > 0 && shooterHeightCm != null && shooterHeightCm >= 185) {
+                headerMult *= 1.0 + (aerialSkill / 300.0);
+            }
+        }
+
+        // V25D34-F1: SHOOTER bonus xG en tiros fuera del area (LONG_RANGE only).
+        // Models "rematador long-range" (Mbappé style) — solo dispara fuerte
+        // desde afuera del box. En SIX_YARD_BOX / PENALTY_AREA_* / OUTSIDE_BOX
+        // SHOOTER NO aporta (ahi manda HEADER, técnica, etc.).
+        int shooterSkillLevel = (shooterSkills != null && shooterSkills.get(PlayerSkill.SHOOTER) != null)
+                ? shooterSkills.get(PlayerSkill.SHOOTER)
+                : 0;
+        double shooterLongRangeMult = 1.0;
+        if (shooterSkillLevel > 0 && quality.location() == V24ShotLocation.LONG_RANGE) {
+            shooterLongRangeMult = 1.0 + (shooterSkillLevel / 250.0);
         }
 
         // V25D33-F3: WALL divisor on xG. Memory lesson "modifier de proteccion
@@ -214,7 +303,7 @@ public class V24ShotXgCalculator {
         }
 
         double xg = baseXgVal * shooterMult * assistMult * defMult * gkMult * styleMult
-                * offFormMod / defFormMod * headerMult / wallDivisor;
+                * offFormMod / defFormMod * headerMult * shooterLongRangeMult / wallDivisor;
 
         return clamp(xg);
     }

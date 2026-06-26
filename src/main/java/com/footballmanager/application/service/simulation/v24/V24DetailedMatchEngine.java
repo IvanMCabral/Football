@@ -26,6 +26,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>Fatigue, cards, and substitution mechanics</li>
  * </ul>
  *
+ * <p>V25D33-V25D34 skill impacts layered on top of the engine (each skill is
+ * applied at its natural pipeline point; no-op when absent or 0):
+ * <ul>
+ *   <li>V25D33-F1: HEADER skill on xG (V24ShotXgCalculator, gated CORNER/CROSS)</li>
+ *   <li>V25D33-F2: DRIBBLER skill on chanceProbability (1v1 multiplier)</li>
+ *   <li>V25D33-F3: WALL skill on xG (GK divisor, V24ShotXgCalculator)</li>
+ *   <li>V25D34-F1: PLAYMAKER skill boosts assistQuality (this engine,
+ *       before xG computation); AERIAL compounds HEADER in calculator;
+ *       SHOOTER adds LONG_RANGE xG bonus in calculator</li>
+ * </ul>
+ *
  * <p>Deterministic: same context + same seed = identical result.
  * No persistence, no Spring, no production wiring.
  */
@@ -520,6 +531,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         // Build shot quality bundle
         double assistQuality = assistOpt.map(selector::assistQuality).orElse(0.3);
+        // V25D34-F1: PLAYMAKER boosts assist quality (vision de juego → mejor
+        // pase). El assist provider con PLAYMAKER skill > 0 multiplica su
+        // assistQuality por (1 + skill/200). El efecto se propaga al assistMult
+        // del V24ShotXgCalculator (0.85 + assistQuality * 0.30). Si no hay
+        // provider (assistOpt.isEmpty) o PLAYMAKER=0/absent, sin cambio —
+        // preserva bit-a-bit el resultado V25D33.
+        if (assistOpt.isPresent()) {
+            int playmakerSkill = assistOpt.get().getSkillLevel(PlayerSkill.PLAYMAKER);
+            assistQuality = playmakerAdjustedAssistQuality(assistQuality, playmakerSkill);
+        }
         double defPressure = defensivePressure(opponent, random);
         double gkQuality = gkQuality(possessor.startingPlayers(), random); // simplified
 
@@ -771,6 +792,45 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double defMod = Math.min(0.9, defendersOnPitch / 11.0 * 1.2);
         double randomFactor = 0.7 + random.nextDouble() * 0.6;
         return Math.min(1.0, basePressure * defMod * randomFactor);
+    }
+
+    /**
+     * V25D34-F1: PLAYMAKER skill impact on assist quality.
+     *
+     * <p>Boosts the base assistQuality (normalized 0-1 from technique) by a
+     * factor of {@code 1 + skill/200}. Models "vision de juego y creacion de
+     * juego" — un asistidor con PLAYMAKER=99 ve mejores pases que uno sin
+     * la skill, lo que se traduce en assistQuality mas alto y por lo tanto
+     * xG mas alto en el V24ShotXgCalculator (assistMult = 0.85 + assistQ*0.30).
+     *
+     * <p>No-op behavior:
+     * <ul>
+     *   <li>{@code playmakerSkill <= 0} (skill absent o level 0) → retorna
+     *       {@code base} sin cambio. Esto preserva el resultado V25D33
+     *       bit-a-bit para callers que no setean PLAYMAKER.</li>
+     * </ul>
+     *
+     * <p>Calibration:
+     * <ul>
+     *   <li>PLAYMAKER=0 → adjust factor = 1.0 (sin cambio)</li>
+     *   <li>PLAYMAKER=50 → adjust factor = 1.25 (+25% assistQuality)</li>
+     *   <li>PLAYMAKER=88 (Bellingham) → adjust factor = 1.44 (+44% assistQuality)</li>
+     *   <li>PLAYMAKER=99 → adjust factor = 1.495 (+49.5% assistQuality)</li>
+     * </ul>
+     *
+     * <p>El cap lo pone {@link V24ShotQuality} constructor (clampFinite a
+     * {@code [0.0, 100.0]}), no este metodo — un PLAYMAKER=99 con technique=99
+     * da assistQuality = 1.0 * 1.495 = 1.495 que pasa el clamp (max 100) sin
+     * modificarse, y luego el calculator hace assistMult = 0.85 + 1.495*0.30
+     * = 1.2985.
+     *
+     * @param baseAssistQuality normalized [0, 1] from {@code selector.assistQuality}
+     * @param playmakerSkill PLAYMAKER level (0-99, sparse map semantics)
+     * @return adjusted assistQuality
+     */
+    private double playmakerAdjustedAssistQuality(double baseAssistQuality, int playmakerSkill) {
+        if (playmakerSkill <= 0) return baseAssistQuality;
+        return baseAssistQuality * (1.0 + playmakerSkill / 200.0);
     }
 
     private double gkQuality(List<V24PlayerMatchState> players, Random random) {
