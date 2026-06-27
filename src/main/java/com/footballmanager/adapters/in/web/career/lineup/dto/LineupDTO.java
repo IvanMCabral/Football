@@ -45,24 +45,37 @@ public record LineupDTO(
      * treats {@code null} as "no breakdown to render" and shows only the
      * score badge.
      */
-    ChemistryBreakdownDTO chemistryBreakdown
+    ChemistryBreakdownDTO chemistryBreakdown,
+    /**
+     * V25D47 (Sprint C11a): inferred formation label ({@code "4-4-2"},
+     * {@code "3-5-2"}, etc.) + per-player effectiveness multipliers
+     * (playerId → 0..1) computed from natural position vs subdivision slot.
+     *
+     * <p>Nullable for backward compat with V25D46 and earlier builds.
+     * The frontend treats {@code null} as "no tactical data" and hides
+     * the section. When present, the UI surfaces the inferred formation
+     * (which may differ from the formation the manager selected via
+     * auto-select if they drag-and-drop players into non-standard slots)
+     * and flags low-effectiveness players for the manager to reconsider.
+     */
+    FormationEffectivenessDTO formationEffectiveness
 ) {
 
     /** Compact ctor legacy (3 args, no warnings/slots/chemistry). */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed) {
-        this(formation, players, confirmed, List.of(), List.of(), null, null);
+        this(formation, players, confirmed, List.of(), List.of(), null, null, null);
     }
 
     /** Compact ctor (4 args, no slots/chemistry). */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
                      List<LineupWarningDTO> warnings) {
-        this(formation, players, confirmed, warnings, List.of(), null, null);
+        this(formation, players, confirmed, warnings, List.of(), null, null, null);
     }
 
     /** Compact ctor (5 args, sin chemistry — for legacy build sites pre-C6). */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
                      List<LineupWarningDTO> warnings, List<LineupSlotDTO> slots) {
-        this(formation, players, confirmed, warnings, slots, null, null);
+        this(formation, players, confirmed, warnings, slots, null, null, null);
     }
 
     /**
@@ -73,7 +86,18 @@ public record LineupDTO(
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
                      List<LineupWarningDTO> warnings, List<LineupSlotDTO> slots,
                      Integer chemistryScore) {
-        this(formation, players, confirmed, warnings, slots, chemistryScore, null);
+        this(formation, players, confirmed, warnings, slots, chemistryScore, null, null);
+    }
+
+    /**
+     * V25D47 (Sprint C11a): compact ctor (7 args, with chemistryBreakdown but
+     * no formationEffectiveness) for callers that pre-date C11a — they get
+     * a null formationEffectiveness (backward compat with the V25D46 wire format).
+     */
+    public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
+                     List<LineupWarningDTO> warnings, List<LineupSlotDTO> slots,
+                     Integer chemistryScore, ChemistryBreakdownDTO chemistryBreakdown) {
+        this(formation, players, confirmed, warnings, slots, chemistryScore, chemistryBreakdown, null);
     }
 
     public LineupDTO {

@@ -3,6 +3,7 @@ package com.footballmanager.application.service.simulation.v24;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
+import com.footballmanager.domain.model.valueobject.PositionEffectivenessCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -925,7 +926,17 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .sorted((a, b) -> Integer.compare(b.attack(), a.attack()))
                 .limit(5)
                 .toList();
-        double avg = sorted.stream().mapToInt(V24PlayerMatchState::attack).average().orElse(70.0);
+        // V25D47 (Sprint C11a): weight each player's attack contribution by
+        // PositionEffectivenessCalculator.effectiveness(naturalPosition, position).
+        // A CB placed in a MID slot (effectiveness 0.8) contributes 80% of its
+        // attack stat; a perfect match contributes 100%. The top-5 selection
+        // is unchanged — still the 5 highest-attack on-pitch players — but
+        // the average is now effectiveness-weighted.
+        double avg = sorted.stream()
+                .mapToDouble(p -> p.attack()
+                        * PositionEffectivenessCalculator.effectiveness(p.naturalPosition(), p.position()))
+                .average()
+                .orElse(70.0);
         return avg;
     }
 
@@ -945,15 +956,26 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .filter(p -> p.position().equals("DEF") || p.position().equals("GK"))
                 .toList();
         if (defenders.isEmpty()) {
-            // Fallback: avg defense of all 11
+            // Fallback: avg defense of all 11 (no effectiveness penalty —
+            // there are no defenders/GK in the lineup at all, so the
+            // engine shouldn't down-weight anyone)
             return players.stream()
                     .filter(V24PlayerMatchState::onPitch)
                     .mapToInt(V24PlayerMatchState::defense)
                     .average()
                     .orElse(70.0);
         }
+        // V25D47 (Sprint C11a): weight each defender's (defense+mentality)/2
+        // contribution by PositionEffectivenessCalculator.effectiveness(...).
+        // Note: switched from int division /2 to double division /2.0 to
+        // preserve precision before multiplying by the effectiveness
+        // multiplier (was losing 0.5 on odd sums).
         double avg = defenders.stream()
-                .mapToInt(p -> (p.defense() + p.mentality()) / 2)
+                .mapToDouble(p -> {
+                    double eff = PositionEffectivenessCalculator.effectiveness(
+                            p.naturalPosition(), p.position());
+                    return ((p.defense() + p.mentality()) / 2.0) * eff;
+                })
                 .average()
                 .orElse(70.0);
         return avg;
