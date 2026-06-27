@@ -16,13 +16,23 @@ import java.util.Map;
  *   {
  *     "inferredFormation": "3-5-2",
  *     "perPlayerEffectiveness": {
- *       "p1": 1.0,
- *       "p2": 0.8,
+ *       "GK-1": 1.0,
+ *       "S22-1": 0.85,
+ *       "S15-1": 0.95,
  *       ...
  *     },
  *     "teamAverage": 0.93
  *   }
  * </pre>
+ *
+ * <p><b>V25D52 (Sprint C13b):</b> {@code perPlayerEffectiveness} keys are
+ * {@code subdivisionId} (e.g. {@code "GK-1"}, {@code "S22-1"}), not
+ * {@code playerId}. This matches the frontend's contract — see
+ * {@code front-ciber/.../shared/models/lineup/formation-effectiveness.dto.ts}.
+ * Prior to C13b the back returned playerId keys while the front looked up
+ * by subdivisionId, so {@code fe.perPlayerEffectiveness?.[subdivisionId]}
+ * always returned {@code undefined} and the CSS class / badge never
+ * applied. C13b aligns the wire contract on subdivisionId.
  *
  * <p>Mirrors the back record {@link FormationEffectiveness} 1:1 (Jackson
  * serializes records via their components). Field naming uses camelCase
