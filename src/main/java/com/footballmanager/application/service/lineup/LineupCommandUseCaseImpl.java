@@ -2,6 +2,7 @@ package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.ChemistryBreakdownDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.FormationDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.FormationEffectivenessDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.FormationPositionDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
@@ -15,6 +16,7 @@ import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.Formation;
+import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -84,7 +86,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
 
                 return careerRepository.save(career)
-                    .thenReturn(buildLineupDTO(lineup, formation, warnings));
+                    .thenReturn(buildLineupDTO(lineup, formation, warnings, slotMap));
             });
     }
 
@@ -184,7 +186,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 }
 
                 return careerRepository.save(career)
-                    .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings));
+                    .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings, slotMap));
             });
     }
 
@@ -316,7 +318,8 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
     }
 
     private LineupDTO buildLineupDTO(List<SessionPlayer> players, Formation formation,
-                                      List<LineupWarningDTO> warnings) {
+                                      List<LineupWarningDTO> warnings,
+                                      Map<String, String> slotMap) {
         List<PlayerLineupDTO> playerDTOs = players.stream()
             .map(p -> new PlayerLineupDTO(
                 p.getSessionPlayerId(),
@@ -332,12 +335,33 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 p.getSuspensionRemainingMatches()
             ))
             .toList();
+
+        // V25D47 (Sprint C11a): build the slot DTOs and the tactical effectiveness
+        // aggregate. Convert the playerId → subdivisionId map into the
+        // LineupSlotDTO list (same shape used by LineupQueryUseCaseImpl), then
+        // compute per-player effectiveness multipliers via
+        // PositionEffectivenessCalculator.effectiveness(naturalPosition, slotCategory).
+        List<LineupSlotDTO> slots = (slotMap == null || slotMap.isEmpty())
+                ? List.of()
+                : slotMap.entrySet().stream()
+                    .map(e -> new LineupSlotDTO(e.getKey(), e.getValue()))
+                    .toList();
+        Map<String, String> naturalByPlayer = new HashMap<>();
+        for (SessionPlayer p : players) {
+            if (p.getSessionPlayerId() != null && p.getPosition() != null) {
+                naturalByPlayer.put(p.getSessionPlayerId(), p.getPosition());
+            }
+        }
+        FormationEffectiveness formationEffectiveness =
+                FormationEffectiveness.from(slots, naturalByPlayer);
+
         // V25D41 (Sprint C6): compute team chemistry from the SessionPlayer list.
         // V25D43 (Sprint C8): calculate() now returns ChemistryDetail (score + breakdown).
         ChemistryDetail chemistryDetail = TeamChemistryCalculator.calculate(players);
-        return new LineupDTO(formation.getCode(), playerDTOs, false, warnings, List.of(),
+        return new LineupDTO(formation.getCode(), playerDTOs, false, warnings, slots,
                 chemistryDetail.score(),
-                ChemistryBreakdownDTO.from(chemistryDetail));
+                ChemistryBreakdownDTO.from(chemistryDetail),
+                FormationEffectivenessDTO.from(formationEffectiveness));
     }
 
     private boolean isPlayerAvailable(SessionPlayer p) {

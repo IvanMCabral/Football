@@ -27,7 +27,17 @@ public class V24PlayerMatchState {
     // TacticalChangeService drives the position reassignment through this
     // setter (validation: NOT NULL — compatibility with the new formation
     // is the service's responsibility, not the player's).
+    //
+    // V25D47 (Sprint C11a): the existing 'position' field is now the
+    // TACTICAL position (current slot category, e.g. "MID" if a CB
+    // got moved to a MID slot). The new 'naturalPosition' field holds the
+    // player's original position (immutable, set at fromSessionPlayer
+    // time). Both are 5-category strings ("GK"/"DEF"/"MID"/"WINGER"/"ATT").
+    // The engine uses PositionEffectivenessCalculator.effectiveness(
+    // naturalPosition, position) to weight stat contributions — a CB at
+    // a MID slot contributes attack_stat * 0.8 instead of the full value.
     private String position;
+    private final String naturalPosition;
     private final int attack;
     private final int defense;
     private final int technique;
@@ -49,6 +59,7 @@ public class V24PlayerMatchState {
 
     private V24PlayerMatchState(
             String sessionPlayerId, String teamId, String name, String position,
+            String naturalPosition,
             int attack, int defense, int technique, int speed, int stamina, int mentality,
             int currentStamina, int form, int yellowCards, boolean redCard,
             boolean injured, boolean onPitch,
@@ -57,6 +68,13 @@ public class V24PlayerMatchState {
         this.teamId = teamId;
         this.name = name;
         this.position = position;
+        // V25D47 (Sprint C11a): naturalPosition = the player's original slot.
+        // If null/blank, fall back to the tactical position so effectiveness()
+        // returns 1.0 (perfect match) — the player is treated as being at
+        // home. This is the same backward-compat shape as legacy lineups.
+        this.naturalPosition = (naturalPosition == null || naturalPosition.isBlank())
+                ? position
+                : naturalPosition;
         this.attack = attack;
         this.defense = defense;
         this.technique = technique;
@@ -82,11 +100,17 @@ public class V24PlayerMatchState {
         Objects.requireNonNull(teamId, "teamId must not be null");
         String name = (player.getName() == null || player.getName().isBlank())
                 ? "Unknown Player" : player.getName();
+        // V25D47 (Sprint C11a): naturalPosition == position at construction
+        // (no tactical change has happened yet). When the TacticalChangeService
+        // reassigns a player mid-match, it calls setPosition() and the
+        // effectiveness calc kicks in.
+        String playerPos = player.getPosition();
         return new V24PlayerMatchState(
                 player.getSessionPlayerId(),
                 teamId,
                 name,
-                player.getPosition(),
+                playerPos,
+                playerPos,
                 intOr(player.getAttack(), 50),
                 intOr(player.getDefense(), 50),
                 intOr(player.getTechnique(), 50),
@@ -112,6 +136,16 @@ public class V24PlayerMatchState {
     public String teamId() { return teamId; }
     public String name() { return name; }
     public String position() { return position; }
+
+    /**
+     * V25D47 (Sprint C11a): the player's original / natural category
+     * (e.g., {@code "DEF"} for a CB). Immutable — set at construction
+     * from {@link SessionPlayer#getPosition()} and never changes. Compare
+     * with {@link #position()} (current tactical slot, mutable) to compute
+     * the effectiveness multiplier via
+     * {@link com.footballmanager.domain.model.valueobject.PositionEffectivenessCalculator}.
+     */
+    public String naturalPosition() { return naturalPosition; }
     public int attack() { return attack; }
     public int defense() { return defense; }
     public int technique() { return technique; }

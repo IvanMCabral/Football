@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.ChemistryBreakdownDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.FormationEffectivenessDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
@@ -8,6 +9,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
+import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,8 +55,11 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         if (lineupIds == null || lineupIds.isEmpty()) {
             // V25D41 (Sprint C6): empty lineup → chemistry = 0 (no lineup, no chemistry).
             // V25D43 (Sprint C8): empty breakdown (4 groups, all empty) for shape stability.
+            // V25D47 (Sprint C11a): empty formation effectiveness (default formation,
+            // empty per-player map, teamAverage=1.0).
             return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0,
-                    ChemistryBreakdownDTO.empty());
+                    ChemistryBreakdownDTO.empty(),
+                    FormationEffectivenessDTO.empty());
         }
 
         List<SessionPlayer> lineup = lineupIds.stream()
@@ -88,9 +94,23 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         // V25D43 (Sprint C8): calculate() now returns ChemistryDetail (score + breakdown).
         ChemistryDetail chemistryDetail = TeamChemistryCalculator.calculate(lineup);
 
+        // V25D47 (Sprint C11a): formation effectiveness — inferred formation label
+        // + per-player effectiveness multipliers (natural position vs slot category).
+        // For empty/malformed slots → defaults to "4-4-2" + empty map + 1.0 team avg
+        // (backward compat with lineups persisted before subdivisionId mapping).
+        Map<String, String> naturalByPlayer = new HashMap<>();
+        for (SessionPlayer p : lineup) {
+            if (p.getSessionPlayerId() != null && p.getPosition() != null) {
+                naturalByPlayer.put(p.getSessionPlayerId(), p.getPosition());
+            }
+        }
+        FormationEffectiveness formationEffectiveness =
+                FormationEffectiveness.from(slots, naturalByPlayer);
+
         return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots,
                 chemistryDetail.score(),
-                ChemistryBreakdownDTO.from(chemistryDetail));
+                ChemistryBreakdownDTO.from(chemistryDetail),
+                FormationEffectivenessDTO.from(formationEffectiveness));
     }
 
     private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {
