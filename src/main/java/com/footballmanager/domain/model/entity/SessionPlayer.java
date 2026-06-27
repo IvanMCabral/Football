@@ -1,6 +1,7 @@
 package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.footballmanager.domain.model.valueobject.OverallCalculator;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 
 import java.math.BigDecimal;
@@ -204,29 +205,21 @@ public class SessionPlayer {
     public Integer calculateOverall() {
         if (hasNullAttributes()) return 50;
 
-        double overall = switch (position) {
-            case "GK" -> defense * 0.40 + technique * 0.20 + mentality * 0.20 +
-                       stamina * 0.10 + speed * 0.05 + attack * 0.05;
-            case "DEF" -> defense * 0.35 + technique * 0.15 + mentality * 0.15 +
-                       stamina * 0.15 + speed * 0.10 + attack * 0.10;
-            case "MID" -> technique * 0.30 + stamina * 0.20 + mentality * 0.15 +
-                       defense * 0.15 + speed * 0.10 + attack * 0.10;
-            case "WINGER" -> speed * 0.30 + attack * 0.25 + technique * 0.20 +
-                       stamina * 0.15 + mentality * 0.05 + defense * 0.05;
-            case "ATT" -> attack * 0.40 + technique * 0.20 + speed * 0.15 +
-                       mentality * 0.10 + stamina * 0.10 + defense * 0.05;
-            default -> getAverageAttributes();
-        };
-        return (int) Math.round(overall);
+        // V25D40 (Sprint C5): delegate to the shared {@link OverallCalculator}.
+        // Before this refactor, SessionPlayer and Player had duplicated switch
+        // statements with the same weights, and only Player was extended to
+        // consider height + skills in V25D39 — leaving the engine path
+        // (consumed by the UI via SessionPlayerDTO.overall) with stale overalls.
+        // Now both paths share one source of truth for the formula.
+        int raw = OverallCalculator.calculate(
+                attack, defense, technique, speed, stamina, mentality,
+                position, heightCm, skillLevels);
+        return raw;
     }
 
     private boolean hasNullAttributes() {
         return attack == null || defense == null || technique == null ||
                speed == null || stamina == null || mentality == null;
-    }
-
-    private double getAverageAttributes() {
-        return (attack + defense + technique + speed + stamina + mentality) / 6.0;
     }
 
     // ========== Getters ==========
