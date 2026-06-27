@@ -13,7 +13,14 @@ public enum Formation {
     FORMATION_3_5_2("3-5-2", 3, 5, 2),
     FORMATION_5_3_2("5-3-2", 5, 3, 2),
     FORMATION_4_1_4_1("4-1-4-1", 4, 5, 1),
-    FORMATION_3_4_3("3-4-3", 3, 4, 3);
+    FORMATION_3_4_3("3-4-3", 3, 4, 3),
+    // V25D54-C15 P1: 4 formations nuevas (feature requests de Iván)
+    FORMATION_3_5_2_CDM("3-5-2-CDM", 3, 5, 2), // 3 CB + 1 CDM + 2 CM + 2 WB = 5 mids
+    FORMATION_5_4_1("5-4-1", 5, 4, 1),
+    FORMATION_3_4_1_2("3-4-1-2", 3, 5, 2),    // 3 CB + 4 MID + 1 CAM = 5 mids
+    FORMATION_4_2_2_2("4-2-2-2", 4, 4, 2),     // 4 DEF + 2 CDM + 2 wide + 2 ST = 4 mids
+    // V25D54-C15 P2: variante con pivote CDM
+    FORMATION_4_3_3_1("4-3-3-1", 4, 3, 3);     // 4 DEF + 1 CDM + 2 CM + 3 ATT = 3 mids
 
     private final String displayName;
     private final int defenders;

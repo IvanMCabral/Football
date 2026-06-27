@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,29 +15,40 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * MVP1-lineup-cancha-1: tests para el servicio de formaciones.
  *
- * <p>V25D36-F2: ahora 7 formaciones (antes 4) — agregadas 5-3-2, 4-1-4-1 y
+ * <p>V25D36-F2: 7 formaciones (antes 4) — agregadas 5-3-2, 4-1-4-1 y
  * 3-4-3 que el engine ya entendía pero que el servicio no exponía.
  *
- * <p>Cubre el contrato: 7 formaciones con 11 posiciones cada una
+ * <p>V25D54-C15 (Sprint C15 — Formations reality): ahora 12 formaciones
+ * (7 originales + 4 nuevas + 1 variante 4-3-3-1). P0 corrigió role labels
+ * de 3-5-2/3-4-3 wide mids (LM→LWB, RM→RWB). P1 agregó 3-5-2-CDM, 5-4-1,
+ * 3-4-1-2, 4-2-2-2. P2 agregó variante 4-3-3-1 con pivote CDM.
+ *
+ * <p>Cubre el contrato: 12 formaciones con 11 posiciones cada una
  * (1 GK + outfieldPlayers), subdivisionIds únicos dentro de cada formación,
- * counts de defensores/mediocampistas/atacantes coincidentes con la formación.
+ * counts de defensores/mediocampistas/atacantes coincidentes con la formación,
+ * role labels esperados por formation (golden master).
  */
 class FormationServiceTest {
 
     private final FormationService service = new FormationService();
 
     @Test
-    @DisplayName("getAllFormations retorna exactamente 7 formaciones")
-    void returnsExactly7Formations() {
-        assertEquals(7, service.getAllFormations().size());
+    @DisplayName("getAllFormations retorna exactamente 12 formaciones (7 originales + 4 nuevas V25D54-C15 + 1 variante 4-3-3-1)")
+    void returnsExactly12Formations() {
+        assertEquals(12, service.getAllFormations().size());
     }
 
     @Test
-    @DisplayName("Las 7 formaciones esperadas están presentes")
+    @DisplayName("Las 12 formaciones esperadas están presentes")
     void allExpectedFormationsPresent() {
         Set<String> names = Set.of(
+            // V25D36-F2: 7 originales
             "4-4-2", "4-3-3", "3-5-2", "4-2-3-1",
-            "5-3-2", "4-1-4-1", "3-4-3");
+            "5-3-2", "4-1-4-1", "3-4-3",
+            // V25D54-C15 P1: 4 nuevas
+            "3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2",
+            // V25D54-C15 P2: 1 variante
+            "4-3-3-1");
         Set<String> actual = new HashSet<>();
         for (FormationDTO f : service.getAllFormations()) {
             actual.add(f.name());
@@ -141,6 +153,13 @@ class FormationServiceTest {
         assertNotNull(service.getFormationByName("5-3-2"));
         assertNotNull(service.getFormationByName("4-1-4-1"));
         assertNotNull(service.getFormationByName("3-4-3"));
+        // V25D54-C15 P1: las 4 formations nuevas.
+        assertNotNull(service.getFormationByName("3-5-2-CDM"));
+        assertNotNull(service.getFormationByName("5-4-1"));
+        assertNotNull(service.getFormationByName("3-4-1-2"));
+        assertNotNull(service.getFormationByName("4-2-2-2"));
+        // V25D54-C15 P2: la variante 4-3-3-1.
+        assertNotNull(service.getFormationByName("4-3-3-1"));
     }
 
     @Test
@@ -265,15 +284,191 @@ class FormationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D53-C14: el slot S23-2 es usado por las 7 formations (single point of failure)")
+    @DisplayName("V25D53-C14: el slot S23-2 es usado por todas las formations (single point of failure)")
     void s23TwoIsUsedByAllFormations() {
         // Documenta que S23-2 (CB central en row 7) aparece en los 11 jugadores
-        // de cada una de las 7 formations. Útil para detectar si alguien cambia
-        // el "back line center" de las 4-back formations.
+        // de cada formación. Útil para detectar si alguien cambia el "back line
+        // center" de las 4-back formations.
+        // V25D54-C15: ahora son 12 formations — sigue siendo cierto.
         for (FormationDTO f : service.getAllFormations()) {
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
             assertTrue(hasS23_2, "Formación " + f.name() + " no usa S23-2 (CB central)");
+        }
+    }
+
+    // ========== V25D54-C15 P0 (Sprint C15 — Formations reality: role labels) ==========
+    //
+    // Golden tests que validan los role labels esperados por formation. Atrapan
+    // regresiones si alguien edita `buildFormations()` y cambia roles sin querer.
+    // Estos tests son el guardrail para el fix P0 (LM→LWB en 3-5-2/3-4-3).
+
+    @Test
+    @DisplayName("V25D54-C15 P0: 3-5-2 wide mids son LWB/RWB (no LM/RM)")
+    void formation_3_5_2_usesLwbRwbForWideMids() {
+        FormationDTO f = service.getFormationByName("3-5-2");
+        assertNotNull(f);
+        // pos #4 (slot S15-1) debe ser LWB
+        FormationPositionDTO leftWide = f.positions().stream()
+            .filter(p -> "S15-1".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("LWB", leftWide.role(),
+            "3-5-2 pos #4 (S15-1) esperaba LWB, fue " + leftWide.role());
+
+        // pos #8 (slot S18-3) debe ser RWB
+        FormationPositionDTO rightWide = f.positions().stream()
+            .filter(p -> "S18-3".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("RWB", rightWide.role(),
+            "3-5-2 pos #8 (S18-3) esperaba RWB, fue " + rightWide.role());
+    }
+
+    @Test
+    @DisplayName("V25D54-C15 P0: 3-4-3 wide mids son LWB/RWB (no LM/RM)")
+    void formation_3_4_3_usesLwbRwbForWideMids() {
+        FormationDTO f = service.getFormationByName("3-4-3");
+        assertNotNull(f);
+        FormationPositionDTO leftWide = f.positions().stream()
+            .filter(p -> "S15-1".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("LWB", leftWide.role(),
+            "3-4-3 pos #4 (S15-1) esperaba LWB, fue " + leftWide.role());
+
+        FormationPositionDTO rightWide = f.positions().stream()
+            .filter(p -> "S18-3".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("RWB", rightWide.role(),
+            "3-4-3 pos #7 (S18-3) esperaba RWB, fue " + rightWide.role());
+    }
+
+    @Test
+    @DisplayName("V25D54-C15 P0: 4-4-2 wide mids siguen siendo LM/RM (no afectados por P0)")
+    void formation_4_4_2_wideMidsRemainLmRm() {
+        FormationDTO f = service.getFormationByName("4-4-2");
+        assertNotNull(f);
+        FormationPositionDTO leftWide = f.positions().stream()
+            .filter(p -> "S16-1".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("LM", leftWide.role());
+
+        FormationPositionDTO rightWide = f.positions().stream()
+            .filter(p -> "S18-3".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("RM", rightWide.role());
+    }
+
+    @Test
+    @DisplayName("V25D54-C15 P0: golden roles para las 7 formations originales")
+    void goldenRolesForOriginal7Formations() {
+        // Snapshot de los role labels esperados. Si alguno cambia sin razón,
+        // este test detecta el delta y obliga a actualizar el golden.
+        Map<String, List<String>> expectedRoles = Map.of(
+            "4-4-2", List.of("GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"),
+            "4-3-3", List.of("GK", "LB", "CB", "CB", "RB", "CM", "CM", "CM", "LW", "ST", "RW"),
+            "3-5-2", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "CM", "RWB", "ST", "ST"),
+            "4-2-3-1", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CDM", "LW", "CAM", "RW", "ST"),
+            "5-3-2", List.of("GK", "LB", "CB", "CB", "CB", "RB", "CM", "CM", "CM", "ST", "ST"),
+            "4-1-4-1", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "LM", "CM", "CM", "RM", "ST"),
+            "3-4-3", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "RWB", "LW", "ST", "RW")
+        );
+        for (var entry : expectedRoles.entrySet()) {
+            String formationName = entry.getKey();
+            List<String> expected = entry.getValue();
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f, formationName + " no encontrada");
+            List<String> actual = f.positions().stream()
+                .map(FormationPositionDTO::role)
+                .toList();
+            assertEquals(expected, actual,
+                formationName + " roles no coinciden. Esperaba " + expected + " pero fue " + actual);
+        }
+    }
+
+    // ========== V25D54-C15 P1 (4 formations nuevas) + P2 (variante 4-3-3-1) ==========
+
+    @Test
+    @DisplayName("V25D54-C15 P1+P2: golden roles para las 5 formations nuevas")
+    void goldenRolesForNew5Formations() {
+        Map<String, List<String>> expectedRoles = Map.of(
+            // P1.1: 3-5-2-CDM — 3 CB + 1 CDM + 2 CM + 2 WB + 2 ST
+            "3-5-2-CDM", List.of("GK", "CB", "CB", "CB", "CDM", "CM", "CM", "LWB", "RWB", "ST", "ST"),
+            // P1.2: 5-4-1 — 5 DEF + LM + 2 CM + RM + 1 ST
+            "5-4-1", List.of("GK", "LB", "CB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST"),
+            // P1.3: 3-4-1-2 (Christmas tree) — 3 CB + LWB + 2 CM + RWB + CAM + 2 ST
+            "3-4-1-2", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "RWB", "CAM", "ST", "ST"),
+            // P1.4: 4-2-2-2 — 4 DEF + 2 CDM + LM + RM + 2 ST
+            "4-2-2-2", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CDM", "LM", "RM", "ST", "ST"),
+            // P2: 4-3-3-1 (variant con CDM pivot) — 4 DEF + CDM + 2 CM + LW + ST + RW
+            "4-3-3-1", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CM", "CM", "LW", "ST", "RW")
+        );
+        for (var entry : expectedRoles.entrySet()) {
+            String formationName = entry.getKey();
+            List<String> expected = entry.getValue();
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f, formationName + " no encontrada");
+            List<String> actual = f.positions().stream()
+                .map(FormationPositionDTO::role)
+                .toList();
+            assertEquals(expected, actual,
+                formationName + " roles no coinciden. Esperaba " + expected + " pero fue " + actual);
+        }
+    }
+
+    @Test
+    @DisplayName("V25D54-C15 P1: cada formation nueva tiene 11 subdivisionIds únicos y coords en [0,100]")
+    void newFormationsHaveUniqueSubdivisionIdsAndValidCoords() {
+        String[] newFormations = {"3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2", "4-3-3-1"};
+        for (String formationName : newFormations) {
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f, formationName + " no encontrada");
+            assertEquals(11, f.positions().size(),
+                formationName + " no tiene 11 posiciones");
+
+            // subdivisionIds únicos
+            Set<String> ids = new HashSet<>();
+            for (FormationPositionDTO p : f.positions()) {
+                assertTrue(ids.add(p.subdivisionId()),
+                    formationName + " tiene subdivisionId duplicado: " + p.subdivisionId());
+            }
+
+            // coords en [0, 100]
+            for (FormationPositionDTO p : f.positions()) {
+                assertNotNull(p.xPercent());
+                assertNotNull(p.yPercent());
+                assertTrue(p.xPercent() >= 0 && p.xPercent() <= 100,
+                    formationName + " xPercent fuera de rango: " + p.xPercent());
+                assertTrue(p.yPercent() >= 0 && p.yPercent() <= 100,
+                    formationName + " yPercent fuera de rango: " + p.yPercent());
+            }
+
+            // exactamente 1 GK
+            long gkCount = f.positions().stream()
+                .filter(p -> "GK".equals(p.role()))
+                .count();
+            assertEquals(1, gkCount,
+                formationName + " debería tener exactamente 1 GK, tuvo " + gkCount);
+
+            // meta defenders+midfielders+attackers == outfieldPlayers
+            int sum = f.defenders() + f.midfielders() + f.attackers();
+            assertEquals(f.outfieldPlayers().intValue(), sum,
+                formationName + " meta no cuadra");
+        }
+    }
+
+    @Test
+    @DisplayName("V25D54-C15: el slot S23-2 sigue siendo usado por las 5 formations nuevas")
+    void s23TwoIsUsedByNewFormations() {
+        // Golden master de S23-2 ahora cubre las 12 formations (7 originales
+        // + 5 nuevas). Las nuevas formations usan back-three o back-four con
+        // CB central en S23-2, igual que las originales.
+        String[] newFormations = {"3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2", "4-3-3-1"};
+        for (String formationName : newFormations) {
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f);
+            boolean hasS23_2 = f.positions().stream()
+                .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
+            assertTrue(hasS23_2,
+                formationName + " no usa S23-2 (CB central) — esperado por golden master");
         }
     }
 }

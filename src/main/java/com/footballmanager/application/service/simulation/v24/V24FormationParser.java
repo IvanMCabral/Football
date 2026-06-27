@@ -81,7 +81,7 @@ public final class V24FormationParser {
         }
     }
 
-    // "4-3-3", "3-5-2" → three parts: defenders, midfielders, totalForwards
+    // "4-3-3", "3-5-2", "5-4-1" → three parts: defenders, midfielders, totalForwards
     private static V24Formation parseTwoDashes(String formation) {
         String[] parts = formation.split("-");
         if (parts.length != 3) return null;
@@ -106,6 +106,10 @@ public final class V24FormationParser {
                 // 5-3-2: 5 defenders, 3 midfielders, 2 forwards (no wingers)
                 return new V24Formation(formation, def, mid, 0, 0, totalForwards);
             }
+            // V25D54-C15 P1: 5-4-1 (5 defenders, 4 midfielders, 1 forward — solo ST)
+            if ("5-4-1".equals(formation)) {
+                return new V24Formation(formation, def, mid, 0, 0, totalForwards);
+            }
             // Generic: no separate winger count
             return new V24Formation(formation, def, mid, 0, 0, totalForwards);
         } catch (NumberFormatException e) {
@@ -113,10 +117,29 @@ public final class V24FormationParser {
         }
     }
 
-    // "4-2-3-1" → four parts: defenders, midfielders, attackingMidfielders, forwards
+    // "4-2-3-1", "3-4-1-2", "4-2-2-2", "4-3-3-1", "3-5-2-CDM" →
+    // four parts: defenders, midfielders, attackingMidfielders, forwards
+    //
+    // <p>V25D54-C15: added explicit cases for 3-4-1-2 (Christmas tree),
+    // 4-2-2-2 (narrow diamond), 4-3-3-1 (4-3-3 con CDM pivot) y
+    // 3-5-2-CDM (3-5-2 con CDM explícito). Para "4-3-3-1" el "-1" final
+    // es decoración (el pivot CDM ya está fold-ado en los 3 mids); el
+    // engine trata 4-3-3-1 con la misma estructura que 4-3-3 (4 DEF + 3
+    // MID + 2 WING + 1 ST) porque el pivot no cambia el shape forward.
+    //
+    // <p>Special-case parsing: para nombres que contienen letras (como
+    // "3-5-2-CDM") los Integer.parseInt fallan y tiran NumberFormatException
+    // antes de llegar al if-check. Por eso verificamos las string especiales
+    // ANTES de parsear los ints.
     private static V24Formation parseThreeDashes(String formation) {
         String[] parts = formation.split("-");
         if (parts.length != 4) return null;
+        // V25D54-C15 P1: 3-5-2-CDM contiene letras — verificamos ANTES
+        // de parsear ints. Engine treats it as 3-5-2-like structure
+        // (3 DEF + 5 MID + 2 ST, sin wingers).
+        if ("3-5-2-CDM".equals(formation)) {
+            return new V24Formation(formation, 3, 5, 0, 0, 2);
+        }
         try {
             int def = Integer.parseInt(parts[0]);
             int mid = Integer.parseInt(parts[1]);
@@ -131,6 +154,22 @@ public final class V24FormationParser {
             if ("4-1-4-1".equals(formation)) {
                 int totalMid = mid + am; // 1+4=5
                 return new V24Formation(formation, def, totalMid, 0, 0, fwd);
+            }
+            // V25D54-C15 P1: 3-4-1-2 (Christmas tree): 3 DEF + 5 MID (4+1 CAM) + 2 ST
+            if ("3-4-1-2".equals(formation)) {
+                int totalMid = mid + am; // 4+1=5
+                return new V24Formation(formation, def, totalMid, 0, 0, fwd);
+            }
+            // V25D54-C15 P1: 4-2-2-2 (narrow diamond): 4 DEF + 4 MID (2 CDM + 2 wide) + 2 ST
+            if ("4-2-2-2".equals(formation)) {
+                int totalMid = mid + am; // 2+2=4
+                return new V24Formation(formation, def, totalMid, 0, 0, fwd);
+            }
+            // V25D54-C15 P2: 4-3-3-1 (4-3-3 con CDM pivot): 4 DEF + 3 MID + 2 WING + 1 ST
+            // El "-1" es decoración (CDM pivot, no additive). Engine treats it
+            // como 4-3-3-like structure since wings+ST son iguales.
+            if ("4-3-3-1".equals(formation)) {
+                return new V24Formation(formation, def, mid, 0, 2, fwd);
             }
             // Generic 4-line formation: no separate wingers
             return new V24Formation(formation, def, mid, am, 0, fwd);

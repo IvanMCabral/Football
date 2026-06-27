@@ -183,6 +183,77 @@ class V24FormationParserTest {
         assertEquals(10, parser.parse("3-4-3").outfieldPlayers());
         assertEquals(10, parser.parse("5-4-1").outfieldPlayers());
         assertEquals(10, parser.parse("5-3-2").outfieldPlayers());
+        // V25D54-C15 P1: 4 formations nuevas también suman 10 outfield.
+        assertEquals(10, parser.parse("3-5-2-CDM").outfieldPlayers());
+        assertEquals(10, parser.parse("3-4-1-2").outfieldPlayers());
+        assertEquals(10, parser.parse("4-2-2-2").outfieldPlayers());
+        // V25D54-C15 P2: variante 4-3-3-1 también suma 10 outfield.
+        assertEquals(10, parser.parse("4-3-3-1").outfieldPlayers());
+    }
+
+    // ========== V25D54-C15 P1: parsing de formations nuevas ==========
+
+    @Test
+    void parses_3_5_2_CDM() {
+        // 3-5-2 con CDM pivot: 3 DEF + 5 MID (1 CDM + 2 CM + 2 WB fold-ados) + 2 ST
+        var f = parser.parse("3-5-2-CDM");
+        assertEquals("3-5-2-CDM", f.raw());
+        assertEquals(3, f.defenders());
+        assertEquals(5, f.midfielders());
+        assertEquals(0, f.attackingMidfielders());
+        assertEquals(0, f.wingers());
+        assertEquals(2, f.forwards());
+        assertEquals(10, f.outfieldPlayers());
+        assertTrue(f.isBackThree());
+        assertTrue(f.hasTwoStrikers());
+    }
+
+    @Test
+    void parses_3_4_1_2_christmas_tree() {
+        // Christmas tree: 3 DEF + 5 MID (4 MID + 1 CAM fold-ados) + 2 ST
+        var f = parser.parse("3-4-1-2");
+        assertEquals("3-4-1-2", f.raw());
+        assertEquals(3, f.defenders());
+        assertEquals(5, f.midfielders()); // 4 + 1 (CAM fold-ado)
+        assertEquals(0, f.attackingMidfielders());
+        assertEquals(0, f.wingers());
+        assertEquals(2, f.forwards());
+        assertEquals(10, f.outfieldPlayers());
+        assertTrue(f.isBackThree());
+        assertTrue(f.hasTwoStrikers());
+    }
+
+    @Test
+    void parses_4_2_2_2_narrow_diamond() {
+        // Narrow diamond: 4 DEF + 4 MID (2 CDM + 2 wide fold-ados) + 2 ST
+        var f = parser.parse("4-2-2-2");
+        assertEquals("4-2-2-2", f.raw());
+        assertEquals(4, f.defenders());
+        assertEquals(4, f.midfielders()); // 2 + 2
+        assertEquals(0, f.attackingMidfielders());
+        assertEquals(0, f.wingers());
+        assertEquals(2, f.forwards());
+        assertEquals(10, f.outfieldPlayers());
+        assertTrue(f.isBackFour());
+        assertTrue(f.hasTwoStrikers());
+    }
+
+    // ========== V25D54-C15 P2: variante 4-3-3-1 con pivote CDM ==========
+
+    @Test
+    void parses_4_3_3_1_with_pivot() {
+        // 4-3-3-1 = 4-3-3 con CDM pivot (decorativo). Engine treats as 4-3-3-like.
+        var f = parser.parse("4-3-3-1");
+        assertEquals("4-3-3-1", f.raw());
+        assertEquals(4, f.defenders());
+        assertEquals(3, f.midfielders());
+        assertEquals(0, f.attackingMidfielders());
+        assertEquals(2, f.wingers()); // same wing count as 4-3-3
+        assertEquals(1, f.forwards());
+        assertEquals(10, f.outfieldPlayers());
+        assertTrue(f.isBackFour());
+        assertTrue(f.hasWingers());
+        assertTrue(f.hasSingleStriker());
     }
 
     // ========== nullPlayerThrowsOnSelectShooterWithFormation ==========
