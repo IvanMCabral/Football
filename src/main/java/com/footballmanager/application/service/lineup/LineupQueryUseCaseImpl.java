@@ -6,6 +6,7 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,8 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         List<String> lineupIds = career.getTeamStarting11().get(userTeamId);
 
         if (lineupIds == null || lineupIds.isEmpty()) {
-            return new LineupDTO(null, Collections.emptyList(), false);
+            // V25D41 (Sprint C6): empty lineup → chemistry = 0 (no lineup, no chemistry).
+            return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0);
         }
 
         List<SessionPlayer> lineup = lineupIds.stream()
@@ -77,7 +79,11 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
         List<LineupSlotDTO> slots = buildSlotsFromSubdivisionMap(career, userTeamId);
 
-        return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots);
+        // V25D41 (Sprint C6): compute team chemistry from the actual SessionPlayer
+        // objects (we have the lineup List<SessionPlayer> here, not just the DTOs).
+        int chemistry = TeamChemistryCalculator.calculate(lineup);
+
+        return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots, chemistry);
     }
 
     private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {
