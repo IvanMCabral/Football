@@ -192,4 +192,180 @@ class PositionEffectivenessCalculatorTest {
     void unknownSlot() {
         assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("DEF", "FUTURE_CAT"));
     }
+
+    // ========== V25D51 (Sprint C13): 3-cat → 5-cat mapper ==========
+
+    @Test
+    @DisplayName("mapper: GK passes through to GK")
+    void mapper_gk() {
+        assertEquals("GK", PositionEffectivenessCalculator.toFiveCategory("GK"));
+    }
+
+    @Test
+    @DisplayName("mapper: CB/LB/RB/LWB/RWB collapse to DEF")
+    void mapper_defVariants() {
+        assertEquals("DEF", PositionEffectivenessCalculator.toFiveCategory("CB"));
+        assertEquals("DEF", PositionEffectivenessCalculator.toFiveCategory("LB"));
+        assertEquals("DEF", PositionEffectivenessCalculator.toFiveCategory("RB"));
+        assertEquals("DEF", PositionEffectivenessCalculator.toFiveCategory("LWB"));
+        assertEquals("DEF", PositionEffectivenessCalculator.toFiveCategory("RWB"));
+    }
+
+    @Test
+    @DisplayName("mapper: CDM/CM/CAM/LM/RM collapse to MID")
+    void mapper_midVariants() {
+        assertEquals("MID", PositionEffectivenessCalculator.toFiveCategory("CDM"));
+        assertEquals("MID", PositionEffectivenessCalculator.toFiveCategory("CM"));
+        assertEquals("MID", PositionEffectivenessCalculator.toFiveCategory("CAM"));
+        assertEquals("MID", PositionEffectivenessCalculator.toFiveCategory("LM"));
+        assertEquals("MID", PositionEffectivenessCalculator.toFiveCategory("RM"));
+    }
+
+    @Test
+    @DisplayName("mapper: LW/RW collapse to WINGER")
+    void mapper_wingerVariants() {
+        assertEquals("WINGER", PositionEffectivenessCalculator.toFiveCategory("LW"));
+        assertEquals("WINGER", PositionEffectivenessCalculator.toFiveCategory("RW"));
+    }
+
+    @Test
+    @DisplayName("mapper: CF/ST collapse to ATT")
+    void mapper_attVariants() {
+        assertEquals("ATT", PositionEffectivenessCalculator.toFiveCategory("CF"));
+        assertEquals("ATT", PositionEffectivenessCalculator.toFiveCategory("ST"));
+    }
+
+    @Test
+    @DisplayName("mapper: 5-cat names pass through unchanged")
+    void mapper_fiveCatPassThrough() {
+        assertEquals("GK", PositionEffectivenessCalculator.toFiveCategory("GK"));
+        assertEquals("DEF", PositionEffectivenessCalculator.toFiveCategory("DEF"));
+        assertEquals("MID", PositionEffectivenessCalculator.toFiveCategory("MID"));
+        assertEquals("WINGER", PositionEffectivenessCalculator.toFiveCategory("WINGER"));
+        assertEquals("ATT", PositionEffectivenessCalculator.toFiveCategory("ATT"));
+    }
+
+    @Test
+    @DisplayName("mapper: unknown / null / blank return as-is (no penalty path)")
+    void mapper_unknownInputs() {
+        assertEquals("FUTURE_POS", PositionEffectivenessCalculator.toFiveCategory("FUTURE_POS"));
+        assertEquals("", PositionEffectivenessCalculator.toFiveCategory(""));
+        assertEquals("   ", PositionEffectivenessCalculator.toFiveCategory("   "));
+        assertEquals(null, PositionEffectivenessCalculator.toFiveCategory(null));
+    }
+
+    // ========== V25D51 (Sprint C13): integration — 3-cat inputs through effectiveness() ==========
+
+    @Test
+    @DisplayName("C13 integration: LW (3-cat) in MID slot → 0.95 (carrilero flexibility)")
+    void c13_lwInMid() {
+        // V25D51 task spec evidence line 1: Rodrygo (LW) en S15-1 (MID) → 0.95.
+        assertEquals(0.95, PositionEffectivenessCalculator.effectiveness("LW", "MID"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: CM (3-cat) in DEF slot → 0.85 (CDM-like)")
+    void c13_cmInDef() {
+        // V25D51 task spec evidence line 2: Carvajal/Vazquez/Rudiger (CM) en
+        // S22-1/S22-2/S23-2 (DEF) → 0.85.
+        assertEquals(0.85, PositionEffectivenessCalculator.effectiveness("CM", "DEF"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: ST (3-cat) in MID slot → 0.7 (false-9 / shadow striker)")
+    void c13_stInMid() {
+        assertEquals(0.7, PositionEffectivenessCalculator.effectiveness("ST", "MID"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: CB (3-cat) in MID slot → 0.8 (CB penalty)")
+    void c13_cbInMid() {
+        assertEquals(0.8, PositionEffectivenessCalculator.effectiveness("CB", "MID"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: GK (3-cat pass-through) in GK slot → 1.0")
+    void c13_gkInGk() {
+        assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("GK", "GK"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: ST (3-cat) in ATT slot → 1.0 (perfect match)")
+    void c13_stInAtt() {
+        assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("ST", "ATT"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: LWB (3-cat, mapped to DEF) in MID slot → 0.8 (CB penalty)")
+    void c13_lwbInMid() {
+        // LWB is a wing-back (defensive) → maps to DEF → DEF in MID = 0.8.
+        // The 0.95 "carrilero flexibility" applies to LW/RW (WINGER→MID), not LWB/RWB.
+        assertEquals(0.8, PositionEffectivenessCalculator.effectiveness("LWB", "MID"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: RWB (3-cat, mapped to DEF) in ATT slot → 0.4 (severe penalty)")
+    void c13_rwbInAtt() {
+        // RWB is a wing-back (defensive) → maps to DEF → DEF in ATT = 0.4.
+        assertEquals(0.4, PositionEffectivenessCalculator.effectiveness("RWB", "ATT"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: LB (3-cat, mapped to DEF) in DEF slot → 1.0 (perfect)")
+    void c13_lbInDef() {
+        // LB is a defensive position → maps to DEF → DEF in DEF = 1.0.
+        assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("LB", "DEF"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: RW (3-cat, mapped to WINGER) in ATT slot → 0.9")
+    void c13_rwInAtt() {
+        // RW is an attacking winger → maps to WINGER → WINGER in ATT = 0.9.
+        assertEquals(0.9, PositionEffectivenessCalculator.effectiveness("RW", "ATT"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: CF (3-cat) in DEF slot → 0.3 (severe penalty)")
+    void c13_cfInDef() {
+        assertEquals(0.3, PositionEffectivenessCalculator.effectiveness("CF", "DEF"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: CAM (3-cat) in MID slot → 1.0 (perfect)")
+    void c13_camInMid() {
+        assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("CAM", "MID"));
+    }
+
+    @Test
+    @DisplayName("C13 integration: CDM (3-cat) in MID slot → 1.0 (perfect)")
+    void c13_cdmInMid() {
+        assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("CDM", "MID"));
+    }
+
+    // ========== V25D51 (Sprint C13): backward compat — 5-cat inputs unchanged ==========
+
+    @Test
+    @DisplayName("C13 backward compat: WINGER (5-cat) in MID slot → 0.95 (unchanged)")
+    void c13_backcompatWingerMid() {
+        // 5-cat passthrough still works (V25D47 contract preserved).
+        assertEquals(0.95, PositionEffectivenessCalculator.effectiveness("WINGER", "MID"));
+    }
+
+    @Test
+    @DisplayName("C13 backward compat: DEF (5-cat) in MID slot → 0.8 (unchanged)")
+    void c13_backcompatDefMid() {
+        assertEquals(0.8, PositionEffectivenessCalculator.effectiveness("DEF", "MID"));
+    }
+
+    @Test
+    @DisplayName("C13 backward compat: MID (5-cat) in ATT slot → 0.85 (unchanged)")
+    void c13_backcompatMidAtt() {
+        assertEquals(0.85, PositionEffectivenessCalculator.effectiveness("MID", "ATT"));
+    }
+
+    @Test
+    @DisplayName("C13 backward compat: null naturalPosition still → 1.0")
+    void c13_backcompatNullNatural() {
+        assertEquals(1.0, PositionEffectivenessCalculator.effectiveness(null, "MID"));
+    }
 }
