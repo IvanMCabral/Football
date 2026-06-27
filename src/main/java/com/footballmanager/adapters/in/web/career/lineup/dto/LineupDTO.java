@@ -22,18 +22,37 @@ public record LineupDTO(
     List<PlayerLineupDTO> players,
     boolean confirmed,
     List<LineupWarningDTO> warnings,
-    List<LineupSlotDTO> slots
+    List<LineupSlotDTO> slots,
+    /**
+     * V25D41 (Sprint C6): team chemistry score in [0, 99], calculated by
+     * {@code TeamChemistryCalculator} from the on-pitch players' overalls and
+     * skill aggregates. {@code null} for empty lineups (the "no lineup saved"
+     * state — see legacy 3-arg ctor below) — populated as 0 for non-empty
+     * lineups with no players, or as the calculated value otherwise.
+     *
+     * <p>Intentionally nullable so legacy callers (pre-C6 build sites) that
+     * don't compute chemistry don't need to change. The UI can safely
+     * ignore {@code null} (treat as "no data") or {@code 0} (treat as "no
+     * lineup strength").
+     */
+    Integer chemistryScore
 ) {
 
-    /** Compact ctor legacy (4 args) — slots null. */
+    /** Compact ctor legacy (3 args, no warnings/slots/chemistry). */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed) {
-        this(formation, players, confirmed, List.of(), List.of());
+        this(formation, players, confirmed, List.of(), List.of(), null);
     }
 
-    /** Compact ctor (4 args, sin slots). */
+    /** Compact ctor (4 args, no slots/chemistry). */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
                      List<LineupWarningDTO> warnings) {
-        this(formation, players, confirmed, warnings, List.of());
+        this(formation, players, confirmed, warnings, List.of(), null);
+    }
+
+    /** Compact ctor (5 args, sin chemistry — for legacy build sites pre-C6). */
+    public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
+                     List<LineupWarningDTO> warnings, List<LineupSlotDTO> slots) {
+        this(formation, players, confirmed, warnings, slots, null);
     }
 
     public LineupDTO {

@@ -13,6 +13,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
 import com.footballmanager.domain.model.valueobject.Formation;
+import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -329,7 +330,9 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 p.getSuspensionRemainingMatches()
             ))
             .toList();
-        return new LineupDTO(formation.getCode(), playerDTOs, false, warnings);
+        // V25D41 (Sprint C6): compute team chemistry from the SessionPlayer list.
+        int chemistry = TeamChemistryCalculator.calculate(players);
+        return new LineupDTO(formation.getCode(), playerDTOs, false, warnings, List.of(), chemistry);
     }
 
     private boolean isPlayerAvailable(SessionPlayer p) {
