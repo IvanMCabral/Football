@@ -119,4 +119,94 @@ class FieldSubdivisionServiceTest {
                 "subIndex fuera de rango [1,3]: " + sub.subIndex());
         }
     }
+
+    // ========== V25D53-C14 (Sprint C14 — Field Map Audit) ==========
+    //
+    // Tests geométricos de la grilla que documentan el estado actual.
+    // El gap (slots vacíos, filas sin uso) está descrito en docs/field-map.md
+    // y los fixes estructurales van a C15. Estos tests sirven de golden master
+    // para detectar regresiones en la geometría del field.
+
+    @Test
+    @DisplayName("V25D53-C14: los 81 slots normales no se solapan entre sí (grilla 9×9 adyacente)")
+    void gridSlotsDoNotOverlap() {
+        // Excluimos GK (slot grande separado que overlapea con sector 26 por diseño).
+        List<FieldSubdivisionDTO> normals = service.getAllSubdivisions().stream()
+            .filter(s -> !s.isGoalkeeper())
+            .toList();
+        assertEquals(81, normals.size());
+
+        for (int i = 0; i < normals.size(); i++) {
+            FieldSubdivisionDTO a = normals.get(i);
+            double aRight = a.left() + a.width();
+            double aBottom = a.top() + a.height();
+            for (int j = i + 1; j < normals.size(); j++) {
+                FieldSubdivisionDTO b = normals.get(j);
+                double bRight = b.left() + b.width();
+                double bBottom = b.top() + b.height();
+
+                boolean xOverlap = a.left() < bRight && b.left() < aRight;
+                boolean yOverlap = a.top() < bBottom && b.top() < aBottom;
+
+                assertFalse(xOverlap && yOverlap,
+                    String.format("Solape entre %s (left=%.2f, top=%.2f, w=%.2f, h=%.2f) y "
+                            + "%s (left=%.2f, top=%.2f, w=%.2f, h=%.2f)",
+                        a.subdivisionId(), a.left(), a.top(), a.width(), a.height(),
+                        b.subdivisionId(), b.left(), b.top(), b.width(), b.height()));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("V25D53-C14: los 81 slots normales cubren el field completo (grilla contigua sin gaps)")
+    void gridSlotsCoverFieldWithoutGaps() {
+        // Construimos el set de celdas (col, row) que ocupa cada slot normal.
+        // Esperamos 81 celdas distintas en una grilla 9×9 (col 0-8, row 0-8).
+        Set<String> cells = new HashSet<>();
+        for (FieldSubdivisionDTO sub : service.getAllSubdivisions()) {
+            if (sub.isGoalkeeper()) continue;
+            int col = (int) Math.round(sub.left() / 11.11);
+            int row = (int) Math.round(sub.top() / 11.11);
+            assertTrue(col >= 0 && col <= 8,
+                "col fuera de rango [0,8] para " + sub.subdivisionId() + ": " + col);
+            assertTrue(row >= 0 && row <= 8,
+                "row fuera de rango [0,8] para " + sub.subdivisionId() + ": " + row);
+            String cell = col + "," + row;
+            assertTrue(cells.add(cell),
+                "Celda duplicada en " + sub.subdivisionId() + ": " + cell);
+        }
+        assertEquals(81, cells.size(), "La grilla no cubre las 81 celdas únicas esperadas");
+    }
+
+    @Test
+    @DisplayName("V25D53-C14: cada slot normal tiene width=height=11.11 (cuadrados uniformes)")
+    void gridSlotsAreUniformSquares() {
+        for (FieldSubdivisionDTO sub : service.getAllSubdivisions()) {
+            if (sub.isGoalkeeper()) continue;
+            assertEquals(11.11, sub.width(), 0.01,
+                "width inesperado para " + sub.subdivisionId() + ": " + sub.width());
+            assertEquals(11.11, sub.height(), 0.01,
+                "height inesperado para " + sub.subdivisionId() + ": " + sub.height());
+        }
+    }
+
+    @Test
+    @DisplayName("V25D53-C14: zone ATTACK corresponde a row 0-1, MIDFIELD a row 2-5, DEFENSE a row 6-8")
+    void gridZonesCorrespondToRowRanges() {
+        for (FieldSubdivisionDTO sub : service.getAllSubdivisions()) {
+            if (sub.isGoalkeeper()) continue;
+            int row = (int) Math.round(sub.top() / 11.11);
+            String expectedZone;
+            if (row <= 1) {
+                expectedZone = "ATTACK";
+            } else if (row <= 5) {
+                expectedZone = "MIDFIELD";
+            } else {
+                expectedZone = "DEFENSE";
+            }
+            assertEquals(expectedZone, sub.zone(),
+                "Zone no coincide con row para " + sub.subdivisionId()
+                    + " (row=" + row + ")");
+        }
+    }
 }
