@@ -11,12 +11,16 @@ import java.util.List;
 /**
  * Servicio que retorna las formaciones tácticas disponibles con sus posiciones.
  *
- * <p>V25D36-F2: ahora retorna las 7 formaciones que el motor del partido
- * entiende vía {@link com.footballmanager.domain.model.valueobject.Formation}
+ * <p>V25D36-F2: retorna las 7 formaciones que el motor del partido entiende
+ * vía {@link com.footballmanager.domain.model.valueobject.Formation}
  * (4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 5-3-2, 4-1-4-1, 3-4-3). Antes solo se
  * exponían 4 (faltaban 5-3-2, 4-1-4-1 y 3-4-3) — bug que rompía el dropdown
  * del frontend cuando el engine (V25D27+) o el career start elegían una de
  * las 3 formations no-listadas.
+ *
+ * <p>V25D54-C15 P0: corrige los role labels de los wide mids de 3-5-2 y
+ * 3-4-3 (LM→LWB, RM→RWB). Antes decía wingers donde en realidad juegan
+ * wing-backs. Las coordenadas (x/y/subdivisionId/actionRange) no cambian.
  *
  * <p>Cada formación lista sus posiciones con coordenadas aproximadas
  * ({@code xPercent}, {@code yPercent}) que el modal usa para
@@ -111,9 +115,11 @@ public class FormationService {
         ));
 
         // 3-5-2: 3 DEF + 5 MID + 2 ATT = 10 outfield + 1 GK
+        // V25D54-C15 P0: pos #4 LM→LWB y pos #8 RM→RWB (en 3-5-2 los wide
+        // mids son wing-backs, no wingers). Las coordenadas no cambian.
         formations.add(new FormationDTO(
             "3-5-2",
-            "3 defensores, 5 mediocampistas, 2 delanteros",
+            "3 defensores, 2 WB + 3 CM, 2 delanteros",
             3, 5, 2, 10,
             List.of(
                 // GK
@@ -122,12 +128,12 @@ public class FormationService {
                 pos(1, "CB", 22.0, 83.0, 7.0, "S22-1"),
                 pos(2, "CB", 50.0, 88.0, 6.0, "S23-2"),
                 pos(3, "CB", 78.0, 83.0, 7.0, "S24-3"),
-                // MID line (row 5 — 5 mids)
-                pos(4, "LM", 6.0, 55.0, 9.0, "S15-1"),
+                // MID line (row 4-5 — LWB + 3 CM + RWB)
+                pos(4, "LWB", 6.0, 55.0, 9.0, "S15-1"),
                 pos(5, "CM", 30.0, 61.0, 7.0, "S16-2"),
                 pos(6, "CM", 50.0, 66.0, 7.0, "S17-2"),
                 pos(7, "CM", 70.0, 61.0, 7.0, "S18-2"),
-                pos(8, "RM", 94.0, 55.0, 9.0, "S18-3"),
+                pos(8, "RWB", 94.0, 55.0, 9.0, "S18-3"),
                 // ATT line (row 1)
                 pos(9, "ST", 39.0, 17.0, 7.0, "S05-2"),
                 pos(10, "ST", 61.0, 17.0, 7.0, "S05-3")
@@ -212,9 +218,10 @@ public class FormationService {
 
         // V25D36-F2: 3-4-3 (3 DEF + 4 MID + 3 ATT). Back-three ofensiva con
         // 2 wingers en la línea de mediocampistas y LW/ST/RW arriba.
+        // V25D54-C15 P0: pos #4 LM→LWB y pos #7 RM→RWB (3-4-3 usa WB, no wingers).
         formations.add(new FormationDTO(
             "3-4-3",
-            "3 defensores, LM + 2 CM + RM, 2 wingers + 1 delantero",
+            "3 defensores, LWB + 2 CM + RWB, 2 wingers + 1 delantero",
             3, 4, 3, 10,
             List.of(
                 // GK
@@ -223,11 +230,11 @@ public class FormationService {
                 pos(1, "CB", 22.0, 83.0, 7.0, "S22-1"),
                 pos(2, "CB", 50.0, 88.0, 6.0, "S23-2"),
                 pos(3, "CB", 78.0, 83.0, 7.0, "S24-3"),
-                // MID line (row 5 — LM, CM, CM, RM)
-                pos(4, "LM", 6.0, 55.0, 9.0, "S15-1"),
+                // MID line (row 4-5 — LWB, CM, CM, RWB)
+                pos(4, "LWB", 6.0, 55.0, 9.0, "S15-1"),
                 pos(5, "CM", 36.0, 61.0, 7.0, "S16-2"),
                 pos(6, "CM", 64.0, 61.0, 7.0, "S17-2"),
-                pos(7, "RM", 94.0, 55.0, 9.0, "S18-3"),
+                pos(7, "RWB", 94.0, 55.0, 9.0, "S18-3"),
                 // ATT line (row 1 — LW, ST, RW)
                 pos(8, "LW", 11.0, 17.0, 7.0, "S04-1"),
                 pos(9, "ST", 50.0, 12.0, 6.0, "S05-2"),

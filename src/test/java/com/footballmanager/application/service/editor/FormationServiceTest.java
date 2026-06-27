@@ -276,4 +276,64 @@ class FormationServiceTest {
             assertTrue(hasS23_2, "Formación " + f.name() + " no usa S23-2 (CB central)");
         }
     }
+
+    // ========== V25D54-C15 P0 (Sprint C15 — Formations reality: role labels) ==========
+    //
+    // Golden tests que validan los role labels esperados por formation. Atrapan
+    // regresiones si alguien edita `buildFormations()` y cambia roles sin querer.
+    // Estos tests son el guardrail para el fix P0 (LM→LWB en 3-5-2/3-4-3).
+
+    @Test
+    @DisplayName("V25D54-C15 P0: 3-5-2 wide mids son LWB/RWB (no LM/RM)")
+    void formation_3_5_2_usesLwbRwbForWideMids() {
+        FormationDTO f = service.getFormationByName("3-5-2");
+        assertNotNull(f);
+        // pos #4 (slot S15-1) debe ser LWB
+        FormationPositionDTO leftWide = f.positions().stream()
+            .filter(p -> "S15-1".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("LWB", leftWide.role(),
+            "3-5-2 pos #4 (S15-1) esperaba LWB, fue " + leftWide.role());
+
+        // pos #8 (slot S18-3) debe ser RWB
+        FormationPositionDTO rightWide = f.positions().stream()
+            .filter(p -> "S18-3".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("RWB", rightWide.role(),
+            "3-5-2 pos #8 (S18-3) esperaba RWB, fue " + rightWide.role());
+    }
+
+    @Test
+    @DisplayName("V25D54-C15 P0: 3-4-3 wide mids son LWB/RWB (no LM/RM)")
+    void formation_3_4_3_usesLwbRwbForWideMids() {
+        FormationDTO f = service.getFormationByName("3-4-3");
+        assertNotNull(f);
+        FormationPositionDTO leftWide = f.positions().stream()
+            .filter(p -> "S15-1".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("LWB", leftWide.role(),
+            "3-4-3 pos #4 (S15-1) esperaba LWB, fue " + leftWide.role());
+
+        FormationPositionDTO rightWide = f.positions().stream()
+            .filter(p -> "S18-3".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("RWB", rightWide.role(),
+            "3-4-3 pos #7 (S18-3) esperaba RWB, fue " + rightWide.role());
+    }
+
+    @Test
+    @DisplayName("V25D54-C15 P0: 4-4-2 wide mids siguen siendo LM/RM (no afectados por P0)")
+    void formation_4_4_2_wideMidsRemainLmRm() {
+        FormationDTO f = service.getFormationByName("4-4-2");
+        assertNotNull(f);
+        FormationPositionDTO leftWide = f.positions().stream()
+            .filter(p -> "S16-1".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("LM", leftWide.role());
+
+        FormationPositionDTO rightWide = f.positions().stream()
+            .filter(p -> "S18-3".equals(p.subdivisionId()))
+            .findFirst().orElseThrow();
+        assertEquals("RM", rightWide.role());
+    }
 }
