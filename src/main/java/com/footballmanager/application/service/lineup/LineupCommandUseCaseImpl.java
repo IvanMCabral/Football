@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.ChemistryBreakdownDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.FormationDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.FormationPositionDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
@@ -12,6 +13,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
+import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.Formation;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import lombok.RequiredArgsConstructor;
@@ -331,8 +333,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             ))
             .toList();
         // V25D41 (Sprint C6): compute team chemistry from the SessionPlayer list.
-        int chemistry = TeamChemistryCalculator.calculate(players);
-        return new LineupDTO(formation.getCode(), playerDTOs, false, warnings, List.of(), chemistry);
+        // V25D43 (Sprint C8): calculate() now returns ChemistryDetail (score + breakdown).
+        ChemistryDetail chemistryDetail = TeamChemistryCalculator.calculate(players);
+        return new LineupDTO(formation.getCode(), playerDTOs, false, warnings, List.of(),
+                chemistryDetail.score(),
+                ChemistryBreakdownDTO.from(chemistryDetail));
     }
 
     private boolean isPlayerAvailable(SessionPlayer p) {
