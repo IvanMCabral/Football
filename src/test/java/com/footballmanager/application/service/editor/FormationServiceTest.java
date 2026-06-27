@@ -150,4 +150,130 @@ class FormationServiceTest {
         assertNull(service.getFormationByName(null));
         assertNull(service.getFormationByName(""));
     }
+
+    // ========== V25D53-C14 (Sprint C14 — Field Map Audit) ==========
+    //
+    // Tests de cobertura que documentan el estado actual del field map.
+    // El gap (LM/RM en vez de LWB/RWB para 3-5-2/3-4-3, formations faltantes,
+    // profundidad plana) está descrito en docs/field-map.md y los fixes van
+    // a C15. Estos tests sirven de golden master para detectar regresiones.
+
+    @Test
+    @DisplayName("V25D53-C14: posiciones de cada formación no se solapan (actionRange = extent)")
+    void positionsDoNotOverlapWithinFormation() {
+        // Para cada formación, validar que ningún par de jugadores (excepto GK que es grande)
+        // comparte el rectángulo visible derivado de (xPercent, yPercent) ± actionRangePercent/2.
+        // El GK ocupa un slot grande separado (subdivisionId GK-1), lo excluimos del check.
+        for (FormationDTO f : service.getAllFormations()) {
+            List<FormationPositionDTO> positions = f.positions();
+            for (int i = 0; i < positions.size(); i++) {
+                FormationPositionDTO a = positions.get(i);
+                if ("GK-1".equals(a.subdivisionId())) continue; // GK: slot grande separado
+                for (int j = i + 1; j < positions.size(); j++) {
+                    FormationPositionDTO b = positions.get(j);
+                    if ("GK-1".equals(b.subdivisionId())) continue;
+
+                    double axMin = a.xPercent() - a.actionRangePercent() / 2.0;
+                    double axMax = a.xPercent() + a.actionRangePercent() / 2.0;
+                    double ayMin = a.yPercent() - a.actionRangePercent() / 2.0;
+                    double ayMax = a.yPercent() + a.actionRangePercent() / 2.0;
+
+                    double bxMin = b.xPercent() - b.actionRangePercent() / 2.0;
+                    double bxMax = b.xPercent() + b.actionRangePercent() / 2.0;
+                    double byMin = b.yPercent() - b.actionRangePercent() / 2.0;
+                    double byMax = b.yPercent() + b.actionRangePercent() / 2.0;
+
+                    boolean xOverlap = axMin < bxMax && bxMin < axMax;
+                    boolean yOverlap = ayMin < byMax && byMin < ayMax;
+
+                    assertFalse(xOverlap && yOverlap,
+                        String.format("Solape en formación %s entre %s (%.2f,%.2f ±%.2f) y %s (%.2f,%.2f ±%.2f)",
+                            f.name(),
+                            a.subdivisionId(), a.xPercent(), a.yPercent(), a.actionRangePercent(),
+                            b.subdivisionId(), b.xPercent(), b.yPercent(), b.actionRangePercent()));
+                }
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("V25D53-C14: cobertura de subdivisionIds — exactamente 26 únicos referenciados por las 7 formations")
+    void gridCoverageIsTwentySixUniqueSubdivisionIds() {
+        // Golden test del audit C14: documenta que las 7 formations actuales
+        // referencian exactamente estos 26 subdivisionIds (1 GK + 25 outfield).
+        // Si alguien agrega/quita formations, este test detecta el delta.
+        Set<String> actualUsed = new HashSet<>();
+        for (FormationDTO f : service.getAllFormations()) {
+            for (FormationPositionDTO p : f.positions()) {
+                actualUsed.add(p.subdivisionId());
+            }
+        }
+        Set<String> expectedUsed = Set.of(
+            // GK
+            "GK-1",
+            // ATTACK row 0 (4-2-3-1 ST top)
+            "S02-2",
+            // ATTACK row 1 (wingers + ST centers)
+            "S04-1", "S05-2", "S05-3", "S06-3",
+            // MIDFIELD row 3 (4-2-3-1 CAM line)
+            "S10-1", "S11-2", "S12-3",
+            // MIDFIELD row 4 (4-1-4-1 LM/RM + 4-3-3 CMs)
+            "S13-1", "S13-2", "S14-2", "S14-3", "S15-1", "S15-2", "S15-3",
+            // MIDFIELD row 5 (wide mids + central mids)
+            "S16-1", "S16-2", "S17-2", "S18-2", "S18-3",
+            // DEFENSE row 7 (4-back/5-back/3-back lines)
+            "S22-1", "S22-2", "S23-2", "S23-3", "S24-3"
+        );
+        assertEquals(26, actualUsed.size(),
+            "Cantidad de subdivisionIds usados cambió del golden (26). "
+                + "Actual: " + actualUsed);
+        assertEquals(expectedUsed, actualUsed,
+            "Set de subdivisionIds usados difiere del golden. "
+                + "Faltan: " + diff(expectedUsed, actualUsed)
+                + ". Sobran: " + diff(actualUsed, expectedUsed));
+    }
+
+    private static <T> Set<T> diff(Set<T> a, Set<T> b) {
+        Set<T> result = new java.util.LinkedHashSet<>(a);
+        result.removeAll(b);
+        return result;
+    }
+
+    @Test
+    @DisplayName("V25D53-C14: 56 subdivisionIds quedan sin usar por ninguna formation (gap documentado)")
+    void gridGapIsFiftySixUnusedSubdivisionIds() {
+        // Golden test del gap: 82 slots totales - 26 usados = 56 vacíos.
+        // Si esto cambia, alguien agregó formations (bien) o rompió la grilla (mal).
+        FieldSubdivisionService subdivisionService = new FieldSubdivisionService();
+        Set<String> all = new HashSet<>();
+        subdivisionService.getAllSubdivisions().forEach(s -> all.add(s.subdivisionId()));
+
+        Set<String> used = new HashSet<>();
+        for (FormationDTO f : service.getAllFormations()) {
+            for (FormationPositionDTO p : f.positions()) {
+                used.add(p.subdivisionId());
+            }
+        }
+
+        Set<String> unused = new HashSet<>(all);
+        unused.removeAll(used);
+
+        assertEquals(82, all.size(), "Cambió el total de subdivisiones");
+        assertEquals(26, used.size(), "Cambió la cantidad usada");
+        assertEquals(56, unused.size(),
+            "Cantidad de slots vacíos cambió. Vacíos actuales: " + unused);
+    }
+
+    @Test
+    @DisplayName("V25D53-C14: el slot S23-2 es usado por las 7 formations (single point of failure)")
+    void s23TwoIsUsedByAllFormations() {
+        // Documenta que S23-2 (CB central en row 7) aparece en los 11 jugadores
+        // de cada una de las 7 formations. Útil para detectar si alguien cambia
+        // el "back line center" de las 4-back formations.
+        for (FormationDTO f : service.getAllFormations()) {
+            boolean hasS23_2 = f.positions().stream()
+                .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
+            assertTrue(hasS23_2, "Formación " + f.name() + " no usa S23-2 (CB central)");
+        }
+    }
 }
