@@ -81,9 +81,10 @@ class FormationEffectivenessTest {
 
         FormationEffectiveness fe = FormationEffectiveness.from(slots, natural);
         assertEquals("4-4-2", fe.inferredFormation());
-        // p6 (CB in MID) → 0.8. All others at natural position → 1.0.
+        // V25D52 (Sprint C13b): keyed by subdivisionId, not playerId.
+        // p6 in S18-1 (MID slot) → 0.8. All others at natural position → 1.0.
         // teamAverage = (10*1.0 + 0.8) / 11 = 10.8/11 ≈ 0.9818
-        assertEquals(0.8, fe.perPlayerEffectiveness().get("p6"));
+        assertEquals(0.8, fe.perPlayerEffectiveness().get("S18-1"));
         assertEquals(10.8 / 11.0, fe.teamAverage(), 0.0001);
     }
 
@@ -104,7 +105,8 @@ class FormationEffectivenessTest {
         natural.put("p9", "WINGER");
 
         FormationEffectiveness fe = FormationEffectiveness.from(slots, natural);
-        assertEquals(0.95, fe.perPlayerEffectiveness().get("p9"),
+        // V25D52 (Sprint C13b): keyed by subdivisionId, not playerId.
+        assertEquals(0.95, fe.perPlayerEffectiveness().get("S09-1"),
                 "WINGER in MID → 0.95 (carrilero flexibility)");
     }
 
@@ -159,5 +161,47 @@ class FormationEffectivenessTest {
         assertEquals(FormationInferer.DEFAULT_FORMATION, fe.inferredFormation());
         assertTrue(fe.perPlayerEffectiveness().isEmpty());
         assertEquals(1.0, fe.teamAverage());
+    }
+
+    // ========== V25D52 (Sprint C13b): contract — keys are subdivisionId ==========
+
+    @Test
+    @DisplayName("V25D52: perPlayerEffectiveness keys are subdivisionId, not playerId")
+    void v25d52_keyedBySubdivisionId() {
+        // Frontend contract: fe.perPlayerEffectiveness?.[subdivisionId]
+        // (see front-ciber/.../formation-effectiveness.dto.ts).
+        // If the map were keyed by playerId, every front lookup would
+        // return undefined and the CSS class / badge would never apply.
+        List<LineupSlotDTO> slots = new ArrayList<>();
+        slots.add(slot("p1", "GK-1"));
+        slots.add(slot("p2", "S22-1"));
+        slots.add(slot("p6", "S15-1")); // CB in MID — penalty
+
+        Map<String, String> natural = new LinkedHashMap<>();
+        natural.put("p1", "GK");
+        natural.put("p2", "DEF");
+        natural.put("p6", "DEF"); // CB placed in MID
+
+        FormationEffectiveness fe = FormationEffectiveness.from(slots, natural);
+
+        // Contract: keys MUST be subdivisionIds.
+        assertTrue(fe.perPlayerEffectiveness().containsKey("GK-1"),
+                "Key GK-1 (subdivisionId) must be present");
+        assertTrue(fe.perPlayerEffectiveness().containsKey("S22-1"),
+                "Key S22-1 (subdivisionId) must be present");
+        assertTrue(fe.perPlayerEffectiveness().containsKey("S15-1"),
+                "Key S15-1 (subdivisionId) must be present");
+        // Contract: playerId keys MUST NOT be present.
+        assertFalse(fe.perPlayerEffectiveness().containsKey("p1"),
+                "Key p1 (playerId) must NOT be present");
+        assertFalse(fe.perPlayerEffectiveness().containsKey("p2"),
+                "Key p2 (playerId) must NOT be present");
+        assertFalse(fe.perPlayerEffectiveness().containsKey("p6"),
+                "Key p6 (playerId) must NOT be present");
+
+        // Sanity check: the CB-in-MID penalty still lands at S15-1, not p6.
+        assertEquals(0.8, fe.perPlayerEffectiveness().get("S15-1"));
+        assertEquals(1.0, fe.perPlayerEffectiveness().get("GK-1"));
+        assertEquals(1.0, fe.perPlayerEffectiveness().get("S22-1"));
     }
 }

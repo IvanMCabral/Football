@@ -643,4 +643,123 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertEquals("4-4-2", saved.getTeamStarting11Formation().get(TEAM_ID),
             "MVP1-lineup-cancha-1.6 F1: formación persistida junto con overrides");
     }
+
+    // ========== V25D52 (Sprint C13b): POST response bug ==========
+
+    /**
+     * V25D52 (Sprint C13b): the POST /manual-select response's
+     * {@code formationEffectiveness.perPlayerEffectiveness} must be keyed
+     * by subdivisionId (NOT playerId) and must carry real effectiveness
+     * multipliers (NOT all 1.0).
+     *
+     * <p>Before this fix, {@link LineupCommandUseCaseImpl#buildLineupDTO}
+     * constructed {@code LineupSlotDTO} with swapped args:
+     * {@code new LineupSlotDTO(subdivisionId, playerId)} instead of
+     * {@code (playerId, subdivisionId)}. The downstream
+     * {@code FormationEffectiveness.from()} then:
+     * <ul>
+     *   <li>looked up {@code naturalByPlayer.get(subdivisionId)} → always null,</li>
+     *   <li>called {@code categoryFor(playerId)} → always null,</li>
+     *   <li>defaulted every effectiveness to 1.0.</li>
+     * </ul>
+     *
+     * <p>The persisted subdivision map was correct (verified by the other
+     * tests in this file), but the response shape that the frontend actually
+     * consumed was silently broken — all values 1.0, no CSS class / badge
+     * ever applied. C13b fixes both: keying by subdivisionId (commit 1) and
+     * the swapped constructor args (this commit 2).
+     *
+     * <p>The setup uses the 4-4-2 squad with CM players in the MID slots —
+     * natural position MID → MID slot is a perfect 1.0 match, so the test
+     * can't accidentally pass with all-1.0 values. We add ONE off-position
+     * player (att-1 = ST in the MID slot S18-3) so the test asserts a real
+     * penalty value at a subdivisionId key, proving both axes of the fix.
+     */
+    @Test
+    @DisplayName("V25D52-C13b: manualSelect response carries perPlayerEffectiveness keyed by subdivisionId with real multipliers")
+    void v25d52_manualSelectResponse_keysAreSubdivisionId_andValuesAreRealMultipliers() {
+        CareerSave career = makeCareer(makeFullSquad442());
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        // Override: send att-1 (ST) into S18-3 (MID slot) so we get a real
+        // penalty (ST in MID = 0.7) instead of all-1.0. The rest follow the
+        // HELPER-BASED baseline.
+        List<LineupSlotDTO> slots = List.of(
+            new LineupSlotDTO("att-1", "S18-3")  // ST placed in MID slot
+        );
+
+        StepVerifier.create(useCase.manualSelectLineupWithSlots(
+                UUID.fromString(USER_ID), "4-4-2", fullLineup442(), slots))
+            .assertNext(dto -> {
+                assertNotNull(dto.formationEffectiveness(),
+                    "V25D52: POST response must carry formationEffectiveness");
+                Map<String, Double> eff = dto.formationEffectiveness().perPlayerEffectiveness();
+                assertNotNull(eff, "V25D52: perPlayerEffectiveness must not be null");
+                assertEquals(11, eff.size(),
+                    "V25D52: 11 entries (one per subdivisionId in the lineup)");
+
+                // Axis 1: keys must be subdivisionIds (NOT playerIds).
+                assertTrue(eff.containsKey("GK-1"),     "V25D52: GK-1 (subdivisionId) must be a key");
+                assertTrue(eff.containsKey("S22-1"),    "V25D52: S22-1 (subdivisionId) must be a key");
+                assertTrue(eff.containsKey("S05-2"),    "V25D52: S05-2 (subdivisionId) must be a key");
+                assertFalse(eff.containsKey("gk-1"),    "V25D52: gk-1 (playerId) must NOT be a key");
+                assertFalse(eff.containsKey("def-1"),   "V25D52: def-1 (playerId) must NOT be a key");
+                assertFalse(eff.containsKey("att-1"),   "V25D52: att-1 (playerId) must NOT be a key");
+
+                // Axis 2: real multipliers must be present (NOT all 1.0).
+                // The ST-in-MID penalty MUST apply at S18-3 (where the ST now lives).
+                assertEquals(0.7, eff.get("S18-3"), 0.0001,
+                    "V25D52: ST in MID slot → 0.7 effectiveness at S18-3 subdivision key");
+                // Perfect-match players should still be 1.0.
+                assertEquals(1.0, eff.get("GK-1"), 0.0001,
+                    "V25D52: GK player at GK-1 slot → 1.0 perfect match");
+
+                // teamAverage should reflect the penalty (less than 1.0).
+                assertTrue(dto.formationEffectiveness().teamAverage() < 1.0,
+                    "V25D52: teamAverage < 1.0 because at least one off-position player");
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * V25D52 (Sprint C13b): the legacy {@link LineupCommandUseCaseImpl#manualSelectLineup}
+     * overload (no slots) also returns a properly-computed
+     * {@code formationEffectiveness} — the same code path through
+     * {@code buildLineupDTO} feeds both the with-slots and the legacy
+     * overload.
+     */
+    @Test
+    @DisplayName("V25D52-C13b: manualSelect legacy overload returns perPlayerEffectiveness keyed by subdivisionId")
+    void v25d52_manualSelectLegacyResponse_keysAreSubdivisionId() {
+        CareerSave career = makeCareer(makeFullSquad442());
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.manualSelectLineup(
+                UUID.fromString(USER_ID), "4-4-2", fullLineup442()))
+            .assertNext(dto -> {
+                assertNotNull(dto.formationEffectiveness(),
+                    "V25D52: legacy overload response must carry formationEffectiveness");
+                Map<String, Double> eff = dto.formationEffectiveness().perPlayerEffectiveness();
+                assertNotNull(eff);
+                assertEquals(11, eff.size(), "V25D52: 11 entries");
+
+                // Keys MUST be subdivisionIds.
+                assertTrue(eff.containsKey("GK-1"),  "V25D52: GK-1 must be a key");
+                assertTrue(eff.containsKey("S22-1"), "V25D52: S22-1 must be a key");
+                assertFalse(eff.containsKey("gk-1"), "V25D52: gk-1 must NOT be a key");
+                assertFalse(eff.containsKey("def-1"), "V25D52: def-1 must NOT be a key");
+
+                // HELPER-BASED put each player at their natural position (CB in DEF,
+                // CM in MID, etc.), so all-natural lineup → all 1.0 multipliers,
+                // and teamAverage = 1.0.
+                for (Map.Entry<String, Double> e : eff.entrySet()) {
+                    assertEquals(1.0, e.getValue(), 0.0001,
+                        "V25D52: HELPER-BASED all-natural lineup → 1.0 at " + e.getKey());
+                }
+                assertEquals(1.0, dto.formationEffectiveness().teamAverage(), 0.0001);
+            })
+            .verifyComplete();
+    }
 }

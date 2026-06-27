@@ -337,14 +337,24 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .toList();
 
         // V25D47 (Sprint C11a): build the slot DTOs and the tactical effectiveness
-        // aggregate. Convert the playerId → subdivisionId map into the
+        // aggregate. Convert the subdivisionId → playerId map into the
         // LineupSlotDTO list (same shape used by LineupQueryUseCaseImpl), then
         // compute per-player effectiveness multipliers via
         // PositionEffectivenessCalculator.effectiveness(naturalPosition, slotCategory).
+        //
+        // V25D52 (Sprint C13b): LineupSlotDTO is record(playerId, subdivisionId)
+        // — args MUST be (playerId, subdivisionId). slotMap is keyed by
+        // subdivisionId with playerId values, so the constructor call is
+        // (e.getValue(), e.getKey()). Prior to this fix the args were
+        // swapped, which silently produced LineupSlotDTO(playerId="S22-1",
+        // subdivisionId="def-1"). The downstream FormationEffectiveness.from()
+        // then looked up naturalByPlayer.get("S22-1") (always null) and
+        // categoryFor("def-1") (always null) → every effectiveness defaulted
+        // to 1.0. Now the POST response matches the GET response shape.
         List<LineupSlotDTO> slots = (slotMap == null || slotMap.isEmpty())
                 ? List.of()
                 : slotMap.entrySet().stream()
-                    .map(e -> new LineupSlotDTO(e.getKey(), e.getValue()))
+                    .map(e -> new LineupSlotDTO(e.getValue(), e.getKey()))
                     .toList();
         Map<String, String> naturalByPlayer = new HashMap<>();
         for (SessionPlayer p : players) {

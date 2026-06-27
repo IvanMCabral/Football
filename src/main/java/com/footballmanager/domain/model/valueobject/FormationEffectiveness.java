@@ -17,11 +17,14 @@ import java.util.Map;
  *   <li>{@code inferredFormation} — canonical label produced by
  *       {@link FormationInferer#infer(List)} from the lineup's subdivision
  *       slots (e.g., {@code "4-4-2"}, {@code "3-5-2"}, {@code "5-3-2"}).</li>
- *   <li>{@code perPlayerEffectiveness} — map of {@code playerId → multiplier
- *       [0, 1]} where the multiplier is {@code effectiveness(naturalPosition,
- *       slotCategory)} for that player's assigned subdivision. Players at
- *       a perfect-match slot get {@code 1.0}; mismatches get a reduced
- *       multiplier (e.g., a CB in a MID slot → 0.8).</li>
+ *   <li>{@code perPlayerEffectiveness} — map of {@code subdivisionId →
+ *       multiplier [0, 1]} where the multiplier is
+ *       {@code effectiveness(naturalPosition, slotCategory)} for the player
+ *       occupying that subdivision. Players at a perfect-match slot get
+ *       {@code 1.0}; mismatches get a reduced multiplier (e.g., a CB in a
+ *       MID slot → 0.8). Keyed by subdivisionId so the frontend can
+ *       correlate a slot with its effectiveness score without joining
+ *       against playerId.</li>
  *   <li>{@code teamAverage} — arithmetic mean of {@code perPlayerEffectiveness}
  *       values. Informational: a quick indicator of "how well does this
  *       lineup fit its formation?". A perfect 4-4-2 with all-natural
@@ -57,6 +60,14 @@ public record FormationEffectiveness(
      * {@code "4-4-2"} and perPlayerEffectiveness is empty (the engine
      * still gets the 4-4-2 default, no penalties applied).
      *
+     * <p><b>V25D52 (Sprint C13b):</b> {@code perPlayerEffectiveness} is
+     * keyed by {@code subdivisionId} (NOT playerId) — the frontend's
+     * {@code FormationEffectivenessDTO} spec correlates each slot with its
+     * effectiveness score directly, without joining against playerId.
+     * Prior to this fix the map was keyed by playerId, which produced a
+     * silent contract mismatch: the frontend looked up by subdivisionId,
+     * always got {@code undefined}, and no CSS class / badge was applied.
+     *
      * @param slots           the 11 subdivision slots the manager assigned
      *                       (may be null/empty for legacy lineups).
      * @param naturalByPlayer playerId → natural 5-cat position
@@ -78,15 +89,18 @@ public record FormationEffectiveness(
             // (calculator returns 1.0 for unknown natural — backward compat).
             // Without this loop, an empty/null naturalByPlayer would yield
             // an empty perPlayer map, hiding the lineup's actual composition.
+            //
+            // V25D52 (Sprint C13b): key by subdivisionId, not playerId — the
+            // frontend correlates a slot with its effectiveness score
+            // directly (see FormationEffectivenessDTO wire shape).
             Map<String, String> safeNatural = (naturalByPlayer != null) ? naturalByPlayer : Map.of();
             for (LineupSlotDTO slot : slots) {
-                if (slot == null || slot.playerId() == null) continue;
+                if (slot == null) continue;
+                if (slot.playerId() == null || slot.subdivisionId() == null) continue;
                 String natural = safeNatural.get(slot.playerId());
-                String slotCat = (slot.subdivisionId() == null)
-                        ? null
-                        : FormationInferer.categoryFor(slot.subdivisionId());
+                String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
                 double eff = PositionEffectivenessCalculator.effectiveness(natural, slotCat);
-                perPlayer.put(slot.playerId(), eff);
+                perPlayer.put(slot.subdivisionId(), eff);
             }
         }
 
