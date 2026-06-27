@@ -75,6 +75,38 @@ public final class FormationInferer {
      *         or {@link #DEFAULT_FORMATION} on any malformed input.
      */
     public static String infer(List<LineupSlotDTO> slots) {
+        return infer(slots, null);
+    }
+
+    /**
+     * V25D55 (Sprint C16): overload that prefers the persisted formation when
+     * available. The persisted formation is the canonical label the manager
+     * actually selected (e.g., {@code "3-5-2-CDM"}, {@code "5-4-1"} — codes
+     * beyond the 3-DIGIT shape produced by slot inference). Slot inference
+     * alone only yields {@code "X-Y-Z"} triples and cannot disambiguate the
+     * 12 formations the front-end exposes.
+     *
+     * <p>Behavior:
+     * <ul>
+     *   <li>If {@code persistedFormation} is non-null and non-blank → return
+     *       it as-is (the manager's intent wins, even if the slot assignments
+     *       would infer a different label; e.g. a 3-5-2-CDM with one CB
+     *       temporarily moved to a MID slot still labels as {@code "3-5-2-CDM"}).</li>
+     *   <li>Otherwise → fall back to the slot-inference algorithm (same as
+     *       {@link #infer(List)}).</li>
+     * </ul>
+     *
+     * @param slots              the 11 slots the manager assigned, or null/empty.
+     * @param persistedFormation the canonical formation label persisted in
+     *                           {@code CareerSave.teamStarting11Formation}, or
+     *                           {@code null}/blank for saves without that map.
+     * @return {@code persistedFormation} when set, otherwise the slot-inferred
+     *         label (or {@link #DEFAULT_FORMATION} on malformed input).
+     */
+    public static String infer(List<LineupSlotDTO> slots, String persistedFormation) {
+        if (persistedFormation != null && !persistedFormation.isBlank()) {
+            return persistedFormation;
+        }
         if (slots == null || slots.isEmpty()) {
             return DEFAULT_FORMATION;
         }

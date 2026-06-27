@@ -104,8 +104,14 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                 naturalByPlayer.put(p.getSessionPlayerId(), p.getPosition());
             }
         }
+        // V25D55 (Sprint C16): forward the persisted formation so the
+        // inferredFormation field reflects the manager's selection (e.g.,
+        // "3-5-2-CDM") instead of collapsing to the slot-count triple.
+        String persistedFormationCode = career.getTeamStarting11Formation() == null
+                ? null
+                : career.getTeamStarting11Formation().get(userTeamId);
         FormationEffectiveness formationEffectiveness =
-                FormationEffectiveness.from(slots, naturalByPlayer);
+                FormationEffectiveness.from(slots, naturalByPlayer, persistedFormationCode);
 
         return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots,
                 chemistryDetail.score(),
