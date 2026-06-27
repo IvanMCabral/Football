@@ -80,8 +80,33 @@ public record FormationEffectiveness(
     public static FormationEffectiveness from(
             List<LineupSlotDTO> slots,
             Map<String, String> naturalByPlayer) {
+        return from(slots, naturalByPlayer, null);
+    }
 
-        String inferred = FormationInferer.infer(slots);
+    /**
+     * V25D55 (Sprint C16): overload that forwards the persisted formation to
+     * {@link FormationInferer#infer(List, String)} so the resulting
+     * {@code inferredFormation} field matches the label the manager actually
+     * selected (e.g. {@code "3-5-2-CDM"}, {@code "5-4-1"}). Without this, the
+     * slot-inference algorithm collapses every multi-role formation into the
+     * {@code "X-Y-Z"} triple, and the front-end reports a different label
+     * than the one shown in the formation modal.
+     *
+     * @param slots              the 11 subdivision slots the manager assigned
+     *                           (may be null/empty for legacy lineups).
+     * @param naturalByPlayer    playerId → natural 5-cat position
+     *                           ({@code "GK"/"DEF"/"MID"/"WINGER"/"ATT"}).
+     * @param persistedFormation canonical formation label from
+     *                           {@code CareerSave.teamStarting11Formation}, or
+     *                           {@code null} for legacy lineups.
+     * @return populated {@code FormationEffectiveness}.
+     */
+    public static FormationEffectiveness from(
+            List<LineupSlotDTO> slots,
+            Map<String, String> naturalByPlayer,
+            String persistedFormation) {
+
+        String inferred = FormationInferer.infer(slots, persistedFormation);
 
         Map<String, Double> perPlayer = new LinkedHashMap<>();
         if (slots != null) {

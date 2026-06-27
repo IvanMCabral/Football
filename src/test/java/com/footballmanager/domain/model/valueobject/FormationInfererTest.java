@@ -137,6 +137,83 @@ class FormationInfererTest {
         assertEquals("4-4-2", FormationInferer.infer(garbage));
     }
 
+    // ========== V25D55 (Sprint C16): persisted-formation overload ==========
+
+    @Test
+    @DisplayName("infer(slots, persisted): persisted 3-5-2-CDM wins over slots")
+    void infer_returnsPersistedFormation_whenProvided() {
+        // Slots spell out a 4-3-3, but the persisted label is 3-5-2-CDM
+        // (the manager dragged CDM into MID — manager intent wins).
+        assertEquals("3-5-2-CDM",
+                FormationInferer.infer(lineupWith(4, 3, 3), "3-5-2-CDM"));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): null persisted → falls back to slot inference")
+    void infer_fallsBackToSlotInference_whenPersistedIsNull() {
+        assertEquals("3-5-2",
+                FormationInferer.infer(lineupWith(3, 5, 2), null));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): blank persisted → falls back to slot inference")
+    void infer_fallsBackToSlotInference_whenPersistedIsBlank() {
+        assertEquals("4-4-2",
+                FormationInferer.infer(lineupWith(4, 4, 2), "   "));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): persisted overrides 4-3-3 slot inference with 4-4-2")
+    void infer_persistedOverridesSlotInference() {
+        // Slots match 4-3-3, but the persisted label is 4-4-2 (manager edited).
+        assertEquals("4-4-2",
+                FormationInferer.infer(lineupWith(4, 3, 3), "4-4-2"));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): 5-4-1 persisted wins over slots")
+    void infer_persisted5_4_1() {
+        // 5-4-1 has 5 DEF + 4 MID + 1 ATT. Slot helper renders as 4-4-2-
+        // compatible counts when MID includes WB slots; the persisted label
+        // is the authority.
+        assertEquals("5-4-1",
+                FormationInferer.infer(lineupWith(5, 4, 1), "5-4-1"));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): 3-4-1-2 persisted wins over slots")
+    void infer_persisted3_4_1_2() {
+        // 3-4-1-2 is 3 DEF + 4 MID + 1 CAM + 2 ATT (10 outfield) — slot
+        // counts here are just a 10-slot baseline; the persisted label is the
+        // authority.
+        assertEquals("3-4-1-2",
+                FormationInferer.infer(lineupWith(3, 5, 2), "3-4-1-2"));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): 4-2-2-2 persisted wins over slots")
+    void infer_persisted4_2_2_2() {
+        assertEquals("4-2-2-2",
+                FormationInferer.infer(lineupWith(4, 4, 2), "4-2-2-2"));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): 4-3-3-1 persisted wins over slots")
+    void infer_persisted4_3_3_1() {
+        assertEquals("4-3-3-1",
+                FormationInferer.infer(lineupWith(4, 3, 3), "4-3-3-1"));
+    }
+
+    @Test
+    @DisplayName("infer(slots, persisted): null slots + persisted → persisted wins")
+    void infer_persistedWithNullSlots() {
+        // Even with no slots (legacy save), the persisted formation survives.
+        assertEquals("3-5-2-CDM",
+                FormationInferer.infer(null, "3-5-2-CDM"));
+        assertEquals("4-4-2",
+                FormationInferer.infer(List.of(), "4-4-2"));
+    }
+
     // ========== categoryFor mapping ==========
 
     @Nested
