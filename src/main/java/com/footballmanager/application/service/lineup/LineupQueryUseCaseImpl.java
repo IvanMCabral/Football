@@ -1,11 +1,13 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.ChemistryBreakdownDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +51,9 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
         if (lineupIds == null || lineupIds.isEmpty()) {
             // V25D41 (Sprint C6): empty lineup → chemistry = 0 (no lineup, no chemistry).
-            return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0);
+            // V25D43 (Sprint C8): empty breakdown (4 groups, all empty) for shape stability.
+            return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0,
+                    ChemistryBreakdownDTO.empty());
         }
 
         List<SessionPlayer> lineup = lineupIds.stream()
@@ -81,9 +85,12 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
         // V25D41 (Sprint C6): compute team chemistry from the actual SessionPlayer
         // objects (we have the lineup List<SessionPlayer> here, not just the DTOs).
-        int chemistry = TeamChemistryCalculator.calculate(lineup);
+        // V25D43 (Sprint C8): calculate() now returns ChemistryDetail (score + breakdown).
+        ChemistryDetail chemistryDetail = TeamChemistryCalculator.calculate(lineup);
 
-        return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots, chemistry);
+        return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots,
+                chemistryDetail.score(),
+                ChemistryBreakdownDTO.from(chemistryDetail));
     }
 
     private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {

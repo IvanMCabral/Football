@@ -29,11 +29,22 @@ import static org.junit.jupiter.api.Assertions.*;
  *   <li>Adversarial (4 tests): 5-formations probe, position-independent, monotonicity, depth vs star-power</li>
  *   <li>Math invariants (2 tests): team skill weights sum to 0.65</li>
  * </ul>
+ *
+ * <p>V25D43 (Sprint C8): {@code calculate()} signature changed from
+ * {@code int} to {@code ChemistryDetail} (Opción B). Existing tests
+ * updated via {@link #scoreOf(List)} helper. New {@link Breakdown} nested
+ * class adds 10 tests for the per-position-group breakdown, the
+ * {@code maxSkillByType} map, and the {@code coveragePercentage} field.
  */
-@DisplayName("TeamChemistryCalculator — V25D41 team chemistry aggregate")
+@DisplayName("TeamChemistryCalculator — V25D41 team chemistry aggregate (V25D43 returns ChemistryDetail)")
 class TeamChemistryCalculatorTest {
 
     // ========== Test helpers ==========
+
+    /** Shortcut: extract the score from a {@link ChemistryDetail}. */
+    private static int scoreOf(List<SessionPlayer> players) {
+        return TeamChemistryCalculator.calculate(players).score();
+    }
 
     /** Reasonable starter stats for an average-elite player (~80 base overall). */
     private static int[] elite() {
@@ -81,13 +92,13 @@ class TeamChemistryCalculatorTest {
         @Test
         @DisplayName("Null list → 0")
         void nullList() {
-            assertEquals(0, TeamChemistryCalculator.calculate(null));
+            assertEquals(0, scoreOf(null));
         }
 
         @Test
         @DisplayName("Empty list → 0")
         void emptyList() {
-            assertEquals(0, TeamChemistryCalculator.calculate(Collections.emptyList()));
+            assertEquals(0, scoreOf(Collections.emptyList()));
         }
 
         @Test
@@ -95,13 +106,13 @@ class TeamChemistryCalculatorTest {
         void singlePlayerNoSkills() {
             // 80×6 base = 80, no skills → chemistry = 80
             List<SessionPlayer> lineup = List.of(player("GK", elite()));
-            assertEquals(80, TeamChemistryCalculator.calculate(lineup));
+            assertEquals(80, scoreOf(lineup));
         }
 
         @Test
         @DisplayName("11 elite players with no skills → AVG of overalls (≈80)")
         void elevenEliteNoSkills() {
-            int chemistry = TeamChemistryCalculator.calculate(eliteLineupNoSkills());
+            int chemistry = scoreOf(eliteLineupNoSkills());
             assertEquals(80, chemistry, "AVG of 11 elite players (80) = 80, no skill bonus");
         }
 
@@ -113,7 +124,7 @@ class TeamChemistryCalculatorTest {
             lineup.add(null);
             lineup.add(null);
             lineup.add(null);
-            assertEquals(0, TeamChemistryCalculator.calculate(lineup));
+            assertEquals(0, scoreOf(lineup));
         }
     }
 
@@ -126,7 +137,7 @@ class TeamChemistryCalculatorTest {
         @Test
         @DisplayName("Lineup with no skills (legacy) → 0 skill bonus")
         void noSkills_zeroBonus() {
-            int chem = TeamChemistryCalculator.calculate(eliteLineupNoSkills());
+            int chem = scoreOf(eliteLineupNoSkills());
             // base = 80, skill_bonus = 0, coverage = 0 → 80
             assertEquals(80, chem, "No skills = no skill bonus");
         }
@@ -141,7 +152,7 @@ class TeamChemistryCalculatorTest {
             // total = 80 + 1 + 0 = 81
             List<SessionPlayer> lineup = new ArrayList<>(eliteLineupNoSkills());
             lineup.set(10, playerWithSkills("ATT", elite(), Map.of(PlayerSkill.SHOOTER, 99)));
-            assertEquals(81, TeamChemistryCalculator.calculate(lineup),
+            assertEquals(81, scoreOf(lineup),
                     "1 SHOOTER=99 on 11 elite: base 80 + skill 1 + coverage 0 = 81");
         }
 
@@ -164,7 +175,7 @@ class TeamChemistryCalculatorTest {
             for (int i = 0; i < 11; i++) {
                 lineup.add(playerWithSkills("MID", elite(), allSkills));
             }
-            assertEquals(95, TeamChemistryCalculator.calculate(lineup),
+            assertEquals(95, scoreOf(lineup),
                     "All skills 99 on 11 elite (MID): 86 base + 6 skill + 3 coverage = 95");
         }
 
@@ -185,7 +196,7 @@ class TeamChemistryCalculatorTest {
             for (int i = 0; i < 11; i++) {
                 lineup.add(playerWithSkills("MID", elite(), lowSkills));
             }
-            assertEquals(86, TeamChemistryCalculator.calculate(lineup),
+            assertEquals(86, scoreOf(lineup),
                     "All skills 50: 83 base + 3 skill + 0 coverage = 86");
         }
     }
@@ -213,7 +224,7 @@ class TeamChemistryCalculatorTest {
             for (int i = 0; i < 11; i++) {
                 lineup.add(playerWithSkills("MID", elite(), allLow));
             }
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             assertEquals(86, chem, "0 covered: 83 base + 3 skill + 0 coverage = 86");
         }
 
@@ -235,7 +246,7 @@ class TeamChemistryCalculatorTest {
             for (int i = 0; i < 11; i++) {
                 lineup.add(playerWithSkills("MID", elite(), skills));
             }
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             assertEquals(90, chem, "5 covered: 84 base + 4 skill + 2 coverage = 90");
         }
 
@@ -256,7 +267,7 @@ class TeamChemistryCalculatorTest {
             for (int i = 0; i < 11; i++) {
                 lineup.add(playerWithSkills("MID", elite(), all80));
             }
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             assertEquals(93, chem, "10 covered: 85 base + 5 skill + 3 coverage = 93");
         }
 
@@ -285,8 +296,8 @@ class TeamChemistryCalculatorTest {
                 lineup80.add(playerWithSkills("MID", elite(), skills80));
                 lineup79.add(playerWithSkills("MID", elite(), skills79));
             }
-            int chem80 = TeamChemistryCalculator.calculate(lineup80);
-            int chem79 = TeamChemistryCalculator.calculate(lineup79);
+            int chem80 = scoreOf(lineup80);
+            int chem79 = scoreOf(lineup79);
             assertEquals(93, chem80, "MAX=80: covered, +3 coverage");
             assertEquals(90, chem79, "MAX=79: NOT covered, +0 coverage (but skill bonus same due to rounding 79→5)");
             assertEquals(3, chem80 - chem79, "Difference is exactly the 3-point coverage bonus");
@@ -312,7 +323,7 @@ class TeamChemistryCalculatorTest {
             //   total = 86 + 1 + 1 = 88
             SessionPlayer sp = playerWithSkills("GK", elite(), Map.of(PlayerSkill.WALL, 99, PlayerSkill.AERIAL, 99));
             sp.setHeightCm(200);
-            int chem = TeamChemistryCalculator.calculate(List.of(sp));
+            int chem = scoreOf(List.of(sp));
             // base = 86 (single player overall)
             // skill bonus at chemistry level: WALL (weight 0.06) * 99 + AERIAL (weight 0.07) * 99 = 5.94 + 6.93 = 12.87 / 10 = 1.287 → 1
             // coverage = 2 * 0.3 = 0.6 → 1
@@ -329,7 +340,7 @@ class TeamChemistryCalculatorTest {
             // total = 80 + 1 + 0 = 81
             List<SessionPlayer> lineup = new ArrayList<>(eliteLineupNoSkills());
             lineup.set(10, playerWithSkills("ATT", elite(), Map.of(PlayerSkill.SHOOTER, 99)));
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             assertEquals(81, chem, "1 SHOOTER=99 star: 80 + 1 + 0 = 81");
         }
 
@@ -340,7 +351,7 @@ class TeamChemistryCalculatorTest {
             List<SessionPlayer> lineup = new ArrayList<>(eliteLineupNoSkills());
             lineup.set(0, playerWithSkills("GK", elite(), Map.of(PlayerSkill.WALL, 90)));
             lineup.set(10, playerWithSkills("ATT", elite(), Map.of(PlayerSkill.SHOOTER, 90)));
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             // base = 80
             // skill: WALL 0.06*90 = 5.4, SHOOTER 0.06*90 = 5.4. sum = 10.8 / 10 = 1.08 → 1
             // coverage = 2 (WALL >= 80 and SHOOTER >= 80) * 0.3 = 0.6 → 1
@@ -364,7 +375,7 @@ class TeamChemistryCalculatorTest {
             lineup.add(null);
             lineup.add(player("ATT", elite()));
             // base = 80 (only 2 valid, both 80)
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             assertEquals(80, chem, "Nulls skipped, AVG over 2 valid = 80");
         }
 
@@ -373,7 +384,7 @@ class TeamChemistryCalculatorTest {
         void emptySkillMap() {
             SessionPlayer sp = player("GK", elite());
             // No setSkillLevel called — skills empty (initDefaults).
-            int chem = TeamChemistryCalculator.calculate(List.of(sp));
+            int chem = scoreOf(List.of(sp));
             assertEquals(80, chem, "Single player no skills: chemistry = base overall = 80");
         }
 
@@ -393,7 +404,7 @@ class TeamChemistryCalculatorTest {
             // Total: 83 + 1 + 0 = 84
             Map<PlayerSkill, Integer> legalSkills = Map.of(PlayerSkill.WALL, 99);
             SessionPlayer sp = playerWithSkills("GK", elite(), legalSkills);
-            int chem = TeamChemistryCalculator.calculate(List.of(sp));
+            int chem = scoreOf(List.of(sp));
             assertEquals(84, chem, "WALL=99 on single GK: 83 base + 1 skill + 0 coverage = 84");
         }
 
@@ -404,7 +415,7 @@ class TeamChemistryCalculatorTest {
             SessionPlayer sp = player("GK", elite());
             sp.setSkillLevel(PlayerSkill.WALL, 50);
             sp.setSkillLevel(PlayerSkill.WALL, 0);  // removes entry
-            int chem = TeamChemistryCalculator.calculate(List.of(sp));
+            int chem = scoreOf(List.of(sp));
             assertEquals(80, chem, "After removing skill, chemistry reverts to base");
         }
     }
@@ -431,7 +442,7 @@ class TeamChemistryCalculatorTest {
             for (int i = 0; i < 11; i++) {
                 lineup.add(playerWithSkills("MID", elite(), allSkills));
             }
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             assertEquals(95, chem, "Max lineup: 86 base + 6 skill + 3 coverage = 95");
             assertTrue(chem <= 99, "Chem <= 99 ceiling");
         }
@@ -444,7 +455,7 @@ class TeamChemistryCalculatorTest {
             for (int i = 0; i < 11; i++) {
                 lineup.add(player("GK", worst));
             }
-            int chem = TeamChemistryCalculator.calculate(lineup);
+            int chem = scoreOf(lineup);
             assertTrue(chem >= 0, "Chem should be >= 0, got " + chem);
             // base = round((1+1+1+1+1+1)/6 * 11) = 1 (each player overall = 1, AVG = 1)
             // No skills → 0
@@ -469,7 +480,7 @@ class TeamChemistryCalculatorTest {
                     for (int i = 0; i < 11; i++) {
                         lineup.add(playerWithSkills("MID", stats, skills));
                     }
-                    int chem = TeamChemistryCalculator.calculate(lineup);
+                    int chem = scoreOf(lineup);
                     assertTrue(chem >= 0 && chem <= 99,
                             "Chem " + chem + " out of [0, 99] for stats " + stats[0] + " skill " + skill);
                 }
@@ -489,7 +500,7 @@ class TeamChemistryCalculatorTest {
             // Memory canonical: 5 variants of similar lineups, 1 distinct.
             // All 5 lineups same base (avg 80), 4 with no skills, 1 with skills.
             List<SessionPlayer> baseline = eliteLineupNoSkills();
-            int baselineChem = TeamChemistryCalculator.calculate(baseline);
+            int baselineChem = scoreOf(baseline);
 
             // Inject skills into one player of the 5th lineup
             Map<PlayerSkill, Integer> highSkills = new HashMap<>();
@@ -498,7 +509,7 @@ class TeamChemistryCalculatorTest {
             }
             List<SessionPlayer> withSkills = new ArrayList<>(baseline);
             withSkills.set(0, playerWithSkills("GK", elite(), highSkills));
-            int withSkillsChem = TeamChemistryCalculator.calculate(withSkills);
+            int withSkillsChem = scoreOf(withSkills);
 
             assertTrue(withSkillsChem > baselineChem,
                     "Lineup with skills (chem=" + withSkillsChem + ") should beat baseline (chem=" + baselineChem + ")");
@@ -513,11 +524,11 @@ class TeamChemistryCalculatorTest {
             Map<PlayerSkill, Integer> skills = Map.of(PlayerSkill.SHOOTER, 99);
             List<SessionPlayer> lineupAtt = new ArrayList<>(eliteLineupNoSkills());
             lineupAtt.set(10, playerWithSkills("ATT", elite(), skills));
-            int chemAtt = TeamChemistryCalculator.calculate(lineupAtt);
+            int chemAtt = scoreOf(lineupAtt);
 
             List<SessionPlayer> lineupGk = new ArrayList<>(eliteLineupNoSkills());
             lineupGk.set(0, playerWithSkills("GK", elite(), skills));
-            int chemGk = TeamChemistryCalculator.calculate(lineupGk);
+            int chemGk = scoreOf(lineupGk);
 
             assertEquals(chemAtt, chemGk,
                     "SHOOTER=99 contributes the same chemistry regardless of position");
@@ -546,9 +557,9 @@ class TeamChemistryCalculatorTest {
                 l5.add(playerWithSkills("MID", elite(), five));
                 l10.add(playerWithSkills("MID", elite(), ten));
             }
-            int c0 = TeamChemistryCalculator.calculate(l0);
-            int c5 = TeamChemistryCalculator.calculate(l5);
-            int c10 = TeamChemistryCalculator.calculate(l10);
+            int c0 = scoreOf(l0);
+            int c5 = scoreOf(l5);
+            int c10 = scoreOf(l10);
 
             assertTrue(c0 < c5, "0 covered (" + c0 + ") < 5 covered (" + c5 + ")");
             assertTrue(c5 < c10, "5 covered (" + c5 + ") < 10 covered (" + c10 + ")");
@@ -583,7 +594,7 @@ class TeamChemistryCalculatorTest {
             List<SessionPlayer> star = new ArrayList<>();
             star.add(playerWithSkills("GK", elite(), Map.of(PlayerSkill.WALL, 99)));
             for (int i = 0; i < 10; i++) star.add(player("MID", elite()));
-            int starChem = TeamChemistryCalculator.calculate(star);
+            int starChem = scoreOf(star);
 
             List<SessionPlayer> deep = new ArrayList<>();
             PlayerSkill[] all = PlayerSkill.values();
@@ -592,7 +603,7 @@ class TeamChemistryCalculatorTest {
                 oneSkill.put(all[i % all.length], 99);
                 deep.add(playerWithSkills("MID", elite(), oneSkill));
             }
-            int deepChem = TeamChemistryCalculator.calculate(deep);
+            int deepChem = scoreOf(deep);
 
             // Star: 1 covered, deep: 10 covered (since each player has a different skill)
             // deepChem = 80 + (1*0.65*99/10) + 10*0.3 = 80 + 1 + 3 = 84
@@ -626,6 +637,204 @@ class TeamChemistryCalculatorTest {
             int covered = 10;
             double bonus = covered * 0.3;
             assertEquals(3.0, bonus, 1e-6, "Coverage bonus must be exactly 3.0 at max");
+        }
+    }
+
+    // ========== V25D43 (Sprint C8) — ChemistryDetail breakdown ==========
+
+    @Nested
+    @DisplayName("V25D43 ChemistryDetail: per-position-group breakdown + maxSkillByType + coveragePercentage")
+    class Breakdown {
+
+        // --- groupsForSkill mapping ---
+
+        @Test
+        @DisplayName("groupsForSkill: WALL → [GK] only")
+        void groupsForSkill_wall() {
+            assertEquals(List.of(ChemistryDetail.PositionGroup.GK),
+                    ChemistryDetail.groupsForSkill(PlayerSkill.WALL));
+        }
+
+        @Test
+        @DisplayName("groupsForSkill: AERIAL → [GK, DEF] (cross-position skill)")
+        void groupsForSkill_aerial() {
+            // AERIAL has 0.15 in GK and 0.20 in DEF → both groups
+            assertEquals(
+                    List.of(ChemistryDetail.PositionGroup.GK, ChemistryDetail.PositionGroup.DEF),
+                    ChemistryDetail.groupsForSkill(PlayerSkill.AERIAL));
+        }
+
+        @Test
+        @DisplayName("groupsForSkill: TACKLER → [GK, DEF, MID] (3 groups)")
+        void groupsForSkill_tackler() {
+            assertEquals(
+                    List.of(
+                            ChemistryDetail.PositionGroup.GK,
+                            ChemistryDetail.PositionGroup.DEF,
+                            ChemistryDetail.PositionGroup.MID),
+                    ChemistryDetail.groupsForSkill(PlayerSkill.TACKLER));
+        }
+
+        @Test
+        @DisplayName("groupsForSkill: WINGER skills (SPEEDSTER, DRIBBLER, SHOOTER) → [ATT] (folded)")
+        void groupsForSkill_wingerFoldedToAtt() {
+            // WINGER is not in PositionGroup enum; WINGER skills fold to ATT
+            assertEquals(List.of(ChemistryDetail.PositionGroup.ATT),
+                    ChemistryDetail.groupsForSkill(PlayerSkill.SPEEDSTER));
+            assertEquals(List.of(ChemistryDetail.PositionGroup.ATT),
+                    ChemistryDetail.groupsForSkill(PlayerSkill.DRIBBLER));
+            assertEquals(List.of(ChemistryDetail.PositionGroup.ATT),
+                    ChemistryDetail.groupsForSkill(PlayerSkill.SHOOTER));
+        }
+
+        @Test
+        @DisplayName("groupsForSkill: null → empty (defensive)")
+        void groupsForSkill_null() {
+            assertEquals(List.of(), ChemistryDetail.groupsForSkill(null));
+        }
+
+        // --- Empty / null / no-skills lineup ---
+
+        @Test
+        @DisplayName("Null lineup → ChemistryDetail with score=0 and empty groups")
+        void nullLineup_emptyDetail() {
+            ChemistryDetail d = TeamChemistryCalculator.calculate(null);
+            assertEquals(0, d.score());
+            assertEquals(0, d.coveragePercentage());
+            // All 4 groups present, all empty
+            for (ChemistryDetail.PositionGroup g : ChemistryDetail.PositionGroup.values()) {
+                assertEquals(List.of(), d.breakdown().get(g),
+                        "Group " + g + " should be empty for null lineup");
+            }
+            // maxSkillByType: 0 for all 10 skills
+            for (PlayerSkill s : PlayerSkill.values()) {
+                assertEquals(0, d.maxSkillByType().get(s),
+                        "maxSkillByType[" + s + "] should be 0 for null lineup");
+            }
+        }
+
+        @Test
+        @DisplayName("Lineup with no skills → breakdown is empty (no SkillCoverage entries)")
+        void noSkills_emptyBreakdown() {
+            // 11 elite players without skills → no SkillCoverage emitted (maxLevel = 0)
+            ChemistryDetail d = TeamChemistryCalculator.calculate(eliteLineupNoSkills());
+            assertEquals(80, d.score(), "11 elite no skills: score = 80");
+            assertEquals(0, d.coveragePercentage(), "0 skills covered (all 0)");
+            for (ChemistryDetail.PositionGroup g : ChemistryDetail.PositionGroup.values()) {
+                assertEquals(List.of(), d.breakdown().get(g),
+                        "Group " + g + " should be empty when no skills present");
+            }
+        }
+
+        // --- Single GK with WALL=99, AERIAL=99 (Courtois-like) ---
+
+        @Test
+        @DisplayName("Single GK with WALL=99, AERIAL=99: GK row has 2, DEF row has 1 (AERIAL cross)")
+        void singleGkWallAerial_breakdown() {
+            // GK player with WALL=99, AERIAL=99
+            // Per-position weights:
+            //   WALL:  GK only
+            //   AERIAL: GK + DEF
+            // Expected breakdown:
+            //   GK: [WALL 99, AERIAL 99]
+            //   DEF: [AERIAL 99]
+            //   MID: []
+            //   ATT: []
+            SessionPlayer sp = playerWithSkills("GK", elite(),
+                    Map.of(PlayerSkill.WALL, 99, PlayerSkill.AERIAL, 99));
+            ChemistryDetail d = TeamChemistryCalculator.calculate(List.of(sp));
+
+            assertEquals(2, d.breakdown().get(ChemistryDetail.PositionGroup.GK).size(),
+                    "GK row should have WALL + AERIAL = 2 entries");
+            assertEquals(1, d.breakdown().get(ChemistryDetail.PositionGroup.DEF).size(),
+                    "DEF row should have AERIAL = 1 entry (cross-position)");
+            assertEquals(List.of(), d.breakdown().get(ChemistryDetail.PositionGroup.MID));
+            assertEquals(List.of(), d.breakdown().get(ChemistryDetail.PositionGroup.ATT));
+
+            // Contributor: same player for both (single GK with both skills)
+            String playerId = sp.getSessionPlayerId();
+            assertEquals(playerId,
+                    d.breakdown().get(ChemistryDetail.PositionGroup.GK).get(0).contributorPlayerId());
+            assertEquals(playerId,
+                    d.breakdown().get(ChemistryDetail.PositionGroup.DEF).get(0).contributorPlayerId());
+
+            // maxSkillByType
+            assertEquals(99, d.maxSkillByType().get(PlayerSkill.WALL));
+            assertEquals(99, d.maxSkillByType().get(PlayerSkill.AERIAL));
+            assertEquals(0, d.maxSkillByType().get(PlayerSkill.MARKER));
+
+            // coveragePercentage: 2 of 10 covered (WALL, AERIAL) → 20%
+            assertEquals(20, d.coveragePercentage(), "2/10 covered = 20%");
+        }
+
+        // --- All 10 skills at 99 (max lineup) ---
+
+        @Test
+        @DisplayName("All skills at 99: every group has 4 entries (4 distinct skills per group)")
+        void allSkillsMax_fullBreakdown() {
+            // 11 elite MID players with all 10 skills at 99
+            // Each skill appears in all groups where it has weight:
+            //   GK: WALL, AERIAL, TACKLER, PASSER (4)
+            //   DEF: MARKER, AERIAL, TACKLER, PASSER (4)
+            //   MID: PLAYMAKER, MARKER, TACKLER, PASSER (4)
+            //   ATT: SHOOTER, HEADER, DRIBBLER, SPEEDSTER (4)
+            // Total skill-appearances = 16, 10 unique skills
+            Map<PlayerSkill, Integer> allSkills = new HashMap<>();
+            for (PlayerSkill s : PlayerSkill.values()) allSkills.put(s, 99);
+            List<SessionPlayer> lineup = new ArrayList<>();
+            for (int i = 0; i < 11; i++) {
+                lineup.add(playerWithSkills("MID", elite(), allSkills));
+            }
+            ChemistryDetail d = TeamChemistryCalculator.calculate(lineup);
+
+            // 4 entries per group
+            assertEquals(4, d.breakdown().get(ChemistryDetail.PositionGroup.GK).size());
+            assertEquals(4, d.breakdown().get(ChemistryDetail.PositionGroup.DEF).size());
+            assertEquals(4, d.breakdown().get(ChemistryDetail.PositionGroup.MID).size());
+            assertEquals(4, d.breakdown().get(ChemistryDetail.PositionGroup.ATT).size());
+
+            // coveragePercentage: 10/10 = 100%
+            assertEquals(100, d.coveragePercentage(), "10/10 covered = 100%");
+
+            // All maxSkillByType = 99
+            for (PlayerSkill s : PlayerSkill.values()) {
+                assertEquals(99, d.maxSkillByType().get(s),
+                        "maxSkillByType[" + s + "] should be 99");
+            }
+        }
+
+        // --- Contributor identification ---
+
+        @Test
+        @DisplayName("Contributor: first player with the max level wins (deterministic tie-break)")
+        void contributor_firstWithMaxWins() {
+            // 3 players with WALL: 70, 90, 80. Max is 90 → 2nd player wins.
+            SessionPlayer p1 = playerWithSkills("GK", elite(), Map.of(PlayerSkill.WALL, 70));
+            SessionPlayer p2 = playerWithSkills("GK", elite(), Map.of(PlayerSkill.WALL, 90));
+            SessionPlayer p3 = playerWithSkills("GK", elite(), Map.of(PlayerSkill.WALL, 80));
+            List<SessionPlayer> lineup = List.of(p1, p2, p3);
+
+            ChemistryDetail d = TeamChemistryCalculator.calculate(lineup);
+            ChemistryDetail.SkillCoverage coverage = d.breakdown()
+                    .get(ChemistryDetail.PositionGroup.GK).get(0);
+            assertEquals(90, coverage.maxLevel());
+            assertEquals(p2.getSessionPlayerId(), coverage.contributorPlayerId(),
+                    "Contributor should be p2 (the 2nd player with max=90)");
+        }
+
+        // --- maxSkillByType shape ---
+
+        @Test
+        @DisplayName("maxSkillByType: 0 for skills not present in lineup")
+        void maxSkillByType_zeroForAbsent() {
+            // Lineup with 1 player, 1 skill (WALL=99). All other 9 skills → 0.
+            SessionPlayer sp = playerWithSkills("GK", elite(), Map.of(PlayerSkill.WALL, 99));
+            ChemistryDetail d = TeamChemistryCalculator.calculate(List.of(sp));
+            assertEquals(99, d.maxSkillByType().get(PlayerSkill.WALL));
+            assertEquals(0, d.maxSkillByType().get(PlayerSkill.AERIAL));
+            assertEquals(0, d.maxSkillByType().get(PlayerSkill.MARKER));
+            assertEquals(0, d.maxSkillByType().get(PlayerSkill.PASSER));
+            assertEquals(0, d.maxSkillByType().get(PlayerSkill.HEADER));
         }
     }
 }
