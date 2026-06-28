@@ -541,4 +541,164 @@ class LineupShortHandedTest {
         StepVerifier.create(useCase.confirmLineup(UUID.fromString(USER_ID)))
             .verifyComplete();
     }
+
+    // ========== V25D61-C20.1 P0: short-handed manual-select slot map invariants ==========
+    //
+    // C20 P0 introduced an off-position fallback inside buildAutoSelectSlotMap that ran
+    // unconditionally. The fallback over-fills slotMap when selectedPlayers.size() <
+    // formation.positions.length, producing duplicate playerIds in the persisted subdivision
+    // map. C20.1 P0 gates the fallback by isAutoSelect (auto-select only). These four tests
+    // pin the post-fix contract for the manual-select short-handed path:
+    //
+    //   1. slot count == number of helper-matched slots (NOT formation.positions.size())
+    //   2. no playerId appears twice in the persisted slots
+    //   3. subdivisions that helper-match couldn't fill have NO entry in the slots
+    //   4. auto-select full squad still produces 11 slots (fallback still fires there)
+
+    /**
+     * Test 1 — manual-select 7 players (short-handed) returns exactly 7 slots.
+     *
+     * <p>With 1 GK + 4 DEF + 2 MID against 4-4-2, the helper-based match fills 7 of 11
+     * subdivisions (GK + 4 DEF + 2 MID). With the C20.1 fix the off-position fallback
+     * does NOT fire in the manual-select path, so slotMap.size() stays at 7. Without
+     * the fix, the fallback would attempt to fill the 4 remaining ATT/MID slots —
+     * failing silently because all 7 players are already used, but pinning that
+     * behavior here documents the invariant the regression broke.
+     */
+    @Test
+    void manualSelect_shortHanded_returnsCorrectSlotCount() {
+        List<SessionPlayer> squad = fullHealthySquad();
+        CareerSave career = makeCareer(squad);
+        // 7 IDs: 1 GK + 4 DEF + 2 MID. Helper match fills 7 of 11 subdivisions in 4-4-2.
+        List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
+                                          "mid-1", "mid-2");
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
+            .assertNext(dto -> {
+                assertEquals(7, dto.players().size(),
+                    "V25D61-C20.1: short-handed manual-select must accept 7 players");
+                assertNotNull(dto.slots(),
+                    "V25D61-C20.1: slots list must not be null");
+                assertEquals(7, dto.slots().size(),
+                    "V25D61-C20.1: slot count must equal helper-matched count (7), not "
+                    + "formation.positions.size() (11) — the regression over-filled to 8");
+            })
+            .verifyComplete();
+
+        verify(careerRepository).save(any());
+    }
+
+    /**
+     * Test 2 — manual-select short-handed slots have no duplicate playerIds.
+     *
+     * <p>Pins the C20.1 regression signature (verifier report):
+     * "Lewandowski aparece at BOTH S05-2 AND S16-2". Every playerId in the
+     * persisted slot map must be unique — a player cannot occupy two
+     * subdivisions simultaneously.
+     */
+    @Test
+    void manualSelect_shortHanded_noDuplicatePlayersInSlots() {
+        List<SessionPlayer> squad = fullHealthySquad();
+        CareerSave career = makeCareer(squad);
+        List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
+                                          "mid-1", "mid-2");
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
+            .assertNext(dto -> {
+                List<String> playerIdsInSlots = dto.slots().stream()
+                    .map(com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO::playerId)
+                    .toList();
+                long distinct = playerIdsInSlots.stream().distinct().count();
+                assertEquals(playerIdsInSlots.size(), distinct,
+                    "V25D61-C20.1: no playerId may appear twice in persisted slots "
+                    + "(regression: 'Lewandowski aparece at BOTH S05-2 AND S16-2'). "
+                    + "Got playerIds=" + playerIdsInSlots);
+                assertTrue(playerIdsInSlots.size() <= lineupIds.size(),
+                    "V25D61-C20.1: slot count must not exceed lineup size ("
+                    + lineupIds.size() + "), got " + playerIdsInSlots.size());
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * Test 3 — manual-select short-handed leaves unfilled subdivisions empty.
+     *
+     * <p>With 7 players (1 GK + 4 DEF + 2 MID) against 4-4-2, the 4 ATT/MID
+     * subdivisions S05-2, S05-3, S17-2, S18-3 have no helper match. With the
+     * C20.1 fix these subdivisions must have NO entry in the slot map (the
+     * off-position fallback is skipped for manual-select). Without the fix
+     * the fallback would try to assign unused players — and while in this
+     * particular case all 7 are used, the fix pins the invariant for any
+     * future composition.
+     */
+    @Test
+    void manualSelect_shortHanded_unfilledSlotsAreEmpty() {
+        List<SessionPlayer> squad = fullHealthySquad();
+        CareerSave career = makeCareer(squad);
+        List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
+                                          "mid-1", "mid-2");
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
+            .assertNext(dto -> {
+                java.util.Set<String> filledSubdivisions = dto.slots().stream()
+                    .map(com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO::subdivisionId)
+                    .collect(java.util.stream.Collectors.toSet());
+
+                // 4-4-2 subdivisions that no helper match could fill (no ST/extra MID in lineup):
+                //   S05-2 (ST), S05-3 (ST) — attackers missing
+                //   S17-2 (CM), S18-3 (RM) — extra midfielder/right-mid missing
+                List<String> expectedUnfilled = List.of("S05-2", "S05-3", "S17-2", "S18-3");
+                for (String unfilled : expectedUnfilled) {
+                    assertFalse(filledSubdivisions.contains(unfilled),
+                        "V25D61-C20.1: subdivision " + unfilled
+                        + " must have NO entry for short-handed 7-player lineup "
+                        + "(no attacker / extra midfielder to fill it). Got subdivisions="
+                        + filledSubdivisions);
+                }
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * Test 4 — auto-select full squad still persists 11 slots (regression guard).
+     *
+     * <p>C20 P0 introduced the off-position fallback specifically for auto-select so that
+     * squads with non-natural position coverage still get all 11 subdivisions filled
+     * (downstream FormationEffectiveness + manual-select re-open depend on the full
+     * map). C20.1 must NOT remove the fallback for auto-select — this test pins that
+     * the fix is targeted at manual-select only.
+     */
+    @Test
+    void autoSelect_fullSquad_stillWorks() {
+        List<SessionPlayer> squad = fullHealthySquad();
+        CareerSave career = makeCareer(squad);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> {
+                assertEquals(11, dto.players().size(),
+                    "Full squad auto-select must still return 11 players");
+                assertNotNull(dto.slots(),
+                    "V25D61-C20.1: slots list must not be null");
+                assertEquals(11, dto.slots().size(),
+                    "V25D61-C20.1: auto-select full squad must persist 11 slots "
+                    + "(C20 P0 fallback contract preserved for auto-select path)");
+                // No duplicates either
+                long distinct = dto.slots().stream()
+                    .map(com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO::playerId)
+                    .distinct()
+                    .count();
+                assertEquals(11L, distinct,
+                    "V25D61-C20.1: 11 slots must have 11 distinct playerIds "
+                    + "(off-position fallback assigned unused players, but each exactly once)");
+            })
+            .verifyComplete();
+    }
 }
