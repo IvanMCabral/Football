@@ -231,49 +231,53 @@ class LineupShortHandedTest {
         verify(careerRepository).save(any());
     }
 
-    // ========== T2: auto-select 10 available -> short-handed warning ==========
+    // ========== V25D59-C19 P0 T2: auto-select 10 available -> THROWS ==========
 
     @Test
-    void autoSelect_10Available_returnsShortHandedWarning() {
-        // Squad of 15, only 10 healthy available, 5 injured
+    void autoSelect_10Available_throwsNotEnoughPlayers() {
+        // Squad of 15, only 10 healthy available, 5 injured.
+        // V25D59-C19 P0: auto-select no longer produces 10-player lineups.
+        // It throws NotEnoughPlayersException → controller maps to 422.
         List<SessionPlayer> squad = makeSquadWithAvailableCount(10, 15);
         CareerSave career = makeCareer(squad);
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
-            .assertNext(dto -> {
-                assertNotNull(dto);
-                assertEquals(10, dto.players().size(), "Should yield 10-player lineup");
-                assertNotNull(dto.warnings(), "warnings list should be non-null");
-                assertFalse(dto.warnings().isEmpty(), "warnings should be non-empty");
-                assertTrue(dto.warnings().stream()
-                    .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code())),
-                    "Should contain LINEUP_SHORT_HANDED warning");
+            .expectErrorSatisfies(err -> {
+                assertTrue(err instanceof NotEnoughPlayersException,
+                    "Expected NotEnoughPlayersException, got " + err.getClass().getSimpleName());
+                assertTrue(err.getMessage().contains("11"),
+                    "Message should mention required 11, got: " + err.getMessage());
+                assertTrue(err.getMessage().contains("10"),
+                    "Message should mention available 10, got: " + err.getMessage());
             })
-            .verifyComplete();
+            .verify();
+
+        verify(careerRepository, never()).save(any());
     }
 
-    // ========== T3: auto-select 7 available -> short-handed lineup (edge of valid range) ==========
+    // ========== V25D59-C19 P0 T3: auto-select 7 available -> THROWS ==========
 
     @Test
-    void autoSelect_7Available_returnsShortHandedLineup() {
-        // Squad of 15, only 7 healthy available, 8 injured
+    void autoSelect_7Available_throwsNotEnoughPlayers() {
+        // Squad of 15, only 7 healthy available, 8 injured.
+        // V25D59-C19 P0: same contract — auto-select requires 11.
         List<SessionPlayer> squad = makeSquadWithAvailableCount(7, 15);
         CareerSave career = makeCareer(squad);
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
-            .assertNext(dto -> {
-                assertNotNull(dto);
-                assertEquals(7, dto.players().size(), "Should yield 7-player lineup (minimum)");
-                assertNotNull(dto.warnings());
-                assertTrue(dto.warnings().stream()
-                    .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code())),
-                    "Should contain LINEUP_SHORT_HANDED warning");
+            .expectErrorSatisfies(err -> {
+                assertTrue(err instanceof NotEnoughPlayersException,
+                    "Expected NotEnoughPlayersException, got " + err.getClass().getSimpleName());
+                assertTrue(err.getMessage().contains("11"),
+                    "Message should mention required 11, got: " + err.getMessage());
+                assertTrue(err.getMessage().contains("7"),
+                    "Message should mention available 7, got: " + err.getMessage());
             })
-            .verifyComplete();
+            .verify();
+
+        verify(careerRepository, never()).save(any());
     }
 
     // ========== T4: auto-select 6 available -> 422 via NotEnoughPlayersException ==========
@@ -289,47 +293,65 @@ class LineupShortHandedTest {
             .expectErrorSatisfies(err -> {
                 assertTrue(err instanceof NotEnoughPlayersException,
                     "Expected NotEnoughPlayersException, got " + err.getClass().getSimpleName());
-                assertTrue(err.getMessage().contains("7"),
-                    "Message should mention minimum 7, got: " + err.getMessage());
+                // V25D59-C19 P0: threshold is 11 (TARGET_LINEUP_PLAYERS), not 7.
+                assertTrue(err.getMessage().contains("11"),
+                    "Message should mention required 11, got: " + err.getMessage());
             })
             .verify();
 
         verify(careerRepository, never()).save(any());
     }
 
-    // ========== T5: auto-select excludes injured AND suspended ==========
+    // ========== V25D59-C19 P0 T5: auto-select excludes injured/suspended AND throws on 9 ==========
 
     @Test
-    void autoSelect_excludesInjuredSuspendedFromShortHanded() {
-        // Squad of 15, 10 healthy of which 1 is suspended = 9 available
+    void autoSelect_9Available_throwsNotEnoughPlayers_filtersInjuredSuspended() {
+        // V25D59-C19 P0: filtering (exclude injured/suspended) is unchanged, but
+        // the auto-select contract is now "11 or throw". This test pins BOTH:
+        // the filter happens (10 healthy - 1 suspended = 9 available) AND the
+        // throw fires (9 < 11).
         List<SessionPlayer> squad = makeSquadWithAvailableAndSuspended(10, 15, 1);
         CareerSave career = makeCareer(squad);
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
-            .assertNext(dto -> {
-                assertNotNull(dto);
-                assertEquals(9, dto.players().size());
-                // No injured or suspended players should be in lineup
-                boolean hasInjured = dto.players().stream()
-                    .anyMatch(p -> Boolean.TRUE.equals(p.injured()));
-                boolean hasSuspended = dto.players().stream()
-                    .anyMatch(p -> Boolean.TRUE.equals(p.suspended()));
-                assertFalse(hasInjured, "Lineup must not contain injured players");
-                assertFalse(hasSuspended, "Lineup must not contain suspended players");
+            .expectErrorSatisfies(err -> {
+                assertTrue(err instanceof NotEnoughPlayersException,
+                    "Expected NotEnoughPlayersException, got " + err.getClass().getSimpleName());
+                assertTrue(err.getMessage().contains("9"),
+                    "Message should reflect 9 available after filter, got: " + err.getMessage());
             })
-            .verifyComplete();
+            .verify();
+
+        verify(careerRepository, never()).save(any());
     }
 
-    // ========== T6: auto-select no goalkeeper -> ALLOW with warning ==========
+    // ========== V25D59-C19 P0 T6 (renamed): no GK fallback on a full squad ==========
 
     @Test
-    void autoSelect_noGoalkeeper_allowedWithWarning() {
-        // 11 healthy, but mark GK as injured (so no GK available)
-        List<SessionPlayer> squad = fullHealthySquad();
-        squad.get(0).setInjured(true);  // GK injured
-        squad.get(0).setInjuryRemainingMatches(2);
+    void autoSelect_noGoalkeeper_fullSquad_returnsWarningAndElevenPlayers() {
+        // V25D59-C19 P0: full 11-player squad with NO natural GK in the position
+        // column → algorithm picks the best-OVR outfielder as off-position GK
+        // fallback and still returns an 11-player lineup. LINEUP_NO_GOALKEEPER
+        // warning surfaces the tactical hit.
+        //
+        // Old T6 used 11 players with GK injured (10 available) and asserted 10
+        // players in the lineup. That path is gone — auto-select throws on 10
+        // available (see T2 above). The spirit of "test the no-GK warning" is
+        // preserved here with a full-squad variant.
+        List<SessionPlayer> squad = List.of(
+            makePlayer("out-1", "CB A", "CB", 80),
+            makePlayer("out-2", "CB B", "CB", 79),
+            makePlayer("out-3", "LB",   "LB", 78),
+            makePlayer("out-4", "RB",   "RB", 77),
+            makePlayer("out-5", "CM A", "CM", 76),
+            makePlayer("out-6", "CM B", "CM", 75),
+            makePlayer("out-7", "LM",   "LM", 74),
+            makePlayer("out-8", "RM",   "RM", 73),
+            makePlayer("out-9", "ST A", "ST", 82),
+            makePlayer("out-10","ST B", "ST", 80),
+            makePlayer("out-11","CF",   "CF", 78)
+        );
         CareerSave career = makeCareer(squad);
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
         when(careerRepository.save(any())).thenReturn(Mono.empty());
@@ -337,12 +359,12 @@ class LineupShortHandedTest {
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
                 assertNotNull(dto);
-                // 10 outfielders, no GK
-                assertEquals(10, dto.players().size());
+                assertEquals(11, dto.players().size(),
+                    "V25D59-C19 P0: auto-select must return 11 even without a natural GK");
                 assertNotNull(dto.warnings());
                 assertTrue(dto.warnings().stream()
                     .anyMatch(w -> LineupWarningDTO.CODE_NO_GOALKEEPER.equals(w.code())),
-                    "Should contain LINEUP_NO_GOALKEEPER warning");
+                    "Should contain LINEUP_NO_GOALKEEPER warning when GK fallback fires");
             })
             .verifyComplete();
     }

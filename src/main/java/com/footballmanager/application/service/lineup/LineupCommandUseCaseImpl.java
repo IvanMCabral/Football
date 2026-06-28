@@ -36,11 +36,19 @@ import java.util.stream.Collectors;
 /**
  * Implementación de UseCase para comandos del lineup.
  *
- * <p>V24D6U2: Supports short-handed lineups. See {@link LineupRules}.
- * Auto-select now produces lineups in {@code [MIN, MAX]} and returns
- * warnings on short-handed or no-GK. Manual select and confirmLineup
- * accept the same range and reject out-of-bounds with a domain
- * exception that maps to 422.
+ * <p>V24D6U2: Supports short-handed lineups via manual-select / confirmLineup
+ * (range {@code [MIN, MAX]}). See {@link LineupRules}.
+ *
+ * <p>V25D59-C19 P0: auto-select NO longer produces short-handed lineups.
+ * It guarantees exactly 11 slots (GK + DEF + MID + ATT) by filling missing
+ * formation-row slots with the best-OVR off-position players and attaching
+ * a {@code LINEUP_OFF_POSITION_FILL} warning per affected row. If the squad
+ * has fewer than {@link LineupRules#TARGET_LINEUP_PLAYERS} available players
+ * the call throws {@link NotEnoughPlayersException} — silent short-handed
+ * success is the bug this fix closes.
+ *
+ * <p>Manual select and confirmLineup still accept the {@code [MIN, MAX]}
+ * range for backward compat with careers mid-rescue from short squads.
  */
 @Service
 @RequiredArgsConstructor
@@ -240,81 +248,118 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .sorted(Comparator.comparing(SessionPlayer::calculateOverall).reversed())
             .toList();
 
-        // V24D6U2: hard floor at MIN_AVAILABLE_PLAYERS, return controlled 422 if not met
-        if (availablePlayers.size() < LineupRules.MIN_AVAILABLE_PLAYERS) {
+        // V25D59-C19 P0: auto-select requires a full squad.
+        // Below TARGET_LINEUP_PLAYERS (11) → throw NotEnoughPlayersException so the
+        // controller returns 422 LINEUP_MINIMUM_PLAYERS_NOT_MET instead of persisting
+        // a silently short-handed lineup (the C18b audit bug). Manual-select keeps the
+        // [MIN, MAX] short-handed path for career rescue.
+        if (availablePlayers.size() < LineupRules.TARGET_LINEUP_PLAYERS) {
             throw new NotEnoughPlayersException(
-                "Minimum " + LineupRules.MIN_AVAILABLE_PLAYERS
-                + " available players required, got " + availablePlayers.size());
+                "Auto-select requires " + LineupRules.TARGET_LINEUP_PLAYERS
+                + " available players, got " + availablePlayers.size());
         }
 
         List<SessionPlayer> lineup = new ArrayList<>();
         List<LineupWarningDTO> warnings = new ArrayList<>();
         Set<String> alreadyTaken = new HashSet<>();
 
-        // 1. GK — prefer one, but allow missing (warning)
-        availablePlayers.stream()
+        // 1. GK — strict-match first; off-position fallback to best OVR if no
+        // natural GK in the squad (e.g. a CDM filling GK). Attaches
+        // LINEUP_NO_GOALKEEPER warning so the UI surfaces the tactical hit.
+        SessionPlayer gk = availablePlayers.stream()
             .filter(p -> "GK".equals(p.getPosition()))
             .findFirst()
-            .ifPresent(p -> {
-                lineup.add(p);
-                alreadyTaken.add(p.getSessionPlayerId());
-            });
-
-        // 2. Defenders — best-effort up to formation.getDefenders()
-        List<SessionPlayer> defenders = availablePlayers.stream()
-            .filter(p -> lineupHelper.isDefender(p.getPosition()))
-            .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
-            .limit(formation.getDefenders())
-            .collect(Collectors.toList());
-        lineup.addAll(defenders);
-        defenders.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
-
-        // 3. Midfielders — best-effort up to formation.getMidfielders()
-        List<SessionPlayer> midfielders = availablePlayers.stream()
-            .filter(p -> lineupHelper.isMidfielder(p.getPosition()))
-            .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
-            .limit(formation.getMidfielders())
-            .collect(Collectors.toList());
-        lineup.addAll(midfielders);
-        midfielders.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
-
-        // 4. Attackers — best-effort up to formation.getAttackers()
-        List<SessionPlayer> attackers = availablePlayers.stream()
-            .filter(p -> lineupHelper.isAttacker(p.getPosition()))
-            .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
-            .limit(formation.getAttackers())
-            .collect(Collectors.toList());
-        lineup.addAll(attackers);
-        attackers.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
-
-        // 5. Fill the gap with any remaining available players (best OVR first)
-        // so the lineup reaches MAX_LINEUP_PLAYERS when possible.
-        if (lineup.size() < LineupRules.MAX_LINEUP_PLAYERS) {
-            int slotsLeft = LineupRules.MAX_LINEUP_PLAYERS - lineup.size();
-            List<SessionPlayer> fill = availablePlayers.stream()
-                .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
-                .limit(slotsLeft)
-                .collect(Collectors.toList());
-            lineup.addAll(fill);
-        }
-
-        // Defensive cap in case we have more than MAX (e.g., if formation summed > 11)
-        final List<SessionPlayer> finalLineup;
-        if (lineup.size() > LineupRules.MAX_LINEUP_PLAYERS) {
-            finalLineup = new ArrayList<>(lineup.subList(0, LineupRules.MAX_LINEUP_PLAYERS));
+            .orElse(null);
+        if (gk != null) {
+            lineup.add(gk);
+            alreadyTaken.add(gk.getSessionPlayerId());
         } else {
-            finalLineup = lineup;
+            SessionPlayer gkFallback = availablePlayers.stream()
+                .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
+                .findFirst()
+                .orElseThrow(() -> new NotEnoughPlayersException(
+                    "No available players for GK fallback (squad=" + availablePlayers.size() + ")"));
+            lineup.add(gkFallback);
+            alreadyTaken.add(gkFallback.getSessionPlayerId());
+            warnings.add(LineupWarningDTO.noGoalkeeper(availablePlayers.size()));
         }
 
-        // V24D6U2: warnings
-        if (lineupHelper.detectShortHandedWarnings(lineup).size() > 0) {
-            warnings.addAll(lineupHelper.detectShortHandedWarnings(lineup));
-        }
-        if (lineup.size() < LineupRules.TARGET_LINEUP_PLAYERS) {
-            warnings.add(LineupWarningDTO.shortHanded(lineup.size()));
+        // 2. DEF — best DEF-capable players first; any remaining DEF slots
+        // are filled with the best-OVR remaining players (off-position).
+        fillRow(availablePlayers, lineup, alreadyTaken, warnings,
+            formation.getDefenders(), "DEF", lineupHelper::isDefender);
+
+        // 3. MID — same off-position fallback pattern.
+        fillRow(availablePlayers, lineup, alreadyTaken, warnings,
+            formation.getMidfielders(), "MID", lineupHelper::isMidfielder);
+
+        // 4. ATT — same off-position fallback pattern.
+        fillRow(availablePlayers, lineup, alreadyTaken, warnings,
+            formation.getAttackers(), "ATT", lineupHelper::isAttacker);
+
+        // V25D59-C19 P0: validate the lineup reached exactly 11 slots before
+        // persisting. Defensive — the algorithm above should always reach 11
+        // for a squad of ≥11, but if a future formation breaks the invariant
+        // (defenders + midfielders + attackers != 10) we fail loud instead of
+        // silently persisting a malformed lineup.
+        if (lineup.size() != LineupRules.TARGET_LINEUP_PLAYERS) {
+            throw new NotEnoughPlayersException(
+                "Auto-select produced " + lineup.size() + " players, expected "
+                + LineupRules.TARGET_LINEUP_PLAYERS);
         }
 
         return new AutoSelectResult(lineup, warnings);
+    }
+
+    /**
+     * V25D59-C19 P0: fill one formation row (DEF / MID / ATT) of {@code slotsNeeded}
+     * slots with the best players available, preferring {@code positionMatcher}-compatible
+     * players and falling back to the best-OVR remaining players (off-position) when
+     * the squad lacks enough compatible players for the row. Adds a
+     * {@link LineupWarningDTO#offPositionFill} warning when the fallback path is used.
+     *
+     * <p>Contract: appends to {@code lineup} in-place and updates {@code alreadyTaken}.
+     * Assumes the caller has reserved the GK slot (slot 0) before calling.
+     */
+    private void fillRow(List<SessionPlayer> availablePlayers,
+                         List<SessionPlayer> lineup,
+                         Set<String> alreadyTaken,
+                         List<LineupWarningDTO> warnings,
+                         int slotsNeeded,
+                         String positionGroup,
+                         java.util.function.Predicate<String> positionMatcher) {
+        if (slotsNeeded <= 0) {
+            return;
+        }
+
+        // Phase 1: take up to slotsNeeded position-perfect players.
+        List<SessionPlayer> perfect = availablePlayers.stream()
+            .filter(p -> positionMatcher.test(p.getPosition()))
+            .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
+            .limit(slotsNeeded)
+            .collect(Collectors.toList());
+        lineup.addAll(perfect);
+        perfect.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
+
+        // Phase 2: any remaining slots for this row → off-position fallback
+        // (best OVR from remaining available players). The penalty is reflected
+        // in formationEffectiveness (sprint C11a PositionEffectivenessCalculator),
+        // and surfaced as a LINEUP_OFF_POSITION_FILL warning.
+        int stillNeeded = slotsNeeded - perfect.size();
+        if (stillNeeded > 0) {
+            List<SessionPlayer> offPosFill = availablePlayers.stream()
+                .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
+                .limit(stillNeeded)
+                .collect(Collectors.toList());
+            lineup.addAll(offPosFill);
+            offPosFill.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
+            long offPosCount = offPosFill.stream()
+                .filter(p -> !positionMatcher.test(p.getPosition()))
+                .count();
+            if (offPosCount > 0) {
+                warnings.add(LineupWarningDTO.offPositionFill(positionGroup, (int) offPosCount));
+            }
+        }
     }
 
     private LineupDTO buildLineupDTO(List<SessionPlayer> players, Formation formation,

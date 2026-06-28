@@ -21,6 +21,12 @@ public record LineupWarningDTO(
 
     public static final String CODE_SHORT_HANDED = "LINEUP_SHORT_HANDED";
     public static final String CODE_NO_GOALKEEPER = "LINEUP_NO_GOALKEEPER";
+    // V25D59-C19 P0: warning when auto-select fills a formation row (DEF/MID/ATT)
+    // with off-position players because the squad doesn't have enough players
+    // for that exact position group. The lineup is still valid (11 slots) but
+    // tactically degraded — the engine computes the effectiveness penalty via
+    // FormationEffectiveness (sprint C11a) and the UI surfaces it.
+    public static final String CODE_OFF_POSITION_FILL = "LINEUP_OFF_POSITION_FILL";
 
     public static final String SEVERITY_WARNING = "WARNING";
     public static final String SEVERITY_INFO = "INFO";
@@ -43,6 +49,26 @@ public record LineupWarningDTO(
             SEVERITY_WARNING,
             available,
             LineupRules.MIN_AVAILABLE_PLAYERS,
+            LineupRules.TARGET_LINEUP_PLAYERS
+        );
+    }
+
+    /**
+     * V25D59-C19 P0: off-position fill warning. {@code positionGroup} is one
+     * of {@code "GK" | "DEF" | "MID" | "ATT"} — the row of the formation
+     * that ended up with off-position players. {@code offPositionCount} is the
+     * number of slots in that row filled by players whose natural position
+     * doesn't match (e.g., a CM filling a CB slot). The penalty surfaces in
+     * {@code formationEffectiveness} (sprint C11a) per-player.
+     */
+    public static LineupWarningDTO offPositionFill(String positionGroup, int offPositionCount) {
+        return new LineupWarningDTO(
+            CODE_OFF_POSITION_FILL,
+            offPositionCount + " " + positionGroup + " slot" + (offPositionCount == 1 ? "" : "s")
+                + " filled by off-position players (effectiveness penalty applied).",
+            SEVERITY_WARNING,
+            offPositionCount,
+            0,
             LineupRules.TARGET_LINEUP_PLAYERS
         );
     }
