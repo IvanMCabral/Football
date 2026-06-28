@@ -102,6 +102,22 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     private final V24AssistModel assistModel = new V24AssistModel();
     private final V24ShotCoordinateGenerator coordGenerator = new V24ShotCoordinateGenerator();
 
+    // V25D67-C27: match intensity multiplier (Opción B from the C27 task prompt).
+    // Set at the start of simulateWithRandom from the absolute difference
+    // between the home and away starting-XI average overalls. Range [0.40, 1.00].
+    // Used in attemptShot (see V24DetailedMatchEngine.java:637 area) to scale
+    // the per-shot goal probability. Parejos (diff ≤ 5%) get reduced goal
+    // probability to prevent goleadas (avg target ~1.5 total per match).
+    // Desiguales (diff ≥ 30%) keep full goal probability — the engine's
+    // random.nextDouble() against the threshold naturally produces lucky
+    // escapes (0-0, 1-0) for the weaker team without artificial topes.
+    //
+    // NOTE: defaults to 1.00 to preserve bit-a-bit behavior with V25D66 in
+    // tests that call attemptShot directly without going through simulate()
+    // (the unit-level isolation tests in V24DetailedMatchEngineRandomOverloadTest
+    // exercise attemptShot with hand-crafted contexts).
+    private double matchIntensity = 1.0;
+
     public V24DetailedMatchEngine() {
         this(new V24DisciplineModel());
     }
@@ -215,6 +231,20 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double homePossAdj = homePossBase * (1.0 + homeMaxPasser / 300.0);
         double awayPossAdj = awayPossBase * (1.0 + awayMaxPasser / 300.0);
         double homeShare = homePossAdj / (homePossAdj + awayPossAdj);
+
+        // V25D67-C27: compute match intensity multiplier (Opción B from the C27
+        // task prompt). Scales the per-shot goal-conversion probability so that
+        // parejos matches (teams within 5% overall) yield realistic ~1.5 total
+        // goals per match, while desiguales (≥30% diff) keep full variability.
+        // Stored on the engine instance so attemptShot() can read it without
+        // changing the method signature (the engine is per-V24LiveSession, so
+        // per-match instance state is safe — no concurrency hazard).
+        double homeAvgOverall = computeTeamAvgOverall(context.homeStartingPlayers());
+        double awayAvgOverall = computeTeamAvgOverall(context.awayStartingPlayers());
+        double overallDiffRatio = computeOverallDiffRatio(homeAvgOverall, awayAvgOverall);
+        this.matchIntensity = computeMatchIntensity(overallDiffRatio);
+        log.debug("[V25D67-C27] matchIntensity={} (homeOvr={}, awayOvr={}, diffRatio={})",
+            matchIntensity, homeAvgOverall, awayAvgOverall, overallDiffRatio);
 
         // Player selectors — share the same Random source in replay path,
         // independent Randoms in legacy path (both via simulateWithRandom's args).
@@ -634,7 +664,17 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         if (onTarget) {
             // Goal if xG > random threshold (higher xG = more likely to beat keeper)
-            isGoal = random.nextDouble() < (xg / 0.60); // scale: 0.60 xG = ~50% goal
+            // V25D67-C27: scale goal-conversion probability by matchIntensity, which
+            // is computed once per match from the absolute difference of the home
+            // and away starting-XI average overalls. For parejos matches (teams
+            // within 5% overall), intensity ≈ 0.40 → ~60% reduction in goal prob
+            // (the 4-0 smoke result from C22 becomes a realistic 1-1 / 1-0).
+            // For desiguales (≥30% diff), intensity = 1.00 → unchanged; the
+            // engine's existing random.nextDouble() vs threshold already produces
+            // the lucky escapes (0-0, 1-0) Iván called out in the C27 brief.
+            // Iván's brief explicitly forbids forcing goleadas or artificial
+            // topes — we never raise intensity above 1.0.
+            isGoal = random.nextDouble() < (xg * matchIntensity / 0.60); // V25D67-C27
             if (isGoal) {
                 possessor.addGoal();
                 // V24D20-SANDBOX-V2-MVP BUG #4: increment the addGoal counter
@@ -1071,6 +1111,92 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .mapToInt(p -> p.getSkillLevel(PlayerSkill.PASSER))
                 .max()
                 .orElse(0);
+    }
+
+    // ========== V25D67-C27 — match intensity (Opción B) helpers ==========
+
+    /**
+     * V25D67-C27 — average overall of a starting XI (in [0, 99]).
+     *
+     * <p>Used to compute the absolute difference between home and away team
+     * overalls, which drives the match intensity multiplier. Falls back to 50
+     * (mid-tier) if the list is empty or all players have null overalls (which
+     * keeps the diff ratio at 0.0 — i.e. treated as parejos by downstream code).
+     *
+     * <p>Reads from {@link SessionPlayer#calculateOverall()}, which delegates to
+     * the shared {@code OverallCalculator} (introduced in V25D40). For our test
+     * fixtures (all 6 stats = ovr, no height, no skills), overall ≈ ovr.
+     */
+    private static double computeTeamAvgOverall(List<SessionPlayer> players) {
+        if (players == null || players.isEmpty()) return 50.0;
+        int sum = 0;
+        int count = 0;
+        for (SessionPlayer p : players) {
+            if (p != null) {
+                Integer overall = p.calculateOverall();
+                if (overall != null) {
+                    sum += overall;
+                    count++;
+                }
+            }
+        }
+        return count > 0 ? (double) sum / count : 50.0;
+    }
+
+    /**
+     * V25D67-C27 — normalized absolute overall difference in [0.0, 1.0].
+     *
+     * <p>Computed as {@code |homeOvr - awayOvr| / max(homeOvr, awayOvr)}.
+     * Returns 0.0 if both teams are non-positive (defensive guard).
+     */
+    private static double computeOverallDiffRatio(double homeOvr, double awayOvr) {
+        double max = Math.max(homeOvr, awayOvr);
+        if (max <= 0.0) return 0.0;
+        return Math.abs(homeOvr - awayOvr) / max;
+    }
+
+    /**
+     * V25D67-C27 — match intensity multiplier (Opción B from the C27 task prompt).
+     *
+     * <p>Maps the absolute overall difference ratio (0..1) to a goal-probability
+     * multiplier in [0.40, 1.00]. The goal is to bring parejos matches
+     * (Real Madrid vs Barcelona class) down to avg ~1.5 total goals per match
+     * while preserving the engine's existing variability for desiguales matches
+     * (where the top team's expected goals are realistic, and the bottom team's
+     * lucky escapes — 0-0, 1-0 — already happen organically via the
+     * random.nextDouble() vs threshold mechanism).
+     *
+     * <ul>
+     *   <li>diffRatio ≤ 5% (5 pp absolute overall gap, e.g. 85 vs 80) → 0.40:
+     *       ~60% reduction in per-shot goal probability. Brings parejos
+     *       matches from current avg ~4.4 total goals down toward ~1.5.</li>
+     *   <li>diffRatio ≥ 30% (e.g. 90 vs 60) → 1.00: full intensity, unchanged
+     *       behavior. The top team's expected goals are realistic, and the
+     *       weaker team's lucky escapes emerge naturally from the random draws.</li>
+     *   <li>5% < diffRatio < 30%: linear interpolation between 0.40 and 1.00.</li>
+     * </ul>
+     *
+     * <p><b>Important constraints from Iván's brief:</b>
+     * <ul>
+     *   <li>We never raise intensity above 1.0 — no forcing goleadas.</li>
+     *   <li>We never add artificial topes — the engine's existing randomness
+     *       is what produces the variance Iván wants preserved.</li>
+     *   <li>Only REDUCES goals. Existing V24D6U4-RE calibration (λ ≈ 1.25 per
+     *       team for 4-4-2 BALANCED OVR=75) becomes "≤ 0.5 per team" for
+     *       parejos — a deliberate retreat from the smoke-C22 observation
+     *       where Real Madrid vs Barcelona ended 4-0.</li>
+     * </ul>
+     */
+    private static double computeMatchIntensity(double diffRatio) {
+        final double PAREJOS_INTENSITY = 0.40;
+        final double DESIGUALES_INTENSITY = 1.00;
+        final double DIFF_PAREJOS_THRESHOLD = 0.05;
+        final double DIFF_DESIGUALES_THRESHOLD = 0.30;
+        if (diffRatio <= DIFF_PAREJOS_THRESHOLD) return PAREJOS_INTENSITY;
+        if (diffRatio >= DIFF_DESIGUALES_THRESHOLD) return DESIGUALES_INTENSITY;
+        double t = (diffRatio - DIFF_PAREJOS_THRESHOLD)
+                / (DIFF_DESIGUALES_THRESHOLD - DIFF_PAREJOS_THRESHOLD);
+        return PAREJOS_INTENSITY + (DESIGUALES_INTENSITY - PAREJOS_INTENSITY) * t;
     }
 
     private double styleToModifier(TeamStyle style) {
