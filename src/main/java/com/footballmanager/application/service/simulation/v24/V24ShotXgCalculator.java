@@ -361,6 +361,23 @@ public class V24ShotXgCalculator {
         // (5-3-2 received MORE goals than 4-3-3). Confirmed by smoke: avg_AG for
         // 5-3-2 was 4.40 (highest) vs 4-3-3 at 2.97 (lowest) — wrong direction.
 
+        // V25D70-C31: cap the formation-modifier ratio at 2.0 to prevent blowout
+        // xG inflation when a high-attack team (e.g. Real Madrid, OVR 84) meets a
+        // low-defense opponent (e.g. Deportivo Verde, OVR 60). Without the cap,
+        // offFormMod/defFormMod reaches 2.98x, pushing most shots to MAX_XG=0.60
+        // and producing 50%+ conversion (runtime smoke showed 7.14 goals/match avg).
+        // With the cap, the ratio is bounded at 2.0x — strong teams still dominate
+        // but match outcomes stay in [3.0, 4.5] for intermedios per spec.
+        // The cap is symmetric (Math.max vs Math.min): if ratio is < 0.5 (defense
+        // dominates offense by 2x), also clamped to 0.5 to keep defensive ceiling
+        // meaningful. This protects against degenerate edges.
+        double formationModRatio = offFormMod / defFormMod;
+        formationModRatio = Math.max(0.5, Math.min(2.0, formationModRatio));
+        // Reapply clamped ratio back to offFormMod (defFormMod stays untouched
+        // so the documentation and downstream uses of defFormMod as protection
+        // factor remain semantically correct).
+        offFormMod = formationModRatio * defFormMod;
+
         // V25D33-F1: HEADER multiplier gated on eventSubType. Only applies on
         // CORNER or CROSS shots — open-play shots are unchanged. Missing/null
         // HEADER skill is treated as 0 (multiplier stays 1.0).
@@ -470,12 +487,18 @@ public class V24ShotXgCalculator {
      * stats should sum" — a 4-3-3 with poor attackers is just a vulnerable 4-3-3,
      * not a free +40% xG.
      *
-     * <p>Formula: {@code mod = baseFormationMod × (1 + (teamAttack - 70) × 0.025)}
+     * <p>Formula: {@code mod = baseFormationMod × (1 + (teamAttack - 70) × 0.012)}
      * <ul>
      *   <li>teamAttack = 70 (median) → multiplier = 1.0 (no amplification)
-     *   <li>teamAttack = 85 (elite) → multiplier = 1.375
-     *   <li>teamAttack = 55 (weak) → multiplier = 0.625
+     *   <li>teamAttack = 85 (elite) → multiplier = 1.18
+     *   <li>teamAttack = 55 (weak) → multiplier = 0.82
      * </ul>
+     *
+     * <p><b>V25D70-C31 (Sprint C31 Phase 2 Option 3):</b> statsAmp coefficient
+     * reduced from 0.025 → 0.012 to prevent extreme xG inflation in asymmetric
+     * matchups (e.g. Real Madrid OVR=84 vs Deportivo Verde OVR=60 → 2.98x xG
+     * boost). The reduced coefficient still gives elite teams a meaningful
+     * advantage (1.18x for OVR=85) but caps the asymptotic blowout potential.
      *
      * <p>Per-formation base values (carried from V25D26.1):
      * <ul>
@@ -499,9 +522,8 @@ public class V24ShotXgCalculator {
         else if ("5-3-2".equals(canonical)) baseMod = 0.55;
         else baseMod = 1.00; // 4-4-2 baseline
 
-        // V25D27: amplify baseMod by teamAttack deviation from median (70).
-        // teamAttack=70 → 1.0, teamAttack=85 → 1.375, teamAttack=55 → 0.625.
-        double statsAmp = 1.0 + (teamAttack - 70.0) * 0.025;
+        // V25D70-C31 Option 3: coefficient reduced 0.025 → 0.012.
+        double statsAmp = 1.0 + (teamAttack - 70.0) * 0.012;
         double mod = baseMod * statsAmp;
         return Math.max(0.1, mod);
     }
@@ -514,12 +536,15 @@ public class V24ShotXgCalculator {
      * by 1.25 (i.e. 20% less xG conceded); a 4-3-3 with mod=0.85 means opponent's
      * xG is divided by 0.85 (i.e. 18% MORE xG conceded — wingers don't track back).
      *
-     * <p>Formula: {@code mod = baseFormationDef × (1 + (teamDefense - 70) × 0.025)}
+     * <p>Formula: {@code mod = baseFormationDef × (1 + (teamDefense - 70) × 0.012)}
      * <ul>
      *   <li>teamDefense = 70 (median) → multiplier = 1.0 (no change)
-     *   <li>teamDefense = 85 (elite) → multiplier = 1.375 (more protection)
-     *   <li>teamDefense = 55 (weak) → multiplier = 0.625 (less protection)
+     *   <li>teamDefense = 85 (elite) → multiplier = 1.18 (more protection)
+     *   <li>teamDefense = 55 (weak) → multiplier = 0.82 (less protection)
      * </ul>
+     *
+     * <p><b>V25D70-C31 (Sprint C31 Phase 2 Option 3):</b> statsAmp coefficient
+     * reduced from 0.025 → 0.012 (matches formationOffensiveModifier change).
      *
      * <p>Per-formation base values (v2, corrected interpretation):
      * <ul>
@@ -543,7 +568,8 @@ public class V24ShotXgCalculator {
         else if ("5-3-2".equals(canonical)) baseMod = 1.25;
         else baseMod = 1.00; // 4-4-2 baseline
 
-        double statsAmp = 1.0 + (opponentDefense - 70.0) * 0.025;
+        // V25D70-C31 Option 3: coefficient reduced 0.025 → 0.012.
+        double statsAmp = 1.0 + (opponentDefense - 70.0) * 0.012;
         double mod = baseMod * statsAmp;
         return Math.max(0.1, mod);
     }
