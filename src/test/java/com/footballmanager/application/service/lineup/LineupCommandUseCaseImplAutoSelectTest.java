@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.lineup;
 
+import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -553,5 +554,190 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots);
         assertEquals(11, teamSlots.size());
+    }
+
+    // ========== V25D59-C19 P0: Auto-Seleccionar must complete 11 slots or throw ==========
+
+    /**
+     * V25D59-C19 P0 (Test 1): squad completo (1 GK + 4 DEF + 4 MID + 2 ATT, all
+     * 11 healthy) → autoSelect produce exactamente 11 slots. Pin del happy path
+     * para el contrato "auto-select siempre produce 11 (o tira)".
+     *
+     * <p>Cubre la propiedad principal del fix: aunque el algoritmo pickee
+     * off-position por accidente (no debería pasar con un squad así), debe
+     * garantizar 11 antes de persistir.
+     */
+    @Test
+    @DisplayName("V25D59-C19 P0: autoSelect 4-4-2 con squad completo → 11 slots, sin warnings")
+    void autoSelect_4_4_2_fullSquad_returnsElevenSlots() {
+        List<SessionPlayer> squad442Full = List.of(
+            makePlayer("gk-c19", "GK C19",  "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-c19","CB A C19","CB", 78, 80, false, false, 0),
+            makePlayer("cb2-c19","CB B C19","CB", 77, 80, false, false, 0),
+            makePlayer("lb-c19", "LB C19",  "LB", 76, 80, false, false, 0),
+            makePlayer("rb-c19", "RB C19",  "RB", 75, 80, false, false, 0),
+            makePlayer("cm1-c19","CM A C19","CM", 74, 80, false, false, 0),
+            makePlayer("cm2-c19","CM B C19","CM", 73, 80, false, false, 0),
+            makePlayer("lm-c19", "LM C19",  "LM", 72, 80, false, false, 0),
+            makePlayer("rm-c19", "RM C19",  "RM", 71, 80, false, false, 0),
+            makePlayer("st1-c19","ST A C19","ST", 82, 80, false, false, 0),
+            makePlayer("st2-c19","ST B C19","ST", 80, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squad442Full);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size(),
+                    "V25D59-C19 P0: auto-select 4-4-2 con squad completo → 11 slots");
+                // Sin warnings: GK + 4 DEF + 4 MID + 2 ATT todos perfect-match.
+                assertTrue(dto.warnings() == null || dto.warnings().isEmpty(),
+                    "V25D59-C19 P0: full squad 4-4-2 no debe emitir off-position warnings");
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor.capture());
+        CareerSave saved = captor.getValue();
+        // Validar persistencia: 11 IDs en teamStarting11 + 11 entries en subdivision map.
+        assertEquals(11, saved.getTeamStarting11().get(TEAM_ID).size());
+        Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertEquals(11, teamSlots.size(),
+            "V25D59-C19 P0: subdivision map debe tener 11 entries para 4-4-2 full squad");
+    }
+
+    /**
+     * V25D59-C19 P0 (Test 2): squad con exactamente 4+ DEF-capable → autoSelect
+     * llena la fila DEF con 4 defensores naturales (sin off-position).
+     *
+     * <p>Pin del comportamiento "DEF row llenada primero, preferentemente con
+     * jugadores en posición natural". Si el algoritmo degradara la DEF row a
+     * off-position cuando hay 4 CB/LB/RB disponibles, este test falla.
+     */
+    @Test
+    @DisplayName("V25D59-C19 P0: autoSelect 4-4-2 con 4+ DEF-capable → DEF row llena natural (no off-position)")
+    void autoSelect_4_4_2_fillsDefRow_natural() {
+        // 4+ DEF-capable: 4 CB + 1 LB (extra) + 4 MID + 2 ATT = 11 healthy.
+        List<SessionPlayer> squad442DefRich = List.of(
+            makePlayer("gk-c19b", "GK",  "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-c19b","CB A","CB", 80, 80, false, false, 0),
+            makePlayer("cb2-c19b","CB B","CB", 79, 80, false, false, 0),
+            makePlayer("cb3-c19b","CB C","CB", 78, 80, false, false, 0),
+            makePlayer("lb-c19b", "LB",  "LB", 77, 80, false, false, 0),
+            makePlayer("cm1-c19b","CM A","CM", 76, 80, false, false, 0),
+            makePlayer("cm2-c19b","CM B","CM", 75, 80, false, false, 0),
+            makePlayer("lm-c19b", "LM",  "LM", 74, 80, false, false, 0),
+            makePlayer("rm-c19b", "RM",  "RM", 73, 80, false, false, 0),
+            makePlayer("st1-c19b","ST A","ST", 82, 80, false, false, 0),
+            makePlayer("st2-c19b","ST B","ST", 80, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squad442DefRich);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+                // Sin warnings: todos los DEF slots cubiertos con DEF-capable.
+                assertTrue(dto.warnings() == null || dto.warnings().isEmpty(),
+                    "V25D59-C19 P0: 4+ DEF-capable no debe disparar LINEUP_OFF_POSITION_FILL(DEF)");
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * V25D59-C19 P0 (Test 3): squad SIN jugadores DEF-capable (solo GK + MID + ATT)
+     * → autoSelect igual produce 11 slots, pero la fila DEF se llena con jugadores
+     * MID off-position + warning {@code LINEUP_OFF_POSITION_FILL(DEF, 4)}.
+     *
+     * <p>Pin del fallback off-position: el bug del C18b era que la fila DEF
+     * quedaba vacía. Este test garantiza que el algoritmo degrada a off-position
+     * con penalty en vez de fallar silencioso.
+     */
+    @Test
+    @DisplayName("V25D59-C19 P0: autoSelect 4-4-2 sin DEF-capable → off-position fill + warning")
+    void autoSelect_4_4_2_offPositionWhenNoDef() {
+        // Squad sin DEF-capable: 1 GK + 0 DEF + 8 MID + 2 ATT = 11 healthy.
+        // No defenders, solo centrocampistas y delanteros.
+        List<SessionPlayer> squad442NoDef = List.of(
+            makePlayer("gk-c19c",  "GK",     "GK", 80, 80, false, false, 0),
+            makePlayer("cm1-c19c", "CM A",   "CM", 85, 80, false, false, 0),
+            makePlayer("cm2-c19c", "CM B",   "CM", 84, 80, false, false, 0),
+            makePlayer("cm3-c19c", "CM C",   "CM", 83, 80, false, false, 0),
+            makePlayer("cm4-c19c", "CM D",   "CM", 82, 80, false, false, 0),
+            makePlayer("cm5-c19c", "CM E",   "CM", 81, 80, false, false, 0),
+            makePlayer("cm6-c19c", "CM F",   "CM", 80, 80, false, false, 0),
+            makePlayer("cm7-c19c", "CM G",   "CM", 79, 80, false, false, 0),
+            makePlayer("cm8-c19c", "CM H",   "CM", 78, 80, false, false, 0),
+            makePlayer("st1-c19c", "ST A",   "ST", 82, 80, false, false, 0),
+            makePlayer("st2-c19c", "ST B",   "ST", 80, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squad442NoDef);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size(),
+                    "V25D59-C19 P0: even sin DEF-capable, auto-select debe producir 11");
+                assertNotNull(dto.warnings());
+                assertTrue(dto.warnings().stream()
+                    .anyMatch(w -> "LINEUP_OFF_POSITION_FILL".equals(w.code())
+                        && w.message() != null && w.message().contains("DEF")),
+                    "V25D59-C19 P0: debe emitir LINEUP_OFF_POSITION_FILL para DEF cuando no hay DEF-capable, got: "
+                        + dto.warnings());
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * V25D59-C19 P0 (Test 4): squad con menos de 11 jugadores healthy
+     * → autoSelect tira NotEnoughPlayersException (no retorna success silencioso).
+     *
+     * <p>Pin del throw path para el squad-short case. Antes de este fix, auto-select
+     * retornaba un lineup de 7/8/10 jugadores con LINEUP_SHORT_HANDED warning — el
+     * bug del C18b. Ahora: excepción controlada, controller mapea a 422.
+     */
+    @Test
+    @DisplayName("V25D59-C19 P0: autoSelect con squad < 11 available → NotEnoughPlayersException")
+    void autoSelect_shortSquad_returnsError() {
+        // Squad of 10: 1 GK + 4 DEF + 4 MID + 1 ATT = 10 healthy. Falta 1 ATT.
+        List<SessionPlayer> squadShort = List.of(
+            makePlayer("gk-c19d",  "GK",   "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-c19d", "CB A", "CB", 78, 80, false, false, 0),
+            makePlayer("cb2-c19d", "CB B", "CB", 77, 80, false, false, 0),
+            makePlayer("lb-c19d",  "LB",   "LB", 76, 80, false, false, 0),
+            makePlayer("rb-c19d",  "RB",   "RB", 75, 80, false, false, 0),
+            makePlayer("cm1-c19d", "CM A", "CM", 74, 80, false, false, 0),
+            makePlayer("cm2-c19d", "CM B", "CM", 73, 80, false, false, 0),
+            makePlayer("lm-c19d",  "LM",   "LM", 72, 80, false, false, 0),
+            makePlayer("rm-c19d",  "RM",   "RM", 71, 80, false, false, 0),
+            makePlayer("st-c19d",  "ST",   "ST", 82, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squadShort);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .expectErrorSatisfies(err -> {
+                assertTrue(err instanceof NotEnoughPlayersException,
+                    "V25D59-C19 P0: expected NotEnoughPlayersException for short squad, got "
+                        + err.getClass().getSimpleName());
+                assertTrue(err.getMessage().contains("11"),
+                    "V25D59-C19 P0: message should mention required 11, got: " + err.getMessage());
+                assertTrue(err.getMessage().contains("10"),
+                    "V25D59-C19 P0: message should mention available 10, got: " + err.getMessage());
+            })
+            .verify();
+
+        verify(careerRepository, never()).save(any());
     }
 }
