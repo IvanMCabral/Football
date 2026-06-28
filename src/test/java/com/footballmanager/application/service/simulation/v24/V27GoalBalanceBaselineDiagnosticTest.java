@@ -497,16 +497,63 @@ class V27GoalBalanceBaselineDiagnosticTest {
     }
 
     private List<SessionPlayer> makePlayers(String prefix, int count, int ovr) {
+        // V25D69-C29 FIX: use per-position attributes (NOT uniform OVR) so the
+        // engine's key-attacker selection (strict >) picks the ATT (with attack
+        // 90) instead of the first player (GK with uniform attack=ovr).
+        // Without this fix, the GK is the "key attacker" and chanceProb never
+        // gets the qualityMod boost from real attackers' attack=90.
+        // Scale: each position's attribute = base * (ovr / 85). For ovr=85:
+        // base unchanged. For ovr=75: 0.882 * base. For ovr=65: 0.765 * base.
+        // Reference: see V29dPerPositionAttributesDiagnosticTest for the
+        // full validation of this fix (gap runtime went from 5.6x to 2.06x
+        // for intermedios with skills + ATTACKING style).
         List<SessionPlayer> list = new ArrayList<>();
+        double scale = ovr / 85.0;
         for (int i = 0; i < count; i++) {
             String id = prefix + "_p" + i;
+            String position = positionForIndex(i);
+            int[] baseAttrs = attributesForPosition(position);
+            int[] attrs = new int[]{
+                    Math.max(50, (int) Math.round(baseAttrs[0] * scale)),
+                    Math.max(50, (int) Math.round(baseAttrs[1] * scale)),
+                    Math.max(50, (int) Math.round(baseAttrs[2] * scale)),
+                    Math.max(50, (int) Math.round(baseAttrs[3] * scale)),
+                    Math.max(50, (int) Math.round(baseAttrs[4] * scale)),
+                    Math.max(50, (int) Math.round(baseAttrs[5] * scale))
+            };
             SessionPlayer p = SessionPlayer.custom(
-                    id, 25, "MID",
-                    ovr, ovr, ovr, ovr, ovr, ovr,
-                    BigDecimal.valueOf(ovr * 1000));
+                    id, 25, position,
+                    attrs[0], attrs[1], attrs[2], attrs[3], attrs[4], attrs[5],
+                    BigDecimal.valueOf(attrs[0] * 1000));
             list.add(p);
         }
         return list;
+    }
+
+    /**
+     * V25D69-C29 FIX helper: per-position attribute profile. Mirrors V29d's
+     * helper so V27 baseline uses the same realistic attribute distribution.
+     * Order: attack, defense, technique, speed, stamina, mentality.
+     */
+    private int[] attributesForPosition(String position) {
+        return switch (position) {
+            case "GK" -> new int[]{65, 80, 65, 65, 70, 75};
+            case "DEF" -> new int[]{70, 80, 72, 75, 80, 78};
+            case "MID" -> new int[]{80, 72, 82, 78, 85, 82};
+            case "ATT" -> new int[]{90, 55, 85, 90, 80, 82};
+            default -> new int[]{75, 75, 75, 75, 75, 75};
+        };
+    }
+
+    /**
+     * V25D69-C29 FIX helper: lineup index → position. Layout matches 4-3-3:
+     * index 0 = GK, indices 1-4 = DEF, indices 5-8 = MID, indices 9-10 = ATT.
+     */
+    private String positionForIndex(int index) {
+        if (index == 0) return "GK";
+        if (index >= 1 && index <= 4) return "DEF";
+        if (index >= 5 && index <= 8) return "MID";
+        return "ATT";
     }
 
     private SessionTeam makeTeam(String id, String name) {
