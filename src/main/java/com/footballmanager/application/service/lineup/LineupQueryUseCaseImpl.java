@@ -4,12 +4,14 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.ChemistryBreakdownD
 import com.footballmanager.adapters.in.web.career.lineup.dto.FormationEffectivenessDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
+import com.footballmanager.domain.model.valueobject.FormationInferer;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +64,10 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                     FormationEffectivenessDTO.empty());
         }
 
+        // V25D65-C25 P0: el lineup vacío no genera warnings (no hay jugadores para
+        // evaluar short-handed / no-GK / off-position). Matchea el comportamiento
+        // pre-C25 donde warnings=List.of() en este path.
+
         List<SessionPlayer> lineup = lineupIds.stream()
             .map(id -> career.getSessionPlayers().get(id))
             .filter(Objects::nonNull)
@@ -113,10 +119,85 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         FormationEffectiveness formationEffectiveness =
                 FormationEffectiveness.from(slots, naturalByPlayer, persistedFormationCode);
 
-        return new LineupDTO(formationCode, playerDTOs, true, List.of(), slots,
+        // V25D65-C25 P0: compute warnings from persisted state (slots + lineup).
+        // Pre-C25 bug: warnings=List.of() here caused the banner to disappear
+        // on reload (only POST /manual-select and /auto-select returned warnings).
+        // Now warnings persist with the lineup (recomputed each /current call).
+        List<LineupWarningDTO> warnings = computePersistedWarnings(
+                lineup, slots, formationEffectiveness);
+
+        return new LineupDTO(formationCode, playerDTOs, true, warnings, slots,
                 chemistryDetail.score(),
                 ChemistryBreakdownDTO.from(chemistryDetail),
                 FormationEffectivenessDTO.from(formationEffectiveness));
+    }
+
+    /**
+     * V25D65-C25 P0: compute warnings for a persisted lineup from its slots
+     * + players + effectiveness data. Mirrors what the command path
+     * ({@code LineupCommandUseCaseImpl}) computes during armar, but for the
+     * read path ({@code GET /career/lineup/current}) which previously
+     * returned {@code warnings=List.of()}.
+     *
+     * <p>Three warning types computed here:
+     * <ul>
+     *   <li>{@code LINEUP_NO_GOALKEEPER} — via {@link LineupHelper#detectShortHandedWarnings}
+     *       when no player in the lineup has natural position GK.</li>
+     *   <li>{@code LINEUP_SHORT_HANDED} — when lineup.size() ∈ [7, 11) (manual-select
+     *       short-handed mode). Adds even if the lineup passed the front-end
+     *       validation; persistence shows the actual state.</li>
+     *   <li>{@code LINEUP_OFF_POSITION_FILL} — counts subdivisionIds where
+     *       {@code formationEffectiveness.perPlayerEffectiveness.get(subd) < 1.0}
+     *       per category (GK/DEF/MID/ATT) via {@link FormationInferer#categoryFor}.
+     *       Emits one warning per non-zero category.</li>
+     * </ul>
+     */
+    private List<LineupWarningDTO> computePersistedWarnings(
+            List<SessionPlayer> lineup,
+            List<LineupSlotDTO> slots,
+            FormationEffectiveness formationEffectiveness) {
+
+        // Start with the helper's no-GK detection (covers lineup-null edge case).
+        List<LineupWarningDTO> warnings = new ArrayList<>(
+                lineupHelper.detectShortHandedWarnings(lineup));
+
+        // Short-handed (manual-select mode allows 7-10 players).
+        if (lineup.size() >= LineupRules.MIN_AVAILABLE_PLAYERS
+                && lineup.size() < LineupRules.TARGET_LINEUP_PLAYERS) {
+            warnings.add(LineupWarningDTO.shortHanded(lineup.size()));
+        }
+
+        // Off-position fill (only if effectiveness data is available — empty
+        // slots map → no off-position data → no warning).
+        if (slots != null && !slots.isEmpty()
+                && formationEffectiveness != null
+                && formationEffectiveness.perPlayerEffectiveness() != null
+                && !formationEffectiveness.perPlayerEffectiveness().isEmpty()) {
+
+            Map<String, Double> perPlayer = formationEffectiveness.perPlayerEffectiveness();
+            // category (GK/DEF/MID/ATT) → count of off-position slots in that row.
+            Map<String, Integer> offPositionCountByGroup = new HashMap<>();
+            for (LineupSlotDTO slot : slots) {
+                if (slot == null || slot.subdivisionId() == null) continue;
+                Double eff = perPlayer.get(slot.subdivisionId());
+                if (eff != null && eff < 1.0) {
+                    String group = FormationInferer.categoryFor(slot.subdivisionId());
+                    if (group != null) {
+                        offPositionCountByGroup.merge(group, 1, Integer::sum);
+                    }
+                }
+            }
+            // Emit one warning per category that has off-position slots.
+            // Iteration order: GK first, then DEF, MID, ATT (stable for tests).
+            for (String group : List.of("GK", "DEF", "MID", "ATT")) {
+                Integer count = offPositionCountByGroup.get(group);
+                if (count != null && count > 0) {
+                    warnings.add(LineupWarningDTO.offPositionFill(group, count));
+                }
+            }
+        }
+
+        return warnings;
     }
 
     private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {
