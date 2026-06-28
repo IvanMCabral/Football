@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -26,6 +27,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
@@ -212,6 +214,117 @@ class LineupQueryUseCaseImplTest {
                 assertEquals("4-4-2", dto.formation(),
                     "MVP1-lineup-cancha-1.6 F3: formación persistida (4-4-2) gana sobre inferFormation (que daría 4-3-3)");
                 assertEquals(11, dto.players().size());
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * V25D65-C25 P0 (Test 3): si el lineup persistido tiene menos de 11 players
+     * (manual-select short-handed mode, 7-10 players), getCurrentLineup debe
+     * retornar un warning LINEUP_SHORT_HANDED en el response.
+     *
+     * <p>Pre-C25: warnings era List.of() en este path, por lo que el banner
+     * "Lineup short-handed" desaparecía al recargar /squad.
+     */
+    @Test
+    @DisplayName("V25D65-C25 P0: getCurrentLineup retorna LINEUP_SHORT_HANDED si lineup tiene < 11 players")
+    void getCurrentLineup_returnsShortHandedWarning_whenLineupLessThan11() {
+        // Squad 4-4-2 reducido a 8 players (short-handed manual mode)
+        List<SessionPlayer> squadSh = new ArrayList<>(List.of(
+            makeHealthy("gk-sh", "GK ShortHand", "GK"),
+            makeHealthy("def1-sh", "Def A SH", "CB"),
+            makeHealthy("def2-sh", "Def B SH", "CB"),
+            makeHealthy("def3-sh", "Def C SH", "LB"),
+            makeHealthy("mid1-sh", "Mid A SH", "CM"),
+            makeHealthy("mid2-sh", "Mid B SH", "CM"),
+            makeHealthy("mid3-sh", "Mid C SH", "LM"),
+            makeHealthy("att1-sh", "Att A SH", "ST")
+        ));
+
+        List<String> lineupSh = List.of("gk-sh", "def1-sh", "def2-sh", "def3-sh",
+            "mid1-sh", "mid2-sh", "mid3-sh", "att1-sh");
+
+        CareerSave career = makeCareerWithLineup(squadSh, lineupSh);
+        Map<String, String> formationMap = new HashMap<>();
+        formationMap.put(TEAM_ID, "4-4-2");
+        career.setTeamStarting11Formation(formationMap);
+
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+
+        StepVerifier.create(useCase.getCurrentLineup(UUID.fromString(USER_ID)))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertNotNull(dto.warnings(), "V25D65-C25: warnings no debe ser null en el response");
+                assertEquals(8, dto.players().size(), "lineup persistido tiene 8 players");
+                // Verificar que LINEUP_SHORT_HANDED está presente
+                boolean hasShortHanded = dto.warnings().stream()
+                    .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()));
+                assertTrue(hasShortHanded,
+                    "V25D65-C25: lineup con 8 players debe emitir LINEUP_SHORT_HANDED warning, "
+                        + "warnings=" + dto.warnings());
+                // Verificar available=8 en el warning
+                LineupWarningDTO shortHanded = dto.warnings().stream()
+                    .filter(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()))
+                    .findFirst().orElseThrow();
+                assertEquals(8, shortHanded.available(),
+                    "V25D65-C25: LINEUP_SHORT_HANDED.available debe reflejar el count del lineup");
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * V25D65-C25 P0 (Test 4): si el lineup persistido tiene un GK en la lineup
+     * pero la squad NO tiene GK natural (caso edge), getCurrentLineup debe
+     * omitir LINEUP_NO_GOALKEEPER cuando sí hay un player con position="GK"
+     * en la lineup.
+     *
+     * <p>Este test verifica que el helper detectShortHandedWarnings funciona
+     * correctamente cuando la lineup incluye un GK. (Es el happy path; el caso
+     * de NO GK está cubierto en LineupCommandUseCaseImplTest.)
+     */
+    @Test
+    @DisplayName("V25D65-C25 P0: getCurrentLineup no emite LINEUP_NO_GOALKEEPER si lineup tiene GK")
+    void getCurrentLineup_omitsNoGoalkeeper_whenLineupHasGK() {
+        // Squad completa 4-4-2 (11 players, full strength)
+        List<SessionPlayer> squadFull = List.of(
+            makeHealthy("gk-full", "GK Full", "GK"),
+            makeHealthy("def1-full", "Def A Full", "CB"),
+            makeHealthy("def2-full", "Def B Full", "CB"),
+            makeHealthy("def3-full", "Def C Full", "LB"),
+            makeHealthy("def4-full", "Def D Full", "RB"),
+            makeHealthy("mid1-full", "Mid A Full", "CM"),
+            makeHealthy("mid2-full", "Mid B Full", "CM"),
+            makeHealthy("mid3-full", "Mid C Full", "LM"),
+            makeHealthy("mid4-full", "Mid D Full", "RM"),
+            makeHealthy("att1-full", "Att A Full", "ST"),
+            makeHealthy("att2-full", "Att B Full", "ST")
+        );
+
+        List<String> lineupFull = List.of("gk-full", "def1-full", "def2-full", "def3-full", "def4-full",
+            "mid1-full", "mid2-full", "mid3-full", "mid4-full", "att1-full", "att2-full");
+
+        CareerSave career = makeCareerWithLineup(squadFull, lineupFull);
+        Map<String, String> formationMap = new HashMap<>();
+        formationMap.put(TEAM_ID, "4-4-2");
+        career.setTeamStarting11Formation(formationMap);
+
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+
+        StepVerifier.create(useCase.getCurrentLineup(UUID.fromString(USER_ID)))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertNotNull(dto.warnings());
+                // No debe haber LINEUP_NO_GOALKEEPER ni LINEUP_SHORT_HANDED
+                boolean hasNoGK = dto.warnings().stream()
+                    .anyMatch(w -> LineupWarningDTO.CODE_NO_GOALKEEPER.equals(w.code()));
+                boolean hasShortHanded = dto.warnings().stream()
+                    .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()));
+                assertTrue(!hasNoGK,
+                    "V25D65-C25: lineup con GK no debe emitir LINEUP_NO_GOALKEEPER, "
+                        + "warnings=" + dto.warnings());
+                assertTrue(!hasShortHanded,
+                    "V25D65-C25: lineup full-strength (11 players) no debe emitir LINEUP_SHORT_HANDED, "
+                        + "warnings=" + dto.warnings());
             })
             .verifyComplete();
     }
