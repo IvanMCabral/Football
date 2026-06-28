@@ -124,19 +124,31 @@ class V24LiveSessionTest {
         V24DetailedMatchResult subResult = subSession.finalResult();
 
         // F2 ASSERTION (inverse of the old D1=B contract): at least one of
-        // homeGoals/awayGoals DIFFERS from the baseline. The F2 fixture
+        // homeGoals/awayGoals DIFFERS from the baseline OR the
+        // shot/xG cumulative totals differ (V25D67-C27 — the engine now
+        // applies a matchIntensity multiplier to parejos scenarios, which
+        // suppresses goals so both baseline and treatment runs may end 0-0
+        // even when the swap affected the draw consumption). The F2 fixture
         // gives bench players higher attributes (see makePlayers) so the
-        // swap measurably affects the engine's draw consumption and goal
-        // output. The test asserts the minimum invariant: the wire
-        // reached the engine and altered the result.
+        // swap measurably affects the engine's draw consumption. The test
+        // asserts the minimum invariant: the wire reached the engine and
+        // altered some observable outcome.
         boolean homeGoalsDiffer = baselineResult.homeGoals() != subResult.homeGoals();
         boolean awayGoalsDiffer = baselineResult.awayGoals() != subResult.awayGoals();
-        assertTrue(homeGoalsDiffer || awayGoalsDiffer,
+        boolean shotsDiffer = baselineResult.homeShots() != subResult.homeShots()
+                || baselineResult.awayShots() != subResult.awayShots();
+        boolean xgDiffer = Math.abs(baselineResult.homeXg() - subResult.homeXg()) >= 0.001
+                || Math.abs(baselineResult.awayXg() - subResult.awayXg()) >= 0.001;
+        assertTrue(homeGoalsDiffer || awayGoalsDiffer || shotsDiffer || xgDiffer,
             "F2 wire violated: substitution did not alter the match result. "
-            + "baseline(home=" + baselineResult.homeGoals()
-            + ", away=" + baselineResult.awayGoals() + ") "
-            + "== sub(home=" + subResult.homeGoals()
-            + ", away=" + subResult.awayGoals() + "). "
+            + "baseline(home=" + baselineResult.homeGoals() + "/" + baselineResult.homeShots()
+                + "/" + baselineResult.homeXg()
+            + ", away=" + baselineResult.awayGoals() + "/" + baselineResult.awayShots()
+                + "/" + baselineResult.awayXg() + ") "
+            + "== sub(home=" + subResult.homeGoals() + "/" + subResult.homeShots()
+                + "/" + subResult.homeXg()
+            + ", away=" + subResult.awayGoals() + "/" + subResult.awayShots()
+                + "/" + subResult.awayXg() + "). "
             + "Either the mutateContext+replayFromMinute wire is not reaching the engine, "
             + "or the bench players in the test fixture have identical attributes to "
             + "the starters (the swap is then a no-op for the engine).");
@@ -401,17 +413,29 @@ class V24LiveSessionTest {
         for (int i = 0; i < 90; i++) subSession.tick();
         V24DetailedMatchResult subResult = subSession.finalResult();
 
-        // ASSERT: at least one of homeGoals/awayGoals must differ. Comparing
-        // both is the strongest signal — even one goal difference proves the
-        // substitution influenced goal scoring.
+        // ASSERT: at least one of homeGoals/awayGoals must differ OR shots/xG
+        // cumulatives must differ (V25D67-C27 — parejos matches often end
+        // 0-0 post-C27 due to the matchIntensity multiplier, so a pure
+        // goal-difference assertion is no longer reliable for the OVR=70
+        // fixture). Comparing shots/xG is still a strong signal that the
+        // swap influenced the engine — bench players have higher attack
+        // attributes so they generate measurably different shot volume.
         boolean homeGoalsDiffer = baselineResult.homeGoals() != subResult.homeGoals();
         boolean awayGoalsDiffer = baselineResult.awayGoals() != subResult.awayGoals();
-        assertTrue(homeGoalsDiffer || awayGoalsDiffer,
+        boolean shotsDiffer = baselineResult.homeShots() != subResult.homeShots()
+                || baselineResult.awayShots() != subResult.awayShots();
+        boolean xgDiffer = Math.abs(baselineResult.homeXg() - subResult.homeXg()) >= 0.001
+                || Math.abs(baselineResult.awayXg() - subResult.awayXg()) >= 0.001;
+        assertTrue(homeGoalsDiffer || awayGoalsDiffer || shotsDiffer || xgDiffer,
             "F2 RED violated: manual substitution did not alter the match result. "
             + "baseline(homeGoals=" + baselineResult.homeGoals()
-            + ", awayGoals=" + baselineResult.awayGoals() + ") "
+                + "/" + baselineResult.homeShots() + "/" + baselineResult.homeXg()
+            + ", awayGoals=" + baselineResult.awayGoals()
+                + "/" + baselineResult.awayShots() + "/" + baselineResult.awayXg() + ") "
             + "== substitution(homeGoals=" + subResult.homeGoals()
-            + ", awayGoals=" + subResult.awayGoals() + "). "
+                + "/" + subResult.homeShots() + "/" + subResult.homeXg()
+            + ", awayGoals=" + subResult.awayGoals()
+                + "/" + subResult.awayShots() + "/" + subResult.awayXg() + "). "
             + "This means the engine still pre-simulates without considering manager actions.");
     }
 
