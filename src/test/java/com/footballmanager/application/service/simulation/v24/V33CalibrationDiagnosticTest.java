@@ -84,7 +84,7 @@ class V33CalibrationDiagnosticTest {
         double desHomeWinPct = 100.0 * des.homeWins / N_SIMULATIONS;
 
         System.out.println();
-        System.out.println("---- V33a regression results ----");
+        System.out.println("---- V31 calibration regression results ----");
         System.out.printf("PAREJOS    : total=%.3f  shots=%.1f  homeWins=%d%%  draws=%d%%  awayWins=%d%%%n",
                 parejos.avgTotalGoals, parejos.avgTotalShots,
                 (int) (100.0 * parejos.homeWins / N_SIMULATIONS),
@@ -93,24 +93,24 @@ class V33CalibrationDiagnosticTest {
         System.out.printf("INT-A 85x75: total=%.3f  shots=%.1f%n", intA.avgTotalGoals, intA.avgTotalShots);
         System.out.printf("INT-B 85x70: total=%.3f  shots=%.1f%n", intB.avgTotalGoals, intB.avgTotalShots);
         System.out.printf("INT-C 85x65: total=%.3f  shots=%.1f%n", intC.avgTotalGoals, intC.avgTotalShots);
-        System.out.printf("INTERMEDIOS: avg=%.3f  (V33a reference 2.047, target [2.0, 3.0])%n", intermediosAvg);
-        System.out.printf("DESIGUALES : topWins=%.1f%%  (V33a reference 75.5%%)%n", desHomeWinPct);
-        System.out.println("---- end V33a regression ----");
+        System.out.printf("INTERMEDIOS: avg=%.3f  (V31 reference 1.815, target [1.7, 2.4])%n", intermediosAvg);
+        System.out.printf("DESIGUALES : topWins=%.1f%%  (V31 reference 62.0%%, target [60%% to 80%%])%n", desHomeWinPct);
+        System.out.println("---- end V31 regression ----");
 
-        // Regression bands — loose enough to absorb RNG noise, tight enough to
-        // catch calibration drift if someone changes (cap, statsAmp) in the future.
-        assertTrue(intermediosAvg >= 1.85 && intermediosAvg <= 2.25,
-                "V33a intermedios avg=" + intermediosAvg
-                        + " is outside regression band [1.85, 2.25] (V33a reference 2.047). "
-                        + "If this fails, the V33a calibration has drifted — "
-                        + "check V24ShotXgCalculator lines 382 (cap=2.5), 538 (statsAmp=0.025), 586 (statsAmp=0.025).");
-        assertTrue(desHomeWinPct >= 70.0 && desHomeWinPct <= 80.0,
-                "V33a desiguales topWins=" + desHomeWinPct
-                        + "% is outside regression band [70%, 80%] (V33a reference 75.5%). "
-                        + "If this fails, the V33a calibration has drifted.");
-        assertTrue(parejos.avgTotalGoals >= 1.0 && parejos.avgTotalGoals <= 1.3,
-                "V33a parejos total=" + parejos.avgTotalGoals
-                        + " is outside regression band [1.0, 1.3] (V33a reference 1.160).");
+        // V31 regression bands (reverted from V33a in C37 Phase A).
+        // Loose enough to absorb RNG noise, tight enough to catch calibration drift.
+        assertTrue(intermediosAvg >= 1.7 && intermediosAvg <= 2.4,
+                "V31 intermedios avg=" + intermediosAvg
+                        + " is outside regression band [1.7, 2.4] (V31 reference 1.815). "
+                        + "If this fails, the V31 calibration has drifted — "
+                        + "check V24ShotXgCalculator lines 392 (cap=2.0), 552 (statsAmp=0.012), 601 (statsAmp=0.012).");
+        assertTrue(desHomeWinPct >= 60.0 && desHomeWinPct <= 80.0,
+                "V31 desiguales topWins=" + desHomeWinPct
+                        + "% is outside regression band [60%, 80%] (V31 reference 62.0%). "
+                        + "If this fails, the V31 calibration has drifted.");
+        assertTrue(parejos.avgTotalGoals >= 0.8 && parejos.avgTotalGoals <= 1.2,
+                "V31 parejos total=" + parejos.avgTotalGoals
+                        + " is outside regression band [0.8, 1.2] (V31 reference 1.135).");
     }
 
     // ========== Helpers (reused from V31b / V33a Phase 1) ==========
