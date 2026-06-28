@@ -80,7 +80,9 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // MVP1-lineup-cancha-1.5: persist subdivision map so that
                 // re-opening the modal restores exact slot assignments
                 // (vs. role-match fallback that only fills GK + first 2 CB).
-                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, lineup);
+                // V25D61-C20.1 P0: pass isAutoSelect=true so the off-position
+                // fallback fires (auto-select requires 11 slots).
+                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, lineup, true);
                 // V25D60-C20 P0: defensive guard for auto-select. The earlier
                 // lineup.size() check (TARGET_LINEUP_PLAYERS = 11) catches the
                 // common "short squad" case, but if for any reason slotMap is
@@ -181,7 +183,10 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // assignments). Front overrides apply on top for slots the
                 // user assigned explicitly (manual drag-drop). Si el front
                 // no envía slots, back completa los 11 slots vía helper.
-                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, selectedPlayers);
+                // V25D61-C20.1 P0: pass isAutoSelect=false so the off-position
+                // fallback does NOT fire for short-handed manual-select
+                // (prevents 7 players → 8 slots with a duplicated playerId).
+                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, selectedPlayers, false);
                 if (slots != null && !slots.isEmpty()) {
                     // Override con lo que el front envió explícitamente
                     // (autoridad del front si el usuario asignó manualmente).
@@ -467,10 +472,30 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
      * re-open modal restores slots verbatim from the persisted subdivision
      * map (no role-match fallback), so back/front cannot diverge.
      *
-     * <p>If a position has no compatible player (short-handed squad), the
-     * corresponding subdivision slot is left unassigned.
+     * <p>V25D61-C20.1 P0: the off-position fallback (V25D60-C20) is gated by
+     * the {@code isAutoSelect} flag. Auto-select ({@code true}) requires the
+     * slot map to cover every formation position (11 slots) so downstream
+     * consumers (FormationEffectiveness, manual-select re-open) cannot recover
+     * from a partial map. Manual-select ({@code false}) preserves the
+     * short-handed contract — only helper-compatible assignments are made,
+     * remaining slots are left empty, and no off-position fallback fires
+     * (which would over-fill the map when {@code lineup.size() < formation
+     * positions}, e.g. 7 players → 8 slots with a duplicated playerId).
+     *
+     * @param formation the formation whose positions drive the slot map
+     * @param lineup the players available for assignment (already filtered
+     *               by fitness for manual-select; full squad for auto-select)
+     * @param isAutoSelect {@code true} for the auto-select path (requires
+     *                     full coverage via off-position fallback);
+     *                     {@code false} for the manual-select path (best-effort
+     *                     helper match only)
+     * @return subdivision → playerId map (may have fewer entries than
+     *         formation positions when {@code isAutoSelect} is {@code false})
      */
-    private Map<String, String> buildAutoSelectSlotMap(Formation formation, List<SessionPlayer> lineup) {
+    private Map<String, String> buildAutoSelectSlotMap(
+            Formation formation,
+            List<SessionPlayer> lineup,
+            boolean isAutoSelect) {
         if (formationService == null) {
             return Map.of();
         }
@@ -507,21 +532,24 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     break;
                 }
             }
-            // V25D60-C20 P0: off-position fallback. If no helper-compatible player
-            // was found for this slot, take the next unused player from the lineup
-            // (any position). The effectiveness penalty is surfaced downstream by
-            // PositionEffectivenessCalculator (sprint C11a). Without this fallback
-            // the slot map can end up with fewer entries than formation positions
-            // (e.g. squad without natural DEF → DEF slots unassigned → only 7 of
-            // 11 subdivision entries persisted), which downstream consumers
-            // (FormationEffectiveness, manual-select re-open) cannot recover from.
+            // V25D60-C20 P0 + V25D61-C20.1 P0: off-position fallback. If no
+            // helper-compatible player was found for this slot, take the next
+            // unused player from the lineup (any position). The effectiveness
+            // penalty is surfaced downstream by PositionEffectivenessCalculator
+            // (sprint C11a). Without this fallback the slot map can end up with
+            // fewer entries than formation positions (e.g. squad without natural
+            // DEF → DEF slots unassigned → only 7 of 11 subdivision entries
+            // persisted), which downstream consumers (FormationEffectiveness,
+            // manual-select re-open) cannot recover from.
             //
-            // Note: this method is shared between autoSelectLineup (requires 11
-            // slots) and manualSelectLineupWithSlots (allows short-handed [MIN, MAX]
-            // range). For short-handed lineups the fallback still runs but the
-            // remaining slots will be left empty — the caller decides whether
-            // to fail loud (auto-select) or persist best-effort (manual-select).
-            if (!assigned) {
+            // V25D61-C20.1 P0: the fallback is GATED by isAutoSelect. For
+            // auto-select the fallback is required (caller fails loud via
+            // IllegalStateException if slotMap.size() != 11). For manual-select
+            // short-handed, the fallback is SKIPPED — otherwise it would
+            // over-fill the map when lineup.size() < formation.positions (e.g.
+            // 7 players + 4-4-2 → 8 slots with a duplicated playerId), breaking
+            // the [MIN, MAX] contract.
+            if (!assigned && isAutoSelect) {
                 for (SessionPlayer player : lineup) {
                     String playerId = player.getSessionPlayerId();
                     if (playerId == null || usedPlayerIds.contains(playerId)) {
