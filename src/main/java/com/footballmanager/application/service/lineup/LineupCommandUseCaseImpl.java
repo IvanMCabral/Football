@@ -81,6 +81,21 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // re-opening the modal restores exact slot assignments
                 // (vs. role-match fallback that only fills GK + first 2 CB).
                 Map<String, String> slotMap = buildAutoSelectSlotMap(formation, lineup);
+                // V25D60-C20 P0: defensive guard for auto-select. The earlier
+                // lineup.size() check (TARGET_LINEUP_PLAYERS = 11) catches the
+                // common "short squad" case, but if for any reason slotMap is
+                // still incomplete (e.g. a future formation breaks the
+                // formationDto.positions().size() == 11 invariant, or all
+                // playerIds are null), fail loud instead of silently
+                // persisting a partial slot map. Manual-select keeps the
+                // best-effort behavior for short-handed rescues.
+                if (slotMap.size() != LineupRules.TARGET_LINEUP_PLAYERS) {
+                    throw new IllegalStateException(
+                        "Auto-select slot assignment incomplete: " + slotMap.size()
+                        + " / " + LineupRules.TARGET_LINEUP_PLAYERS
+                        + " (formation: " + formation.getCode() + ", squad may be too small)"
+                    );
+                }
                 if (slotMap.isEmpty()) {
                     career.getTeamStarting11Subdivision().remove(userTeamId);
                 } else {
@@ -471,12 +486,13 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             if (role == null || subdivisionId == null || subdivisionId.isBlank()) {
                 continue;
             }
+            boolean assigned = false;
+            // Phase 1: helper-based match (natural / compatible position).
             for (SessionPlayer player : lineup) {
                 String playerId = player.getSessionPlayerId();
                 if (playerId == null || usedPlayerIds.contains(playerId)) {
                     continue;
                 }
-                // Helper-based match: GK exacto, DEF/MID/ATT por helper.
                 boolean matches = switch (role) {
                     case "GK" -> "GK".equals(player.getPosition());
                     case "LB", "CB", "RB", "LWB", "RWB" -> lineupHelper.isDefender(player.getPosition());
@@ -485,6 +501,32 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     default -> false;
                 };
                 if (matches) {
+                    slotMap.put(subdivisionId, playerId);
+                    usedPlayerIds.add(playerId);
+                    assigned = true;
+                    break;
+                }
+            }
+            // V25D60-C20 P0: off-position fallback. If no helper-compatible player
+            // was found for this slot, take the next unused player from the lineup
+            // (any position). The effectiveness penalty is surfaced downstream by
+            // PositionEffectivenessCalculator (sprint C11a). Without this fallback
+            // the slot map can end up with fewer entries than formation positions
+            // (e.g. squad without natural DEF → DEF slots unassigned → only 7 of
+            // 11 subdivision entries persisted), which downstream consumers
+            // (FormationEffectiveness, manual-select re-open) cannot recover from.
+            //
+            // Note: this method is shared between autoSelectLineup (requires 11
+            // slots) and manualSelectLineupWithSlots (allows short-handed [MIN, MAX]
+            // range). For short-handed lineups the fallback still runs but the
+            // remaining slots will be left empty — the caller decides whether
+            // to fail loud (auto-select) or persist best-effort (manual-select).
+            if (!assigned) {
+                for (SessionPlayer player : lineup) {
+                    String playerId = player.getSessionPlayerId();
+                    if (playerId == null || usedPlayerIds.contains(playerId)) {
+                        continue;
+                    }
                     slotMap.put(subdivisionId, playerId);
                     usedPlayerIds.add(playerId);
                     break;
