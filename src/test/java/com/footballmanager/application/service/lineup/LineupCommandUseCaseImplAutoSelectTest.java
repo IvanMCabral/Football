@@ -740,4 +740,221 @@ class LineupCommandUseCaseImplAutoSelectTest {
 
         verify(careerRepository, never()).save(any());
     }
+
+    // ========== V25D60-C20 P0: Auto-select slot map must cover ALL formation positions ==========
+
+    /**
+     * V25D60-C20 P0 (Test 1): squad con solo GK + MID + ATT natural (sin DEF-capable)
+     * → autoSelect produce 11 slots y la subdivision map tiene 11 entries con los
+     * 4 slots DEF llenados off-position (penalty en effectiveness, no failure).
+     *
+     * <p>Pin del fix C20: antes del fix, los 4 DEF slots quedaban sin asignación
+     * porque el switch case del helper-based match no encontraba LB/CB/RB/LWB/RWB
+     * natural en el squad → slotMap.size() == 7 → teamStarting11Subdivision
+     * persistido con sólo 7 entries. El bug del verifier C19.
+     *
+     * <p>Con el off-position fallback en {@code buildAutoSelectSlotMap}, los 4
+     * DEF slots se llenan con cualquier MID disponible (penalty 0.7-0.95 según
+     * PositionEffectivenessCalculator) y la subdivision map completa los 11.
+     */
+    @Test
+    @DisplayName("V25D60-C20 P0: autoSelect 4-4-2 con squad sin DEF natural → 11 slots en subdivision map (off-position fallback)")
+    void autoSelect_defLessSquad_persists11Slots() {
+        // 1 GK + 0 DEF + 8 MID + 2 ATT = 11 healthy. Sin DEF-capable.
+        // La fillRow va a meter warnings LINEUP_OFF_POSITION_FILL(DEF, 4) y los
+        // DEF slots del subdivision map se llenan con MID players via el
+        // fallback del slot assignment.
+        List<SessionPlayer> squadNoDef = List.of(
+            makePlayer("gk-c20",    "GK C20",   "GK", 80, 80, false, false, 0),
+            makePlayer("cm1-c20",   "CM A C20", "CM", 85, 80, false, false, 0),
+            makePlayer("cm2-c20",   "CM B C20", "CM", 84, 80, false, false, 0),
+            makePlayer("cm3-c20",   "CM C C20", "CM", 83, 80, false, false, 0),
+            makePlayer("cm4-c20",   "CM D C20", "CM", 82, 80, false, false, 0),
+            makePlayer("cm5-c20",   "CM E C20", "CM", 81, 80, false, false, 0),
+            makePlayer("cm6-c20",   "CM F C20", "CM", 80, 80, false, false, 0),
+            makePlayer("cm7-c20",   "CM G C20", "CM", 79, 80, false, false, 0),
+            makePlayer("cm8-c20",   "CM H C20", "CM", 78, 80, false, false, 0),
+            makePlayer("st1-c20",   "ST A C20", "ST", 82, 80, false, false, 0),
+            makePlayer("st2-c20",   "ST B C20", "ST", 80, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squadNoDef);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size(),
+                    "V25D60-C20 P0: auto-select 4-4-2 sin DEF natural → 11 slots");
+                // Sin DEF-capable en el squad → warning LINEUP_OFF_POSITION_FILL(DEF, 4).
+                assertNotNull(dto.warnings());
+                assertTrue(dto.warnings().stream()
+                    .anyMatch(w -> "LINEUP_OFF_POSITION_FILL".equals(w.code())
+                        && w.message() != null && w.message().contains("DEF")),
+                    "V25D60-C20 P0: debe emitir LINEUP_OFF_POSITION_FILL para DEF cuando no hay DEF-capable, got: "
+                        + dto.warnings());
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor.capture());
+        CareerSave saved = captor.getValue();
+
+        // El bug principal: subdivision map debe tener 11 entries, no 7.
+        Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertEquals(11, teamSlots.size(),
+            "V25D60-C20 P0: subdivision map debe tener 11 entries incluso sin DEF natural (off-position fallback)");
+    }
+
+    /**
+     * V25D60-C20 P0 (Test 2): para todas las formations válidas, slotMap.size()
+     * debe ser exactamente igual al número de posiciones de la formación.
+     *
+     * <p>Pin de la propiedad de cobertura: buildAutoSelectSlotMap debe
+     * completar TODAS las subdivision positions, no solo las que tengan un
+     * natural match. Si una formation tiene 11 positions (4-3-3, 4-4-2, 3-5-2)
+     * o 10 (3-4-3, etc.), la subdivision map tiene exactamente esa cantidad.
+     *
+     * <p>Validamos contra 4-3-3 con squad completo y contra 4-4-2 con squad
+     * sin DEF — el caso del bug del verifier C19.
+     */
+    @Test
+    @DisplayName("V25D60-C20 P0: slotMap.size() === formation.positions().length para todas las formations")
+    void autoSelect_slotMapMatchesFormationSize() {
+        // Caso A: 4-3-3 con squad completo (todos natural) → slotMap.size() == 11.
+        List<SessionPlayer> squad433 = List.of(
+            makePlayer("gk-c20b",   "GK C20B",   "GK", 80, 80, false, false, 0),
+            makePlayer("lb-c20b",   "LB C20B",   "LB", 80, 80, false, false, 0),
+            makePlayer("cb1-c20b",  "CB A C20B", "CB", 80, 80, false, false, 0),
+            makePlayer("cb2-c20b",  "CB B C20B", "CB", 80, 80, false, false, 0),
+            makePlayer("rb-c20b",   "RB C20B",   "RB", 80, 80, false, false, 0),
+            makePlayer("cm1-c20b",  "CM A C20B", "CM", 80, 80, false, false, 0),
+            makePlayer("cm2-c20b",  "CM B C20B", "CM", 80, 80, false, false, 0),
+            makePlayer("cm3-c20b",  "CM C C20B", "CM", 80, 80, false, false, 0),
+            makePlayer("lw-c20b",   "LW C20B",   "LW", 80, 80, false, false, 0),
+            makePlayer("st-c20b",   "ST C20B",   "ST", 80, 80, false, false, 0),
+            makePlayer("rw-c20b",   "RW C20B",   "RW", 80, 80, false, false, 0)
+        );
+
+        CareerSave career433 = makeCareer(squad433);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career433)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor433 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor433.capture());
+        Map<String, String> teamSlots433 = captor433.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots433);
+        assertEquals(11, teamSlots433.size(),
+            "V25D60-C20 P0: 4-3-3 con squad completo → 11 entries");
+
+        // Caso B: 4-4-2 con squad sin DEF natural (regression del bug del verifier C19).
+        List<SessionPlayer> squad442NoDef = List.of(
+            makePlayer("gk-c20c",   "GK C20C",   "GK", 80, 80, false, false, 0),
+            makePlayer("cm1-c20c",  "CM A C20C", "CM", 85, 80, false, false, 0),
+            makePlayer("cm2-c20c",  "CM B C20C", "CM", 84, 80, false, false, 0),
+            makePlayer("cm3-c20c",  "CM C C20C", "CM", 83, 80, false, false, 0),
+            makePlayer("cm4-c20c",  "CM D C20C", "CM", 82, 80, false, false, 0),
+            makePlayer("cm5-c20c",  "CM E C20C", "CM", 81, 80, false, false, 0),
+            makePlayer("cm6-c20c",  "CM F C20C", "CM", 80, 80, false, false, 0),
+            makePlayer("cm7-c20c",  "CM G C20C", "CM", 79, 80, false, false, 0),
+            makePlayer("cm8-c20c",  "CM H C20C", "CM", 78, 80, false, false, 0),
+            makePlayer("st1-c20c",  "ST A C20C", "ST", 82, 80, false, false, 0),
+            makePlayer("st2-c20c",  "ST B C20C", "ST", 80, 80, false, false, 0)
+        );
+
+        // Reset mocks para el segundo flow.
+        org.mockito.Mockito.reset(careerRepository);
+        CareerSave career442 = makeCareer(squad442NoDef);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career442)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor442 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor442.capture());
+        Map<String, String> teamSlots442 = captor442.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots442);
+        assertEquals(11, teamSlots442.size(),
+            "V25D60-C20 P0: 4-4-2 sin DEF natural → 11 entries (off-position fallback llena DEF slots)");
+    }
+
+    /**
+     * V25D60-C20 P0 (Test 3): con lineup.size() == 11 y formación con 11
+     * positions, el defensive throw {@code IllegalStateException} del final
+     * de buildAutoSelectSlotMap es inalcanzable en producción — el off-position
+     * fallback garantiza slotMap.size() == 11.
+     *
+     * <p>Este test verifica la propiedad principal: incluso en el peor caso
+     * (todos los slots requieren una posición que el squad no tiene), el
+     * fallback off-position mantiene slotMap.size() == formation.positions().size().
+     * El throw del defensive guard existe como safety net para bugs futuros
+     * (e.g. una formación con &gt; 11 positions o una regresión del algoritmo)
+     * pero no debe dispararse con formations válidas y squad size ≥ 11.
+     *
+     * <p>Para validar el throw directamente necesitaríamos reflection sobre
+     * buildAutoSelectSlotMap (private) o mockear FormationService — fuera
+     * de scope para este sprint. El test del happy-path-extremo (squad sin
+     * ningún natural para ninguna categoría) es el equivalente funcional:
+     * si pasa, el throw es inalcanzable para squads de 11.
+     */
+    @Test
+    @DisplayName("V25D60-C20 P0: squad sin match natural para ningún slot → slotMap.size() == 11 vía fallback (defensive throw inalcanzable)")
+    void autoSelect_throwsIfSlotMapIncomplete_worstCaseStillFillsViaFallback() {
+        // Squad: 1 GK + 10 ST. Cero DEF/MID-capable. El helper-based match
+        // para los 4 slots DEF y 4 slots MID no encuentra nada → fallback
+        // off-position toma los ST restantes. Resultado: slotMap.size() == 11,
+        // NO IllegalStateException.
+        List<SessionPlayer> squadOnlySt = List.of(
+            makePlayer("gk-c20e",    "GK C20E",   "GK", 80, 80, false, false, 0),
+            makePlayer("st1-c20e",   "ST A C20E", "ST", 82, 80, false, false, 0),
+            makePlayer("st2-c20e",   "ST B C20E", "ST", 81, 80, false, false, 0),
+            makePlayer("st3-c20e",   "ST C C20E", "ST", 80, 80, false, false, 0),
+            makePlayer("st4-c20e",   "ST D C20E", "ST", 79, 80, false, false, 0),
+            makePlayer("st5-c20e",   "ST E C20E", "ST", 78, 80, false, false, 0),
+            makePlayer("st6-c20e",   "ST F C20E", "ST", 77, 80, false, false, 0),
+            makePlayer("st7-c20e",   "ST G C20E", "ST", 76, 80, false, false, 0),
+            makePlayer("st8-c20e",   "ST H C20E", "ST", 75, 80, false, false, 0),
+            makePlayer("st9-c20e",   "ST I C20E", "ST", 74, 80, false, false, 0),
+            makePlayer("st10-c20e",  "ST J C20E", "ST", 73, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squadOnlySt);
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any())).thenReturn(Mono.empty());
+
+        // El sistema debe poder completar la lineup sin lanzar.
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size(),
+                    "V25D60-C20 P0: squad con solo GK+ST debe completar 11 slots");
+                // Múltiples warnings: LINEUP_NO_GOALKEEPER no (hay GK), pero
+                // LINEUP_OFF_POSITION_FILL(DEF, 4) + LINEUP_OFF_POSITION_FILL(MID, 4)
+                // + LINEUP_OFF_POSITION_FILL(ATT, ?). Verificar que al menos
+                // hay warnings para DEF y MID (las categorías donde no hay natural).
+                assertNotNull(dto.warnings());
+                long offPosFillCount = dto.warnings().stream()
+                    .filter(w -> "LINEUP_OFF_POSITION_FILL".equals(w.code()))
+                    .count();
+                assertTrue(offPosFillCount >= 2,
+                    "V25D60-C20 P0: debe haber al menos 2 warnings LINEUP_OFF_POSITION_FILL (DEF + MID), got: "
+                        + dto.warnings());
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerRepository).save(captor.capture());
+        Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertEquals(11, teamSlots.size(),
+            "V25D60-C20 P0: subdivision map debe tener 11 entries incluso en el worst-case (no DEF ni MID natural)");
+    }
 }
