@@ -27,19 +27,27 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * <p>This test asserts:
  * <ol>
- *   <li>The visible (SSE) event list has between 25 and 55 events at minute 90.</li>
+ *   <li>The visible (SSE) event list has between 20 and 55 events at minute 90.</li>
  *   <li>The visible event list does NOT contain any of the NOISE_EVENTS
  *       (CHANCE_CREATED, OFFSIDE, CORNER, FOUL, MISS, BLOCK).</li>
  *   <li>The visible event list DOES contain the "important" event types
  *       (GOAL, YELLOW_CARD, RED_CARD, SHOT_ON_TARGET, SUBSTITUTION,
  *       TACTICAL_CHANGE, INJURY) — when the engine produces them.</li>
- *   <li>The 3 seeds used produce consistent counts (within the 25-55 range).</li>
+ *   <li>The 3 seeds used produce consistent counts (within the 20-55 range).</li>
  * </ol>
+ *
+ * <p>V25D68-C28: lower bound reduced from 25 to 20 because the C28 fix
+ * extends matchIntensity to chanceProbability (midpoint-SQRT multiplier
+ * at line 420 of V24DetailedMatchEngine). For parejos matches
+ * (intensity=0.40), chanceProb drops to sqrt(0.7)=0.837, reducing shot
+ * volume by ~16% and therefore SHOT_ON_TARGET/MISS/BLOCK event count.
+ * Measured post-fix: ~22 events for seed=42 (down from ~28 pre-fix).
+ * Upper bound (55) is unchanged — far from saturation.
  */
 class V24LiveSessionEventFilterTest {
 
     @Test
-    @DisplayName("BUG-009: SSE event count at minute 90 is between 25 and 55 (across 3 seeds)")
+    @DisplayName("BUG-009: SSE event count at minute 90 is between 20 and 55 (across 3 seeds)")
     void ssePayload_has25to55Events() {
         long[] seeds = {42L, 123L, 9999L};
         for (long seed : seeds) {
@@ -51,9 +59,9 @@ class V24LiveSessionEventFilterTest {
             }
             V24LiveSnapshot snap = session.tick();
             int visibleCount = snap.allEvents().size();
-            assertTrue(visibleCount >= 25 && visibleCount <= 55,
+            assertTrue(visibleCount >= 20 && visibleCount <= 55,
                 "BUG-009 violated for seed=" + seed + ": SSE payload has " + visibleCount
-                + " events at minute 90. Expected 25-55. "
+                + " events at minute 90. Expected 20-55. "
                 + "Without the noise filter, the engine produces ~50-80 events.");
         }
     }
