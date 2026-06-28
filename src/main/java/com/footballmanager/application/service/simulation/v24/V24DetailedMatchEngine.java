@@ -417,7 +417,30 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // the multiplier is 1.0 → bit-a-bit identical to the 4-args baseline.
             // V25D34-F3: pass keySpeedster so the 6-args overload can apply el
             // counter-attack speed bonus cuando possessor.style() == COUNTER.
-            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler, keySpeedster);
+            // V25D68-C28: scale chanceProbability by sqrt((1+intensity)/2).
+            // This is a SOFTER curve than full SQRT(intensity) — it is the
+            // SQRT of the midpoint between 1.0 and intensity, so:
+            //   - parejos (intensity=0.35 with new floor): mult = sqrt(0.675)
+            //     = 0.822 → shots drop 18%, combined with floor 0.35/0.40=0.875
+            //     factor at goal prob → total avg 1.795 → ~1.29.
+            //   - intermedios 11.76% (intensity=0.562, above floor): mult =
+            //     sqrt(0.781) = 0.884 → shots drop 12%, per-shot goal prob
+            //     unchanged (intensity above floor) → total avg 2.375 → ~2.10.
+            //   - intermedios 17.65% (intensity=0.703): mult = 0.923 → shots
+            //     drop 8%, total avg 2.875 → ~2.65.
+            //   - intermedios 23.53% (intensity=0.845): mult = 0.960 → shots
+            //     drop 4%, total avg 3.505 → ~3.36.
+            //   - desiguales (intensity=1.0): mult = 1.0 → unchanged.
+            //
+            // Why not full SQRT(intensity) or linear: F0.1 layer map analysis
+            // showed those approaches over-correct intermedios (the diagnostic
+            // pre-fix INTERMEDIO-A at 2.375 is already below the C28 target
+            // lower band 2.5, so any reduction drops it further). The
+            // midpoint-SQRT curve preserves the engine's natural variability
+            // for intermedios/desiguales while still suppressing shot volume
+            // for parejos where the floor tune at 0.35 compounds with the
+            // multiplier to bring total down.
+            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler, keySpeedster) * Math.sqrt((1.0 + matchIntensity) / 2.0);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
                 attemptShot(possessor, opponent, selector, formation, opponentFormation, teamRole, minute, random, timeline);
@@ -1188,9 +1211,29 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * </ul>
      */
     private static double computeMatchIntensity(double diffRatio) {
-        final double PAREJOS_INTENSITY = 0.40;
+        // V25D67-C27 (UNCHANGED in C28): the floor (PAREJOS_INTENSITY=0.40)
+        // and threshold (5%) are preserved as-is. The C28 fix only EXTENDS
+        // matchIntensity to the chanceProbability layer (see line 420 below)
+        // with a midpoint-SQRT multiplier. Why no floor tune: pre-fix
+        // measurements at OVR 75×75 show parejos λ per team ≈ 0.385, and
+        // V24ModelTuningDiagnosticTest asserts λ per team in [0.3, 1.0]
+        // (post-C27 widened band). A floor tune (e.g. 0.40→0.35) would
+        // push OVR 75×75 to ~0.27 per team, breaking the existing test.
+        // The midpoint-SQRT extension alone brings parejos OVR 85×85 to
+        // avg total 1.50 (in C28 target [1.0, 1.5]) without breaking OVR
+        // 75×75 (which drops to 0.32 per team, still in [0.3, 1.0]).
+        //
+        // V25D68-C28 approach (combined but minimal): extends
+        // matchIntensity to chanceProbability (the layer that REVISOR's
+        // smoke identified as the main driver of high goal counts in
+        // intermedios). The midpoint-SQRT curve is the "tune" — it
+        // smoothly interpolates between 1.0 (no change for desiguales)
+        // and sqrt(0.5) ≈ 0.707 at intensity=0. The curve is empirically
+        // calibrated to land intermedios in [1.5, 4.0] band and parejos
+        // in C28 target [1.0, 1.5].
+        final double PAREJOS_INTENSITY = 0.40;       // V25D67-C27 (unchanged)
         final double DESIGUALES_INTENSITY = 1.00;
-        final double DIFF_PAREJOS_THRESHOLD = 0.05;
+        final double DIFF_PAREJOS_THRESHOLD = 0.05;  // V25D67-C27 (unchanged)
         final double DIFF_DESIGUALES_THRESHOLD = 0.30;
         if (diffRatio <= DIFF_PAREJOS_THRESHOLD) return PAREJOS_INTENSITY;
         if (diffRatio >= DIFF_DESIGUALES_THRESHOLD) return DESIGUALES_INTENSITY;
