@@ -371,8 +371,15 @@ public class V24ShotXgCalculator {
         // The cap is symmetric (Math.max vs Math.min): if ratio is < 0.5 (defense
         // dominates offense by 2x), also clamped to 0.5 to keep defensive ceiling
         // meaningful. This protects against degenerate edges.
+        //
+        // V25D71-C33 (Sprint C33 calibration): cap ratio relaxed from 2.0 → 2.5
+        // after C31 over-correction dropped runtime intermedios from 5.45 to 2.08
+        // (target [3.0, 4.5]) and top-wins from 100% to ~50%. V33a diagnostic
+        // (cap=2.5, statsAmp=0.025) was the sweet spot in the V33a-e matrix — see
+        // reporte-C33-phase1.md. Cap=2.5 lets desiguales produce realistic
+        // goal differentials without hitting the clamp at the 90×60 extreme.
         double formationModRatio = offFormMod / defFormMod;
-        formationModRatio = Math.max(0.5, Math.min(2.0, formationModRatio));
+        formationModRatio = Math.max(0.5, Math.min(2.5, formationModRatio));
         // Reapply clamped ratio back to offFormMod (defFormMod stays untouched
         // so the documentation and downstream uses of defFormMod as protection
         // factor remain semantically correct).
@@ -523,7 +530,12 @@ public class V24ShotXgCalculator {
         else baseMod = 1.00; // 4-4-2 baseline
 
         // V25D70-C31 Option 3: coefficient reduced 0.025 → 0.012.
-        double statsAmp = 1.0 + (teamAttack - 70.0) * 0.012;
+        // V25D71-C33: statsAmp coefficient restored 0.012 → 0.025 per V33a decision.
+        // Restoring the pre-C31 amplification gives elite teams (OVR=85) a meaningful
+        // 1.18x modifier (vs 1.09x with the C31 reduction) and lets runtime recovery
+        // land in the target intermedios band [3.0, 4.5]. See reporte-C33-phase1.md
+        // for the V33a diagnostic reference values.
+        double statsAmp = 1.0 + (teamAttack - 70.0) * 0.025;
         double mod = baseMod * statsAmp;
         return Math.max(0.1, mod);
     }
@@ -569,7 +581,9 @@ public class V24ShotXgCalculator {
         else baseMod = 1.00; // 4-4-2 baseline
 
         // V25D70-C31 Option 3: coefficient reduced 0.025 → 0.012.
-        double statsAmp = 1.0 + (opponentDefense - 70.0) * 0.012;
+        // V25D71-C33: statsAmp coefficient restored 0.012 → 0.025 per V33a decision
+        // (mirrors the offensive modifier change — both go back to pre-C31 value).
+        double statsAmp = 1.0 + (opponentDefense - 70.0) * 0.025;
         double mod = baseMod * statsAmp;
         return Math.max(0.1, mod);
     }
