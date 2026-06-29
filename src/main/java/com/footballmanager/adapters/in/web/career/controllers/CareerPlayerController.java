@@ -6,7 +6,9 @@ import com.footballmanager.adapters.in.web.career.dto.response.SessionPlayerDTO;
 import com.footballmanager.adapters.in.web.career.mappers.SessionEntityMapper;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.career.CareerPlayerService;
+import com.footballmanager.application.service.career.CareerSessionService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -24,10 +26,14 @@ import java.util.UUID;
 public class CareerPlayerController {
 
     private final CareerPlayerService playerService;
+    private final CareerSessionService careerSessionService;
     private final ControllerHelper controllerHelper;
 
-    public CareerPlayerController(CareerPlayerService playerService, ControllerHelper controllerHelper) {
+    public CareerPlayerController(CareerPlayerService playerService,
+                                  CareerSessionService careerSessionService,
+                                  ControllerHelper controllerHelper) {
         this.playerService = playerService;
+        this.careerSessionService = careerSessionService;
         this.controllerHelper = controllerHelper;
     }
 
@@ -65,9 +71,21 @@ public class CareerPlayerController {
     }
 
     @GetMapping("/squad")
-    public Mono<List<SessionPlayerDTO>> getUserSquad(Authentication authentication) {
+    public Mono<ResponseEntity<List<SessionPlayerDTO>>> getUserSquad(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        return playerService.getUserSquad(userId)
-                .map(players -> players.stream().map(SessionEntityMapper::toDTO).toList());
+        // V25D75-C40 A2: return 422 UNPROCESSABLE_ENTITY when no career exists
+        // (was returning 200 with empty list, masking the "no career" error).
+        // Front can distinguish "no career" from "career with empty squad" via status code.
+        return careerSessionService.getCareerFromCache(userId)
+                .flatMap(career -> playerService.getUserSquad(userId)
+                        .map(players -> {
+                            List<SessionPlayerDTO> dtos = players.stream()
+                                    .map(SessionEntityMapper::toDTO)
+                                    .toList();
+                            return ResponseEntity.ok(dtos);
+                        }))
+                .switchIfEmpty(Mono.just(
+                        ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                                .body(List.of())));
     }
 }
