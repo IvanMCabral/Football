@@ -273,6 +273,128 @@ class LineupQueryUseCaseImplTest {
     }
 
     /**
+     * V25D77-C42 C1 regression test: si el lineup persistido contiene un player
+     * suspendido (red card o suspensionRemainingMatches &gt; 0), {@code getCurrentLineup}
+     * debe excluirlo del response. La persistencia interna puede mantenerlo
+     * (otros paths dependen), pero la API no debe surfacearlo como parte del
+     * "current starting XI".
+     *
+     * <p>Pre-C40 el filtro no existía — un player suspendido por roja aparecía
+     * en la lineup y el front lo mostraba como titular. V25D75-C40 C1 introdujo
+     * el filtro en {@link LineupQueryUseCaseImpl} líneas 74-85. Este test es la
+     * red de seguridad contra regresiones futuras.
+     */
+    @Test
+    @DisplayName("V25D77-C42 C1: getCurrentLineup filtra players suspendidos del response")
+    void getCurrentLineup_filtersOutSuspendedPlayers() {
+        // Squad 4-4-2 full strength, marcamos 1 player como suspended.
+        List<SessionPlayer> squadSus = List.of(
+            makeHealthy("gk-sus", "GK Suspended", "GK"),
+            makeHealthy("def1-sus", "Def A Sus", "CB"),
+            makeHealthy("def2-sus", "Def B Sus", "CB"),
+            makeHealthy("def3-sus", "Def C Sus", "LB"),
+            makeHealthy("def4-sus", "Def D Sus", "RB"),
+            makeHealthy("mid1-sus", "Mid A Sus", "CM"),
+            makeHealthy("mid2-sus", "Mid B Sus", "CM"),
+            makeHealthy("mid3-sus", "Mid C Sus", "LM"),
+            makeHealthy("mid4-sus", "Mid D Sus", "RM"),
+            makeHealthy("att1-sus", "Att A Sus", "ST"),
+            makeHealthy("att2-sus", "Att B Sus", "ST")
+        );
+
+        // Marcamos "mid3-sus" como suspended por roja (suspended=true + remaining=1).
+        SessionPlayer suspendedPlayer = squadSus.stream()
+            .filter(p -> "mid3-sus".equals(p.getSessionPlayerId()))
+            .findFirst().orElseThrow();
+        suspendedPlayer.setSuspended(true);
+        suspendedPlayer.setSuspensionRemainingMatches(1);
+
+        List<String> lineupSus = List.of("gk-sus", "def1-sus", "def2-sus", "def3-sus", "def4-sus",
+            "mid1-sus", "mid2-sus", "mid3-sus", "mid4-sus", "att1-sus", "att2-sus");
+
+        CareerSave career = makeCareerWithLineup(squadSus, lineupSus);
+        Map<String, String> formationMap = new HashMap<>();
+        formationMap.put(TEAM_ID, "4-4-2");
+        career.setTeamStarting11Formation(formationMap);
+
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+
+        StepVerifier.create(useCase.getCurrentLineup(UUID.fromString(USER_ID)))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                // El player suspendido debe estar excluido del response
+                assertEquals(10, dto.players().size(),
+                    "V25D77-C42 C1: lineup de 11 con 1 suspendido debe devolver 10 players");
+                boolean suspendedInResponse = dto.players().stream()
+                    .anyMatch(p -> "mid3-sus".equals(p.playerId()));
+                assertTrue(!suspendedInResponse,
+                    "V25D77-C42 C1: el player con suspended=true NO debe aparecer en el response");
+                // Players sanos sí deben estar
+                boolean mid1InResponse = dto.players().stream()
+                    .anyMatch(p -> "mid1-sus".equals(p.playerId()));
+                assertTrue(mid1InResponse,
+                    "V25D77-C42 C1: players sanos deben seguir en el response");
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * V25D77-C42 C1 regression test (variante): un player con
+     * {@code suspensionRemainingMatches > 0} pero {@code suspended=false} (caso
+     * edge: estado inconsistente entre flags) también debe filtrarse. El código
+     * en {@link LineupQueryUseCaseImpl} línea 83-84 aplica ambos filtros
+     * independientemente — el segundo filtro es la red de seguridad.
+     */
+    @Test
+    @DisplayName("V25D77-C42 C1: getCurrentLineup filtra players con suspensionRemainingMatches > 0 aunque suspended=false")
+    void getCurrentLineup_filtersOutPlayersWithRemainingSuspension() {
+        List<SessionPlayer> squadRem = List.of(
+            makeHealthy("gk-rem", "GK Rem", "GK"),
+            makeHealthy("def1-rem", "Def A Rem", "CB"),
+            makeHealthy("def2-rem", "Def B Rem", "CB"),
+            makeHealthy("def3-rem", "Def C Rem", "LB"),
+            makeHealthy("def4-rem", "Def D Rem", "RB"),
+            makeHealthy("mid1-rem", "Mid A Rem", "CM"),
+            makeHealthy("mid2-rem", "Mid B Rem", "CM"),
+            makeHealthy("mid3-rem", "Mid C Rem", "LM"),
+            makeHealthy("mid4-rem", "Mid D Rem", "RM"),
+            makeHealthy("att1-rem", "Att A Rem", "ST"),
+            makeHealthy("att2-rem", "Att B Rem", "ST")
+        );
+
+        // Marcamos "att1-rem" con suspensionRemainingMatches=2 pero suspended=false
+        // (estado defensivo: si el flag suspended fue reseteado por algún path
+        // pero el remaining match no, debe seguir filtrado).
+        SessionPlayer remainingSusp = squadRem.stream()
+            .filter(p -> "att1-rem".equals(p.getSessionPlayerId()))
+            .findFirst().orElseThrow();
+        remainingSusp.setSuspended(false);
+        remainingSusp.setSuspensionRemainingMatches(2);
+
+        List<String> lineupRem = List.of("gk-rem", "def1-rem", "def2-rem", "def3-rem", "def4-rem",
+            "mid1-rem", "mid2-rem", "mid3-rem", "mid4-rem", "att1-rem", "att2-rem");
+
+        CareerSave career = makeCareerWithLineup(squadRem, lineupRem);
+        Map<String, String> formationMap = new HashMap<>();
+        formationMap.put(TEAM_ID, "4-4-2");
+        career.setTeamStarting11Formation(formationMap);
+
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+
+        StepVerifier.create(useCase.getCurrentLineup(UUID.fromString(USER_ID)))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(10, dto.players().size(),
+                    "V25D77-C42 C1: lineup con 1 player con suspensionRemainingMatches>0 debe devolver 10 players");
+                boolean remainingInResponse = dto.players().stream()
+                    .anyMatch(p -> "att1-rem".equals(p.playerId()));
+                assertTrue(!remainingInResponse,
+                    "V25D77-C42 C1: player con suspensionRemainingMatches>0 NO debe aparecer en el response");
+            })
+            .verifyComplete();
+    }
+
+    /**
      * V25D65-C25 P0 (Test 4): si el lineup persistido tiene un GK en la lineup
      * pero la squad NO tiene GK natural (caso edge), getCurrentLineup debe
      * omitir LINEUP_NO_GOALKEEPER cuando sí hay un player con position="GK"
