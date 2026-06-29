@@ -84,7 +84,7 @@ class V33CalibrationDiagnosticTest {
         double desHomeWinPct = 100.0 * des.homeWins / N_SIMULATIONS;
 
         System.out.println();
-        System.out.println("---- V31 calibration regression results ----");
+        System.out.println("---- Pre-C31 calibration regression results ----");
         System.out.printf("PAREJOS    : total=%.3f  shots=%.1f  homeWins=%d%%  draws=%d%%  awayWins=%d%%%n",
                 parejos.avgTotalGoals, parejos.avgTotalShots,
                 (int) (100.0 * parejos.homeWins / N_SIMULATIONS),
@@ -93,24 +93,28 @@ class V33CalibrationDiagnosticTest {
         System.out.printf("INT-A 85x75: total=%.3f  shots=%.1f%n", intA.avgTotalGoals, intA.avgTotalShots);
         System.out.printf("INT-B 85x70: total=%.3f  shots=%.1f%n", intB.avgTotalGoals, intB.avgTotalShots);
         System.out.printf("INT-C 85x65: total=%.3f  shots=%.1f%n", intC.avgTotalGoals, intC.avgTotalShots);
-        System.out.printf("INTERMEDIOS: avg=%.3f  (V31 reference 1.815, target [1.7, 2.4])%n", intermediosAvg);
-        System.out.printf("DESIGUALES : topWins=%.1f%%  (V31 reference 62.0%%, target [60%% to 80%%])%n", desHomeWinPct);
-        System.out.println("---- end V31 regression ----");
+        System.out.printf("INTERMEDIOS: avg=%.3f  (pre-C31 runtime reference 5.45, target [1.5, 3.0])%n", intermediosAvg);
+        System.out.printf("DESIGUALES : topWins=%.1f%%  (pre-C31 runtime reference 100%%, target [80%% to 100%%])%n", desHomeWinPct);
+        System.out.println("---- end pre-C31 regression ----");
 
-        // V31 regression bands (reverted from V33a in C37 Phase A).
-        // Loose enough to absorb RNG noise, tight enough to catch calibration drift.
-        assertTrue(intermediosAvg >= 1.7 && intermediosAvg <= 2.4,
-                "V31 intermedios avg=" + intermediosAvg
-                        + " is outside regression band [1.7, 2.4] (V31 reference 1.815). "
-                        + "If this fails, the V31 calibration has drifted — "
-                        + "check V24ShotXgCalculator lines 392 (cap=2.0), 552 (statsAmp=0.012), 601 (statsAmp=0.012).");
-        assertTrue(desHomeWinPct >= 60.0 && desHomeWinPct <= 80.0,
-                "V31 desiguales topWins=" + desHomeWinPct
-                        + "% is outside regression band [60%, 80%] (V31 reference 62.0%). "
-                        + "If this fails, the V31 calibration has drifted.");
-        assertTrue(parejos.avgTotalGoals >= 0.8 && parejos.avgTotalGoals <= 1.2,
-                "V31 parejos total=" + parejos.avgTotalGoals
-                        + " is outside regression band [0.8, 1.2] (V31 reference 1.135).");
+        // Pre-C31 regression bands (reverted from V31 in C38 Phase).
+        // Target reflects RUNTIME empirical pre-C31 expectations:
+        // intermedios 5.45, top wins 100%, parejos reduced via C28 matchIntensity.
+        // Diagnostic (synthetic per-position attrs, no skills) produces lower
+        // numbers than runtime — bands reflect the lower-bound to allow diagnostic
+        // noise while catching actual calibration drift.
+        assertTrue(intermediosAvg >= 1.8 && intermediosAvg <= 2.6,
+                "pre-C31 intermedios avg=" + intermediosAvg
+                        + " is outside regression band [1.8, 2.6] (pre-C31 diagnostic reference 2.153, runtime 5.45). "
+                        + "If this fails, the pre-C31 calibration has drifted — "
+                        + "check V24ShotXgCalculator lines 384 (no cap), 541 (statsAmp=0.025), 588 (statsAmp=0.025).");
+        assertTrue(desHomeWinPct >= 80.0 && desHomeWinPct <= 100.0,
+                "pre-C31 desiguales topWins=" + desHomeWinPct
+                        + "% is outside regression band [80%, 100%] (pre-C31 runtime reference 100%). "
+                        + "If this fails, the pre-C31 calibration has drifted.");
+        assertTrue(parejos.avgTotalGoals >= 0.9 && parejos.avgTotalGoals <= 1.4,
+                "pre-C31 parejos total=" + parejos.avgTotalGoals
+                        + " is outside regression band [0.9, 1.4] (pre-C31 diagnostic reference 1.160).");
     }
 
     // ========== Helpers (reused from V31b / V33a Phase 1) ==========
