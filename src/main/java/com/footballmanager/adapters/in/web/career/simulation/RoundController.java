@@ -19,9 +19,15 @@ import com.footballmanager.application.service.simulation.v24.V24MatchContextFac
 import com.footballmanager.application.service.simulation.v24.LiveRoundMutationTracking;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.entity.Match;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
+import com.footballmanager.domain.model.entity.MatchResult;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.MatchId;
+import com.footballmanager.domain.model.valueobject.MatchStatus;
+import com.footballmanager.domain.model.valueobject.TeamId;
+import com.footballmanager.domain.ports.out.match.MatchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +62,9 @@ public class RoundController {
     private final CareerSessionService careerSessionService;
     private final V24MatchContextFactory v24ContextFactory;
     private final LeagueSimulator leagueSimulator;
+    // V25D75-C40 B3: persists finished live matches to MatchRepository so
+    // GET /api/v1/matches returns them (was always []). Best-effort fire-and-forget.
+    private final MatchRepository matchRepository;
     // F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): stores the pre-subs
     // BaselineState at match start, deletes it on match finish.
     private final BaselineStateStoragePort baselineStoragePort;
@@ -391,6 +400,15 @@ public class RoundController {
                 events
         ));
 
+        // V25D75-C40 B3: persist the finished match to MatchRepository so
+        // GET /api/v1/matches returns it. Previously the live path only
+        // updated CareerSave.matchesList (in-process fixtures) — never
+        // created the standalone Match entity. The /matches page therefore
+        // rendered an empty list. We build a fresh Match from the snapshot
+        // (no findById because the live engine never calls
+        // MatchRepository.save before this point) and save best-effort.
+        persistFinishedMatch(result, events, career);
+
         int finished = matchesFinished.incrementAndGet();
         log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", result.snapshot().matchId(), finished, totalMatches);
 
@@ -411,6 +429,93 @@ public class RoundController {
             orchestrator.processMatchDayResults(userId.toString(), matchResults)
                     .subscribe();
         }
+    }
+
+    /**
+     * V24D6R2: Capture pre-round state for suspended/injured players.
+     * Mirrors {@code LeagueSimulator.capturePreRoundSuspendedPlayerIds} and
+     * {@code capturePreRoundInjuredPlayerIds} but lives in the controller
+     * since tracking is a per-round artifact created at startMatches.
+     */
+        /**
+     * V25D75-C40 B3: persist a finished match to {@link MatchRepository} so
+     * {@code GET /api/v1/matches} surfaces it. The live engine path never
+     * called {@code matchRepository.save} — the legacy
+     * {@code MatchFinishService.finishMatch} expects a pre-existing Match
+     * entity via {@code findById}, which is also empty for live matches, so
+     * nothing ever reached Redis. We build a fresh Match from the snapshot
+     * (id, teams, score, status) and save it best-effort — failures are
+     * logged and swallowed so the live match flow is never blocked.
+     */
+    private void persistFinishedMatch(MatchFinishedResult result,
+                                      java.util.List<com.footballmanager.domain.model.entity.MatchEvent> events,
+                                      CareerSave career) {
+        try {
+            MatchStateSnapshot snap = result.snapshot();
+            if (snap.matchId() == null || snap.homeTeamId() == null || snap.awayTeamId() == null) {
+                log.warn("[C40-B3] persistFinishedMatch skipped — incomplete snapshot (matchId={}, home={}, away={})",
+                    snap.matchId(), snap.homeTeamId(), snap.awayTeamId());
+                return;
+            }
+            int homeGoals = snap.score() != null ? snap.score().home() : 0;
+            int awayGoals = snap.score() != null ? snap.score().away() : 0;
+            MatchResult matchResult = MatchResult.of(
+                homeGoals, awayGoals,
+                50, 50,
+                homeGoals * 3, awayGoals * 3,
+                events,
+                null
+            );
+            // Find the fixture to get round number
+            int round = 1;
+            java.time.Instant scheduledAt = java.time.Instant.now();
+            if (career != null && career.getTournamentState() != null
+                && career.getTournamentState().getFixtures() != null) {
+                var fixture = career.getTournamentState().getFixtures().stream()
+                    .filter(f -> snap.matchId().toString().equals(f.getMatchId()))
+                    .findFirst()
+                    .orElse(null);
+                if (fixture != null) {
+                    round = fixture.getRound();
+                }
+            }
+            Match match = Match.schedule(
+                MatchId.of(snap.matchId()),
+                TeamId.of(snap.homeTeamId()),
+                TeamId.of(snap.awayTeamId()),
+                scheduledAt,
+                round
+            );
+            match.simulate(matchResult);
+            // V25D75-C40 B3 fix: persist under user namespace so the
+            // GET /api/v1/matches endpoint (which calls findAll(userId))
+            // returns it. UUID-based userId extraction (manager/careerId
+            // preferred; fallback to userId field on snapshot).
+            UUID userId = extractUserIdForMatchPersistence(snap, career);
+            matchRepository.save(userId, match)
+                .doOnSuccess(v -> log.info("[C40-B3] Persisted finished match matchId={} to MatchRepository (userId={})",
+                    snap.matchId(), userId))
+                .doOnError(err -> log.warn("[C40-B3] Failed to persist finished match matchId={}: {}",
+                    snap.matchId(), err.getMessage()))
+                .onErrorResume(err -> reactor.core.publisher.Mono.empty())
+                .subscribe();
+        } catch (Exception e) {
+            log.warn("[C40-B3] persistFinishedMatch threw for matchId={}: {}",
+                result.snapshot().matchId(), e.getMessage());
+        }
+    }
+
+    private UUID extractUserIdForMatchPersistence(MatchStateSnapshot snap, CareerSave career) {
+        if (snap.userId() != null && !snap.userId().isBlank()) {
+            try { return UUID.fromString(snap.userId()); } catch (Exception ignored) {}
+        }
+        if (career != null && career.getUserId() != null) {
+            return career.getUserId();
+        }
+        // Last resort: random UUID so the save doesn't crash on a malformed
+        // userId. The match will be persisted under a junk key, but the
+        // /matches page query would miss it. Better than blocking the live flow.
+        return UUID.randomUUID();
     }
 
     /**

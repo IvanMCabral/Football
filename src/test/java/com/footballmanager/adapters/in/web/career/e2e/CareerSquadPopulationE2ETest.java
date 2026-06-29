@@ -2,6 +2,7 @@ package com.footballmanager.adapters.in.web.career.e2e;
 
 import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.application.service.career.CareerSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,10 +58,19 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
     @Autowired
     private ReactiveRedisTemplate<String, String> redisTemplate;
 
+    @Autowired
+    private CareerSessionService careerSessionService;
+
     @BeforeEach
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        // V25D75-C40 A2: also clear the in-memory CareerSessionService cache.
+        // Without this, CareerSquadFallbackE2ETest (which runs before us in
+        // the full mvn test suite) leaves a cached career for SEED_USER_ID
+        // that survives the Redis flushDb — getCareerFromCache returns the
+        // stale entry and the noCareer test sees 200 instead of 422.
+        careerSessionService.clearCache();
     }
 
     @Test

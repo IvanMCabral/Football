@@ -248,7 +248,9 @@ class LineupControllerE2ETest {
     void manualSelect_happyPath() {
         stubCareerInPhase(CareerPhase.PRE_MATCH);
         List<String> playerIds = List.of("p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11");
-        when(lineupCommandUseCase.manualSelectLineup(eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds)))
+        when(lineupCommandUseCase.manualSelectLineupWithSlots(
+                eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds),
+                argThat(slots -> slots == null || slots.isEmpty())))
             .thenReturn(Mono.just(lineupWith11Players()));
 
         webTestClient.mutateWith(

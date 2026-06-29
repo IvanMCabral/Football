@@ -446,7 +446,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
                 : (i <= 7) ? "MID"
                 : (i <= 9) ? "WINGER" : "ATT";
             String id = teamId + "-" + suffix + "-" + i;
-            // F2 fixture: bench players have higher attack/defense/technique
+            // F2 fixture: bench players have MUCH higher attack/defense/technique
             // than starters so a swap starter→bench measurably alters the
             // engine's goal output. Without this, all players have
             // identical stats and the F2 contract "substitution alters
@@ -454,12 +454,19 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             // consumption is identical regardless of the swap). The
             // existing happy-path test (success=true, substitutionsRemaining=4)
             // is unaffected because it does not assert on goals.
-            int attack = "bench".equals(suffix) ? 80 : 70;
-            int defense = "bench".equals(suffix) ? 75 : 70;
-            int technique = "bench".equals(suffix) ? 78 : 70;
-            int speed = "bench".equals(suffix) ? 80 : 70;
-            int stamina = 70;
-            int mentality = 70;
+            //
+            // V25D75-C40 A5: pre-C31 engine (post C38 revert) has lower goal
+            // rate than the V33a/V31 era. Differential widened from
+            // 80/75/78/80 vs 70/70/70/70 to 99/99/99/99 vs 30/30/30/30 so the
+            // bench swap measurably affects goal output even with low-rate
+            // engine. Test does NOT depend on absolute goal count — only
+            // that the swap CHANGES the count (>= 1 goal difference).
+            int attack = "bench".equals(suffix) ? 99 : 30;
+            int defense = "bench".equals(suffix) ? 99 : 30;
+            int technique = "bench".equals(suffix) ? 99 : 30;
+            int speed = "bench".equals(suffix) ? 99 : 30;
+            int stamina = "bench".equals(suffix) ? 99 : 30;
+            int mentality = "bench".equals(suffix) ? 99 : 30;
             // SessionPlayer.custom(name, age, position, stats..., marketValue)
             // The first arg is the player name; we then override sessionPlayerId
             // to a known value so the substitution engine can find the player

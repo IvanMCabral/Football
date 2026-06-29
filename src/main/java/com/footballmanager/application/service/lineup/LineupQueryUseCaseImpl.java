@@ -71,6 +71,17 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         List<SessionPlayer> lineup = lineupIds.stream()
             .map(id -> career.getSessionPlayers().get(id))
             .filter(Objects::nonNull)
+            // V25D75-C40 C1: filter suspended players from the returned
+            // lineup. The persisted state may include players that became
+            // suspended mid-match (red card) AFTER the lineup was set —
+            // we don't auto-cleanup the persisted state (other code paths
+            // may rely on it), but the API response should not surface a
+            // suspended player as part of the "current starting XI".
+            // Mirrors the auto-select filter (LineupCommandUseCaseImpl
+            // line ~266) and the validatePlayerFitness gate.
+            .filter(p -> !Boolean.TRUE.equals(p.getSuspended()))
+            .filter(p -> p.getSuspensionRemainingMatches() == null
+                || p.getSuspensionRemainingMatches() <= 0)
             .toList();
 
         // MVP1-lineup-cancha-1.6: leer formación persistida con fallback a
