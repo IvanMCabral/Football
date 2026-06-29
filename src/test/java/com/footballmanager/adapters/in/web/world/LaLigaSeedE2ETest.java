@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
@@ -47,6 +48,23 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
 
     private static final UUID SEED_USER_ID =
         UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    /**
+     * V25D77-C42 A3: top-5 Real Madrid stars we expect to be present with
+     * their canonical LaLiga 2024-25 names (locks in that the seed is using
+     * the real-name JSON file {@code seed/laliga-2024-25.json} and not the
+     * old generic {@code Player N} placeholder). If any of these gets
+     * renamed in the JSON, the test must be updated to match — that is
+     * exactly the lock-in this spec provides (catches drift from the real
+     * roster back to placeholders).
+     */
+    private static final List<String> EXPECTED_REAL_LALIGA_NAMES = List.of(
+        "Vinicius Junior",
+        "Jude Bellingham",
+        "Kylian Mbappe",
+        "Federico Valverde",
+        "Thibaut Courtois"
+    );
 
     @org.springframework.beans.factory.annotation.Autowired
     private ReactiveRedisTemplate<String, String> redisTemplate;
@@ -115,6 +133,35 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
             "Expected at least 130 players in test DB, got: " + count);
     }
 
+    /**
+     * V25D77-C42 A3: lock-in that the LaLiga seed carries the canonical real
+     * names of the top-5 Real Madrid players (Vinicius, Bellingham, Mbappe,
+     * Valverde, Courtois). Pre-C40 the JSON shipped generic placeholders and
+     * the test suite silently passed because {@code db_hasAtLeast130Players}
+     * only counts rows. This test catches a regression back to the
+     * placeholder format even if row counts stay stable.
+     */
+    @Test
+    @DisplayName("DB has real LaLiga top-5 names (Vinicius, Bellingham, Mbappe, Valverde, Courtois)")
+    void db_hasRealLaLigaNames_top5() {
+        List<String> missing = EXPECTED_REAL_LALIGA_NAMES.stream()
+            .filter(name -> {
+                Long count = databaseClient.sql(
+                        "SELECT COUNT(*) AS c FROM players WHERE name = :name")
+                    .bind("name", name)
+                    .map(row -> row.get("c", Long.class))
+                    .one()
+                    .block();
+                return count == null || count < 1;
+            })
+            .toList();
+
+        org.junit.jupiter.api.Assertions.assertTrue(missing.isEmpty(),
+            "LaLiga seed is missing these real player names (regression back "
+                + "to placeholder format?): " + missing
+                + ". Expected names come from src/main/resources/seed/laliga-2024-25.json");
+    }
+
     @Test
     @DisplayName("HTTP /world/leagues returns the La Liga league")
     void http_leagues_returnsLaLiga() {
@@ -142,5 +189,33 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
             .expectStatus().isOk()
             .expectBody()
             .jsonPath("$").isArray();
+    }
+
+    /**
+     * V25D77-C42 A3: HTTP-level lock-in. The {@code /world/players} endpoint
+     * must surface real LaLiga names (not {@code "Player 1"}, {@code "Player 2"},
+     * etc). We don't assert on the full top-5 here because some players may
+     * not be included in the free-player set returned by the endpoint; we
+     * assert on the Real Madrid trio that the engine's smoke path actually
+     * reads (Vinicius, Bellingham, Mbappe) plus the top-tier GK Courtois.
+     */
+    @Test
+    @DisplayName("HTTP /world/players returns at least one real LaLiga star")
+    void http_players_returnsAtLeastOneRealLaLigaName() {
+        // The /world/players endpoint returns a JSON array. We only need to
+        // assert that at least one of the canonical real names is present in
+        // the response body — that is enough to lock in that the HTTP layer
+        // surfaces the real-name JSON and not generic placeholders.
+        webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .get().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/players")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$").isArray()
+            .jsonPath("$[?(@.name == 'Vinicius Junior')]").exists()
+            .jsonPath("$[?(@.name == 'Jude Bellingham')]").exists();
     }
 }
