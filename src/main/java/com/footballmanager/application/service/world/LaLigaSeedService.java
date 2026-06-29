@@ -177,8 +177,15 @@ public class LaLigaSeedService {
                 // V25D32-F3: height + skills vienen del WorldPlayer (seteados en
                 // applyHeightAndSkillsFromDto). skillLevels se serializa a JSON
                 // (mismo codec que PlayerEntity).
-                Integer height = wp.getHeightCm();
+Integer height = wp.getHeightCm();
                 String skillsJson = serializeSkillLevelsOrNull(wp.getSkillLevels());
+                // V25D75-C40 A3: serializeSkillLevelsOrNull returns null when
+                // skillLevels map is empty. R2DBC .bind(name, null) throws
+                // "Value for parameter X must not be null. Use bindNull()".
+                // Same for heightCm. Replace null with empty JSON / 0 so the
+                // INSERT succeeds (nullable cols accept these defaults).
+                String skillsJsonForDb = skillsJson != null ? skillsJson : "{}";
+                Integer heightForDb = height != null ? height : 0;
 
                 databaseClient.sql("""
                     INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
@@ -203,8 +210,8 @@ public class LaLigaSeedService {
                     .bind("injured", false)
                     .bind("createdAt", now)
                     .bind("updatedAt", now)
-                    .bind("heightCm", height)
-                    .bind("skillLevelsJson", skillsJson)
+                    .bind("heightCm", heightForDb)
+                    .bind("skillLevelsJson", skillsJsonForDb)
                     .fetch()
                     .rowsUpdated()
                     .block();
@@ -235,7 +242,7 @@ public class LaLigaSeedService {
                 if (!msg.contains("players_pkey") && !msg.contains("duplicate key")) {
                     errors++;
                     if (errors <= 3) {
-                        log.warn("[LA-LIGA-SEED] INSERT non-pk error: id={}, name={}, error={}", realPlayerId, newName, msg);
+                        log.warn("[LA-LIGA-SEED] INSERT non-pk error: id={}, name={}, type={}, error={}", realPlayerId, newName, e.getClass().getSimpleName(), msg);
                     }
                 }
             }
