@@ -81,8 +81,15 @@ public class MatchRedisRepository {
     }
 
     public Flux<MatchEntity> findAllByUserId(UUID userId) {
-        String pattern = getKeyPatternByUser(userId);
-        return redisTemplate.keys(pattern)
+        // V25D76-C41: scan all match keys under the user's namespace.
+        // Save uses the structured key `user:{userId}:game:{gameId}:match:{matchId}`
+        // (with gameId possibly null for live matches where the engine never
+        // set the GameId on the entity). The pre-C41 find pattern
+        // `user:{userId}:match:*` (without the `game:` segment) returned
+        // empty because no saved key matched it. Use a broader pattern that
+        // covers both `game:null:match:*` and `game:{any}:match:*` paths.
+        String userPrefix = "user:" + userId + ":";
+        return redisTemplate.keys(userPrefix + "*match:*")
                 .collectList()
                 .flatMapMany(keys -> {
                     if (keys.isEmpty()) {
