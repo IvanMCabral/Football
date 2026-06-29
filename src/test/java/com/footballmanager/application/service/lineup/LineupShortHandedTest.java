@@ -9,7 +9,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
-import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.application.service.career.CareerSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 class LineupShortHandedTest {
 
     @Mock
-    private CareerRepository careerRepository;
+    private CareerSessionService careerSessionService;
 
     private LineupHelper lineupHelper;
     private LineupCommandUseCaseImpl useCase;
@@ -56,7 +56,8 @@ class LineupShortHandedTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper, new FormationService());
+        useCase = new LineupCommandUseCaseImpl(
+                careerSessionService, lineupHelper, new FormationService());
     }
 
     private SessionPlayer makePlayer(String id, String name, String position, int energy) {
@@ -216,8 +217,8 @@ class LineupShortHandedTest {
         // Squad of 11 healthy = 11 available
         List<SessionPlayer> squad = makeSquadWithAvailableCount(11, 11);
         CareerSave career = makeCareer(squad);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
@@ -228,7 +229,7 @@ class LineupShortHandedTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     // ========== V25D59-C19 P0 T2: auto-select 10 available -> THROWS ==========
@@ -240,7 +241,7 @@ class LineupShortHandedTest {
         // It throws NotEnoughPlayersException → controller maps to 422.
         List<SessionPlayer> squad = makeSquadWithAvailableCount(10, 15);
         CareerSave career = makeCareer(squad);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .expectErrorSatisfies(err -> {
@@ -253,7 +254,7 @@ class LineupShortHandedTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== V25D59-C19 P0 T3: auto-select 7 available -> THROWS ==========
@@ -264,7 +265,7 @@ class LineupShortHandedTest {
         // V25D59-C19 P0: same contract — auto-select requires 11.
         List<SessionPlayer> squad = makeSquadWithAvailableCount(7, 15);
         CareerSave career = makeCareer(squad);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .expectErrorSatisfies(err -> {
@@ -277,7 +278,7 @@ class LineupShortHandedTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== T4: auto-select 6 available -> 422 via NotEnoughPlayersException ==========
@@ -287,7 +288,7 @@ class LineupShortHandedTest {
         // Squad of 15, only 6 healthy available, 9 injured
         List<SessionPlayer> squad = makeSquadWithAvailableCount(6, 15);
         CareerSave career = makeCareer(squad);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .expectErrorSatisfies(err -> {
@@ -299,7 +300,7 @@ class LineupShortHandedTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== V25D59-C19 P0 T5: auto-select excludes injured/suspended AND throws on 9 ==========
@@ -312,7 +313,7 @@ class LineupShortHandedTest {
         // throw fires (9 < 11).
         List<SessionPlayer> squad = makeSquadWithAvailableAndSuspended(10, 15, 1);
         CareerSave career = makeCareer(squad);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .expectErrorSatisfies(err -> {
@@ -323,7 +324,7 @@ class LineupShortHandedTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== V25D59-C19 P0 T6 (renamed): no GK fallback on a full squad ==========
@@ -353,8 +354,8 @@ class LineupShortHandedTest {
             makePlayer("out-11","CF",   "CF", 78)
         );
         CareerSave career = makeCareer(squad);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
@@ -378,8 +379,8 @@ class LineupShortHandedTest {
         // Pick any 7 healthy players (1 GK + 4 DEF + 2 MID)
         List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
                                           "mid-1", "mid-2");
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
@@ -391,7 +392,7 @@ class LineupShortHandedTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     // ========== T-V24D6T2: manual-select 10 jugadores -> V24D6U2 short-handed path (no longer 400) ==========
@@ -409,8 +410,8 @@ class LineupShortHandedTest {
         List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
                                           "mid-1", "mid-2", "mid-3", "mid-4",
                                           "att-1");
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // V24D6T2 expectation: success (not 400). Pre-V24D6U2 this would have
         // thrown IllegalArgumentException("Must select exactly 11 players") and
@@ -426,7 +427,7 @@ class LineupShortHandedTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     // ========== T-V24D6T2: manual-select with injured player -> 422 (no longer 500) ==========
@@ -445,7 +446,7 @@ class LineupShortHandedTest {
         List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
                                           "mid-1", "mid-2", "mid-3", "mid-4",
                                           "att-1", "inj-extra");
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         // The use-case layer throws IllegalArgumentException; the GlobalExceptionHandler
         // maps it to 422. This test pins the use-case-layer contract; the handler
@@ -459,7 +460,7 @@ class LineupShortHandedTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== T8: manual-select 6 players -> rejected ==========
@@ -478,7 +479,7 @@ class LineupShortHandedTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== T9: manual-select more than 11 -> rejected ==========
@@ -497,7 +498,7 @@ class LineupShortHandedTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== T10: confirm lineup 7 players -> allowed ==========
@@ -510,13 +511,13 @@ class LineupShortHandedTest {
         career.getTeamStarting11().put(TEAM_ID, new ArrayList<>(List.of(
             "gk-1", "def-1", "def-2", "def-3", "def-4", "mid-1", "mid-2"
         )));
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.confirmLineup(UUID.fromString(USER_ID)))
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     // ========== T11: confirm lineup with injured player -> rejected (via validatePlayerFitness) ==========
@@ -534,8 +535,8 @@ class LineupShortHandedTest {
             "gk-1", "def-1", "def-2", "def-3", "def-4", "mid-1", "inj-0"
         )));
         squad.add(makeInjuredPlayer("inj-0", "InjuredBench", "ST"));
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // confirmLineup doesn't validate player fitness — only the size gate
         StepVerifier.create(useCase.confirmLineup(UUID.fromString(USER_ID)))
@@ -572,8 +573,8 @@ class LineupShortHandedTest {
         // 7 IDs: 1 GK + 4 DEF + 2 MID. Helper match fills 7 of 11 subdivisions in 4-4-2.
         List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
                                           "mid-1", "mid-2");
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
@@ -587,7 +588,7 @@ class LineupShortHandedTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     /**
@@ -604,8 +605,8 @@ class LineupShortHandedTest {
         CareerSave career = makeCareer(squad);
         List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
                                           "mid-1", "mid-2");
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
@@ -641,8 +642,8 @@ class LineupShortHandedTest {
         CareerSave career = makeCareer(squad);
         List<String> lineupIds = List.of("gk-1", "def-1", "def-2", "def-3", "def-4",
                                           "mid-1", "mid-2");
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
@@ -678,8 +679,8 @@ class LineupShortHandedTest {
     void autoSelect_fullSquad_stillWorks() {
         List<SessionPlayer> squad = fullHealthySquad();
         CareerSave career = makeCareer(squad);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {

@@ -6,7 +6,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
-import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.application.service.career.CareerSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,13 +44,14 @@ class V24ManualSelectLineupAvailabilityBlockingTest {
     private static final String TEAM_ID = "team-manual-001";
 
     @Mock
-    private CareerRepository careerRepository;
+    private CareerSessionService careerSessionService;
 
     private LineupCommandUseCaseImpl useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new LineupCommandUseCaseImpl(careerRepository, new LineupHelper(), new FormationService());
+        useCase = new LineupCommandUseCaseImpl(
+                careerSessionService, new LineupHelper(), new FormationService());
     }
 
     @Test
@@ -59,7 +60,7 @@ class V24ManualSelectLineupAvailabilityBlockingTest {
                 /*suspended*/ true, /*suspendRemaining*/ 1, /*injured*/ false, /*injRemaining*/ 0);
         CareerSave career = makeCareer(squad);
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         List<String> selection = pickFirst11(squad);
         assertTrue(selection.contains("sus-1"),
@@ -82,7 +83,7 @@ class V24ManualSelectLineupAvailabilityBlockingTest {
                 /*suspended*/ false, /*suspendRemaining*/ 0, /*injured*/ true, /*injRemaining*/ 0);
         CareerSave career = makeCareer(squad);
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         List<String> selection = pickFirst11(squad);
         assertTrue(selection.contains("inj-1"));
@@ -103,7 +104,7 @@ class V24ManualSelectLineupAvailabilityBlockingTest {
                 /*suspended*/ false, /*suspendRemaining*/ 1, /*injured*/ false, /*injRemaining*/ 0);
         CareerSave career = makeCareer(squad);
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         List<String> selection = pickFirst11(squad);
         assertTrue(selection.contains("sr-1"));
@@ -126,7 +127,7 @@ class V24ManualSelectLineupAvailabilityBlockingTest {
                 /*suspended*/ false, /*suspendRemaining*/ 0, /*injured*/ false, /*injRemaining*/ 2);
         CareerSave career = makeCareer(squad);
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         List<String> selection = pickFirst11(squad);
         assertTrue(selection.contains("ir-1"));

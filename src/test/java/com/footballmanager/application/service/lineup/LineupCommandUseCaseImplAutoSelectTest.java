@@ -5,7 +5,7 @@ import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
-import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 class LineupCommandUseCaseImplAutoSelectTest {
 
     @Mock
-    private CareerRepository careerRepository;
+    private CareerSessionService careerSessionService;
 
     private LineupHelper lineupHelper;
     private LineupCommandUseCaseImpl useCase;
@@ -43,7 +43,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper, new FormationService());
+        useCase = new LineupCommandUseCaseImpl(
+                careerSessionService, lineupHelper, new FormationService());
     }
 
     private SessionPlayer makePlayer(String id, String name, String position, int overall, int energy, boolean injured, boolean suspended, int suspensionRemainingMatches) {
@@ -130,8 +131,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(players);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(lineup -> {
@@ -148,7 +149,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     @Test
@@ -170,8 +171,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(players);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(lineup -> {
@@ -184,7 +185,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     @Test
@@ -206,8 +207,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(players);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(lineup -> {
@@ -219,7 +220,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     @Test
@@ -241,8 +242,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(players);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(lineup -> {
@@ -254,7 +255,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     @Test
@@ -276,8 +277,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(players);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(lineup -> {
@@ -289,7 +290,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     @Test
@@ -312,8 +313,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(players);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(lineup -> {
@@ -328,7 +329,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     @Test
@@ -351,8 +352,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(players);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(lineup -> {
@@ -367,7 +368,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 
     // ========== MVP1-lineup-cancha-1.6: HELPER-BASED match (F2) + formation persistence (F1) ==========
@@ -400,8 +401,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squad433Mixed);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         List<String> lineup = List.of("gk-mix", "lb-mix", "cb1-mix", "cb2-mix", "rb-mix",
             "cdm-mix", "cam-mix", "cm-mix", "lw-mix", "st-mix", "rw-mix");
@@ -412,7 +413,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -465,8 +466,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squadNoExact);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Forzar el orden del lineup — manualmente, sin auto-select — para tener
         // determinismo en la prueba (auto-select filtraría por categoría y ordenaría
@@ -480,7 +481,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -532,15 +533,15 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squad433);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(dto -> assertEquals(11, dto.players().size()))
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         // F1: formación persistida por team.
@@ -585,8 +586,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squad442Full);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
@@ -600,7 +601,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
         // Validar persistencia: 11 IDs en teamStarting11 + 11 entries en subdivision map.
         assertEquals(11, saved.getTeamStarting11().get(TEAM_ID).size());
@@ -637,8 +638,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squad442DefRich);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
@@ -680,8 +681,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squad442NoDef);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
@@ -724,7 +725,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squadShort);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .expectErrorSatisfies(err -> {
@@ -738,7 +739,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     // ========== V25D60-C20 P0: Auto-select slot map must cover ALL formation positions ==========
@@ -779,8 +780,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squadNoDef);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
@@ -798,7 +799,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         // El bug principal: subdivision map debe tener 11 entries, no 7.
@@ -839,15 +840,15 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career433 = makeCareer(squad433);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career433)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career433));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(dto -> assertEquals(11, dto.players().size()))
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor433 = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor433.capture());
+        verify(careerSessionService).saveCareer(captor433.capture());
         Map<String, String> teamSlots433 = captor433.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots433);
         assertEquals(11, teamSlots433.size(),
@@ -869,17 +870,17 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         // Reset mocks para el segundo flow.
-        org.mockito.Mockito.reset(careerRepository);
+        org.mockito.Mockito.reset(careerSessionService);
         CareerSave career442 = makeCareer(squad442NoDef);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career442)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career442));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> assertEquals(11, dto.players().size()))
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor442 = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor442.capture());
+        verify(careerSessionService).saveCareer(captor442.capture());
         Map<String, String> teamSlots442 = captor442.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots442);
         assertEquals(11, teamSlots442.size(),
@@ -927,8 +928,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
         );
 
         CareerSave career = makeCareer(squadOnlySt);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // El sistema debe poder completar la lineup sin lanzar.
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
@@ -951,7 +952,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots);
         assertEquals(11, teamSlots.size(),

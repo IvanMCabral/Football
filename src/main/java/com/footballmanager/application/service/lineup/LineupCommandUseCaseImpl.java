@@ -9,10 +9,10 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
+import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
-import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.Formation;
@@ -49,12 +49,23 @@ import java.util.stream.Collectors;
  *
  * <p>Manual select and confirmLineup still accept the {@code [MIN, MAX]}
  * range for backward compat with careers mid-rescue from short squads.
+ *
+ * <p>V25D78-C43 P0 (formation persistence fix): every save goes through
+ * {@link CareerSessionService#saveCareer(CareerSave)} (which atomically
+ * persists to Redis AND updates the in-memory {@code careerCache}) instead
+ * of the raw {@code careerRepository.save}. Pre-fix, the orchestrator's
+ * {@code getCareerFromCache} could return a stale pre-lineup object and
+ * the next {@code saveCareer} call would overwrite Redis with the stale
+ * state — wiping the lineup (the "0/11 players + formation null after
+ * Confirmar y Jugar" smoke symptom). Reads also go through the session
+ * service so the cache is populated on the read path; subsequent
+ * orchestrator reads then see the fresh lineup.
  */
 @Service
 @RequiredArgsConstructor
 public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
-    private final CareerRepository careerRepository;
+    private final CareerSessionService careerSessionService;
     private final LineupHelper lineupHelper;
     private final FormationService formationService;
 
@@ -62,10 +73,13 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
     public Mono<LineupDTO> autoSelectLineup(UUID userId, String formationCode) {
         Formation formation = Formation.fromString(formationCode);
 
-        return careerRepository.findById(userId.toString())
-            .flatMap(optionalCareer -> optionalCareer.isPresent()
-                ? Mono.just(optionalCareer.get())
-                : Mono.empty())
+        // V25D78-C43 P0: read directly from Redis (NOT cache) to bypass any stale
+        // cached CareerSave. Saves go through careerSessionService.saveCareer which
+        // updates the cache atomically (saves to Redis then puts the new object in
+        // the in-memory cache) — without this, the next read from
+        // MatchSimulationOrchestrator would return a stale pre-lineup object and
+        // overwrite Redis, losing the lineup (the "0/11 after continue-season" bug).
+        return careerSessionService.continueCareer(userId)
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
                 AutoSelectResult result = performAutoSelect(career, userTeamId, formation);
@@ -110,7 +124,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // of the lineup, which stays as the previous formation).
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
 
-                return careerRepository.save(career)
+                return careerSessionService.saveCareer(career)
                     .thenReturn(buildLineupDTO(lineup, formation, warnings, slotMap));
             });
     }
@@ -141,10 +155,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             return Mono.error(new IllegalArgumentException("Cannot select same player twice"));
         }
 
-        return careerRepository.findById(userId.toString())
-            .flatMap(optionalCareer -> optionalCareer.isPresent()
-                ? Mono.just(optionalCareer.get())
-                : Mono.empty())
+        return careerSessionService.continueCareer(userId)
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
                 List<String> squadIds = career.getTeamManager().getTeamSquads().get(userTeamId);
@@ -213,17 +224,14 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     career.getTeamStarting11Subdivision().remove(userTeamId);
                 }
 
-                return careerRepository.save(career)
+                return careerSessionService.saveCareer(career)
                     .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings, slotMap));
             });
     }
 
     @Override
     public Mono<Void> confirmLineup(UUID userId) {
-        return careerRepository.findById(userId.toString())
-            .flatMap(optionalCareer -> optionalCareer.isPresent()
-                ? Mono.just(optionalCareer.get())
-                : Mono.empty())
+        return careerSessionService.continueCareer(userId)
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
                 List<String> lineupIds = career.getTeamStarting11().get(userTeamId);
@@ -245,7 +253,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         + LineupRules.MAX_LINEUP_PLAYERS + " allowed."));
                 }
 
-                return careerRepository.save(career).then();
+                return careerSessionService.saveCareer(career).then();
             });
     }
 

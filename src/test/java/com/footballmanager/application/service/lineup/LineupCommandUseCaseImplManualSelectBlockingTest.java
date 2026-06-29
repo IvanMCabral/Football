@@ -6,7 +6,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
-import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.application.service.career.CareerSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
 class LineupCommandUseCaseImplManualSelectBlockingTest {
 
     @Mock
-    private CareerRepository careerRepository;
+    private CareerSessionService careerSessionService;
 
     private LineupHelper lineupHelper;
     private LineupCommandUseCaseImpl useCase;
@@ -52,7 +52,8 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper, new FormationService());
+        useCase = new LineupCommandUseCaseImpl(
+                careerSessionService, lineupHelper, new FormationService());
     }
 
     private SessionPlayer makeHealthy(String id, String name, String position) {
@@ -181,7 +182,7 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
             .filter(p -> !"sus-1".equals(p.getSessionPlayerId())).toList();
         List<String> lineup = buildLineupWithReserved(healthyPlayers, "sus-1");
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineup))
             .expectErrorSatisfies(err -> {
@@ -193,7 +194,7 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
             .verify();
 
         // Should NOT have saved the career — the request was rejected before save
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     @Test
@@ -224,7 +225,7 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
             .filter(p -> !"st-1".equals(p.getSessionPlayerId())).toList();
         List<String> lineup = buildLineupWithReserved(healthyPlayers, "st-1");
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineup))
             .expectErrorSatisfies(err -> {
@@ -235,7 +236,7 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     @Test
@@ -261,7 +262,7 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
             .filter(p -> !"inj-1".equals(p.getSessionPlayerId())).toList();
         List<String> lineup = buildLineupWithReserved(healthyPlayers, "inj-1");
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineup))
             .expectErrorSatisfies(err -> {
@@ -272,7 +273,7 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
             })
             .verify();
 
-        verify(careerRepository, never()).save(any());
+        verify(careerSessionService, never()).saveCareer(any());
     }
 
     @Test
@@ -293,8 +294,8 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
         CareerSave career = makeCareer(players);
         List<String> lineup = players.stream().map(SessionPlayer::getSessionPlayerId).toList();
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineup))
             .assertNext(dto -> {
@@ -302,6 +303,6 @@ class LineupCommandUseCaseImplManualSelectBlockingTest {
             })
             .verifyComplete();
 
-        verify(careerRepository).save(any());
+        verify(careerSessionService).saveCareer(any());
     }
 }
