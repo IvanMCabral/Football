@@ -484,6 +484,16 @@ Integer height = wp.getHeightCm();
     /**
      * Mapea posición del JSON seed a Player.Position enum.
      * El JSON puede tener variantes (MID, ATT, WINGER) que no existen en el enum.
+     *
+     * <p>V25D78-C43 P0: la categoría "DEF" del seed (e.g. Carvajal, Rudiger, Militao)
+     * se mapea a {@link Player.Position#CB} en vez de caer al catch-all default (que
+     * devolvía {@code CM} via {@code Player.Position.valueOf("DEF")} → IAE → fallback).
+     * Pre-fix, todos los "DEF" terminaban almacenados como CM, así que la auto-select
+     * no podía distinguirlos de los mediocampistas y llenaba los DEF slots con
+     * CDM/CM de OVR más alto (Valverde 85, Tchouameni 80, etc.) — el "4 DEF slots
+     * filled by off-position players" de Bug #2. Post-fix, "DEF" → CB y la auto-select
+     * puede matchear la fila DEF correctamente. Mismo razonamiento para "ATT" (que
+     * ya mapeaba a CF — kept) y "MID" (que mapeaba a CDM — kept).
      */
     private static Player.Position mapPosition(String pos) {
         if (pos == null) return Player.Position.CM;
@@ -494,6 +504,7 @@ Integer height = wp.getHeightCm();
             case "RB" -> Player.Position.RB;
             case "LWB" -> Player.Position.LWB;
             case "RWB" -> Player.Position.RWB;
+            case "DEF" -> Player.Position.CB;  // V25D78-C43: was CM (broken fallback)
             case "CDM", "MID" -> Player.Position.CDM;
             case "CM" -> Player.Position.CM;
             case "CAM" -> Player.Position.CAM;

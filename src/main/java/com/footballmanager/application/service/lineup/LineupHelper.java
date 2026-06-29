@@ -15,36 +15,58 @@ import java.util.List;
  * <p>V24D6U2: Added short-handed variants that return warnings instead
  * of throwing on position deficit. The strict methods remain for
  * legacy callers and tests.
+ *
+ * <p>V25D78-C43 P0 (auto-select role match fix): the position-category
+ * helpers ({@code isDefender} / {@code isMidfielder} / {@code isAttacker})
+ * now accept BOTH the specific role codes (CB, LB, RB, CDM, CM, etc.)
+ * AND the category codes (DEF, MID, ATT). Pre-fix, only specific role
+ * codes were accepted, which caused the LaLiga seed data (which uses
+ * category codes like "DEF" for Carvajal/Rudiger/Militao) to be silently
+ * rejected as a defender — auto-select would skip them and pick CDM/CM
+ * players with higher OVR for the 4 DEF slots, with off-position warnings
+ * ("4 DEF slots filled by off-position players"). Accepting category
+ * codes as well makes the system robust to both naming conventions
+ * (the existing squad data uses category codes; the helper-based match
+ * for slot assignment has always used specific role codes).
  */
 @Component
 public class LineupHelper {
 
     public boolean isDefender(String position) {
         return position != null && (
+            // Specific role codes
             position.equals("CB") ||
             position.equals("LB") ||
             position.equals("RB") ||
             position.equals("LWB") ||
-            position.equals("RWB")
+            position.equals("RWB") ||
+            // Category code (LaLiga seed uses "DEF" for Carvajal, Rudiger, Militao, etc.)
+            position.equals("DEF")
         );
     }
 
     public boolean isMidfielder(String position) {
         return position != null && (
+            // Specific role codes
             position.equals("CDM") ||
             position.equals("CM") ||
             position.equals("CAM") ||
             position.equals("LM") ||
             position.equals("RM") ||
             position.equals("LW") ||
-            position.equals("RW")
+            position.equals("RW") ||
+            // Category code (LaLiga seed uses "MID" for Valverde, Tchouameni, etc.)
+            position.equals("MID")
         );
     }
 
     public boolean isAttacker(String position) {
         return position != null && (
+            // Specific role codes
             position.equals("CF") ||
-            position.equals("ST")
+            position.equals("ST") ||
+            // Category code (LaLiga seed uses "ATT" for Vinicius, Mbappe, etc.)
+            position.equals("ATT")
         );
     }
 
