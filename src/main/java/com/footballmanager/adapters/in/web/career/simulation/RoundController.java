@@ -400,14 +400,14 @@ public class RoundController {
                 events
         ));
 
-        // V25D75-C40 B3: persist the finished match to MatchRepository so
-        // GET /api/v1/matches returns it. Previously the live path only
-        // updated CareerSave.matchesList (in-process fixtures) — never
-        // created the standalone Match entity. The /matches page therefore
-        // rendered an empty list. We build a fresh Match from the snapshot
-        // (no findById because the live engine never calls
-        // MatchRepository.save before this point) and save best-effort.
-        persistFinishedMatch(result, events, career);
+        // V25D75-C40 B3 + V25D76-C41: persist the finished match to
+        // MatchRepository so GET /api/v1/matches returns it. Pass the
+        // controller's userId (derived from JWT) explicitly — relying on
+        // snap.userId()/career.getUserId() caused the C41 regression where
+        // the live path returned null in both (MatchSessionRegistry never
+        // set the initial state.userId for the V24 path) and the C40
+        // fallback to UUID.randomUUID() persisted under a junk key.
+        persistFinishedMatch(result, events, career, userId);
 
         int finished = matchesFinished.incrementAndGet();
         log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", result.snapshot().matchId(), finished, totalMatches);
@@ -449,11 +449,12 @@ public class RoundController {
      */
     private void persistFinishedMatch(MatchFinishedResult result,
                                       java.util.List<com.footballmanager.domain.model.entity.MatchEvent> events,
-                                      CareerSave career) {
+                                      CareerSave career,
+                                      UUID authUserId) {
         try {
             MatchStateSnapshot snap = result.snapshot();
             if (snap.matchId() == null || snap.homeTeamId() == null || snap.awayTeamId() == null) {
-                log.warn("[C40-B3] persistFinishedMatch skipped — incomplete snapshot (matchId={}, home={}, away={})",
+                log.warn("[C41] persistFinishedMatch skipped — incomplete snapshot (matchId={}, home={}, away={})",
                     snap.matchId(), snap.homeTeamId(), snap.awayTeamId());
                 return;
             }
@@ -487,35 +488,48 @@ public class RoundController {
                 round
             );
             match.simulate(matchResult);
-            // V25D75-C40 B3 fix: persist under user namespace so the
-            // GET /api/v1/matches endpoint (which calls findAll(userId))
-            // returns it. UUID-based userId extraction (manager/careerId
-            // preferred; fallback to userId field on snapshot).
-            UUID userId = extractUserIdForMatchPersistence(snap, career);
-            matchRepository.save(userId, match)
-                .doOnSuccess(v -> log.info("[C40-B3] Persisted finished match matchId={} to MatchRepository (userId={})",
-                    snap.matchId(), userId))
-                .doOnError(err -> log.warn("[C40-B3] Failed to persist finished match matchId={}: {}",
+            // V25D75-C40 B3 + V25D76-C41 fix: use the controller's auth userId
+            // (derived from JWT) as the authoritative user namespace for
+            // MatchRepository. NEVER fall back to UUID.randomUUID() — that
+            // persisted under a junk key in C40 and /api/v1/matches could
+            // never find the match. If authUserId is somehow null, log error
+            // and skip (don't pollute the repository with orphan keys).
+            UUID userId = authUserId;
+            if (userId == null) {
+                // Defensive: also check snap.userId() + career.getUserId()
+                // before giving up. These should normally also be null in
+                // this fallback path (see C41 investigation), but we check
+                // them anyway for defense in depth.
+                String snapUserId = snap.userId();
+                if (snapUserId != null && !snapUserId.isBlank()) {
+                    try { userId = UUID.fromString(snapUserId); } catch (Exception ignored) {}
+                }
+                if (userId == null && career != null) {
+                    userId = career.getUserId();
+                }
+            }
+            if (userId == null) {
+                log.error("[C41] persistFinishedMatch ABORTED — cannot determine userId for matchId={}. "
+                    + "snap.userId={}, career.userId={}, authUserId={}. "
+                    + "Match will NOT be persisted (avoids orphan keys that /api/v1/matches cannot find).",
+                    snap.matchId(), snap.userId(),
+                    career != null ? career.getUserId() : null,
+                    authUserId);
+                return;
+            }
+            // userId is effectively final at this point (guarded by the null check above).
+            final UUID persistUserId = userId;
+            matchRepository.save(persistUserId, match)
+                .doOnSuccess(v -> log.info("[C41] Persisted finished match matchId={} to MatchRepository (userId={})",
+                    snap.matchId(), persistUserId))
+                .doOnError(err -> log.warn("[C41] Failed to persist finished match matchId={}: {}",
                     snap.matchId(), err.getMessage()))
                 .onErrorResume(err -> reactor.core.publisher.Mono.empty())
                 .subscribe();
         } catch (Exception e) {
-            log.warn("[C40-B3] persistFinishedMatch threw for matchId={}: {}",
+            log.warn("[C41] persistFinishedMatch threw for matchId={}: {}",
                 result.snapshot().matchId(), e.getMessage());
         }
-    }
-
-    private UUID extractUserIdForMatchPersistence(MatchStateSnapshot snap, CareerSave career) {
-        if (snap.userId() != null && !snap.userId().isBlank()) {
-            try { return UUID.fromString(snap.userId()); } catch (Exception ignored) {}
-        }
-        if (career != null && career.getUserId() != null) {
-            return career.getUserId();
-        }
-        // Last resort: random UUID so the save doesn't crash on a malformed
-        // userId. The match will be persisted under a junk key, but the
-        // /matches page query would miss it. Better than blocking the live flow.
-        return UUID.randomUUID();
     }
 
     /**

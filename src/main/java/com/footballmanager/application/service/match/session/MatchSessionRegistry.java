@@ -50,6 +50,15 @@ public class MatchSessionRegistry {
         String key = buildKey(userId, matchId);
         return activeSessions.computeIfAbsent(key, id -> {
             MatchState initialState = new MatchState(matchId);
+            // V25D76-C41: set userId on the initial MatchState so that the
+            // downstream MatchStateSnapshot carries it (used by
+            // RoundController.persistFinishedMatch as a secondary fallback
+            // for the userId namespace). Without this, the V24 path
+            // produced a snapshot with userId=null, forcing
+            // extractUserIdForMatchPersistence to fall back to
+            // UUID.randomUUID() — which persisted the match under an
+            // orphan key that GET /api/v1/matches could never find.
+            initialState.setUserId(userId != null ? userId.toString() : null);
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
             return new MatchSession(userId, matchId, initialState, tickHandler, v24LiveSession);
