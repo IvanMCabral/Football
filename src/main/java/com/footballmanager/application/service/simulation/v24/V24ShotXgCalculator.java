@@ -372,24 +372,16 @@ public class V24ShotXgCalculator {
         // dominates offense by 2x), also clamped to 0.5 to keep defensive ceiling
         // meaningful. This protects against degenerate edges.
         //
-        // V25D70-C31 (reverted from V33a in Sprint C37 Phase A): cap ratio set to 2.0
-        // to prevent blowout xG inflation when a high-attack team (e.g. Real Madrid, OVR 84) meets a
-        // low-defense opponent (e.g. Deportivo Verde, OVR 60). Without the cap,
-        // offFormMod/defFormMod reaches 2.98x, pushing most shots to MAX_XG=0.60
-        // and producing 50%+ conversion (runtime smoke showed 7.14 goals/match avg).
-        // With the cap, the ratio is bounded at 2.0x — strong teams still dominate
-        // but match outcomes stay in [3.0, 4.5] for intermedios per spec.
-        // The cap is symmetric (Math.max vs Math.min): if ratio is < 0.5 (defense
-        // dominates offense by 2x), also clamped to 0.5 to keep defensive ceiling
-        // meaningful. This protects against degenerate edges.
-        //
-        // V25D71-C33 (V33a): relaxed to 2.5. Reverted to 2.0 in C37 Phase A after
-        // diagnostic-runtime investigation showed runtime has multiple factors
-        // (starter selection, possession dynamics) that compound the calibration.
-        // Pre-C31 (effectively uncapped at 2.98x) empirically produced runtime
-        // top wins >=85% which is the operational target.
+        // Pre-C31 (Sprint C30): NO upper cap on formation-modifier ratio.
+// V25D70-C31 introduced cap=2.0 to prevent blowout xG inflation.
+// V25D71-C33 (V33a) relaxed to cap=2.5.
+// V25D73-C37 Phase A reverted to cap=2.0 (still over-corrected runtime).
+// V25D74-C38: REMOVED upper cap entirely — restore pre-C31 behavior.
+// Pre-C31 empirical runtime: intermedios 5.45, top wins 100% (C30 smoke).
+// The lower bound (Math.max(0.5, ...)) is preserved to keep defensive ceiling
+// meaningful when defense dominates offense by 2x.
         double formationModRatio = offFormMod / defFormMod;
-        formationModRatio = Math.max(0.5, Math.min(2.0, formationModRatio));
+        formationModRatio = Math.max(0.5, formationModRatio);
         // Reapply clamped ratio back to offFormMod (defFormMod stays untouched
         // so the documentation and downstream uses of defFormMod as protection
         // factor remain semantically correct).
@@ -539,17 +531,14 @@ public class V24ShotXgCalculator {
         else if ("5-3-2".equals(canonical)) baseMod = 0.55;
         else baseMod = 1.00; // 4-4-2 baseline
 
-        // V25D70-C31 Option 3 (reverted from V33a in Sprint C37 Phase A): coefficient
-        // reduced 0.025 → 0.012 to prevent extreme xG inflation in asymmetric
-        // matchups (e.g. Real Madrid OVR=84 vs Deportivo Verde OVR=60 → 2.98x xG
-        // boost). The reduced coefficient still gives elite teams a meaningful
-        // advantage (1.18x for OVR=85) but caps the asymptotic blowout potential.
-        //
-        // V25D71-C33 (V33a): restored to 0.025. Reverted to 0.012 in C37 Phase A after
-        // diagnostic-runtime investigation showed V33a calibration didn't account for
-        // runtime-only factors (starter selection registration-order, possession
-        // dynamics). Pre-C31 (0.025) empirically produced runtime top wins >=85%.
-        double statsAmp = 1.0 + (teamAttack - 70.0) * 0.012;
+        // Pre-C31 (Sprint C30): statsAmp coefficient = 0.025 (full stat amplification).
+// V25D70-C31 reduced to 0.012 (Option 3) to prevent extreme xG inflation.
+// V25D71-C33 (V33a) restored to 0.025.
+// V25D73-C37 Phase A reverted to 0.012 (V31).
+// V25D74-C38: RESTORED to 0.025 — full pre-C31 amplification.
+// Pre-C31 empirical runtime: intermedios 5.45, top wins 100% (C30 smoke).
+// Elite teams (OVR=85) get 1.18x modifier (vs 1.09x with C31's 0.012).
+        double statsAmp = 1.0 + (teamAttack - 70.0) * 0.025;
         double mod = baseMod * statsAmp;
         return Math.max(0.1, mod);
     }
@@ -594,11 +583,9 @@ public class V24ShotXgCalculator {
         else if ("5-3-2".equals(canonical)) baseMod = 1.25;
         else baseMod = 1.00; // 4-4-2 baseline
 
-        // V25D70-C31 Option 3 (reverted from V33a in Sprint C37 Phase A): coefficient
-        // reduced 0.025 → 0.012 (mirrors the offensive modifier change — both
-        // reduced together). Reverted to 0.012 after C37 investigation showed
-        // V33a 0.025 didn't account for runtime-only factors.
-        double statsAmp = 1.0 + (opponentDefense - 70.0) * 0.012;
+        // Pre-C31 (Sprint C30): statsAmp coefficient = 0.025 (full stat amplification).
+// V25D70-C31 reduced to 0.012. V25D74-C38 RESTORED to 0.025 (pre-C31).
+        double statsAmp = 1.0 + (opponentDefense - 70.0) * 0.025;
         double mod = baseMod * statsAmp;
         return Math.max(0.1, mod);
     }
