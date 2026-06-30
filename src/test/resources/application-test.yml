@@ -39,7 +39,14 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      # V25D78-C51 fix: previously defaulted to empty string, which caused
+      # 176 NOAUTH errors in @BeforeEach cleanRedis() whenever Redis local
+      # was running with the dev profile's `requirepass` set. Now defaults
+      # to the SAME password the dev profile uses (see
+      # src/main/resources/application-local.yml / .properties), so `mvn test`
+      # works out-of-the-box against a Redis started for the dev backend.
+      # CI / other envs can override via the REDIS_PASSWORD env var.
+      password: ${REDIS_PASSWORD:MgrRedis2026!Rotate#Secure}
       database: 15
       timeout: 10000ms
       lettuce:
