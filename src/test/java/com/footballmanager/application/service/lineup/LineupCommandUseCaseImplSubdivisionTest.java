@@ -7,7 +7,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
-import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.application.service.career.CareerSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
 class LineupCommandUseCaseImplSubdivisionTest {
 
     @Mock
-    private CareerRepository careerRepository;
+    private CareerSessionService careerSessionService;
 
     private LineupHelper lineupHelper;
     private LineupCommandUseCaseImpl useCase;
@@ -51,7 +51,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        useCase = new LineupCommandUseCaseImpl(careerRepository, lineupHelper, new FormationService());
+        useCase = new LineupCommandUseCaseImpl(
+                careerSessionService, lineupHelper, new FormationService());
     }
 
     private SessionPlayer makeHealthy(String id, String name, String position) {
@@ -144,8 +145,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots persiste subdivision map (HELPER base + front overrides = 11 entries)")
     void manualSelectWithSlots_persistsSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Slots con subdivisions que coinciden con HELPER-BASED para 4-4-2.
         List<LineupSlotDTO> slots = List.of(
@@ -171,7 +172,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         // Verify the saved career has the subdivision map populated.
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -201,8 +202,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots slots null escribe HELPER-BASED subdivision map (11 entries)")
     void manualSelectWithSlots_nullSlots_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
                 UUID.fromString(USER_ID), "4-4-2", fullLineup442(), null))
@@ -210,7 +211,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -244,8 +245,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots slots vacío escribe HELPER-BASED subdivision map (11 entries)")
     void manualSelectWithSlots_emptySlots_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
                 UUID.fromString(USER_ID), "4-4-2", fullLineup442(), List.of()))
@@ -253,7 +254,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -278,8 +279,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots filtra slots con playerId inválido, HELPER base persiste (11 entries)")
     void manualSelectWithSlots_filtersInvalidPlayerIds() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         List<LineupSlotDTO> slots = List.of(
             new LineupSlotDTO("gk-1", "GK-1"),       // válido
@@ -292,7 +293,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -321,8 +322,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         preExisting.put(TEAM_ID, new HashMap<>(Map.of("OLD-SLOT", "old-player")));
         career.setTeamStarting11Subdivision(preExisting);
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Slots con subdivisionId en blanco y playerId en blanco — todos inválidos
         List<LineupSlotDTO> slots = List.of(
@@ -338,7 +339,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -364,8 +365,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots slots con subdivisionIds blank/null no impide HELPER-BASED map (11 entries)")
     void manualSelectWithSlots_blankSubdivisionIds_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         List<LineupSlotDTO> slots = List.of(
             new LineupSlotDTO("gk-1", ""),
@@ -378,7 +379,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -404,8 +405,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.6: manualSelectLineup legacy escribe HELPER-BASED subdivision map (11 entries)")
     void manualSelectLegacy_writesHelperBasedSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineup(
                 UUID.fromString(USER_ID), "4-4-2", fullLineup442()))
@@ -413,7 +414,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -449,15 +450,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.5: autoSelectLineup 4-4-2 persiste subdivision map con 11 entries")
     void autoSelect_4_4_2_persistsSubdivisionMap() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> assertEquals(11, dto.players().size()))
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -509,15 +510,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
         );
 
         CareerSave career = makeCareer(squad433);
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(dto -> assertEquals(11, dto.players().size()))
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -558,15 +559,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
         preExisting.put(TEAM_ID, oldSlots);
         career.setTeamStarting11Subdivision(preExisting);
 
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> assertEquals(11, dto.players().size()))
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -599,8 +600,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("MVP1-lineup-cancha-1.6: manualSelectWithSlots front overrides toman precedencia sobre HELPER-BASED base")
     void manualSelectWithSlots_frontOverridesTakePrecedence() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Front envía slots explícitos. HELPER-BASED para 4-4-2 con makeFullSquad442
         // habría asignado S22-1 → def-1 (CB, primer defensor). Front overridea
@@ -615,7 +616,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             .verifyComplete();
 
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
-        verify(careerRepository).save(captor.capture());
+        verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
@@ -679,8 +680,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("V25D52-C13b: manualSelect response carries perPlayerEffectiveness keyed by subdivisionId with real multipliers")
     void v25d52_manualSelectResponse_keysAreSubdivisionId_andValuesAreRealMultipliers() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Override: send att-1 (ST) into S18-3 (MID slot) so we get a real
         // penalty (ST in MID = 0.7) instead of all-1.0. The rest follow the
@@ -733,8 +734,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     @DisplayName("V25D52-C13b: manualSelect legacy overload returns perPlayerEffectiveness keyed by subdivisionId")
     void v25d52_manualSelectLegacyResponse_keysAreSubdivisionId() {
         CareerSave career = makeCareer(makeFullSquad442());
-        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any())).thenReturn(Mono.empty());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(useCase.manualSelectLineup(
                 UUID.fromString(USER_ID), "4-4-2", fullLineup442()))
