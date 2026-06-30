@@ -16,10 +16,12 @@ spring:
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
     username: ${DB_USER:postgres}
-    # Default intentionally empty: tests must run with DB_PASSWORD set
-    # explicitly (see run-game-controller-tests.ps1). Hardcoding 'postgres'
-    # here silently breaks the smoke whenever the test DB is rotated.
-    password: ${DB_PASSWORD:}
+    # V25D78-C52 fix: mirror of C51 (Redis). Previously defaulted to empty
+    # string, causing 71 failures + 5 errors in mvn test whenever DB_PASSWORD
+    # env var was unset. Now defaults to the SAME password the dev profile
+    # uses (see src/main/resources/application-local.properties:3).
+    # CI / other envs can override via the DB_PASSWORD env var.
+    password: ${DB_PASSWORD:Mgr2026Rot!Secure#}
     pool:
       initial-size: 2
       max-size: 5
