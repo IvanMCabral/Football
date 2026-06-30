@@ -66,9 +66,11 @@ class LaLigaSeedDataTest {
 
         assertNotNull(data);
         assertEquals("La Liga 2024/25", data.league().name());
-        assertEquals(20, data.teams().size(), "LaLiga tiene 20 equipos");
-        assertTrue(data.players().size() >= 380 && data.players().size() <= 500,
-                "LaLiga seed debe tener 380-500 jugadores, fue " + data.players().size());
+        // V25D78-C55.3 B1: LaLiga extended to 60 teams (was 20) to provide
+        // real roster depth for multi-tier scheduling + auto-select flows.
+        assertEquals(60, data.teams().size(), "LaLiga tiene 60 equipos (V25D78-C55.3 B1)");
+        assertTrue(data.players().size() >= 900 && data.players().size() <= 1100,
+                "LaLiga seed debe tener 900-1100 jugadores, fue " + data.players().size());
     }
 
     @Test
@@ -80,10 +82,14 @@ class LaLigaSeedDataTest {
         }
 
         for (LaLigaSeedData.PlayerDto p : data.players()) {
-            assertTrue(
-                    p.position().equals("GK") || p.position().equals("DEF")
-                            || p.position().equals("MID") || p.position().equals("WINGER")
-                            || p.position().equals("ATT"),
+            // V25D78-C55.3 B1: extended LaLiga uses both 5-cat codes (GK/DEF/MID/WINGER/ATT)
+            // and specific role codes (CB/LB/RB/CDM/CM/CAM/CF/ST) for synthetic teams.
+            // The legacy LaLigaSeedService.mapPosition() translates 5-cat to specific
+            // role codes, so both forms are valid in the JSON.
+            java.util.Set<String> validPositions = java.util.Set.of(
+                    "GK", "DEF", "MID", "WINGER", "ATT",
+                    "CB", "LB", "RB", "CDM", "CM", "CAM", "CF", "ST");
+            assertTrue(validPositions.contains(p.position()),
                     "Posición inválida para " + p.name() + ": " + p.position());
             assertTrue(p.age() != null && p.age() >= 16 && p.age() <= 45,
                     "Edad inválida para " + p.name() + ": " + p.age());

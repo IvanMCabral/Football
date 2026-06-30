@@ -100,19 +100,20 @@ class LaLigaSeedServiceTest {
         StepVerifier.create(service.execute(userId))
                 .assertNext(result -> {
                     assertEquals("La Liga 2024/25", result.leagueName());
-                    assertEquals(20, result.teamsCount(), "Debe seedear 20 equipos");
-                    assertTrue(result.playersCount() >= 380 && result.playersCount() <= 500,
-                            "Debe seedear 380-500 jugadores, fue " + result.playersCount());
+                    // V25D78-C55.3 B1: 60 teams per league (was 20)
+                    assertEquals(60, result.teamsCount(), "Debe seedear 60 equipos (V25D78-C55.3 B1)");
+                    assertTrue(result.playersCount() >= 900 && result.playersCount() <= 1100,
+                            "Debe seedear 900-1100 jugadores, fue " + result.playersCount());
                     assertTrue(result.durationMs() >= 0);
                 })
                 .verifyComplete();
 
-        // El snapshot persistido debe tener 20 equipos y ~400 jugadores
+        // El snapshot persistido debe tener 60 equipos y ~1000 jugadores
         ArgumentCaptor<WorldSnapshot> captor = ArgumentCaptor.forClass(WorldSnapshot.class);
         verify(snapshotService, atLeastOnce()).saveSnapshot(captor.capture());
         WorldSnapshot persisted = captor.getValue();
-        assertEquals(20, persisted.getWorldTeams().size());
-        assertTrue(persisted.getWorldPlayers().size() >= 380);
+        assertEquals(60, persisted.getWorldTeams().size());
+        assertTrue(persisted.getWorldPlayers().size() >= 900);
     }
 
     @Test
@@ -135,9 +136,10 @@ class LaLigaSeedServiceTest {
         // Primera ejecución
         StepVerifier.create(service.execute(userId))
                 .assertNext(r1 -> {
-                    assertEquals(20, r1.teamsCount());
+                    // V25D78-C55.3 B1: 60 teams per league
+                    assertEquals(60, r1.teamsCount());
                     int firstPlayers = r1.playersCount();
-                    assertTrue(firstPlayers >= 380);
+                    assertTrue(firstPlayers >= 900);
 
                     // Segunda ejecución sobre el snapshot ya populado
                     WorldSnapshot populated = new WorldSnapshot();
@@ -151,8 +153,8 @@ class LaLigaSeedServiceTest {
 
                     StepVerifier.create(service.execute(userId))
                             .assertNext(r2 -> {
-                                assertEquals(20, r2.teamsCount(),
-                                        "Idempotencia: segunda ejecución debe seguir teniendo 20 equipos, no 40");
+                                assertEquals(60, r2.teamsCount(),
+                                        "Idempotencia: segunda ejecución debe seguir teniendo 60 equipos, no 120");
                                 assertEquals(firstPlayers, r2.playersCount(),
                                         "Idempotencia: segunda ejecución debe tener la misma cantidad de players");
                             })
@@ -286,16 +288,16 @@ class LaLigaSeedServiceTest {
         UUID userId = UUID.randomUUID();
 
         StepVerifier.create(service.execute(userId))
-                .assertNext(r -> assertEquals(20, r.teamsCount()))
+                .assertNext(r -> assertEquals(60, r.teamsCount()))
                 .verifyComplete();
 
         // Contrato 1: saveSnapshot fue la ÚLTIMA escritura — una sola llamada con el snapshot mutado
         ArgumentCaptor<WorldSnapshot> savedCaptor = ArgumentCaptor.forClass(WorldSnapshot.class);
         verify(snapshotService, times(1)).saveSnapshot(savedCaptor.capture());
-        assertEquals(20, savedCaptor.getValue().getWorldTeams().size(),
-                "snapshot persistido debe tener los 20 LaLiga teams");
-        assertEquals(406, savedCaptor.getValue().getWorldPlayers().size(),
-                "snapshot persistido debe tener los 406 LaLiga players");
+        assertEquals(60, savedCaptor.getValue().getWorldTeams().size(),
+                "snapshot persistido debe tener los 60 LaLiga teams (V25D78-C55.3 B1)");
+        assertEquals(1006, savedCaptor.getValue().getWorldPlayers().size(),
+                "snapshot persistido debe tener los 1006 LaLiga players (V25D78-C55.3 B1)");
 
         // Contrato 2: NO se llama deleteByUserId — la snapshot persistida debe sobrevivir
         verify(worldRepository, never()).deleteByUserId(any(UUID.class));

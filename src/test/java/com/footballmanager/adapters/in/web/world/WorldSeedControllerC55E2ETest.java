@@ -92,7 +92,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
             .expectStatus().isOk()
             .expectBody()
             .jsonPath("$.status").isEqualTo("ok")
-            .jsonPath("$.teamsInserted").isEqualTo(20)
+            .jsonPath("$.teamsInserted").isEqualTo(60)
             .jsonPath("$.playersInserted").exists();
 
         // Verify the league shows up in /world/leagues
@@ -128,7 +128,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
             .expectBody()
             .jsonPath("$.status").isEqualTo("ok")
             .jsonPath("$.leagueName").isEqualTo("Premier League 2024/25")
-            .jsonPath("$.teamsInserted").isEqualTo(20)
+            .jsonPath("$.teamsInserted").isEqualTo(60)
             .jsonPath("$.playersInserted").exists();
 
         // Verify the Premier League shows up in /world/leagues. The count may

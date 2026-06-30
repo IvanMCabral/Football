@@ -92,9 +92,10 @@ class LaLigaSeedServiceV25D36F4Test {
 
         assertNotNull(result, "execute() debe retornar un SeedResult");
         assertEquals("La Liga 2024/25", result.leagueName());
-        assertEquals(20, result.teamsCount(), "Debe haber 20 equipos La Liga");
-        assertTrue(result.playersCount() >= 380,
-            "Debe haber ~400 jugadores, got=" + result.playersCount());
+        // V25D78-C55.3 B1: 60 teams per league (was 20)
+        assertEquals(60, result.teamsCount(), "Debe haber 60 equipos La Liga (V25D78-C55.3 B1)");
+        assertTrue(result.playersCount() >= 900,
+            "Debe haber ~1000 jugadores, got=" + result.playersCount());
     }
 
     @Test
@@ -154,8 +155,8 @@ class LaLigaSeedServiceV25D36F4Test {
         assertEquals(0, mismatches,
             "V25D36-F4 reproducibilidad rota: " + mismatches + " heights difieren entre calls. "
             + "Esto indica que el Random del generator se está compartiendo entre calls.");
-        assertTrue(matches >= 380,
-            "V25D36-F4: deben coincidir >= 380 heights (todos los no-top-20), got=" + matches);
+        assertTrue(matches >= 900,
+            "V25D36-F4: deben coincidir >= 900 heights (todos los no-top-20), got=" + matches);
     }
 
     @Test
