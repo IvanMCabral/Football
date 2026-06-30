@@ -17,6 +17,7 @@ public class Team {
     private final String country;
     private BigDecimal budget;
     private Formation formation;
+    private final Division division;
     private final Set<PlayerId> squadPlayerIds;
     private final Instant createdAt;
     private Instant updatedAt;
@@ -25,17 +26,18 @@ public class Team {
     private static final int MIN_NAME_LENGTH = 3;
     private static final int MAX_NAME_LENGTH = 100;
 
-    private Team(TeamId id, UserId managerId, String name, String country, 
-                 BigDecimal budget, Formation formation, Set<PlayerId> squadPlayerIds,
+    private Team(TeamId id, UserId managerId, String name, String country,
+                 BigDecimal budget, Formation formation, Division division, Set<PlayerId> squadPlayerIds,
                  Instant createdAt, Instant updatedAt) {
         this.id = Objects.requireNonNull(id, "TeamId cannot be null");
         this.managerId = Objects.requireNonNull(managerId, "ManagerId cannot be null");
         this.country = Objects.requireNonNull(country, "Country cannot be null");
         this.formation = Objects.requireNonNull(formation, "Formation cannot be null");
-        
+        this.division = Objects.requireNonNull(division, "Division cannot be null");
+
         validateName(name);
         validateBudget(budget);
-        
+
         this.name = name;
         this.budget = budget;
         this.squadPlayerIds = squadPlayerIds != null ? new HashSet<>(squadPlayerIds) : new HashSet<>();
@@ -43,17 +45,47 @@ public class Team {
         this.updatedAt = updatedAt != null ? updatedAt : Instant.now();
     }
 
+    /**
+     * V25D78-C55.2: factory con división explícita. Usar cuando el caller
+     * sabe en qué tier va el equipo (e.g., seed inicial, post-promotion).
+     */
     public static Team create(TeamId id, UserId managerId, String name, String country,
-                             BigDecimal budget, Formation formation) {
-        return new Team(id, managerId, name, country, budget, formation, 
+                             BigDecimal budget, Formation formation, Division division) {
+        return new Team(id, managerId, name, country, budget, formation, division,
                        new HashSet<>(), Instant.now(), Instant.now());
     }
 
+    /**
+     * Backward-compat overload (default Division.PRIMERA). Usado por código
+     * legacy que no asigna división explícitamente — 10 tests + 1 main.
+     */
+    public static Team create(TeamId id, UserId managerId, String name, String country,
+                             BigDecimal budget, Formation formation) {
+        return create(id, managerId, name, country, budget, formation, Division.defaultDivision());
+    }
+
+    /**
+     * V25D78-C55.2: factory con división explícita. Usar cuando el caller
+     * sabe en qué tier va el equipo (e.g., post-promotion season status).
+     */
+    public static Team reconstruct(TeamId id, UserId managerId, String name, String country,
+                                  BigDecimal budget, Formation formation, Division division,
+                                  Set<PlayerId> squadPlayerIds,
+                                  Instant createdAt, Instant updatedAt) {
+        return new Team(id, managerId, name, country, budget, formation, division,
+                       squadPlayerIds, createdAt, updatedAt);
+    }
+
+    /**
+     * Backward-compat overload (default Division.PRIMERA). Usado por
+     * TeamEntity.toDomain() cuando la columna `division` aún no existe
+     * en la fila (pre-V25D78 o data legacy sin division).
+     */
     public static Team reconstruct(TeamId id, UserId managerId, String name, String country,
                                   BigDecimal budget, Formation formation, Set<PlayerId> squadPlayerIds,
                                   Instant createdAt, Instant updatedAt) {
-        return new Team(id, managerId, name, country, budget, formation, 
-                       squadPlayerIds, createdAt, updatedAt);
+        return reconstruct(id, managerId, name, country, budget, formation,
+                          Division.defaultDivision(), squadPlayerIds, createdAt, updatedAt);
     }
 
     private void validateName(String name) {
@@ -133,6 +165,16 @@ public class Team {
         return formation;
     }
 
+    /**
+     * V25D78-C55.2: división (tier) del equipo dentro de su liga.
+     * Immutable — se setea en construcción y solo cambia vía promotion/
+     * relegation logic (que crea un nuevo Team aggregate, no muta el
+     * existente).
+     */
+    public Division getDivision() {
+        return division;
+    }
+
     public Set<PlayerId> getSquadPlayerIds() {
         return Collections.unmodifiableSet(squadPlayerIds);
     }
@@ -160,7 +202,7 @@ public class Team {
 
     @Override
     public String toString() {
-        return String.format("Team{id=%s, name='%s', country='%s', budget=%s, squadSize=%d, formation=%s}",
-                id, name, country, budget, squadPlayerIds.size(), formation);
+        return String.format("Team{id=%s, name='%s', country='%s', division=%s, budget=%s, squadSize=%d, formation=%s}",
+                id, name, country, division, budget, squadPlayerIds.size(), formation);
     }
 }
