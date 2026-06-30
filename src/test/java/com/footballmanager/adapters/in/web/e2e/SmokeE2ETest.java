@@ -1,8 +1,10 @@
 package com.footballmanager.adapters.in.web.e2e;
 
 import com.footballmanager.AbstractIntegrationTest;
+import com.footballmanager.infrastructure.security.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -35,6 +37,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
  */
 @DisplayName("V24D7 FASE A — Smoke E2E (test infrastructure)")
 class SmokeE2ETest extends AbstractIntegrationTest {
+
+    @Autowired
+    private com.footballmanager.infrastructure.security.JwtTokenProvider jwtTokenProvider;
 
     private static final UUID SEED_USER_ID =
         UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -78,12 +83,20 @@ class SmokeE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/world/teams?userId=... returns 200 against seeded DB")
+    @DisplayName("GET /api/v1/world/teams?userId=... returns 200 against seeded DB "
+        + "(V25D78-C48: now requires authenticated — uses real JWT)")
     void worldTeamsEndpoint_returns200() {
+        // V25D78-C48: /world/** changed from permitAll to authenticated. Pre-C48 this
+        // worked anonymously; post-C48 we send a real JWT generated via JwtTokenProvider.
+        // (mockUser configurer is incompatible with the server-bound WebTestClient used
+        // by this test — the auto-bound @SpringBootTest RANDOM_PORT client connects via
+        // real HTTP, so we have to use real JWT, not mockUser.)
+        String token = jwtTokenProvider.generateToken(SEED_USER_ID.toString(), "USER");
         webTestClient.get().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/teams")
                 .queryParam("userId", SEED_USER_ID)
                 .build())
+            .header("Authorization", "Bearer " + token)
             .accept(APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk()
@@ -91,12 +104,16 @@ class SmokeE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/world/leagues?userId=... returns 200")
+    @DisplayName("GET /api/v1/world/leagues?userId=... returns 200 "
+        + "(V25D78-C48: now requires authenticated — uses real JWT)")
     void worldLeaguesEndpoint_returns200() {
+        // V25D78-C48: /world/** changed from permitAll to authenticated.
+        String token = jwtTokenProvider.generateToken(SEED_USER_ID.toString(), "USER");
         webTestClient.get().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/leagues")
                 .queryParam("userId", SEED_USER_ID)
                 .build())
+            .header("Authorization", "Bearer " + token)
             .accept(APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk()

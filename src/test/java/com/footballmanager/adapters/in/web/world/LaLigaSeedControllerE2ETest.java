@@ -214,22 +214,19 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C47 P0: POST /world/seed-la-liga — anonymous request (no JWT) still "
-        + "allowed by SecurityConfig (permitAll design intent — see SecurityConfig.java line ~144)")
-    void seed_anonymousRequest_returns200() {
-        // SecurityConfig.java:144 has `/api/v1/world/**` as permitAll().
-        // The C47 fix preserves this design intent (the world must be seedable
-        // BEFORE any user exists, during the setup flow). Anonymous impersonation
-        // is a separate concern (scope: data integrity, not privilege escalation)
-        // and is documented in the C47 audit table as a candidate for a follow-up
-        // sprint if Iván decides to harden.
+    @DisplayName("V25D78-C48 P0: POST /world/seed-la-liga — anonymous request (no JWT) "
+        + "returns 401 (post-C48 SecurityConfig: /world/** requires authenticated)")
+    void seed_anonymousRequest_returns401() {
+        // V25D78-C48: SecurityConfig.java:144 changed from permitAll to authenticated.
+        // Pre-C48 (and pre-C47): anonymous could seed anyone's WorldSnapshot.
+        // Post-C48: anonymous is rejected at the security filter level with 401.
+        // Admin pre-user setup, if needed, goes through /api/v1/admin/world/seed-la-liga
+        // (role=ADMIN required, separate code path).
         webTestClient.post().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/seed-la-liga")
                 .queryParam("userId", SEED_USER_ID)
                 .build())
             .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.status").isEqualTo("ok");
+            .expectStatus().isUnauthorized();
     }
 }
