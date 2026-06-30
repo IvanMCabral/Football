@@ -22,6 +22,14 @@ import reactor.core.publisher.Mono;
 
 @Configuration
 @EnableWebFluxSecurity
+// V25D78-C48 note: we use MANUAL role check inside AdminWorldController instead of
+// @PreAuthorize("hasRole('ADMIN')"). Reason: @PreAuthorize requires spring-aop +
+// aspectjweaver on the classpath, which the project does not have (pom.xml has no
+// spring-boot-starter-aop). Adding that dependency is scope inflation for C48
+// (security-only sprint); manual check inside the controller is the lighter-weight
+// alternative that achieves the same role-gating without the AOP dependency chain.
+// If a future sprint adds AOP, this comment can be removed and @PreAuthorize
+// re-introduced for cleaner declarative style.
 @RequiredArgsConstructor
 public class SecurityConfig {
     // V24D14-JSON401: ObjectMapper injected via Lombok @RequiredArgsConstructor
@@ -130,18 +138,29 @@ public class SecurityConfig {
                 // 3 alternative options we considered and rejected.
                 .pathMatchers("/api/v1/teams", "/api/v1/teams/**").permitAll()
                 .pathMatchers("/api/v1/career", "/api/v1/career/**").authenticated()
-                // V24D12-C-3: /api/v1/world stays permitAll intentionally. The
-                // setup flow (create leagues, teams, players, seed La Liga via
-                // /api/v1/world/seed-la-liga) must be reachable BEFORE any user
-                // exists. PlayerCommandController and TeamCommandController
-                // receive userId from the request BODY (not Authentication)
-                // because the world must be seedable without an authenticated
-                // session. WorldQueryController exposes the WorldSnapshot
-                // (leagues, teams, players) read-only to the team-selection
-                // dropdown in the front, which the user sees before creating
-                // a career. Not a security risk: the world is global reference
-                // data, not per-user data.
-                .pathMatchers("/api/v1/world", "/api/v1/world/**").permitAll()
+// V25D78-C48: /api/v1/world/** changed from permitAll to authenticated.
+                // Investigation showed that the original permitAll was based on the
+                // design intent "the world is global reference data" (V24D12-C-3 comment
+                // in SecurityConfig), but the actual implementation persists a PER-USER
+                // WorldSnapshot in Redis at key world:{userId}. With permitAll, anonymous
+                // attackers could DELETE /world/snapshot?userId=ANY_USER (data loss) or
+                // POST /world/create-random-player with body userId=ANY_USER (data
+                // corruption). Now requires authenticated user — see C47 for the
+                // authenticated-impersonation fix (JWT.userId == param.userId).
+                //
+                // Note: setup flow (register → career-setup → seed) still works because
+                // F0 investigation confirmed (a) no backend service auto-calls
+                // /world/seed-la-liga during register/login, (b) frontend authInterceptor
+                // adds Bearer token to all /world/* calls (the world is always read
+                // post-login, never pre-login in practice). Admin pre-user setup, if
+                // needed in the future, goes through /api/v1/admin/world/seed-la-liga
+                // (role=ADMIN required).
+                .pathMatchers("/api/v1/world", "/api/v1/world/**").authenticated()
+                // V25D78-C48: /api/v1/admin/world/** requires role=ADMIN. Method-level
+                // @PreAuthorize("hasRole('ADMIN')") on AdminWorldController enforces the
+                // role check after the JWT filter populates authentication. Anonymous and
+                // non-ADMIN users get 403 via @PreAuthorize denial.
+                .pathMatchers("/api/v1/admin/world", "/api/v1/admin/world/**").authenticated()
                 // V24D12-C-3: /api/v1/leagues stays permitAll intentionally.
                 // LeagueController (non-reactive) is an empty legacy class
                 // with no endpoints (only a constructor). LeagueControllerReactive
