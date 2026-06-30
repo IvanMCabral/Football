@@ -1,0 +1,426 @@
+package com.footballmanager.application.service.world;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.model.entity.WorldLeague;
+import com.footballmanager.domain.model.entity.WorldPlayer;
+import com.footballmanager.domain.model.entity.WorldSnapshot;
+import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
+import com.footballmanager.domain.ports.out.player.PlayerRepository;
+import com.footballmanager.domain.model.entity.Player.Position;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * V25D78-C55.1: Multi-league seed service. Seeds one or more of the 10
+ * "Top 10 mundial" leagues (La Liga, Premier, Bundesliga, Serie A, Ligue 1,
+ * Brasileirão, Liga Profesional, MLS, Eredivisie, Championship) into the
+ * user's {@link WorldSnapshot} + Postgres.
+ *
+ * <p><b>Architecture decision:</b> this class is a parallel to
+ * {@link LaLigaSeedService}, not a refactor. LaLigaSeedService is
+ * battle-tested (C44 + V25D32 + V25D36 + V25D37 unit tests, ~10 tests
+ * cover its specific code paths including the V25D36-F4 per-call
+ * {@link PlayerAttributesGenerator} thread-safety fix). Refactoring it
+ * to be fully generic would risk regressions for marginal gain. Instead,
+ * WorldSeedService delegates La Liga to the existing service and implements
+ * the same UPSERT pattern inline for the other 9 leagues.
+ *
+ * <p><b>Idempotency:</b> same contract as LaLigaSeedService. Re-running
+ * with the same resource file produces the same WorldSnapshot content
+ * (byte-for-byte for a deterministic seed).
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class WorldSeedService {
+
+    private final WorldSnapshotService snapshotService;
+    private final ObjectMapper objectMapper;
+    private final RedisWorldRepository worldRepository;
+    private final PlayerRepository playerRepository;
+    private final DatabaseClient databaseClient;
+    private final LaLigaSeedService laLigaSeedService;
+
+    /**
+     * Seeds a single league. Delegates La Liga to the existing service
+     * (preserves all regression tests); implements the generic pattern
+     * inline for the other 9 leagues.
+     *
+     * @param leagueType one of the 10 enum values
+     * @param userId     the user whose WorldSnapshot gets the league
+     * @return Mono with the {@link SeedResult} summary
+     */
+    public Mono<SeedResult> seedLeague(LeagueType leagueType, UUID userId) {
+        if (leagueType == LeagueType.LALIGA) {
+            // Delegate — preserves all LaLigaSeedService unit tests. Map the
+            // legacy SeedResult (LaLigaSeedService.SeedResult) to ours so callers
+            // see a single SeedResult type.
+            return laLigaSeedService.execute(userId)
+                    .map(ll -> new SeedResult(ll.leagueName(), ll.teamsCount(),
+                            ll.playersCount(), ll.durationMs()));
+        }
+        long start = System.currentTimeMillis();
+        PlayerAttributesGenerator gen = new PlayerAttributesGenerator();
+        String logPrefix = "[" + leagueType.slug().toUpperCase() + "-SEED]";
+        log.info("{} starting for userId={}", logPrefix, userId);
+
+        return loadSeedData(leagueType.resourcePath())
+                .flatMap(seed -> snapshotService.getSnapshot(userId)
+                        .flatMap(snapshot -> applySeed(userId, snapshot, seed, gen, logPrefix, start)));
+    }
+
+    /**
+     * Seeds ALL 10 leagues (idempotent — can be called repeatedly to top up
+     * missing leagues). Used by {@code POST /world/seed-all}.
+     *
+     * <p>Reuses {@link LaLigaSeedService} for La Liga and applies each other
+     * league sequentially. Sequential is OK because the seed operations are
+     * fast (mostly Redis reads + writes) and concurrent writes to the same
+     * WorldSnapshot would race anyway.
+     */
+    public Mono<AllSeedResult> seedAllLeagues(UUID userId) {
+        log.info("[WORLD-SEED-ALL] starting for userId={}", userId);
+        List<SeedResult> results = new ArrayList<>();
+        // Use concatMap (not flatMap) so each seedLeague waits for the previous
+        // one to finish its saveSnapshot. flatMap runs in parallel by default
+        // (concurrency=256), which causes race conditions: multiple parallel
+        // calls all read the same empty snapshot, each adds its league, the last
+        // saveSnapshot overwrites the others, and only 1 league survives.
+        return Flux.fromArray(LeagueType.values())
+                .concatMap(lt -> seedLeague(lt, userId)
+                        .doOnNext(results::add)
+                        .onErrorResume(e -> {
+                            log.warn("[WORLD-SEED-ALL] league {} failed: {}", lt.slug(), e.getMessage());
+                            return Mono.empty();
+                        }))
+                .collectList()
+                .map(seedResults -> new AllSeedResult(results));
+    }
+
+    // ========== Loading ==========
+
+    private Mono<LaLigaSeedData> loadSeedData(String resourcePath) {
+        return Mono.fromCallable(() -> {
+            try (InputStream in = new ClassPathResource(resourcePath).getInputStream()) {
+                return objectMapper.readValue(in, LaLigaSeedData.class);
+            }
+        });
+    }
+
+    // ========== Seed application ==========
+
+    private Mono<SeedResult> applySeed(UUID userId, WorldSnapshot snapshot,
+                                       LaLigaSeedData seed,
+                                       PlayerAttributesGenerator gen,
+                                       String logPrefix, long start) {
+        UUID leagueId = ensureLeague(snapshot, seed);
+        Map<String, WorldTeam> teamsByName = ensureTeams(snapshot, seed, leagueId);
+        List<WorldPlayer> players = ensurePlayers(snapshot, seed, teamsByName, gen);
+        persistPlayerNamesInPostgres(userId, players, logPrefix);
+
+        return snapshotService.saveSnapshot(snapshot)
+                .map(saved -> {
+                    long dur = System.currentTimeMillis() - start;
+                    log.info("{} done: teams={} players={} durationMs={}",
+                            logPrefix, teamsByName.size(), players.size(), dur);
+                    return new SeedResult(seed.league().name(),
+                            teamsByName.size(), players.size(), dur);
+                });
+    }
+
+    private UUID ensureLeague(WorldSnapshot snapshot, LaLigaSeedData seed) {
+        if (snapshot.getLeagues() == null) snapshot.setLeagues(new ArrayList<>());
+        // Idempotency: check by NAME (not by UUID). Real-league IDs from
+        // Postgres (loaded via snapshotCreator.create) use the leagues.id UUID
+        // column, while seed-only leagues use a name-derived UUID. The only
+        // stable identifier across both sources is the league name.
+        String seedLeagueName = seed.league().name();
+        String seedCountry = seed.league().country() == null ? "" : seed.league().country();
+        WorldLeague existing = snapshot.getLeagues().stream()
+                .filter(l -> l.getName() != null && l.getName().equals(seedLeagueName))
+                .findFirst().orElse(null);
+        if (existing != null) {
+            return existing.getRealLeagueId();
+        }
+        UUID leagueId = UUID.nameUUIDFromBytes(
+                (seedLeagueName + "|" + seedCountry).getBytes());
+        snapshot.getLeagues().add(
+                WorldLeague.fromRealLeague(leagueId,
+                        seedLeagueName,
+                        seedCountry,
+                        seed.league().tier() == null ? 1 : seed.league().tier()));
+        return leagueId;
+    }
+
+    private Map<String, WorldTeam> ensureTeams(WorldSnapshot snapshot,
+                                                LaLigaSeedData seed, UUID leagueId) {
+        if (snapshot.getWorldTeams() == null) snapshot.setWorldTeams(new HashMap<>());
+        Map<String, WorldTeam> byName = indexTeamsByName(snapshot);
+        Map<String, WorldTeam> result = new HashMap<>();
+        for (LaLigaSeedData.TeamDto dto : seed.teams()) {
+            String key = dto.name().toLowerCase();
+            WorldTeam existing = byName.get(key);
+            if (existing != null) {
+                updateTeamFromDto(existing, dto, leagueId);
+                result.put(key, existing);
+            } else {
+                WorldTeam created = createTeamFromDto(dto, leagueId, seed.league().country());
+                snapshot.getWorldTeams().put(created.getWorldTeamId(), created);
+                result.put(key, created);
+            }
+        }
+        return result;
+    }
+
+    private Map<String, WorldTeam> indexTeamsByName(WorldSnapshot snapshot) {
+        Map<String, WorldTeam> map = new HashMap<>();
+        for (WorldTeam t : snapshot.getWorldTeams().values()) {
+            if (t.getName() != null) map.put(t.getName().toLowerCase(), t);
+        }
+        return map;
+    }
+
+    private WorldTeam createTeamFromDto(LaLigaSeedData.TeamDto dto,
+                                        UUID leagueId, String country) {
+        UUID teamId = UUID.nameUUIDFromBytes(("team|" + dto.name()).getBytes());
+        BigDecimal budget = BigDecimal.valueOf(dto.budgetMillions() == null ? 50L : dto.budgetMillions())
+                .multiply(BigDecimal.valueOf(1_000_000L));
+        return WorldTeam.fromRealTeam(teamId, leagueId, dto.name(),
+                country == null ? "" : country,
+                dto.city(), budget,
+                dto.formation() == null ? "4-3-3" : dto.formation());
+    }
+
+    private void updateTeamFromDto(WorldTeam team, LaLigaSeedData.TeamDto dto, UUID leagueId) {
+        if (dto.formation() != null) team.setBaseFormation(dto.formation());
+        if (dto.budgetMillions() != null) {
+            team.setBaseBudget(BigDecimal.valueOf(dto.budgetMillions())
+                    .multiply(BigDecimal.valueOf(1_000_000L)));
+        }
+        if (dto.city() != null) team.setCity(dto.city());
+        if (leagueId != null) team.setRealLeagueId(leagueId);
+    }
+
+    private List<WorldPlayer> ensurePlayers(WorldSnapshot snapshot, LaLigaSeedData seed,
+                                            Map<String, WorldTeam> teamsByName,
+                                            PlayerAttributesGenerator gen) {
+        if (snapshot.getWorldPlayers() == null) snapshot.setWorldPlayers(new HashMap<>());
+        Map<String, WorldPlayer> existing = indexPlayersByTeamAndName(snapshot);
+        List<WorldPlayer> affected = new ArrayList<>();
+        for (LaLigaSeedData.PlayerDto dto : seed.players()) {
+            String teamKey = dto.team().toLowerCase();
+            WorldTeam team = teamsByName.get(teamKey);
+            if (team == null) {
+                log.warn("seed: player {} references unknown team {}", dto.name(), dto.team());
+                continue;
+            }
+            String key = (team.getWorldTeamId() + "|" + dto.name()).toLowerCase();
+            WorldPlayer wp = existing.get(key);
+            if (wp != null) {
+                updatePlayerFromDto(wp, dto, team, gen);
+                affected.add(wp);
+            } else {
+                wp = createPlayerFromDto(dto, team, gen);
+                snapshot.getWorldPlayers().put(wp.getWorldPlayerId(), wp);
+                affected.add(wp);
+            }
+        }
+        return affected;
+    }
+
+    private Map<String, WorldPlayer> indexPlayersByTeamAndName(WorldSnapshot snapshot) {
+        Map<String, WorldPlayer> map = new HashMap<>();
+        for (WorldPlayer p : snapshot.getWorldPlayers().values()) {
+            if (p.getWorldTeamId() != null && p.getName() != null) {
+                map.put((p.getWorldTeamId() + "|" + p.getName()).toLowerCase(), p);
+            }
+        }
+        return map;
+    }
+
+    private WorldPlayer createPlayerFromDto(LaLigaSeedData.PlayerDto dto, WorldTeam team,
+                                           PlayerAttributesGenerator gen) {
+        UUID pid = UUID.nameUUIDFromBytes(
+                ("player|" + team.getName() + "|" + dto.name()).getBytes());
+        BigDecimal mv = calculateMarketValue(
+                dto.baseAttack(), dto.baseDefense(), dto.baseTechnique(),
+                dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), dto.age());
+        WorldPlayer wp = WorldPlayer.fromRealPlayer(
+                pid, team.getWorldTeamId(),
+                dto.name(), dto.age(),
+                dto.position() == null ? "MID" : dto.position(),
+                dto.baseAttack(), dto.baseDefense(),
+                dto.baseTechnique(), dto.baseSpeed(),
+                dto.baseStamina(), dto.baseMentality(),
+                mv);
+        wp.setHeightCm(dto.heightCm() != null ? dto.heightCm() : gen.generateHeightCm());
+        Map<PlayerSkill, Integer> skills = dto.skillLevels() != null
+                ? dto.skillLevels()
+                : gen.generateSkillLevels();
+        wp.setSkillLevels(skills);
+        return wp;
+    }
+
+    private void updatePlayerFromDto(WorldPlayer wp, LaLigaSeedData.PlayerDto dto,
+                                     WorldTeam team, PlayerAttributesGenerator gen) {
+        if (dto.age() != null) wp.setAge(dto.age());
+        if (dto.baseAttack() != null) wp.setBaseAttack(dto.baseAttack());
+        if (dto.baseDefense() != null) wp.setBaseDefense(dto.baseDefense());
+        if (dto.baseTechnique() != null) wp.setBaseTechnique(dto.baseTechnique());
+        if (dto.baseSpeed() != null) wp.setBaseSpeed(dto.baseSpeed());
+        if (dto.baseStamina() != null) wp.setBaseStamina(dto.baseStamina());
+        if (dto.baseMentality() != null) wp.setBaseMentality(dto.baseMentality());
+        if (dto.position() != null) wp.setPosition(dto.position());
+        if (dto.heightCm() != null) wp.setHeightCm(dto.heightCm());
+        if (dto.skillLevels() != null) wp.setSkillLevels(dto.skillLevels());
+    }
+
+    /** Map MANAGER's 5-cat code (GK/DEF/MID/WINGER/ATT) → {@link Position} enum for the
+     *  Postgres `players` table (which uses the 15-role enum). */
+    private Position mapPositionString(String pos) {
+        if (pos == null) return Position.CM;
+        return switch (pos.toUpperCase()) {
+            case "GK" -> Position.GK;
+            case "DEF" -> Position.CB;
+            case "MID" -> Position.CM;
+            case "WINGER" -> Position.LW;
+            case "ATT" -> Position.ST;
+            default -> Position.CM;
+        };
+    }
+
+    private BigDecimal calculateMarketValue(Integer att, Integer def, Integer tech,
+                                            Integer spd, Integer sta, Integer men, Integer age) {
+        if (att == null || def == null || tech == null || spd == null || sta == null || men == null) {
+            return BigDecimal.valueOf(5_000_000L);
+        }
+        double overall = (att + def + tech + spd + sta + men) / 6.0;
+        double ageFactor = age == null ? 1.0 : Math.max(0.4, 1.0 - Math.abs(26 - age) * 0.04);
+        long value = (long) (Math.pow(overall - 50, 2.5) * 50_000L * ageFactor);
+        if (value < 100_000L) value = 100_000L;
+        return BigDecimal.valueOf(value);
+    }
+
+    // ========== Postgres persistence (mirrors LaLigaSeedService for new ligas) ==========
+
+    private void persistPlayerNamesInPostgres(UUID userId, List<WorldPlayer> players,
+                                              String logPrefix) {
+        Set<UUID> teamIds = players.stream()
+                .filter(wp -> wp.getWorldTeamId() != null)
+                .map(wp -> {
+                    try { return UUID.fromString(wp.getWorldTeamId()); }
+                    catch (Exception e) { return null; }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (!teamIds.isEmpty()) {
+            try {
+                databaseClient.sql("DELETE FROM team_squad WHERE team_id = ANY(:teamIds)")
+                        .bind("teamIds", teamIds.toArray(UUID[]::new))
+                        .fetch().rowsUpdated().block();
+            } catch (Exception e) {
+                log.warn("{} team_squad cleanup failed: {}", logPrefix, e.getMessage());
+            }
+        }
+        int inserted = 0, squadEntries = 0, skipped = 0, errors = 0;
+        java.time.Instant now = java.time.Instant.now();
+        for (WorldPlayer wp : players) {
+            if (wp.getRealPlayerId() == null) { skipped++; continue; }
+            UUID pid = wp.getRealPlayerId();
+            try {
+                Position pos = mapPositionString(wp.getPosition());
+                Integer height = wp.getHeightCm();
+                String skillsJson = serializeSkillLevelsOrNull(wp.getSkillLevels());
+                String skillsJsonForDb = skillsJson != null ? skillsJson : "{}";
+                Integer heightForDb = height != null ? height : 0;
+
+                databaseClient.sql("""
+                    INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
+                    VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :mv, :energy, :injured, :createdAt, :updatedAt, :heightCm, :skillLevelsJson)
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        height_cm = EXCLUDED.height_cm,
+                        skill_levels_json = EXCLUDED.skill_levels_json
+                    """)
+                    .bind("id", pid)
+                    .bind("name", wp.getName())
+                    .bind("age", wp.getAge() != null ? wp.getAge() : 25)
+                    .bind("position", pos.name())
+                    .bind("attack", wp.getBaseAttack() != null ? wp.getBaseAttack() : 50)
+                    .bind("defense", wp.getBaseDefense() != null ? wp.getBaseDefense() : 50)
+                    .bind("technique", wp.getBaseTechnique() != null ? wp.getBaseTechnique() : 50)
+                    .bind("speed", wp.getBaseSpeed() != null ? wp.getBaseSpeed() : 50)
+                    .bind("stamina", wp.getBaseStamina() != null ? wp.getBaseStamina() : 50)
+                    .bind("mentality", wp.getBaseMentality() != null ? wp.getBaseMentality() : 50)
+                    .bind("mv", wp.getBaseMarketValue() != null
+                            ? wp.getBaseMarketValue()
+                            : BigDecimal.valueOf(5_000_000L))
+                    .bind("energy", 100)
+                    .bind("injured", false)
+                    .bind("createdAt", now)
+                    .bind("updatedAt", now)
+                    .bind("heightCm", heightForDb)
+                    .bind("skillLevelsJson", skillsJsonForDb)
+                    .fetch().rowsUpdated().block();
+
+                if (wp.getWorldTeamId() != null) {
+                    try {
+                        UUID worldTeamId = UUID.fromString(wp.getWorldTeamId());
+                        databaseClient.sql("""
+                            INSERT INTO team_squad (team_id, player_id)
+                            VALUES (:teamId, :playerId)
+                            ON CONFLICT DO NOTHING
+                            """)
+                            .bind("teamId", worldTeamId)
+                            .bind("playerId", pid)
+                            .fetch().rowsUpdated().block();
+                        squadEntries++;
+                    } catch (Exception sqle) { /* ignore */ }
+                }
+                inserted++;
+            } catch (Exception e) {
+                String msg = e.getMessage() != null ? e.getMessage() : "";
+                if (!msg.contains("players_pkey") && !msg.contains("duplicate key")) {
+                    errors++;
+                }
+            }
+        }
+        log.info("{} postgres persist: total={}, inserted={}, squadEntries={}, skipped={}, errors={}",
+                logPrefix, players.size(), inserted, squadEntries, skipped, errors);
+    }
+
+    private String serializeSkillLevelsOrNull(Map<PlayerSkill, Integer> skills) {
+        if (skills == null || skills.isEmpty()) return null;
+        try {
+            return objectMapper.writeValueAsString(skills);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // ========== Result types ==========
+
+    /** Per-league seed result (mirrors {@link LaLigaSeedService.SeedResult}). */
+    public record SeedResult(String leagueName, int teamsCount, int playersCount, long durationMs) {}
+
+    /** Result for seed-all — list of per-league results. */
+    public record AllSeedResult(List<SeedResult> perLeague) {}
+}
