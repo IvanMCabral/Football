@@ -249,7 +249,8 @@ class LaLigaSeedServiceV25D32Test {
         StepVerifier.create(service.execute(userId))
                 .assertNext(result -> {
                     assertEquals("La Liga 2024/25", result.leagueName());
-                    assertEquals(20, result.teamsCount());
+                    // V25D78-C55.3 B1: 60 teams per league (was 20)
+                    assertEquals(60, result.teamsCount());
                 })
                 .verifyComplete();
     }
