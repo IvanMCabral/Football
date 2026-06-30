@@ -328,4 +328,40 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
             .as("3 consecutive seed-alls must produce stable leagues count")
             .isEqualTo(leaguesAfter2);
     }
+
+    @Test
+    @DisplayName("V25D78-C55.1.1 (cosmetic fix): POST /world/seed/{slug} returns userId as UUID, "
+        + "not the league name (regression for the REVISOR-reported cosmetic bug)")
+    void seedLeague_responseUserId_isUuid_notLeagueName() {
+        JsonNode body = webTestClient.mutateWith(mockUser(USER_ID.toString()))
+            .post().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/seed/premier")
+                .queryParam("userId", USER_ID)
+                .build())
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(JsonNode.class)
+            .returnResult().getResponseBody();
+
+        // The userId field MUST be a UUID string that parses back into the
+        // same USER_ID we sent. Pre-fix this returned the league name
+        // "Premier League 2024/25", which is clearly not a UUID.
+        String userIdStr = body.path("userId").asText();
+        org.assertj.core.api.Assertions.assertThat(userIdStr)
+            .as("$.userId must be a UUID string, not a league name")
+            .isNotBlank()
+            .isEqualTo(USER_ID.toString());
+
+        // Defense-in-depth: also try UUID.fromString to catch malformed UUIDs.
+        UUID parsed = UUID.fromString(userIdStr);
+        org.assertj.core.api.Assertions.assertThat(parsed)
+            .as("$.userId must round-trip through UUID.fromString")
+            .isEqualTo(USER_ID);
+
+        // Sanity: the leagueName field is still present (it should NOT have
+        // replaced userId — they are independent fields).
+        org.assertj.core.api.Assertions.assertThat(body.path("leagueName").asText())
+            .as("$.leagueName must still be the human-readable league name")
+            .isEqualTo("Premier League 2024/25");
+    }
 }

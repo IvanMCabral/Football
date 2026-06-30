@@ -53,7 +53,7 @@ public class WorldSeedController {
                     .body(error("UNKNOWN_LEAGUE", "No league with slug '" + slug + "'")));
         }
         return worldSeedService.seedLeague(lt, userId)
-                .map(result -> ResponseEntity.ok(success(result)))
+                .map(result -> ResponseEntity.ok(success(userId, result)))
                 .onErrorResume(e -> {
                     log.error("[WORLD-SEED] seed/{}/{} failed with full stack:", lt.slug(), userId, e);
                     e.printStackTrace();
@@ -84,10 +84,13 @@ public class WorldSeedController {
                         .body(error("SEED_ALL_FAILED", e.getMessage()))));
     }
 
-    private Map<String, Object> success(WorldSeedService.SeedResult r) {
+    private Map<String, Object> success(UUID userId, WorldSeedService.SeedResult r) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", "ok");
-        body.put("userId", r.leagueName() != null ? r.leagueName() : "");
+        // V25D78-C55.1.1: fix cosmetic bug — previously this field held the
+        // league name, but it should be the userId UUID (matches line 78 in
+        // seedAll and the SeedResult semantics: the result is per-user).
+        body.put("userId", userId.toString());
         body.put("leagueName", r.leagueName());
         body.put("teamsInserted", r.teamsCount());
         body.put("playersInserted", r.playersCount());
