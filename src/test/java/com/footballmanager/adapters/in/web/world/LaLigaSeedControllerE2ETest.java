@@ -168,4 +168,68 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
             .as("snapshot.worldPlayers must contain the 406 LaLiga players (size >= 406)")
             .isGreaterThanOrEqualTo(406);
     }
+
+    @Test
+    @DisplayName("V25D78-C47 P0: POST /world/seed-la-liga — JWT user CAN seed for self (200 OK, "
+        + "regression guard for the happy path after C47 security fix)")
+    void seed_jwtMatchesParam_returns200() {
+        // Same UUID as mockUser → expected behavior preserved (200 OK)
+        webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .post().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/seed-la-liga")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.status").isEqualTo("ok")
+            .jsonPath("$.userId").isEqualTo(SEED_USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("V25D78-C47 P0: POST /world/seed-la-liga — JWT user A trying to seed for "
+        + "user B → 403 IMPERSONATION_FORBIDDEN (regression for the C44 finding)")
+    void seed_jwtDoesNotMatchParam_returns403() {
+        // DIFFERENT UUIDs — JWT for user A, param for user B. This is the
+        // exact attack vector REVISOR C44 found.
+        UUID impostorUuid = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
+        webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .post().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/seed-la-liga")
+                .queryParam("userId", impostorUuid)
+                .build())
+            .exchange()
+            .expectStatus().isForbidden()
+            .expectBody()
+            .jsonPath("$.code").isEqualTo("IMPERSONATION_FORBIDDEN")
+            .jsonPath("$.status").isEqualTo(403);
+
+        // Verify NO seed happened in Redis for the impostor target
+        String impostorRedisKey = "world:" + impostorUuid;
+        Long impostorBytes = redisTemplate.opsForValue().size(impostorRedisKey).block();
+        assertThat(impostorBytes == null || impostorBytes == 0L)
+            .as("V25D78-C47 contract: NO Redis write for impostor target (impostorUuid="
+                + impostorUuid + ", bytes=" + impostorBytes + ")")
+            .isTrue();  // STRLEN should be 0 (key absent) — no seed performed
+    }
+
+    @Test
+    @DisplayName("V25D78-C47 P0: POST /world/seed-la-liga — anonymous request (no JWT) still "
+        + "allowed by SecurityConfig (permitAll design intent — see SecurityConfig.java line ~144)")
+    void seed_anonymousRequest_returns200() {
+        // SecurityConfig.java:144 has `/api/v1/world/**` as permitAll().
+        // The C47 fix preserves this design intent (the world must be seedable
+        // BEFORE any user exists, during the setup flow). Anonymous impersonation
+        // is a separate concern (scope: data integrity, not privilege escalation)
+        // and is documented in the C47 audit table as a candidate for a follow-up
+        // sprint if Iván decides to harden.
+        webTestClient.post().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/seed-la-liga")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.status").isEqualTo("ok");
+    }
 }
