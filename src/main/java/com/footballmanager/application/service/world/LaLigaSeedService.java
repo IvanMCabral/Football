@@ -105,13 +105,18 @@ public class LaLigaSeedService {
         // encuentre los jugadores reales (no placeholders) cuando reconstruya el WorldView después del seed
         persistPlayerNamesInPostgres(userId, createdOrUpdated);
 
-        // Capa 2: forzar regeneración del WorldSnapshot borrando el snapshot viejo de Redis
-        // después del save. Así, un próximo getOrCreateSnapshot reconstruirá desde el state real.
+        // Capa 2 (FIX V25D78-C44): persistir el WorldSnapshot en Redis AHORA MISMO
+        // como ÚLTIMA escritura. El bug previo llamaba worldRepository.deleteByUserId(userId)
+        // después de saveSnapshot — eso borraba la snapshot recién guardada y dejaba
+        // STRLEN=0 / TTL=-2 al volver al cliente. El rebuild defensivo (Borrar y reconstruir)
+        // ya no es necesario: WorldSnapshotService.getSnapshot tiene switchIfEmpty que
+        // crea snapshot fresco si Redis está vacío, así que el snapshot persistido es
+        // el estado canónico. La persistencia en Postgres (Capa 3 arriba) sigue siendo
+        // defensa-en-profundidad para rebuilds por TTL o restart.
         return snapshotService.saveSnapshot(snapshot)
-                .flatMap(saved -> worldRepository.deleteByUserId(userId)
-                        .doOnNext(deleted -> log.info("[LA-LIGA-SEED] snapshot invalidated for rebuild, userId={}, deleted={}", userId, deleted))
-                        .thenReturn(saved))
-                .doOnSuccess(s -> log.info("[LA-LIGA-SEED] snapshot regenerated for userId={}", userId))
+                .doOnSuccess(s -> log.info("[LA-LIGA-SEED] snapshot persisted for userId={} ({} worldTeams, {} worldPlayers)",
+                        userId, snapshot.getWorldTeams() == null ? 0 : snapshot.getWorldTeams().size(),
+                        snapshot.getWorldPlayers() == null ? 0 : snapshot.getWorldPlayers().size()))
                 .map(saved -> {
                     long durationMs = System.currentTimeMillis() - start;
                     int teamsCount = teamsByName.size();

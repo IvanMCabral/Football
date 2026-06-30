@@ -27,8 +27,14 @@ import static org.mockito.Mockito.*;
  *
  * <p>Verifica: idempotencia, conteo de equipos/players, asignación de league, persistencia.
  *
- * <p><b>V24D8-BUG-002 update:</b> agrega verificación de Capa 2 (deleteByUserId del WorldSnapshot
- * viejo) y Capa 3 (persistPlayerNamesInPostgres con DatabaseClient).
+ * <p><b>V24D8-BUG-002 update:</b> agrega verificación de Capa 3 (persistPlayerNamesInPostgres con DatabaseClient).
+ *
+ * <p><b>V25D78-C44 update:</b> antes verificaba que Capa 2 llamaba
+ * {@code deleteByUserId} (que borraba la snapshot recién guardada — el bug).
+ * La inversión del test ahora verifica que {@code saveSnapshot} es la ÚLTIMA
+ * escritura y {@code deleteByUserId} NO se llama. Rebuild defensivo eliminado
+ * porque {@code WorldSnapshotService.getSnapshot} ya tiene {@code switchIfEmpty}
+ * para regenerar si la snapshot está vacía.
  */
 class LaLigaSeedServiceTest {
 
@@ -257,9 +263,16 @@ class LaLigaSeedServiceTest {
     // ========== V24D8-BUG-002 Capas 2 y 3 ==========
 
     @Test
-    void execute_deletesOldWorldSnapshot_viaLayer2() {
-        // V24D8-BUG-002 Capa 2: cada seed debe invalidar el WorldSnapshot viejo en Redis
-        // (deleteByUserId) después del save, para forzar un rebuild desde la fuente de verdad.
+    void execute_persistsSnapshotInRedis_withoutDeleting_viaLayer2() {
+        // V25D78-C44 fix: el seed persiste el WorldSnapshot en Redis (saveSnapshot) como
+        // ÚLTIMA escritura — la snapshot DEBE quedar en Redis inmediatamente. Antes,
+        // aplicar Capa 2 llamaba deleteByUserId DESPUÉS del save, borrando la snapshot
+        // recién guardada (STRLEN=0 / TTL=-2 al volver al cliente). Eso era el bug
+        // reportado.
+        //
+        // Contrato post-fix:
+        //   1) saveSnapshot se llama 1 vez con el snapshot mutado (con LaLiga teams + players)
+        //   2) deleteByUserId NUNCA se llama — la snapshot persistida ES el estado canónico
         WorldSnapshot emptySnapshot = new WorldSnapshot();
         emptySnapshot.setUserId(UUID.randomUUID());
         emptySnapshot.setLeagues(new java.util.ArrayList<>());
@@ -276,8 +289,16 @@ class LaLigaSeedServiceTest {
                 .assertNext(r -> assertEquals(20, r.teamsCount()))
                 .verifyComplete();
 
-        // Verifica que deleteByUserId se llamó exactamente 1 vez con el userId correcto
-        verify(worldRepository, times(1)).deleteByUserId(eq(userId));
+        // Contrato 1: saveSnapshot fue la ÚLTIMA escritura — una sola llamada con el snapshot mutado
+        ArgumentCaptor<WorldSnapshot> savedCaptor = ArgumentCaptor.forClass(WorldSnapshot.class);
+        verify(snapshotService, times(1)).saveSnapshot(savedCaptor.capture());
+        assertEquals(20, savedCaptor.getValue().getWorldTeams().size(),
+                "snapshot persistido debe tener los 20 LaLiga teams");
+        assertEquals(406, savedCaptor.getValue().getWorldPlayers().size(),
+                "snapshot persistido debe tener los 406 LaLiga players");
+
+        // Contrato 2: NO se llama deleteByUserId — la snapshot persistida debe sobrevivir
+        verify(worldRepository, never()).deleteByUserId(any(UUID.class));
     }
 
     @Test
