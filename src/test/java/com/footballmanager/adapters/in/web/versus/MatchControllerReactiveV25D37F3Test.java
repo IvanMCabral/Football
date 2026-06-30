@@ -80,6 +80,15 @@ class MatchControllerReactiveV25D37F3Test {
     @Mock
     private ExecuteMatchCommandUseCase executeMatchCommandUseCase;
 
+    @Mock
+    private com.footballmanager.application.service.world.WorldSnapshotService worldSnapshotService;
+
+    @Mock
+    private com.footballmanager.application.service.career.CareerSessionService careerSessionService;
+
+    @Mock
+    private com.footballmanager.application.service.simulation.v24.V24DetailedMatchQueryService v24DetailedMatchQueryService;
+
     private MatchControllerReactive controller;
     private Authentication auth;
 
@@ -88,7 +97,8 @@ class MatchControllerReactiveV25D37F3Test {
         controller = new MatchControllerReactive(
                 matchRepository, matchSimulationService,
                 getMatchStateQueryUseCase, advanceMatchUseCase,
-                executeMatchCommandUseCase, new ControllerHelper());
+                executeMatchCommandUseCase, new ControllerHelper(),
+                worldSnapshotService, careerSessionService, v24DetailedMatchQueryService);
         UUID userId = UUID.randomUUID();
         auth = new UsernamePasswordAuthenticationToken(
                 userId.toString(), "n/a",
