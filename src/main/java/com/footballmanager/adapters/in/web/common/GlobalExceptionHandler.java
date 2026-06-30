@@ -125,4 +125,40 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponseBody.unauthorized(ex.getMessage()))
         );
     }
+
+    /**
+     * V25D78-C50: Impersonation sweep — handler for
+     * {@link ImpersonationForbiddenException} thrown by
+     * {@link ControllerHelper#requireSelfUserId} when the JWT userId does
+     * NOT match the param/body userId.
+     *
+     * <p>Wire format matches the inline C47/C48 contract so existing
+     * consumers (and the C47/C48 E2E tests that assert on
+     * {@code $.code == "IMPERSONATION_FORBIDDEN"}) keep working:
+     * <pre>{@code
+     * {
+     *   "code":    "IMPERSONATION_FORBIDDEN",
+     *   "message": "...",
+     *   "status":  403
+     * }
+     * }</pre>
+     *
+     * <p>Spring's @ExceptionHandler resolution uses the most specific
+     * match — {@code ImpersonationForbiddenException} extends
+     * {@link RuntimeException}, so this handler runs before any generic
+     * fallback.
+     */
+    @ExceptionHandler(ImpersonationForbiddenException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleImpersonationForbidden(
+            ImpersonationForbiddenException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", "IMPERSONATION_FORBIDDEN");
+        body.put("message", ex.getMessage());
+        body.put("status", HttpStatus.FORBIDDEN.value());
+        return Mono.just(
+            ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(body)
+        );
+    }
 }
