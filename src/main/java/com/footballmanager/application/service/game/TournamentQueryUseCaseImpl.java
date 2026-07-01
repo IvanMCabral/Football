@@ -95,7 +95,16 @@ public class TournamentQueryUseCaseImpl implements TournamentQueryUseCase {
         return getStandings(userId)
             .collectList()
             .flatMap(standings -> {
-                if (standings.isEmpty() || standings.get(0).points() == 0) {
+                // C55.7.5 #29: previous contract returned Mono.empty() when
+                // the top team had 0 points. That made the
+                // /api/v1/games/{id}/champion endpoint 404 in
+                // end-of-tournament views, surfacing as "Error al cargar
+                // el campeón" in the frontend. The correct contract is
+                // to always return the top-ranked team — points=0 is a
+                // valid (if undesired) state that should still surface
+                // a valid DTO with the top teamId, letting the frontend
+                // render "0 PTS" gracefully instead of an error.
+                if (standings.isEmpty()) {
                     return Mono.empty();
                 }
                 StandingDTO champion = standings.get(0);

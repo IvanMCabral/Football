@@ -42,15 +42,16 @@ public class DashboardController {
      * POST /api/v1/dashboard/reload-world
      * Fuerza la recarga del WorldSnapshot desde PostgreSQL.
      * Útil cuando el snapshot en Redis tiene datos incompletos.
+     *
+     * <p>C55.7.5 #30: the matches count was previously hardcoded to 0 in
+     * the response (with a TODO to count from CareerSave). The fix
+     * delegates the entire response (including the matches count) to
+     * {@link WorldStatusQueryService} so both endpoints stay consistent.
      */
     @PostMapping("/reload-world")
     public Mono<WorldStatusResponse> reloadWorldSnapshot(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
         return worldSnapshotService.reloadFromDatabase(userId)
-                .map(snapshot -> new WorldStatusResponse(
-                        snapshot.getAllWorldTeams() != null ? snapshot.getAllWorldTeams().size() : 0,
-                        snapshot.getAllWorldPlayers() != null ? snapshot.getAllWorldPlayers().size() : 0,
-                        0
-                ));
+                .then(worldStatusQueryService.getWorldStatus(userId));
     }
 }
