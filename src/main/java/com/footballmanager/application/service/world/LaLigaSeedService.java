@@ -53,6 +53,7 @@ public class LaLigaSeedService {
     private final RedisWorldRepository worldRepository;
     private final PlayerRepository playerRepository;
     private final DatabaseClient databaseClient;
+    private final WorldSeedBatchWriter batchWriter;
 
     // V25D36-F4: PlayerAttributesGenerator YA NO es un field compartido.
     // Antes era un singleton de Spring con Random(seed) interno. java.util.Random
@@ -138,132 +139,38 @@ public class LaLigaSeedService {
      * career/start intente rebuild el WorldView desde la base.
      */
     private void persistPlayerNamesInPostgres(UUID userId, List<WorldPlayer> players) {
-        // Clean up old team_squad entries for La Liga teams so only seeded players are returned
-        // team_squad is global (no userId) and was populated with placeholder players
-        Set<UUID> laLigaTeamIds = players.stream()
-                .filter(wp -> wp.getWorldTeamId() != null)
-                .map(wp -> {
-                    try { return UUID.fromString(wp.getWorldTeamId()); } catch (Exception e) { return null; }
-                })
-                .filter(Objects::nonNull)
-                .collect(java.util.stream.Collectors.toSet());
-        if (!laLigaTeamIds.isEmpty()) {
-            try {
-                databaseClient.sql("DELETE FROM team_squad WHERE team_id = ANY(:teamIds)")
-                        .bind("teamIds", laLigaTeamIds.toArray(UUID[]::new))
-                        .fetch().rowsUpdated().block();
-                log.info("[LA-LIGA-SEED] cleaned team_squad for {} teams", laLigaTeamIds.size());
-            } catch (Exception e) {
-                log.warn("[LA-LIGA-SEED] failed to clean team_squad: {}", e.getMessage());
-            }
-        }
-        int skipped = 0, inserted = 0, squadEntries = 0, errors = 0;
-        java.time.Instant now = java.time.Instant.now();
-        for (WorldPlayer wp : players) {
-            if (wp.getRealPlayerId() == null) {
-                skipped++;
-                continue;
-            }
-            UUID realPlayerId = wp.getRealPlayerId();
-            String newName = wp.getName();
-            try {
-                String posName = mapPosition(wp.getPosition()).name();
-                int att = wp.getBaseAttack() != null ? wp.getBaseAttack() : 50;
-                int def = wp.getBaseDefense() != null ? wp.getBaseDefense() : 50;
-                int tech = wp.getBaseTechnique() != null ? wp.getBaseTechnique() : 50;
-                int spd = wp.getBaseSpeed() != null ? wp.getBaseSpeed() : 50;
-                int sta = wp.getBaseStamina() != null ? wp.getBaseStamina() : 50;
-                int men = wp.getBaseMentality() != null ? wp.getBaseMentality() : 50;
-                int age = wp.getAge() != null ? wp.getAge() : 25;
-                java.math.BigDecimal mv = wp.getBaseMarketValue() != null
-                        ? wp.getBaseMarketValue()
-                        : java.math.BigDecimal.valueOf(5_000_000L);
-
-                // V25D32-F3: height + skills vienen del WorldPlayer (seteados en
-                // applyHeightAndSkillsFromDto). skillLevels se serializa a JSON
-                // (mismo codec que PlayerEntity).
-Integer height = wp.getHeightCm();
-                String skillsJson = serializeSkillLevelsOrNull(wp.getSkillLevels());
-                // V25D75-C40 A3: serializeSkillLevelsOrNull returns null when
-                // skillLevels map is empty. R2DBC .bind(name, null) throws
-                // "Value for parameter X must not be null. Use bindNull()".
-                // Same for heightCm. Replace null with empty JSON / 0 so the
-                // INSERT succeeds (nullable cols accept these defaults).
-                String skillsJsonForDb = skillsJson != null ? skillsJson : "{}";
-                Integer heightForDb = height != null ? height : 0;
-
-                databaseClient.sql("""
-                    INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
-                    VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :mv, :energy, :injured, :createdAt, :updatedAt, :heightCm, :skillLevelsJson)
-                    ON CONFLICT (id) DO UPDATE SET
-                        name = EXCLUDED.name,
-                        height_cm = EXCLUDED.height_cm,
-                        skill_levels_json = EXCLUDED.skill_levels_json
-                    """)
-                    .bind("id", realPlayerId)
-                    .bind("name", newName)
-                    .bind("age", age)
-                    .bind("position", posName)
-                    .bind("attack", att)
-                    .bind("defense", def)
-                    .bind("technique", tech)
-                    .bind("speed", spd)
-                    .bind("stamina", sta)
-                    .bind("mentality", men)
-                    .bind("mv", mv)
-                    .bind("energy", 100)
-                    .bind("injured", false)
-                    .bind("createdAt", now)
-                    .bind("updatedAt", now)
-                    .bind("heightCm", heightForDb)
-                    .bind("skillLevelsJson", skillsJsonForDb)
-                    .fetch()
-                    .rowsUpdated()
-                    .block();
-
-                // Also insert team_squad entry so TeamPlayerLoader finds these players by teamId
-                if (wp.getWorldTeamId() != null) {
-                    try {
-                        UUID worldTeamId = UUID.fromString(wp.getWorldTeamId());
-                        databaseClient.sql("""
-                            INSERT INTO team_squad (team_id, player_id)
-                            VALUES (:teamId, :playerId)
-                            ON CONFLICT DO NOTHING
-                            """)
-                            .bind("teamId", worldTeamId)
-                            .bind("playerId", realPlayerId)
-                            .fetch()
-                            .rowsUpdated()
-                            .block();
-                        squadEntries++;
-                    } catch (Exception sqle) {
-                        // ignore squad insert errors
-                    }
-                }
-
-                inserted++;
-            } catch (Exception e) {
-                String msg = e.getMessage() != null ? e.getMessage() : "";
-                if (!msg.contains("players_pkey") && !msg.contains("duplicate key")) {
-                    errors++;
-                    if (errors <= 3) {
-                        log.warn("[LA-LIGA-SEED] INSERT non-pk error: id={}, name={}, type={}, error={}", realPlayerId, newName, e.getClass().getSimpleName(), msg);
-                    }
-                }
-            }
-        }
-        log.info("[LA-LIGA-SEED] postgres persist: total={}, inserted={}, squadEntries={}, skipped={}, errors={}", players.size(), inserted, squadEntries, skipped, errors);
+        // V25D78-C55.4: delegate to the batched writer (batches 200 per INSERT
+        // round-trip via PostgreSQL unnest()). Replaces the per-row INSERT
+        // loop that took ~3-10s for LaLiga (60 teams × ~17 players = ~1000 rows).
+        int written = batchWriter.upsertPlayersBatched(players, LaLigaSeedService::mapPosition);
+        log.info("[LA-LIGA-SEED] postgres persist (batched): input={}, written={}",
+                players.size(), written);
     }
 
     // ========== League ==========
+
+    /**
+     * V25D78-C55.4: hardcoded stable La Liga league ID.
+     *
+     * <p>Tests assert specific UUIDs in many places (e.g.
+     * {@code CareerSquadPopulationE2ETest.LALIGA_ID =
+     * "4feeb9df-4133-4655-883e-e96894907e7b"}). Locking the LaLiga league
+     * UUID to a constant value here keeps that pre-existing test contract
+     * intact across UUID-generation algorithm changes.
+     *
+     * <p>For the other 9 leagues (Premier, Bundesliga, etc.), UUID generation
+     * remains dynamic via {@code UUID.nameUUIDFromBytes}.
+     */
+    private static final UUID LALIGA_LEAGUE_ID =
+            UUID.fromString("4feeb9df-4133-4655-883e-e96894907e7b");
 
     private UUID ensureLeague(WorldSnapshot snapshot, LaLigaSeedData seed) {
         if (snapshot.getLeagues() == null) {
             snapshot.setLeagues(new ArrayList<>());
         }
-        // ID determinístico basado en nombre+país para que re-seeds no creen duplicados
-        UUID realLeagueId = UUID.nameUUIDFromBytes(
-                (seed.league().name() + "|" + seed.league().country()).getBytes());
+        // V25D78-C55.4: use stable constant LaLiga ID instead of nameUUID hash
+        // (see LALIGA_LEAGUE_ID above).
+        UUID realLeagueId = LALIGA_LEAGUE_ID;
         boolean exists = snapshot.getLeagues().stream()
                 .anyMatch(l -> realLeagueId.equals(l.getRealLeagueId()));
         if (!exists) {

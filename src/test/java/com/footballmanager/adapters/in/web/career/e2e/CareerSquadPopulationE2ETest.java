@@ -254,11 +254,14 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("V24D8-BUG-004: POST /world/seed-la-liga + POST /career/start → squad has REAL player names (not placeholders)")
     void seedLaLiga_careerStart_squadHasRealPlayerNames() {
-        // 1. Get first team from La Liga (Real Madrid: teamId = 8e55b18e-051d-48bd-9763-a35ae3005ac0)
-        // Use fixed teamId to ensure we get Real Madrid for deterministic test
-        String teamId = "8e55b18e-051d-48bd-9763-a35ae3005ac0";
+        // V25D78-C55.4: replaced the hardcoded UUID with a dynamic lookup.
+        // The previous UUID was tied to a specific seed-data version and
+        // stopped matching Real Madrid's teamId after C55.1's UUID
+        // generation algorithm. We look up Real Madrid by name via the
+        // HTTP /world/leagues/{id}/teams endpoint (deterministic — the
+        // seed JSON places Real Madrid first alphabetically).
 
-        // 2. Seed La Liga
+        // 1. Seed La Liga
         webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
             .post().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/seed-la-liga")
@@ -266,6 +269,27 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
                 .build())
             .exchange()
             .expectStatus().isOk();
+
+        // 2. Resolve Real Madrid's actual teamId (name -> uuid) by querying
+        // the league teams endpoint and filtering for the name.
+        List<Map<String, Object>> teams = webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .get().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/leagues/{leagueId}/teams")
+                .queryParam("userId", SEED_USER_ID)
+                .build(LALIGA_ID))
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
+            .returnResult()
+            .getResponseBody();
+        String teamId = teams.stream()
+            .filter(t -> "Real Madrid".equals(t.get("name")))
+            .map(t -> String.valueOf(t.get("worldTeamId")))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError(
+                "Real Madrid not found in LaLiga teams after seed (got "
+                + teams.size() + " teams)"));
 
         // 3. Create career with Real Madrid
         webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))

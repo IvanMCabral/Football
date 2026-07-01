@@ -58,6 +58,7 @@ public class WorldSeedService {
     private final PlayerRepository playerRepository;
     private final DatabaseClient databaseClient;
     private final LaLigaSeedService laLigaSeedService;
+    private final WorldSeedBatchWriter batchWriter;
 
     /**
      * Seeds a single league. Delegates La Liga to the existing service
@@ -326,99 +327,12 @@ public class WorldSeedService {
 
     // ========== Postgres persistence (mirrors LaLigaSeedService for new ligas) ==========
 
+    // V25D78-C55.4: delegate the heavy per-row INSERT loop to the batched writer.
+    // 9000 sequential round-trips → ~45 batched round-trips (batch size 200).
     private void persistPlayerNamesInPostgres(UUID userId, List<WorldPlayer> players,
                                               String logPrefix) {
-        Set<UUID> teamIds = players.stream()
-                .filter(wp -> wp.getWorldTeamId() != null)
-                .map(wp -> {
-                    try { return UUID.fromString(wp.getWorldTeamId()); }
-                    catch (Exception e) { return null; }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        if (!teamIds.isEmpty()) {
-            try {
-                databaseClient.sql("DELETE FROM team_squad WHERE team_id = ANY(:teamIds)")
-                        .bind("teamIds", teamIds.toArray(UUID[]::new))
-                        .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
-            } catch (Exception e) {
-                log.warn("{} team_squad cleanup failed: {}", logPrefix, e.getMessage());
-            }
-        }
-        int inserted = 0, squadEntries = 0, skipped = 0, errors = 0;
-        java.time.Instant now = java.time.Instant.now();
-        for (WorldPlayer wp : players) {
-            if (wp.getRealPlayerId() == null) { skipped++; continue; }
-            UUID pid = wp.getRealPlayerId();
-            try {
-                Position pos = mapPositionString(wp.getPosition());
-                Integer height = wp.getHeightCm();
-                String skillsJson = serializeSkillLevelsOrNull(wp.getSkillLevels());
-                String skillsJsonForDb = skillsJson != null ? skillsJson : "{}";
-                Integer heightForDb = height != null ? height : 0;
-
-                databaseClient.sql("""
-                    INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
-                    VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :mv, :energy, :injured, :createdAt, :updatedAt, :heightCm, :skillLevelsJson)
-                    ON CONFLICT (id) DO UPDATE SET
-                        name = EXCLUDED.name,
-                        height_cm = EXCLUDED.height_cm,
-                        skill_levels_json = EXCLUDED.skill_levels_json
-                    """)
-                    .bind("id", pid)
-                    .bind("name", wp.getName())
-                    .bind("age", wp.getAge() != null ? wp.getAge() : 25)
-                    .bind("position", pos.name())
-                    .bind("attack", wp.getBaseAttack() != null ? wp.getBaseAttack() : 50)
-                    .bind("defense", wp.getBaseDefense() != null ? wp.getBaseDefense() : 50)
-                    .bind("technique", wp.getBaseTechnique() != null ? wp.getBaseTechnique() : 50)
-                    .bind("speed", wp.getBaseSpeed() != null ? wp.getBaseSpeed() : 50)
-                    .bind("stamina", wp.getBaseStamina() != null ? wp.getBaseStamina() : 50)
-                    .bind("mentality", wp.getBaseMentality() != null ? wp.getBaseMentality() : 50)
-                    .bind("mv", wp.getBaseMarketValue() != null
-                            ? wp.getBaseMarketValue()
-                            : BigDecimal.valueOf(5_000_000L))
-                    .bind("energy", 100)
-                    .bind("injured", false)
-                    .bind("createdAt", now)
-                    .bind("updatedAt", now)
-                    .bind("heightCm", heightForDb)
-                    .bind("skillLevelsJson", skillsJsonForDb)
-                    .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
-
-                if (wp.getWorldTeamId() != null) {
-                    try {
-                        UUID worldTeamId = UUID.fromString(wp.getWorldTeamId());
-                        databaseClient.sql("""
-                            INSERT INTO team_squad (team_id, player_id)
-                            VALUES (:teamId, :playerId)
-                            ON CONFLICT DO NOTHING
-                            """)
-                            .bind("teamId", worldTeamId)
-                            .bind("playerId", pid)
-                            .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
-                        squadEntries++;
-                    } catch (Exception sqle) { /* ignore */ }
-                }
-                inserted++;
-            } catch (Exception e) {
-                String msg = e.getMessage() != null ? e.getMessage() : "";
-                if (!msg.contains("players_pkey") && !msg.contains("duplicate key")) {
-                    errors++;
-                }
-            }
-        }
-        log.info("{} postgres persist: total={}, inserted={}, squadEntries={}, skipped={}, errors={}",
-                logPrefix, players.size(), inserted, squadEntries, skipped, errors);
-    }
-
-    private String serializeSkillLevelsOrNull(Map<PlayerSkill, Integer> skills) {
-        if (skills == null || skills.isEmpty()) return null;
-        try {
-            return objectMapper.writeValueAsString(skills);
-        } catch (Exception e) {
-            return null;
-        }
+        int written = batchWriter.upsertPlayersBatched(players, this::mapPositionString);
+        log.info("{} postgres persist (batched): input={}, written={}", logPrefix, players.size(), written);
     }
 
     /**

@@ -55,6 +55,18 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        // V25D78-C55.4: re-seed LaLiga per test so seedLeagueId() and seedTeamId()
+        // (which query /world/leagues and /world/leagues/{id}/teams) find data
+        // instead of getting NPE on empty response. The legacy implementation
+        // relied on test order leaving data behind, which broke after the
+        // snapshot-flow refactor.
+        webTestClient.mutateWith(mockUser(SEED_USER_ID))
+            .post().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/seed-la-liga")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .exchange()
+            .expectStatus().isOk();
     }
 
     // V24D7+2.1: /api/v1/world/teams and /api/v1/world/leagues are global endpoints

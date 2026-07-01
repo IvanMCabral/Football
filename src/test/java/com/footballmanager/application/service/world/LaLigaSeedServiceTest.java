@@ -56,7 +56,11 @@ class LaLigaSeedServiceTest {
                 new com.fasterxml.jackson.databind.ObjectMapper(),
                 worldRepository,
                 playerRepository,
-                databaseClient
+                databaseClient,
+                // V25D78-C55.4: batch writer not used in this unit test (it
+                // exercises the snapshot-layer contract; persistence is
+                // stubbed via the DatabaseClient mock). Pass a no-op mock.
+                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class)
         );
 
         // Stubs básicos para que los tests no fallen por NPE en la Capa 2/3

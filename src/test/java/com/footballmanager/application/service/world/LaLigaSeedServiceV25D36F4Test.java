@@ -55,7 +55,8 @@ class LaLigaSeedServiceV25D36F4Test {
                 new com.fasterxml.jackson.databind.ObjectMapper(),
                 worldRepository,
                 playerRepository,
-                databaseClient
+                databaseClient,
+                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class)
         );
 
         when(worldRepository.deleteByUserId(any(UUID.class))).thenReturn(Mono.just(true));

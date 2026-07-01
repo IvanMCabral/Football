@@ -62,7 +62,10 @@ class LaLigaSeedServiceV25D32Test {
                 new ObjectMapper(),
                 worldRepository,
                 playerRepository,
-                databaseClient
+                databaseClient,
+                // V25D78-C55.4: batch writer unused in this unit test (snapshot
+                // layer is the focus; persistence is mocked via DatabaseClient).
+                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class)
         );
 
         when(worldRepository.deleteByUserId(any(UUID.class))).thenReturn(Mono.just(true));

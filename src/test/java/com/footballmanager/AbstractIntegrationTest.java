@@ -62,5 +62,17 @@ public abstract class AbstractIntegrationTest {
             .serverCommands()
             .flushDb()
             .block();
+
+        // V25D78-C55.4: also clean Postgres world tables that persist across
+        // test runs in the same JVM. Without this, the BuildWorldViewUseCase
+        // reloads stale teams + leagues (from a previous test run with
+        // older algorithm-generated leagueIds) into the snapshot, and the
+        // seeded data with the new LALIGA_ID constant becomes invisible
+        // because the old Postgres teams carry old leagueIds.
+        databaseClient.sql("DELETE FROM team_squad").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
+        databaseClient.sql("DELETE FROM players").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
+        databaseClient.sql("DELETE FROM teams").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
+        databaseClient.sql("DELETE FROM leagues_teams").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
+        databaseClient.sql("DELETE FROM leagues").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
     }
 }
