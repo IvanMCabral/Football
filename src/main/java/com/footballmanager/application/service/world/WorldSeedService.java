@@ -136,6 +136,14 @@ public class WorldSeedService {
         UUID leagueId = ensureLeague(snapshot, seed);
         Map<String, WorldTeam> teamsByName = ensureTeams(snapshot, seed, leagueId);
         List<WorldPlayer> players = ensurePlayers(snapshot, seed, teamsByName, gen);
+        // V25D78-C55.6.1: redistribute the snapshot's per-league division
+        // tiers (20/20/20 for a 60-team league). Mirror V25D80 SQL logic in
+        // Java so the Redis snapshot stores correct PRIMERA/SEGUNDA/TERCERA.
+        // Even though this path persists teams to Postgres (where V25D80
+        // would redistribute), the read path returns the Redis snapshot
+        // verbatim — without this step the response would still show all
+        // PRIMERA. See DivisionRankDistributor for details.
+        DivisionRankDistributor.applyPerLeagueRankDivision(snapshot);
         persistPlayerNamesInPostgres(userId, players, logPrefix);
         // V25D78-C55.3 B1: also persist team rows + league_id so that
         // V25D80 migration can distribute divisions per-league. Uses a
