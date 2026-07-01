@@ -255,4 +255,73 @@ class UserDivisionFixtureQueryServiceTest {
         assertEquals(DIV_B_TEAM_2_NAME, response.teamNames().get(DIV_B_TEAM_2),
                 "getAll() teamNames map must include cross-division teams for ALL rounds");
     }
+
+    // ========== getAllByRound (V25D78-C55.7.7 BUG-M4) ==========
+
+    @Test
+    @DisplayName("getAllByRound — returns only the requested round, but teamNames/teams/config stay complete")
+    void getAllByRound_returnsOnlyRequestedRound_withCompleteMetadata() {
+        CareerSave save = buildCareerWithTwoDivisions(List.of(
+                fixture("m1", USER_TEAM, DIV_A_TEAM, 1),
+                fixture("m2", USER_TEAM, DIV_A_TEAM, 2),
+                fixture("m3", DIV_B_TEAM_1, DIV_B_TEAM_2, 2)
+        ));
+
+        var response = service.getAllByRound(save, 2).block();
+
+        assertNotNull(response);
+        // Single round payload
+        assertEquals(1, response.rounds().size(),
+                "BUG-M4: only the requested round must be in the rounds array");
+        assertEquals(2, response.rounds().get(0).round());
+        // Matches include BOTH the user-division and cross-division fixture of round 2
+        assertEquals(2, response.rounds().get(0).matches().size(),
+                "BUG-M4: round 2 contains both m2 (user-div) and m3 (cross-div)");
+        // Metadata stays complete (config + teams + teamNames) so UI can still resolve names
+        assertNotNull(response.config());
+        assertEquals(2, response.teams().size(), "User-division teams list stays complete");
+        assertEquals(USER_TEAM_NAME, response.teamNames().get(USER_TEAM));
+        assertEquals(DIV_A_TEAM_NAME, response.teamNames().get(DIV_A_TEAM));
+        assertEquals(DIV_B_TEAM_1_NAME, response.teamNames().get(DIV_B_TEAM_1),
+                "BUG-M4: cross-division teamNames must still resolve in single-round payload");
+        assertEquals(DIV_B_TEAM_2_NAME, response.teamNames().get(DIV_B_TEAM_2));
+    }
+
+    @Test
+    @DisplayName("getAllByRound — IDA phase for round <= roundsWithBye, VUELTA otherwise")
+    void getAllByRound_phaseLabel_idaForOddRounds_vueltaForEven() {
+        // 2-team user division → roundsWithBye=1, totalRounds=2. Round 1=IDA, round 2=VUELTA.
+        CareerSave save = buildCareerWithTwoDivisions(List.of(
+                fixture("m1", USER_TEAM, DIV_A_TEAM, 1),
+                fixture("m2", USER_TEAM, DIV_A_TEAM, 2)
+        ));
+
+        var idaResp = service.getAllByRound(save, 1).block();
+        var vueltaResp = service.getAllByRound(save, 2).block();
+
+        assertNotNull(idaResp);
+        assertNotNull(vueltaResp);
+        assertEquals("IDA", idaResp.rounds().get(0).phase());
+        assertEquals("Primera Vuelta", idaResp.rounds().get(0).phaseLabel());
+        assertEquals("VUELTA", vueltaResp.rounds().get(0).phase());
+        assertEquals("Segunda Vuelta", vueltaResp.rounds().get(0).phaseLabel());
+    }
+
+    @Test
+    @DisplayName("getAllByRound — out-of-range round returns empty matches but populated metadata")
+    void getAllByRound_outOfRangeRound_returnsEmptyMatchesWithMetadata() {
+        CareerSave save = buildCareerWithTwoDivisions(List.of(
+                fixture("m1", USER_TEAM, DIV_A_TEAM, 1)
+        ));
+
+        var response = service.getAllByRound(save, 99).block();
+
+        assertNotNull(response);
+        assertEquals(1, response.rounds().size());
+        assertEquals(99, response.rounds().get(0).round());
+        assertEquals(0, response.rounds().get(0).matches().size(),
+                "BUG-M4: requested round with no fixtures must return empty matches (not crash)");
+        // Metadata still populated so UI doesn't break
+        assertEquals(USER_TEAM_NAME, response.teamNames().get(USER_TEAM));
+    }
 }

@@ -28,6 +28,15 @@ public class FixtureQueryService {
         return userDivisionService.getAll(career);
     }
 
+    /**
+     * V25D78-C55.7.7 BUG-M4: same payload shape as {@link #getAllUserDivisionFixtures}
+     * but filtered to a single round. Used by {@code GET /api/v1/career/fixtures/all?round=N}
+     * which previously ignored the {@code round} query param.
+     */
+    public Mono<AllFixturesResponse> getAllUserDivisionFixturesByRound(CareerSave career, int round) {
+        return userDivisionService.getAllByRound(career, round);
+    }
+
     public Mono<CompleteFixturesResponse> getCompleteFixtures(CareerSave career) {
         return leagueService.getCompleteFixtures(career);
     }

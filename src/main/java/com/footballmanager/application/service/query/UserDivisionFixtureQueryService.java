@@ -91,6 +91,89 @@ public class UserDivisionFixtureQueryService {
         });
     }
 
+    /**
+     * V25D78-C55.7.7 BUG-M4: getAll with a single-round filter. Returns an
+     * {@link AllFixturesResponse} shape with only the requested round in the
+     * rounds array (other rounds are filtered out, but {@code teamNames},
+     * {@code teams}, and {@code config} stay complete so the UI can still
+     * resolve BYE team names + cross-division team names).
+     *
+     * <p>Strategy decision (per F0 hallazgos + salvedad Mavis #2): instead of
+     * in-memory post-filter on the full payload (which works since dataset is
+     * bounded at 240 matches = 10 rounds × 24 matches for 5-team divisions),
+     * we delegate to {@link #getByRound} for the matches and reconstruct the
+     * AllFixturesResponse with a single RoundInfo. This reuses the same code
+     * path the existing {@code GET /fixtures?round=N} endpoint uses, so the
+     * teamName resolution behavior stays consistent.
+     *
+     * <p>For rounds with no fixtures (e.g. user requested round=99 of a 10-round
+     * tournament) → returns empty matches list but populated teamNames/config.
+     */
+    public Mono<AllFixturesResponse> getAllByRound(CareerSave career, int round) {
+        return getByRound(career, round)
+            .map(matches -> buildSingleRoundResponse(career, round, matches));
+    }
+
+    private AllFixturesResponse buildSingleRoundResponse(CareerSave career, int round, List<MatchInfo> matches) {
+        Division userDivision = career.getUserDivision();
+        if (userDivision == null) {
+            return new AllFixturesResponse(
+                career.getCareerId() != null ? career.getCareerId() : "",
+                0, List.of(), List.of(), Map.of(),
+                new DivisionConfig(0, 0, false, 0, 0));
+        }
+
+        int numTeams = userDivision.getTeamCount();
+        int roundsWithBye = (numTeams % 2 == 0) ? numTeams - 1 : numTeams;
+        int totalRounds = roundsWithBye * 2;
+
+        Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
+        // Same defensive merge as getAll — extend with cross-division teams from
+        // any fixture in the tournament (not just this round), so the teamNames
+        // map stays useful even when the filter limits rounds.
+        Set<String> allFixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(
+            career.getTournamentState().getFixtures());
+        Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, allFixtureTeamIds);
+        teamNames.putAll(extraNames);
+
+        List<TeamInfo> teamsList = userDivision.getTeamIds().stream()
+            .map(teamId -> career.getSessionTeam(teamId))
+            .filter(Objects::nonNull)
+            .map(t -> new TeamInfo(t.getSessionTeamId(), t.getName()))
+            .toList();
+
+        DivisionConfig config = new DivisionConfig(numTeams, numTeams / 2, numTeams % 2 != 0, roundsWithBye, roundsWithBye);
+
+        // Phase label: IDA rounds 1..roundsWithBye, VUELTA rounds roundsWithBye+1..totalRounds
+        String phase = round <= roundsWithBye ? "IDA" : "VUELTA";
+        String phaseLabel = round <= roundsWithBye ? "Primera Vuelta" : "Segunda Vuelta";
+
+        // BYE team: any user-division team not in the matches for this round
+        String byeTeam = null;
+        if (numTeams % 2 != 0) {
+            Set<String> teamsInRound = new HashSet<>();
+            matches.forEach(m -> {
+                if (m.homeTeamId() != null) teamsInRound.add(m.homeTeamId());
+                if (m.awayTeamId() != null) teamsInRound.add(m.awayTeamId());
+            });
+            for (String teamId : userDivision.getTeamIds()) {
+                if (!teamsInRound.contains(teamId)) {
+                    byeTeam = teamNames.getOrDefault(teamId, teamId);
+                    break;
+                }
+            }
+        }
+
+        RoundInfo roundInfo = new RoundInfo(round, phase, phaseLabel, matches, byeTeam, matches.size());
+        return new AllFixturesResponse(
+            career.getCareerId() != null ? career.getCareerId() : "",
+            totalRounds,
+            List.of(roundInfo),
+            teamsList,
+            teamNames,
+            config);
+    }
+
     private AllFixturesResponse createEmptyResponse() {
         return new AllFixturesResponse("", 0, List.of(), List.of(), Map.of(), new DivisionConfig(0, 0, false, 0, 0));
     }
