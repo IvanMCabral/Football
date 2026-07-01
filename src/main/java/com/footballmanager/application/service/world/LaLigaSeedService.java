@@ -103,6 +103,14 @@ public class LaLigaSeedService {
         // UPSERT players: agrupar por team-name para asignar worldTeamId
         List<WorldPlayer> createdOrUpdated = ensurePlayers(snapshot, seed, teamsByName, attributesGenerator);
 
+        // V25D78-C55.6.1: redistribute the snapshot's per-league division
+        // tiers (20/20/20 for a 60-team league). Mirror V25D80 SQL logic in
+        // Java so the Redis snapshot stores correct PRIMERA/SEGUNDA/TERCERA
+        // even though this seed path skips persistTeamsInPostgres
+        // (C55.6 deferred to a migration that never applied to LaLiga).
+        // See DivisionRankDistributor for details.
+        DivisionRankDistributor.applyPerLeagueRankDivision(snapshot);
+
         // Capa 3: persiste nombres reales y team_squad en PostgreSQL para que BuildWorldViewUseCase
         // encuentre los jugadores reales (no placeholders) cuando reconstruya el WorldView después del seed
         persistPlayerNamesInPostgres(userId, createdOrUpdated);
