@@ -73,6 +73,8 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        // V25D78-C55.5: seed LaLiga first so DB has teams.
+        seedLaLigaForUser(UUID.fromString("00000000-0000-0000-0000-000000000001"));
     }
 
     @Test
@@ -110,15 +112,25 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("DB has at least 20 teams")
+    @DisplayName("WorldSnapshot has at least 20 teams (queried via /world/teams)")
     void db_hasAtLeast20Teams() {
-        Long count = databaseClient.sql("SELECT COUNT(*) AS c FROM teams")
-            .map(row -> row.get("c", Long.class))
-            .one()
-            .block();
-        org.junit.jupiter.api.Assertions.assertNotNull(count);
+        // V25D78-C55.5: the legacy LaLigaSeedService writes teams to the Redis
+        // WorldSnapshot, not to Postgres `teams` table. Query the public HTTP
+        // /world/teams endpoint (which builds the WorldView) for the seed user.
+        int count = webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .get().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/teams")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .accept(org.springframework.http.MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(com.fasterxml.jackson.databind.JsonNode.class)
+            .returnResult()
+            .getResponseBody()
+            .size();
         org.junit.jupiter.api.Assertions.assertTrue(count >= 20,
-            "Expected at least 20 teams in test DB, got: " + count);
+            "Expected at least 20 teams in WorldSnapshot, got: " + count);
     }
 
     @Test
@@ -200,22 +212,32 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
      * reads (Vinicius, Bellingham, Mbappe) plus the top-tier GK Courtois.
      */
     @Test
-    @DisplayName("HTTP /world/players returns at least one real LaLiga star")
+    @DisplayName("HTTP /world/players per-team returns at least one real LaLiga star")
     void http_players_returnsAtLeastOneRealLaLigaName() {
-        // The /world/players endpoint returns a JSON array. We only need to
-        // assert that at least one of the canonical real names is present in
-        // the response body — that is enough to lock in that the HTTP layer
-        // surfaces the real-name JSON and not generic placeholders.
+        // V25D78-C55.5: /world/players returns ALL 1006 players in one
+        // payload which exceeds WebTestClient's default 256KB buffer limit.
+        // Switch to /world/teams/{worldTeamId}/players (per-team, ~22 players
+        // payload, fits in buffer) using Real Madrid's teamId (a known
+        // curated team with Vinicius Junior and Jude Bellingham).
+        String realMadridId = laligaTeamId(
+            SEED_USER_ID,
+            UUID.fromString("4feeb9df-4133-4655-883e-e96894907e7b"),
+            "Real Madrid");
         webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
             .get().uri(uriBuilder -> uriBuilder
-                .path("/api/v1/world/players")
+                .path("/api/v1/world/teams/{teamId}/players")
                 .queryParam("userId", SEED_USER_ID)
-                .build())
+                .build(realMadridId))
             .exchange()
             .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$").isArray()
-            .jsonPath("$[?(@.name == 'Vinicius Junior')]").exists()
-            .jsonPath("$[?(@.name == 'Jude Bellingham')]").exists();
+            .expectBody(String.class)
+            .value(body -> {
+                org.junit.jupiter.api.Assertions.assertTrue(
+                    body.contains("Vinicius Junior"),
+                    "Vinicius Junior missing from Real Madrid players");
+                org.junit.jupiter.api.Assertions.assertTrue(
+                    body.contains("Jude Bellingham"),
+                    "Jude Bellingham missing from Real Madrid players");
+            });
     }
 }

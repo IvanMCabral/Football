@@ -65,6 +65,8 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
+        seedLaLigaForUser(SEED_USER_ID);
         // V25D75-C40 A2: also clear the in-memory CareerSessionService cache.
         // Without this, CareerSquadFallbackE2ETest (which runs before us in
         // the full mvn test suite) leaves a cached career for SEED_USER_ID
@@ -90,7 +92,11 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
             .getResponseBody();
 
         assertThat(teams).isNotNull().isNotEmpty();
-        String teamId = (String) teams.get(0).get("worldTeamId");
+        String teamId = teams.stream()
+            .filter(t -> "Real Madrid".equals(t.get("name")))
+            .map(t -> (String) t.get("worldTeamId"))
+            .findFirst()
+            .orElseGet(() -> (String) teams.get(0).get("worldTeamId"));  // V25D78-C55.5 fallback
         assertThat(teamId).isNotNull();
 
         // 2. Create career with La Liga + first team
@@ -136,7 +142,11 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
             .getResponseBody();
 
         assertThat(teams).isNotNull().isNotEmpty();
-        String teamId = (String) teams.get(0).get("worldTeamId");
+        String teamId = teams.stream()
+            .filter(t -> "Real Madrid".equals(t.get("name")))
+            .map(t -> (String) t.get("worldTeamId"))
+            .findFirst()
+            .orElseGet(() -> (String) teams.get(0).get("worldTeamId"));  // V25D78-C55.5 fallback
 
         // 2. Create career
         webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
@@ -199,7 +209,11 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
             .getResponseBody();
 
         assertThat(teams).isNotNull().isNotEmpty();
-        String teamId = (String) teams.get(0).get("worldTeamId");
+        String teamId = teams.stream()
+            .filter(t -> "Real Madrid".equals(t.get("name")))
+            .map(t -> (String) t.get("worldTeamId"))
+            .findFirst()
+            .orElseGet(() -> (String) teams.get(0).get("worldTeamId"));  // V25D78-C55.5 fallback
 
         // 2. Create career
         webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))

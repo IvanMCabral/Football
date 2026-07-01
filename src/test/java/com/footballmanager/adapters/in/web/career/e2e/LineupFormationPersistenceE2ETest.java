@@ -82,6 +82,8 @@ class LineupFormationPersistenceE2ETest extends AbstractIntegrationTest {
     void cleanState() {
         reactiveRedisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
+        seedLaLigaForUser(SEED_USER_ID);
         // V25D75-C40 A2: clear the in-memory cache between tests so a previous
         // test's cached CareerSave doesn't leak across the @BeforeEach.
         careerSessionService.clearCache();
@@ -101,7 +103,11 @@ class LineupFormationPersistenceE2ETest extends AbstractIntegrationTest {
             .getResponseBody();
 
         assertThat(teams).isNotNull().isNotEmpty();
-        return (String) teams.get(0).get("worldTeamId");
+        return teams.stream()
+            .filter(t -> "Real Madrid".equals(t.get("name")))
+            .map(t -> (String) t.get("worldTeamId"))
+            .findFirst()
+            .orElseGet(() -> (String) teams.get(0).get("worldTeamId"));  // V25D78-C55.5 fallback if Real Madrid missing
     }
 
     private void seedCareer(String teamId) {

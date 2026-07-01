@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,10 +68,14 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
         if (roundEngineRegistry.getActiveRoundCount() > 0) {
             roundEngineRegistry.stopAllEngines();
         }
-        if (redisTemplate.getConnectionFactory() != null) {
-            redisTemplate.getConnectionFactory().getReactiveConnection()
-                .serverCommands().flushDb().block();
-        }
+    }
+
+    @BeforeEach
+    void seedLaLiga() {
+        // V25D78-C55.5: seed LaLiga for SEED_USER_ID so seedTeamId/seedCareer
+        // helpers find data. AbstractIntegrationTest.@BeforeEach already
+        // cleaned Redis (flushDb + DELETE world tables).
+        seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
     }
 
     private static final String SEED_USER_ID =
@@ -111,6 +116,11 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
     }
 
     private String seedCareerAndGameId(String userId) {
+        // V25D78-C55.5: seed LaLiga for the random userId used by the test
+        // (the auth principal in POST /games below is userId, so the
+        // controller's BuildWorldView queries that user — which has no data
+        // unless we seed it).
+        seedLaLigaForUser(UUID.fromString(userId));
         String teamId = seedTeamId();
         String leagueId = seedLeagueId();
         String body = String.format(

@@ -62,6 +62,14 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
     @Autowired
     private RoundEngineRegistry roundEngineRegistry;
 
+    @org.junit.jupiter.api.BeforeEach
+    void seedLaLigaBeforeEachTest() {
+        // V25D78-C55.5: ensure LaLiga snapshot is populated for SEED_USER_ID
+        // before each test (AbstractIntegrationTest.@BeforeEach flushes
+        // Redis + deletes world tables per-test, so we re-seed).
+        seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
+    }
+
     @AfterEach
     void tearDown() {
         // Defensive cleanup so round engines from one test don't leak into
@@ -85,18 +93,12 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
     }
 
     private String seedTeamId(String userId) {
-        return webTestClient.mutateWith(mockUser(SEED_USER_ID))
-            .get().uri(uriBuilder -> uriBuilder
-                .path("/api/v1/world/teams")
-                .queryParam("userId", SEED_USER_ID)
-                .build())
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody(JsonNode.class)
-            .returnResult()
-            .getResponseBody()
-            .get(0).get("worldTeamId").asText();
+        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
+        // LaLiga expansion means .get(0) returns a synthetic B1 add like
+        // "Vigo City 1", not Real Madrid).
+        return laligaTeamId(UUID.fromString(SEED_USER_ID),
+                UUID.fromString("4feeb9df-4133-4655-883e-e96894907e7b"),
+                "Real Madrid");
     }
 
     private String seedLeagueId() {
@@ -124,6 +126,11 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
      * to get the raw UUID string.
      */
     private String seedCareerAndGameId(String userId) {
+        // V25D78-C55.5: seed LaLiga for THIS userId (the auth principal in
+        // the POST /games below) — the previous version relied on stale
+        // state from a prior test, which broke when cleanRedis wiped Redis
+        // per-test.
+        seedLaLigaForUser(UUID.fromString(userId));
         String teamId = seedTeamId(userId);
         String leagueId = seedLeagueId();
         String body = String.format(

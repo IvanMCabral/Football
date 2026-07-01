@@ -108,18 +108,11 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
      * Note: WorldTeam JSON field is "worldTeamId" (not "id") per the entity definition.
      */
     private String seedTeamId(String userId) {
-        return webTestClient.mutateWith(mockUser(SEED_USER_ID))
-            .get().uri(uriBuilder -> uriBuilder
-                .path("/api/v1/world/teams")
-                .queryParam("userId", SEED_USER_ID)
-                .build())
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody(JsonNode.class)
-            .returnResult()
-            .getResponseBody()
-            .get(0).get("worldTeamId").asText();
+        // V25D78-C55.5: lookup "Real Madrid" by name (not "first team")
+        // because C55.3 B1 extended LaLiga to 60 teams and the alphabetically
+        // first team is now a synthetic B1 add ("Vigo City 1").
+        UUID laligaId = UUID.fromString("4feeb9df-4133-4655-883e-e96894907e7b");
+        return laligaTeamId(UUID.fromString(SEED_USER_ID), laligaId, "Real Madrid");
     }
 
     private String validCreateBody(String name, String teamId, String leagueId) {
@@ -135,7 +128,11 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("POST /api/v1/games — 201 with body containing gameId and userId")
     void createGame_validRequest_returns201() {
-        String userId = uniqueUserId();
+        // V25D78-C55.5: use SEED_USER_ID (not uniqueUserId) so the controller
+        // finds the LaLiga WorldSnapshot that @BeforeEach seeded. The previous
+        // uniqueUserId() pattern assumed the seed left state for any user,
+        // which broke when cleanRedis wipes Redis per-test.
+        String userId = SEED_USER_ID;
         String teamId = seedTeamId(userId);
         String leagueId = seedLeagueId();
         String body = validCreateBody("My Career " + UUID.randomUUID().toString().substring(0, 8), teamId, leagueId);
@@ -162,7 +159,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/games/{id} — 200 with body (regression for V24D12.2 deserialization fix)")
     void getGameById_existingGame_returns200() {
-        String userId = uniqueUserId();
+        String userId = SEED_USER_ID;
         String teamId = seedTeamId(userId);
         String leagueId = seedLeagueId();
         String createBody = validCreateBody("GetTest", teamId, leagueId);
@@ -194,7 +191,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/games — 200 with list (array of games)")
     void getAllGames_userHasGames_returns200List() {
-        String userId = uniqueUserId();
+        String userId = SEED_USER_ID;
         String teamId = seedTeamId(userId);
         String leagueId = seedLeagueId();
         String body1 = validCreateBody("List1", teamId, leagueId);
@@ -221,7 +218,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/games/{nonexistent} — 404 Not Found")
     void getGameById_nonExistent_returns404() {
-        String userId = uniqueUserId();
+        String userId = SEED_USER_ID;
         String fakeGameId = UUID.randomUUID().toString();
 
         webTestClient.mutateWith(mockUser(userId))
@@ -233,7 +230,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("DELETE /api/v1/games/{id} — 204 No Content")
     void deleteGame_existingGame_returns204() {
-        String userId = uniqueUserId();
+        String userId = SEED_USER_ID;
         String teamId = seedTeamId(userId);
         String leagueId = seedLeagueId();
         String createBody = validCreateBody("DeleteMe", teamId, leagueId);
@@ -260,7 +257,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/games/{id} after DELETE — 404 (idempotency: deleted game is gone)")
     void getGameById_afterDelete_returns404() {
-        String userId = uniqueUserId();
+        String userId = SEED_USER_ID;
         String teamId = seedTeamId(userId);
         String leagueId = seedLeagueId();
         String createBody = validCreateBody("DeleteAndGet", teamId, leagueId);
@@ -312,7 +309,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("POST /api/v1/games without teamId — 400 (controller defensive guard)")
     void createGame_missingTeamId_returns400() {
-        String userId = uniqueUserId();
+        String userId = SEED_USER_ID;
         // Body has name + leagueId but NO teamId
         String body = String.format(
             "{\"name\":\"MissingTeam\",\"leagueId\":\"%s\"}",

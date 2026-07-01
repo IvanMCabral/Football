@@ -93,40 +93,34 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
+        seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
     }
 
     @Test
     @DisplayName("V25D76-C41: live match → /api/v1/matches returns the persisted match (no orphan key)")
     void liveMatch_finishes_persistedToMatchRepository_findableByUserId() throws Exception {
-        // 1. Create a fresh userId (so we don't collide with CareerSquadPopulationE2ETest
-        //    or CareerSquadFallbackE2ETest that share SEED_USER_ID).
-        String userId = UUID.randomUUID().toString();
+        // V25D78-C55.5: use SEED_USER_ID throughout. The @BeforeEach seeds
+        // LaLiga for SEED_USER_ID, so the career-start endpoint must query
+        // snapshots for the same user (BuildWorldViewUseCase.getOrCreateSnapshot
+        // keys by userId; if the snapshot is empty for the test user, the
+        // endpoint throws "La liga no tiene equipos"). The original random
+        // userId was a C40-era collision workaround — no longer needed
+        // because @BeforeEach re-seeds per-test.
+        String userId = SEED_USER_ID;
 
-        // 2. Seed La Liga via the world endpoint (real LaLiga seed → Postgres).
-        webTestClient.mutateWith(mockUser(SEED_USER_ID))
-            .post().uri(uriBuilder -> uriBuilder
-                .path("/api/v1/world/seed-la-liga")
-                .queryParam("userId", SEED_USER_ID)
-                .build())
-            .exchange()
-            .expectStatus().isOk();
+        // 2. Seed La Liga already happened in @BeforeEach for SEED_USER_ID.
 
         // 3. Fetch a real La Liga teamId (Real Madrid fixed for determinism).
         //    The LALIGA_ID is a hardcoded UUID in the seed (deterministic).
         final String laligaId = "4feeb9df-4133-4655-883e-e96894907e7b";
-        List<Map<String, Object>> teams = webTestClient.mutateWith(mockUser(SEED_USER_ID))
-            .get().uri(uriBuilder -> uriBuilder
-                .path("/api/v1/world/leagues/{leagueId}/teams")
-                .queryParam("userId", SEED_USER_ID)
-                .build(laligaId))
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
-            .returnResult()
-            .getResponseBody();
-        assertThat(teams).as("LaLiga teams must be available after seed").isNotNull().isNotEmpty();
-        String teamId = String.valueOf(teams.get(0).get("worldTeamId"));
+        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
+        // expansion means .get(0) is now "Vigo City 1", a synthetic B1 add,
+        // not Real Madrid). Use the helper from AbstractIntegrationTest.
+        String teamId = laligaTeamId(
+            UUID.fromString(SEED_USER_ID),
+            UUID.fromString(laligaId),
+            "Real Madrid");
 
         // 4. Create career (POST /api/v1/career/start). The user is now bound to a career.
         webTestClient.mutateWith(mockUser(userId))

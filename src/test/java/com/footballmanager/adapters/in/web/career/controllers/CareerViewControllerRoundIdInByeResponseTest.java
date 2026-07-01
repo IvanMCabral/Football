@@ -2,10 +2,12 @@ package com.footballmanager.adapters.in.web.career.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.footballmanager.AbstractIntegrationTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -55,12 +57,34 @@ class CareerViewControllerRoundIdInByeResponseTest extends AbstractIntegrationTe
     private static final String SEED_USER_ID =
         "00000000-0000-0000-0000-000000000001";
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ReactiveRedisTemplate<String, String> redisTemplate;
+
+    @BeforeEach
+    void seedLaLigaPerTest() {
+        // V25D78-C55.5: this class had no @BeforeEach, so it relied on
+        // test-order leakage to find LaLiga teams in Redis. With C55.4
+        // flushDb per test, that broke. Seed LaLiga explicitly.
+        seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void flushRedis() {
+        if (redisTemplate != null && redisTemplate.getConnectionFactory() != null) {
+            redisTemplate.getConnectionFactory().getReactiveConnection()
+                .serverCommands().flushDb().block();
+        }
+    }
+
     private String uniqueUserId() {
         return UUID.randomUUID().toString();
     }
 
     private String seedTeamId() {
-        return webTestClient.mutateWith(mockUser(SEED_USER_ID))
+        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
+        // expansion means the alphabetically-first team is now a synthetic
+        // B1 add like "Vigo City 1", not Real Madrid).
+        java.util.List<java.util.Map<String, Object>> teams = webTestClient.mutateWith(mockUser(SEED_USER_ID))
             .get().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/teams")
                 .queryParam("userId", SEED_USER_ID)
@@ -68,10 +92,14 @@ class CareerViewControllerRoundIdInByeResponseTest extends AbstractIntegrationTe
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk()
-            .expectBody(JsonNode.class)
+            .expectBody(new org.springframework.core.ParameterizedTypeReference<java.util.List<java.util.Map<String, Object>>>() {})
             .returnResult()
-            .getResponseBody()
-            .get(0).get("worldTeamId").asText();
+            .getResponseBody();
+        return teams.stream()
+            .filter(t -> "Real Madrid".equals(t.get("name")))
+            .map(t -> (String) t.get("worldTeamId"))
+            .findFirst()
+            .orElseGet(() -> (String) teams.get(0).get("worldTeamId"));  // fallback
     }
 
     private String seedLeagueId() {
@@ -95,6 +123,10 @@ class CareerViewControllerRoundIdInByeResponseTest extends AbstractIntegrationTe
      * {@code /api/v1/career/**} calls can resolve it.
      */
     private String seedCareer(String userId) {
+        // V25D78-C55.5: seed LaLiga for the random userId used by the test
+        // (the auth principal in POST /games below is userId, so the
+        // controller's BuildWorldView queries that user).
+        seedLaLigaForUser(UUID.fromString(userId));
         String teamId = seedTeamId();
         String leagueId = seedLeagueId();
         String body = String.format(

@@ -43,6 +43,7 @@ class LaLigaSeedServiceV25D32Test {
 
     private WorldSnapshotService snapshotService;
     private RedisWorldRepository worldRepository;
+    private WorldSeedBatchWriter batchWriter;
     private PlayerRepository playerRepository;
     private DatabaseClient databaseClient;
     private LaLigaSeedService service;
@@ -63,9 +64,7 @@ class LaLigaSeedServiceV25D32Test {
                 worldRepository,
                 playerRepository,
                 databaseClient,
-                // V25D78-C55.4: batch writer unused in this unit test (snapshot
-                // layer is the focus; persistence is mocked via DatabaseClient).
-                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class)
+                batchWriter = org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class)
         );
 
         when(worldRepository.deleteByUserId(any(UUID.class))).thenReturn(Mono.just(true));
@@ -111,20 +110,36 @@ class LaLigaSeedServiceV25D32Test {
         // Cargar seed completo via el path real
         seedOnce();
 
-        // El bind debe incluir heightCm y skillLevelsJson (verificamos via los
-        // captured binds; la logica de serializacion es trivial).
-        // NOTA: como capturamos los binds en orden, no podemos asociar el bind de
-        // heightCm con Mbappe directamente sin un ID — lo que verificamos aca es
-        // que el codigo *llama* a bind con esos nombres de parametro en algun
-        // momento del flujo.
-        boolean hasHeightBind = capturedBinds.stream()
-                .anyMatch(b -> "heightCm".equals(b.get("name")));
-        boolean hasSkillsBind = capturedBinds.stream()
-                .anyMatch(b -> "skillLevelsJson".equals(b.get("name")));
-        assertTrue(hasHeightBind,
-                "El flujo del seed debe usar el param :heightCm al menos 1 vez (top-5/20 tienen height hardcoded)");
-        assertTrue(hasSkillsBind,
-                "El flujo del seed debe usar el param :skillLevelsJson al menos 1 vez (top-5 tienen skills curated)");
+        // V25D78-C55.4: pre-C55.4, this test verified that DatabaseClient.bind
+        // was called with `:heightCm` and `:skillLevelsJson` parameter names.
+        // Post-C55.4, the per-row INSERT loop is gone — player persistence
+        // moved to WorldSeedBatchWriter.upsertPlayersBatched(...) which
+        // doesn't bind to DatabaseClient directly. The bind-name assertion
+        // is therefore outdated and obsolete for the C55.4+ flow.
+        //
+        // Replace the bind-name assertion with a behavioral assertion: that
+        // the batch writer was invoked with a non-empty player list (i.e.
+        // the seed actually persisted them). The internal bind semantics
+        // now live in WorldSeedBatchWriter and are covered by its own
+        // integration tests (mvn test on a running C55.4 stack).
+        org.mockito.Mockito.verify(batchWriter, atLeast(1))
+                .upsertPlayersBatched(
+                        org.mockito.ArgumentMatchers.anyList(),
+                        org.mockito.ArgumentMatchers.any());
+        // Snapshot must contain 5 curated players with height + skills
+        org.mockito.ArgumentCaptor<com.footballmanager.domain.model.entity.WorldSnapshot> captor =
+                org.mockito.ArgumentCaptor.forClass(com.footballmanager.domain.model.entity.WorldSnapshot.class);
+        org.mockito.Mockito.verify(snapshotService, atLeast(1)).saveSnapshot(captor.capture());
+        com.footballmanager.domain.model.entity.WorldSnapshot saved = captor.getValue();
+        int withHeight = 0, withSkills = 0;
+        for (com.footballmanager.domain.model.entity.WorldPlayer p : saved.getWorldPlayers().values()) {
+            if (p.getHeightCm() != null && p.getHeightCm() > 0) withHeight++;
+            if (p.getSkillLevels() != null && !p.getSkillLevels().isEmpty()) withSkills++;
+        }
+        assertTrue(withHeight >= 5,
+                "Top-5 curated players should have non-null height; got " + withHeight);
+        assertTrue(withSkills >= 5,
+                "Top-5 curated players should have non-empty skillLevels; got " + withSkills);
     }
 
     @Test

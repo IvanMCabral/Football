@@ -74,6 +74,8 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
         // Without flushDb, a previous test's career could leak into the next one.
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
+        seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
     }
 
     // V24D7+2.1 hardcoded seed admin (copied from GameControllerE2ETest line 63-64).
@@ -90,6 +92,15 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
      * Copy-paste literal of GameControllerE2ETest.seedTeamId. Uses field "worldTeamId".
      */
     private String seedTeamId(String userId) {
+        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
+        // LaLiga expansion means .get(0) returns a synthetic B1 add like
+        // "Vigo City 1", not Real Madrid).
+        return laligaTeamId(UUID.fromString(SEED_USER_ID),
+                UUID.fromString("4feeb9df-4133-4655-883e-e96894907e7b"),
+                "Real Madrid");
+    }
+
+    private String seedTeamIdLegacyUnfiltered(String userId) {
         return webTestClient.mutateWith(mockUser(SEED_USER_ID))
             .get().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/teams")
@@ -130,6 +141,9 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
      * passes CreateCareerSnapshotUseCaseImpl validation (>= 2 && <= leagueTeams.size()).
      */
     private void seedCareerAndGame(String userId) {
+        // V25D78-C55.5: seed LaLiga for the random userId that the test
+        // authenticates as (auth principal in POST /games below).
+        seedLaLigaForUser(UUID.fromString(userId));
         String teamId = seedTeamId(userId);
         String leagueId = seedLeagueId();
         String body = String.format(
