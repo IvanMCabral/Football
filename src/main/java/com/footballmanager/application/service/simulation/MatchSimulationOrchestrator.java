@@ -68,7 +68,11 @@ public class MatchSimulationOrchestrator {
 
     public Mono<Void> processMatchDayResults(String userId, java.util.List<MatchResultProcessor.MatchResultInfo> results) {
         if (results.isEmpty()) {
-            return Mono.empty();
+            // C55.8 B1.b fix: empty results may indicate a BYE round for the user
+            // (no fixtures in currentRound involve userSessionTeamId). Previously
+            // returned Mono.empty() silently and the career got stuck. Now we
+            // route to handlePotentialBye which advances if it's a real BYE.
+            return handlePotentialBye(userId);
         }
 
         UUID userUUID = UUID.fromString(userId);
@@ -105,6 +109,90 @@ public class MatchSimulationOrchestrator {
                 .then();
     }
 
+    /**
+     * C55.8 B1.b: handle the case where processMatchDayResults is called with an
+     * empty results list. If the current round is a BYE for the user (no fixture
+     * involves userSessionTeamId), advance career.currentRound to the next round
+     * (or finish the tournament if it was the last round). If it is NOT a BYE,
+     * log an error and stay stuck — we don't know how to advance without
+     * match data, and silently dropping the call would lose state.
+     */
+    private Mono<Void> handlePotentialBye(String userId) {
+        UUID userUUID = UUID.fromString(userId);
+        Semaphore semaphore = userSemaphores.computeIfAbsent(userId, k -> new Semaphore(1));
+        boolean acquired = semaphore.tryAcquire();
+
+        if (!acquired) {
+            return Mono.empty();
+        }
+
+        return Mono.fromCallable(() -> {
+                    try {
+                        return processByeRound(userId, userUUID);
+                    } finally {
+                        semaphore.release();
+                        userSemaphores.remove(userId, semaphore);
+                    }
+                })
+                .subscribeOn(orchestratorScheduler)
+                .doOnNext(career -> {
+                    if (career != null) {
+                        int currentRound = career.getTournamentState().getCurrentRound();
+                        notificationService.emitResultsUpdated(userId, String.valueOf(currentRound), 0);
+                    }
+                })
+                .onErrorResume(e -> {
+                    semaphore.release();
+                    userSemaphores.remove(userId, semaphore);
+                    return Mono.empty();
+                })
+                .then();
+    }
+
+    private CareerSave processByeRound(String userId, UUID userUUID) {
+        CareerSave career = careerSessionService.getCareerFromCache(userUUID)
+                .block(java.time.Duration.ofSeconds(10));
+
+        if (career == null) {
+            return null;
+        }
+
+        var tournamentState = career.getTournamentState();
+        int currentRound = tournamentState.getCurrentRound();
+        int totalRounds = tournamentState.getTotalRounds();
+        String userTeamId = career.getUserSessionTeamId();
+
+        boolean isBye = tournamentState.getFixturesForRound(currentRound).stream()
+                .noneMatch(f -> userTeamId != null
+                        && (userTeamId.equals(f.getHomeTeamId())
+                            || userTeamId.equals(f.getAwayTeamId())));
+
+        if (!isBye) {
+            log.error("[orchestrator] userId={} round={} empty results but round is NOT a BYE for user "
+                    + "(userTeamId={}, fixtures={}) — staying stuck. Investigate caller.",
+                    userId, currentRound, userTeamId, tournamentState.getFixturesForRound(currentRound).size());
+            return null;
+        }
+
+        log.info("[orchestrator] userId={} round={} detected BYE round — auto-advancing career", userId, currentRound);
+
+        if (currentRound >= totalRounds) {
+            java.util.List<TournamentResult> allResults = resultProcessor.determineDivisionChampions(career);
+            finishTournament(career, allResults);
+        } else {
+            tournamentState.setCurrentRound(currentRound + 1);
+            // Phase is already WAITING_USER from the previous round completion — keep it.
+            tournamentState.setCareerPhase(CareerPhase.WAITING_USER);
+        }
+
+        careerSessionService.saveCareer(career)
+                .block(java.time.Duration.ofSeconds(10));
+
+        roundEngineRegistry.unregister(userUUID);
+
+        return career;
+    }
+
     private CareerSave processResultsInternal(String userId, UUID userUUID, java.util.List<MatchResultProcessor.MatchResultInfo> results) {
         CareerSave career = careerSessionService.getCareerFromCache(userUUID)
                 .block(java.time.Duration.ofSeconds(10));
@@ -113,18 +201,31 @@ public class MatchSimulationOrchestrator {
             return null;
         }
 
-        int careerCurrentRound = career.getTournamentState().getCurrentRound();
+        var tournamentState = career.getTournamentState();
+        int careerCurrentRound = tournamentState.getCurrentRound();
 
-        // Verificar que los resultados son para la ronda actual
+        // C55.8 B1.a fix: handle stale/future matchId (previously silent-rejected).
+        // - fixture.round < careerCurrentRound → idempotent skip (already processed)
+        // - fixture.round == careerCurrentRound → normal flow
+        // - fixture.round > careerCurrentRound → advance career to catch up, then process
         if (!results.isEmpty()) {
             String firstMatchId = results.get(0).matchId();
-            var firstFixture = career.getTournamentState().getFixtures().stream()
+            var firstFixture = tournamentState.getFixtures().stream()
                     .filter(f -> f.getMatchId().equals(firstMatchId))
                     .findFirst()
                     .orElse(null);
 
             if (firstFixture != null && firstFixture.getRound() != careerCurrentRound) {
-                return null;
+                int fixtureRound = firstFixture.getRound();
+                if (fixtureRound < careerCurrentRound) {
+                    log.warn("[orchestrator] userId={} stale matchId {} from round={} (careerCurrentRound={}) — already processed, skipping",
+                            userId, firstMatchId, fixtureRound, careerCurrentRound);
+                    return null;
+                }
+                log.warn("[orchestrator] userId={} future matchId {} from round={} (careerCurrentRound={}) — advancing career",
+                        userId, firstMatchId, fixtureRound, careerCurrentRound);
+                tournamentState.setCurrentRound(fixtureRound);
+                careerCurrentRound = fixtureRound;
             }
         }
 
