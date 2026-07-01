@@ -6,6 +6,7 @@ import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.domain.model.valueobject.Division;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import com.footballmanager.domain.model.entity.Player.Position;
@@ -209,10 +210,15 @@ public class WorldSeedService {
         UUID teamId = UUID.nameUUIDFromBytes(("team|" + dto.name()).getBytes());
         BigDecimal budget = BigDecimal.valueOf(dto.budgetMillions() == null ? 50L : dto.budgetMillions())
                 .multiply(BigDecimal.valueOf(1_000_000L));
+        // V25D78-C55.6: default to PRIMERA here. The canonical per-league
+        // distribution happens via V25D80 migration AFTER persistTeamsInPostgres
+        // (which writes the rows with division='PRIMERA'). On subsequent loads,
+        // TeamPlayerLoaderService picks up the correct division from Postgres.
         return WorldTeam.fromRealTeam(teamId, leagueId, dto.name(),
                 country == null ? "" : country,
                 dto.city(), budget,
-                dto.formation() == null ? "4-3-3" : dto.formation());
+                dto.formation() == null ? "4-3-3" : dto.formation(),
+                Division.defaultDivision());
     }
 
     private void updateTeamFromDto(WorldTeam team, LaLigaSeedData.TeamDto dto, UUID leagueId) {

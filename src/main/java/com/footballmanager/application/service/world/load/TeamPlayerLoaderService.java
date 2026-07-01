@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import com.footballmanager.domain.ports.out.team.TeamRepository;
 import com.footballmanager.domain.model.entity.Player;
+import com.footballmanager.domain.model.valueobject.Division;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -41,7 +42,13 @@ public class TeamPlayerLoaderService {
                             team.getCountry(),
                             team.getCountry(),
                             team.getBudget(),
-                            team.getFormation() != null ? team.getFormation().toString() : "4-3-3"
+                            team.getFormation() != null ? team.getFormation().toString() : "4-3-3",
+                            // V25D78-C55.6: propagate the division tier persisted in
+                            // teams.division (Postgres) through to WorldTeam so the
+                            // WorldView carries the tier info for division-aware
+                            // queries (phase 4 UI: standings, dropdowns,
+                            // promotion/relegation).
+                            team.getDivision() != null ? team.getDivision() : Division.defaultDivision()
                     );
 
                     return playerRepository.findByTeamId(team.getId().getValue())
