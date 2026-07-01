@@ -7,6 +7,7 @@ import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.domain.model.valueobject.Division;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -224,6 +225,9 @@ public class LaLigaSeedService {
         UUID realTeamId = UUID.nameUUIDFromBytes(("team|" + dto.name()).getBytes());
         BigDecimal budget = BigDecimal.valueOf(dto.budgetMillions() == null ? 50L : dto.budgetMillions())
                 .multiply(BigDecimal.valueOf(1_000_000L));
+        // V25D78-C55.6: default to PRIMERA. V25D80 migration re-distributes
+        // per-league canonical 20/20/20 after persistTeamsInPostgres writes the
+        // row with division='PRIMERA'.
         return WorldTeam.fromRealTeam(
                 realTeamId,
                 realLeagueId,
@@ -231,7 +235,8 @@ public class LaLigaSeedService {
                 "Spain",
                 dto.city(),
                 budget,
-                dto.formation() == null ? "4-3-3" : dto.formation());
+                dto.formation() == null ? "4-3-3" : dto.formation(),
+                Division.defaultDivision());
     }
 
     private void updateTeamFromDto(WorldTeam team, LaLigaSeedData.TeamDto dto, UUID realLeagueId) {

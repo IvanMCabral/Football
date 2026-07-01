@@ -39,6 +39,8 @@ public class AssignPlayerUseCaseImpl implements AssignPlayerUseCase {
                         return teamRepository.findById(userId, UUID.fromString(worldTeamId))
                                 .flatMap(realTeam -> {
                                     // Crear WorldTeam desde el equipo real
+                                    // V25D78-C55.6: propagate division tier from
+                                    // Team aggregate (Postgres) through to WorldTeam.
                                     WorldTeam newTeam = WorldTeam.fromRealTeam(
                                             realTeam.getId().getValue(),
                                             null, // leagueId desconocido
@@ -46,7 +48,8 @@ public class AssignPlayerUseCaseImpl implements AssignPlayerUseCase {
                                             realTeam.getCountry(),
                                             realTeam.getCountry(),
                                             realTeam.getBudget(),
-                                            realTeam.getFormation() != null ? realTeam.getFormation().toString() : "4-3-3"
+                                            realTeam.getFormation() != null ? realTeam.getFormation().toString() : "4-3-3",
+                                            realTeam.getDivision() != null ? realTeam.getDivision() : com.footballmanager.domain.model.valueobject.Division.defaultDivision()
                                     );
                                     // Agregar al snapshot
                                     snapshot.addWorldTeam(newTeam);

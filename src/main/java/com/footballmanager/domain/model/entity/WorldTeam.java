@@ -1,17 +1,19 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.valueobject.Division;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
  * WorldTeam - Equipo en el WorldSnapshot.
  * Puede ser REAL (desde PostgreSQL) o CUSTOM (creado por usuario).
- * 
+ *
  * NO es mutable durante el juego.
  * SessionTeam lo envuelve con estado mutable.
  */
 public class WorldTeam {
-    
+
     private String worldTeamId;          // ID único en WorldSnapshot
     private UUID realTeamId;             // ref a PostgreSQL teams_table (null si es custom)
     private UUID realLeagueId;           // liga a la que pertenece (null si es custom)
@@ -21,20 +23,44 @@ public class WorldTeam {
     private BigDecimal baseBudget;       // presupuesto base (inmutable)
     private String baseFormation;        // formación base (inmutable)
     private WorldTeamOrigin origin;      // REAL o CUSTOM
-    
+    /**
+     * V25D78-C55.6: tier (PRIMERA/SEGUNDA/TERCERA) dentro de la liga del equipo.
+     * Default = {@link Division#defaultDivision()} cuando se crea un WorldTeam
+     * desde data de seed JSON (que no incluye division explícita). Para custom
+     * teams sin tier (CUSTOM origin) queda null. Carga desde Postgres Team
+     * aggregate via {@link #fromRealTeam(UUID, UUID, String, String, String, BigDecimal, String, Division)}
+     * propaga el valor real.
+     */
+    private Division division;
+
     public enum WorldTeamOrigin {
         REAL,     // Clonado de PostgreSQL
         CUSTOM    // Creado por usuario
     }
-    
+
     public WorldTeam() {
     }
-    
+
     /**
-     * Crea un WorldTeam desde un equipo real de PostgreSQL
+     * Crea un WorldTeam desde un equipo real de PostgreSQL, con division=null.
+     * @deprecated Use {@link #fromRealTeam(UUID, UUID, String, String, String, BigDecimal, String, Division)}
+     *             to carry the division tier through the WorldView boundary.
      */
+    @Deprecated
     public static WorldTeam fromRealTeam(UUID realTeamId, UUID realLeagueId, String name,
                                          String country, String city, BigDecimal budget, String formation) {
+        return fromRealTeam(realTeamId, realLeagueId, name, country, city, budget, formation, Division.defaultDivision());
+    }
+
+    /**
+     * Crea un WorldTeam desde un equipo real de PostgreSQL, propagando el
+     * {@link Division} tier persistido en la fila {@code teams} (V25D78-C55.6
+     * pre-req para C55.2 phase 4 UI: standings por división, division preview
+     * dropdown, promotion/relegation).
+     */
+    public static WorldTeam fromRealTeam(UUID realTeamId, UUID realLeagueId, String name,
+                                         String country, String city, BigDecimal budget, String formation,
+                                         Division division) {
         WorldTeam team = new WorldTeam();
         // worldTeamId = realTeamId para que WorldView.getTeamsByLeague() funcione correctamente
         team.worldTeamId = realTeamId.toString();
@@ -46,6 +72,7 @@ public class WorldTeam {
         team.baseBudget = budget;
         team.baseFormation = formation;
         team.origin = WorldTeamOrigin.REAL;
+        team.division = division == null ? Division.defaultDivision() : division;
         return team;
     }
     
@@ -138,5 +165,17 @@ public class WorldTeam {
 
     public void setOrigin(WorldTeamOrigin origin) {
         this.origin = origin;
+    }
+
+    /**
+     * V25D78-C55.6: tier del equipo dentro de su liga (PRIMERA/SEGUNDA/TERCERA).
+     * Null si es un equipo CUSTOM creado por el usuario sin tier.
+     */
+    public Division getDivision() {
+        return division;
+    }
+
+    public void setDivision(Division division) {
+        this.division = division;
     }
 }
