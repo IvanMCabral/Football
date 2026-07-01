@@ -88,6 +88,13 @@ public class CareerCommandController {
                         request.gameSpeed(),
                         effectiveTeamsPerDivision
                 )
+                // V25D78-C55.11 (BUG_C55.9_FINDING_01): invalidate the JVM-local
+                // careerCache right after a new CareerSave is persisted to Redis,
+                // so subsequent /status reads do NOT return the previous career
+                // (the cache would otherwise still hold the stale CareerSave from
+                // the prior /career/start call). Mirror pattern used by
+                // TestHarnessUseCaseImpl / ContinueSeasonUseCaseImpl / StartRoundUseCaseImpl.
+                .doOnNext(started -> sessionService.invalidateCache(userId))
                 // V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): after the
                 // career is initialized, also persist a Game entity that
                 // shares the career's UUID. Best-effort — if Redis fails,
