@@ -79,17 +79,35 @@ public class CareerViewController {
     }
 
     /**
-     * GET /api/v1/career/fixtures/all
-     * Obtiene todos los fixtures de la división del usuario
+     * GET /api/v1/career/fixtures/all[?round=N]
+     * Obtiene los fixtures de la división del usuario.
+     *
+     * <p>V25D78-C55.7.7 BUG-M4: previously this endpoint ignored the {@code round}
+     * query param and always returned all 240 matches across 10 rounds. Now it
+     * honors {@code ?round=N} (1-based) and returns a single-round slice with
+     * the same response shape (teamNames / config / teams stay complete so the
+     * UI can still resolve BYE + cross-division team names).
+     *
+     * <p>Backwards compatibility: callers that don't pass {@code round} get the
+     * existing all-rounds payload unchanged.
      */
     @GetMapping("/fixtures/all")
-    public Mono<FixtureQueryDtos.AllFixturesResponse> getAllFixtures(Authentication authentication) {
+    public Mono<FixtureQueryDtos.AllFixturesResponse> getAllFixtures(
+            @RequestParam(required = false) Integer round,
+            Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
+        var fallback = new FixtureQueryDtos.AllFixturesResponse(
+                "", 0, List.of(), List.of(), Map.of(),
+                new FixtureQueryDtos.DivisionConfig(0, 0, false, 0, 0));
+        if (round == null) {
+            return sessionService.getCareerFromCache(userId)
+                    .flatMap(fixtureQueryService::getAllUserDivisionFixtures)
+                    .switchIfEmpty(Mono.just(fallback));
+        }
+        final int requestedRound = round;
         return sessionService.getCareerFromCache(userId)
-                .flatMap(fixtureQueryService::getAllUserDivisionFixtures)
-                .switchIfEmpty(Mono.just(new FixtureQueryDtos.AllFixturesResponse(
-                        "", 0, List.of(), List.of(), Map.of(), new FixtureQueryDtos.DivisionConfig(0, 0, false, 0, 0)
-                )));
+                .flatMap(career -> fixtureQueryService.getAllUserDivisionFixturesByRound(career, requestedRound))
+                .switchIfEmpty(Mono.just(fallback));
     }
 
     /**
