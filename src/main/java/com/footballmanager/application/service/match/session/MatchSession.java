@@ -4,8 +4,13 @@ import com.footballmanager.application.engine.match.MatchCommandHandler;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.application.service.simulation.v24.V24LiveSnapshot;
+import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
+import com.footballmanager.application.service.simulation.v24.V24MatchTimeline;
+import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.v24.V24PlayerMatchState;
+import com.footballmanager.application.service.simulation.v24.V24PlayerMatchStatsModel;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.model.entity.MatchEvent;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
@@ -13,6 +18,7 @@ import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
+import com.footballmanager.domain.model.entity.SessionPlayer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -217,8 +223,19 @@ public class MatchSession {
      * (homePossession, awayPossession, homeStyle, awayStyle, homeFormation,
      * awayFormation) so the F3 UI can render the possession bar and the
      * current style/formation per team in real time.
+     *
+     * <p>V25D79: computes the new {@code homePlayerRatings} /
+     * {@code awayPlayerRatings} (per-player live stats via
+     * {@link V24PlayerMatchStatsModel#computeRatings(java.util.Collection, V24MatchTimeline)})
+     * and {@code substitutionsRemaining} (max(0, 5 - count(SUBSTITUTION events))).
+     * The ratings are computed against the LIVE partial timeline (events up to
+     * {@code snap.minute()}), not the cached full-match engine result, so the
+     * F4 substitution modal shows stats that update minute-by-minute.
+     *
+     * <p>Package-private (default visibility) so {@code MatchSessionV25D79Test}
+     * can drive it with controlled inputs. Not part of the public API.
      */
-    private MatchStateSnapshot adaptV24Snapshot(V24LiveSnapshot snap) {
+    MatchStateSnapshot adaptV24Snapshot(V24LiveSnapshot snap) {
         UUID homeTeamId = snap.homeTeamId() != null ? UUID.fromString(snap.homeTeamId()) : null;
         UUID awayTeamId = snap.awayTeamId() != null ? UUID.fromString(snap.awayTeamId()) : null;
 
@@ -226,6 +243,40 @@ public class MatchSession {
         for (V24MatchEvent e : snap.allEvents()) {
             adaptedEvents.add(toDomainMatchEvent(e));
         }
+
+        // V25D79: per-player live stats. Build the partial timeline (events up
+        // to currentMinute — snap.allEvents() is already filtered by
+        // V24LiveSession.buildSnapshot()) so the ratings reflect the live
+        // match, NOT the final 90-minute projection.
+        List<V24PlayerMatchRatingDto> homePlayerRatings = List.of();
+        List<V24PlayerMatchRatingDto> awayPlayerRatings = List.of();
+        V24MatchContext ctx = v24LiveSession.context();
+        if (ctx != null) {
+            String homeIdStr = snap.homeTeamId();
+            String awayIdStr = snap.awayTeamId();
+            List<V24PlayerMatchState> homeStates = buildPlayerStates(
+                    homeIdStr, ctx.homeStartingPlayers(), ctx.homeBenchPlayers());
+            List<V24PlayerMatchState> awayStates = buildPlayerStates(
+                    awayIdStr, ctx.awayStartingPlayers(), ctx.awayBenchPlayers());
+
+            V24MatchTimeline liveTimeline = new V24MatchTimeline();
+            for (V24MatchEvent e : snap.allEvents()) {
+                liveTimeline.addEvent(e);
+            }
+
+            V24PlayerMatchStatsModel statsModel = new V24PlayerMatchStatsModel();
+            homePlayerRatings = statsModel.computeRatings(homeStates, liveTimeline);
+            awayPlayerRatings = statsModel.computeRatings(awayStates, liveTimeline);
+        }
+
+        // V25D79 (D5): substitutions remaining. The match starts at 5 subs;
+        // each SUBSTITUTION event decrements the count. Floor at 0 so a buggy
+        // engine (e.g. emitting SUBSTITUTION events for tactical changes) does
+        // not produce a negative counter.
+        long subsDone = adaptedEvents.stream()
+                .filter(e -> e.getEventType() == MatchEvent.EventType.SUBSTITUTION)
+                .count();
+        int substitutionsRemaining = (int) Math.max(0, MatchStateSnapshot.MAX_SUBSTITUTIONS - subsDone);
 
         return new MatchStateSnapshot(
                 currentState.matchId(),
@@ -243,8 +294,41 @@ public class MatchSession {
                 snap.homeStyle(),
                 snap.awayStyle(),
                 snap.homeFormation(),
-                snap.awayFormation()
+                snap.awayFormation(),
+                // V25D79
+                homePlayerRatings,
+                awayPlayerRatings,
+                substitutionsRemaining
         );
+    }
+
+    /**
+     * V25D79 helper: build a list of {@link V24PlayerMatchState} for the home
+     * or away team from the {@code V24MatchContext}'s starting + bench lists
+     * (both {@link SessionPlayer}). Returns an empty list when the team has no
+     * players (defensive — never crashes SSE).
+     */
+    private List<V24PlayerMatchState> buildPlayerStates(
+            String teamId,
+            List<SessionPlayer> starting,
+            List<SessionPlayer> bench) {
+        if (teamId == null) {
+            return List.of();
+        }
+        List<V24PlayerMatchState> states = new ArrayList<>();
+        if (starting != null) {
+            for (SessionPlayer p : starting) {
+                if (p == null) continue;
+                states.add(V24PlayerMatchState.fromSessionPlayer(p, teamId));
+            }
+        }
+        if (bench != null) {
+            for (SessionPlayer p : bench) {
+                if (p == null) continue;
+                states.add(V24PlayerMatchState.fromSessionPlayer(p, teamId));
+            }
+        }
+        return states;
     }
 
     /**
