@@ -243,7 +243,12 @@ public class MatchSession {
                 snap.homeStyle(),
                 snap.awayStyle(),
                 snap.homeFormation(),
-                snap.awayFormation()
+                snap.awayFormation(),
+                // V25D79 — populated below in BE2 commit; defaults to safe
+                // values here to keep the canonical 18-arg shape compiling.
+                java.util.List.of(),
+                java.util.List.of(),
+                5
         );
     }
 
