@@ -70,6 +70,14 @@ public record MatchStateSnapshot(
 ) implements Serializable {
 
     /**
+     * V25D79 (D5): the maximum number of substitutions per team per match.
+     * Derivation: {@code substitutionsRemaining} =
+     * {@code max(0, MAX_SUBSTITUTIONS - count(SUBSTITUTION events in the
+     * manager team's timeline))}. The canonical value is 5 (FIFA football rule).
+     */
+    public static final int MAX_SUBSTITUTIONS = 5;
+
+    /**
      * Constructor con valores por defecto para compatibilidad.
      */
     public MatchStateSnapshot(UUID matchId) {
