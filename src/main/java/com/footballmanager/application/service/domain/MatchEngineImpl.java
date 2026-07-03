@@ -228,7 +228,12 @@ public class MatchEngineImpl implements MatchEngine {
 
         if (random.nextDouble() < 0.2) {
             int injuryMinute = 30 + random.nextInt(50);
-            events.add(MatchEvent.of(MatchEvent.EventType.SUBSTITUTION, injuryMinute, "InjuredPlayer", "ANY"));
+            // V25D81.1 BUG #1: pre-V24 legacy fallback path used to mislabel
+            // injury events as SUBSTITUTION (semantically wrong). Emit a proper
+            // INJURY event tagged "InJURED_V23_LEGACY" so downstream consumers
+            // (UI modals, persistence) can distinguish them from real subs.
+            events.add(MatchEvent.of(MatchEvent.EventType.INJURY, injuryMinute,
+                    null, "InjuredPlayer", null, "InJURED_V23_LEGACY"));
         }
 
         events.sort(java.util.Comparator.comparingInt(MatchEvent::getMinute));
