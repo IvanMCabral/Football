@@ -314,6 +314,83 @@ class MatchEngineImplEventConsistencyTest {
         }
     }
 
+    // ========== V25D81.1 BUG #1 regression tests ==========
+    //
+    // Legacy V23 fallback in MatchEngineImpl#generateEvents used to emit INJURY
+    // events mislabeled as SUBSTITUTION. After the cleanup the legacy marker is
+    // description="InJURED_V23_LEGACY" with EventType=INJURY. These tests sweep
+    // many matches (≥1_000) to surface the 20% legacy path and assert the shape.
+
+    @Test
+    void substitutionEventsNeverHaveLegacyInjuryPlayerName_V25D81_1() {
+        // BUG #1 regression: a SUBSTITUTION event must never have
+        // playerName="InjuredPlayer" — that was the legacy V23 mislabeling.
+        boolean foundBadEvent = false;
+        StringBuilder sample = new StringBuilder();
+        int sweep = 0;
+        for (int i = 0; i < 5_000 && !foundBadEvent; i++) {
+            Team home = createTeam("Home", 75);
+            Team away = createTeam("Away", 75);
+            long seed = 7_777L + i;
+            MatchResult r = engine.simulate(home, away, seed).block(Duration.ofSeconds(5));
+            assertNotNull(r);
+            sweep++;
+            for (MatchEvent e : r.getEvents()) {
+                if (e.getEventType() == MatchEvent.EventType.SUBSTITUTION
+                        && "InjuredPlayer".equals(e.getPlayerName())) {
+                    foundBadEvent = true;
+                    sample.append(String.format(
+                            "seed=%d minute=%d type=%s name=%s desc=%s%n",
+                            seed, e.getMinute(), e.getEventType(),
+                            e.getPlayerName(), e.getDescription()));
+                    break;
+                }
+            }
+        }
+        assertFalse(foundBadEvent,
+                String.format("Legacy V23 SUBSTITUTION-as-INJURY leaked through after %d matches: %s",
+                        sweep, sample));
+    }
+
+    @Test
+    void legacyInjuryEventsHaveCorrectShape_V25D81_1() {
+        // BUG #1 regression: any event tagged "InJURED_V23_LEGACY" must be of
+        // type INJURY, with playerName="InjuredPlayer", null playerId/teamId,
+        // and minute in [30, 79].
+        int sweep = 0;
+        int legacyFound = 0;
+        for (int i = 0; i < 5_000 && legacyFound < 5; i++) {
+            Team home = createTeam("Home", 75);
+            Team away = createTeam("Away", 75);
+            long seed = 8_888L + i;
+            MatchResult r = engine.simulate(home, away, seed).block(Duration.ofSeconds(5));
+            assertNotNull(r);
+            sweep++;
+            for (MatchEvent e : r.getEvents()) {
+                if ("InJURED_V23_LEGACY".equals(e.getDescription())) {
+                    legacyFound++;
+                    assertEquals(MatchEvent.EventType.INJURY, e.getEventType(),
+                            "V25D81.1 legacy marker must be INJURY, got " + e.getEventType()
+                                    + " at seed=" + seed + " minute=" + e.getMinute());
+                    assertEquals("InjuredPlayer", e.getPlayerName(),
+                            "V25D81.1 legacy INJURY must keep playerName='InjuredPlayer' at seed=" + seed);
+                    assertNull(e.getPlayerId(),
+                            "V25D81.1 legacy INJURY carries null playerId at seed=" + seed);
+                    assertNull(e.getTeamId(),
+                            "V25D81.1 legacy INJURY carries null teamId at seed=" + seed);
+                    assertTrue(e.getMinute() >= 30 && e.getMinute() <= 79,
+                            "V25D81.1 legacy INJURY minute must be in [30,79], got "
+                                    + e.getMinute() + " at seed=" + seed);
+                }
+            }
+        }
+        // ~20% probability of legacy injury per match × 5_000 matches → expect
+        // ~1_000 events. If we found <5, the sweep was too short (RNG degenerate).
+        assertTrue(legacyFound >= 5,
+                "Expected to find at least 5 legacy INJURY events in " + sweep
+                        + " matches, found " + legacyFound);
+    }
+
     private Team createTeam(String name, int ovr) {
         Team team = Team.create(TeamId.generate(), UserId.generate(), name, "England",
                 new BigDecimal("10000000"), Formation.ofDefault());
