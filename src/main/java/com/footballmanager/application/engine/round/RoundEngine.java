@@ -174,6 +174,21 @@ public class RoundEngine {
         return matchEngines.get(matchId);
     }
 
+    /**
+     * C55.14 OBS-1: convenience accessor that returns the current
+     * {@link MatchStateSnapshot} for a single match registered in this
+     * round. Returns {@code null} when the {@code matchId} is not
+     * registered (caller is expected to translate null into a 404).
+     *
+     * <p>The returned snapshot carries the full V25D79 contract
+     * (player ratings + substitutions remaining), populated on every
+     * tick by {@code MatchSession.adaptV24Snapshot()}.
+     */
+    public MatchStateSnapshot getCurrentMatchSnapshot(UUID matchId) {
+        MatchEngine engine = matchEngines.get(matchId);
+        return engine != null ? engine.getCurrentState() : null;
+    }
+
     public int getMatchCount() {
         return matchEngines.size();
     }

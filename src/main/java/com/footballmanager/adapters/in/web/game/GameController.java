@@ -1,10 +1,12 @@
 package com.footballmanager.adapters.in.web.game;
 
 import com.footballmanager.adapters.in.web.game.dto.*;
+import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.domain.GameService;
 import com.footballmanager.domain.port.in.game.TournamentQueryUseCase;
 import com.footballmanager.domain.port.in.match.*;
 import com.footballmanager.domain.model.aggregate.Game;
+import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.entity.RuntimeMatch;
 import com.footballmanager.domain.model.valueobject.GameId;
 import com.footballmanager.domain.model.valueobject.UserId;
@@ -30,7 +32,11 @@ public class GameController {
 
     private final GameService gameService;
     private final StartRoundUseCase startRoundUseCase;
-    private final GetMatchStateQueryUseCase getMatchStateQueryUseCase;
+    // C55.14 OBS-1: GameController.matches now returns MatchStateSnapshot
+    // (V25D79 contract). Resolve via RoundEngineRegistry instead of the
+    // legacy GetMatchStateQueryUseCase + MatchRuntimeRepository (Redis)
+    // path that exposed RuntimeMatch without the V25D79 fields.
+    private final RoundEngineRegistry roundEngineRegistry;
     private final AdvanceMatchUseCase advanceMatchUseCase;
     private final FinalizeMatchUseCase finalizeMatchUseCase;
     private final TournamentQueryUseCase tournamentQueryUseCase;
@@ -198,19 +204,58 @@ public class GameController {
                 });
     }
 
+    /**
+     * C55.14 OBS-1: GET /api/v1/games/match/{matchId} now returns a
+     * {@link MatchStateSnapshot} (the V25D79 contract) instead of the
+     * legacy {@code RuntimeMatch} DTO which lacked
+     * {@code homePlayerRatings}, {@code awayPlayerRatings}, and
+     * {@code substitutionsRemaining}.
+     *
+     * <p>Resolution path: parse {@code matchId} as UUID, look up the
+     * owning {@code RoundEngine} via {@link RoundEngineRegistry} (the
+     * registry is the global source of truth for live matches), then
+     * return {@code RoundEngine.getCurrentMatchSnapshot(matchId)} —
+     * which delegates to {@code MatchEngine.getCurrentState()} that
+     * already computes the 3 V25D79 fields on every SSE tick.
+     *
+     * <p>Status codes:
+     * <ul>
+     *   <li>401 — no authenticated user</li>
+     *   <li>400 — {@code matchId} is not a valid UUID</li>
+     *   <li>404 — no active round owns this matchId (match finished
+     *       and the registry was unregistered, or the round has been
+     *       stopped, or the match was never started)</li>
+     *   <li>200 — snapshot with V25D79 fields populated</li>
+     * </ul>
+     *
+     * <p>Note: scoping is intentionally global (same posture as the
+     * existing {@code MatchEngineController.getRoundIdForMatch}
+     * endpoint). User-scoping at the registry level is out of scope
+     * for this mini-sprint and would be a separate hardening pass.
+     */
     @GetMapping("/match/{matchId}")
-    public Mono<ResponseEntity<RuntimeMatch>> getMatchState(@PathVariable String matchId, Authentication authentication) {
+    public Mono<ResponseEntity<MatchStateSnapshot>> getMatchState(@PathVariable String matchId, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
         if (userIdStr == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
+        // userId is kept here for symmetry with sibling endpoints (and to
+        // anchor future user-scoping work) but the current lookup is
+        // intentionally global on the matchId, same as the SSE RoundState
+        // consumer in the UI.
         UUID userId = UUID.fromString(userIdStr);
 
-        return getMatchStateQueryUseCase.getMatchState(userId, matchId)
+        UUID matchIdUuid;
+        try {
+            matchIdUuid = UUID.fromString(matchId);
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+
+        return Mono.justOrEmpty(roundEngineRegistry.getByMatchId(matchIdUuid))
+                .map(roundEngine -> roundEngine.getCurrentMatchSnapshot(matchIdUuid))
                 .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-                });
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/match/{matchId}/advance")
