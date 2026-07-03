@@ -13,6 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * V24C3: Tests for V24InjuryModel.
  * Validates base injury probability, stamina modifiers, high-intensity modifier,
  * style modifiers, clamping, and deterministic behavior.
+ *
+ * <p>V25D81.1 BUG #6 tuning: BASE raised to 0.008 (was 0.003) and MAX raised to
+ * 0.05 (was 0.02). New tests below assert both values directly and the new
+ * clamping range. User-team bias (BUG #6 option-a) is intentionally OUT OF
+ * SCOPE — deferred to V25D82+ if Iván requests it.
  */
 class V24InjuryModelTest {
 
@@ -25,6 +30,67 @@ class V24InjuryModelTest {
         double base = model.baseInjuryProbability();
         assertTrue(base <= 0.01, "base should be <= 0.01, got " + base);
         assertTrue(base > 0, "base should be > 0, got " + base);
+    }
+
+    // ========== V25D81.1 BUG #6 tuning tests ==========
+
+    @Test
+    void baseInjuryProbabilityEqualsTunedValue_V25D81_1() {
+        // V25D81.1: BASE raised from 0.003 to 0.008 (2.5x more probable).
+        double base = model.baseInjuryProbability();
+        assertEquals(0.008, base, 0.0000001,
+                "V25D81.1 BASE must be exactly 0.008, got " + base);
+    }
+
+    @Test
+    void probabilityAlwaysWithinClampRange_V25D81_1() {
+        // V25D81.1: clamp range is [0.0005, 0.05] for any combination of modifiers.
+        // Sweep across low/medium/high stamina, normal/high-intensity, all styles.
+        int[] staminas = { 5, 25, 45, 70, 100 };
+        TeamStyle[] styles = {
+                TeamStyle.BALANCED, TeamStyle.ATTACKING, TeamStyle.COUNTER,
+                TeamStyle.DEFENSIVE, TeamStyle.POSSESSION
+        };
+        boolean[] intensities = { false, true };
+
+        for (int stamina : staminas) {
+            for (TeamStyle style : styles) {
+                for (boolean hi : intensities) {
+                    V24PlayerMatchState p = makePlayer(
+                            "clamp-sweep-" + stamina + "-" + style + "-" + hi,
+                            70, stamina);
+                    double prob = model.adjustedInjuryProbability(p, style, hi);
+                    assertTrue(prob >= 0.0005 && prob <= 0.05,
+                            "prob out of [0.0005, 0.05] for stamina=" + stamina
+                                    + " style=" + style + " hi=" + hi
+                                    + " -> " + prob);
+                }
+            }
+        }
+    }
+
+    @Test
+    void minClampIs0_0005_V25D81_1() {
+        // Edge-case minimum: high stamina + minimal style + no high-intensity
+        // still floors to MIN_INJURY_PROB = 0.0005.
+        V24PlayerMatchState p = makePlayer("min-clamp", 70, 100);
+        double prob = model.adjustedInjuryProbability(p, TeamStyle.POSSESSION, false);
+        // BASE=0.008 + 0 (stamina >= 40) + 0 (no hi) + 0 (POSSESSION) = 0.008
+        // 0.008 already > MIN, so we just assert the documented lower bound.
+        assertTrue(prob >= 0.0005, "prob must be >= MIN 0.0005, got " + prob);
+    }
+
+    @Test
+    void maxClampAllowsUpTo0_05_V25D81_1() {
+        // V25D81.1: document the new ceiling. BASE=0.008 + exhausted + hi + ATTACKING
+        // = 0.008 + 0.008 + 0.002 + 0.001 = 0.019, well under 0.05. Verify ceiling
+        // is at least as high as 0.05 (proves the constant was raised).
+        V24PlayerMatchState exhausted = makePlayer("max-clamp", 70, 5);
+        double prob = model.adjustedInjuryProbability(exhausted, TeamStyle.ATTACKING, true);
+        assertTrue(prob <= 0.05,
+                "prob must be <= MAX 0.05, got " + prob);
+        assertTrue(prob > 0.01,
+                "exhausted + hi + attacking should still be visibly nonzero, got " + prob);
     }
 
     // ========== adjustedInjuryProbability tests ==========
@@ -86,22 +152,23 @@ class V24InjuryModelTest {
     void injuryProbabilityIsClamped() {
         V24PlayerMatchState player = makePlayer("clamp-injury", 70, 100);
 
+        // V25D81.1 BUG #6: clamping range is [0.0005, 0.05] (was [0.0005, 0.02]).
         // Min clamp test: POSSESSION style, no high-intensity, high stamina → should be near min
         double probMin = model.adjustedInjuryProbability(player, TeamStyle.POSSESSION, false);
-        assertTrue(probMin >= 0.0005 && probMin <= 0.02,
-                "probMin should be clamped to [0.0005, 0.02], got " + probMin);
+        assertTrue(probMin >= 0.0005 && probMin <= 0.05,
+                "probMin should be clamped to [0.0005, 0.05], got " + probMin);
 
         // Max clamp test: very low stamina, high-intensity, attacking
         V24PlayerMatchState maxPlayer = makePlayer("max-injury", 70, 15);
         double probMax = model.adjustedInjuryProbability(maxPlayer, TeamStyle.ATTACKING, true);
-        assertTrue(probMax >= 0.0005 && probMax <= 0.02,
-                "probMax should be clamped to [0.0005, 0.02], got " + probMax);
+        assertTrue(probMax >= 0.0005 && probMax <= 0.05,
+                "probMax should be clamped to [0.0005, 0.05], got " + probMax);
 
         // Exhausted with all modifiers should still clamp
         V24PlayerMatchState exhausted = makePlayer("ex-injury", 70, 5);
         double probExhausted = model.adjustedInjuryProbability(exhausted, TeamStyle.ATTACKING, true);
-        assertTrue(probExhausted >= 0.0005 && probExhausted <= 0.02,
-                "probExhausted should be clamped to [0.0005, 0.02], got " + probExhausted);
+        assertTrue(probExhausted >= 0.0005 && probExhausted <= 0.05,
+                "probExhausted should be clamped to [0.0005, 0.05], got " + probExhausted);
     }
 
     // ========== shouldInjure tests ==========

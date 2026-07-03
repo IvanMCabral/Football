@@ -19,13 +19,22 @@ import java.util.Random;
  *
  * <p>No mutable state, no side effects. Deterministic via provided Random.
  * No Spring annotations, no repository dependencies.
+ *
+ * <p>V25D81.1 BUG #6 tuning: BASE raised from 0.003 to 0.008 (2.5x more probable)
+ * so that the user team (e.g. Villarreal) receives visible injuries during a
+ * short sim run instead of relying on chance. MAX raised from 0.02 to 0.05 to
+ * keep the clamp ceiling meaningful against the new BASE + modifier stack.
+ * See tests in V24InjuryModelTest.
  */
 public final class V24InjuryModel {
 
-    private static final double BASE_INJURY_PROB = 0.003;
+    // V25D81.1 BUG #6: BASE raised 0.003 -> 0.008 (2.5x more probable).
+    private static final double BASE_INJURY_PROB = 0.008;
 
     private static final double MIN_INJURY_PROB = 0.0005;
-    private static final double MAX_INJURY_PROB = 0.02;
+    // V25D81.1 BUG #6: MAX raised 0.02 -> 0.05 to keep clamp ceiling meaningful
+    // for the new BASE + cumulative modifiers.
+    private static final double MAX_INJURY_PROB = 0.05;
 
     public double baseInjuryProbability() {
         return BASE_INJURY_PROB;
