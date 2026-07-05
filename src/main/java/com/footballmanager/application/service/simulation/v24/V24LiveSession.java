@@ -187,7 +187,14 @@ public final class V24LiveSession {
         // fresh batch of doubles on every call, producing a different
         // timeline per tick and a flickering score in the F3 live UI).
         cachedRandom.rewind();
-        V24DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom);
+        // V25D87 (F1 Option A): incremental-bounded simulate. The engine
+        // runs only minutes [1, ticksRun+1] instead of the full 90, so
+        // each live SSE tick costs ~1ms / 90 instead of ~1ms. The
+        // CachingRandomWrapper replay contract is preserved because the
+        // wrapper replays the same draws from minute 1 on every call —
+        // minute [1..ticksRun+1] draws match the unbounded prefix.
+        int maxMinute = Math.min(ticksRun + 1, 90);
+        V24DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom, maxMinute);
         this.cachedResult = result;
         this.homeGoals = result.homeGoals();
         this.awayGoals = result.awayGoals();
