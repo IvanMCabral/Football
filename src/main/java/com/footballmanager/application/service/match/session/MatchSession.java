@@ -79,7 +79,11 @@ public class MatchSession {
         this.currentState = convertToSnapshot(matchId, state);
         this.tickHandler = tickHandler;
         this.commandQueue = new ConcurrentLinkedQueue<>();
-        this.stateSink = Sinks.many().multicast().onBackpressureBuffer();
+        // V25D87.1-BACK-F1: align with CareerNotificationService's
+        // replay().latest() pattern — see RoundEngine.stateSink for the
+        // full rationale. MatchSession feeds the per-match SSE stream
+        // consumed by startMatchUseCase / live components.
+        this.stateSink = Sinks.many().replay().latest();
         this.v24LiveSession = v24LiveSession;
     }
 

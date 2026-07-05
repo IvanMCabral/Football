@@ -45,7 +45,22 @@ public class RoundEngine {
         this.roundId = roundId;
         this.matchEngines = new ConcurrentHashMap<>();
         this.statusCalculator = statusCalculator;
-        this.stateSink = Sinks.many().multicast().onBackpressureBuffer();
+        // V25D87.1-BACK-F1: switch from multicast().onBackpressureBuffer() to
+        // replay().latest() — same pattern as CareerNotificationService, which
+        // is the proven-working SSE sink in this codebase.
+        //
+        // multicast().onBackpressureBuffer() drops emits when the producer
+        // outpaces the consumer's downstream (the SSE writer pauses during
+        // JSON serialization of RoundState). The first emit reaches the
+        // client, the rest are silently dropped by tryEmitNext() returning
+        // FAIL_OVERFLOW.
+        //
+        // replay().latest() caches the most-recent value (so late
+        // subscribers get the current state) and emits every subsequent
+        // value to all currently-subscribed consumers. For SSE, the latest
+        // semantic is correct: the UI wants the most-current snapshot
+        // (overwrites stale intermediate values).
+        this.stateSink = Sinks.many().replay().latest();
     }
 
     public void registerMatch(UUID matchId, MatchEngine engine) {
