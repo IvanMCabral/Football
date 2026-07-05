@@ -61,13 +61,16 @@ public class MatchEngineController {
             //   - .publishOn(boundedElastic()) — serialize downstream on
             //     a separate thread so the producer (round-engine scheduler)
             //     never blocks on TCP flush backpressure.
-            //   - .onBackpressureLatest() — slow consumer gets the LATEST
-            //     snapshot instead of stalling the chain.
+            //   - REMOVED .onBackpressureLatest(): it WAS dropping
+            //     intermediate emits under any backpressure. The replay()
+            //     sink from F1 already gives "latest wins" semantics for
+            //     new subscribers + future emits are still delivered to
+            //     all subscribers, so an additional onBackpressureLatest()
+            //     was strictly harmful.
             //   - .doOnNext(...) debug log so runtime smoke can confirm
             //     emits are flowing through the controller layer.
             return roundEngine.getStateStream()
                 .publishOn(Schedulers.boundedElastic())
-                .onBackpressureLatest()
                 .doOnNext(rs -> log.debug("[SSE-STREAM] roundId={} emit: tick-minute={} status={} ({} matches)",
                         id,
                         rs.getMatches().isEmpty() ? -1 : rs.getMatches().get(0).currentMinute(),
