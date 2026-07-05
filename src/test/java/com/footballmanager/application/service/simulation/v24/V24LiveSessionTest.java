@@ -223,11 +223,17 @@ class V24LiveSessionTest {
     @Test
     @DisplayName("currentMinute and context accessors return the expected values")
     void accessors_returnExpectedValues() {
-        // currentMinute reflects the latest tick (started at 0, ticked once -> 1).
-        assertEquals(1, session.currentMinute());
+        // V25D87 (F1 Option A): bounded simulate now processes only the
+        // new minute each tick, so a single tick can land on a minute
+        // where the engine loop emits zero engine events (no shot, no
+        // foul, no corner). Tick 10 more times before the
+        // non-empty sanity check so the assertion is reliable across
+        // random seeds.
+        for (int i = 0; i < 10; i++) session.tick();
+        assertEquals(11, session.currentMinute());
         assertNotNull(session.context());
         assertEquals(context, session.context());
-        // Accumulated events is non-null
+        // Accumulated events is non-null and (over 11 minutes) non-empty.
         assertNotNull(session.accumulatedEvents());
         assertFalse(session.accumulatedEvents().isEmpty());
     }
