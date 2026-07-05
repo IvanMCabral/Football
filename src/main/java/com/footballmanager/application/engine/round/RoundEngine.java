@@ -3,6 +3,7 @@ package com.footballmanager.application.engine.round;
 import com.footballmanager.application.engine.match.MatchEngine;
 import com.footballmanager.application.engine.model.RoundState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  *
  * Thread-safe: usa MatchStateSnapshot inmutable.
  */
+@Slf4j
 public class RoundEngine {
 
     private static final Duration ROUND_TICK_INTERVAL = Duration.ofMillis(500);
@@ -110,11 +112,25 @@ public class RoundEngine {
             return;
         }
 
+        // V25D87.1-BACK-F2: catch per-match exceptions. Otherwise a single
+        // V24 simulation throw on one match propagates out of executeTick()
+        // and ScheduledExecutorService.scheduleAtFixedRate kills the entire
+        // round scheduler (Java contract: any task exception suppresses all
+        // subsequent executions). Symptom was the runtime smoke seeing
+        // exactly 1 SSE event (the synchronous initial emit) then nothing.
         for (MatchEngine engine : matchEngines.values()) {
             if (!engine.isFinished() && !engine.isPaused()) {
                 int currentMinute = engine.getCurrentState().currentMinute();
                 if (currentMinute < 90) {
-                    engine.advanceTick();
+                    try {
+                        engine.advanceTick();
+                    } catch (Exception e) {
+                        // log and continue — let other matches progress.
+                        // round-engine scheduler must keep firing ticks.
+                        log.error("[ROUND-ENGINE] match advanced Tick FAILED for roundId={}: "
+                                + "suppressing this match in this tick. Other matches continue.",
+                                roundId, e);
+                    }
                 }
             }
         }
