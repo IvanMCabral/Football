@@ -183,6 +183,51 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
+     * V25D87: incremental-bounded overload. Simulates only the minutes
+     * {@code [1, maxMinute]} (inclusive, 1-indexed) and returns the
+     * matching partial timeline. The replay path (F2 / mutateContext +
+     * replayFromMinute) keeps using the unbounded {@link #simulate(V24MatchContext, Random)}
+     * overload so the deterministic replay contract is preserved.
+     *
+     * <p>Use case: the live SSE tick driver
+     * ({@link V24LiveSession#tick()}) calls this with {@code maxMinute =
+     * ticksRun + 1} on every scheduler tick. The bounded run is ~90×
+     * cheaper per call than the unbounded one because it processes only
+     * the single new minute. The CachingRandomWrapper replay contract is
+     * preserved because the engine consumes the same draw prefix from
+     * minute 1 through {@code maxMinute} as the full unbounded run would.
+     *
+     * <p>Determinism: with the same {@code context}, {@code random} and
+     * the same {@code maxMinute}, the returned {@code timeline.events()}
+     * for minutes {@code [1, maxMinute]} is bit-equivalent to the prefix
+     * of {@code simulate(context, random).timeline().events()} filtered
+     * to the same minute range (the loop body is identical — only the
+     * early break at {@code minute > maxMinute} is added).
+     *
+     * @param context  the match context (never null)
+     * @param random   the replay-path shared source (typically a
+     *                 {@code CachingRandomWrapper}) used for ALL draws
+     * @param maxMinute inclusive upper bound on the simulated minute
+     *                 range; must be in {@code [1, 90]}
+     * @return a result whose {@code timeline} contains only the events
+     *         emitted between minute 1 and {@code maxMinute} inclusive;
+     *         {@code homeGoals}/{@code awayGoals}/{@code possession}
+     *         reflect the aggregate up to {@code maxMinute}
+     * @throws IllegalArgumentException if {@code random} is null or
+     *                                  {@code maxMinute} is out of range
+     */
+    public V24DetailedMatchResult simulate(V24MatchContext context, Random random, int maxMinute) {
+        if (random == null) {
+            throw new IllegalArgumentException("random must not be null");
+        }
+        if (maxMinute < 1 || maxMinute > 90) {
+            throw new IllegalArgumentException(
+                "maxMinute must be in [1, 90], got " + maxMinute);
+        }
+        return simulateWithRandomBounded(context, random, random, random, maxMinute);
+    }
+
+    /**
      * Core simulation logic shared by both overloads. Takes three pre-seeded
      * Randoms (one for main, one for each player selector). The CALLER is
      * responsible for choosing whether they want 3 independent Randoms
@@ -194,10 +239,49 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * identical to the pre-refactor body — no draw-order changes inside the
      * loop body.
      */
+    /**
+     * V25D87: thin 4-arg wrapper kept for the two existing call sites
+     * ({@link #simulate(V24MatchContext, long)} and
+     * {@link #simulate(V24MatchContext, Random)}) that need the full
+     * 90-minute run. Delegates to the bounded variant with
+     * {@code maxMinute = 90}; preserves bit-equivalent output for all
+     * callers because the bounded variant with 90 is identical to the
+     * pre-V25D87 body (the early break is unreachable when
+     * {@code maxMinute == 90} because the clock stops at minute 90).
+     */
     private V24DetailedMatchResult simulateWithRandom(
             V24MatchContext context, Random random, Random homeSelectorRandom, Random awaySelectorRandom) {
+        return simulateWithRandomBounded(context, random, homeSelectorRandom, awaySelectorRandom, 90);
+    }
+
+    /**
+     * V25D87: core simulation with an early-break bound. Body is logically
+     * identical to the pre-V25D87 {@code simulateWithRandom} body — the
+     * only addition is the {@code if (minute > maxMinute) break;} at the
+     * top of the per-minute loop. The unbounded callers (line 141 and
+     * line 182) reach this method via the 4-arg wrapper above with
+     * {@code maxMinute = 90} (the clock terminates at minute 90
+     * regardless, so the break is never taken there). The bounded caller
+     * ({@link #simulate(V24MatchContext, Random, int)}) passes the tick's
+     * upper minute directly.
+     *
+     * <p>This method was extracted from the original
+     * {@code simulateWithRandom} during V25D87 (F1 Option A) and is
+     * logically identical to the pre-extract body — no draw-order
+     * changes inside the loop body.
+     */
+    private V24DetailedMatchResult simulateWithRandomBounded(
+            V24MatchContext context, Random random, Random homeSelectorRandom, Random awaySelectorRandom, int maxMinute) {
         if (context == null) {
             throw new IllegalArgumentException("context must not be null");
+        }
+        if (maxMinute < 1 || maxMinute > 90) {
+            // Defensive guard; the public overload already validated
+            // the argument, but the legacy 4-arg wrapper invokes this
+            // method with a literal 90 so we keep the check here as a
+            // belt-and-braces measure.
+            throw new IllegalArgumentException(
+                "maxMinute must be in [1, 90], got " + maxMinute);
         }
 
         V24TeamMatchState homeState = V24TeamMatchState.create(
@@ -253,6 +337,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         while (clock.isRunning()) {
             int minute = clock.currentMinute();
+            // V25D87 (F1 Option A): early break when the bounded caller
+            // asked for fewer than 90 minutes. Prevents the engine from
+            // burning ~1ms of full-90-min simulate() work per tick when
+            // the live tick driver only needs the next single minute.
+            // The unbounded callers reach here with maxMinute=90 and the
+            // clock already stops at minute 90, so this break is a no-op
+            // for them — bit-equivalent with the pre-V25D87 body.
+            if (minute > maxMinute) {
+                break;
+            }
 
             // LIVE-MATCH-F2-F2.5: apply scheduled manual substitutions for this
             // minute. Iterates the context's deferred-swap list once per minute
