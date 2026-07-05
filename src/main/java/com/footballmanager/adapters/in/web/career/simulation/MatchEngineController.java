@@ -14,7 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,7 +53,26 @@ public class MatchEngineController {
             }
 
             log.info("[SSE-STREAM] Streaming roundId: {}", id);
+            // V25D87.1-BACK-F3: runtime smoke still dropped to 1 event after
+            // the F1 sink fix + F2 scheduler survival fix. Difference from
+            // passing integration tests: a slow real consumer (Spring SSE
+            // writer + Jackson + Netty chunked write + proxy buffer) on a
+            // hot stream producer. Defensive fix:
+            //   - .publishOn(boundedElastic()) — serialize downstream on
+            //     a separate thread so the producer (round-engine scheduler)
+            //     never blocks on TCP flush backpressure.
+            //   - .onBackpressureLatest() — slow consumer gets the LATEST
+            //     snapshot instead of stalling the chain.
+            //   - .doOnNext(...) debug log so runtime smoke can confirm
+            //     emits are flowing through the controller layer.
             return roundEngine.getStateStream()
+                .publishOn(Schedulers.boundedElastic())
+                .onBackpressureLatest()
+                .doOnNext(rs -> log.debug("[SSE-STREAM] roundId={} emit: tick-minute={} status={} ({} matches)",
+                        id,
+                        rs.getMatches().isEmpty() ? -1 : rs.getMatches().get(0).currentMinute(),
+                        rs.getStatus(),
+                        rs.getMatches().size()))
                 .doOnCancel(() -> log.info("[SSE-STREAM] Stream cancelled for roundId: {}", id))
                 .doOnComplete(() -> log.info("[SSE-STREAM] Stream completed for roundId: {}", id));
 
