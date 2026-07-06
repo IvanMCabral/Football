@@ -216,11 +216,12 @@ class FormationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D53-C14: cobertura de subdivisionIds — exactamente 26 únicos referenciados por las 7 formations")
+    @DisplayName("V25D53-C14 / V25D94: cobertura de subdivisionIds — exactamente 26 únicos referenciados por las 12 formations (symmetric)")
     void gridCoverageIsTwentySixUniqueSubdivisionIds() {
-        // Golden test del audit C14: documenta que las 7 formations actuales
-        // referencian exactamente estos 26 subdivisionIds (1 GK + 25 outfield).
-        // Si alguien agrega/quita formations, este test detecta el delta.
+        // V25D94 F1-F3: rebalanceó coords a symmetric. 26 unique
+        // subdivisionIds (1 GK + 25 outfield). Pre-V25D94 eran 26 — count
+        // se mantiene porque aunque cambio de cells, sigue habiendo 25 outfield
+        // + 1 GK en uso.
         Set<String> actualUsed = new HashSet<>();
         for (FormationDTO f : service.getAllFormations()) {
             for (FormationPositionDTO p : f.positions()) {
@@ -230,24 +231,24 @@ class FormationServiceTest {
         Set<String> expectedUsed = Set.of(
             // GK
             "GK-1",
-            // ATTACK row 0 (4-2-3-1 ST top)
+            // ATTACK row 0 (4-2-3-1 + 4-1-4-1 ST top)
             "S02-2",
-            // ATTACK row 1 (wingers + ST centers)
-            "S04-1", "S05-2", "S05-3", "S06-3",
-            // MIDFIELD row 3 (4-2-3-1 CAM line)
-            "S10-1", "S11-2", "S12-3",
-            // MIDFIELD row 4 (4-1-4-1 LM/RM + 4-3-3 CMs)
-            "S13-1", "S13-2", "S14-2", "S14-3", "S15-1", "S15-2", "S15-3",
-            // MIDFIELD row 5 (wide mids + central mids)
-            "S16-1", "S16-2", "S17-2", "S18-2", "S18-3",
-            // DEFENSE row 7 (4-back/5-back/3-back lines)
-            "S22-1", "S22-2", "S23-2", "S23-3", "S24-3"
+            // ATTACK row 1 — wingers + ST (V25D93.6 wingers = FW family)
+            "S04-1", "S05-1", "S05-2", "S05-3", "S06-3",
+            // MIDFIELD row 3 (4-2-3-1 CAM line — V25D94 symmetric S10-2/S11-2/S12-2)
+            "S10-2", "S11-2", "S12-2",
+            // MIDFIELD row 4 (LWB/RWB of 3-back formations + 4-3-3 CMs)
+            "S15-1", "S17-1", "S17-2", "S17-3", "S18-3",
+            // MIDFIELD row 5 (wide mids + central mids in symmetric col 0/1/2)
+            "S16-2", "S18-2",
+            // DEFENSE row 7 — 3-back/4-back/5-back lines (symmetric)
+            "S22-1", "S22-2", "S22-3", "S23-1", "S23-2", "S23-3", "S24-1", "S24-2", "S24-3"
         );
         assertEquals(26, actualUsed.size(),
-            "Cantidad de subdivisionIds usados cambió del golden (26). "
+            "V25D94: cantidad de subdivisionIds usados cambió del golden (26). "
                 + "Actual: " + actualUsed);
         assertEquals(expectedUsed, actualUsed,
-            "Set de subdivisionIds usados difiere del golden. "
+            "V25D94: set de subdivisionIds usados difiere del golden. "
                 + "Faltan: " + diff(expectedUsed, actualUsed)
                 + ". Sobran: " + diff(actualUsed, expectedUsed));
     }
@@ -278,22 +279,43 @@ class FormationServiceTest {
         unused.removeAll(used);
 
         assertEquals(82, all.size(), "Cambió el total de subdivisiones");
-        assertEquals(26, used.size(), "Cambió la cantidad usada");
+        assertEquals(26, used.size(), "Cambió la cantidad usada (golden=26)");
         assertEquals(56, unused.size(),
             "Cantidad de slots vacíos cambió. Vacíos actuales: " + unused);
     }
 
     @Test
-    @DisplayName("V25D53-C14: el slot S23-2 es usado por todas las formations (single point of failure)")
-    void s23TwoIsUsedByAllFormations() {
-        // Documenta que S23-2 (CB central en row 7) aparece en los 11 jugadores
-        // de cada formación. Útil para detectar si alguien cambia el "back line
-        // center" de las 4-back formations.
-        // V25D54-C15: ahora son 12 formations — sigue siendo cierto.
-        for (FormationDTO f : service.getAllFormations()) {
+    @DisplayName("V25D53-C14 / V25D94: el slot S23-2 es usado por las formations 3-CB y 5-CB (no 4-DEF)")
+    void s23TwoIsUsedByThreeAndFiveBackFormations() {
+        // V25D94 F1: 4-DEF formations (4-4-2, 4-3-3, 4-2-3-1, 4-1-4-1, 4-2-2-2, 4-3-3-1)
+        // usan symmetric cells S22-2, S23-1, S23-3, S24-2 (no S23-2 — eso seria la cell
+        // central col 1, pero las 4-DEF usan col 1 LEFT + RIGHT).
+        // Solo las formations 3-CB (S22-3, S23-2, S24-1) y 5-CB (S22-1, S22-2, S23-2,
+        // S24-2, S24-3) usan S23-2 porque tienen CB en col 1 mid.
+        String[] threeBackFormations = {"3-5-2", "3-4-3", "3-5-2-CDM", "3-4-1-2"};
+        String[] fiveBackFormations = {"5-3-2", "5-4-1"};
+        String[] fourBackFormations = {"4-4-2", "4-3-3", "4-2-3-1", "4-1-4-1", "4-2-2-2", "4-3-3-1"};
+
+        for (String formationName : threeBackFormations) {
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f, formationName + " no encontrada");
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
-            assertTrue(hasS23_2, "Formación " + f.name() + " no usa S23-2 (CB central)");
+            assertTrue(hasS23_2, "3-CB " + formationName + " esperaba S23-2 (CB central col 1 mid)");
+        }
+        for (String formationName : fiveBackFormations) {
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f, formationName + " no encontrada");
+            boolean hasS23_2 = f.positions().stream()
+                .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
+            assertTrue(hasS23_2, "5-CB " + formationName + " esperaba S23-2 (CB central col 1 mid)");
+        }
+        for (String formationName : fourBackFormations) {
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f, formationName + " no encontrada");
+            boolean hasS23_2 = f.positions().stream()
+                .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
+            assertFalse(hasS23_2, "4-DEF " + formationName + " NO deberia usar S23-2 (usa S23-1 + S23-3 en V25D94 symmetric)");
         }
     }
 
@@ -342,32 +364,39 @@ class FormationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D54-C15 P0: 4-4-2 wide mids siguen siendo LM/RM (no afectados por P0)")
+    @DisplayName("V25D54-C15 P0 / V25D94: 4-4-2 wide mids siguen siendo LM/RM (symmetric cells S16-2/S18-2)")
     void formation_4_4_2_wideMidsRemainLmRm() {
+        // V25D94 F2: 4-MID symmetric usa S16-2 (LM) / S17-1 (CM) / S17-3 (CM) / S18-2 (RM).
+        // Pre-V25D94 usaba S16-1 / S16-2 / S17-2 / S18-3.
         FormationDTO f = service.getFormationByName("4-4-2");
         assertNotNull(f);
         FormationPositionDTO leftWide = f.positions().stream()
-            .filter(p -> "S16-1".equals(p.subdivisionId()))
+            .filter(p -> "S16-2".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("LM", leftWide.role());
 
         FormationPositionDTO rightWide = f.positions().stream()
-            .filter(p -> "S18-3".equals(p.subdivisionId()))
+            .filter(p -> "S18-2".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("RM", rightWide.role());
     }
 
     @Test
-    @DisplayName("V25D54-C15 P0: golden roles para las 7 formations originales")
+    @DisplayName("V25D54-C15 P0 / V25D94: golden roles para las 7 formations originales")
     void goldenRolesForOriginal7Formations() {
         // Snapshot de los role labels esperados. Si alguno cambia sin razón,
         // este test detecta el delta y obliga a actualizar el golden.
+        // V25D94: 5-3-2 ahora usa LWB/CB/CB/CB/RWB (era LB/CB/CB/CB/RB) para
+        // 5-CB symmetric — V25D54 ya lo había puesto así.
         Map<String, List<String>> expectedRoles = Map.of(
             "4-4-2", List.of("GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"),
             "4-3-3", List.of("GK", "LB", "CB", "CB", "RB", "CM", "CM", "CM", "LW", "ST", "RW"),
             "3-5-2", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "CM", "RWB", "ST", "ST"),
             "4-2-3-1", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CDM", "LW", "CAM", "RW", "ST"),
-            "5-3-2", List.of("GK", "LB", "CB", "CB", "CB", "RB", "CM", "CM", "CM", "ST", "ST"),
+            // V25D94: 5-3-2 symmetric uses LWB/CB/CB/CB/RWB for 5-CB layout
+            // (S22-1/S22-2/S23-2/S24-2/S24-3). Pre-V25D94 was LB/CB/CB/CB/RB
+            // (5-back wingers; now wing-backs per V25D54 P0 convention).
+            "5-3-2", List.of("GK", "LWB", "CB", "CB", "CB", "RWB", "CM", "CM", "CM", "ST", "ST"),
             "4-1-4-1", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "LM", "CM", "CM", "RM", "ST"),
             "3-4-3", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "RWB", "LW", "ST", "RW")
         );
@@ -387,13 +416,13 @@ class FormationServiceTest {
     // ========== V25D54-C15 P1 (4 formations nuevas) + P2 (variante 4-3-3-1) ==========
 
     @Test
-    @DisplayName("V25D54-C15 P1+P2: golden roles para las 5 formations nuevas")
+    @DisplayName("V25D54-C15 P1+P2 / V25D94: golden roles para las 5 formations nuevas")
     void goldenRolesForNew5Formations() {
         Map<String, List<String>> expectedRoles = Map.of(
             // P1.1: 3-5-2-CDM — 3 CB + 1 CDM + 2 CM + 2 WB + 2 ST
             "3-5-2-CDM", List.of("GK", "CB", "CB", "CB", "CDM", "CM", "CM", "LWB", "RWB", "ST", "ST"),
-            // P1.2: 5-4-1 — 5 DEF + LM + 2 CM + RM + 1 ST
-            "5-4-1", List.of("GK", "LB", "CB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST"),
+            // P1.2: 5-4-1 — V25D94 ahora usa LWB/CB/CB/CB/RWB (5-CB symmetric)
+            "5-4-1", List.of("GK", "LWB", "CB", "CB", "CB", "RWB", "LM", "CM", "CM", "RM", "ST"),
             // P1.3: 3-4-1-2 (Christmas tree) — 3 CB + LWB + 2 CM + RWB + CAM + 2 ST
             "3-4-1-2", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "RWB", "CAM", "ST", "ST"),
             // P1.4: 4-2-2-2 — 4 DEF + 2 CDM + LM + RM + 2 ST
@@ -456,19 +485,82 @@ class FormationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D54-C15: el slot S23-2 sigue siendo usado por las 5 formations nuevas")
+    @DisplayName("V25D54-C15 / V25D94: 3-CB y 5-CB formations nuevas usan S23-2 (4-DEF no)")
     void s23TwoIsUsedByNewFormations() {
-        // Golden master de S23-2 ahora cubre las 12 formations (7 originales
-        // + 5 nuevas). Las nuevas formations usan back-three o back-four con
-        // CB central en S23-2, igual que las originales.
-        String[] newFormations = {"3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2", "4-3-3-1"};
-        for (String formationName : newFormations) {
+        // V25D94 F1: 4-DEF formations (4-2-2-2, 4-3-3-1) NO usan S23-2
+        // (usan S23-1 + S23-3 en symmetric). Solo 3-CB y 5-CB nuevas usan S23-2.
+        String[] threeBackNew = {"3-5-2-CDM", "3-4-1-2"};
+        String[] fiveBackNew = {"5-4-1"};
+        String[] fourBackNew = {"4-2-2-2", "4-3-3-1"};
+
+        for (String formationName : threeBackNew) {
             FormationDTO f = service.getFormationByName(formationName);
             assertNotNull(f);
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
-            assertTrue(hasS23_2,
-                formationName + " no usa S23-2 (CB central) — esperado por golden master");
+            assertTrue(hasS23_2, "3-CB " + formationName + " esperaba S23-2");
+        }
+        for (String formationName : fiveBackNew) {
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f);
+            boolean hasS23_2 = f.positions().stream()
+                .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
+            assertTrue(hasS23_2, "5-CB " + formationName + " esperaba S23-2");
+        }
+        for (String formationName : fourBackNew) {
+            FormationDTO f = service.getFormationByName(formationName);
+            assertNotNull(f);
+            boolean hasS23_2 = f.positions().stream()
+                .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
+            assertFalse(hasS23_2, "4-DEF " + formationName + " NO deberia usar S23-2 en V25D94 symmetric");
+        }
+    }
+
+    // ========== V25D94 F4: Symmetry test ==========
+    //
+    // Ivan feedback: "no son iguales en un 4-4-2, hay como mas a la izquierda".
+    // V25D94 F1-F3 remapeo a coords symmetric. Este test valida que CADA fila
+    // (positions agrupadas por yPercent ± 2%) está centrada en xPercent=50%
+    // (no left-biased). El check: (min + max) / 2 = 50% within tolerance.
+    //
+    // NOTA: No usamos gap-equal check porque 5-CB formations tienen
+    // wingbacks en los extremos (gaps 11.1 entre LWB/CB y CB/RWB) y
+    // 3 inner CBs con gaps ~33.3 (por eso la "diferencia" es by design,
+    // no un bug). El bug de Ivan era ASIMETRIA, no gap-uniformity.
+
+    @Test
+    @DisplayName("V25D94 F4: las 12 formations tienen rows centrados en xPercent=50 (no left-biased)")
+    void formationsSubdivisionCoordsAreSymmetric() {
+        // Para cada formation:
+        //   1. Agrupa positions por yPercent (±2)
+        //   2. Para cada grupo (row), verifica que el row está centrado:
+        //      (minX + maxX) / 2 ≈ 50 (±0.5% tolerance)
+        // Falla si el row está left-biased (per Ivan feedback).
+        double yBucket = 2.0;
+        double maxCenterDrift = 0.5;
+
+        for (FormationDTO f : service.getAllFormations()) {
+            // Agrupa positions por yPercent bucket.
+            Map<Integer, List<Double>> yGroups = new java.util.TreeMap<>();
+            for (FormationPositionDTO p : f.positions()) {
+                int bucket = (int) Math.round(p.yPercent() / yBucket);
+                yGroups.computeIfAbsent(bucket, k -> new java.util.ArrayList<>())
+                    .add(p.xPercent());
+            }
+
+            for (var entry : yGroups.entrySet()) {
+                List<Double> xs = entry.getValue();
+                if (xs.size() < 2) continue; // single-position row (GK o single FW) — skip
+                double minX = xs.stream().min(Double::compare).orElse(0.0);
+                double maxX = xs.stream().max(Double::compare).orElse(0.0);
+                double center = (minX + maxX) / 2.0;
+                double drift = Math.abs(center - 50.0);
+                assertTrue(drift < maxCenterDrift,
+                    String.format("V25D94 F4: formation %s yRow %d (yPercent≈%.1f) "
+                        + "left-biased: xPercents=%s, minX=%.2f, maxX=%.2f, center=%.2f, drift=%.3f (>%.2f)",
+                        f.name(), entry.getKey(), entry.getKey() * yBucket,
+                        xs, minX, maxX, center, drift, maxCenterDrift));
+            }
         }
     }
 }
