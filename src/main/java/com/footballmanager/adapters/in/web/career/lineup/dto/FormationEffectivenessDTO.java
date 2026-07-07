@@ -21,7 +21,10 @@ import java.util.Map;
  *       "S15-1": 0.95,
  *       ...
  *     },
- *     "teamAverage": 0.93
+ *     "teamAverage": 0.93,
+ *     "attackRating": 142.0,
+ *     "midfieldRating": 105.0,
+ *     "defenseRating": 95.0
  *   }
  * </pre>
  *
@@ -33,6 +36,16 @@ import java.util.Map;
  * by subdivisionId, so {@code fe.perPlayerEffectiveness?.[subdivisionId]}
  * always returned {@code undefined} and the CSS class / badge never
  * applied. C13b aligns the wire contract on subdivisionId.
+ *
+ * <p><b>V25D99.15-BACK:</b> three new fields
+ * ({@code attackRating}, {@code midfieldRating}, {@code defenseRating})
+ * expose the same modifiers the V24 simulation engine uses during a real
+ * match (V24ShotXgCalculator.formationOffensiveModifier +
+ * formationDefensiveModifier, weighted by PositionEffectivenessCalculator
+ * .effectiveness). All three values are in {@code [0, ~200]}; 100 = 4-4-2
+ * baseline at median stats. Higher attack = more dangerous, higher defense
+ * = more protection. Used by the frontend Team Stats panel as the
+ * single source of truth (no more client-side heuristics).
  *
  * <p>Mirrors the back record {@link FormationEffectiveness} 1:1 (Jackson
  * serializes records via their components). Field naming uses camelCase
@@ -49,14 +62,20 @@ import java.util.Map;
 public record FormationEffectivenessDTO(
     String inferredFormation,
     Map<String, Double> perPlayerEffectiveness,
-    double teamAverage
+    double teamAverage,
+    /** V25D99.15-BACK: attack modifier × 100. Higher = more dangerous. */
+    Double attackRating,
+    /** V25D99.15-BACK: midfield modifier × 100 (technique-weighted). */
+    Double midfieldRating,
+    /** V25D99.15-BACK: defense modifier × 100. Higher = more protection. */
+    Double defenseRating
 ) {
 
     /**
      * Mapper: domain record → response DTO. Returns an empty DTO
      * ({@code inferredFormation = "4-4-2"}, {@code perPlayerEffectiveness = {}},
-     * {@code teamAverage = 1.0}) when the input is null — graceful
-     * degradation, the build sites always populate the field with a
+     * {@code teamAverage = 1.0}, ratings = 100/100/100) when the input is null —
+     * graceful degradation, the build sites always populate the field with a
      * non-null value.
      *
      * <p>Per-player map order is preserved via {@link LinkedHashMap} so
@@ -73,18 +92,26 @@ public record FormationEffectivenessDTO(
         return new FormationEffectivenessDTO(
                 domain.inferredFormation(),
                 players,
-                domain.teamAverage());
+                domain.teamAverage(),
+                domain.attackRating(),
+                domain.midfieldRating(),
+                domain.defenseRating());
     }
 
     /**
      * Convenience: returns the backward-compat empty instance. Same shape
      * as {@code from(FormationEffectiveness.empty())} — the default
-     * formation with no per-player penalties.
+     * formation with no per-player penalties. Ratings default to 100/100/100
+     * (4-4-2 baseline at median stats) so the frontend has something to
+     * render while no lineup is loaded yet.
      */
     public static FormationEffectivenessDTO empty() {
         return new FormationEffectivenessDTO(
                 FormationInferer.DEFAULT_FORMATION,
                 Map.of(),
-                1.0);
+                1.0,
+                100.0,
+                100.0,
+                100.0);
     }
 }

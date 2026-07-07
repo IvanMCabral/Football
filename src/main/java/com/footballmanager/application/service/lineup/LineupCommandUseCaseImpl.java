@@ -435,12 +435,32 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 naturalByPlayer.put(p.getSessionPlayerId(), p.getPosition());
             }
         }
+        // V25D99.15-BACK: build per-player attribute DTOs so the
+        // FormationEffectiveness pipeline can compute the engine's
+        // teamAttack / teamDefense / teamMidfield aggregates. Without
+        // attributes the calculator falls back to median 70 per stat.
+        List<FormationEffectiveness.PlayerAttrDTO> attrsByPlayer = new ArrayList<>();
+        for (SessionPlayer p : players) {
+            if (p.getSessionPlayerId() != null) {
+                attrsByPlayer.add(new FormationEffectiveness.PlayerAttrDTO(
+                        p.getSessionPlayerId(),
+                        p.getAttack(),
+                        p.getDefense(),
+                        p.getTechnique(),
+                        p.getMentality()));
+            }
+        }
         // V25D55 (Sprint C16): manual-select just persisted formation.getCode()
         // into CareerSave.teamStarting11Formation (line above). Pass it through
         // so the inferredFormation field matches the actual selected label
         // (e.g., "3-5-2-CDM") instead of collapsing to a 3-DIGIT triple.
         FormationEffectiveness formationEffectiveness =
-                FormationEffectiveness.from(slots, naturalByPlayer, formation.getCode());
+                FormationEffectiveness.from(
+                        slots,
+                        naturalByPlayer,
+                        formation.getCode(),
+                        attrsByPlayer,
+                        formation.getCode());
 
         // V25D41 (Sprint C6): compute team chemistry from the SessionPlayer list.
         // V25D43 (Sprint C8): calculate() now returns ChemistryDetail (score + breakdown).

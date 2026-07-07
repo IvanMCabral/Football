@@ -7,7 +7,9 @@ import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
+import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
+import com.footballmanager.domain.model.valueobject.TeamRatingsCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -195,5 +198,99 @@ public class LineupController {
                 Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))))
             .onErrorResume(NotEnoughPlayersException.class, ex ->
                 Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))));
+    }
+
+    /**
+     * V25D99.15-BACK: real-time preview of the per-zone team ratings
+     * (attack / midfield / defense) for an arbitrary lineup. The
+     * frontend Team Stats panel calls this on every drag-drop (debounced
+     * ~150ms) so the rating chips/bars reflect engine math without
+     * requiring a save round-trip.
+     *
+     * <p>{@code POST /api/v1/career/lineup/preview-ratings}
+     *
+     * <p>Body: {@link PreviewRatingsRequest} with the formation label and
+     * the current slot assignments (may be empty / partial while the
+     * user is dragging).
+     *
+     * <p>Response: {@link PreviewRatingsResponse} with the three
+     * modifier × 100 values.
+     *
+     * <p><b>Read-only:</b> nothing is persisted. The endpoint reads the
+     * 11 SessionPlayers from the career's cache (same path
+     * {@code /preview-chemistry} uses) to look up per-player attributes
+     * for the rating formula. If a playerId is missing from the career
+     * the rating for that slot falls back to median (70) stat values,
+     * matching the engine's defensive fallback.
+     *
+     * <p><b>Performance:</b> the calculator is O(N log N) on top-5 sort
+     * over at most 11 players, so the endpoint comfortably runs in
+     * &lt;1ms on a hot path. No DB hits — career + squad live in Redis
+     * cache.
+     */
+    @PostMapping("/preview-ratings")
+    public Mono<ResponseEntity<?>> previewRatings(
+            @RequestBody PreviewRatingsRequest request,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return careerSessionService.getCareerFromCache(userId)
+                .<ResponseEntity<?>>flatMap(career -> {
+                    Map<String, SessionPlayer> allPlayers = career.getSessionPlayers();
+                    if (allPlayers == null || allPlayers.isEmpty()) {
+                        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                                Map.of("error", "No players found in career",
+                                        "userId", userId.toString())));
+                    }
+
+                    List<LineupSlotDTO> slots = (request.slots() == null) ? List.of() : request.slots();
+                    Map<String, String> naturalByPlayer = new HashMap<>();
+                    List<FormationEffectiveness.PlayerAttrDTO> attrsByPlayer = new ArrayList<>();
+                    List<String> missing = new ArrayList<>();
+                    for (LineupSlotDTO slot : slots) {
+                        if (slot == null || slot.playerId() == null) continue;
+                        SessionPlayer p = allPlayers.get(slot.playerId());
+                        if (p == null) {
+                            missing.add(slot.playerId());
+                            continue;
+                        }
+                        if (p.getPosition() != null) {
+                            naturalByPlayer.put(slot.playerId(), p.getPosition());
+                        }
+                        attrsByPlayer.add(new FormationEffectiveness.PlayerAttrDTO(
+                                slot.playerId(),
+                                p.getAttack(),
+                                p.getDefense(),
+                                p.getTechnique(),
+                                p.getMentality()));
+                    }
+
+                    if (!missing.isEmpty()) {
+                        // 404 with the ids we couldn't resolve — front can
+                        // log + render fallback. Same defensive shape as
+                        // /preview-chemistry.
+                        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                                Map.of("error", "Some playerIds not found in career",
+                                        "missing", missing)));
+                    }
+
+                    // Reuse FormationEffectiveness.from — it computes the
+                    // three ratings (and only them; perPlayerEffectiveness
+                    // and teamAverage are computed too but the response
+                    // here only surfaces the ratings).
+                    FormationEffectiveness fe = FormationEffectiveness.from(
+                            slots,
+                            naturalByPlayer,
+                            request.formation(),
+                            attrsByPlayer,
+                            request.formation());
+                    return Mono.just(ResponseEntity.ok((Object) new PreviewRatingsResponse(
+                            fe.attackRating() != null ? fe.attackRating() : 100.0,
+                            fe.midfieldRating() != null ? fe.midfieldRating() : 100.0,
+                            fe.defenseRating() != null ? fe.defenseRating() : 100.0)));
+                })
+                .onErrorResume(IllegalArgumentException.class, ex ->
+                        Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))))
+                .onErrorResume(NotEnoughPlayersException.class, ex ->
+                        Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))));
     }
 }

@@ -48,7 +48,13 @@ import java.util.Map;
 public record FormationEffectiveness(
     String inferredFormation,
     Map<String, Double> perPlayerEffectiveness,
-    double teamAverage
+    double teamAverage,
+    /** V25D99.15-BACK: attack modifier × 100 (formation × statsAmp(teamAttack)). */
+    Double attackRating,
+    /** V25D99.15-BACK: midfield modifier × 100 (formation × statsAmp(teamMidfield)). */
+    Double midfieldRating,
+    /** V25D99.15-BACK: defense modifier × 100 (formation × statsAmp(teamDefense)). */
+    Double defenseRating
 ) {
 
     /**
@@ -80,32 +86,22 @@ public record FormationEffectiveness(
     public static FormationEffectiveness from(
             List<LineupSlotDTO> slots,
             Map<String, String> naturalByPlayer) {
-        return from(slots, naturalByPlayer, null);
+        return from(slots, naturalByPlayer, null, List.of(), null);
     }
 
     /**
-     * V25D55 (Sprint C16): overload that forwards the persisted formation to
-     * {@link FormationInferer#infer(List, String)} so the resulting
-     * {@code inferredFormation} field matches the label the manager actually
-     * selected (e.g. {@code "3-5-2-CDM"}, {@code "5-4-1"}). Without this, the
-     * slot-inference algorithm collapses every multi-role formation into the
-     * {@code "X-Y-Z"} triple, and the front-end reports a different label
-     * than the one shown in the formation modal.
-     *
-     * @param slots              the 11 subdivision slots the manager assigned
-     *                           (may be null/empty for legacy lineups).
-     * @param naturalByPlayer    playerId → natural 5-cat position
-     *                           ({@code "GK"/"DEF"/"MID"/"WINGER"/"ATT"}).
-     * @param persistedFormation canonical formation label from
-     *                           {@code CareerSave.teamStarting11Formation}, or
-     *                           {@code null} for legacy lineups.
-     * @return populated {@code FormationEffectiveness}.
+     * V25D99.15-BACK: overload that also takes per-player attributes so
+     * {@link TeamRatingsCalculator} can compute the engine's
+     * teamAttack / teamDefense / teamMidfield aggregates. Without
+     * attributes, ratings default to the formation baselines
+     * (4-4-2 = 100/100/100, scaled for others).
      */
     public static FormationEffectiveness from(
             List<LineupSlotDTO> slots,
             Map<String, String> naturalByPlayer,
-            String persistedFormation) {
-
+            String persistedFormation,
+            List<PlayerAttrDTO> attrsByPlayer,
+            String formationForRatings) {
         String inferred = FormationInferer.infer(slots, persistedFormation);
 
         Map<String, Double> perPlayer = new LinkedHashMap<>();
@@ -133,18 +129,124 @@ public record FormationEffectiveness(
                 ? 1.0
                 : perPlayer.values().stream().mapToDouble(Double::doubleValue).average().orElse(1.0);
 
-        return new FormationEffectiveness(inferred, perPlayer, avg);
+        // V25D99.15-BACK: compute the engine's per-zone ratings (attack /
+        // midfield / defense). Build the PlayerAttrs list from the slots
+        // + the caller-supplied attributes. Players without attributes
+        // are skipped (calculator falls back to median 70 for missing
+        // values, so a 7-attribute lineup still works).
+        String formationForCalc = (formationForRatings != null && !formationForRatings.isBlank())
+                ? formationForRatings
+                : inferred;
+        TeamRatingsCalculator.TeamRatings ratings = computeRatings(
+                slots, naturalByPlayer, attrsByPlayer, formationForCalc);
+
+        return new FormationEffectiveness(
+                inferred,
+                perPlayer,
+                avg,
+                ratings.attackRating(),
+                ratings.midfieldRating(),
+                ratings.defenseRating());
+    }
+
+    /**
+     * V25D99.15-BACK: helper that bridges the existing slot +
+     * naturalByPlayer + attrsByPlayer shape into the calculator's
+     * {@link TeamRatingsCalculator.PlayerAttrs} list. Skips players that
+     * don't appear in any slot (bench) — the engine's teamAttack /
+     * teamDefense aggregates only count on-field players.
+     */
+    private static TeamRatingsCalculator.TeamRatings computeRatings(
+            List<LineupSlotDTO> slots,
+            Map<String, String> naturalByPlayer,
+            List<PlayerAttrDTO> attrsByPlayer,
+            String formationForRatings) {
+        if (slots == null || slots.isEmpty()) {
+            return TeamRatingsCalculator.compute(List.of(), formationForRatings);
+        }
+        java.util.Map<String, PlayerAttrDTO> attrsIdx = new java.util.HashMap<>();
+        if (attrsByPlayer != null) {
+            for (PlayerAttrDTO a : attrsByPlayer) {
+                if (a != null && a.playerId() != null) {
+                    attrsIdx.put(a.playerId(), a);
+                }
+            }
+        }
+        java.util.List<TeamRatingsCalculator.PlayerAttrs> calculatorAttrs = new java.util.ArrayList<>();
+        for (LineupSlotDTO slot : slots) {
+            if (slot == null || slot.playerId() == null) continue;
+            String natural = (naturalByPlayer != null) ? naturalByPlayer.get(slot.playerId()) : null;
+            String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
+            PlayerAttrDTO attr = attrsIdx.get(slot.playerId());
+            calculatorAttrs.add(new TeamRatingsCalculator.PlayerAttrs(
+                    slot.playerId(),
+                    natural,
+                    slotCat,
+                    attr != null ? attr.attack() : null,
+                    attr != null ? attr.defense() : null,
+                    attr != null ? attr.technique() : null,
+                    attr != null ? attr.mentality() : null
+            ));
+        }
+        return TeamRatingsCalculator.compute(calculatorAttrs, formationForRatings);
+    }
+
+    /**
+     * V25D99.15-BACK: thin DTO so callers can supply per-player attributes
+     * without depending on {@link com.footballmanager.domain.model.entity
+     * .SessionPlayer} directly (the controller layer lives in
+     * {@code adapters.in.web}).
+     */
+    public record PlayerAttrDTO(
+            String playerId,
+            Integer attack,
+            Integer defense,
+            Integer technique,
+            Integer mentality
+    ) {}
+
+    /**
+     * V25D55 (Sprint C16): overload that forwards the persisted formation to
+     * {@link FormationInferer#infer(List, String)} so the resulting
+     * {@code inferredFormation} field matches the label the manager actually
+     * selected (e.g. {@code "3-5-2-CDM"}, {@code "5-4-1"}). Without this, the
+     * slot-inference algorithm collapses every multi-role formation into the
+     * {@code "X-Y-Z"} triple, and the front-end reports a different label
+     * than the one shown in the formation modal.
+     *
+     * <p>V25D99.15-BACK: thin delegate to the 5-arg overload — no
+     * attributes are passed so ratings fall back to the formation
+     * baseline (4-4-2 = 100/100/100).
+     *
+     * @param slots              the 11 subdivision slots the manager assigned
+     *                           (may be null/empty for legacy lineups).
+     * @param naturalByPlayer    playerId → natural 5-cat position
+     *                           ({@code "GK"/"DEF"/"MID"/"WINGER"/"ATT"}).
+     * @param persistedFormation canonical formation label from
+     *                           {@code CareerSave.teamStarting11Formation}, or
+     *                           {@code null} for legacy lineups.
+     * @return populated {@code FormationEffectiveness}.
+     */
+    public static FormationEffectiveness from(
+            List<LineupSlotDTO> slots,
+            Map<String, String> naturalByPlayer,
+            String persistedFormation) {
+        return from(slots, naturalByPlayer, persistedFormation, List.of(), null);
     }
 
     /**
      * Backward-compat empty instance: inferredFormation = default, no
-     * per-player data, teamAverage = 1.0. Returned by build sites when
-     * slots are null/malformed (graceful degradation).
+     * per-player data, teamAverage = 1.0, ratings = 100/100/100 (4-4-2
+     * baseline at median stats). Returned by build sites when slots are
+     * null/malformed (graceful degradation).
      */
     public static FormationEffectiveness empty() {
         return new FormationEffectiveness(
                 FormationInferer.DEFAULT_FORMATION,
                 Map.of(),
-                1.0);
+                1.0,
+                100.0,
+                100.0,
+                100.0);
     }
 }

@@ -121,6 +121,20 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                 naturalByPlayer.put(p.getSessionPlayerId(), p.getPosition());
             }
         }
+        // V25D99.15-BACK: per-player attribute DTOs for the engine
+        // rating computation. Without them, ratings default to the
+        // formation baseline (4-4-2 = 100/100/100).
+        List<FormationEffectiveness.PlayerAttrDTO> attrsByPlayer = new ArrayList<>();
+        for (SessionPlayer p : lineup) {
+            if (p.getSessionPlayerId() != null) {
+                attrsByPlayer.add(new FormationEffectiveness.PlayerAttrDTO(
+                        p.getSessionPlayerId(),
+                        p.getAttack(),
+                        p.getDefense(),
+                        p.getTechnique(),
+                        p.getMentality()));
+            }
+        }
         // V25D55 (Sprint C16): forward the persisted formation so the
         // inferredFormation field reflects the manager's selection (e.g.,
         // "3-5-2-CDM") instead of collapsing to the slot-count triple.
@@ -128,7 +142,12 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                 ? null
                 : career.getTeamStarting11Formation().get(userTeamId);
         FormationEffectiveness formationEffectiveness =
-                FormationEffectiveness.from(slots, naturalByPlayer, persistedFormationCode);
+                FormationEffectiveness.from(
+                        slots,
+                        naturalByPlayer,
+                        persistedFormationCode,
+                        attrsByPlayer,
+                        persistedFormationCode);
 
         // V25D65-C25 P0: compute warnings from persisted state (slots + lineup).
         // Pre-C25 bug: warnings=List.of() here caused the banner to disappear
