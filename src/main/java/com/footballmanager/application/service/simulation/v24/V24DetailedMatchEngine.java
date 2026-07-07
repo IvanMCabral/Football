@@ -1066,29 +1066,35 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     /**
      * V25D27: aggregate attacker stat for the possessor's starting 11, weighted
-     * by formation-aware role. Returns the avg attack stat of the top-5
+     * by formation-aware role. Returns the avg attack stat of the top-7
      * "attacking" players (forwards, attacking midfielders, wingers) where
      * "attacking" is defined by position: ATT > MID > DEF. This stat amplifies
      * the formationOffensiveModifier — elite attackers in a 4-3-3 get more
      * xG boost than weak attackers in the same formation.
      *
-     * <p>Fallback: if fewer than 5 "attacking" players, averages all 11.
+     * <p>V25D99.18: widened from top-5 to top-7 so the panel reacts when
+     * MIDs push into the attack zone (their eff rises via
+     * SubdivisionEffectivenessCalculator but their raw attack ~70 falls
+     * short of the top-5 dominated by STs ~80). With 7 slots, 2 MIDs with
+     * high eff near the natural pos can enter the cohort and bump ATT.
+     *
+     * <p>Fallback: if fewer than 7 "attacking" players, averages all 11.
      * Returns 70.0 (median) if startingPlayers is empty.
      */
     private double aggregateAttackerStat(List<V24PlayerMatchState> players, String formation) {
         if (players.isEmpty()) return 70.0;
-        // Sort by attack descending and pick top-5
+        // Sort by attack descending and pick top-7
         List<V24PlayerMatchState> sorted = players.stream()
                 .filter(V24PlayerMatchState::onPitch)
                 .sorted((a, b) -> Integer.compare(b.attack(), a.attack()))
-                .limit(5)
+                .limit(7)
                 .toList();
         // V25D47 (Sprint C11a): weight each player's attack contribution by
         // PositionEffectivenessCalculator.effectiveness(naturalPosition, position).
         // A CB placed in a MID slot (effectiveness 0.8) contributes 80% of its
-        // attack stat; a perfect match contributes 100%. The top-5 selection
-        // is unchanged — still the 5 highest-attack on-pitch players — but
-        // the average is now effectiveness-weighted.
+        // attack stat; a perfect match contributes 100%. The top-7 selection
+        // (V25D99.18) is unchanged in shape — still the N highest-attack
+        // on-pitch players — but the average is now effectiveness-weighted.
         double avg = sorted.stream()
                 .mapToDouble(p -> p.attack()
                         * PositionEffectivenessCalculator.effectiveness(p.naturalPosition(), p.position()))

@@ -227,8 +227,9 @@ public class LineupController {
      * the rating for that slot falls back to median (70) stat values,
      * matching the engine's defensive fallback.
      *
-     * <p><b>Performance:</b> the calculator is O(N log N) on top-5 sort
-     * over at most 11 players, so the endpoint comfortably runs in
+     * <p><b>Performance:</b> the calculator is O(N log N) on top-7 sort
+     * (V25D99.18: widened from top-5) over at most 11 players, so the
+     * endpoint comfortably runs in
      * &lt;1ms on a hot path. No DB hits — career + squad live in Redis
      * cache.
      */

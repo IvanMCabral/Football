@@ -11,9 +11,11 @@ import java.util.Map;
  *
  * <p>The simulation engine computes:
  * <ul>
- *   <li><b>teamAttack</b> = avg of top-5 attackers'
+ *   <li><b>teamAttack</b> = avg of top-7 attackers'
  *       {@code attack * PositionEffectivenessCalculator.effectiveness(naturalPos, slotCategory)}
- *       (V24DetailedMatchEngine.aggregateAttackerStat, line 1078).</li>
+ *       (V24DetailedMatchEngine.aggregateAttackerStat, line 1078).
+ *       V25D99.18: widened from top-5 to top-7 so MIDs in attack-zone
+ *       slots with high eff enter the cohort.</li>
  *   <li><b>teamDefense</b> = avg of DEF + GK players'
  *       {@code ((defense + mentality) / 2.0) * effectiveness}
  *       (V24DetailedMatchEngine.aggregateDefenderStat, line 1109).</li>
@@ -192,12 +194,13 @@ public final class TeamRatingsCalculator {
         // (e.g. partial lineup during drag).
         // No pre-scan needed &mdash; the helper handles both per player.
 
-        // teamAttack = avg of top-5 attackers' (attack * effectiveness).
+        // teamAttack = avg of top-7 attackers' (attack * effectiveness).
         // Per engine: a player is an "attacker" if slotCategory == "ATT".
         // Outside ATT they still contribute to teamAttack IF their attack
-        // is among the top-5 (pre-V25D47 spec); after V25D47 the engine
+        // is among the top-N (pre-V25D47 spec); after V25D47 the engine
         // weights ALL 11 attackers (slot category ATT) by effectiveness
-        // and picks top-5. Mirroring engine V25D47:
+        // and picks top-N. Mirroring engine V25D47 + V25D99.18 widen to
+        // top-7:
         //
         // V25D99.16-BACK: each player carries the slot's xPct / yPct
         // (resolved by FormationEffectiveness.computeRatings from the
@@ -217,7 +220,7 @@ public final class TeamRatingsCalculator {
         if (attackerScores.isEmpty()) {
             teamAttack = MEDIAN_STAT;
         } else {
-            int n = Math.min(5, attackerScores.size());
+            int n = Math.min(7, attackerScores.size());
             double sum = 0;
             for (int i = 0; i < n; i++) {
                 sum += attackerScores.get(i);

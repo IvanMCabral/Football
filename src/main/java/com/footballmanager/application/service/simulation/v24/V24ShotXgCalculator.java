@@ -147,7 +147,7 @@ public class V24ShotXgCalculator {
      * @param formation the POSSESSOR's formation (e.g. "4-3-3")
      * @param opponentFormation the DEFENDING team's formation (e.g. "5-3-2")
      * @param possessorAttack aggregate attack stat of the possessor's attacking
-     *                        players (avg of top-5 attackers, [0-99])
+     *                        players (avg of top-7 attackers, [0-99])
      * @param opponentDefense aggregate defense stat of the opponent's
      *                        defending players (avg of defenders + GK mentality, [0-99])
      * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable, V25D32 lo ignora)
@@ -242,7 +242,7 @@ public class V24ShotXgCalculator {
      * @param formation the POSSESSOR's formation (e.g. "4-3-3")
      * @param opponentFormation the DEFENDING team's formation (e.g. "5-3-2")
      * @param possessorAttack aggregate attack stat of the possessor's attacking
-     *                        players (avg of top-5 attackers, [0-99])
+     *                        players (avg of top-7 attackers, [0-99])
      * @param opponentDefense aggregate defense stat of the opponent's
      *                        defending players (avg of defenders + GK mentality, [0-99])
      * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable;
@@ -323,7 +323,7 @@ public class V24ShotXgCalculator {
      * @param formation the POSSESSOR's formation (e.g. "4-3-3")
      * @param opponentFormation the DEFENDING team's formation (e.g. "5-3-2")
      * @param possessorAttack aggregate attack stat of the possessor's attacking
-     *                        players (avg of top-5 attackers, [0-99])
+     *                        players (avg of top-7 attackers, [0-99])
      * @param opponentDefense aggregate defense stat of the opponent's
      *                        defending players (avg of defenders + GK mentality, [0-99])
      * @param shooterSkills sparse map de PlayerSkill levels del shooter (nullable)

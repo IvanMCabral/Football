@@ -274,7 +274,7 @@ public class TestHarnessController {
      * {@link InjectPlayerStatsRequest} for the full spec.
      *
      * <p>Engine reads updated stats on next replay via {@code aggregateAttackerStat}
-     * (top-5 attackers by attack stat) and {@code aggregateDefenderStat}
+     * (top-7 attackers by attack stat, V25D99.18) and {@code aggregateDefenderStat}
      * (DEF + GK avg of defense+mentality). Those feed
      * {@code formationOffensiveModifier} and {@code formationDefensiveModifier}
      * respectively. Mutating stats changes the formation effect magnitude.
