@@ -137,8 +137,13 @@ public record FormationEffectiveness(
                 String natural = safeNatural.get(slot.playerId());
                 String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
                 double eff;
-                double[] coords = safeCoords.get(slot.subdivisionId());
-                if (coords != null && coords.length >= 2) {
+                // V25D99.17-BACK: prefer the player's free-positioning override
+                // coords when the front sets them (customXPercent / customYPercent).
+                // The canonical coords from safeCoords still apply when the
+                // override is null (legacy path, pre-V25D99.17 saves, players
+                // dropped directly on a slot center).
+                double[] coords = resolveSlotCoords(slot, safeCoords);
+                if (coords != null) {
                     eff = SubdivisionEffectivenessCalculator.effectiveness(
                             natural, coords[0], coords[1], slotCat);
                 } else {
@@ -216,7 +221,11 @@ public record FormationEffectiveness(
             String natural = (naturalByPlayer != null) ? naturalByPlayer.get(slot.playerId()) : null;
             String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
             PlayerAttrDTO attr = attrsIdx.get(slot.playerId());
-            double[] coords = safeCoords.get(slot.subdivisionId());
+            // V25D99.17-BACK: prefer the player's free-positioning override
+            // coords (customXPercent / customYPercent) over the canonical
+            // slot coords. Same override semantics as the perPlayer loop
+            // above; the helper keeps both spots in lockstep.
+            double[] coords = resolveSlotCoords(slot, safeCoords);
             Double slotX = (coords != null && coords.length >= 1) ? coords[0] : null;
             Double slotY = (coords != null && coords.length >= 2) ? coords[1] : null;
             calculatorAttrs.add(new TeamRatingsCalculator.PlayerAttrs(
@@ -232,6 +241,48 @@ public record FormationEffectiveness(
             ));
         }
         return TeamRatingsCalculator.compute(calculatorAttrs, formationForRatings);
+    }
+
+    /**
+     * V25D99.17-BACK: pick the effective field coords for a slot.
+     *
+     * <p>Resolution order:
+     * <ol>
+     *   <li>If the slot carries a numeric {@code customXPercent} AND
+     *       {@code customYPercent} override (V25D98 free-positioning),
+     *       return {@code {customXPercent, customYPercent}}.</li>
+     *   <li>Else return the canonical {@code {coords[0], coords[1]}}
+     *       from {@code coordsBySubdivision} (resolved by
+     *       {@code FormationService.getCoordsByFormation(formation)} in
+     *       the controller layer).</li>
+     *   <li>Else {@code null} — caller falls back to the legacy
+     *       zone-only {@code PositionEffectivenessCalculator}.</li>
+     * </ol>
+     *
+     * <p>The front may send only one of the two coords (NaN-ish). When
+     * that happens we still fall back to the canonical pair, otherwise
+     * the calculator would compute a junk distance (one axis at 0 or
+     * 100, the other at the slot center) and produce a misleadingly
+     * large penalty.
+     *
+     * @param slot       the per-player slot entry (may carry a free-
+     *                   positioning override).
+     * @param safeCoords canonical coords from {@code FormationService},
+     *                   keyed by {@code subdivisionId}.
+     * @return {@code double[2]} with the effective x/y, or {@code null}
+     *         when no coords can be resolved.
+     */
+    private static double[] resolveSlotCoords(LineupSlotDTO slot, Map<String, double[]> safeCoords) {
+        Double cx = slot.customXPercent();
+        Double cy = slot.customYPercent();
+        if (cx != null && cy != null && !Double.isNaN(cx) && !Double.isNaN(cy)) {
+            return new double[]{cx, cy};
+        }
+        double[] canonical = safeCoords.get(slot.subdivisionId());
+        if (canonical != null && canonical.length >= 2) {
+            return canonical;
+        }
+        return null;
     }
 
     /**
