@@ -30,6 +30,26 @@ import java.util.Map;
  * truth: any engine re-calibration updates BOTH the live match engine
  * and the lineup preview.
  *
+ * <h2>V25D99.16-BACK: subdivision-aware effectiveness</h2>
+ * <p>Pre-V25D99.16, the engine used
+ * {@link PositionEffectivenessCalculator#effectiveness(String, String)}
+ * which collapses per-player contribution into 3-4 zone buckets. Two
+ * slots in the SAME zone (e.g. CB at S22-2 vs S24-2) produced identical
+ * effectiveness &mdash; fine-grained drag-and-drop on the field had no
+ * effect on the team ratings.
+ *
+ * <p>V25D99.16 wraps the zone lookup in
+ * {@link SubdivisionEffectivenessCalculator}, which also factors in the
+ * Euclidean distance from the slot to the natural position's ideal
+ * centroid on the field. A CB at the natural CB slot (S22-1/S23-1/S23-3
+ * range) still scores ~1.0; a CB dragged to the opposite wing slot
+ * (S22-2 vs S24-2 in 4-4-2) drops ~0.05-0.15 depending on layout.
+ *
+ * <p>Backward compat: callers that don't supply {@code slotXPercent /
+ * slotYPercent} (NaN) get the pre-V25D99.16 zone-only math. The only
+ * in-tree caller {@code FormationEffectiveness.computeRatings} passes
+ * the coords resolved from {@code FormationService}.
+ *
  * <h2>Rating scale</h2>
  * <p>The engine uses the modifiers as a multiplier on xG
  * (offensive) or as a divisor on opponent xG (defensive). For the
@@ -37,20 +57,20 @@ import java.util.Map;
  * <ul>
  *   <li>{@code attackRating} = {@code formationOffensiveModifier * 100},
  *       55-165 in practice. 100 = 4-4-2 baseline at median stats
- *       (70 attack). >100 = "more dangerous than baseline".</li>
+ *       (70 attack). &gt;100 = "more dangerous than baseline".</li>
  *   <li>{@code defenseRating} = {@code formationDefensiveModifier * 100},
  *       55-165. 100 = 4-4-2 baseline. HIGHER = more protection
  *       (divided into opponent xG, so it REDUCES goals conceded).</li>
  *   <li>{@code midfieldRating} = symmetric for the MID cohort
  *       using the {@code technique} attribute (midfield-domain metric
- *       — engine doesn't compute this directly; we mirror the
+ *       &mdash; engine doesn't compute this directly; we mirror the
  *       formula so the panel stays consistent).</li>
  * </ul>
  *
  * <h2>Backward compat</h2>
  * <p>If the lineup is empty / null, returns the baseline values for
  * the requested formation (100 / 100 / 100 for 4-4-2, scaled for others).
- * The frontend can render "—" via the same fallback rules it uses for
+ * The frontend can render "&mdash;" via the same fallback rules it uses for
  * missing data.
  */
 public final class TeamRatingsCalculator {
@@ -111,6 +131,19 @@ public final class TeamRatingsCalculator {
      * subdivision slot. The slot category is computed by the caller via
      * {@link FormationInferer#categoryFor(String)} so this class stays
      * decoupled from the subdivision-id vocabulary.
+     *
+     * <p>V25D99.16-BACK: {@code slotXPercent} and {@code slotYPercent}
+     * are the field coords (0-100 each, see {@code FormationService}
+     * cell centers) of the assigned subdivision slot. The values feed
+     * {@link SubdivisionEffectivenessCalculator} to apply a small
+     * distance-from-ideal penalty for fine-grained drag tuning.
+     *
+     * <p>Backward compat: pass {@link Double#NaN} to BOTH fields to
+     * reproduce pre-V25D99.16 zone-only math (the calculator skips the
+     * geometry penalty when coords are NaN). The only in-tree builder
+     * ({@code FormationEffectiveness.computeRatings}) resolves coords
+     * from the {@code FormationService} cache; legacy callers that don't
+     * have access to it pass NaN.
      */
     public record PlayerAttrs(
             String playerId,
@@ -119,7 +152,9 @@ public final class TeamRatingsCalculator {
             Integer attack,
             Integer defense,
             Integer technique,
-            Integer mentality
+            Integer mentality,
+            Double slotXPercent,
+            Double slotYPercent
     ) {}
 
     /**
@@ -148,16 +183,32 @@ public final class TeamRatingsCalculator {
             return new TeamRatings(attBase * 100.0, 1.00 * 100.0, defBase * 100.0);
         }
 
+        // V25D99.16-BACK: each player carries optional slot coords
+        // (resolved by FormationEffectiveness.computeRatings from the
+        // FormationService cache). subdivisionEffectiveness() picks the
+        // legacy zone-only math when coords are NaN (backward compat
+        // for tests that don't wire up formation coords) and the
+        // subdivision-aware math otherwise. Mixed coords are valid
+        // (e.g. partial lineup during drag).
+        // No pre-scan needed &mdash; the helper handles both per player.
+
         // teamAttack = avg of top-5 attackers' (attack * effectiveness).
         // Per engine: a player is an "attacker" if slotCategory == "ATT".
         // Outside ATT they still contribute to teamAttack IF their attack
         // is among the top-5 (pre-V25D47 spec); after V25D47 the engine
         // weights ALL 11 attackers (slot category ATT) by effectiveness
         // and picks top-5. Mirroring engine V25D47:
+        //
+        // V25D99.16-BACK: each player carries the slot's xPct / yPct
+        // (resolved by FormationEffectiveness.computeRatings from the
+        // FormationService cache). When both are present (non-NaN),
+        // SubdivisionEffectivenessCalculator layers a distance-from-
+        // ideal penalty so within-zone drag-and-drop changes the team
+        // rating by 1-3 points per ~10% horizontal drag. Legacy callers
+        // pass NaN and the calculator skips the geometry penalty.
         List<Double> attackerScores = new java.util.ArrayList<>();
         for (PlayerAttrs p : attrs) {
-            double eff = PositionEffectivenessCalculator.effectiveness(
-                    p.naturalPos(), p.slotCategory());
+            double eff = subdivisionEffectiveness(p);
             double rawAttack = (p.attack() != null) ? p.attack() : MEDIAN_STAT;
             attackerScores.add(rawAttack * eff);
         }
@@ -181,8 +232,7 @@ public final class TeamRatingsCalculator {
             if (!"DEF".equals(cat) && !"GK".equals(cat)) {
                 continue;
             }
-            double eff = PositionEffectivenessCalculator.effectiveness(
-                    p.naturalPos(), p.slotCategory());
+            double eff = subdivisionEffectiveness(p);
             int def = (p.defense() != null) ? p.defense() : MEDIAN_STAT;
             int men = (p.mentality() != null) ? p.mentality() : MEDIAN_STAT;
             defenderScores.add(((def + men) / 2.0) * eff);
@@ -217,8 +267,7 @@ public final class TeamRatingsCalculator {
             if (!"MID".equals(p.slotCategory())) {
                 continue;
             }
-            double eff = PositionEffectivenessCalculator.effectiveness(
-                    p.naturalPos(), p.slotCategory());
+            double eff = subdivisionEffectiveness(p);
             int tech = (p.technique() != null) ? p.technique() : MEDIAN_STAT;
             midfielderScores.add(tech * eff);
         }
@@ -247,5 +296,34 @@ public final class TeamRatingsCalculator {
                 Math.max(0.1, midRating) * 100.0,
                 Math.max(0.1, defRating) * 100.0
         );
+    }
+
+    /**
+     * V25D99.16-BACK: per-player effectiveness lookup that switches
+     * between the legacy zone-only table and the new
+     * subdivision-aware calculator based on whether the caller
+     * supplied slot coords.
+     *
+     * <p>{@code NaN} or {@code null} coords (any) &rarr; legacy
+     * {@link PositionEffectivenessCalculator#effectiveness} lookup
+     * (zone-only; pre-V25D99.16 behavior, preserves unit tests
+     * that don't have formation coords wired in).
+     *
+     * <p>Valid coords &rarr; {@link SubdivisionEffectivenessCalculator}
+     * which layers a distance-from-ideal penalty on top of the base
+     * zone effectiveness.
+     *
+     * @param p the player record
+     * @return effectiveness in {@code [0, 1]}
+     */
+    private static double subdivisionEffectiveness(PlayerAttrs p) {
+        double xPct = (p.slotXPercent() != null) ? p.slotXPercent() : Double.NaN;
+        double yPct = (p.slotYPercent() != null) ? p.slotYPercent() : Double.NaN;
+        if (Double.isNaN(xPct) || Double.isNaN(yPct)) {
+            return PositionEffectivenessCalculator.effectiveness(
+                    p.naturalPos(), p.slotCategory());
+        }
+        return SubdivisionEffectivenessCalculator.effectiveness(
+                p.naturalPos(), xPct, yPct, p.slotCategory());
     }
 }

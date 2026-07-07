@@ -454,13 +454,22 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         // into CareerSave.teamStarting11Formation (line above). Pass it through
         // so the inferredFormation field matches the actual selected label
         // (e.g., "3-5-2-CDM") instead of collapsing to a 3-DIGIT triple.
+        //
+        // V25D99.16-BACK: resolve per-subdivision xPct/yPct from the
+        // FormationService cache so the team ratings use the new
+        // distance-aware effectiveness instead of the legacy zone-only
+        // table. Without this, fine-grained drag-and-drop on the field
+        // produces no rating change.
+        Map<String, double[]> coordsBySubdivision =
+                formationService.getCoordsByFormation(formation.getCode());
         FormationEffectiveness formationEffectiveness =
                 FormationEffectiveness.from(
                         slots,
                         naturalByPlayer,
                         formation.getCode(),
                         attrsByPlayer,
-                        formation.getCode());
+                        formation.getCode(),
+                        coordsBySubdivision);
 
         // V25D41 (Sprint C6): compute team chemistry from the SessionPlayer list.
         // V25D43 (Sprint C8): calculate() now returns ChemistryDetail (score + breakdown).

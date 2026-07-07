@@ -2,6 +2,7 @@ package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -58,7 +59,12 @@ class LineupQueryUseCaseImplTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        useCase = new LineupQueryUseCaseImpl(careerRepository, lineupHelper);
+        // V25D99.16-BACK: FormationService provides per-subdivision xPct
+        // /yPct. Tests don't care about coords, but the constructor now
+        // requires it (real coord lookup happens via the service's
+        // FormationDTO cache). Null would NPE; pass a real instance
+        // without wiring coords.
+        useCase = new LineupQueryUseCaseImpl(careerRepository, lineupHelper, new FormationService());
     }
 
     private SessionPlayer makeHealthy(String id, String name, String position) {

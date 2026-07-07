@@ -4,6 +4,7 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.*;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
@@ -42,6 +43,9 @@ public class LineupController {
     private final LineupCommandUseCase lineupCommandUseCase;
     private final LineupQueryUseCase lineupQueryUseCase;
     private final CareerSessionService careerSessionService;
+    // V25D99.16-BACK: resolve per-subdivision xPct/yPct so the preview-
+    // ratings endpoint applies the new distance-aware effectiveness.
+    private final FormationService formationService;
     private final ControllerHelper controllerHelper;
 
     /**
@@ -273,6 +277,16 @@ public class LineupController {
                                         "missing", missing)));
                     }
 
+                    // V25D99.16-BACK: resolve per-subdivision coords from
+                    // the FormationService cache so the rating calculator
+                    // can apply the distance-from-ideal penalty. Without
+                    // this, fine-grained drag-and-drop on the field
+                    // produces no rating change (the calculator falls
+                    // back to the legacy zone-only math when coords are
+                    // missing).
+                    Map<String, double[]> coordsBySubdivision =
+                            formationService.getCoordsByFormation(request.formation());
+
                     // Reuse FormationEffectiveness.from — it computes the
                     // three ratings (and only them; perPlayerEffectiveness
                     // and teamAverage are computed too but the response
@@ -282,7 +296,8 @@ public class LineupController {
                             naturalByPlayer,
                             request.formation(),
                             attrsByPlayer,
-                            request.formation());
+                            request.formation(),
+                            coordsBySubdivision);
                     return Mono.just(ResponseEntity.ok((Object) new PreviewRatingsResponse(
                             fe.attackRating() != null ? fe.attackRating() : 100.0,
                             fe.midfieldRating() != null ? fe.midfieldRating() : 100.0,

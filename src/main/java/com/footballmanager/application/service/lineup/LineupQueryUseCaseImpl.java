@@ -6,6 +6,7 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
@@ -40,6 +41,10 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
     private final CareerRepository careerRepository;
     private final LineupHelper lineupHelper;
+    // V25D99.16-BACK: resolved per-subdivision xPct/yPct so the team
+    // ratings use the new distance-aware effectiveness. Injected via
+    // @RequiredArgsConstructor.
+    private final FormationService formationService;
 
     @Override
     public Mono<LineupDTO> getCurrentLineup(UUID userId) {
@@ -87,6 +92,14 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         // MVP1-lineup-cancha-1.6: leer formación persistida con fallback a
         // inferFormation para saves viejos que no tienen teamStarting11Formation.
         String formationCode = readPersistedFormation(career, userTeamId, lineup);
+
+        // V25D99.16-BACK: lookup per-subdivision coords from the
+        // FormationService cache so /current responses include the new
+        // subdivision-aware team ratings (manual-select persistence
+        // already wired through CommandUseCaseImpl; this is the read
+        // path that surfaces ratings on re-open).
+        Map<String, double[]> coordsBySubdivision =
+                formationService.getCoordsByFormation(formationCode);
 
         List<PlayerLineupDTO> playerDTOs = lineup.stream()
             .map(p -> new PlayerLineupDTO(
@@ -147,7 +160,8 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                         naturalByPlayer,
                         persistedFormationCode,
                         attrsByPlayer,
-                        persistedFormationCode);
+                        persistedFormationCode,
+                        coordsBySubdivision);
 
         // V25D65-C25 P0: compute warnings from persisted state (slots + lineup).
         // Pre-C25 bug: warnings=List.of() here caused the banner to disappear
@@ -199,6 +213,17 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
         // Off-position fill (only if effectiveness data is available — empty
         // slots map → no off-position data → no warning).
+        //
+        // V25D99.16-BACK: threshold relaxed from `< 1.0` to `< 0.85`.
+        // Reason: SubdivisionEffectivenessCalculator now factors in
+        // distance-from-ideal so a CB placed at the LB/RB wing DEF slot
+        // drops to ~0.85 effectiveness (was 1.0 pre-V25D99.16 — pure
+        // zone table). That drop is meaningful for the panel ratings
+        // (so fine-grained drag-and-drop is visible) but a CB playing
+        // LB is still a coherent defensive assignment, NOT an
+        // off-position warning. The threshold now matches the engine's
+        // intent: fire only for SIGNIFICANT off-position (cross-zone:
+        // CB→MID, MID→ATT, etc. all score < 0.85 in the zone table).
         if (slots != null && !slots.isEmpty()
                 && formationEffectiveness != null
                 && formationEffectiveness.perPlayerEffectiveness() != null
@@ -210,7 +235,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             for (LineupSlotDTO slot : slots) {
                 if (slot == null || slot.subdivisionId() == null) continue;
                 Double eff = perPlayer.get(slot.subdivisionId());
-                if (eff != null && eff < 1.0) {
+                if (eff != null && eff < 0.85) {
                     String group = FormationInferer.categoryFor(slot.subdivisionId());
                     if (group != null) {
                         offPositionCountByGroup.merge(group, 1, Integer::sum);

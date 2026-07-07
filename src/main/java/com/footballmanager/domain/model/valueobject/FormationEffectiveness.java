@@ -86,7 +86,7 @@ public record FormationEffectiveness(
     public static FormationEffectiveness from(
             List<LineupSlotDTO> slots,
             Map<String, String> naturalByPlayer) {
-        return from(slots, naturalByPlayer, null, List.of(), null);
+        return from(slots, naturalByPlayer, null, List.of(), null, Map.of());
     }
 
     /**
@@ -95,16 +95,26 @@ public record FormationEffectiveness(
      * teamAttack / teamDefense / teamMidfield aggregates. Without
      * attributes, ratings default to the formation baselines
      * (4-4-2 = 100/100/100, scaled for others).
+     *
+     * <p>V25D99.16-BACK: added {@code coordsBySubdivision} parameter so
+     * the rating calculator can apply the new subdivision-aware
+     * distance penalty. Pass an empty map (or {@link Map#of()}) to skip
+     * the geometry penalty and preserve the legacy zone-only math
+     * (callers that don't have formation coords wired in still work).
      */
     public static FormationEffectiveness from(
             List<LineupSlotDTO> slots,
             Map<String, String> naturalByPlayer,
             String persistedFormation,
             List<PlayerAttrDTO> attrsByPlayer,
-            String formationForRatings) {
+            String formationForRatings,
+            Map<String, double[]> coordsBySubdivision) {
         String inferred = FormationInferer.infer(slots, persistedFormation);
 
         Map<String, Double> perPlayer = new LinkedHashMap<>();
+        // V25D99.16-BACK: snapshot coords lookup for null-safety inside
+        // the loop. Mirrors the safeNatural pattern right below.
+        Map<String, double[]> safeCoords = (coordsBySubdivision != null) ? coordsBySubdivision : Map.of();
         if (slots != null) {
             // Per-player effectiveness, even when naturalByPlayer is null
             // (calculator returns 1.0 for unknown natural — backward compat).
@@ -114,13 +124,26 @@ public record FormationEffectiveness(
             // V25D52 (Sprint C13b): key by subdivisionId, not playerId — the
             // frontend correlates a slot with its effectiveness score
             // directly (see FormationEffectivenessDTO wire shape).
+            //
+            // V25D99.16-BACK: when the caller supplies coords for this
+            // subdivision, layer the subdivision-aware distance penalty
+            // on top of the zone lookup. Otherwise fall back to the
+            // legacy zone-only math (preserves pre-V25D99.16 perPlayer
+            // values for callers that haven't wired coords).
             Map<String, String> safeNatural = (naturalByPlayer != null) ? naturalByPlayer : Map.of();
             for (LineupSlotDTO slot : slots) {
                 if (slot == null) continue;
                 if (slot.playerId() == null || slot.subdivisionId() == null) continue;
                 String natural = safeNatural.get(slot.playerId());
                 String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
-                double eff = PositionEffectivenessCalculator.effectiveness(natural, slotCat);
+                double eff;
+                double[] coords = safeCoords.get(slot.subdivisionId());
+                if (coords != null && coords.length >= 2) {
+                    eff = SubdivisionEffectivenessCalculator.effectiveness(
+                            natural, coords[0], coords[1], slotCat);
+                } else {
+                    eff = PositionEffectivenessCalculator.effectiveness(natural, slotCat);
+                }
                 perPlayer.put(slot.subdivisionId(), eff);
             }
         }
@@ -134,11 +157,15 @@ public record FormationEffectiveness(
         // + the caller-supplied attributes. Players without attributes
         // are skipped (calculator falls back to median 70 for missing
         // values, so a 7-attribute lineup still works).
+        //
+        // V25D99.16-BACK: also thread the per-subdivision coords into
+        // each PlayerAttrs entry so the new distance-aware calculator
+        // can run. Empty / missing coords → NaN → legacy zone-only math.
         String formationForCalc = (formationForRatings != null && !formationForRatings.isBlank())
                 ? formationForRatings
                 : inferred;
         TeamRatingsCalculator.TeamRatings ratings = computeRatings(
-                slots, naturalByPlayer, attrsByPlayer, formationForCalc);
+                slots, naturalByPlayer, attrsByPlayer, formationForCalc, safeCoords);
 
         return new FormationEffectiveness(
                 inferred,
@@ -155,12 +182,22 @@ public record FormationEffectiveness(
      * {@link TeamRatingsCalculator.PlayerAttrs} list. Skips players that
      * don't appear in any slot (bench) — the engine's teamAttack /
      * teamDefense aggregates only count on-field players.
+     *
+     * <p>V25D99.16-BACK: also threads {@code coordsBySubdivision} (a
+     * pre-resolved {@code subdivisionId -> {xPct, yPct}} map, typically
+     * built from {@code FormationService.getCoordsByFormation(formation)})
+     * into each {@code PlayerAttrs} entry. Players whose subdivision has
+     * no coords entry get {@code Double.NaN} so
+     * {@link TeamRatingsCalculator} falls back to the legacy zone-only
+     * effectiveness lookup (mixed-coords lineups during partial drag
+     * still produce sensible numbers).
      */
     private static TeamRatingsCalculator.TeamRatings computeRatings(
             List<LineupSlotDTO> slots,
             Map<String, String> naturalByPlayer,
             List<PlayerAttrDTO> attrsByPlayer,
-            String formationForRatings) {
+            String formationForRatings,
+            Map<String, double[]> coordsBySubdivision) {
         if (slots == null || slots.isEmpty()) {
             return TeamRatingsCalculator.compute(List.of(), formationForRatings);
         }
@@ -172,12 +209,16 @@ public record FormationEffectiveness(
                 }
             }
         }
+        Map<String, double[]> safeCoords = (coordsBySubdivision != null) ? coordsBySubdivision : Map.of();
         java.util.List<TeamRatingsCalculator.PlayerAttrs> calculatorAttrs = new java.util.ArrayList<>();
         for (LineupSlotDTO slot : slots) {
             if (slot == null || slot.playerId() == null) continue;
             String natural = (naturalByPlayer != null) ? naturalByPlayer.get(slot.playerId()) : null;
             String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
             PlayerAttrDTO attr = attrsIdx.get(slot.playerId());
+            double[] coords = safeCoords.get(slot.subdivisionId());
+            Double slotX = (coords != null && coords.length >= 1) ? coords[0] : null;
+            Double slotY = (coords != null && coords.length >= 2) ? coords[1] : null;
             calculatorAttrs.add(new TeamRatingsCalculator.PlayerAttrs(
                     slot.playerId(),
                     natural,
@@ -185,7 +226,9 @@ public record FormationEffectiveness(
                     attr != null ? attr.attack() : null,
                     attr != null ? attr.defense() : null,
                     attr != null ? attr.technique() : null,
-                    attr != null ? attr.mentality() : null
+                    attr != null ? attr.mentality() : null,
+                    slotX,
+                    slotY
             ));
         }
         return TeamRatingsCalculator.compute(calculatorAttrs, formationForRatings);
@@ -214,9 +257,12 @@ public record FormationEffectiveness(
      * {@code "X-Y-Z"} triple, and the front-end reports a different label
      * than the one shown in the formation modal.
      *
-     * <p>V25D99.15-BACK: thin delegate to the 5-arg overload — no
+     * <p>V25D99.15-BACK: thin delegate to the 6-arg overload — no
      * attributes are passed so ratings fall back to the formation
      * baseline (4-4-2 = 100/100/100).
+     *
+     * <p>V25D99.16-BACK: no coords passed so ratings fall back to the
+     * legacy zone-only math (no subdivision-aware distance penalty).
      *
      * @param slots              the 11 subdivision slots the manager assigned
      *                           (may be null/empty for legacy lineups).
@@ -231,7 +277,7 @@ public record FormationEffectiveness(
             List<LineupSlotDTO> slots,
             Map<String, String> naturalByPlayer,
             String persistedFormation) {
-        return from(slots, naturalByPlayer, persistedFormation, List.of(), null);
+        return from(slots, naturalByPlayer, persistedFormation, List.of(), null, Map.of());
     }
 
     /**

@@ -3,6 +3,7 @@ package com.footballmanager.adapters.in.web.career.controllers;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
@@ -81,8 +82,12 @@ class PreviewChemistryControllerTest {
         lineupCommandUseCase = mock(LineupCommandUseCase.class);
         lineupQueryUseCase = mock(LineupQueryUseCase.class);
         controllerHelper = mock(ControllerHelper.class);
+        // V25D99.16-BACK: FormationService now injected for the
+        // /preview-ratings endpoint to resolve per-subdivision coords.
+        // /preview-chemistry tests don't hit that path; pass a real
+        // instance so the constructor accepts the new arg.
         controller = new LineupController(lineupCommandUseCase, lineupQueryUseCase,
-                careerSessionService, controllerHelper);
+                careerSessionService, new FormationService(), controllerHelper);
 
         // Authentication with a UUID-shaped principal
         auth = new UsernamePasswordAuthenticationToken(

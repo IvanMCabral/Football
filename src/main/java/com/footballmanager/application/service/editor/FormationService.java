@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Servicio que retorna las formaciones tácticas disponibles con sus posiciones.
@@ -74,6 +75,70 @@ public class FormationService {
             .filter(f -> name.equals(f.name()))
             .findFirst()
             .orElse(null);
+    }
+
+    // ========== V25D99.16-BACK subdivision-coord lookup ==========
+
+    /**
+     * V25D99.16-BACK: returns the {@code {xPercent, yPercent}} of a
+     * specific subdivision slot within a named formation. The engine
+     * now factors in slot geometry (distance from natural-position
+     * ideal centroid) when computing the team ratings, so callers
+     * resolve coords through this method rather than hard-coding
+     * xPct/yPct maps of their own.
+     *
+     * <p>Returns {@code null} if either the formation or the subdivision
+     * is unknown. Callers fall back to the pre-V25D99.16 zone-only
+     * effectiveness lookup on null (no harm done &mdash; the new
+     * calculator skips geometry when given NaN coords).
+     *
+     * @param formation     canonical formation label (e.g., "4-4-2",
+     *                      "5-3-2", "4-2-3-1"); null/blank &rarr; null.
+     * @param subdivisionId e.g., {@code "S22-1"}, {@code "GK-1"};
+     *                      null/blank &rarr; null.
+     * @return {@code {xPercent, yPercent}} or null if not found.
+     */
+    public double[] getCoordsBySubdivision(String formation, String subdivisionId) {
+        if (formation == null || formation.isBlank()
+                || subdivisionId == null || subdivisionId.isBlank()) {
+            return null;
+        }
+        FormationDTO f = getFormationByName(formation);
+        if (f == null) {
+            return null;
+        }
+        for (FormationPositionDTO pos : f.positions()) {
+            if (subdivisionId.equals(pos.subdivisionId())) {
+                return new double[]{pos.xPercent(), pos.yPercent()};
+            }
+        }
+        return null;
+    }
+
+    /**
+     * V25D99.16-BACK: convenience that returns ALL subdivision coords
+     * for a formation as a {@code subdivisionId -> {x, y}} map. Used by
+     * the lineup preview endpoint to wire subdivision-aware
+     * effectiveness without resolving each slot individually (saves
+     * a linear scan per slot, ~11 lookups per request).
+     *
+     * @param formation canonical formation label; null/unknown &rarr; empty map.
+     * @return immutable map; safe to pass to {@code FormationEffectiveness.from(...)}.
+     */
+    public Map<String, double[]> getCoordsByFormation(String formation) {
+        if (formation == null || formation.isBlank()) {
+            return Map.of();
+        }
+        FormationDTO f = getFormationByName(formation);
+        if (f == null) {
+            return Map.of();
+        }
+        Map<String, double[]> result = new java.util.HashMap<>();
+        for (FormationPositionDTO pos : f.positions()) {
+            result.put(pos.subdivisionId(),
+                    new double[]{pos.xPercent(), pos.yPercent()});
+        }
+        return java.util.Collections.unmodifiableMap(result);
     }
 
     private List<FormationDTO> buildFormations() {
