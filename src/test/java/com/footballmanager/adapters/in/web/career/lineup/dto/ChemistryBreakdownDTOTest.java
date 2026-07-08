@@ -168,6 +168,104 @@ class ChemistryBreakdownDTOTest {
         }
     }
 
+    // ========== V25D99.19-BACK (BUG-1 fix): from(detail, slots, naturalByPlayer) overload ==========
+
+    @Nested
+    @DisplayName("from(detail, slots, naturalByPlayer): BUG-1 slot-category fallback")
+    class FromWithSlotsFallback {
+
+        @Test
+        @DisplayName("Null slots → delegates to from(detail) (existing behavior)")
+        void nullSlots() {
+            SessionPlayer sp = playerWithSkills("GK", elite(),
+                    Map.of(PlayerSkill.WALL, 99, PlayerSkill.AERIAL, 99));
+            ChemistryDetail detail = TeamChemistryCalculator.calculate(List.of(sp));
+            ChemistryBreakdownDTO base = ChemistryBreakdownDTO.from(detail);
+            ChemistryBreakdownDTO withNullSlots = ChemistryBreakdownDTO.from(detail, null, null);
+            assertEquals(base.positionGroups(), withNullSlots.positionGroups());
+            assertEquals(base.maxSkillByType(), withNullSlots.maxSkillByType());
+            assertEquals(base.coveragePercentage(), withNullSlots.coveragePercentage());
+        }
+
+        @Test
+        @DisplayName("Empty slots → delegates to from(detail) (existing behavior)")
+        void emptySlots() {
+            SessionPlayer sp = playerWithSkills("GK", elite(),
+                    Map.of(PlayerSkill.WALL, 99, PlayerSkill.AERIAL, 99));
+            ChemistryDetail detail = TeamChemistryCalculator.calculate(List.of(sp));
+            ChemistryBreakdownDTO base = ChemistryBreakdownDTO.from(detail);
+            ChemistryBreakdownDTO withEmptySlots = ChemistryBreakdownDTO.from(detail, List.of(), Map.of());
+            assertEquals(base.positionGroups(), withEmptySlots.positionGroups());
+        }
+
+        @Test
+        @DisplayName("Lineup with no skill data + slots in MID category only → MID group gets synthetic '-SLOT' entry, others stay empty")
+        void lineupWithMidSlotsAndNoSkills() {
+            // Player with NO skillLevels populated (legacy / V25D31 seed) at a MID slot.
+            SessionPlayer p = SessionPlayer.custom("Test", 25, "MID",
+                    80, 80, 80, 80, 80, 80, BigDecimal.valueOf(1_000_000));
+            // NO setSkillLevel calls — skillLevels map is empty.
+            ChemistryDetail detail = TeamChemistryCalculator.calculate(List.of(p));
+            // detail.breakdown() should be all-empty (no skills → no entries).
+            for (ChemistryDetail.PositionGroup g : ChemistryDetail.PositionGroup.values()) {
+                assertTrue(detail.breakdown().get(g).isEmpty(),
+                        "Skill-weight breakdown should be empty for " + g.name());
+            }
+
+            // Slot in sector 17 (MID per FormationInferer.categoryFor).
+            List<LineupSlotDTO> slots = List.of(new LineupSlotDTO(p.getSessionPlayerId(), "S17-1"));
+            Map<String, String> naturalByPlayer = Map.of(p.getSessionPlayerId(), "MID");
+            ChemistryBreakdownDTO dto = ChemistryBreakdownDTO.from(detail, slots, naturalByPlayer);
+
+            // MID group should now have a synthetic entry (the slot fallback).
+            List<ChemistryBreakdownDTO.SkillCoverageDTO> mid = dto.positionGroups().get("MID");
+            assertEquals(1, mid.size(), "MID group should have the synthetic -SLOT entry");
+            assertEquals("MID-SLOT", mid.get(0).skill(), "Synthetic skill name = group-SLOT");
+            assertEquals(0, mid.get(0).maxLevel(), "Synthetic maxLevel = 0 (chip-low class)");
+            assertEquals(p.getSessionPlayerId(), mid.get(0).contributorId());
+
+            // GK / DEF / ATT have no slot → stay empty.
+            assertTrue(dto.positionGroups().get("GK").isEmpty());
+            assertTrue(dto.positionGroups().get("DEF").isEmpty());
+            assertTrue(dto.positionGroups().get("ATT").isEmpty());
+
+            // coveragePercentage / maxSkillByType unchanged from the skill-weight detail.
+            assertEquals(0, dto.coveragePercentage());
+        }
+
+        @Test
+        @DisplayName("Existing skill entries are preserved when slot fallback is also applied to OTHER groups")
+        void preservesSkillEntriesAndAddsFallback() {
+            // GK with WALL=99 (weight in GK) + ATT slot from a separate ATT player
+            SessionPlayer gk = playerWithSkills("GK", elite(),
+                    Map.of(PlayerSkill.WALL, 99));
+            SessionPlayer att = playerWithSkills("ATT", elite(), Map.of());  // no skills
+            att.setSessionPlayerId("att-1");
+            List<SessionPlayer> lineup = List.of(gk, att);
+            ChemistryDetail detail = TeamChemistryCalculator.calculate(lineup);
+
+            // Add ATT slot from `att` (no skills) — fallback should populate ATT group.
+            List<LineupSlotDTO> slots = List.of(
+                    new LineupSlotDTO(gk.getSessionPlayerId(), "GK-1"),
+                    new LineupSlotDTO("att-1", "S05-1"));  // S05-1 = ATT per FormationInferer
+            Map<String, String> naturalByPlayer = Map.of(
+                    gk.getSessionPlayerId(), "GK",
+                    "att-1", "ATT");
+            ChemistryBreakdownDTO dto = ChemistryBreakdownDTO.from(detail, slots, naturalByPlayer);
+
+            // GK group: WALL (real, from skill data).
+            List<ChemistryBreakdownDTO.SkillCoverageDTO> gkRow = dto.positionGroups().get("GK");
+            assertEquals(1, gkRow.size(), "GK group: real WALL entry preserved");
+            assertEquals("WALL", gkRow.get(0).skill());
+
+            // ATT group: synthetic -SLOT entry (no real skill entries, but slot present).
+            List<ChemistryBreakdownDTO.SkillCoverageDTO> attRow = dto.positionGroups().get("ATT");
+            assertEquals(1, attRow.size(), "ATT group: synthetic -SLOT fallback applied");
+            assertEquals("ATT-SLOT", attRow.get(0).skill());
+            assertEquals("att-1", attRow.get(0).contributorId());
+        }
+    }
+
     // ========== JSON serialization ==========
 
     @Nested

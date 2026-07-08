@@ -172,7 +172,16 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
         return new LineupDTO(formationCode, playerDTOs, true, warnings, slots,
                 chemistryDetail.score(),
-                ChemistryBreakdownDTO.from(chemistryDetail),
+                // V25D99.19-BACK (BUG-1 fix): pass slots + naturalByPlayer so
+                // the ChemistryBreakdownDTO can pad empty PositionGroups with
+                // slot-category fallback entries (e.g. lineup with legacy/zero
+                // skill data where the skill-weight grouping yields empty
+                // groups but the lineup has assigned slots). Pre-fix
+                // Ivan saw `positionGroups: { GK: [], DEF: [], MID: [], ATT: [] }`
+                // + coveragePercentage 0 rendered as the "0% coverage" UX
+                // gap. The single-arg `from(detail)` remains available for
+                // /preview-chemistry callers that have no slot context.
+                ChemistryBreakdownDTO.from(chemistryDetail, slots, naturalByPlayer),
                 FormationEffectivenessDTO.from(formationEffectiveness));
     }
 
