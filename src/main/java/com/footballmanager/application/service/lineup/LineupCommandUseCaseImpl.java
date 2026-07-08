@@ -96,7 +96,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // (vs. role-match fallback that only fills GK + first 2 CB).
                 // V25D61-C20.1 P0: pass isAutoSelect=true so the off-position
                 // fallback fires (auto-select requires 11 slots).
-                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, lineup, true);
+                // V25D99.20.2-BACK: buildAutoSelectSlotMap now returns
+                // Map<String, LineupSlotDTO> (subdivisionId → LineupSlotDTO
+                // with customX/Y=null because auto-select is canonical). The
+                // front's free-positioning overrides only arrive via manual-select.
+                Map<String, LineupSlotDTO> slotMap = buildAutoSelectSlotMap(formation, lineup, true);
                 // V25D60-C20 P0: defensive guard for auto-select. The earlier
                 // lineup.size() check (TARGET_LINEUP_PLAYERS = 11) catches the
                 // common "short squad" case, but if for any reason slotMap is
@@ -112,11 +116,13 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         + " (formation: " + formation.getCode() + ", squad may be too small)"
                     );
                 }
+                Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
                 if (slotMap.isEmpty()) {
-                    career.getTeamStarting11Subdivision().remove(userTeamId);
+                    allSlots.remove(userTeamId);
                 } else {
-                    career.getTeamStarting11Subdivision().put(userTeamId, slotMap);
+                    allSlots.put(userTeamId, slotMap);
                 }
+                career.setTeamStarting11SubdivisionSlots(allSlots);
 
                 // MVP1-lineup-cancha-1.6: persist formation code so that
                 // getCurrentLineup returns the actual formation the user
@@ -197,10 +203,20 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // V25D61-C20.1 P0: pass isAutoSelect=false so the off-position
                 // fallback does NOT fire for short-handed manual-select
                 // (prevents 7 players → 8 slots with a duplicated playerId).
-                Map<String, String> slotMap = buildAutoSelectSlotMap(formation, selectedPlayers, false);
+                // V25D99.20.2-BACK: returns Map<String, LineupSlotDTO> so the
+                // front's customXPercent / customYPercent override coords
+                // (V25D98 free-positioning) survive the round-trip. Pre-fix,
+                // the String-only shape discarded these coords and the
+                // SubdivisionEffectivenessCalculator always saw canonical
+                // coords (causing 1px-drag sensitivity = no observable
+                // penalty because the back's penalty was always 0).
+                Map<String, LineupSlotDTO> slotMap = buildAutoSelectSlotMap(formation, selectedPlayers, false);
                 if (slots != null && !slots.isEmpty()) {
                     // Override con lo que el front envió explícitamente
                     // (autoridad del front si el usuario asignó manualmente).
+                    // V25D99.20.2-BACK: keep the front's customXPercent and
+                    // customYPercent so the engine's distance-from-ideal
+                    // penalty reflects the actual drop point.
                     for (LineupSlotDTO slot : slots) {
                         if (slot.subdivisionId() == null || slot.subdivisionId().isBlank()) {
                             continue;
@@ -213,16 +229,18 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                             continue;
                         }
                         // Si dos slots intentan usar el mismo subdivisionId, el último gana.
-                        slotMap.put(slot.subdivisionId(), slot.playerId());
+                        slotMap.put(slot.subdivisionId(), slot);
                     }
                 }
+                Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
                 if (!slotMap.isEmpty()) {
-                    career.getTeamStarting11Subdivision().put(userTeamId, slotMap);
+                    allSlots.put(userTeamId, slotMap);
                 } else {
                     // Si HELPER-BASED no produjo nada (short-handed lineup),
                     // limpiamos el entry existente para no dejar datos stale.
-                    career.getTeamStarting11Subdivision().remove(userTeamId);
+                    allSlots.remove(userTeamId);
                 }
+                career.setTeamStarting11SubdivisionSlots(allSlots);
 
                 return careerSessionService.saveCareer(career)
                     .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings, slotMap));
@@ -392,7 +410,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     private LineupDTO buildLineupDTO(List<SessionPlayer> players, Formation formation,
                                       List<LineupWarningDTO> warnings,
-                                      Map<String, String> slotMap) {
+                                      Map<String, LineupSlotDTO> slotMap) {
         List<PlayerLineupDTO> playerDTOs = players.stream()
             .map(p -> new PlayerLineupDTO(
                 p.getSessionPlayerId(),
@@ -410,24 +428,39 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .toList();
 
         // V25D47 (Sprint C11a): build the slot DTOs and the tactical effectiveness
-        // aggregate. Convert the subdivisionId → playerId map into the
-        // LineupSlotDTO list (same shape used by LineupQueryUseCaseImpl), then
-        // compute per-player effectiveness multipliers via
-        // PositionEffectivenessCalculator.effectiveness(naturalPosition, slotCategory).
+        // aggregate. V25D99.20.2-BACK: slotMap is now Map<String, LineupSlotDTO>
+        // (subdivisionId → LineupSlotDTO with playerId + customX/Y). Pass the
+        // LineupSlotDTO values through directly so the front's free-positioning
+        // customXPercent / customYPercent (V25D98 model) survive the round-trip
+        // into the LineupDTO and downstream FormationEffectiveness.from() can
+        // apply the distance-from-ideal penalty at the actual drop point.
         //
         // V25D52 (Sprint C13b): LineupSlotDTO is record(playerId, subdivisionId)
         // — args MUST be (playerId, subdivisionId). slotMap is keyed by
-        // subdivisionId with playerId values, so the constructor call is
-        // (e.getValue(), e.getKey()). Prior to this fix the args were
-        // swapped, which silently produced LineupSlotDTO(playerId="S22-1",
-        // subdivisionId="def-1"). The downstream FormationEffectiveness.from()
-        // then looked up naturalByPlayer.get("S22-1") (always null) and
-        // categoryFor("def-1") (always null) → every effectiveness defaulted
-        // to 1.0. Now the POST response matches the GET response shape.
+        // subdivisionId with LineupSlotDTO values (whose playerId is the
+        // inner field). Pre-V25D99.20.2, the map was keyed by subdivisionId
+        // with String playerId values, and the constructor call was
+        // (e.getValue(), e.getKey()) — now it's (slot.playerId(),
+        // slot.subdivisionId()) since the outer key + inner field agree.
         List<LineupSlotDTO> slots = (slotMap == null || slotMap.isEmpty())
                 ? List.of()
                 : slotMap.entrySet().stream()
-                    .map(e -> new LineupSlotDTO(e.getValue(), e.getKey()))
+                    .map(e -> {
+                        LineupSlotDTO inner = e.getValue();
+                        // Prefer the LineupSlotDTO's own subdivisionId (it
+                        // may differ from the outer key for legacy
+                        // pre-V25D99.20.2 wrapped values, or for null
+                        // subdivisionId in the inner DTO). Fall back to
+                        // the outer key when the inner is null.
+                        String subdivisionId = inner.subdivisionId() != null
+                                ? inner.subdivisionId()
+                                : e.getKey();
+                        return new LineupSlotDTO(
+                                inner.playerId(),
+                                subdivisionId,
+                                inner.customXPercent(),
+                                inner.customYPercent());
+                    })
                     .toList();
         Map<String, String> naturalByPlayer = new HashMap<>();
         for (SessionPlayer p : players) {
@@ -526,10 +559,14 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
      *                     full coverage via off-position fallback);
      *                     {@code false} for the manual-select path (best-effort
      *                     helper match only)
-     * @return subdivision → playerId map (may have fewer entries than
-     *         formation positions when {@code isAutoSelect} is {@code false})
+     * @return subdivisionId → LineupSlotDTO map. For auto-select the
+     *         customX/Y are null (canonical snap-to-slot). For manual-select
+     *         the front's overrides are applied on top in
+     *         {@link #manualSelectLineupWithSlots}. May have fewer entries
+     *         than formation positions when {@code isAutoSelect} is
+     *         {@code false}.
      */
-    private Map<String, String> buildAutoSelectSlotMap(
+    private Map<String, LineupSlotDTO> buildAutoSelectSlotMap(
             Formation formation,
             List<SessionPlayer> lineup,
             boolean isAutoSelect) {
@@ -540,7 +577,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         if (formationDto == null || formationDto.positions() == null) {
             return Map.of();
         }
-        Map<String, String> slotMap = new HashMap<>();
+        Map<String, LineupSlotDTO> slotMap = new HashMap<>();
         Set<String> usedPlayerIds = new HashSet<>();
         for (FormationPositionDTO pos : formationDto.positions()) {
             String role = pos.role();
@@ -563,7 +600,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     default -> false;
                 };
                 if (matches) {
-                    slotMap.put(subdivisionId, playerId);
+                    // V25D99.20.2-BACK: store LineupSlotDTO with playerId +
+                    // subdivisionId. customX/Y null at auto-select stage
+                    // (canonical coords only — manual-select overrides
+                    // these if the front sent free-positioning coords).
+                    slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
                     usedPlayerIds.add(playerId);
                     assigned = true;
                     break;
@@ -592,7 +633,12 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     if (playerId == null || usedPlayerIds.contains(playerId)) {
                         continue;
                     }
-                    slotMap.put(subdivisionId, playerId);
+                    // V25D99.20.2-BACK: wrap the off-position fallback playerId
+                    // in a LineupSlotDTO with the subdivisionId and no
+                    // customX/Y override (canonical coords for off-position
+                    // players, penalty surfaced by FormationEffectiveness
+                    // downstream).
+                    slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
                     usedPlayerIds.add(playerId);
                     break;
                 }

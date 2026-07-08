@@ -288,18 +288,38 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
     }
 
     private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {
-        Map<String, Map<String, String>> allSlots = career.getTeamStarting11Subdivision();
+        // V25D99.20.2-BACK: use the typed slot getter so we preserve
+        // customXPercent / customYPercent on the LineupSlotDTOs. The
+        // legacy String-only getter would discard these overrides and the
+        // FormationEffectiveness calculator downstream would silently
+        // fall back to canonical subdivision coords (no penalty for
+        // free-positioned players).
+        Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
         if (allSlots == null) {
             return List.of();
         }
-        Map<String, String> teamSlots = allSlots.get(userTeamId);
+        Map<String, LineupSlotDTO> teamSlots = allSlots.get(userTeamId);
         if (teamSlots == null || teamSlots.isEmpty()) {
             return List.of();
         }
 
         List<LineupSlotDTO> result = new ArrayList<>(teamSlots.size());
-        for (Map.Entry<String, String> entry : teamSlots.entrySet()) {
-            result.add(new LineupSlotDTO(entry.getValue(), entry.getKey()));
+        for (Map.Entry<String, LineupSlotDTO> entry : teamSlots.entrySet()) {
+            LineupSlotDTO inner = entry.getValue();
+            // Outer key + inner subdivisionId should agree for fresh
+            // writes. If they differ (e.g. legacy wrapped value with
+            // null inner subdivisionId), prefer the inner when set, else
+            // fall back to the outer key. Same fallback applies to
+            // customX/Y: a null inner means canonical coords (the
+            // FormationEffectiveness.from() handles that).
+            String subdivisionId = inner.subdivisionId() != null
+                    ? inner.subdivisionId()
+                    : entry.getKey();
+            result.add(new LineupSlotDTO(
+                    inner.playerId(),
+                    subdivisionId,
+                    inner.customXPercent(),
+                    inner.customYPercent()));
         }
         return result;
     }
