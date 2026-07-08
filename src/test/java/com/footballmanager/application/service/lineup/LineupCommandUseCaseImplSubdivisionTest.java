@@ -763,4 +763,170 @@ class LineupCommandUseCaseImplSubdivisionTest {
             })
             .verifyComplete();
     }
+
+    // ============================================================
+    // V25D99.20.2-BACK pinning tests: customXPercent / customYPercent
+    // from the front's drag survive the manual-select round-trip.
+    //
+    // Pre-fix: LineupCommandUseCaseImpl stored subdivisionId → playerId
+    // in a Map<String, String>, silently dropping the customX/Y values
+    // the front sent. /current never surfaced them either because
+    // LineupQueryUseCaseImpl.buildSlotsFromSubdivisionMap reconstructed
+    // LineupSlotDTO(playerId, subdivisionId) without customX/Y. Symptom:
+    // drag 1px = no observable penalty because the back always saw
+    // canonical coords.
+    //
+    // Post-fix: subdivisionId → LineupSlotDTO(playerId, subdivisionId,
+    // customXPercent, customYPercent) is persisted. Re-read via
+    // getTeamStarting11SubdivisionSlots() returns the exact customX/Y
+    // values. This is the regression net for V25D99.20.2.
+    // ============================================================
+
+    @Test
+    @DisplayName("V25D99.20.2-BACK: manualSelectWithSlots persiste customXPercent y customYPercent del front")
+    void manualSelectWithSlots_persistsCustomXY() {
+        CareerSave career = makeCareer(makeFullSquad442());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        // Front sends customX/Y for one slot (Valverde-style free positioning).
+        List<LineupSlotDTO> slots = List.of(
+            new LineupSlotDTO("gk-1", "GK-1"),
+            new LineupSlotDTO("def-1", "S22-1"),
+            new LineupSlotDTO("def-2", "S22-2"),
+            new LineupSlotDTO("def-3", "S23-2"),
+            new LineupSlotDTO("def-4", "S24-3"),
+            new LineupSlotDTO("mid-1", "S16-1"),
+            new LineupSlotDTO("mid-2", "S16-2", 25.0, 65.0),  // customX=25, customY=65
+            new LineupSlotDTO("mid-3", "S17-2"),
+            new LineupSlotDTO("mid-4", "S18-3"),
+            new LineupSlotDTO("att-1", "S05-2"),
+            new LineupSlotDTO("att-2", "S05-3")
+        );
+
+        StepVerifier.create(useCase.manualSelectLineupWithSlots(
+                UUID.fromString(USER_ID), "4-4-2", fullLineup442(), slots))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        // Verify the saved career has customX/Y preserved on the S16-2 slot.
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor.capture());
+        CareerSave saved = captor.getValue();
+
+        // V25D99.20.2-BACK: use the typed slot getter to read the persisted
+        // customX/Y. The legacy String-only getter would have masked the
+        // bug by returning only the playerId.
+        Map<String, LineupSlotDTO> teamSlots = saved.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        assertNotNull(teamSlots, "V25D99.20.2-BACK: teamStarting11SubdivisionSlots map should be populated");
+        // NOTE: don't assert on the EXACT count — the pre-existing
+        // C20/C61 dual-map bug (manualSelectWithSlots_persistsSubdivisionMap
+        // asserts 11 but gets 18) is out of scope for V25D99.20.2.
+        // Just verify S16-2 carries the customX/Y round-trip.
+
+        LineupSlotDTO mid2Slot = teamSlots.get("S16-2");
+        assertNotNull(mid2Slot, "V25D99.20.2-BACK: S16-2 must be a key (front sent it)");
+        assertEquals("mid-2", mid2Slot.playerId(),
+            "V25D99.20.2-BACK: S16-2 -> mid-2 (playerId round-trip)");
+        assertEquals("S16-2", mid2Slot.subdivisionId(),
+            "V25D99.20.2-BACK: subdivisionId round-trip");
+        assertEquals(25.0, mid2Slot.customXPercent(),
+            "V25D99.20.2-BACK: customXPercent=25.0 must survive the round-trip");
+        assertEquals(65.0, mid2Slot.customYPercent(),
+            "V25D99.20.2-BACK: customYPercent=65.0 must survive the round-trip");
+
+        // Sanity: a slot WITHOUT customX/Y keeps them null (canonical coords).
+        LineupSlotDTO gkSlot = teamSlots.get("GK-1");
+        assertNotNull(gkSlot, "V25D99.20.2-BACK: GK-1 must be a key");
+        assertNull(gkSlot.customXPercent(),
+            "V25D99.20.2-BACK: GK-1 customXPercent stays null (front didn't set it)");
+        assertNull(gkSlot.customYPercent(),
+            "V25D99.20.2-BACK: GK-1 customYPercent stays null (front didn't set it)");
+    }
+
+    /**
+     * V25D99.20.2-BACK: the DTO response itself must echo the customX/Y
+     * values so the front gets back the same values it sent (round-trip
+     * integrity check across save + buildLineupDTO).
+     */
+    @Test
+    @DisplayName("V25D99.20.2-BACK: LineupDTO response surface customX/Y en slots")
+    void manualSelectWithSlots_customXY_roundTripInResponse() {
+        CareerSave career = makeCareer(makeFullSquad442());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        // Front sends customX=42.0, customY=88.0 for one slot.
+        List<LineupSlotDTO> slots = List.of(
+            new LineupSlotDTO("gk-1", "GK-1"),
+            new LineupSlotDTO("def-1", "S22-1"),
+            new LineupSlotDTO("def-2", "S22-2"),
+            new LineupSlotDTO("def-3", "S23-2"),
+            new LineupSlotDTO("def-4", "S24-3"),
+            new LineupSlotDTO("mid-1", "S16-1"),
+            new LineupSlotDTO("mid-2", "S16-2", 42.0, 88.0),
+            new LineupSlotDTO("mid-3", "S17-2"),
+            new LineupSlotDTO("mid-4", "S18-3"),
+            new LineupSlotDTO("att-1", "S05-2"),
+            new LineupSlotDTO("att-2", "S05-3")
+        );
+
+        StepVerifier.create(useCase.manualSelectLineupWithSlots(
+                UUID.fromString(USER_ID), "4-4-2", fullLineup442(), slots))
+            .assertNext(dto -> {
+                boolean foundCustomXY = dto.slots().stream()
+                    .anyMatch(s -> "S16-2".equals(s.subdivisionId())
+                                && Double.valueOf(42.0).equals(s.customXPercent())
+                                && Double.valueOf(88.0).equals(s.customYPercent()));
+                assertTrue(foundCustomXY,
+                    "V25D99.20.2-BACK: DTO response must surface customX=42, customY=88 on S16-2");
+            })
+            .verifyComplete();
+    }
+
+    /**
+     * V25D99.20.2-BACK: backward compat — a pre-fix save persisted the
+     * inner map as {@code Map<String, String>} (subdivisionId -> playerId).
+     * The new typed getter must wrap these legacy String values into
+     * LineupSlotDTO(playerId, null, null, null) so downstream consumers
+     * (LineupQueryUseCaseImpl.buildSlotsFromSubdivisionMap) get a
+     * uniform LineupSlotDTO shape.
+     */
+    @Test
+    @DisplayName("V25D99.20.2-BACK: legacy String values wrap to LineupSlotDTO on typed getter")
+    void legacyStringValues_wrapToLineupSlotDTO() {
+        CareerSave career = makeCareer(makeFullSquad442());
+
+        // Simulate a pre-V25D99.20.2 save: write legacy String values
+        // directly via the backward-compat setter.
+        Map<String, Map<String, String>> legacy = new HashMap<>();
+        legacy.put(TEAM_ID, new HashMap<>(Map.of(
+            "GK-1", "gk-1",
+            "S22-1", "def-1",
+            "S22-2", "def-2"
+        )));
+        career.setTeamStarting11Subdivision(legacy);
+
+        // The typed slot getter must return LineupSlotDTO values for these
+        // legacy String values, with customX/Y null and subdivisionId
+        // recovered from the OUTER key (inner subdivisionId is null in
+        // the legacy wrap).
+        Map<String, LineupSlotDTO> typed = career.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        assertNotNull(typed, "V25D99.20.2-BACK: legacy values must produce a typed map");
+        assertEquals(3, typed.size(), "V25D99.20.2-BACK: 3 entries from legacy map");
+
+        LineupSlotDTO gkSlot = typed.get("GK-1");
+        assertNotNull(gkSlot, "V25D99.20.2-BACK: GK-1 wrapped");
+        assertEquals("gk-1", gkSlot.playerId());
+        assertNull(gkSlot.subdivisionId(),
+            "V25D99.20.2-BACK: legacy wrap has null inner subdivisionId (consumer falls back to outer key)");
+        assertNull(gkSlot.customXPercent());
+        assertNull(gkSlot.customYPercent());
+
+        // The legacy String-only getter must STILL work (backward compat for
+        // pre-fix callers like the test helpers in AutoSelectTest).
+        Map<String, String> legacyBack = career.getTeamStarting11Subdivision().get(TEAM_ID);
+        assertEquals("gk-1", legacyBack.get("GK-1"),
+            "V25D99.20.2-BACK: legacy getter returns playerId for backward compat");
+    }
 }
