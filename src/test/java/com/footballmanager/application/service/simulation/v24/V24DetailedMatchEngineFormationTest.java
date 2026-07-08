@@ -412,20 +412,18 @@ class V24DetailedMatchEngineFormationTest {
         double baselineAgg = invokeAggregateAttackerStat(baselineStates, "4-4-2");
         double misalignedAgg = invokeAggregateAttackerStat(misalignedStates, "4-4-2");
 
-        // Top-5 baseline: 100+99+98+97+96 = 490 / 5 = 98.0.
-        // Top-5 misaligned: 99+98+97+96+95 = 485 / 5 = 97.0 (att0 fell out of top-5
-        // after the move since its weighted attack is 100*0.7 = 70, lower than att5's 95).
-        // Even with att0 still in top-5 by raw sort (it has attack=100, highest),
-        // the weighted contribution is 100*0.7 = 70 vs raw 100.
-        // So misaligned = (70 + 99 + 98 + 97 + 96) / 5 = 92.0.
-        // Baseline = 98.0. Difference = 6.0 (~6.1% lower).
+        // Top-7 baseline (V25D99.18: widened from top-5): 100+99+98+97+96+95+94 = 679 / 7 = 97.0.
+        // Top-7 misaligned: att0 still in top-7 by raw sort (raw attack=100 keeps it #1),
+        // but weighted contribution is 100*0.7 = 70. So misaligned =
+        // (70 + 99 + 98 + 97 + 96 + 95 + 94) / 7 = 649 / 7 = 92.71.
+        // Baseline = 97.0. Difference = 4.29 (~4.4% lower).
         assertTrue(baselineAgg > misalignedAgg,
                 "aggregateAttackerStat must decrease when a top attacker is moved to a "
                         + "MID tactical slot (effectiveness 0.7). baseline=" + baselineAgg
                         + ", misaligned=" + misalignedAgg);
-        // Sanity: misaligned must be at least 5% lower (we expect ~6%).
-        assertTrue(baselineAgg - misalignedAgg >= baselineAgg * 0.05,
-                "Misaligned aggregate should be at least 5% lower than baseline. "
+        // Sanity: misaligned must be at least 3.5% lower (V25D99.18 top-7: expected delta ~4.4%).
+        assertTrue(baselineAgg - misalignedAgg >= baselineAgg * 0.035,
+                "Misaligned aggregate should be at least 3.5% lower than baseline. "
                         + "baseline=" + baselineAgg + ", misaligned=" + misalignedAgg
                         + ", delta=" + (baselineAgg - misalignedAgg));
     }
@@ -558,15 +556,17 @@ class V24DetailedMatchEngineFormationTest {
         double actualDefense = invokeAggregateDefenderStat(states);
 
         // Hand-computed baseline (no effectiveness weighting, mentality=75 for all).
-        // Top-5 by attack: 90,90,75,75,75 → avg = 81.0.
-        double expectedAttack = (90.0 + 90.0 + 75.0 + 75.0 + 75.0) / 5.0;
+        // Top-7 by attack (V25D99.18: widened from top-5):
+        // lineup is 1 GK(30) + 4 DEF(50) + 4 MID(75) + 2 ATT(90). Top-7 =
+        // 2 ATT(90) + 4 MID(75) + 1 DEF(50) = 530 / 7 ≈ 75.71.
+        double expectedAttack = (90.0 + 90.0 + 75.0 + 75.0 + 75.0 + 75.0 + 50.0) / 7.0;
         // DEF+GK: GK(def=80,ment=75)=(80+75)/2=77.5; 4 DEF(def=70,ment=75)=(70+75)/2=72.5 each.
         // avg = (77.5 + 72.5*4) / 5 = (77.5 + 290) / 5 = 367.5 / 5 = 73.5.
         double expectedDefense = (77.5 + 72.5 * 4) / 5.0;
 
         assertTrue(Math.abs(actualAttack - expectedAttack) < 1e-6,
                 "aggregateAttackerStat with no tactical moves must equal the "
-                        + "pre-C11a unweighted top-5 average. expected=" + expectedAttack
+                        + "pre-C11a unweighted top-7 average (V25D99.18). expected=" + expectedAttack
                         + ", actual=" + actualAttack);
         assertTrue(Math.abs(actualDefense - expectedDefense) < 1e-6,
                 "aggregateDefenderStat with no tactical moves must equal the "
