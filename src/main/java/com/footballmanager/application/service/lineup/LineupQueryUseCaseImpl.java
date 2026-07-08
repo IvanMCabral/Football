@@ -6,6 +6,7 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
+import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -16,6 +17,7 @@ import com.footballmanager.domain.model.valueobject.FormationInferer;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -46,13 +48,34 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
     // @RequiredArgsConstructor.
     private final FormationService formationService;
 
+    // V25D99.20.1: nullable injection so /current uses the in-memory cache
+    // layer (ConcurrentHashMap in CareerSessionService) when Spring has
+    // wired the dependency. Tests construct this class with the 3-arg
+    // constructor (no Spring context), so the field stays null and the
+    // legacy direct-repo path is exercised. With it, the read path
+    // matches the write path (/auto-select, /manual-select, /confirm,
+    // /preview-chemistry, /preview-ratings) which already use
+    // careerSessionService.getCareerFromCache. Pre-fix: /current hit
+    // Redis directly and returned 200 + empty body when the Redis key was
+    // temporarily missing (TTL race, post-restart before first warming),
+    // while every other endpoint kept serving from cache.
+    @Autowired(required = false)
+    @SuppressWarnings("PMD.UnusedPrivateField")
+    private CareerSessionService careerSessionService;
+
     @Override
     public Mono<LineupDTO> getCurrentLineup(UUID userId) {
-        return careerRepository.findById(userId.toString())
-            .flatMap(optionalCareer -> optionalCareer.isPresent()
-                ? Mono.just(optionalCareer.get())
-                : Mono.empty())
-            .map(this::buildLineupDTO);
+        Mono<CareerSave> careerMono;
+        if (careerSessionService != null) {
+            careerMono = careerSessionService.getCareerFromCache(userId);
+        } else {
+            // Legacy / test path: direct Redis read.
+            careerMono = careerRepository.findById(userId.toString())
+                .flatMap(optionalCareer -> optionalCareer.isPresent()
+                    ? Mono.just(optionalCareer.get())
+                    : Mono.empty());
+        }
+        return careerMono.map(this::buildLineupDTO);
     }
 
     private LineupDTO buildLineupDTO(CareerSave career) {
