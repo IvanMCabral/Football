@@ -36,7 +36,7 @@ import java.util.UUID;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/career/lineup")
+@RequestMapping(value = "/api/v1/career/lineup", produces = "application/json;charset=UTF-8")
 @RequiredArgsConstructor
 public class LineupController {
 

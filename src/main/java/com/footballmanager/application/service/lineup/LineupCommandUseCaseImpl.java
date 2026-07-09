@@ -117,6 +117,19 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     );
                 }
                 Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
+                // V25D99.20.3-BACK BUG-2: clear the inner map BEFORE the
+                // put so a cycle 4-4-2 → 4-3-3 → 4-4-2 doesn't leave 3
+                // stale 4-3-3 slots behind. The setTeamStarting11SubdivisionSlots
+                // setter REPLACES the raw field with the new typed map
+                // (this.teamStarting11Subdivision = raw), so technically
+                // the put below replaces the entire entry for userTeamId.
+                // But the explicit clear() is a belt-and-suspenders
+                // against future refactors that switch to incremental
+                // put, and it makes the intent obvious to readers.
+                Map<String, LineupSlotDTO> existingTeamSlots = allSlots.get(userTeamId);
+                if (existingTeamSlots != null) {
+                    existingTeamSlots.clear();
+                }
                 if (slotMap.isEmpty()) {
                     allSlots.remove(userTeamId);
                 } else {

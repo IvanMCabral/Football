@@ -55,6 +55,18 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+  # V25D99.20.3-BACK BUG-3: force UTF-8 on every response so the Angular
+  # front doesn't have to guess. Without `force: true`, Spring Boot
+  # only adds ;charset=UTF-8 when the response actually contains
+  # non-ASCII bytes — the front then defaults to Latin-1 and
+  # displays the canonical Mojibake pairs (`âœ•` for ✓, `â€"` for —,
+  # `Ã—` for ×). `force: true` makes every response declare UTF-8
+  # explicitly, eliminating the dual-encoding ambiguity.
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
 
 # Actuator (Health checks and metrics)
 management:
