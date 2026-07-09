@@ -496,4 +496,63 @@ class LineupControllerE2ETest {
             .jsonPath("$.slots[10].playerId").isEqualTo("p11")
             .jsonPath("$.slots[10].subdivisionId").isEqualTo("S06-3");
     }
+
+    // ============================================================
+    // V25D99.20.3-BACK BUG-3 pinning test: every response from the
+    // modal endpoints (lineup current, auto-select, manual-select,
+    // preview-ratings, preview-chemistry) must declare
+    // `Content-Type: application/json;charset=UTF-8`. Pre-fix, the
+    // server.servlet.encoding config was missing, so the front
+    // guessed the charset from bytes alone and rendered the
+    // canonical Mojibake pairs (`âœ•` for ✓, `â€"` for —, `Ã—` for ×).
+    // ============================================================
+
+    @Test
+    @DisplayName("V25D99.20.3-BACK BUG-3: GET /career/lineup/current returns Content-Type application/json;charset=UTF-8")
+    void getCurrent_responseDeclaresUtf8Charset() {
+        LineupDTO emptyLineup = new LineupDTO(
+            "4-4-2", new ArrayList<>(), false, List.of(), List.of());
+        when(lineupQueryUseCase.getCurrentLineup(eq(TEST_USER_ID)))
+            .thenReturn(Mono.just(emptyLineup));
+
+        webTestClient.mutateWith(
+                org.springframework.security.test.web.reactive.server
+                    .SecurityMockServerConfigurers.mockUser(TEST_USER_ID.toString()))
+            .get().uri("/api/v1/career/lineup/current")
+            .exchange()
+            .expectStatus().isOk()
+            .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+            // V25D99.20.3-BACK: the charset must be UTF-8 (charset=UTF-8
+            // must appear in the Content-Type header, with `force: true`
+            // in server.servlet.encoding). This is the regression net
+            // for the `âœ•` / `â€"` / `Ã—` mojibake that appeared in
+            // the front when the front's JSON parser fell back to Latin-1.
+            .expectHeader().value("Content-Type", ct -> {
+                org.junit.jupiter.api.Assertions.assertTrue(
+                    ct.toLowerCase().contains("charset=utf-8"),
+                    "V25D99.20.3-BACK BUG-3: Content-Type must include charset=UTF-8, got: " + ct);
+            });
+    }
+
+    @Test
+    @DisplayName("V25D99.20.3-BACK BUG-3: POST /career/lineup/auto-select returns Content-Type application/json;charset=UTF-8")
+    void autoSelect_responseDeclaresUtf8Charset() {
+        stubCareerInPhase(CareerPhase.PRE_MATCH);
+        when(lineupCommandUseCase.autoSelectLineup(eq(TEST_USER_ID), eq("4-4-2")))
+            .thenReturn(Mono.just(lineupWith11Players()));
+
+        webTestClient.mutateWith(
+                org.springframework.security.test.web.reactive.server
+                    .SecurityMockServerConfigurers.mockUser(TEST_USER_ID.toString()))
+            .post().uri("/api/v1/career/lineup/auto-select")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{\"formation\":\"4-4-2\"}")
+            .exchange()
+            .expectStatus().isOk()
+            .expectHeader().value("Content-Type", ct -> {
+                org.junit.jupiter.api.Assertions.assertTrue(
+                    ct.toLowerCase().contains("charset=utf-8"),
+                    "V25D99.20.3-BACK BUG-3: auto-select Content-Type must include charset=UTF-8, got: " + ct);
+            });
+    }
 }
