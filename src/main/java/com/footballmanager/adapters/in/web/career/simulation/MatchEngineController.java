@@ -89,7 +89,7 @@ public class MatchEngineController {
      * POST /api/v1/match-engine/{matchId}/pause
      * Pauses a match directly by matchId.
      */
-    @PostMapping("/{matchId}/pause")
+    @PostMapping(value = "/{matchId}/pause", produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<Object>> pauseMatch(
             @PathVariable String matchId,
             Authentication authentication) {
@@ -113,7 +113,7 @@ public class MatchEngineController {
      * POST /api/v1/match-engine/{matchId}/resume
      * Resumes a paused match.
      */
-    @PostMapping("/{matchId}/resume")
+    @PostMapping(value = "/{matchId}/resume", produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<Object>> resumeMatch(
             @PathVariable String matchId,
             Authentication authentication) {
@@ -137,7 +137,7 @@ public class MatchEngineController {
      * POST /api/v1/match-engine/{matchId}/stop
      * Stops a match.
      */
-    @PostMapping("/{matchId}/stop")
+    @PostMapping(value = "/{matchId}/stop", produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<Object>> stopMatch(
             @PathVariable String matchId,
             Authentication authentication) {
@@ -177,7 +177,7 @@ public class MatchEngineController {
      * registered, 404 when it is not (the round has been unregistered
      * after completion). 400 when the matchId is not a valid UUID.
      */
-    @GetMapping("/matches/{matchId}/roundId")
+    @GetMapping(value = "/matches/{matchId}/roundId", produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatch(
             @PathVariable String matchId) {
         log.debug("[MATCH-CONTROLLER] getRoundIdForMatch called for matchId: {}", matchId);

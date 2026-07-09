@@ -116,26 +116,26 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         + " (formation: " + formation.getCode() + ", squad may be too small)"
                     );
                 }
-                Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
-                // V25D99.20.3-BACK BUG-2: clear the inner map BEFORE the
-                // put so a cycle 4-4-2 → 4-3-3 → 4-4-2 doesn't leave 3
-                // stale 4-3-3 slots behind. The setTeamStarting11SubdivisionSlots
-                // setter REPLACES the raw field with the new typed map
-                // (this.teamStarting11Subdivision = raw), so technically
-                // the put below replaces the entire entry for userTeamId.
-                // But the explicit clear() is a belt-and-suspenders
-                // against future refactors that switch to incremental
-                // put, and it makes the intent obvious to readers.
-                Map<String, LineupSlotDTO> existingTeamSlots = allSlots.get(userTeamId);
-                if (existingTeamSlots != null) {
-                    existingTeamSlots.clear();
-                }
-                if (slotMap.isEmpty()) {
-                    allSlots.remove(userTeamId);
-                } else {
-                    allSlots.put(userTeamId, slotMap);
-                }
-                career.setTeamStarting11SubdivisionSlots(allSlots);
+                // V25D99.20.3.1-BACK BUG-2 gap fix: my V25D99.20.3 fix
+                // operated on a NEW typed map returned by
+                // getTeamStarting11SubdivisionSlots(), then wrote it back
+                // via setTeamStarting11SubdivisionSlots(). The unit test
+                // passed (mocked same in-memory object). The runtime
+                // FAILED because between unit and runtime, the CareerSave
+                // is JSON-serialized to Redis and deserialized back.
+                // Jackson's Map<String, Object> field deserializes the
+                // inner values as raw LinkedHashMap (not LineupSlotDTO),
+                // so the runtime's typed getter wraps them but the legacy
+                // getter (which drove the runtime check) skips them
+                // (instanceof String fails on LinkedHashMap).
+                //
+                // To eliminate the gap, operate directly on the RAW
+                // field via the dedicated clear-and-put helper. This
+                // bypasses the typed/raw conversion round-trip and
+                // guarantees the raw field (and therefore the JSON
+                // serialization) ends up with exactly the slotMap we
+                // want, with no stale keys surviving the cycle.
+                career.replaceTeamStarting11SubdivisionRaw(userTeamId, slotMap);
 
                 // MVP1-lineup-cancha-1.6: persist formation code so that
                 // getCurrentLineup returns the actual formation the user
@@ -245,15 +245,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         slotMap.put(slot.subdivisionId(), slot);
                     }
                 }
-                Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
-                if (!slotMap.isEmpty()) {
-                    allSlots.put(userTeamId, slotMap);
-                } else {
-                    // Si HELPER-BASED no produjo nada (short-handed lineup),
-                    // limpiamos el entry existente para no dejar datos stale.
-                    allSlots.remove(userTeamId);
-                }
-                career.setTeamStarting11SubdivisionSlots(allSlots);
+                // V25D99.20.3.1-BACK BUG-2 gap: same root cause as autoSelectLineup.
+                // Use the dedicated clear-and-put helper on the raw field
+                // to bypass the typed/raw round-trip and guarantee the
+                // JSON serialization ends up with exactly the slotMap.
+                career.replaceTeamStarting11SubdivisionRaw(userTeamId, slotMap);
 
                 return careerSessionService.saveCareer(career)
                     .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings, slotMap));

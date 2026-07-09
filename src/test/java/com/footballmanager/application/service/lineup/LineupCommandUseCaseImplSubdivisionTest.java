@@ -991,4 +991,99 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertEquals(11, slotsFinal.size(),
             "V25D99.20.3-BACK BUG-2: cycle 4-4-2 -> 4-3-3 -> 4-4-2 must leave exactly 11 slots, no 4-3-3 stale entries");
     }
+
+    // ============================================================
+    // V25D99.20.3.1-BACK BUG-2 gap: integration test that simulates
+    // the JSON round-trip. The unit test above (using a fresh
+    // CareerSave object) PASSED, but the runtime FAILED because
+    // between autoSelectLineup and the next read, CareerSave is
+    // JSON-serialized to Redis via the application's ObjectMapper
+    // and deserialized back. Jackson's Map<String, Object> field
+    // deserializes the inner values as raw LinkedHashMap (not
+    // LineupSlotDTO), so the typed getter wraps them but the legacy
+    // getter (which drove the runtime check) skips them via
+    // `instanceof String` — the runtime saw slots=14 instead of 11.
+    //
+    // V25D99.20.3.1 fix: operate directly on the raw field via the
+    // dedicated replaceTeamStarting11SubdivisionRaw helper. This
+    // test pins BOTH the in-memory shape AND the post-roundtrip
+    // shape via Jackson, so future refactors that switch back to a
+    // typed-raw roundtrip can't reintroduce the gap.
+    // ============================================================
+
+    @Test
+    @DisplayName("V25D99.20.3.1-BACK BUG-2: JSON round-trip — cycle 4-4-2 -> 4-3-3 -> 4-4-2 leaves 11 slots, not 14")
+    void autoSelectLineup_clearsStaleSlots_afterJsonRoundTrip() throws Exception {
+        // V25D99.20.3.1: integrate with the application's ObjectMapper
+        // (which has jackson-datatype-jsr310 registered for java.time.Instant
+        // and friends) so the round-trip is faithful to runtime. Also
+        // configure FAIL_ON_UNKNOWN_PROPERTIES=false because CareerSave's
+        // nested entities (CareerSeasonManager) have transient fields
+        // like `totalDivisions` that aren't @JsonIgnoreProperties-annotated
+        // (CareerSave itself IS, but the propagation doesn't reach nested
+        // classes).
+        com.fasterxml.jackson.databind.ObjectMapper mapper =
+            new com.fasterxml.jackson.databind.ObjectMapper()
+                .findAndRegisterModules()
+                .configure(
+                    com.fasterxml.jackson.databind.DeserializationFeature
+                        .FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // 1) auto-select 4-4-2
+        ArgumentCaptor<CareerSave> cap1 = ArgumentCaptor.forClass(CareerSave.class);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID)))
+                .thenReturn(Mono.just(makeCareer(makeFullSquad442())));
+        when(careerSessionService.saveCareer(any()))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2").block();
+        verify(careerSessionService, atLeastOnce()).saveCareer(cap1.capture());
+        CareerSave after442 = cap1.getValue();
+        assertEquals(11,
+            after442.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
+            "V25D99.20.3.1: 4-4-2 must populate 11 slots");
+        // Round-trip: serialize + deserialize the CareerSave.
+        String json442 = mapper.writeValueAsString(after442);
+        CareerSave reloaded442 = mapper.readValue(json442, CareerSave.class);
+        assertEquals(11,
+            reloaded442.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
+            "V25D99.20.3.1: 4-4-2 must SURVIVE JSON round-trip with 11 slots");
+
+        // 2) auto-select 4-3-3 on the reloaded 4-4-2 career
+        reset(careerSessionService);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID)))
+                .thenReturn(Mono.just(reloaded442));
+        when(careerSessionService.saveCareer(any()))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3").block();
+        ArgumentCaptor<CareerSave> cap2 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService, atLeastOnce()).saveCareer(cap2.capture());
+        CareerSave after433 = cap2.getValue();
+        assertEquals(11,
+            after433.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
+            "V25D99.20.3.1: 4-3-3 must populate 11 slots");
+        String json433 = mapper.writeValueAsString(after433);
+        CareerSave reloaded433 = mapper.readValue(json433, CareerSave.class);
+        assertEquals(11,
+            reloaded433.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
+            "V25D99.20.3.1: 4-3-3 must SURVIVE JSON round-trip with 11 slots");
+
+        // 3) auto-select 4-4-2 again on the reloaded 4-3-3 career.
+        // The runtime gap: this final step used to leave 14 slots
+        // (3 stale from 4-3-3). The integration test (with JSON
+        // round-trip) pins the fix.
+        reset(careerSessionService);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID)))
+                .thenReturn(Mono.just(reloaded433));
+        when(careerSessionService.saveCareer(any()))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2").block();
+        ArgumentCaptor<CareerSave> cap3 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService, atLeastOnce()).saveCareer(cap3.capture());
+        CareerSave afterFinal = cap3.getValue();
+
+        Map<String, LineupSlotDTO> slotsFinal = afterFinal.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        assertNotNull(slotsFinal, "V25D99.20.3.1: final 4-4-2 must have slots");
+        assertEquals(11, slotsFinal.size(),
+            "V25D99.20.3.1 BUG-2: cycle 4-4-2 -> 4-3-3 -> 4-4-2 with JSON round-trip must leave exactly 11 slots, no 4-3-3 stale entries");
+    }
 }

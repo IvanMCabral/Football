@@ -267,4 +267,40 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
         }
         return players;
     }
+
+    // ============================================================
+    // V25D99.20.3.1-BACK BUG-3 pinning test: the formation-change
+    // endpoint must declare Content-Type: application/json;charset=UTF-8
+    // (defense-in-depth for mojibake). Pre-V25D99.20.3.1, the
+    // FormationChangeController class-level @RequestMapping had no
+    // `produces` attribute, so the Content-Type was the bare
+    // `application/json`. Combined with the global encoding config
+    // (charset=UTF-8, force=true), most clients decoded correctly, but
+    // a strict UTF-8-only consumer that respects the Content-Type
+    // charset (or a proxy that normalizes the header) could still
+    // surface Mojibake. The class-level `produces =
+    // "application/json;charset=UTF-8"` makes the charset explicit.
+    // ============================================================
+
+    @Test
+    @DisplayName("V25D99.20.3.1-BACK BUG-3: POST /match-engine/matches/{id}/formation returns Content-Type application/json;charset=UTF-8")
+    void changeFormation_responseDeclaresUtf8Charset() {
+        String userId = UUID.randomUUID().toString();
+        String matchId = UUID.randomUUID().toString();
+        String body = """
+            {"players":[{"playerId":"p1","position":"GK"}]}
+            """;
+
+        webTestClient.mutateWith(mockUser(userId))
+            .post().uri("/api/v1/match-engine/matches/{id}/formation", matchId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .exchange()
+            .expectStatus().is4xxClientError()
+            .expectHeader().value("Content-Type", ct -> {
+                org.junit.jupiter.api.Assertions.assertTrue(
+                    ct.toLowerCase().contains("charset=utf-8"),
+                    "V25D99.20.3.1-BACK BUG-3: Content-Type must include charset=UTF-8, got: " + ct);
+            });
+    }
 }

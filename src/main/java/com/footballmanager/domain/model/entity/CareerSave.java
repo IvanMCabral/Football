@@ -124,6 +124,38 @@ public class CareerSave {
         }
         this.teamStarting11Subdivision = raw;
     }
+
+    /**
+     * V25D99.20.3.1-BACK BUG-2 gap fix: clear-and-put on the raw field
+     * directly for a single teamId. This bypasses the
+     * typed-raw-conversion round-trip (which the unit test mocks but
+     * the runtime JSON serialization+deserialization does not).
+     *
+     * <p>Use this in {@code autoSelectLineup} so the persisted
+     * (serialized) shape exactly matches the new slotMap, with no
+     * risk of stale keys surviving a clear-and-rebuild on a
+     * separately-allocated typed map.
+     *
+     * @param teamId the user/team key (e.g. session team id).
+     * @param slots the new slot map. If null/empty, the entry is removed
+     *              entirely.
+     */
+    public void replaceTeamStarting11SubdivisionRaw(String teamId,
+                                                     Map<String, LineupSlotDTO> slots) {
+        if (teamStarting11Subdivision == null) {
+            teamStarting11Subdivision = new HashMap<>();
+        }
+        if (slots == null || slots.isEmpty()) {
+            teamStarting11Subdivision.remove(teamId);
+            return;
+        }
+        Map<String, Object> inner = teamStarting11Subdivision.computeIfAbsent(
+            teamId, k -> new HashMap<>());
+        inner.clear();
+        for (Map.Entry<String, LineupSlotDTO> e : slots.entrySet()) {
+            inner.put(e.getKey(), e.getValue());
+        }
+    }
     public void setTeamStarting11Formation(Map<String, String> formation) {
         this.teamStarting11Formation = (formation == null) ? new HashMap<>() : new HashMap<>(formation);
     }

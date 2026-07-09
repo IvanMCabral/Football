@@ -12,7 +12,7 @@ import java.util.UUID;
  * Controller for match control operations (pause, resume, stop).
  */
 @RestController
-@RequestMapping("/api/v1/match-engine/matches")
+@RequestMapping(value = "/api/v1/match-engine/matches", produces = "application/json;charset=UTF-8")
 @RequiredArgsConstructor
 public class MatchController {
 

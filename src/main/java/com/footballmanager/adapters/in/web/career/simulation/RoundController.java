@@ -82,7 +82,7 @@ public class RoundController {
      * Starts a new round with multiple matches.
      * Returns immediately while round starts asynchronously.
      */
-    @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
         // V24D15-CLEANUP (BUG 5 — RoundController E2E): auth check must run
         // FIRST so the 401 case beats body validation. Before this fix, an
