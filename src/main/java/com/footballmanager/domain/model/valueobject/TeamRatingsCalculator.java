@@ -82,45 +82,76 @@ public final class TeamRatingsCalculator {
     }
 
     /**
-     * Per-formation offensive base modifier (V24ShotXgCalculator
-     * .formationOffensiveModifier). 4-4-2 = 1.00 (baseline), 4-3-3 = 1.40
-     * (wing play), 5-3-2 = 0.55 (defensive shape with 2 strikers, low
-     * attacking width). Unknown formations default to 4-4-2 (1.00).
+     * Per-formation offensive base modifier for the squad preview.
+     *
+     * <p>V25D99.20.12-BACK: keep formations as strategic trade-offs, not
+     * strict upgrades. 4-4-2 is the neutral reference; attack-heavy shapes
+     * gain danger but must pay with lower defensive base, while defensive
+     * shapes gain protection but lose attacking threat. Unknown formations
+     * default to 4-4-2 (1.00).
+     *
+     * <p>The three base maps (ATT/MID/DEF) are a conserved 300-point budget:
+     * each formation distributes roughly 1.00 + 1.00 + 1.00 across the three
+     * lanes before player quality and manual positioning are applied. This
+     * makes the UI read like a real tactical choice instead of a hidden tier
+     * list where one formation is simply better by name.
      */
     private static final Map<String, Double> FORMATION_OFF_BASE = Map.ofEntries(
             Map.entry("4-4-2", 1.00),
-            Map.entry("4-3-3", 1.40),
-            Map.entry("4-2-3-1", 1.65),
-            Map.entry("3-4-3", 1.35),
-            Map.entry("3-5-2", 0.70),
-            Map.entry("5-3-2", 0.55),
-            Map.entry("4-1-4-1", 0.95),
-            Map.entry("3-5-2-CDM", 0.65),
-            Map.entry("5-4-1", 0.55),
-            Map.entry("3-4-1-2", 1.05),
-            Map.entry("4-2-2-2", 1.10),
-            Map.entry("4-1-2-3", 1.25)
+            Map.entry("4-3-3", 1.18),
+            Map.entry("4-2-3-1", 1.16),
+            Map.entry("3-4-3", 1.14),
+            Map.entry("3-5-2", 0.90),
+            Map.entry("5-3-2", 0.82),
+            Map.entry("4-1-4-1", 0.88),
+            Map.entry("3-5-2-CDM", 0.84),
+            Map.entry("5-4-1", 0.76),
+            Map.entry("3-4-1-2", 1.06),
+            Map.entry("4-2-2-2", 1.08),
+            Map.entry("4-1-2-3", 1.14)
     );
 
     /**
-     * Per-formation defensive base modifier (V24ShotXgCalculator
-     * .formationDefensiveModifier). 4-4-2 = 1.00 (baseline), 4-3-3 = 0.85
-     * (wingers don't track back), 5-3-2 = 1.25 (back-five = strongest
-     * protection). Unknown formations default to 4-4-2 (1.00).
+     * Per-formation midfield base modifier from the same conserved 300-point
+     * tactical budget as ATT/DEF. Player technique, role fit and coordinates
+     * still decide the final number; this only states the shape's structural
+     * emphasis.
+     */
+    private static final Map<String, Double> FORMATION_MID_BASE = Map.ofEntries(
+            Map.entry("4-4-2", 1.00),
+            Map.entry("4-3-3", 0.95),
+            Map.entry("4-2-3-1", 1.02),
+            Map.entry("3-4-3", 0.98),
+            Map.entry("3-5-2", 1.05),
+            Map.entry("5-3-2", 0.98),
+            Map.entry("4-1-4-1", 1.04),
+            Map.entry("3-5-2-CDM", 1.04),
+            Map.entry("5-4-1", 1.02),
+            Map.entry("3-4-1-2", 1.00),
+            Map.entry("4-2-2-2", 0.96),
+            Map.entry("4-1-2-3", 0.98)
+    );
+
+    /**
+     * Per-formation defensive base modifier for the squad preview.
+     *
+     * <p>The defensive values mirror the offensive trade-offs above. No named
+     * formation should be better than 4-4-2 in every dimension just because it
+     * is selected; player quality and manual shape can still make a tactic work.
      */
     private static final Map<String, Double> FORMATION_DEF_BASE = Map.ofEntries(
             Map.entry("4-4-2", 1.00),
-            Map.entry("4-3-3", 0.85),
-            Map.entry("4-2-3-1", 0.95),
-            Map.entry("3-4-3", 1.05),
-            Map.entry("3-5-2", 1.10),
-            Map.entry("5-3-2", 1.25),
+            Map.entry("4-3-3", 0.87),
+            Map.entry("4-2-3-1", 0.82),
+            Map.entry("3-4-3", 0.88),
+            Map.entry("3-5-2", 1.05),
+            Map.entry("5-3-2", 1.20),
             Map.entry("4-1-4-1", 1.10),
-            Map.entry("3-5-2-CDM", 1.18),
-            Map.entry("5-4-1", 1.30),
-            Map.entry("3-4-1-2", 1.08),
-            Map.entry("4-2-2-2", 1.00),
-            Map.entry("4-1-2-3", 1.00)
+            Map.entry("3-5-2-CDM", 1.12),
+            Map.entry("5-4-1", 1.22),
+            Map.entry("3-4-1-2", 0.94),
+            Map.entry("4-2-2-2", 0.96),
+            Map.entry("4-1-2-3", 0.88)
     );
 
     /**
@@ -194,8 +225,9 @@ public final class TeamRatingsCalculator {
         // is loaded yet (lineup.length == 0).
         if (attrs == null || attrs.isEmpty()) {
             double attBase = FORMATION_OFF_BASE.getOrDefault(canonicalFormation, 1.00);
+            double midBase = FORMATION_MID_BASE.getOrDefault(canonicalFormation, 1.00);
             double defBase = FORMATION_DEF_BASE.getOrDefault(canonicalFormation, 1.00);
-            return new TeamRatings(attBase * 100.0, 1.00 * 100.0, defBase * 100.0);
+            return new TeamRatings(attBase * 100.0, midBase * 100.0, defBase * 100.0);
         }
 
         // V25D99.16-BACK: each player carries optional slot coords
@@ -299,10 +331,7 @@ public final class TeamRatingsCalculator {
         FormationBaseBlend baseBlend = effectiveFormationBase(attrs, canonicalFormation);
         double attBase = baseBlend.attackBase();
         double defBase = baseBlend.defenseBase();
-        // Midfield has no engine precedent; treat it as 1.00 base (same
-        // shape as ATT but formation-agnostic, since the engine doesn't
-        // model "4-3-3 is more attacking-midfield than 4-4-2").
-        double midBase = 1.00;
+        double midBase = baseBlend.midfieldBase();
 
         double attRating = attBase * statsAmpAtt;
         double defRating = defBase * statsAmpDef;
@@ -374,7 +403,7 @@ public final class TeamRatingsCalculator {
         return 1.0 + (0.25 * forward);
     }
 
-    private record FormationBaseBlend(double attackBase, double defenseBase) {}
+    private record FormationBaseBlend(double attackBase, double midfieldBase, double defenseBase) {}
 
     /**
      * V25D99.20.11-BACK: progressive tactical-shape blending.
@@ -394,18 +423,19 @@ public final class TeamRatingsCalculator {
      */
     private static FormationBaseBlend effectiveFormationBase(List<PlayerAttrs> attrs, String selectedFormation) {
         double selectedAttack = FORMATION_OFF_BASE.getOrDefault(selectedFormation, 1.00);
+        double selectedMidfield = FORMATION_MID_BASE.getOrDefault(selectedFormation, 1.00);
         double selectedDefense = FORMATION_DEF_BASE.getOrDefault(selectedFormation, 1.00);
         if (attrs == null || attrs.isEmpty()) {
-            return new FormationBaseBlend(selectedAttack, selectedDefense);
+            return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
         boolean hasManualShape = attrs.stream().anyMatch(PlayerAttrs::customPosition);
         if (!hasManualShape) {
-            return new FormationBaseBlend(selectedAttack, selectedDefense);
+            return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
 
         SoftShape soft = softShapeFromCoords(attrs);
         if (soft.totalOutfield() < 8.0) {
-            return new FormationBaseBlend(selectedAttack, selectedDefense);
+            return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
 
         ShapeCandidate best = null;
@@ -428,12 +458,12 @@ public final class TeamRatingsCalculator {
         }
 
         if (best == null || best.formation().equals(selectedFormation)) {
-            return new FormationBaseBlend(selectedAttack, selectedDefense);
+            return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
         int[] selectedCounts = parseCoarseFormation(selectedFormation);
         int[] bestCounts = parseCoarseFormation(best.formation());
         if (sameCoarseShape(selectedCounts, bestCounts)) {
-            return new FormationBaseBlend(selectedAttack, selectedDefense);
+            return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
         second = secondDistinctShapeCandidate(best, soft, selectedFormation);
 
@@ -445,13 +475,15 @@ public final class TeamRatingsCalculator {
         double closeness = clamp01((0.55 - best.distance()) / 0.55);
         double blend = clarity * closeness;
         if (blend <= 0.05) {
-            return new FormationBaseBlend(selectedAttack, selectedDefense);
+            return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
 
         double targetAttack = FORMATION_OFF_BASE.getOrDefault(best.formation(), selectedAttack);
+        double targetMidfield = FORMATION_MID_BASE.getOrDefault(best.formation(), selectedMidfield);
         double targetDefense = FORMATION_DEF_BASE.getOrDefault(best.formation(), selectedDefense);
         return new FormationBaseBlend(
                 selectedAttack + (targetAttack - selectedAttack) * blend,
+                selectedMidfield + (targetMidfield - selectedMidfield) * blend,
                 selectedDefense + (targetDefense - selectedDefense) * blend);
     }
 

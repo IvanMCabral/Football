@@ -244,6 +244,42 @@ class TeamRatingsCalculatorWithinZoneTest {
     }
 
     @Test
+    @DisplayName("4-1-2-3 trades defense for attack instead of strictly dominating 4-4-2")
+    void attackingFormationDoesNotStrictlyDominateBalancedFormation() {
+        List<TeamRatingsCalculator.PlayerAttrs> neutralLineup = List.of(
+                gkAt("gk1"),
+                defAt("d1", "LB", 16.65, 83.0),
+                defAt("d2", "CB", 38.85, 83.0),
+                defAt("d3", "CB", 61.05, 83.0),
+                defAt("d4", "RB", 83.25, 83.0),
+                cmAt("m1", 16.65, 61.0),
+                cmAt("m2", 38.85, 61.0),
+                cmAt("m3", 61.05, 61.0),
+                cmAt("m4", 83.25, 61.0),
+                fwdAt("f1", 38.85, 17.0),
+                fwdAt("f2", 61.05, 17.0)
+        );
+
+        TeamRatingsCalculator.TeamRatings balanced =
+                TeamRatingsCalculator.compute(neutralLineup, "4-4-2");
+        TeamRatingsCalculator.TeamRatings attacking =
+                TeamRatingsCalculator.compute(neutralLineup, "4-1-2-3");
+
+        assertTrue(attacking.attackRating() > balanced.attackRating(),
+                "4-1-2-3 should be more dangerous than 4-4-2. "
+                        + "Got attacking=" + attacking.attackRating()
+                        + ", balanced=" + balanced.attackRating());
+        assertTrue(attacking.defenseRating() < balanced.defenseRating(),
+                "4-1-2-3 must pay a defensive cost; otherwise it becomes a strict upgrade. "
+                        + "Got attacking=" + attacking.defenseRating()
+                        + ", balanced=" + balanced.defenseRating());
+        assertTrue(attacking.midfieldRating() < balanced.midfieldRating(),
+                "The conserved formation budget should not give free midfield points to 4-1-2-3. "
+                        + "Got attacking=" + attacking.midfieldRating()
+                        + ", balanced=" + balanced.midfieldRating());
+    }
+
+    @Test
     @DisplayName("NaN coords reproduce pre-V25D99.16 behavior (zone-only math)")
     void nanCoords_legacyFallback() {
         // Two CBs at the same row slot (S22-2 LB-ish). The first uses
