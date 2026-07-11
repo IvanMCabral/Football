@@ -556,10 +556,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     // reviewer useful for comparing 4-4-2 vs 4-3-3 vs manual
                     // player drags, instead of only changing the score layer.
                     * possessorShape.attackVolumeMultiplier()
-                    * opponentShape.defensiveResistanceMultiplier();
+                    * opponentShape.defensiveResistanceMultiplier()
+                    * channelMismatchMultiplier(possessorShape, opponentShape);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
-                attemptShot(possessor, opponent, selector, formation, opponentFormation, teamRole, minute, random, timeline);
+                attemptShot(possessor, opponent, selector, formation, opponentFormation,
+                        possessorShape, opponentShape, teamRole, minute, random, timeline);
             }
 
             // Chance created event (broader than shot)
@@ -692,6 +694,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             V24PlayerSelector selector,
             String formation,
             String opponentFormation,
+            V24TacticalShapeProfile possessorShape,
+            V24TacticalShapeProfile opponentShape,
             String teamRole,
             int minute,
             Random random,
@@ -718,13 +722,13 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double rawShooterQuality = selector.shooterQuality(shooter);
         double shooterQuality = fatigueModel.applyFatigueToQuality(rawShooterQuality, shooter);
 
-        // V24D23-A: shot location is now formation-aware. Formation shifts the
-        // distribution (e.g. 4-3-3 has more PENALTY_AREA_WIDE shots via wingers,
-        // 3-5-2 has fewer wide shots via the back-three, 4-2-3-1 concentrates
-        // in the six-yard box via the single striker). This amplifies the
-        // formation-driven xG variation beyond the ~5% shooter-share shift that
-        // the V24PlayerSelector alone provides.
-        V24ShotLocation location = selectShotLocation(possessor.style(), formation, random);
+        // V25D99.20.5: shot location reads the real tactical shape, not only
+        // the formation label. A team overloaded through the centre gets more
+        // central/box shots; a team with useful width gets more wide shots; and
+        // opponent channel coverage can push attempts away from the protected
+        // lane. This is the first engine layer for "play through wings/centre".
+        V24ShotLocation location = selectShotLocation(
+                possessor.style(), formation, possessorShape, opponentShape, random);
 
         // Get assist provider via V24AssistModel
         var assistOpt = assistModel.selectAssistProvider(
@@ -907,8 +911,13 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * @param random    the per-shot RNG; one {@code nextDouble()} is consumed per call
      * @return the chosen shot location for this attempt
      */
-    private V24ShotLocation selectShotLocation(TeamStyle style, String formation, Random random) {
-        double[] weights = computeLocationWeights(style, formation);
+    private V24ShotLocation selectShotLocation(
+            TeamStyle style,
+            String formation,
+            V24TacticalShapeProfile possessorShape,
+            V24TacticalShapeProfile opponentShape,
+            Random random) {
+        double[] weights = computeLocationWeights(style, formation, possessorShape, opponentShape);
         double total = weights[0] + weights[1] + weights[2] + weights[3] + weights[4];
         // Guard against pathological totals (should never happen — every weight is positive)
         if (total <= 0.0) return V24ShotLocation.PENALTY_AREA_CENTER;
@@ -920,6 +929,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         }
         // Floating-point fallback for the boundary case (roll == total).
         return LOCATIONS[LOCATIONS.length - 1];
+    }
+
+    private V24ShotLocation selectShotLocation(TeamStyle style, String formation, Random random) {
+        return selectShotLocation(style, formation, neutralShapeProfile(), neutralShapeProfile(), random);
     }
 
     /**
@@ -939,7 +952,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * for a 4-4-2 squad — the formation modifiers above the baseline
      * are what make 4-3-3 vs 4-2-3-1 distinguishable.
      */
-    private double[] computeLocationWeights(TeamStyle style, String formation) {
+    private double[] computeLocationWeights(
+            TeamStyle style,
+            String formation,
+            V24TacticalShapeProfile possessorShape,
+            V24TacticalShapeProfile opponentShape) {
         // Baseline (BALANCED) — preserved from pre-V24D23-A for regression continuity.
         double[] w = { 0.25, 0.27, 0.20, 0.18, 0.10 };
 
@@ -977,7 +994,28 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // more PENALTY_AREA_CENTER.
             w[1] *= 1.20;  // PENALTY_AREA_CENTER +20%
         }
+        if (possessorShape != null && opponentShape != null) {
+            double centralAttack = possessorShape.attackCenter();
+            double wideAttack = (possessorShape.attackLeft() + possessorShape.attackRight()) / 2.0;
+            double centralDefense = opponentShape.defenseCenter();
+            double wideDefense = (opponentShape.defenseLeft() + opponentShape.defenseRight()) / 2.0;
+
+            double centralEdge = centralAttack - centralDefense;
+            double wideEdge = wideAttack - wideDefense;
+            double flankImbalance = Math.abs(possessorShape.attackLeft() - possessorShape.attackRight());
+
+            w[0] *= clamp(1.0 + centralEdge * 0.18, 0.86, 1.18);
+            w[1] *= clamp(1.0 + centralEdge * 0.22, 0.84, 1.22);
+            w[2] *= clamp(1.0 + wideEdge * 0.28, 0.78, 1.28);
+            w[3] *= clamp(1.0 + Math.max(0.0, wideDefense - wideAttack) * 0.14, 0.92, 1.16);
+            w[4] *= clamp(1.0 + Math.max(0.0, centralDefense - centralAttack) * 0.12, 0.94, 1.14);
+            w[1] *= clamp(1.0 - flankImbalance * 0.10, 0.88, 1.0);
+        }
         return w;
+    }
+
+    private double[] computeLocationWeights(TeamStyle style, String formation) {
+        return computeLocationWeights(style, formation, neutralShapeProfile(), neutralShapeProfile());
     }
 
     /**
@@ -1275,14 +1313,20 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     private record V24TacticalShapeProfile(
             double possessionMultiplier,
             double attackVolumeMultiplier,
-            double defensiveResistanceMultiplier
+            double defensiveResistanceMultiplier,
+            double attackLeft,
+            double attackCenter,
+            double attackRight,
+            double defenseLeft,
+            double defenseCenter,
+            double defenseRight
     ) {}
 
     private V24TacticalShapeProfile tacticalShapeProfile(
             V24TeamMatchState team,
             Map<String, LineupSlotDTO> slotsByPlayerId) {
         if (team == null || team.startingPlayers().isEmpty()) {
-            return new V24TacticalShapeProfile(1.0, 1.0, 1.0);
+            return neutralShapeProfile();
         }
 
         int gk = 0;
@@ -1300,6 +1344,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         int leftLane = 0;
         int centerLane = 0;
         int rightLane = 0;
+        double attackLeft = 0.0;
+        double attackCenter = 0.0;
+        double attackRight = 0.0;
+        double defenseLeft = 0.0;
+        double defenseCenter = 0.0;
+        double defenseRight = 0.0;
 
         for (V24PlayerMatchState p : team.startingPlayers()) {
             if (p == null || !p.onPitch() || p.injured() || p.redCard()) continue;
@@ -1328,6 +1378,19 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             if (x < 35.0) leftLane++;
             else if (x > 65.0) rightLane++;
             else centerLane++;
+
+            double attackWeight = clamp((100.0 - y) / 100.0, 0.0, 1.0);
+            double defenseWeight = clamp(y / 100.0, 0.0, 1.0);
+            if (x < 35.0) {
+                attackLeft += attackWeight;
+                defenseLeft += defenseWeight;
+            } else if (x > 65.0) {
+                attackRight += attackWeight;
+                defenseRight += defenseWeight;
+            } else {
+                attackCenter += attackWeight;
+                defenseCenter += defenseWeight;
+            }
 
             widthSum += widthFromCenter;
             widthCount++;
@@ -1372,7 +1435,38 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 - flankGapPenalty - centralGapPenalty;
         double resistance = clamp(1.0 - defensiveStrength, 0.76, 1.24);
 
-        return new V24TacticalShapeProfile(possession, attackVolume, resistance);
+        return new V24TacticalShapeProfile(
+                possession,
+                attackVolume,
+                resistance,
+                normalizeChannel(attackLeft),
+                normalizeChannel(attackCenter),
+                normalizeChannel(attackRight),
+                normalizeChannel(defenseLeft),
+                normalizeChannel(defenseCenter),
+                normalizeChannel(defenseRight));
+    }
+
+    private V24TacticalShapeProfile neutralShapeProfile() {
+        return new V24TacticalShapeProfile(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+    }
+
+    private double normalizeChannel(double raw) {
+        // Around 2.0 means roughly two useful outfield contributions in that
+        // lane. Clamp keeps extreme manual shapes meaningful without exploding.
+        return clamp(raw / 2.0, 0.35, 1.65);
+    }
+
+    private double channelMismatchMultiplier(V24TacticalShapeProfile attack, V24TacticalShapeProfile defense) {
+        if (attack == null || defense == null) return 1.0;
+        double leftEdge = attack.attackLeft() - defense.defenseLeft();
+        double centerEdge = attack.attackCenter() - defense.defenseCenter();
+        double rightEdge = attack.attackRight() - defense.defenseRight();
+        double bestEdge = Math.max(leftEdge, Math.max(centerEdge, rightEdge));
+        double worstEdge = Math.min(leftEdge, Math.min(centerEdge, rightEdge));
+        double advantage = Math.max(0.0, bestEdge) * 0.120;
+        double deadEnd = Math.max(0.0, -worstEdge) * 0.045;
+        return clamp(1.0 + advantage - deadEnd, 0.86, 1.20);
     }
 
     private double tacticalYPercent(V24PlayerMatchState player, Map<String, LineupSlotDTO> slotsByPlayerId) {
