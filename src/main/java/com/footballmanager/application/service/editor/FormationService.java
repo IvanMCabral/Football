@@ -215,9 +215,9 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
-                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 83.0, 7.0, "S22-3"),
-                pos(2, "CB", CELL_CENTER_COL1_MID,   88.0, 6.0, "S23-2"),
-                pos(3, "CB", CELL_CENTER_COL2_LEFT,  83.0, 7.0, "S24-1"),
+                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
+                pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
+                pos(3, "CB", CELL_CENTER_COL2_LEFT,  76.0, 7.0, "S24-1"),
                 // MID line (row 4-5) — 5-MID SYMMETRIC V25D94 (LWB + 3 CM + RWB)
                 pos(4, "LWB", WINGBACK_LEFT_X,  56.0, 9.0, "S15-1"),
                 pos(5, "CM",  CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
@@ -265,11 +265,11 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 5-CB SPANS FULL WIDTH V25D94
-                pos(1, "LWB", FIVE_BACK_WIDE_LEFT_X,  82.0, 8.0, "S22-1"),
-                pos(2, "CB",  FIVE_BACK_LEFT_CB_X,    83.0, 6.0, "S22-2"),
-                pos(3, "CB",  CELL_CENTER_COL1_MID,   86.0, 6.0, "S23-2"),
-                pos(4, "CB",  FIVE_BACK_RIGHT_CB_X,   83.0, 6.0, "S24-2"),
-                pos(5, "RWB", FIVE_BACK_WIDE_RIGHT_X, 82.0, 8.0, "S24-3"),
+                pos(1, "LWB", FIVE_BACK_WIDE_LEFT_X,  76.0, 8.0, "S22-1"),
+                pos(2, "CB",  FIVE_BACK_LEFT_CB_X,    78.0, 6.0, "S22-2"),
+                pos(3, "CB",  CELL_CENTER_COL1_MID,   80.0, 6.0, "S23-2"),
+                pos(4, "CB",  FIVE_BACK_RIGHT_CB_X,   78.0, 6.0, "S24-2"),
+                pos(5, "RWB", FIVE_BACK_WIDE_RIGHT_X, 76.0, 8.0, "S24-3"),
                 // MID line (row 5) — 3-MID SYMMETRIC V25D94
                 pos(6, "CM", CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
                 pos(7, "CM", CELL_CENTER_COL1_MID,   66.0, 7.0, "S17-2"),
@@ -314,9 +314,9 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
-                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 83.0, 7.0, "S22-3"),
-                pos(2, "CB", CELL_CENTER_COL1_MID,   88.0, 6.0, "S23-2"),
-                pos(3, "CB", CELL_CENTER_COL2_LEFT,  83.0, 7.0, "S24-1"),
+                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
+                pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
+                pos(3, "CB", CELL_CENTER_COL2_LEFT,  76.0, 7.0, "S24-1"),
                 // MID line (row 4-5) — LWB + 2 CM + RWB SYMMETRIC
                 pos(4, "LWB", WINGBACK_LEFT_X,  56.0, 9.0, "S15-1"),
                 pos(5, "CM",  CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
@@ -340,9 +340,9 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
-                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 83.0, 7.0, "S22-3"),
-                pos(2, "CB", CELL_CENTER_COL1_MID,   88.0, 6.0, "S23-2"),
-                pos(3, "CB", CELL_CENTER_COL2_LEFT,  83.0, 7.0, "S24-1"),
+                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
+                pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
+                pos(3, "CB", CELL_CENTER_COL2_LEFT,  76.0, 7.0, "S24-1"),
                 // CDM anchor (row 5) — center
                 pos(4, "CDM", CELL_CENTER_COL1_MID, 72.0, 8.0, "S17-2"),
                 // CM line (row 5) — 2 CM SYMMETRIC
@@ -366,11 +366,11 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 5-CB SPANS FULL WIDTH V25D94
-                pos(1, "LWB", FIVE_BACK_WIDE_LEFT_X,  82.0, 8.0, "S22-1"),
-                pos(2, "CB",  FIVE_BACK_LEFT_CB_X,    83.0, 6.0, "S22-2"),
-                pos(3, "CB",  CELL_CENTER_COL1_MID,   86.0, 6.0, "S23-2"),
-                pos(4, "CB",  FIVE_BACK_RIGHT_CB_X,   83.0, 6.0, "S24-2"),
-                pos(5, "RWB", FIVE_BACK_WIDE_RIGHT_X, 82.0, 8.0, "S24-3"),
+                pos(1, "LWB", FIVE_BACK_WIDE_LEFT_X,  76.0, 8.0, "S22-1"),
+                pos(2, "CB",  FIVE_BACK_LEFT_CB_X,    78.0, 6.0, "S22-2"),
+                pos(3, "CB",  CELL_CENTER_COL1_MID,   80.0, 6.0, "S23-2"),
+                pos(4, "CB",  FIVE_BACK_RIGHT_CB_X,   78.0, 6.0, "S24-2"),
+                pos(5, "RWB", FIVE_BACK_WIDE_RIGHT_X, 76.0, 8.0, "S24-3"),
                 // MID line (row 5) — 4-MID SYMMETRIC V25D94
                 pos(6, "LM", CELL_CENTER_COL0_MID,  61.0, 7.0, "S16-2"),
                 pos(7, "CM", CELL_CENTER_COL1_LEFT, 66.0, 7.0, "S17-1"),
@@ -390,9 +390,9 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
-                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 83.0, 7.0, "S22-3"),
-                pos(2, "CB", CELL_CENTER_COL1_MID,   88.0, 6.0, "S23-2"),
-                pos(3, "CB", CELL_CENTER_COL2_LEFT,  83.0, 7.0, "S24-1"),
+                pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
+                pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
+                pos(3, "CB", CELL_CENTER_COL2_LEFT,  76.0, 7.0, "S24-1"),
                 // MID line (row 4-5) — LWB + 2 CM + RWB
                 pos(4, "LWB", WINGBACK_LEFT_X,  56.0, 9.0, "S15-1"),
                 pos(5, "CM",  CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
