@@ -225,6 +225,7 @@ public record FormationEffectiveness(
             // coords (customXPercent / customYPercent) over the canonical
             // slot coords. Same override semantics as the perPlayer loop
             // above; the helper keeps both spots in lockstep.
+            boolean customPosition = isTacticalShapeOverride(slot, safeCoords);
             double[] coords = resolveSlotCoords(slot, safeCoords, natural);
             Double slotX = (coords != null && coords.length >= 1) ? coords[0] : null;
             Double slotY = (coords != null && coords.length >= 2) ? coords[1] : null;
@@ -237,7 +238,8 @@ public record FormationEffectiveness(
                     attr != null ? attr.technique() : null,
                     attr != null ? attr.mentality() : null,
                     slotX,
-                    slotY
+                    slotY,
+                    customPosition
             ));
         }
         return TeamRatingsCalculator.compute(calculatorAttrs, formationForRatings);
@@ -311,6 +313,35 @@ public record FormationEffectiveness(
             return canonical;
         }
         return null;
+    }
+
+    /**
+     * V25D99.20.12-BACK: distinguish fine manual positioning from a tactical
+     * shape change. Any numeric custom coord still feeds the geometry-aware
+     * rating math, but the formation-base blend only activates when the marker
+     * is clearly away from its canonical slot. This prevents one-pixel drags
+     * around CAM/CDM/variant templates from flipping the whole tactical identity.
+     */
+    private static boolean isTacticalShapeOverride(
+            LineupSlotDTO slot,
+            Map<String, double[]> safeCoords
+    ) {
+        if (slot == null
+                || slot.customXPercent() == null
+                || slot.customYPercent() == null
+                || Double.isNaN(slot.customXPercent())
+                || Double.isNaN(slot.customYPercent())) {
+            return false;
+        }
+
+        double[] canonical = safeCoords.get(slot.subdivisionId());
+        if (canonical == null || canonical.length < 2) {
+            return true;
+        }
+
+        double dx = Math.abs(slot.customXPercent() - canonical[0]);
+        double dy = Math.abs(slot.customYPercent() - canonical[1]);
+        return dy >= 14.0 || Math.hypot(dx, dy) >= 16.0;
     }
 
     private static boolean isGenericOutfieldPosition(String naturalPosition) {

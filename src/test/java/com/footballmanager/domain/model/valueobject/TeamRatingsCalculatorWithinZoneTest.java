@@ -45,7 +45,7 @@ class TeamRatingsCalculatorWithinZoneTest {
         // S17-3 (RCM, 61.05, 61.0)
         // S18-2 (RM,  83.25, 61.0)
         return new TeamRatingsCalculator.PlayerAttrs(
-                id, "CM", "MID", 70, 50, 75, 60, x, y);
+                id, "CM", "MID", 70, 50, 75, 60, x, y, true);
     }
 
     private static TeamRatingsCalculator.PlayerAttrs defAt(String id, String role,
@@ -56,19 +56,19 @@ class TeamRatingsCalculatorWithinZoneTest {
         // S23-3 (RCB,  61.05, 83.0)
         // S24-2 (RB,   83.25, 83.0)
         return new TeamRatingsCalculator.PlayerAttrs(
-                id, role, "DEF", 50, 75, 55, 75, x, y);
+                id, role, "DEF", 50, 75, 55, 75, x, y, true);
     }
 
     private static TeamRatingsCalculator.PlayerAttrs fwdAt(String id, double x, double y) {
         // ATT in 4-4-2: S05-1 / S05-3.
         return new TeamRatingsCalculator.PlayerAttrs(
-                id, "ST", "ATT", 80, 30, 65, 60, x, y);
+                id, "ST", "ATT", 80, 30, 65, 60, x, y, true);
     }
 
     private static TeamRatingsCalculator.PlayerAttrs gkAt(String id) {
         // GK slot is unique, no coords needed for the test.
         return new TeamRatingsCalculator.PlayerAttrs(
-                id, "GK", "GK", 25, 60, 65, 50, 50.0, 93.0);
+                id, "GK", "GK", 25, 60, 65, 50, 50.0, 93.0, false);
     }
 
     @Test

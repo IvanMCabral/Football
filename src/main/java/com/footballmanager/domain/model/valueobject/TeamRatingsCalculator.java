@@ -93,7 +93,13 @@ public final class TeamRatingsCalculator {
             Map.entry("4-2-3-1", 1.65),
             Map.entry("3-4-3", 1.35),
             Map.entry("3-5-2", 0.70),
-            Map.entry("5-3-2", 0.55)
+            Map.entry("5-3-2", 0.55),
+            Map.entry("4-1-4-1", 0.95),
+            Map.entry("3-5-2-CDM", 0.65),
+            Map.entry("5-4-1", 0.55),
+            Map.entry("3-4-1-2", 1.05),
+            Map.entry("4-2-2-2", 1.10),
+            Map.entry("4-1-2-3", 1.25)
     );
 
     /**
@@ -108,7 +114,13 @@ public final class TeamRatingsCalculator {
             Map.entry("4-2-3-1", 0.95),
             Map.entry("3-4-3", 1.05),
             Map.entry("3-5-2", 1.10),
-            Map.entry("5-3-2", 1.25)
+            Map.entry("5-3-2", 1.25),
+            Map.entry("4-1-4-1", 1.10),
+            Map.entry("3-5-2-CDM", 1.18),
+            Map.entry("5-4-1", 1.30),
+            Map.entry("3-4-1-2", 1.08),
+            Map.entry("4-2-2-2", 1.00),
+            Map.entry("4-1-2-3", 1.00)
     );
 
     /**
@@ -156,7 +168,8 @@ public final class TeamRatingsCalculator {
             Integer technique,
             Integer mentality,
             Double slotXPercent,
-            Double slotYPercent
+            Double slotYPercent,
+            boolean customPosition
     ) {}
 
     /**
@@ -385,6 +398,10 @@ public final class TeamRatingsCalculator {
         if (attrs == null || attrs.isEmpty()) {
             return new FormationBaseBlend(selectedAttack, selectedDefense);
         }
+        boolean hasManualShape = attrs.stream().anyMatch(PlayerAttrs::customPosition);
+        if (!hasManualShape) {
+            return new FormationBaseBlend(selectedAttack, selectedDefense);
+        }
 
         SoftShape soft = softShapeFromCoords(attrs);
         if (soft.totalOutfield() < 8.0) {
@@ -402,10 +419,10 @@ public final class TeamRatingsCalculator {
                     + Math.abs(soft.mid() - counts[1])
                     + Math.abs(soft.att() - counts[2]);
             ShapeCandidate sc = new ShapeCandidate(candidate, distance);
-            if (best == null || sc.distance() < best.distance()) {
+            if (best == null || isBetterShapeCandidate(sc, best, selectedFormation, soft)) {
                 second = best;
                 best = sc;
-            } else if (second == null || sc.distance() < second.distance()) {
+            } else if (second == null || isBetterShapeCandidate(sc, second, selectedFormation, soft)) {
                 second = sc;
             }
         }
@@ -413,6 +430,12 @@ public final class TeamRatingsCalculator {
         if (best == null || best.formation().equals(selectedFormation)) {
             return new FormationBaseBlend(selectedAttack, selectedDefense);
         }
+        int[] selectedCounts = parseCoarseFormation(selectedFormation);
+        int[] bestCounts = parseCoarseFormation(best.formation());
+        if (sameCoarseShape(selectedCounts, bestCounts)) {
+            return new FormationBaseBlend(selectedAttack, selectedDefense);
+        }
+        second = secondDistinctShapeCandidate(best, soft, selectedFormation);
 
         double separation = (second == null) ? 2.0 : Math.max(0.0, second.distance() - best.distance());
         double clarity = clamp01(separation / 2.0);
@@ -435,6 +458,60 @@ public final class TeamRatingsCalculator {
     private record SoftShape(double def, double mid, double att, double totalOutfield) {}
 
     private record ShapeCandidate(String formation, double distance) {}
+
+    private static boolean isBetterShapeCandidate(
+            ShapeCandidate candidate,
+            ShapeCandidate current,
+            String selectedFormation,
+            SoftShape soft
+    ) {
+        double diff = candidate.distance() - current.distance();
+        if (diff < -0.0001) {
+            return true;
+        }
+        if (diff > 0.0001) {
+            return false;
+        }
+
+        int[] selected = parseCoarseFormation(selectedFormation);
+        if (selected != null) {
+            double attDrift = soft.att() - selected[2];
+            double defDrift = soft.def() - selected[0];
+            if (attDrift > 0.35) {
+                return FORMATION_OFF_BASE.getOrDefault(candidate.formation(), 1.00)
+                        > FORMATION_OFF_BASE.getOrDefault(current.formation(), 1.00);
+            }
+            if (defDrift > 0.35) {
+                return FORMATION_DEF_BASE.getOrDefault(candidate.formation(), 1.00)
+                        > FORMATION_DEF_BASE.getOrDefault(current.formation(), 1.00);
+            }
+        }
+
+        return candidate.formation().compareTo(current.formation()) < 0;
+    }
+
+    private static ShapeCandidate secondDistinctShapeCandidate(
+            ShapeCandidate best,
+            SoftShape soft,
+            String selectedFormation
+    ) {
+        int[] bestCounts = parseCoarseFormation(best.formation());
+        ShapeCandidate second = null;
+        for (String candidate : FORMATION_OFF_BASE.keySet()) {
+            int[] counts = parseCoarseFormation(candidate);
+            if (counts == null || sameCoarseShape(counts, bestCounts)) {
+                continue;
+            }
+            double distance = Math.abs(soft.def() - counts[0])
+                    + Math.abs(soft.mid() - counts[1])
+                    + Math.abs(soft.att() - counts[2]);
+            ShapeCandidate sc = new ShapeCandidate(candidate, distance);
+            if (second == null || isBetterShapeCandidate(sc, second, selectedFormation, soft)) {
+                second = sc;
+            }
+        }
+        return second;
+    }
 
     private static SoftShape softShapeFromCoords(List<PlayerAttrs> attrs) {
         double def = 0.0;
@@ -490,6 +567,13 @@ public final class TeamRatingsCalculator {
         } catch (NumberFormatException ex) {
             return null;
         }
+    }
+
+    private static boolean sameCoarseShape(int[] left, int[] right) {
+        return left != null && right != null
+                && left[0] == right[0]
+                && left[1] == right[1]
+                && left[2] == right[2];
     }
 
     private static double clamp01(double value) {
