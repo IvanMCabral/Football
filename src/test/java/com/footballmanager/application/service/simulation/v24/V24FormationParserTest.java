@@ -187,8 +187,8 @@ class V24FormationParserTest {
         assertEquals(10, parser.parse("3-5-2-CDM").outfieldPlayers());
         assertEquals(10, parser.parse("3-4-1-2").outfieldPlayers());
         assertEquals(10, parser.parse("4-2-2-2").outfieldPlayers());
-        // V25D54-C15 P2: variante 4-3-3-1 también suma 10 outfield.
-        assertEquals(10, parser.parse("4-3-3-1").outfieldPlayers());
+        // V25D54-C15 P2: variante 4-1-2-3 también suma 10 outfield.
+        assertEquals(10, parser.parse("4-1-2-3").outfieldPlayers());
     }
 
     // ========== V25D54-C15 P1: parsing de formations nuevas ==========
@@ -238,13 +238,13 @@ class V24FormationParserTest {
         assertTrue(f.hasTwoStrikers());
     }
 
-    // ========== V25D54-C15 P2: variante 4-3-3-1 con pivote CDM ==========
+    // ========== V25D54-C15 P2: variante 4-1-2-3 con pivote CDM ==========
 
     @Test
-    void parses_4_3_3_1_with_pivot() {
-        // 4-3-3-1 = 4-3-3 con CDM pivot (decorativo). Engine treats as 4-3-3-like.
-        var f = parser.parse("4-3-3-1");
-        assertEquals("4-3-3-1", f.raw());
+    void parses_4_1_2_3_with_pivot() {
+        // 4-1-2-3 = 4-3-3 con CDM pivot (decorativo). Engine treats as 4-3-3-like.
+        var f = parser.parse("4-1-2-3");
+        assertEquals("4-1-2-3", f.raw());
         assertEquals(4, f.defenders());
         assertEquals(3, f.midfielders());
         assertEquals(0, f.attackingMidfielders());

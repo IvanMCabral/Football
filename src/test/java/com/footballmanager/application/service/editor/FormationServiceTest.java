@@ -19,9 +19,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * 3-4-3 que el engine ya entendía pero que el servicio no exponía.
  *
  * <p>V25D54-C15 (Sprint C15 — Formations reality): ahora 12 formaciones
- * (7 originales + 4 nuevas + 1 variante 4-3-3-1). P0 corrigió role labels
+ * (7 originales + 4 nuevas + 1 variante 4-1-2-3). P0 corrigió role labels
  * de 3-5-2/3-4-3 wide mids (LM→LWB, RM→RWB). P1 agregó 3-5-2-CDM, 5-4-1,
- * 3-4-1-2, 4-2-2-2. P2 agregó variante 4-3-3-1 con pivote CDM.
+ * 3-4-1-2, 4-2-2-2. P2 agregó variante 4-1-2-3 con pivote CDM.
  *
  * <p>Cubre el contrato: 12 formaciones con 11 posiciones cada una
  * (1 GK + outfieldPlayers), subdivisionIds únicos dentro de cada formación,
@@ -33,7 +33,7 @@ class FormationServiceTest {
     private final FormationService service = new FormationService();
 
     @Test
-    @DisplayName("getAllFormations retorna exactamente 12 formaciones (7 originales + 4 nuevas V25D54-C15 + 1 variante 4-3-3-1)")
+    @DisplayName("getAllFormations retorna exactamente 12 formaciones (7 originales + 4 nuevas V25D54-C15 + 1 variante 4-1-2-3)")
     void returnsExactly12Formations() {
         assertEquals(12, service.getAllFormations().size());
     }
@@ -48,7 +48,7 @@ class FormationServiceTest {
             // V25D54-C15 P1: 4 nuevas
             "3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2",
             // V25D54-C15 P2: 1 variante
-            "4-3-3-1");
+            "4-1-2-3");
         Set<String> actual = new HashSet<>();
         for (FormationDTO f : service.getAllFormations()) {
             actual.add(f.name());
@@ -158,8 +158,8 @@ class FormationServiceTest {
         assertNotNull(service.getFormationByName("5-4-1"));
         assertNotNull(service.getFormationByName("3-4-1-2"));
         assertNotNull(service.getFormationByName("4-2-2-2"));
-        // V25D54-C15 P2: la variante 4-3-3-1.
-        assertNotNull(service.getFormationByName("4-3-3-1"));
+        // V25D54-C15 P2: la variante 4-1-2-3.
+        assertNotNull(service.getFormationByName("4-1-2-3"));
     }
 
     @Test
@@ -287,14 +287,14 @@ class FormationServiceTest {
     @Test
     @DisplayName("V25D53-C14 / V25D94: el slot S23-2 es usado por las formations 3-CB y 5-CB (no 4-DEF)")
     void s23TwoIsUsedByThreeAndFiveBackFormations() {
-        // V25D94 F1: 4-DEF formations (4-4-2, 4-3-3, 4-2-3-1, 4-1-4-1, 4-2-2-2, 4-3-3-1)
+        // V25D94 F1: 4-DEF formations (4-4-2, 4-3-3, 4-2-3-1, 4-1-4-1, 4-2-2-2, 4-1-2-3)
         // usan symmetric cells S22-2, S23-1, S23-3, S24-2 (no S23-2 — eso seria la cell
         // central col 1, pero las 4-DEF usan col 1 LEFT + RIGHT).
         // Solo las formations 3-CB (S22-3, S23-2, S24-1) y 5-CB (S22-1, S22-2, S23-2,
         // S24-2, S24-3) usan S23-2 porque tienen CB en col 1 mid.
         String[] threeBackFormations = {"3-5-2", "3-4-3", "3-5-2-CDM", "3-4-1-2"};
         String[] fiveBackFormations = {"5-3-2", "5-4-1"};
-        String[] fourBackFormations = {"4-4-2", "4-3-3", "4-2-3-1", "4-1-4-1", "4-2-2-2", "4-3-3-1"};
+        String[] fourBackFormations = {"4-4-2", "4-3-3", "4-2-3-1", "4-1-4-1", "4-2-2-2", "4-1-2-3"};
 
         for (String formationName : threeBackFormations) {
             FormationDTO f = service.getFormationByName(formationName);
@@ -413,7 +413,7 @@ class FormationServiceTest {
         }
     }
 
-    // ========== V25D54-C15 P1 (4 formations nuevas) + P2 (variante 4-3-3-1) ==========
+    // ========== V25D54-C15 P1 (4 formations nuevas) + P2 (variante 4-1-2-3) ==========
 
     @Test
     @DisplayName("V25D54-C15 P1+P2 / V25D94: golden roles para las 5 formations nuevas")
@@ -427,8 +427,8 @@ class FormationServiceTest {
             "3-4-1-2", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "RWB", "CAM", "ST", "ST"),
             // P1.4: 4-2-2-2 — 4 DEF + 2 CDM + LM + RM + 2 ST
             "4-2-2-2", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CDM", "LM", "RM", "ST", "ST"),
-            // P2: 4-3-3-1 (variant con CDM pivot) — 4 DEF + CDM + 2 CM + LW + ST + RW
-            "4-3-3-1", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CM", "CM", "LW", "ST", "RW")
+            // P2: 4-1-2-3 (variant con CDM pivot) — 4 DEF + CDM + 2 CM + LW + ST + RW
+            "4-1-2-3", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CM", "CM", "LW", "ST", "RW")
         );
         for (var entry : expectedRoles.entrySet()) {
             String formationName = entry.getKey();
@@ -446,7 +446,7 @@ class FormationServiceTest {
     @Test
     @DisplayName("V25D54-C15 P1: cada formation nueva tiene 11 subdivisionIds únicos y coords en [0,100]")
     void newFormationsHaveUniqueSubdivisionIdsAndValidCoords() {
-        String[] newFormations = {"3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2", "4-3-3-1"};
+        String[] newFormations = {"3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2", "4-1-2-3"};
         for (String formationName : newFormations) {
             FormationDTO f = service.getFormationByName(formationName);
             assertNotNull(f, formationName + " no encontrada");
@@ -487,11 +487,11 @@ class FormationServiceTest {
     @Test
     @DisplayName("V25D54-C15 / V25D94: 3-CB y 5-CB formations nuevas usan S23-2 (4-DEF no)")
     void s23TwoIsUsedByNewFormations() {
-        // V25D94 F1: 4-DEF formations (4-2-2-2, 4-3-3-1) NO usan S23-2
+        // V25D94 F1: 4-DEF formations (4-2-2-2, 4-1-2-3) NO usan S23-2
         // (usan S23-1 + S23-3 en symmetric). Solo 3-CB y 5-CB nuevas usan S23-2.
         String[] threeBackNew = {"3-5-2-CDM", "3-4-1-2"};
         String[] fiveBackNew = {"5-4-1"};
-        String[] fourBackNew = {"4-2-2-2", "4-3-3-1"};
+        String[] fourBackNew = {"4-2-2-2", "4-1-2-3"};
 
         for (String formationName : threeBackNew) {
             FormationDTO f = service.getFormationByName(formationName);

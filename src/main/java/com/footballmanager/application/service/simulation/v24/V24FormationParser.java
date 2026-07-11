@@ -117,15 +117,15 @@ public final class V24FormationParser {
         }
     }
 
-    // "4-2-3-1", "3-4-1-2", "4-2-2-2", "4-3-3-1", "3-5-2-CDM" →
+    // "4-2-3-1", "3-4-1-2", "4-2-2-2", "4-1-2-3", "3-5-2-CDM" →
     // four parts: defenders, midfielders, attackingMidfielders, forwards
     //
     // <p>V25D54-C15: added explicit cases for 3-4-1-2 (Christmas tree),
-    // 4-2-2-2 (narrow diamond), 4-3-3-1 (4-3-3 con CDM pivot) y
-    // 3-5-2-CDM (3-5-2 con CDM explícito). Para "4-3-3-1" el "-1" final
-    // es decoración (el pivot CDM ya está fold-ado en los 3 mids); el
-    // engine trata 4-3-3-1 con la misma estructura que 4-3-3 (4 DEF + 3
-    // MID + 2 WING + 1 ST) porque el pivot no cambia el shape forward.
+    // 4-2-2-2 (narrow diamond), 4-1-2-3 (4-3-3 con CDM pivot) y
+    // 3-5-2-CDM (3-5-2 con CDM explícito). Para "4-1-2-3", los dos
+    // numeros centrales son la linea media (1 CDM + 2 CM) y el "3" final
+    // es el tridente (LW/ST/RW). El engine lo trata como 4-3-3-like:
+    // 4 DEF + 3 MID + 2 WING + 1 ST.
     //
     // <p>Special-case parsing: para nombres que contienen letras (como
     // "3-5-2-CDM") los Integer.parseInt fallan y tiran NumberFormatException
@@ -165,11 +165,11 @@ public final class V24FormationParser {
                 int totalMid = mid + am; // 2+2=4
                 return new V24Formation(formation, def, totalMid, 0, 0, fwd);
             }
-            // V25D54-C15 P2: 4-3-3-1 (4-3-3 con CDM pivot): 4 DEF + 3 MID + 2 WING + 1 ST
-            // El "-1" es decoración (CDM pivot, no additive). Engine treats it
-            // como 4-3-3-like structure since wings+ST son iguales.
-            if ("4-3-3-1".equals(formation)) {
-                return new V24Formation(formation, def, mid, 0, 2, fwd);
+            // V25D99.20.8-BACK: 4-1-2-3 is the professional label for the
+            // old 4-3-3-with-CDM-pivot variant. The final "3" is a front
+            // three (LW/ST/RW), not three central forwards.
+            if ("4-1-2-3".equals(formation)) {
+                return new V24Formation(formation, def, mid + am, 0, 2, 1);
             }
             // Generic 4-line formation: no separate wingers
             return new V24Formation(formation, def, mid, am, 0, fwd);

@@ -778,7 +778,7 @@ class V24DetailedMatchEngineFormationTest {
 
     // ============================================================================
     // V25D55 (Sprint C16) — Engine integration tests for the 5 new formations
-    // added in V25D54 (C15): 3-5-2-CDM, 5-4-1, 3-4-1-2, 4-2-2-2, 4-3-3-1.
+    // added in V25D54 (C15): 3-5-2-CDM, 5-4-1, 3-4-1-2, 4-2-2-2, 4-1-2-3.
     //
     // Each test simulates a full match with the new formation on both teams and
     // asserts: (a) the simulation completes without exception, (b) cumulative
@@ -819,10 +819,10 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     @Test
-    @DisplayName("V25D55 (C16) P1.5: 4-3-3-1 simulation runs without error and produces valid xG")
-    void simulation_4_3_3_1_runsWithoutError() {
-        V24DetailedMatchResult result = runMatch("4-3-3-1", "4-4-2", 42L);
-        assertValidMatchResult(result, "4-3-3-1");
+    @DisplayName("V25D55 (C16) P1.5: 4-1-2-3 simulation runs without error and produces valid xG")
+    void simulation_4_1_2_3_runsWithoutError() {
+        V24DetailedMatchResult result = runMatch("4-1-2-3", "4-4-2", 42L);
+        assertValidMatchResult(result, "4-1-2-3");
     }
 
     /**

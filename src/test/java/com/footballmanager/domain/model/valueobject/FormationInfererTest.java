@@ -198,10 +198,10 @@ class FormationInfererTest {
     }
 
     @Test
-    @DisplayName("infer(slots, persisted): 4-3-3-1 persisted wins over slots")
-    void infer_persisted4_3_3_1() {
-        assertEquals("4-3-3-1",
-                FormationInferer.infer(lineupWith(4, 3, 3), "4-3-3-1"));
+    @DisplayName("infer(slots, persisted): 4-1-2-3 persisted wins over slots")
+    void infer_persisted4_1_2_3() {
+        assertEquals("4-1-2-3",
+                FormationInferer.infer(lineupWith(4, 3, 3), "4-1-2-3"));
     }
 
     @Test

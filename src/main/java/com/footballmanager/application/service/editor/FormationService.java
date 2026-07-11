@@ -431,10 +431,10 @@ public class FormationService {
             )
         ));
 
-        // 4-3-3-1: 4 DEF + 1 CDM + 2 CM + 3 ATT = 10 outfield + 1 GK
+        // 4-1-2-3: 4 DEF + 1 CDM + 2 CM + 3 ATT = 10 outfield + 1 GK
         // V25D94: 4-DEF + 3-MID (CDM/CM/CM) symmetric + 3-FW.
         formations.add(new FormationDTO(
-            "4-3-3-1",
+            "4-1-2-3",
             "4 defensores, 1 CDM + 2 CM, 2 wingers + 1 delantero",
             4, 3, 3, 10,
             List.of(
