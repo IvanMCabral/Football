@@ -1,12 +1,15 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.valueobject.FormationInferer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -64,6 +67,15 @@ public class V24TeamMatchState {
             List<SessionPlayer> starting,
             List<SessionPlayer> bench,
             TeamStyle style) {
+        return create(team, starting, bench, style, Collections.emptyMap());
+    }
+
+    public static V24TeamMatchState create(
+            SessionTeam team,
+            List<SessionPlayer> starting,
+            List<SessionPlayer> bench,
+            TeamStyle style,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
         Objects.requireNonNull(team, "team must not be null");
         Objects.requireNonNull(starting, "starting list must not be null");
         Objects.requireNonNull(bench, "bench list must not be null");
@@ -78,7 +90,9 @@ public class V24TeamMatchState {
         String tid = team.getSessionTeamId();
         List<V24PlayerMatchState> startState = new ArrayList<>();
         for (SessionPlayer p : starting) {
-            startState.add(V24PlayerMatchState.fromSessionPlayer(p, tid));
+            V24PlayerMatchState playerState = V24PlayerMatchState.fromSessionPlayer(p, tid);
+            applyPersistedTacticalSlot(playerState, slotsByPlayerId);
+            startState.add(playerState);
         }
 
         List<V24PlayerMatchState> benchState = new ArrayList<>();
@@ -97,6 +111,33 @@ public class V24TeamMatchState {
                 benchState,
                 0, 0.0, 0, 0, 0
         );
+    }
+
+    private static void applyPersistedTacticalSlot(
+            V24PlayerMatchState playerState,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        if (playerState == null || slotsByPlayerId == null || slotsByPlayerId.isEmpty()) return;
+        LineupSlotDTO slot = slotsByPlayerId.get(playerState.sessionPlayerId());
+        if (slot == null) return;
+        String tacticalPosition = tacticalPositionFor(slot, playerState.naturalPosition());
+        if (tacticalPosition != null && !tacticalPosition.isBlank()) {
+            playerState.setPosition(tacticalPosition);
+        }
+    }
+
+    private static String tacticalPositionFor(LineupSlotDTO slot, String naturalPosition) {
+        if (slot == null) return null;
+        if ("GK-1".equals(slot.subdivisionId()) || "GK".equalsIgnoreCase(naturalPosition)) {
+            return "GK";
+        }
+        Double customY = slot.customYPercent();
+        if (customY != null && Double.isFinite(customY)) {
+            double y = Math.max(0.0, Math.min(100.0, customY));
+            if (y <= 22.2222) return "ATT";
+            if (y <= 66.6667) return "MID";
+            return "DEF";
+        }
+        return FormationInferer.categoryFor(slot.subdivisionId());
     }
 
     public String teamId() { return teamId; }

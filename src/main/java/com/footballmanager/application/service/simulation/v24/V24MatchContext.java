@@ -2,6 +2,7 @@ package com.footballmanager.application.service.simulation.v24;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -9,7 +10,9 @@ import com.footballmanager.domain.model.entity.SessionTeam;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -74,6 +77,8 @@ public final class V24MatchContext {
     private final String awayFormation;
     private final TeamStyle homeStyle;
     private final TeamStyle awayStyle;
+    private final Map<String, LineupSlotDTO> homeSlotsByPlayerId;
+    private final Map<String, LineupSlotDTO> awaySlotsByPlayerId;
     /**
      * LIVE-MATCH-F2-LIVE F2.5: scheduled (deferred) manual substitutions.
      * Internal storage is mutable for the constructor to build the sorted
@@ -102,6 +107,37 @@ public final class V24MatchContext {
             @JsonProperty("homeStyle") TeamStyle homeStyle,
             @JsonProperty("awayStyle") TeamStyle awayStyle,
             @JsonProperty("manualSubstitutions") List<ScheduledSub> manualSubstitutions) {
+        this(matchId, homeTeamId, awayTeamId, homeTeam, awayTeam,
+                homeStartingPlayers, awayStartingPlayers, homeBenchPlayers, awayBenchPlayers,
+                homeFormation, awayFormation, homeStyle, awayStyle,
+                manualSubstitutions, Collections.emptyMap(), Collections.emptyMap());
+    }
+
+    /**
+     * V25D99.20.4: primary constructor with persisted lineup slots.
+     *
+     * <p>The slot maps are keyed by {@code sessionPlayerId}. They let the
+     * match engine rebuild its mutable player state with the manager's exact
+     * tactical slot/free-positioning decision without mutating the
+     * {@link SessionPlayer} objects stored in the career save.
+     */
+    public V24MatchContext(
+            String matchId,
+            String homeTeamId,
+            String awayTeamId,
+            SessionTeam homeTeam,
+            SessionTeam awayTeam,
+            List<SessionPlayer> homeStartingPlayers,
+            List<SessionPlayer> awayStartingPlayers,
+            List<SessionPlayer> homeBenchPlayers,
+            List<SessionPlayer> awayBenchPlayers,
+            String homeFormation,
+            String awayFormation,
+            TeamStyle homeStyle,
+            TeamStyle awayStyle,
+            List<ScheduledSub> manualSubstitutions,
+            Map<String, LineupSlotDTO> homeSlotsByPlayerId,
+            Map<String, LineupSlotDTO> awaySlotsByPlayerId) {
         if (matchId == null || matchId.isBlank()) {
             throw new IllegalArgumentException("matchId must not be blank");
         }
@@ -119,6 +155,8 @@ public final class V24MatchContext {
         this.homeStyle = (homeStyle != null) ? homeStyle : TeamStyle.BALANCED;
         this.awayStyle = (awayStyle != null) ? awayStyle : TeamStyle.BALANCED;
         this.manualSubstitutions = defensiveCopyAndSort(manualSubstitutions);
+        this.homeSlotsByPlayerId = defensiveCopyMap(homeSlotsByPlayerId);
+        this.awaySlotsByPlayerId = defensiveCopyMap(awaySlotsByPlayerId);
 
         validate();
     }
@@ -175,6 +213,18 @@ public final class V24MatchContext {
         return Collections.unmodifiableList(new java.util.ArrayList<>(list));
     }
 
+    private static Map<String, LineupSlotDTO> defensiveCopyMap(Map<String, LineupSlotDTO> map) {
+        if (map == null || map.isEmpty()) return Collections.emptyMap();
+        Map<String, LineupSlotDTO> copy = new LinkedHashMap<>();
+        for (Map.Entry<String, LineupSlotDTO> entry : map.entrySet()) {
+            if (entry == null || entry.getKey() == null || entry.getKey().isBlank() || entry.getValue() == null) {
+                continue;
+            }
+            copy.put(entry.getKey(), entry.getValue());
+        }
+        return Collections.unmodifiableMap(copy);
+    }
+
     /**
      * LIVE-MATCH-F2-LIVE F2.5: defensively copy the manualSubstitutions
      * list and sort it by the deterministic order. Returns an empty
@@ -210,6 +260,8 @@ public final class V24MatchContext {
     @JsonProperty("awayFormation") public String awayFormation() { return awayFormation; }
     @JsonProperty("homeStyle") public TeamStyle homeStyle() { return homeStyle; }
     @JsonProperty("awayStyle") public TeamStyle awayStyle() { return awayStyle; }
+    @JsonProperty("homeSlotsByPlayerId") public Map<String, LineupSlotDTO> homeSlotsByPlayerId() { return homeSlotsByPlayerId; }
+    @JsonProperty("awaySlotsByPlayerId") public Map<String, LineupSlotDTO> awaySlotsByPlayerId() { return awaySlotsByPlayerId; }
 
     /**
      * LIVE-MATCH-F2-LIVE F2.5: read-only view of the deferred manual
@@ -262,7 +314,8 @@ public final class V24MatchContext {
                     homeBenchPlayers, awayBenchPlayers,
                     homeFormation, awayFormation,
                     newStyle, awayStyle,
-                    manualSubstitutions);
+                    manualSubstitutions,
+                    homeSlotsByPlayerId, awaySlotsByPlayerId);
         }
         if (awayTeamId.equals(teamId)) {
             return new V24MatchContext(
@@ -272,7 +325,8 @@ public final class V24MatchContext {
                     homeBenchPlayers, awayBenchPlayers,
                     homeFormation, awayFormation,
                     homeStyle, newStyle,
-                    manualSubstitutions);
+                    manualSubstitutions,
+                    homeSlotsByPlayerId, awaySlotsByPlayerId);
         }
         throw new IllegalArgumentException(
                 "teamId '" + teamId + "' does not match home ('"
@@ -312,7 +366,8 @@ public final class V24MatchContext {
                     homeBenchPlayers, awayBenchPlayers,
                     newFormation, awayFormation,
                     homeStyle, awayStyle,
-                    manualSubstitutions);
+                    manualSubstitutions,
+                    homeSlotsByPlayerId, awaySlotsByPlayerId);
         }
         if (awayTeamId.equals(teamId)) {
             return new V24MatchContext(
@@ -322,7 +377,8 @@ public final class V24MatchContext {
                     homeBenchPlayers, awayBenchPlayers,
                     homeFormation, newFormation,
                     homeStyle, awayStyle,
-                    manualSubstitutions);
+                    manualSubstitutions,
+                    homeSlotsByPlayerId, awaySlotsByPlayerId);
         }
         throw new IllegalArgumentException(
                 "teamId '" + teamId + "' does not match home ('"
@@ -475,6 +531,7 @@ public final class V24MatchContext {
                 homeBenchPlayers, awayBenchPlayers,
                 homeFormation, awayFormation,
                 homeStyle, awayStyle,
-                nextManualSubs);
+                nextManualSubs,
+                homeSlotsByPlayerId, awaySlotsByPlayerId);
     }
 }

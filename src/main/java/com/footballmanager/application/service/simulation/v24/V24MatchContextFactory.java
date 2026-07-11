@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -8,6 +9,7 @@ import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +130,9 @@ public final class V24MatchContextFactory {
                 ? persistedFormations.get(awayTeamId)
                 : awayTeam.getFormation();
 
+        Map<String, LineupSlotDTO> homeSlotsByPlayerId = resolveSlotsByPlayerId(career, homeTeamId);
+        Map<String, LineupSlotDTO> awaySlotsByPlayerId = resolveSlotsByPlayerId(career, awayTeamId);
+
         return new V24MatchContext(
                 matchId,
                 homeTeamId,
@@ -141,7 +146,10 @@ public final class V24MatchContextFactory {
                 homeFormation,
                 awayFormation,
                 homeStyle,
-                awayStyle);
+                awayStyle,
+                List.of(),
+                homeSlotsByPlayerId,
+                awaySlotsByPlayerId);
     }
 
     /**
@@ -356,5 +364,25 @@ public final class V24MatchContextFactory {
         return squad.stream()
                 .filter(p -> !starterIds.contains(p.getSessionPlayerId()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * V25D99.20.4: carries the manager's persisted slot/free-positioning
+     * decisions into the V24 match context, keyed by playerId for O(1) lookup
+     * when building mutable {@link V24PlayerMatchState} copies.
+     */
+    private Map<String, LineupSlotDTO> resolveSlotsByPlayerId(CareerSave career, String teamId) {
+        if (career == null || teamId == null || teamId.isBlank()) return Map.of();
+        Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
+        if (allSlots == null || allSlots.isEmpty()) return Map.of();
+        Map<String, LineupSlotDTO> teamSlots = allSlots.get(teamId);
+        if (teamSlots == null || teamSlots.isEmpty()) return Map.of();
+
+        Map<String, LineupSlotDTO> byPlayerId = new LinkedHashMap<>();
+        for (LineupSlotDTO slot : teamSlots.values()) {
+            if (slot == null || slot.playerId() == null || slot.playerId().isBlank()) continue;
+            byPlayerId.put(slot.playerId(), slot);
+        }
+        return byPlayerId;
     }
 }

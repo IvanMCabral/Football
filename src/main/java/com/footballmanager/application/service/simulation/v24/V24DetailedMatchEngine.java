@@ -286,11 +286,13 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         V24TeamMatchState homeState = V24TeamMatchState.create(
                 context.homeTeam(), context.homeStartingPlayers(),
-                context.homeBenchPlayers(), context.homeStyle());
+                context.homeBenchPlayers(), context.homeStyle(),
+                context.homeSlotsByPlayerId());
 
         V24TeamMatchState awayState = V24TeamMatchState.create(
                 context.awayTeam(), context.awayStartingPlayers(),
-                context.awayBenchPlayers(), context.awayStyle());
+                context.awayBenchPlayers(), context.awayStyle(),
+                context.awaySlotsByPlayerId());
 
         V24MatchClock clock = new V24MatchClock(90);
         V24MatchTimeline timeline = new V24MatchTimeline();
