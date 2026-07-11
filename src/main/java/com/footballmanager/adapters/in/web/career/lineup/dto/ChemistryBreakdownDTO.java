@@ -50,8 +50,16 @@ import java.util.Map;
 public record ChemistryBreakdownDTO(
     Map<String, List<SkillCoverageDTO>> positionGroups,
     Map<String, Integer> maxSkillByType,
-    int coveragePercentage
+    int coveragePercentage,
+    TacticalChemistryDTO tacticalChemistry
 ) {
+    public ChemistryBreakdownDTO(
+            Map<String, List<SkillCoverageDTO>> positionGroups,
+            Map<String, Integer> maxSkillByType,
+            int coveragePercentage
+    ) {
+        this(positionGroups, maxSkillByType, coveragePercentage, null);
+    }
 
     /**
      * One skill's contribution to a position group.
@@ -150,9 +158,20 @@ public record ChemistryBreakdownDTO(
     public static ChemistryBreakdownDTO from(ChemistryDetail detail,
                                              List<LineupSlotDTO> slots,
                                              Map<String, String> naturalByPlayer) {
+        return from(detail, slots, naturalByPlayer, null);
+    }
+
+    public static ChemistryBreakdownDTO from(ChemistryDetail detail,
+                                             List<LineupSlotDTO> slots,
+                                             Map<String, String> naturalByPlayer,
+                                             TacticalChemistryDTO tacticalChemistry) {
         ChemistryBreakdownDTO base = from(detail);
         if (slots == null || slots.isEmpty()) {
-            return base;
+            return new ChemistryBreakdownDTO(
+                    base.positionGroups(),
+                    base.maxSkillByType(),
+                    base.coveragePercentage(),
+                    tacticalChemistry);
         }
 
         Map<String, List<SkillCoverageDTO>> groups = new LinkedHashMap<>(base.positionGroups());
@@ -189,7 +208,11 @@ public record ChemistryBreakdownDTO(
                 groups.put(g.name(), synthesized);
             }
         }
-        return new ChemistryBreakdownDTO(groups, base.maxSkillByType(), base.coveragePercentage());
+        return new ChemistryBreakdownDTO(
+                groups,
+                base.maxSkillByType(),
+                base.coveragePercentage(),
+                tacticalChemistry);
     }
 
     /**

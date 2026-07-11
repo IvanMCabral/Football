@@ -22,8 +22,14 @@ import java.util.List;
  * role-match), se agrega.
  */
 public record PreviewChemistryRequest(
-    List<String> playerIds
+    List<String> playerIds,
+    String formation,
+    List<LineupSlotDTO> slots
 ) {
+
+    public PreviewChemistryRequest(List<String> playerIds) {
+        this(playerIds, null, null);
+    }
 
     public PreviewChemistryRequest {
         if (playerIds == null) {

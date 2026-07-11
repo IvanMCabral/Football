@@ -9,6 +9,8 @@ import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
+import com.footballmanager.domain.model.valueobject.TacticalChemistry;
+import com.footballmanager.domain.model.valueobject.TacticalChemistryCalculator;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.model.valueobject.TeamRatingsCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
@@ -176,12 +178,16 @@ public class LineupController {
 
                 List<SessionPlayer> lineup = new ArrayList<>(11);
                 List<String> missing = new ArrayList<>();
+                Map<String, String> naturalByPlayer = new HashMap<>();
                 for (String id : request.playerIds()) {
                     SessionPlayer p = allPlayers.get(id);
                     if (p == null) {
                         missing.add(id);
                     } else {
                         lineup.add(p);
+                        if (p.getPosition() != null) {
+                            naturalByPlayer.put(id, p.getPosition());
+                        }
                     }
                 }
 
@@ -196,7 +202,24 @@ public class LineupController {
                 // Compute ChemistryDetail (V25D41/C6 — same TeamChemistryCalculator).
                 // lineup.size() == 11 garantizado (11 ids válidos, request validó size 11).
                 ChemistryDetail detail = TeamChemistryCalculator.calculate(lineup);
-                return Mono.just(ResponseEntity.ok((Object) detail));
+                if (request.slots() == null || request.slots().isEmpty()) {
+                    return Mono.just(ResponseEntity.ok((Object) detail));
+                }
+                TacticalChemistry tacticalChemistry = null;
+                Map<String, double[]> coordsBySubdivision =
+                        formationService.getCoordsByFormation(request.formation());
+                tacticalChemistry = TacticalChemistryCalculator.calculate(
+                        request.slots(),
+                        naturalByPlayer,
+                        coordsBySubdivision);
+                ChemistryBreakdownDTO breakdown = ChemistryBreakdownDTO.from(
+                        detail,
+                        request.slots(),
+                        naturalByPlayer,
+                        TacticalChemistryDTO.from(tacticalChemistry));
+                return Mono.just(ResponseEntity.ok((Object) PreviewChemistryResponseDTO.from(
+                        detail,
+                        breakdown)));
             })
             .onErrorResume(IllegalArgumentException.class, ex ->
                 Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))))

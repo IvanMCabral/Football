@@ -6,6 +6,7 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.TacticalChemistryDTO;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
@@ -14,6 +15,8 @@ import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
 import com.footballmanager.domain.model.valueobject.FormationInferer;
+import com.footballmanager.domain.model.valueobject.TacticalChemistry;
+import com.footballmanager.domain.model.valueobject.TacticalChemistryCalculator;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import lombok.RequiredArgsConstructor;
@@ -157,6 +160,10 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                 naturalByPlayer.put(p.getSessionPlayerId(), p.getPosition());
             }
         }
+        TacticalChemistry tacticalChemistry = TacticalChemistryCalculator.calculate(
+                slots,
+                naturalByPlayer,
+                coordsBySubdivision);
         // V25D99.15-BACK: per-player attribute DTOs for the engine
         // rating computation. Without them, ratings default to the
         // formation baseline (4-4-2 = 100/100/100).
@@ -204,7 +211,11 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                 // + coveragePercentage 0 rendered as the "0% coverage" UX
                 // gap. The single-arg `from(detail)` remains available for
                 // /preview-chemistry callers that have no slot context.
-                ChemistryBreakdownDTO.from(chemistryDetail, slots, naturalByPlayer),
+                ChemistryBreakdownDTO.from(
+                        chemistryDetail,
+                        slots,
+                        naturalByPlayer,
+                        TacticalChemistryDTO.from(tacticalChemistry)),
                 FormationEffectivenessDTO.from(formationEffectiveness));
     }
 
