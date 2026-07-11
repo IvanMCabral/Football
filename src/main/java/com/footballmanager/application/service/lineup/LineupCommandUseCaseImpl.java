@@ -285,6 +285,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
     }
 
     private record AutoSelectResult(List<SessionPlayer> lineup, List<LineupWarningDTO> warnings) {}
+    private record OutfieldRoleNeeds(int defenders, int midfielders, int attackers) {}
 
     private AutoSelectResult performAutoSelect(CareerSave career, String teamId, Formation formation) {
         List<String> squadIds = career.getTeamManager().getTeamSquads().get(teamId);
@@ -341,16 +342,21 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
         // 2. DEF — best DEF-capable players first; any remaining DEF slots
         // are filled with the best-OVR remaining players (off-position).
+        // V25D99.20.7-BACK: derive needs from the concrete visual slots.
+        // This keeps LWB/RWB defensive and LW/RW attacking instead of relying
+        // on coarse enum counts that collapse wingback/winger variants.
+        OutfieldRoleNeeds roleNeeds = getOutfieldRoleNeeds(formation);
+
         fillRow(availablePlayers, lineup, alreadyTaken, warnings,
-            formation.getDefenders(), "DEF", lineupHelper::isDefender);
+            roleNeeds.defenders(), "DEF", lineupHelper::isDefender);
 
         // 3. MID — same off-position fallback pattern.
         fillRow(availablePlayers, lineup, alreadyTaken, warnings,
-            formation.getMidfielders(), "MID", lineupHelper::isMidfielder);
+            roleNeeds.midfielders(), "MID", lineupHelper::isMidfielder);
 
         // 4. ATT — same off-position fallback pattern.
         fillRow(availablePlayers, lineup, alreadyTaken, warnings,
-            formation.getAttackers(), "ATT", lineupHelper::isAttacker);
+            roleNeeds.attackers(), "ATT", lineupHelper::isAttacker);
 
         // V25D59-C19 P0: validate the lineup reached exactly 11 slots before
         // persisting. Defensive — the algorithm above should always reach 11
@@ -364,6 +370,60 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         }
 
         return new AutoSelectResult(lineup, warnings);
+    }
+
+    private OutfieldRoleNeeds getOutfieldRoleNeeds(Formation formation) {
+        OutfieldRoleNeeds fallback = new OutfieldRoleNeeds(
+                formation.getDefenders(),
+                formation.getMidfielders(),
+                formation.getAttackers());
+        if (formationService == null || formation == null) {
+            return fallback;
+        }
+        FormationDTO formationDto = formationService.getFormationByName(formation.getCode());
+        if (formationDto == null || formationDto.positions() == null) {
+            return fallback;
+        }
+
+        int defenders = 0;
+        int midfielders = 0;
+        int attackers = 0;
+        for (FormationPositionDTO pos : formationDto.positions()) {
+            String role = pos.role();
+            if (isDefensiveSlotRole(role)) {
+                defenders++;
+            } else if (isMidfieldSlotRole(role)) {
+                midfielders++;
+            } else if (isAttackingSlotRole(role)) {
+                attackers++;
+            }
+        }
+
+        if (defenders + midfielders + attackers != LineupRules.TARGET_LINEUP_PLAYERS - 1) {
+            return fallback;
+        }
+        return new OutfieldRoleNeeds(defenders, midfielders, attackers);
+    }
+
+    private boolean isDefensiveSlotRole(String role) {
+        return switch (role) {
+            case "LB", "CB", "RB", "LWB", "RWB" -> true;
+            default -> false;
+        };
+    }
+
+    private boolean isMidfieldSlotRole(String role) {
+        return switch (role) {
+            case "CDM", "CM", "CAM", "LM", "RM" -> true;
+            default -> false;
+        };
+    }
+
+    private boolean isAttackingSlotRole(String role) {
+        return switch (role) {
+            case "LW", "RW", "CF", "ST" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -604,8 +664,8 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 boolean matches = switch (role) {
                     case "GK" -> "GK".equals(player.getPosition());
                     case "LB", "CB", "RB", "LWB", "RWB" -> lineupHelper.isDefender(player.getPosition());
-                    case "CDM", "CM", "CAM", "LM", "RM", "LW", "RW" -> lineupHelper.isMidfielder(player.getPosition());
-                    case "CF", "ST" -> lineupHelper.isAttacker(player.getPosition());
+                    case "CDM", "CM", "CAM", "LM", "RM" -> lineupHelper.isMidfielder(player.getPosition());
+                    case "LW", "RW", "CF", "ST" -> lineupHelper.isAttacker(player.getPosition());
                     default -> false;
                 };
                 if (matches) {
