@@ -74,52 +74,46 @@ class V24ShotXgCalculatorFormationModifierTest {
         }
     }
 
-    // ========== Test 2 — attacking formations (4-3-3, 4-2-3-1) produce higher xG than 4-4-2 ==========
+    // ========== Test 2 — formation labels do not produce free xG by themselves ==========
 
     @ParameterizedTest
     @EnumSource(V24ShotLocation.class)
-    @DisplayName("Attacking formations (4-3-3, 4-2-3-1) produce strictly higher xG than 4-4-2 at every location")
+    @DisplayName("Formation labels do not grant free xG in the per-shot calculator")
     void attackingFormationsHaveHigherXgThanBaseline(V24ShotLocation loc) {
         double xgBaseline = calc.calculateXg(baseline(loc), "4-4-2");
         assertTrue(xgBaseline >= 0.01, "baseline xG must be > 0 (clamp), got " + xgBaseline);
 
         for (String attacking : ATTACKING) {
             double xgAttacking = calc.calculateXg(baseline(loc), attacking);
-            assertTrue(xgAttacking > xgBaseline,
-                "Attacking formation=" + attacking + " at " + loc
-                    + " must produce higher xG than 4-4-2 (got "
-                    + xgAttacking + " vs " + xgBaseline + ")");
+            assertEquals(xgBaseline, xgAttacking, 1e-9,
+                "Formation label=" + attacking + " at " + loc
+                    + " must not produce free xG vs 4-4-2. Tactical differences"
+                    + " are applied by V24DetailedMatchEngine from real slots.");
         }
     }
 
-    // ========== Test 3 — defensive formations (3-5-2, 5-3-2) produce lower xG than 4-4-2 ==========
+    // ========== Test 3 — defensive labels do not suppress xG by themselves ==========
 
     @ParameterizedTest
     @EnumSource(V24ShotLocation.class)
-    @DisplayName("Defensive formations (3-5-2, 5-3-2) produce lower-or-equal xG than 4-4-2 at every location")
+    @DisplayName("Defensive formation labels do not suppress xG in the per-shot calculator")
     void defensiveFormationsHaveLowerXgThanBaseline(V24ShotLocation loc) {
         double xgBaseline = calc.calculateXg(baseline(loc), "4-4-2");
         assertTrue(xgBaseline <= 0.60, "baseline xG must be < 0.60 (clamp), got " + xgBaseline);
 
-        // V25D27: with the larger modifier spread (5-3-2 baseMod=0.55), some long-range
-        // shots may clamp to the floor (MIN_XG=0.01) for both 4-4-2 and defensive formations.
-        // We use <= instead of < to accept the clamp-floor tie, and require strict < where
-        // the baseline is well above the clamp floor.
         for (String defensive : DEFENSIVE) {
             double xgDefensive = calc.calculateXg(baseline(loc), defensive);
-            boolean tied = Math.abs(xgDefensive - xgBaseline) < 0.001;
-            boolean lower = xgDefensive < xgBaseline;
-            assertTrue(lower || tied,
-                "Defensive formation=" + defensive + " at " + loc
-                    + " must produce <= xG vs 4-4-2 (got "
-                    + xgDefensive + " vs " + xgBaseline + ")");
+            assertEquals(xgBaseline, xgDefensive, 1e-9,
+                "Formation label=" + defensive + " at " + loc
+                    + " must not suppress xG vs 4-4-2. Defensive shape is"
+                    + " applied by V24DetailedMatchEngine from real slots.");
         }
     }
 
     // ========== Test 4 — modifier ratio validation (5-3-2 / 4-4-2) ==========
 
     @Test
-    @DisplayName("Modifier ratio (5-3-2 / 4-4-2) sits in [0.50, 0.62] (matches V25D27 pipeline: 0.55/1.00 = 0.55)")
+    @DisplayName("5-3-2 / 4-4-2 per-shot label ratio is neutral")
     void ultraDefensiveRatioIsApproximatelyPoint55() {
         // Use SIX_YARD_BOX so the absolute xG is well above the clamp floor — clamp
         // would otherwise compress the ratio at low-quality shots.
@@ -129,15 +123,15 @@ class V24ShotXgCalculatorFormationModifierTest {
         double xgUltraDef = calc.calculateXg(q, "5-3-2");
         double ratio = xgUltraDef / xgBaseline;
 
-        assertTrue(ratio >= 0.50 && ratio <= 0.62,
-            "5-3-2 / 4-4-2 ratio must be in [0.50, 0.62], got " + ratio
+        assertEquals(1.0, ratio, 1e-9,
+            "5-3-2 / 4-4-2 per-shot label ratio must be neutral, got " + ratio
                 + " (xgBaseline=" + xgBaseline + ", xgUltraDef=" + xgUltraDef + ")");
     }
 
     // ========== Test 5 — modifier ratio validation (4-2-3-1 / 4-4-2) ==========
 
     @Test
-    @DisplayName("Modifier ratio (4-2-3-1 / 4-4-2) sits in [1.55, 1.75] (matches V25D27 pipeline: 1.65/1.00 = 1.65)")
+    @DisplayName("4-2-3-1 / 4-4-2 per-shot label ratio is neutral")
     void attackingRatioIsApproximatelyPoint165() {
         V24ShotQuality q = new V24ShotQuality(
             V24ShotLocation.SIX_YARD_BOX, 0.7, 0.5, 0.3, 0.3, 1.05);
@@ -145,8 +139,8 @@ class V24ShotXgCalculatorFormationModifierTest {
         double xgAttacking = calc.calculateXg(q, "4-2-3-1");
         double ratio = xgAttacking / xgBaseline;
 
-        assertTrue(ratio >= 1.55 && ratio <= 1.75,
-            "4-2-3-1 / 4-4-2 ratio must be in [1.55, 1.75], got " + ratio
+        assertEquals(1.0, ratio, 1e-9,
+            "4-2-3-1 / 4-4-2 per-shot label ratio must be neutral, got " + ratio
                 + " (xgBaseline=" + xgBaseline + ", xgAttacking=" + xgAttacking + ")");
     }
 
@@ -197,21 +191,13 @@ class V24ShotXgCalculatorFormationModifierTest {
      */
     @ParameterizedTest
     @EnumSource(V24ShotLocation.class)
-    @DisplayName("3-4-3 (mixed formation) produces xG different from 4-4-2 baseline")
+    @DisplayName("3-4-3 label is neutral vs 4-4-2 in the per-shot calculator")
     void mixedFormationDiffersFromBaseline(V24ShotLocation loc) {
         double xgBaseline = calc.calculateXg(baseline(loc), "4-4-2");
         double xgMixed = calc.calculateXg(baseline(loc), "3-4-3");
 
-        // Strict measurability threshold only at high-xG locations.
-        // At low-xG locations (LONG_RANGE, OUTSIDE_BOX, PENALTY_AREA_WIDE) the
-        // 3-4-3 vs 4-4-2 absolute diff after clamp rounding is < 0.001 even
-        // though the modifier ratio is preserved — covered indirectly by
-        // Test 2 / Test 3 strict assertions at SIX_YARD_BOX.
-        if (loc == V24ShotLocation.SIX_YARD_BOX || loc == V24ShotLocation.PENALTY_AREA_CENTER) {
-            assertTrue(Math.abs(xgMixed - xgBaseline) > 0.001,
-                "3-4-3 must produce measurably different xG than 4-4-2 at " + loc
-                    + " (got xgMixed=" + xgMixed + ", xgBaseline=" + xgBaseline + ")");
-        }
+        assertEquals(xgBaseline, xgMixed, 1e-9,
+            "3-4-3 label must be neutral vs 4-4-2 in the per-shot calculator.");
         assertNotNull(xgMixed, "xG must never be null");
     }
 }

@@ -1291,6 +1291,15 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         int att = 0;
         double widthSum = 0.0;
         int widthCount = 0;
+        double defWidthSum = 0.0;
+        double midWidthSum = 0.0;
+        double attWidthSum = 0.0;
+        double defYSum = 0.0;
+        double midYSum = 0.0;
+        double attYSum = 0.0;
+        int leftLane = 0;
+        int centerLane = 0;
+        int rightLane = 0;
 
         for (V24PlayerMatchState p : team.startingPlayers()) {
             if (p == null || !p.onPitch() || p.injured() || p.redCard()) continue;
@@ -1301,30 +1310,67 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
             double y = tacticalYPercent(p, slotsByPlayerId);
             double x = tacticalXPercent(p, slotsByPlayerId);
-            if (y <= 22.2222) att++;
-            else if (y <= 66.6667) mid++;
-            else def++;
+            double widthFromCenter = Math.min(1.0, Math.abs(x - 50.0) / 50.0);
+            if (y <= 22.2222) {
+                att++;
+                attWidthSum += widthFromCenter;
+                attYSum += y;
+            } else if (y <= 66.6667) {
+                mid++;
+                midWidthSum += widthFromCenter;
+                midYSum += y;
+            } else {
+                def++;
+                defWidthSum += widthFromCenter;
+                defYSum += y;
+            }
 
-            widthSum += Math.min(1.0, Math.abs(x - 50.0) / 50.0);
+            if (x < 35.0) leftLane++;
+            else if (x > 65.0) rightLane++;
+            else centerLane++;
+
+            widthSum += widthFromCenter;
             widthCount++;
         }
 
         double width = widthCount > 0 ? widthSum / widthCount : 0.45;
+        double defWidth = def > 0 ? defWidthSum / def : width;
+        double midWidth = mid > 0 ? midWidthSum / mid : width;
+        double attWidth = att > 0 ? attWidthSum / att : width;
+        double defAvgY = def > 0 ? defYSum / def : 78.0;
+        double midAvgY = mid > 0 ? midYSum / mid : 50.0;
+        double attAvgY = att > 0 ? attYSum / att : 15.0;
+        double centerShare = widthCount > 0 ? (double) centerLane / widthCount : 0.45;
+        double sideBalance = widthCount > 0
+                ? 1.0 - (Math.abs(leftLane - rightLane) / (double) widthCount)
+                : 1.0;
 
-        double midDelta = (mid - 4.0) * 0.035;
-        double narrowPenalty = Math.max(0.0, 0.34 - width) * 0.18;
-        double excessiveWidthPenalty = Math.max(0.0, width - 0.64) * 0.08;
-        double possession = clamp(1.0 + midDelta - narrowPenalty - excessiveWidthPenalty, 0.88, 1.14);
+        double midDelta = (mid - 4.0) * 0.055;
+        double midfieldWidthBonus = (midWidth - 0.34) * 0.16;
+        double centralOverloadBonus = Math.min(0.05, Math.max(0.0, centerShare - 0.45) * 0.10);
+        double noOutletPenalty = Math.max(0.0, 0.22 - attWidth) * 0.18;
+        double excessiveWidthPenalty = Math.max(0.0, width - 0.68) * 0.10;
+        double possession = clamp(1.0 + midDelta + midfieldWidthBonus + centralOverloadBonus
+                - noOutletPenalty - excessiveWidthPenalty, 0.84, 1.18);
 
-        double attackDelta = (att - 2.0) * 0.075;
-        double usefulWidth = (width - 0.42) * 0.18;
+        double attackDelta = (att - 2.0) * 0.095;
+        double usefulAttackWidth = (attWidth - 0.30) * 0.30;
+        double supportFromMidfield = (66.6667 - midAvgY) / 66.6667 * 0.08;
+        double advancedLineBonus = (22.2222 - attAvgY) / 22.2222 * 0.06;
+        double sideImbalancePenalty = Math.max(0.0, 0.72 - sideBalance) * 0.08;
         double noGkPenalty = gk == 1 ? 0.0 : 0.08;
-        double attackVolume = clamp(1.0 + attackDelta + usefulWidth - noGkPenalty, 0.82, 1.22);
+        double attackVolume = clamp(1.0 + attackDelta + usefulAttackWidth + supportFromMidfield
+                + advancedLineBonus - sideImbalancePenalty - noGkPenalty, 0.76, 1.30);
 
-        double defDelta = (def - 4.0) * 0.06;
-        double flankGapPenalty = Math.max(0.0, 0.36 - width) * 0.20;
-        double centralGapPenalty = Math.max(0.0, width - 0.68) * 0.12;
-        double resistance = clamp(1.0 - defDelta + flankGapPenalty + centralGapPenalty, 0.82, 1.18);
+        double defDelta = (def - 4.0) * 0.080;
+        double defensiveWidthBonus = Math.min(0.08, Math.max(0.0, defWidth - 0.34) * 0.20);
+        double lowBlockBonus = Math.max(0.0, defAvgY - 74.0) * 0.004;
+        double midfieldScreenBonus = Math.max(0.0, mid - 3.0) * 0.025;
+        double flankGapPenalty = Math.max(0.0, 0.30 - defWidth) * 0.28;
+        double centralGapPenalty = Math.max(0.0, defWidth - 0.72) * 0.16;
+        double defensiveStrength = defDelta + defensiveWidthBonus + lowBlockBonus + midfieldScreenBonus
+                - flankGapPenalty - centralGapPenalty;
+        double resistance = clamp(1.0 - defensiveStrength, 0.76, 1.24);
 
         return new V24TacticalShapeProfile(possession, attackVolume, resistance);
     }

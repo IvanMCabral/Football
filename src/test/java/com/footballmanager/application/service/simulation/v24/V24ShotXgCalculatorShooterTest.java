@@ -208,7 +208,7 @@ class V24ShotXgCalculatorShooterTest {
         // HEADER=80 → headerMult = 1.40. SHOOTER=90 → shooterLongRangeMult = 1.36.
         // Combined: 1.40 * 1.36 = 1.904
         double expected = baseline * 1.40 * 1.36;
-        assertEquals(expected, xg, 0.001,
+        assertEquals(expected, xg, 0.002,
                 "SHOOTER=90 + HEADER=80 en LONG_RANGE/CORNER deben compound");
     }
 

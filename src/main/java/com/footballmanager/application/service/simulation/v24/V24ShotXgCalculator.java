@@ -509,27 +509,14 @@ public class V24ShotXgCalculator {
      * boost). The reduced coefficient still gives elite teams a meaningful
      * advantage (1.18x for OVR=85) but caps the asymptotic blowout potential.
      *
-     * <p>Per-formation base values (carried from V25D26.1):
-     * <ul>
-     *   <li>4-4-2 → 1.00
-     *   <li>4-3-3 → 1.40
-     *   <li>4-2-3-1 → 1.65
-     *   <li>3-5-2 → 0.70
-     *   <li>5-3-2 → 0.55
-     *   <li>3-4-3 → 1.35
-     * </ul>
+     * <p>V25D99.20.4: the formation label no longer grants a static xG
+     * bonus/penalty. Shape effects now come from the persisted tactical slots in
+     * {@link V24DetailedMatchEngine}; this method keeps only the team-quality
+     * amplification so two similarly shaped lineups behave similarly even if one
+     * was selected from "4-4-2" and the other from "4-3-3".
      */
     private double formationOffensiveModifier(String formation, double teamAttack) {
-        V24FormationParser parser = new V24FormationParser();
-        V24FormationParser.V24Formation f = parser.parse(formation);
-        String canonical = f.raw();
-        double baseMod;
-        if ("4-3-3".equals(canonical)) baseMod = 1.40;
-        else if ("4-2-3-1".equals(canonical)) baseMod = 1.65;
-        else if ("3-4-3".equals(canonical)) baseMod = 1.35;
-        else if ("3-5-2".equals(canonical)) baseMod = 0.70;
-        else if ("5-3-2".equals(canonical)) baseMod = 0.55;
-        else baseMod = 1.00; // 4-4-2 baseline
+        double baseMod = 1.00;
 
         // Pre-C31 (Sprint C30): statsAmp coefficient = 0.025 (full stat amplification).
 // V25D70-C31 reduced to 0.012 (Option 3) to prevent extreme xG inflation.
@@ -561,27 +548,12 @@ public class V24ShotXgCalculator {
      * <p><b>V25D70-C31 (Sprint C31 Phase 2 Option 3):</b> statsAmp coefficient
      * reduced from 0.025 → 0.012 (matches formationOffensiveModifier change).
      *
-     * <p>Per-formation base values (v2, corrected interpretation):
-     * <ul>
-     *   <li>4-4-2 → 1.00 (balanced)
-     *   <li>4-3-3 → 0.85 (wingers don't defend → less protection → more goals conceded)
-     *   <li>4-2-3-1 → 0.95 (double pivot screens defense, slight protection)
-     *   <li>3-5-2 → 1.10 (3 CBs + wing-backs compress space, decent protection)
-     *   <li>5-3-2 → 1.25 (back-five = strong protection, fewest goals conceded)
-     *   <li>3-4-3 → 1.05 (3 CBs offset by advanced wing-backs)
-     * </ul>
+     * <p>V25D99.20.4: static defensive protection by formation name was removed.
+     * Defensive protection now comes from the actual tactical shape (defensive
+     * count, width, low block, midfield screen) in {@link V24DetailedMatchEngine}.
      */
     private double formationDefensiveModifier(String opponentFormation, double opponentDefense) {
-        V24FormationParser parser = new V24FormationParser();
-        V24FormationParser.V24Formation f = parser.parse(opponentFormation);
-        String canonical = f.raw();
-        double baseMod;
-        if ("4-3-3".equals(canonical)) baseMod = 0.85;
-        else if ("4-2-3-1".equals(canonical)) baseMod = 0.95;
-        else if ("3-4-3".equals(canonical)) baseMod = 1.05;
-        else if ("3-5-2".equals(canonical)) baseMod = 1.10;
-        else if ("5-3-2".equals(canonical)) baseMod = 1.25;
-        else baseMod = 1.00; // 4-4-2 baseline
+        double baseMod = 1.00;
 
         // Pre-C31 (Sprint C30): statsAmp coefficient = 0.025 (full stat amplification).
 // V25D70-C31 reduced to 0.012. V25D74-C38 RESTORED to 0.025 (pre-C31).
