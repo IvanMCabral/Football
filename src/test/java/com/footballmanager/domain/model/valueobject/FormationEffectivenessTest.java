@@ -30,6 +30,10 @@ class FormationEffectivenessTest {
         return new LineupSlotDTO(playerId, subdivisionId);
     }
 
+    private LineupSlotDTO customSlot(String playerId, String subdivisionId, double x, double y) {
+        return new LineupSlotDTO(playerId, subdivisionId, x, y);
+    }
+
     @Test
     @DisplayName("from: 4-4-2 lineup with all-natural positions → teamAverage=1.0")
     void from_perfectLineup() {
@@ -161,6 +165,146 @@ class FormationEffectivenessTest {
         assertEquals(FormationInferer.DEFAULT_FORMATION, fe.inferredFormation());
         assertTrue(fe.perPlayerEffectiveness().isEmpty());
         assertEquals(1.0, fe.teamAverage());
+    }
+
+    @Test
+    @DisplayName("V25D99.20.9: generic positions are not penalized at canonical formation slots")
+    void genericPositionsAtCanonicalSlots_noGeometryPenalty() {
+        List<LineupSlotDTO> slots = List.of(
+                slot("gk", "GK-1"),
+                slot("lb", "S22-2"),
+                slot("lcb", "S23-1"),
+                slot("rcb", "S23-3"),
+                slot("rb", "S24-2"),
+                slot("lm", "S16-2"),
+                slot("lcm", "S17-1"),
+                slot("rcm", "S17-3"),
+                slot("rm", "S18-2"),
+                slot("lst", "S05-1"),
+                slot("rst", "S05-3")
+        );
+        Map<String, String> natural = new LinkedHashMap<>();
+        natural.put("gk", "GK");
+        natural.put("lb", "DEF");
+        natural.put("lcb", "DEF");
+        natural.put("rcb", "DEF");
+        natural.put("rb", "DEF");
+        natural.put("lm", "MID");
+        natural.put("lcm", "MID");
+        natural.put("rcm", "MID");
+        natural.put("rm", "MID");
+        natural.put("lst", "ATT");
+        natural.put("rst", "ATT");
+        Map<String, double[]> coords = Map.ofEntries(
+                Map.entry("GK-1", new double[]{50.0, 93.0}),
+                Map.entry("S22-2", new double[]{16.65, 83.0}),
+                Map.entry("S23-1", new double[]{38.85, 83.0}),
+                Map.entry("S23-3", new double[]{61.05, 83.0}),
+                Map.entry("S24-2", new double[]{83.25, 83.0}),
+                Map.entry("S16-2", new double[]{16.65, 61.0}),
+                Map.entry("S17-1", new double[]{38.85, 61.0}),
+                Map.entry("S17-3", new double[]{61.05, 61.0}),
+                Map.entry("S18-2", new double[]{83.25, 61.0}),
+                Map.entry("S05-1", new double[]{38.85, 17.0}),
+                Map.entry("S05-3", new double[]{61.05, 17.0})
+        );
+
+        FormationEffectiveness fe = FormationEffectiveness.from(
+                slots, natural, "4-4-2", List.of(), "4-4-2", coords);
+
+        assertEquals(1.0, fe.teamAverage(), 0.0001,
+                "A canonical, role-compatible lineup with generic DEF/MID/ATT data should start at 100%");
+        fe.perPlayerEffectiveness().forEach((slotId, eff) ->
+                assertEquals(1.0, eff, 0.0001, "slot " + slotId + " should not be pre-penalized"));
+    }
+
+    @Test
+    @DisplayName("V25D99.20.9: generic manual drag is proportional to distance from canonical slot")
+    void genericManualDrag_penalizesByDeltaFromCanonicalSlot() {
+        Map<String, String> natural = Map.of("mid", "MID");
+        Map<String, double[]> coords = Map.of("S16-2", new double[]{16.65, 61.0});
+
+        FormationEffectiveness canonical = FormationEffectiveness.from(
+                List.of(slot("mid", "S16-2")),
+                natural, "4-4-2", List.of(), "4-4-2", coords);
+        FormationEffectiveness tinyMove = FormationEffectiveness.from(
+                List.of(customSlot("mid", "S16-2", 18.65, 61.0)),
+                natural, "4-4-2", List.of(), "4-4-2", coords);
+        FormationEffectiveness bigMove = FormationEffectiveness.from(
+                List.of(customSlot("mid", "S16-2", 46.65, 61.0)),
+                natural, "4-4-2", List.of(), "4-4-2", coords);
+
+        double canonicalEff = canonical.perPlayerEffectiveness().get("S16-2");
+        double tinyEff = tinyMove.perPlayerEffectiveness().get("S16-2");
+        double bigEff = bigMove.perPlayerEffectiveness().get("S16-2");
+
+        assertEquals(1.0, canonicalEff, 0.0001);
+        assertTrue(tinyEff < canonicalEff, "tiny drag should have a small cost");
+        assertTrue(tinyEff > 0.99, "2% drag should barely move the score, got " + tinyEff);
+        assertTrue(bigEff < tinyEff, "large drag should cost more than tiny drag");
+        assertTrue(bigEff < 0.92, "30% drag should be clearly visible, got " + bigEff);
+    }
+
+    @Test
+    @DisplayName("V25D99.20.9: extreme role misuse still carries a strong penalty")
+    void extremeRoleMisuse_stillStrongPenalty() {
+        List<LineupSlotDTO> slots = List.of(slot("att", "S22-2"));
+        Map<String, String> natural = Map.of("att", "ATT");
+        Map<String, double[]> coords = Map.of("S22-2", new double[]{16.65, 83.0});
+
+        FormationEffectiveness fe = FormationEffectiveness.from(
+                slots, natural, "4-4-2", List.of(), "4-4-2", coords);
+
+        assertEquals(0.3, fe.perPlayerEffectiveness().get("S22-2"), 0.0001,
+                "ATT in DEF slot should be punished by the role table even if generic geometry is neutral");
+    }
+
+    @Test
+    @DisplayName("V25D99.20.9: back-three wingbacks are evaluated as DEF, not MID")
+    void backThreeWingbacks_areDefensiveSlots() {
+        List<LineupSlotDTO> slots = List.of(
+                slot("lwb", "S15-1"),
+                slot("rwb", "S18-3")
+        );
+        Map<String, String> natural = Map.of(
+                "lwb", "DEF",
+                "rwb", "DEF"
+        );
+        Map<String, double[]> coords = Map.of(
+                "S15-1", new double[]{12.0, 56.0},
+                "S18-3", new double[]{88.0, 56.0}
+        );
+
+        FormationEffectiveness fe = FormationEffectiveness.from(
+                slots, natural, "3-5-2", List.of(), "3-5-2", coords);
+
+        assertEquals(1.0, fe.perPlayerEffectiveness().get("S15-1"), 0.0001);
+        assertEquals(1.0, fe.perPlayerEffectiveness().get("S18-3"), 0.0001);
+        assertEquals(1.0, fe.teamAverage(), 0.0001);
+    }
+
+    @Test
+    @DisplayName("V25D99.20.9: 4-2-3-1 LW/RW advanced slots are evaluated as ATT, not MID")
+    void fourTwoThreeOneWideAttackers_areAttackingSlots() {
+        List<LineupSlotDTO> slots = List.of(
+                slot("lw", "S10-2"),
+                slot("rw", "S12-2")
+        );
+        Map<String, String> natural = Map.of(
+                "lw", "ATT",
+                "rw", "ATT"
+        );
+        Map<String, double[]> coords = Map.of(
+                "S10-2", new double[]{22.0, 39.0},
+                "S12-2", new double[]{78.0, 39.0}
+        );
+
+        FormationEffectiveness fe = FormationEffectiveness.from(
+                slots, natural, "4-2-3-1", List.of(), "4-2-3-1", coords);
+
+        assertEquals(1.0, fe.perPlayerEffectiveness().get("S10-2"), 0.0001);
+        assertEquals(1.0, fe.perPlayerEffectiveness().get("S12-2"), 0.0001);
+        assertEquals(1.0, fe.teamAverage(), 0.0001);
     }
 
     // ========== V25D52 (Sprint C13b): contract — keys are subdivisionId ==========

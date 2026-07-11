@@ -110,6 +110,9 @@ public record FormationEffectiveness(
             String formationForRatings,
             Map<String, double[]> coordsBySubdivision) {
         String inferred = FormationInferer.infer(slots, persistedFormation);
+        String formationForCalc = (formationForRatings != null && !formationForRatings.isBlank())
+                ? formationForRatings
+                : inferred;
 
         Map<String, Double> perPlayer = new LinkedHashMap<>();
         // V25D99.16-BACK: snapshot coords lookup for null-safety inside
@@ -135,14 +138,14 @@ public record FormationEffectiveness(
                 if (slot == null) continue;
                 if (slot.playerId() == null || slot.subdivisionId() == null) continue;
                 String natural = safeNatural.get(slot.playerId());
-                String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
+                String slotCat = roleAwareCategoryFor(slot.subdivisionId(), formationForCalc);
                 double eff;
                 // V25D99.17-BACK: prefer the player's free-positioning override
                 // coords when the front sets them (customXPercent / customYPercent).
                 // The canonical coords from safeCoords still apply when the
                 // override is null (legacy path, pre-V25D99.17 saves, players
                 // dropped directly on a slot center).
-                double[] coords = resolveSlotCoords(slot, safeCoords);
+                double[] coords = resolveSlotCoords(slot, safeCoords, natural);
                 if (coords != null) {
                     eff = SubdivisionEffectivenessCalculator.effectiveness(
                             natural, coords[0], coords[1], slotCat);
@@ -166,9 +169,6 @@ public record FormationEffectiveness(
         // V25D99.16-BACK: also thread the per-subdivision coords into
         // each PlayerAttrs entry so the new distance-aware calculator
         // can run. Empty / missing coords → NaN → legacy zone-only math.
-        String formationForCalc = (formationForRatings != null && !formationForRatings.isBlank())
-                ? formationForRatings
-                : inferred;
         TeamRatingsCalculator.TeamRatings ratings = computeRatings(
                 slots, naturalByPlayer, attrsByPlayer, formationForCalc, safeCoords);
 
@@ -219,13 +219,13 @@ public record FormationEffectiveness(
         for (LineupSlotDTO slot : slots) {
             if (slot == null || slot.playerId() == null) continue;
             String natural = (naturalByPlayer != null) ? naturalByPlayer.get(slot.playerId()) : null;
-            String slotCat = FormationInferer.categoryFor(slot.subdivisionId());
+            String slotCat = roleAwareCategoryFor(slot.subdivisionId(), formationForRatings);
             PlayerAttrDTO attr = attrsIdx.get(slot.playerId());
             // V25D99.17-BACK: prefer the player's free-positioning override
             // coords (customXPercent / customYPercent) over the canonical
             // slot coords. Same override semantics as the perPlayer loop
             // above; the helper keeps both spots in lockstep.
-            double[] coords = resolveSlotCoords(slot, safeCoords);
+            double[] coords = resolveSlotCoords(slot, safeCoords, natural);
             Double slotX = (coords != null && coords.length >= 1) ? coords[0] : null;
             Double slotY = (coords != null && coords.length >= 2) ? coords[1] : null;
             calculatorAttrs.add(new TeamRatingsCalculator.PlayerAttrs(
@@ -272,17 +272,84 @@ public record FormationEffectiveness(
      * @return {@code double[2]} with the effective x/y, or {@code null}
      *         when no coords can be resolved.
      */
-    private static double[] resolveSlotCoords(LineupSlotDTO slot, Map<String, double[]> safeCoords) {
+    private static double[] resolveSlotCoords(
+            LineupSlotDTO slot,
+            Map<String, double[]> safeCoords,
+            String naturalPosition) {
         Double cx = slot.customXPercent();
         Double cy = slot.customYPercent();
+        double[] canonical = safeCoords.get(slot.subdivisionId());
+        boolean genericNatural = isGenericOutfieldPosition(naturalPosition);
+
+        // V25D99.20.9-BACK: real career data often stores broad positions
+        // (DEF/MID/ATT/WINGER) instead of granular roles (LB/CM/ST/LW).
+        // A canonical 4-4-2 should not penalize a generic DEF just because
+        // the slot is wide LB/RB, nor a generic MID because it is LM/RM.
+        //
+        // For generic players, canonical coordinates mean "perfect enough".
+        // When the user free-drags the marker, measure only the DELTA from
+        // its canonical slot by translating that delta around the generic
+        // category's centroid. This keeps tiny manual moves tiny, large
+        // manual moves large, and avoids a sudden penalty for starting from
+        // a wide canonical slot.
         if (cx != null && cy != null && !Double.isNaN(cx) && !Double.isNaN(cy)) {
+            if (genericNatural && canonical != null && canonical.length >= 2) {
+                double[] ideal = SubdivisionEffectivenessCalculator.idealCoordsFor(naturalPosition);
+                if (ideal != null && ideal.length >= 2) {
+                    return new double[]{
+                            ideal[0] + (cx - canonical[0]),
+                            ideal[1] + (cy - canonical[1])
+                    };
+                }
+            }
             return new double[]{cx, cy};
         }
-        double[] canonical = safeCoords.get(slot.subdivisionId());
+        if (genericNatural) {
+            return null;
+        }
         if (canonical != null && canonical.length >= 2) {
             return canonical;
         }
         return null;
+    }
+
+    private static boolean isGenericOutfieldPosition(String naturalPosition) {
+        return "DEF".equals(naturalPosition)
+                || "MID".equals(naturalPosition)
+                || "WINGER".equals(naturalPosition)
+                || "ATT".equals(naturalPosition);
+    }
+
+    private static String roleAwareCategoryFor(String subdivisionId, String formation) {
+        if (subdivisionId == null) {
+            return null;
+        }
+        if (formation != null) {
+            // V25D99.20.9-BACK: the grid row is not always the tactical
+            // role. In back-three formations, LWB/RWB live visually in the
+            // midfield row but should be evaluated as DEF. In 4-2-3-1, the
+            // wide LW/RW attacking-midfield slots live in row 3 but should
+            // contribute as ATT. The visual FormationService roles are the
+            // real tactical source; this helper mirrors the current 12
+            // canonical layouts without changing FormationInferer, whose job
+            // remains coarse row-based inference for legacy/custom shapes.
+            if (isBackThreeWingbackFormation(formation)
+                    && ("S15-1".equals(subdivisionId) || "S18-3".equals(subdivisionId))) {
+                return "DEF";
+            }
+            if ("4-2-3-1".equals(formation)
+                    && ("S10-2".equals(subdivisionId) || "S12-2".equals(subdivisionId))) {
+                return "ATT";
+            }
+        }
+        return FormationInferer.categoryFor(subdivisionId);
+    }
+
+    private static boolean isBackThreeWingbackFormation(String formation) {
+        return "3-5-2".equals(formation)
+                || "3-4-3".equals(formation)
+                || "3-5-2-CDM".equals(formation)
+                || "3-4-1-2".equals(formation);
     }
 
     /**
