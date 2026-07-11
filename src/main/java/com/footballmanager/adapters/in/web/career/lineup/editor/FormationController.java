@@ -33,9 +33,10 @@ public class FormationController {
     /**
      * GET /api/v1/editor/formations
      *
-     * <p>Retorna las 7 formaciones hardcoded con sus posiciones
-     * (4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 5-3-2, 4-1-4-1, 3-4-3).
-     * V25D36-F2: agregadas 5-3-2, 4-1-4-1 y 3-4-3 (antes solo 4).
+     * <p>Retorna las 12 formaciones hardcoded con sus posiciones.
+     * V25D36-F2: agregadas 5-3-2, 4-1-4-1 y 3-4-3.
+     * V25D54-C15: agregadas 3-5-2-CDM, 5-4-1, 3-4-1-2,
+     * 4-2-2-2 y 4-3-3-1.
      */
     @GetMapping
     public Mono<List<FormationDTO>> getAllFormations() {
