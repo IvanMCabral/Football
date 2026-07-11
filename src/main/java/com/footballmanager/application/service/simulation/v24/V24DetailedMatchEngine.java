@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
@@ -314,8 +315,17 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // compartida (no hay pass accuracy explicito en el engine).
         int homeMaxPasser = maxPasserSkill(homeState.startingPlayers());
         int awayMaxPasser = maxPasserSkill(awayState.startingPlayers());
-        double homePossAdj = homePossBase * (1.0 + homeMaxPasser / 300.0);
-        double awayPossAdj = awayPossBase * (1.0 + awayMaxPasser / 300.0);
+        // V25D99.21: possession also reads the actual tactical shape. Before this
+        // layer, two formations with the same style + PASSER profile could produce
+        // identical possession even when one had an extra midfielder or when the
+        // manager dragged players centrally/wide. The modifier is intentionally
+        // smooth and bounded: a few pixels only nudge the share; moving a line into
+        // another zone or collapsing the team shape has a visible but not arcade-y
+        // effect.
+        V24TacticalShapeProfile homeShape = tacticalShapeProfile(homeState, context.homeSlotsByPlayerId());
+        V24TacticalShapeProfile awayShape = tacticalShapeProfile(awayState, context.awaySlotsByPlayerId());
+        double homePossAdj = homePossBase * (1.0 + homeMaxPasser / 300.0) * homeShape.possessionMultiplier();
+        double awayPossAdj = awayPossBase * (1.0 + awayMaxPasser / 300.0) * awayShape.possessionMultiplier();
         double homeShare = homePossAdj / (homePossAdj + awayPossAdj);
 
         // V25D67-C27: compute match intensity multiplier (Opción B from the C27
@@ -536,7 +546,17 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // for intermedios/desiguales while still suppressing shot volume
             // for parejos where the floor tune at 0.35 compounds with the
             // multiplier to bring total down.
-            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler, keySpeedster) * Math.sqrt((1.0 + matchIntensity) / 2.0);
+            V24TacticalShapeProfile possessorShape = homeHasPossession ? homeShape : awayShape;
+            V24TacticalShapeProfile opponentShape = homeHasPossession ? awayShape : homeShape;
+            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler, keySpeedster)
+                    * Math.sqrt((1.0 + matchIntensity) / 2.0)
+                    // V25D99.21: shape affects shot/chance volume. Attacking
+                    // occupation and width raise chance creation; defensive
+                    // occupation of the opponent lowers it. This makes the match
+                    // reviewer useful for comparing 4-4-2 vs 4-3-3 vs manual
+                    // player drags, instead of only changing the score layer.
+                    * possessorShape.attackVolumeMultiplier()
+                    * opponentShape.defensiveResistanceMultiplier();
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
                 attemptShot(possessor, opponent, selector, formation, opponentFormation, teamRole, minute, random, timeline);
@@ -1252,6 +1272,97 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * the shared {@code OverallCalculator} (introduced in V25D40). For our test
      * fixtures (all 6 stats = ovr, no height, no skills), overall ≈ ovr.
      */
+    private record V24TacticalShapeProfile(
+            double possessionMultiplier,
+            double attackVolumeMultiplier,
+            double defensiveResistanceMultiplier
+    ) {}
+
+    private V24TacticalShapeProfile tacticalShapeProfile(
+            V24TeamMatchState team,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        if (team == null || team.startingPlayers().isEmpty()) {
+            return new V24TacticalShapeProfile(1.0, 1.0, 1.0);
+        }
+
+        int gk = 0;
+        int def = 0;
+        int mid = 0;
+        int att = 0;
+        double widthSum = 0.0;
+        int widthCount = 0;
+
+        for (V24PlayerMatchState p : team.startingPlayers()) {
+            if (p == null || !p.onPitch() || p.injured() || p.redCard()) continue;
+            if ("GK".equals(p.position())) {
+                gk++;
+                continue;
+            }
+
+            double y = tacticalYPercent(p, slotsByPlayerId);
+            double x = tacticalXPercent(p, slotsByPlayerId);
+            if (y <= 22.2222) att++;
+            else if (y <= 66.6667) mid++;
+            else def++;
+
+            widthSum += Math.min(1.0, Math.abs(x - 50.0) / 50.0);
+            widthCount++;
+        }
+
+        double width = widthCount > 0 ? widthSum / widthCount : 0.45;
+
+        double midDelta = (mid - 4.0) * 0.035;
+        double narrowPenalty = Math.max(0.0, 0.34 - width) * 0.18;
+        double excessiveWidthPenalty = Math.max(0.0, width - 0.64) * 0.08;
+        double possession = clamp(1.0 + midDelta - narrowPenalty - excessiveWidthPenalty, 0.88, 1.14);
+
+        double attackDelta = (att - 2.0) * 0.075;
+        double usefulWidth = (width - 0.42) * 0.18;
+        double noGkPenalty = gk == 1 ? 0.0 : 0.08;
+        double attackVolume = clamp(1.0 + attackDelta + usefulWidth - noGkPenalty, 0.82, 1.22);
+
+        double defDelta = (def - 4.0) * 0.06;
+        double flankGapPenalty = Math.max(0.0, 0.36 - width) * 0.20;
+        double centralGapPenalty = Math.max(0.0, width - 0.68) * 0.12;
+        double resistance = clamp(1.0 - defDelta + flankGapPenalty + centralGapPenalty, 0.82, 1.18);
+
+        return new V24TacticalShapeProfile(possession, attackVolume, resistance);
+    }
+
+    private double tacticalYPercent(V24PlayerMatchState player, Map<String, LineupSlotDTO> slotsByPlayerId) {
+        LineupSlotDTO slot = slotFor(player, slotsByPlayerId);
+        if (slot != null && slot.customYPercent() != null && Double.isFinite(slot.customYPercent())) {
+            return clamp(slot.customYPercent(), 0.0, 100.0);
+        }
+        return switch (player.position()) {
+            case "ATT", "WINGER" -> 15.0;
+            case "MID" -> 50.0;
+            case "GK" -> 92.0;
+            default -> 78.0;
+        };
+    }
+
+    private double tacticalXPercent(V24PlayerMatchState player, Map<String, LineupSlotDTO> slotsByPlayerId) {
+        LineupSlotDTO slot = slotFor(player, slotsByPlayerId);
+        if (slot != null && slot.customXPercent() != null && Double.isFinite(slot.customXPercent())) {
+            return clamp(slot.customXPercent(), 0.0, 100.0);
+        }
+        return switch (player.position()) {
+            case "WINGER" -> 18.0;
+            default -> 50.0;
+        };
+    }
+
+    private LineupSlotDTO slotFor(V24PlayerMatchState player, Map<String, LineupSlotDTO> slotsByPlayerId) {
+        if (player == null || slotsByPlayerId == null || slotsByPlayerId.isEmpty()) return null;
+        return slotsByPlayerId.get(player.sessionPlayerId());
+    }
+
+    private static double clamp(double value, double min, double max) {
+        if (!Double.isFinite(value)) return min;
+        return Math.max(min, Math.min(max, value));
+    }
+
     private static double computeTeamAvgOverall(List<SessionPlayer> players) {
         if (players == null || players.isEmpty()) return 50.0;
         int sum = 0;
