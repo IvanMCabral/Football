@@ -283,8 +283,9 @@ public final class TeamRatingsCalculator {
         double statsAmpDef = 1.0 + (teamDefense - MEDIAN_STAT) * STATS_AMP;
         double statsAmpMid = 1.0 + (teamMidfield - MEDIAN_STAT) * STATS_AMP;
 
-        double attBase = FORMATION_OFF_BASE.getOrDefault(canonicalFormation, 1.00);
-        double defBase = FORMATION_DEF_BASE.getOrDefault(canonicalFormation, 1.00);
+        FormationBaseBlend baseBlend = effectiveFormationBase(attrs, canonicalFormation);
+        double attBase = baseBlend.attackBase();
+        double defBase = baseBlend.defenseBase();
         // Midfield has no engine precedent; treat it as 1.00 base (same
         // shape as ATT but formation-agnostic, since the engine doesn't
         // model "4-3-3 is more attacking-midfield than 4-4-2").
@@ -358,5 +359,140 @@ public final class TeamRatingsCalculator {
         }
         double forward = Math.max(0.0, Math.min(1.0, (55.0 - yPct) / 40.0));
         return 1.0 + (0.25 * forward);
+    }
+
+    private record FormationBaseBlend(double attackBase, double defenseBase) {}
+
+    /**
+     * V25D99.20.11-BACK: progressive tactical-shape blending.
+     *
+     * <p>The selected formation remains the manager's explicit intent. However,
+     * when the user manually reshapes the team far enough, the preview should
+     * drift toward the tactical modifiers of the new visible shape. Example:
+     * starting from 4-4-2 and pushing a midfielder into a true front-three
+     * should approach 4-3-3 ratings; a tiny one-frame move near the boundary
+     * should not flip the whole team from 4-4-2 to 4-3-3.
+     *
+     * <p>This method computes soft DEF/MID/ATT counts from the players' current
+     * Y coordinates, chooses the closest coarse formation among the engine base
+     * table, then blends selected-base -> closest-shape-base by confidence.
+     * Ambiguous shapes (e.g. counts halfway between 4-4-2 and 4-3-3) get little
+     * or no blend; clear shapes get most/all of the target base.
+     */
+    private static FormationBaseBlend effectiveFormationBase(List<PlayerAttrs> attrs, String selectedFormation) {
+        double selectedAttack = FORMATION_OFF_BASE.getOrDefault(selectedFormation, 1.00);
+        double selectedDefense = FORMATION_DEF_BASE.getOrDefault(selectedFormation, 1.00);
+        if (attrs == null || attrs.isEmpty()) {
+            return new FormationBaseBlend(selectedAttack, selectedDefense);
+        }
+
+        SoftShape soft = softShapeFromCoords(attrs);
+        if (soft.totalOutfield() < 8.0) {
+            return new FormationBaseBlend(selectedAttack, selectedDefense);
+        }
+
+        ShapeCandidate best = null;
+        ShapeCandidate second = null;
+        for (String candidate : FORMATION_OFF_BASE.keySet()) {
+            int[] counts = parseCoarseFormation(candidate);
+            if (counts == null) {
+                continue;
+            }
+            double distance = Math.abs(soft.def() - counts[0])
+                    + Math.abs(soft.mid() - counts[1])
+                    + Math.abs(soft.att() - counts[2]);
+            ShapeCandidate sc = new ShapeCandidate(candidate, distance);
+            if (best == null || sc.distance() < best.distance()) {
+                second = best;
+                best = sc;
+            } else if (second == null || sc.distance() < second.distance()) {
+                second = sc;
+            }
+        }
+
+        if (best == null || best.formation().equals(selectedFormation)) {
+            return new FormationBaseBlend(selectedAttack, selectedDefense);
+        }
+
+        double separation = (second == null) ? 2.0 : Math.max(0.0, second.distance() - best.distance());
+        double clarity = clamp01(separation / 2.0);
+        // Only blend when the manual shape is clearly close to the target.
+        // A single advanced midfielder in a 4-4-2 is tactical intent inside
+        // the same plan, not yet a full 4-3-3.
+        double closeness = clamp01((0.55 - best.distance()) / 0.55);
+        double blend = clarity * closeness;
+        if (blend <= 0.05) {
+            return new FormationBaseBlend(selectedAttack, selectedDefense);
+        }
+
+        double targetAttack = FORMATION_OFF_BASE.getOrDefault(best.formation(), selectedAttack);
+        double targetDefense = FORMATION_DEF_BASE.getOrDefault(best.formation(), selectedDefense);
+        return new FormationBaseBlend(
+                selectedAttack + (targetAttack - selectedAttack) * blend,
+                selectedDefense + (targetDefense - selectedDefense) * blend);
+    }
+
+    private record SoftShape(double def, double mid, double att, double totalOutfield) {}
+
+    private record ShapeCandidate(String formation, double distance) {}
+
+    private static SoftShape softShapeFromCoords(List<PlayerAttrs> attrs) {
+        double def = 0.0;
+        double mid = 0.0;
+        double att = 0.0;
+        double total = 0.0;
+        for (PlayerAttrs p : attrs) {
+            if (p == null || "GK".equals(p.slotCategory())) {
+                continue;
+            }
+            double y = (p.slotYPercent() != null) ? p.slotYPercent() : Double.NaN;
+            if (Double.isNaN(y)) {
+                String cat = p.slotCategory();
+                if ("DEF".equals(cat)) def += 1.0;
+                else if ("ATT".equals(cat)) att += 1.0;
+                else mid += 1.0;
+                total += 1.0;
+                continue;
+            }
+            double attW = clamp01((55.0 - y) / 38.0);
+            double defW = clamp01((y - 65.0) / 18.0);
+            double sum = attW + defW;
+            if (sum > 1.0) {
+                attW /= sum;
+                defW /= sum;
+                sum = 1.0;
+            }
+            double midW = 1.0 - sum;
+            att += attW;
+            mid += midW;
+            def += defW;
+            total += 1.0;
+        }
+        return new SoftShape(def, mid, att, total);
+    }
+
+    private static int[] parseCoarseFormation(String formation) {
+        if (formation == null || formation.isBlank()) {
+            return null;
+        }
+        String[] parts = formation.split("-");
+        if (parts.length < 3) {
+            return null;
+        }
+        try {
+            int def = Integer.parseInt(parts[0]);
+            int att = Integer.parseInt(parts[parts.length - 1]);
+            int mid = 10 - def - att;
+            if (def < 0 || mid < 0 || att < 0) {
+                return null;
+            }
+            return new int[]{def, mid, att};
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private static double clamp01(double value) {
+        return Math.max(0.0, Math.min(1.0, value));
     }
 }

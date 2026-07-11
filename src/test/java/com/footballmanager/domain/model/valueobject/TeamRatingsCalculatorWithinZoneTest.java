@@ -196,6 +196,54 @@ class TeamRatingsCalculatorWithinZoneTest {
     }
 
     @Test
+    @DisplayName("Clear manual front three progressively approaches attacking formation base")
+    void clearManualFrontThree_blendsTowardAttackingShape() {
+        List<TeamRatingsCalculator.PlayerAttrs> baseline = List.of(
+                gkAt("gk1"),
+                defAt("d1", "LB", 16.65, 83.0),
+                defAt("d2", "CB", 38.85, 83.0),
+                defAt("d3", "CB", 61.05, 83.0),
+                defAt("d4", "RB", 83.25, 83.0),
+                cmAt("m1", 16.65, 61.0),
+                cmAt("m2", 38.85, 61.0),
+                cmAt("m3", 61.05, 61.0),
+                cmAt("m4", 83.25, 61.0),
+                fwdAt("f1", 38.85, 17.0),
+                fwdAt("f2", 61.05, 17.0)
+        );
+
+        List<TeamRatingsCalculator.PlayerAttrs> clearFrontThree = List.of(
+                gkAt("gk1"),
+                defAt("d1", "LB", 16.65, 83.0),
+                defAt("d2", "CB", 38.85, 83.0),
+                defAt("d3", "CB", 61.05, 83.0),
+                defAt("d4", "RB", 83.25, 83.0),
+                cmAt("m1", 16.65, 61.0),
+                cmAt("m2", 38.85, 61.0),
+                // This is no longer a one-frame nudge: the manager has
+                // clearly turned the line into a front three.
+                cmAt("m3", 61.05, 17.0),
+                cmAt("m4", 83.25, 61.0),
+                fwdAt("f1", 38.85, 17.0),
+                fwdAt("f2", 61.05, 17.0)
+        );
+
+        TeamRatingsCalculator.TeamRatings baseRatings =
+                TeamRatingsCalculator.compute(baseline, FORMATION);
+        TeamRatingsCalculator.TeamRatings manualRatings =
+                TeamRatingsCalculator.compute(clearFrontThree, FORMATION);
+
+        assertTrue(manualRatings.attackRating() > baseRatings.attackRating() + 15.0,
+                "A clear manual front three should approach a more attacking base. "
+                        + "Got manual=" + manualRatings.attackRating()
+                        + ", base=" + baseRatings.attackRating());
+        assertTrue(manualRatings.defenseRating() < baseRatings.defenseRating(),
+                "A clear manual front three should trade defensive base for attack. "
+                        + "Got manual=" + manualRatings.defenseRating()
+                        + ", base=" + baseRatings.defenseRating());
+    }
+
+    @Test
     @DisplayName("NaN coords reproduce pre-V25D99.16 behavior (zone-only math)")
     void nanCoords_legacyFallback() {
         // Two CBs at the same row slot (S22-2 LB-ish). The first uses
