@@ -213,7 +213,7 @@ public final class TeamRatingsCalculator {
         for (PlayerAttrs p : attrs) {
             double eff = subdivisionEffectiveness(p);
             double rawAttack = (p.attack() != null) ? p.attack() : MEDIAN_STAT;
-            attackerScores.add(rawAttack * eff);
+            attackerScores.add(rawAttack * eff * forwardIntentMultiplier(p));
         }
         Collections.sort(attackerScores, Collections.reverseOrder());
         double teamAttack;
@@ -328,5 +328,35 @@ public final class TeamRatingsCalculator {
         }
         return SubdivisionEffectivenessCalculator.effectiveness(
                 p.naturalPos(), xPct, yPct, p.slotCategory());
+    }
+
+    /**
+     * V25D99.20.10-BACK: tactical free-positioning intent.
+     *
+     * <p>Before this, manually pushing a midfielder higher only applied the
+     * distance-from-ideal penalty. That made the UI feel backwards: a manager
+     * could move a CM toward the attacking line and see both ATT and MID drop.
+     * The penalty is still valid (the player left his ideal structure), but the
+     * model also needs to recognize the tactical intent: a non-attacker placed
+     * higher up the pitch contributes a bit more to attack.
+     *
+     * <p>Coordinates use the frontend field convention: {@code y=0} near the
+     * opponent goal / attack band, {@code y=100} near our goal. Canonical MID
+     * positions around {@code y=60} get no bonus. Moving a MID to CAM-ish zones
+     * around {@code y=40} grants roughly +9% attack contribution before the
+     * existing effectiveness penalty is applied. Natural ATT slots do not get
+     * extra boost here; their attacking value is already represented by
+     * formation base + player attack + effectiveness.
+     */
+    private static double forwardIntentMultiplier(PlayerAttrs p) {
+        if (p == null || "ATT".equals(p.slotCategory())) {
+            return 1.0;
+        }
+        double yPct = (p.slotYPercent() != null) ? p.slotYPercent() : Double.NaN;
+        if (Double.isNaN(yPct)) {
+            return 1.0;
+        }
+        double forward = Math.max(0.0, Math.min(1.0, (55.0 - yPct) / 40.0));
+        return 1.0 + (0.25 * forward);
     }
 }

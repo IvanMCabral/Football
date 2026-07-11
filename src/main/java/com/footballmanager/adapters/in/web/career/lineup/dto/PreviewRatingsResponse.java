@@ -1,5 +1,7 @@
 package com.footballmanager.adapters.in.web.career.lineup.dto;
 
+import java.util.Map;
+
 /**
  * V25D99.15-BACK: response body for {@code POST /career/lineup/preview-ratings}.
  *
@@ -11,7 +13,14 @@ package com.footballmanager.adapters.in.web.career.lineup.dto;
  *
  * <p>Wire shape:
  * <pre>
- *   { "attackRating": 142.0, "midfieldRating": 105.0, "defenseRating": 95.0 }
+ *   {
+ *     "attackRating": 142.0,
+ *     "midfieldRating": 105.0,
+ *     "defenseRating": 95.0,
+ *     "inferredFormation": "4-4-2",
+ *     "perPlayerEffectiveness": { "GK-1": 1.0, ... },
+ *     "teamAverage": 0.94
+ *   }
  * </pre>
  *
  * <p>Values are in {@code [0, ~200]}; 100 = 4-4-2 baseline at median
@@ -22,6 +31,9 @@ package com.footballmanager.adapters.in.web.career.lineup.dto;
 public record PreviewRatingsResponse(
         double attackRating,
         double midfieldRating,
-        double defenseRating
+        double defenseRating,
+        String inferredFormation,
+        Map<String, Double> perPlayerEffectiveness,
+        double teamAverage
 ) {
 }

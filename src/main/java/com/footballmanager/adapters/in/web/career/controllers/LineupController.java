@@ -302,7 +302,10 @@ public class LineupController {
                     return Mono.just(ResponseEntity.ok((Object) new PreviewRatingsResponse(
                             fe.attackRating() != null ? fe.attackRating() : 100.0,
                             fe.midfieldRating() != null ? fe.midfieldRating() : 100.0,
-                            fe.defenseRating() != null ? fe.defenseRating() : 100.0)));
+                            fe.defenseRating() != null ? fe.defenseRating() : 100.0,
+                            fe.inferredFormation(),
+                            fe.perPlayerEffectiveness(),
+                            fe.teamAverage())));
                 })
                 .onErrorResume(IllegalArgumentException.class, ex ->
                         Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))))

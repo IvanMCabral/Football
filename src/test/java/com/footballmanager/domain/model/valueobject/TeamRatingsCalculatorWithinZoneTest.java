@@ -145,6 +145,57 @@ class TeamRatingsCalculatorWithinZoneTest {
     }
 
     @Test
+    @DisplayName("Advanced midfielder trades structure for attack intent")
+    void advancedMidfielder_increasesAttackIntentButLosesMidfieldStructure() {
+        List<TeamRatingsCalculator.PlayerAttrs> baseline = List.of(
+                gkAt("gk1"),
+                defAt("d1", "LB", 16.65, 83.0),
+                defAt("d2", "CB", 38.85, 83.0),
+                defAt("d3", "CB", 61.05, 83.0),
+                defAt("d4", "RB", 83.25, 83.0),
+                cmAt("m1", 16.65, 61.0),
+                cmAt("m2", 38.85, 61.0),
+                cmAt("m3", 61.05, 61.0),
+                cmAt("m4", 83.25, 61.0),
+                fwdAt("f1", 38.85, 17.0),
+                fwdAt("f2", 61.05, 17.0)
+        );
+
+        List<TeamRatingsCalculator.PlayerAttrs> oneMidAdvanced = List.of(
+                gkAt("gk1"),
+                defAt("d1", "LB", 16.65, 83.0),
+                defAt("d2", "CB", 38.85, 83.0),
+                defAt("d3", "CB", 61.05, 83.0),
+                defAt("d4", "RB", 83.25, 83.0),
+                cmAt("m1", 16.65, 61.0),
+                cmAt("m2", 38.85, 61.0),
+                // Manager pushes one CM into a CAM-ish lane. The player
+                // leaves his ideal midfield structure (MID should drop),
+                // but the tactical intent is more offensive (ATT should rise).
+                cmAt("m3", 61.05, 42.0),
+                cmAt("m4", 83.25, 61.0),
+                fwdAt("f1", 38.85, 17.0),
+                fwdAt("f2", 61.05, 17.0)
+        );
+
+        TeamRatingsCalculator.TeamRatings baseRatings =
+                TeamRatingsCalculator.compute(baseline, FORMATION);
+        TeamRatingsCalculator.TeamRatings advancedRatings =
+                TeamRatingsCalculator.compute(oneMidAdvanced, FORMATION);
+
+        assertTrue(advancedRatings.attackRating() > baseRatings.attackRating(),
+                "Pushing a CM higher should increase ATT intent. "
+                        + "Got advanced=" + advancedRatings.attackRating()
+                        + ", base=" + baseRatings.attackRating());
+        assertTrue(advancedRatings.midfieldRating() < baseRatings.midfieldRating(),
+                "Pushing a CM away from the midfield line should reduce MID structure. "
+                        + "Got advanced=" + advancedRatings.midfieldRating()
+                        + ", base=" + baseRatings.midfieldRating());
+        assertEquals(baseRatings.defenseRating(), advancedRatings.defenseRating(), EPS,
+                "DEF should be unchanged when only a MID moves higher");
+    }
+
+    @Test
     @DisplayName("NaN coords reproduce pre-V25D99.16 behavior (zone-only math)")
     void nanCoords_legacyFallback() {
         // Two CBs at the same row slot (S22-2 LB-ish). The first uses
