@@ -57,6 +57,19 @@ public class FormationService {
     private static final double CELL_CENTER_COL2_MID   = 83.25;  // col 2 sub 2 (S24-2)
     private static final double CELL_CENTER_COL2_RIGHT = 94.35;  // col 2 sub 3 (S24-3)
 
+    // V25D99.20.5: visual/professional layout coords. Keep tactical slots
+    // unchanged, but avoid drawing players glued to the touchline/goal mouth.
+    private static final double WINGBACK_LEFT_X = 12.0;
+    private static final double WINGBACK_RIGHT_X = 88.0;
+    private static final double WINGER_LEFT_X = 18.0;
+    private static final double WINGER_RIGHT_X = 82.0;
+    private static final double FIVE_BACK_WIDE_LEFT_X = 10.0;
+    private static final double FIVE_BACK_LEFT_CB_X = 30.0;
+    private static final double FIVE_BACK_RIGHT_CB_X = 70.0;
+    private static final double FIVE_BACK_WIDE_RIGHT_X = 90.0;
+    private static final double SINGLE_STRIKER_Y = 14.0;
+    private static final double FRONT_THREE_WIDE_Y = 18.0;
+
     private final List<FormationDTO> cachedFormations;
 
     public FormationService() {
@@ -187,9 +200,9 @@ public class FormationService {
                 pos(7, "CM", CELL_CENTER_COL1_RIGHT,50.0, 8.0, "S17-3"),
                 // ATT line (row 1) — LW/ST/RW. Per V25D94 the wingers (LW/RW)
                 // belong to FW family (V25D93.6 fix). Center cells S04-1, S05-2, S06-3.
-                pos(8,  "LW", 11.0, 17.0, 7.0, "S04-1"),
+                pos(8,  "LW", WINGER_LEFT_X, FRONT_THREE_WIDE_Y, 7.0, "S04-1"),
                 pos(9,  "ST", 50.0, 12.0, 6.0, "S05-2"),
-                pos(10, "RW", 89.0, 17.0, 7.0, "S06-3")
+                pos(10, "RW", WINGER_RIGHT_X, FRONT_THREE_WIDE_Y, 7.0, "S06-3")
             )
         ));
 
@@ -206,11 +219,11 @@ public class FormationService {
                 pos(2, "CB", CELL_CENTER_COL1_MID,   88.0, 6.0, "S23-2"),
                 pos(3, "CB", CELL_CENTER_COL2_LEFT,  83.0, 7.0, "S24-1"),
                 // MID line (row 4-5) — 5-MID SYMMETRIC V25D94 (LWB + 3 CM + RWB)
-                pos(4, "LWB", CELL_CENTER_COL0_LEFT,  55.0, 9.0, "S15-1"),
+                pos(4, "LWB", WINGBACK_LEFT_X,  56.0, 9.0, "S15-1"),
                 pos(5, "CM",  CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
                 pos(6, "CM",  CELL_CENTER_COL1_MID,   66.0, 7.0, "S17-2"),
                 pos(7, "CM",  CELL_CENTER_COL1_RIGHT, 61.0, 7.0, "S17-3"),
-                pos(8, "RWB", CELL_CENTER_COL2_RIGHT, 55.0, 9.0, "S18-3"),
+                pos(8, "RWB", WINGBACK_RIGHT_X, 56.0, 9.0, "S18-3"),
                 // ATT line (row 1) — 2-FW SYMMETRIC V25D94
                 pos(9,  "ST", CELL_CENTER_COL1_LEFT,  17.0, 7.0, "S05-1"),
                 pos(10, "ST", CELL_CENTER_COL1_RIGHT, 17.0, 7.0, "S05-3")
@@ -234,11 +247,11 @@ public class FormationService {
                 pos(5, "CDM", CELL_CENTER_COL1_LEFT,  66.0, 7.0, "S17-1"),
                 pos(6, "CDM", CELL_CENTER_COL1_RIGHT, 66.0, 7.0, "S17-3"),
                 // CAM line (row 3) — 3 CAM SYMMETRIC
-                pos(7, "LW",  CELL_CENTER_COL0_MID,  39.0, 8.0, "S10-2"),
+                pos(7, "LW",  22.0,  39.0, 8.0, "S10-2"),
                 pos(8, "CAM", CELL_CENTER_COL1_MID,  39.0, 8.0, "S11-2"),
-                pos(9, "RW",  CELL_CENTER_COL2_MID,  39.0, 8.0, "S12-2"),
+                pos(9, "RW",  78.0,  39.0, 8.0, "S12-2"),
                 // ATT line (row 0) — single ST centered
-                pos(10, "ST", 50.0, 6.0, 6.0, "S02-2")
+                pos(10, "ST", 50.0, SINGLE_STRIKER_Y, 6.0, "S02-2")
             )
         ));
 
@@ -252,11 +265,11 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 5-CB SPANS FULL WIDTH V25D94
-                pos(1, "LWB", CELL_CENTER_COL0_LEFT,  83.0, 8.0, "S22-1"),
-                pos(2, "CB",  CELL_CENTER_COL0_MID,   83.0, 6.0, "S22-2"),
+                pos(1, "LWB", FIVE_BACK_WIDE_LEFT_X,  82.0, 8.0, "S22-1"),
+                pos(2, "CB",  FIVE_BACK_LEFT_CB_X,    83.0, 6.0, "S22-2"),
                 pos(3, "CB",  CELL_CENTER_COL1_MID,   86.0, 6.0, "S23-2"),
-                pos(4, "CB",  CELL_CENTER_COL2_MID,   83.0, 6.0, "S24-2"),
-                pos(5, "RWB", CELL_CENTER_COL2_RIGHT, 83.0, 8.0, "S24-3"),
+                pos(4, "CB",  FIVE_BACK_RIGHT_CB_X,   83.0, 6.0, "S24-2"),
+                pos(5, "RWB", FIVE_BACK_WIDE_RIGHT_X, 82.0, 8.0, "S24-3"),
                 // MID line (row 5) — 3-MID SYMMETRIC V25D94
                 pos(6, "CM", CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
                 pos(7, "CM", CELL_CENTER_COL1_MID,   66.0, 7.0, "S17-2"),
@@ -288,7 +301,7 @@ public class FormationService {
                 pos(8, "CM", CELL_CENTER_COL1_RIGHT,50.0, 7.0, "S17-3"),
                 pos(9, "RM", CELL_CENTER_COL2_MID,  50.0, 8.0, "S18-2"),
                 // ATT line (row 0) — single ST centered
-                pos(10, "ST", 50.0, 6.0, 6.0, "S02-2")
+                pos(10, "ST", 50.0, SINGLE_STRIKER_Y, 6.0, "S02-2")
             )
         ));
 
@@ -305,14 +318,14 @@ public class FormationService {
                 pos(2, "CB", CELL_CENTER_COL1_MID,   88.0, 6.0, "S23-2"),
                 pos(3, "CB", CELL_CENTER_COL2_LEFT,  83.0, 7.0, "S24-1"),
                 // MID line (row 4-5) — LWB + 2 CM + RWB SYMMETRIC
-                pos(4, "LWB", CELL_CENTER_COL0_LEFT,  55.0, 9.0, "S15-1"),
+                pos(4, "LWB", WINGBACK_LEFT_X,  56.0, 9.0, "S15-1"),
                 pos(5, "CM",  CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
                 pos(6, "CM",  CELL_CENTER_COL1_RIGHT, 61.0, 7.0, "S17-3"),
-                pos(7, "RWB", CELL_CENTER_COL2_RIGHT, 55.0, 9.0, "S18-3"),
+                pos(7, "RWB", WINGBACK_RIGHT_X, 56.0, 9.0, "S18-3"),
                 // ATT line (row 1) — LW/ST/RW (wingers = FW family per V25D93.6)
-                pos(8,  "LW", 11.0, 17.0, 7.0, "S04-1"),
+                pos(8,  "LW", WINGER_LEFT_X, FRONT_THREE_WIDE_Y, 7.0, "S04-1"),
                 pos(9,  "ST", 50.0, 12.0, 6.0, "S05-2"),
-                pos(10, "RW", 89.0, 17.0, 7.0, "S06-3")
+                pos(10, "RW", WINGER_RIGHT_X, FRONT_THREE_WIDE_Y, 7.0, "S06-3")
             )
         ));
 
@@ -336,8 +349,8 @@ public class FormationService {
                 pos(5, "CM", CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
                 pos(6, "CM", CELL_CENTER_COL1_RIGHT, 61.0, 7.0, "S17-3"),
                 // WB line (row 4)
-                pos(7, "LWB", CELL_CENTER_COL0_LEFT,  55.0, 9.0, "S15-1"),
-                pos(8, "RWB", CELL_CENTER_COL2_RIGHT, 55.0, 9.0, "S18-3"),
+                pos(7, "LWB", WINGBACK_LEFT_X,  56.0, 9.0, "S15-1"),
+                pos(8, "RWB", WINGBACK_RIGHT_X, 56.0, 9.0, "S18-3"),
                 // ATT line (row 1) — 2-FW SYMMETRIC V25D94
                 pos(9,  "ST", CELL_CENTER_COL1_LEFT,  17.0, 7.0, "S05-1"),
                 pos(10, "ST", CELL_CENTER_COL1_RIGHT, 17.0, 7.0, "S05-3")
@@ -353,11 +366,11 @@ public class FormationService {
             List.of(
                 pos(0, "GK", 50.0, 93.0, 5.0, "GK-1"),
                 // DEF line (row 7) — 5-CB SPANS FULL WIDTH V25D94
-                pos(1, "LWB", CELL_CENTER_COL0_LEFT,  83.0, 8.0, "S22-1"),
-                pos(2, "CB",  CELL_CENTER_COL0_MID,   83.0, 6.0, "S22-2"),
+                pos(1, "LWB", FIVE_BACK_WIDE_LEFT_X,  82.0, 8.0, "S22-1"),
+                pos(2, "CB",  FIVE_BACK_LEFT_CB_X,    83.0, 6.0, "S22-2"),
                 pos(3, "CB",  CELL_CENTER_COL1_MID,   86.0, 6.0, "S23-2"),
-                pos(4, "CB",  CELL_CENTER_COL2_MID,   83.0, 6.0, "S24-2"),
-                pos(5, "RWB", CELL_CENTER_COL2_RIGHT, 83.0, 8.0, "S24-3"),
+                pos(4, "CB",  FIVE_BACK_RIGHT_CB_X,   83.0, 6.0, "S24-2"),
+                pos(5, "RWB", FIVE_BACK_WIDE_RIGHT_X, 82.0, 8.0, "S24-3"),
                 // MID line (row 5) — 4-MID SYMMETRIC V25D94
                 pos(6, "LM", CELL_CENTER_COL0_MID,  61.0, 7.0, "S16-2"),
                 pos(7, "CM", CELL_CENTER_COL1_LEFT, 66.0, 7.0, "S17-1"),
@@ -381,10 +394,10 @@ public class FormationService {
                 pos(2, "CB", CELL_CENTER_COL1_MID,   88.0, 6.0, "S23-2"),
                 pos(3, "CB", CELL_CENTER_COL2_LEFT,  83.0, 7.0, "S24-1"),
                 // MID line (row 4-5) — LWB + 2 CM + RWB
-                pos(4, "LWB", CELL_CENTER_COL0_LEFT,  55.0, 9.0, "S15-1"),
+                pos(4, "LWB", WINGBACK_LEFT_X,  56.0, 9.0, "S15-1"),
                 pos(5, "CM",  CELL_CENTER_COL1_LEFT,  61.0, 7.0, "S17-1"),
                 pos(6, "CM",  CELL_CENTER_COL1_RIGHT, 61.0, 7.0, "S17-3"),
-                pos(7, "RWB", CELL_CENTER_COL2_RIGHT, 55.0, 9.0, "S18-3"),
+                pos(7, "RWB", WINGBACK_RIGHT_X, 56.0, 9.0, "S18-3"),
                 // CAM line (row 3) — single CAM centered
                 pos(8, "CAM", CELL_CENTER_COL1_MID, 39.0, 8.0, "S11-2"),
                 // ATT line (row 1) — 2-FW SYMMETRIC V25D94
@@ -436,9 +449,9 @@ public class FormationService {
                 pos(6, "CM",  CELL_CENTER_COL1_LEFT, 50.0, 8.0, "S17-1"),
                 pos(7, "CM",  CELL_CENTER_COL1_RIGHT,50.0, 8.0, "S17-3"),
                 // ATT line (row 1) — LW/ST/RW (FW family per V25D93.6)
-                pos(8,  "LW", 11.0, 17.0, 7.0, "S04-1"),
+                pos(8,  "LW", WINGER_LEFT_X, FRONT_THREE_WIDE_Y, 7.0, "S04-1"),
                 pos(9,  "ST", 50.0, 12.0, 6.0, "S05-2"),
-                pos(10, "RW", 89.0, 17.0, 7.0, "S06-3")
+                pos(10, "RW", WINGER_RIGHT_X, FRONT_THREE_WIDE_Y, 7.0, "S06-3")
             )
         ));
 
