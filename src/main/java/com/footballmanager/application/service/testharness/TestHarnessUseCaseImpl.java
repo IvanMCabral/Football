@@ -29,8 +29,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
@@ -674,13 +676,28 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         List<ScenarioMatrixRow> rows = new ArrayList<>();
         rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
             "base-balanced", "Base: full match BALANCED", formation,
-            TeamStyle.BALANCED, null, null));
+            TeamStyle.BALANCED, null, ScenarioAction.none()));
         rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
             "m45-wide", "Minute 45 -> WIDE_PLAY", formation,
-            TeamStyle.BALANCED, 45, TeamStyle.WIDE_PLAY));
+            TeamStyle.BALANCED, 45, ScenarioAction.style(TeamStyle.WIDE_PLAY)));
         rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
             "m45-central", "Minute 45 -> CENTRAL_PLAY", formation,
-            TeamStyle.BALANCED, 45, TeamStyle.CENTRAL_PLAY));
+            TeamStyle.BALANCED, 45, ScenarioAction.style(TeamStyle.CENTRAL_PLAY)));
+        rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
+            "m45-formation-433", "Minute 45 -> formation 4-3-3", formation,
+            TeamStyle.BALANCED, 45, ScenarioAction.formation("4-3-3")));
+        rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
+            "m45-formation-4231", "Minute 45 -> formation 4-2-3-1", formation,
+            TeamStyle.BALANCED, 45, ScenarioAction.formation("4-2-3-1")));
+
+        Optional<SubPlan> attackingSub = chooseImpactSubstitution(career, fixture, userTeamId, home, away);
+        attackingSub.ifPresent(plan -> rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
+            "m60-impact-sub",
+            "Minute 60 -> " + plan.offName() + " out, " + plan.onName() + " in",
+            formation,
+            TeamStyle.BALANCED,
+            60,
+            ScenarioAction.substitution(plan))));
         return rows;
     }
 
@@ -696,26 +713,41 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             String formation,
             TeamStyle initialStyle,
             Integer changeMinute,
-            TeamStyle changedStyle) {
+            ScenarioAction action) {
 
         boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
         TeamStyle homeStyle = userIsHome ? initialStyle : home.getStyle();
         TeamStyle awayStyle = userIsHome ? away.getStyle() : initialStyle;
+        ScenarioAction safeAction = action != null ? action : ScenarioAction.none();
 
         V24MatchContext context = v24ContextFactory.buildWithStyles(
             career, fixture, home, away, homeStyle, awayStyle, seed);
 
         V24DetailedMatchResult result;
         long tacticalChanges = 0;
-        if (changeMinute == null || changedStyle == null) {
+        long substitutions = 0;
+        if (changeMinute == null || safeAction.type() == ScenarioActionType.NONE) {
             result = new V24DetailedMatchEngine().simulate(context, new Random(seed));
         } else {
             V24LiveSession session = new V24LiveSession(context, seed);
             for (int i = 0; i < changeMinute; i++) {
                 session.tick();
             }
-            session.mutateContext(ctx -> ctx.withNewStyle(userTeamId, changedStyle));
-            tacticalChanges = 1;
+            if (safeAction.type() == ScenarioActionType.STYLE) {
+                session.mutateContext(ctx -> ctx.withNewStyle(userTeamId, safeAction.changedStyle()));
+                tacticalChanges = 1;
+            } else if (safeAction.type() == ScenarioActionType.FORMATION) {
+                session.mutateContext(ctx -> ctx.withNewFormation(userTeamId, safeAction.changedFormation()));
+                tacticalChanges = 1;
+            } else if (safeAction.type() == ScenarioActionType.SUBSTITUTION && safeAction.subPlan() != null) {
+                SubPlan plan = safeAction.subPlan();
+                session.mutateContext(ctx -> ctx.withManualSubstitution(
+                    userTeamId,
+                    plan.playerOffId(),
+                    plan.playerOnId(),
+                    changeMinute));
+                substitutions = 1;
+            }
             while (!session.isFinished()) {
                 session.tick();
             }
@@ -729,7 +761,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             formation,
             initialStyle,
             changeMinute,
-            changedStyle,
+            safeAction.changedStyle(),
+            safeAction.type().name(),
+            safeAction.detail(),
             result.homeGoals(),
             result.awayGoals(),
             result.homeXg(),
@@ -744,8 +778,89 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             zones.awayCentral(),
             zones.awayWide(),
             zones.awayLong(),
-            tacticalChanges
+            tacticalChanges,
+            substitutions
         );
+    }
+
+    private Optional<SubPlan> chooseImpactSubstitution(
+            CareerSave career,
+            MatchFixture fixture,
+            String userTeamId,
+            SessionTeam home,
+            SessionTeam away) {
+
+        boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
+        V24MatchContext context = v24ContextFactory.buildWithStyles(
+            career,
+            fixture,
+            home,
+            away,
+            userIsHome ? TeamStyle.BALANCED : home.getStyle(),
+            userIsHome ? away.getStyle() : TeamStyle.BALANCED,
+            12345L);
+
+        List<SessionPlayer> starters = userIsHome ? context.homeStartingPlayers() : context.awayStartingPlayers();
+        List<SessionPlayer> bench = userIsHome ? context.homeBenchPlayers() : context.awayBenchPlayers();
+
+        return starters.stream()
+            .filter(this::isOutfieldPlayer)
+            .sorted(Comparator
+                .comparingInt((SessionPlayer p) -> impactSubPositionPriority(p.getPosition()))
+                .thenComparingInt(p -> safeInt(p.getAttack()))
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+            .map(off -> bestBenchReplacement(off, bench)
+                .map(on -> new SubPlan(
+                    off.getSessionPlayerId(),
+                    on.getSessionPlayerId(),
+                    safeName(off),
+                    safeName(on),
+                    off.getPosition(),
+                    on.getPosition())))
+            .flatMap(Optional::stream)
+            .findFirst();
+    }
+
+    private Optional<SessionPlayer> bestBenchReplacement(SessionPlayer off, List<SessionPlayer> bench) {
+        return bench.stream()
+            .filter(this::isOutfieldPlayer)
+            .filter(p -> p.getSessionPlayerId() != null && !p.getSessionPlayerId().isBlank())
+            .filter(p -> off.getPosition() != null && off.getPosition().equals(p.getPosition()))
+            .max(Comparator
+                .comparingInt((SessionPlayer p) -> safeInt(p.getAttack()))
+                .thenComparingInt(p -> safeInt(p.getTechnique()))
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)));
+    }
+
+    private int impactSubPositionPriority(String position) {
+        if ("ATT".equals(position) || "WINGER".equals(position)) {
+            return 0;
+        }
+        if ("MID".equals(position)) {
+            return 1;
+        }
+        if ("DEF".equals(position)) {
+            return 2;
+        }
+        return 3;
+    }
+
+    private boolean isOutfieldPlayer(SessionPlayer player) {
+        return player != null
+            && player.getSessionPlayerId() != null
+            && !player.getSessionPlayerId().isBlank()
+            && player.getPosition() != null
+            && !"GK".equals(player.getPosition());
+    }
+
+    private int safeInt(Integer value) {
+        return value != null ? value : 0;
+    }
+
+    private String safeName(SessionPlayer player) {
+        return player != null && player.getName() != null && !player.getName().isBlank()
+            ? player.getName()
+            : "Unknown";
     }
 
     private String currentFormation(CareerSave career, String teamId, SessionTeam team) {
@@ -791,6 +906,57 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         int awayCentral,
         int awayWide,
         int awayLong
+    ) {}
+
+    private enum ScenarioActionType {
+        NONE,
+        STYLE,
+        FORMATION,
+        SUBSTITUTION
+    }
+
+    private record ScenarioAction(
+        ScenarioActionType type,
+        TeamStyle changedStyle,
+        String changedFormation,
+        SubPlan subPlan
+    ) {
+        static ScenarioAction none() {
+            return new ScenarioAction(ScenarioActionType.NONE, null, null, null);
+        }
+
+        static ScenarioAction style(TeamStyle style) {
+            return new ScenarioAction(ScenarioActionType.STYLE, style, null, null);
+        }
+
+        static ScenarioAction formation(String formation) {
+            return new ScenarioAction(ScenarioActionType.FORMATION, null, formation, null);
+        }
+
+        static ScenarioAction substitution(SubPlan subPlan) {
+            return new ScenarioAction(ScenarioActionType.SUBSTITUTION, null, null, subPlan);
+        }
+
+        String detail() {
+            return switch (type) {
+                case NONE -> "Sin cambios";
+                case STYLE -> changedStyle != null ? changedStyle.name() : "Style change";
+                case FORMATION -> changedFormation != null ? changedFormation : "Formation change";
+                case SUBSTITUTION -> subPlan != null
+                    ? subPlan.offName() + " (" + subPlan.offPosition() + ") -> "
+                        + subPlan.onName() + " (" + subPlan.onPosition() + ")"
+                    : "Substitution";
+            };
+        }
+    }
+
+    private record SubPlan(
+        String playerOffId,
+        String playerOnId,
+        String offName,
+        String onName,
+        String offPosition,
+        String onPosition
     ) {}
 
     // ========== resetRound (V24D24.3-HOTFIX) ==========

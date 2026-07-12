@@ -153,6 +153,8 @@ public interface TestHarnessUseCase {
         TeamStyle initialStyle,
         Integer changeMinute,
         TeamStyle changedStyle,
+        String actionType,
+        String actionDetail,
         int homeGoals,
         int awayGoals,
         double homeXg,
@@ -167,6 +169,7 @@ public interface TestHarnessUseCase {
         int awayCentralShots,
         int awayWideShots,
         int awayLongShots,
-        long tacticalChanges
+        long tacticalChanges,
+        long substitutions
     ) {}
 }
