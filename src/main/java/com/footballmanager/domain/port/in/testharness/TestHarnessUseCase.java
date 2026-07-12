@@ -94,6 +94,8 @@ public interface TestHarnessUseCase {
      */
     Mono<MatchFixture> replayMatch(UUID userId, String matchId, Long seedOverride);
 
+    Mono<List<ScenarioMatrixRow>> runScenarioMatrix(UUID userId, String matchId, Long seedOverride);
+
     /**
      * V24D24.3-HOTFIX: Reset every fixture of a round back to PENDING,
      * clear its {@link MatchFixture.MatchResultData}, remove the cached
@@ -143,4 +145,28 @@ public interface TestHarnessUseCase {
             }
         }
     }
+
+    record ScenarioMatrixRow(
+        String scenario,
+        String description,
+        String formation,
+        TeamStyle initialStyle,
+        Integer changeMinute,
+        TeamStyle changedStyle,
+        int homeGoals,
+        int awayGoals,
+        double homeXg,
+        double awayXg,
+        int homeShots,
+        int awayShots,
+        int homePossession,
+        int awayPossession,
+        int homeCentralShots,
+        int homeWideShots,
+        int homeLongShots,
+        int awayCentralShots,
+        int awayWideShots,
+        int awayLongShots,
+        long tacticalChanges
+    ) {}
 }

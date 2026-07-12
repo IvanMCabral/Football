@@ -348,6 +348,19 @@ public class TestHarnessController {
             .map(ResponseEntity::ok);
     }
 
+    @PostMapping("/match/{matchId}/scenario-matrix")
+    public Mono<ResponseEntity<List<TestHarnessUseCase.ScenarioMatrixRow>>> scenarioMatrix(
+            @PathVariable String matchId,
+            @RequestBody(required = false) ReplayMatchRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        Long seedOverride = (request != null) ? request.seed() : null;
+
+        return testHarnessUseCase.runScenarioMatrix(userId, matchId, seedOverride)
+            .map(ResponseEntity::ok);
+    }
+
     /**
      * V24D24.3-HOTFIX: POST /api/v1/test-harness/career/reset-round
      * Resets every fixture of a round back to PENDING, evicts the

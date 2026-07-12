@@ -7,9 +7,13 @@ import com.footballmanager.application.service.simulation.v24.V24DetailedMatchDa
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.v24.V24LiveSession;
+import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
+import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -622,6 +626,172 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 careerSessionService.invalidateCache(career.getUserId())))
             .thenReturn(fixture);
     }
+
+    @Override
+    public Mono<List<ScenarioMatrixRow>> runScenarioMatrix(UUID userId, String matchId, Long seedOverride) {
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("matchId is required"));
+        }
+        long seed = (seedOverride != null) ? seedOverride : 12345L;
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " â€” call create-custom first")))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                return Mono.fromSupplier(() -> executeScenarioMatrix(optionalCareer.get(), matchId, seed));
+            });
+    }
+
+    private List<ScenarioMatrixRow> executeScenarioMatrix(CareerSave career, String matchId, long seed) {
+        MatchFixture fixture = career.getTournamentState().getFixtures().stream()
+            .filter(f -> f.getMatchId().equals(matchId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Match not found in current tournament: " + matchId));
+
+        SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
+        SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
+        if (home == null || away == null) {
+            throw new IllegalStateException(
+                "SessionTeam not found for match " + matchId
+                    + " (home=" + fixture.getHomeTeamId()
+                    + ", away=" + fixture.getAwayTeamId() + ")");
+        }
+
+        String userTeamId = career.getUserSessionTeamId();
+        boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
+        boolean userIsAway = fixture.getAwayTeamId().equals(userTeamId);
+        if (!userIsHome && !userIsAway) {
+            throw new IllegalArgumentException(
+                "Scenario matrix requires a match involving the user team: " + userTeamId);
+        }
+
+        String formation = currentFormation(career, userTeamId, userIsHome ? home : away);
+        List<ScenarioMatrixRow> rows = new ArrayList<>();
+        rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
+            "base-balanced", "Base: full match BALANCED", formation,
+            TeamStyle.BALANCED, null, null));
+        rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
+            "m45-wide", "Minute 45 -> WIDE_PLAY", formation,
+            TeamStyle.BALANCED, 45, TeamStyle.WIDE_PLAY));
+        rows.add(runScenario(career, fixture, home, away, userTeamId, seed,
+            "m45-central", "Minute 45 -> CENTRAL_PLAY", formation,
+            TeamStyle.BALANCED, 45, TeamStyle.CENTRAL_PLAY));
+        return rows;
+    }
+
+    private ScenarioMatrixRow runScenario(
+            CareerSave career,
+            MatchFixture fixture,
+            SessionTeam home,
+            SessionTeam away,
+            String userTeamId,
+            long seed,
+            String scenario,
+            String description,
+            String formation,
+            TeamStyle initialStyle,
+            Integer changeMinute,
+            TeamStyle changedStyle) {
+
+        boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
+        TeamStyle homeStyle = userIsHome ? initialStyle : home.getStyle();
+        TeamStyle awayStyle = userIsHome ? away.getStyle() : initialStyle;
+
+        V24MatchContext context = v24ContextFactory.buildWithStyles(
+            career, fixture, home, away, homeStyle, awayStyle, seed);
+
+        V24DetailedMatchResult result;
+        long tacticalChanges = 0;
+        if (changeMinute == null || changedStyle == null) {
+            result = new V24DetailedMatchEngine().simulate(context, new Random(seed));
+        } else {
+            V24LiveSession session = new V24LiveSession(context, seed);
+            for (int i = 0; i < changeMinute; i++) {
+                session.tick();
+            }
+            session.mutateContext(ctx -> ctx.withNewStyle(userTeamId, changedStyle));
+            tacticalChanges = 1;
+            while (!session.isFinished()) {
+                session.tick();
+            }
+            result = session.finalResult();
+        }
+
+        ZoneCounts zones = countZones(result);
+        return new ScenarioMatrixRow(
+            scenario,
+            description,
+            formation,
+            initialStyle,
+            changeMinute,
+            changedStyle,
+            result.homeGoals(),
+            result.awayGoals(),
+            result.homeXg(),
+            result.awayXg(),
+            result.homeShots(),
+            result.awayShots(),
+            result.homePossession(),
+            result.awayPossession(),
+            zones.homeCentral(),
+            zones.homeWide(),
+            zones.homeLong(),
+            zones.awayCentral(),
+            zones.awayWide(),
+            zones.awayLong(),
+            tacticalChanges
+        );
+    }
+
+    private String currentFormation(CareerSave career, String teamId, SessionTeam team) {
+        Map<String, String> formations = career.getTeamStarting11Formation();
+        if (formations != null && formations.get(teamId) != null && !formations.get(teamId).isBlank()) {
+            return formations.get(teamId);
+        }
+        return team.getFormation();
+    }
+
+    private ZoneCounts countZones(V24DetailedMatchResult result) {
+        int homeCentral = 0, homeWide = 0, homeLong = 0;
+        int awayCentral = 0, awayWide = 0, awayLong = 0;
+        for (V24MatchEvent event : result.timeline().events()) {
+            if (!isShotLike(event) || event.shotCoordinate() == null) {
+                continue;
+            }
+            V24ShotLocation location = event.shotCoordinate().location();
+            boolean home = result.homeTeamId().equals(event.teamId());
+            if (location == V24ShotLocation.SIX_YARD_BOX || location == V24ShotLocation.PENALTY_AREA_CENTER) {
+                if (home) homeCentral++; else awayCentral++;
+            } else if (location == V24ShotLocation.PENALTY_AREA_WIDE) {
+                if (home) homeWide++; else awayWide++;
+            } else {
+                if (home) homeLong++; else awayLong++;
+            }
+        }
+        return new ZoneCounts(homeCentral, homeWide, homeLong, awayCentral, awayWide, awayLong);
+    }
+
+    private boolean isShotLike(V24MatchEvent event) {
+        return event.type() == V24MatchEventType.SHOT
+            || event.type() == V24MatchEventType.SHOT_ON_TARGET
+            || event.type() == V24MatchEventType.MISS
+            || event.type() == V24MatchEventType.BLOCK
+            || event.type() == V24MatchEventType.GOAL;
+    }
+
+    private record ZoneCounts(
+        int homeCentral,
+        int homeWide,
+        int homeLong,
+        int awayCentral,
+        int awayWide,
+        int awayLong
+    ) {}
 
     // ========== resetRound (V24D24.3-HOTFIX) ==========
 
