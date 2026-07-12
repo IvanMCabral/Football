@@ -228,6 +228,39 @@ class V24DetailedMatchEngineFormationTest {
                 + "V24DetailedMatchEngine.computeLocationWeights.");
     }
 
+    @Test
+    void selectShotLocation_widePlay_shiftsToWideChannel() {
+        final int samples = 20000;
+        Map<V24ShotLocation, Integer> balanced = aggregateShotLocations("4-4-2", TeamStyle.BALANCED, samples);
+        Map<V24ShotLocation, Integer> wide = aggregateShotLocations("4-4-2", TeamStyle.WIDE_PLAY, samples);
+
+        double balancedWideShare = balanced.get(V24ShotLocation.PENALTY_AREA_WIDE) / (double) samples;
+        double wideShare = wide.get(V24ShotLocation.PENALTY_AREA_WIDE) / (double) samples;
+
+        assertTrue(wideShare > balancedWideShare * 1.30,
+            "WIDE_PLAY should materially increase PENALTY_AREA_WIDE shots versus BALANCED. "
+                + "Observed: wide=" + wideShare + ", balanced=" + balancedWideShare);
+    }
+
+    @Test
+    void selectShotLocation_centralPlay_shiftsToCentralChannel() {
+        final int samples = 20000;
+        Map<V24ShotLocation, Integer> balanced = aggregateShotLocations("4-4-2", TeamStyle.BALANCED, samples);
+        Map<V24ShotLocation, Integer> central = aggregateShotLocations("4-4-2", TeamStyle.CENTRAL_PLAY, samples);
+
+        double balancedCentralShare = centralShare(balanced, samples);
+        double centralShare = centralShare(central, samples);
+        double balancedWideShare = balanced.get(V24ShotLocation.PENALTY_AREA_WIDE) / (double) samples;
+        double centralWideShare = central.get(V24ShotLocation.PENALTY_AREA_WIDE) / (double) samples;
+
+        assertTrue(centralShare > balancedCentralShare * 1.12,
+            "CENTRAL_PLAY should increase SIX_YARD_BOX + PENALTY_AREA_CENTER shots versus BALANCED. "
+                + "Observed: central=" + centralShare + ", balanced=" + balancedCentralShare);
+        assertTrue(centralWideShare < balancedWideShare * 0.75,
+            "CENTRAL_PLAY should reduce PENALTY_AREA_WIDE shots versus BALANCED. "
+                + "Observed: centralWide=" + centralWideShare + ", balancedWide=" + balancedWideShare);
+    }
+
     /**
      * Helper for the V24D23-A B2 unit tests: invokes the private
      * {@code selectShotLocation(style, formation, random)} method
@@ -242,6 +275,10 @@ class V24DetailedMatchEngineFormationTest {
      * {@code V24ShotLocation selectShotLocation(TeamStyle, String, Random)}.
      */
     private Map<V24ShotLocation, Integer> aggregateShotLocations(String formation, int samples) {
+        return aggregateShotLocations(formation, TeamStyle.BALANCED, samples);
+    }
+
+    private Map<V24ShotLocation, Integer> aggregateShotLocations(String formation, TeamStyle style, int samples) {
         Map<V24ShotLocation, Integer> counts = new EnumMap<>(V24ShotLocation.class);
         for (V24ShotLocation loc : V24ShotLocation.values()) {
             counts.put(loc, 0);
@@ -255,13 +292,18 @@ class V24DetailedMatchEngineFormationTest {
                 // Fresh Random per call — independent weighted draws.
                 Random r = new Random(i * 31L + 17L);
                 V24ShotLocation loc = (V24ShotLocation) method.invoke(
-                    engine, TeamStyle.BALANCED, formation, r);
+                    engine, style, formation, r);
                 counts.merge(loc, 1, Integer::sum);
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to invoke selectShotLocation via reflection", e);
         }
         return counts;
+    }
+
+    private double centralShare(Map<V24ShotLocation, Integer> counts, int samples) {
+        return (counts.get(V24ShotLocation.SIX_YARD_BOX)
+            + counts.get(V24ShotLocation.PENALTY_AREA_CENTER)) / (double) samples;
     }
 
     // ========== Match runner ==========
