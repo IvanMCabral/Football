@@ -45,6 +45,7 @@ public final class V24DisciplineModel {
             case COUNTER -> 0.010;
             case ATTACKING -> 0.005;
             case POSSESSION -> -0.010;
+            case WIDE_PLAY, CENTRAL_PLAY -> 0.000;
             case BALANCED -> 0.000;
         };
 

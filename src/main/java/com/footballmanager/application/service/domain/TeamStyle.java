@@ -24,5 +24,11 @@ public enum TeamStyle {
     COUNTER,
 
     /** Slightly lower totalLambda, slight possession share boost */
-    POSSESSION
+    POSSESSION,
+
+    /** Attack preference through wide channels / wings. */
+    WIDE_PLAY,
+
+    /** Attack preference through the central lane. */
+    CENTRAL_PLAY
 }

@@ -76,6 +76,7 @@ public final class V24InjuryModel {
             case COUNTER -> 0.001;
             case DEFENSIVE -> 0.0;
             case POSSESSION -> 0.0;
+            case WIDE_PLAY, CENTRAL_PLAY -> 0.0;
             case BALANCED -> 0.0;
         };
         prob += styleMod;

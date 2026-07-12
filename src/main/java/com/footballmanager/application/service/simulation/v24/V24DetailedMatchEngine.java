@@ -1036,6 +1036,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             case ATTACKING -> new double[] { 1.60, 1.11, 0.85, 0.50, 0.30 };
             // Slow build-up, balanced penetration
             case POSSESSION -> new double[] { 1.20, 1.11, 0.90, 0.56, 0.30 };
+            // Wide focus: more wing/cross attempts, fewer central tap-ins.
+            case WIDE_PLAY -> new double[] { 0.95, 0.90, 1.45, 0.95, 0.85 };
+            // Central focus: more through-ball/box-center chances, fewer wide shots.
+            case CENTRAL_PLAY -> new double[] { 1.18, 1.28, 0.62, 0.92, 0.85 };
             // Fast breaks, more long-range and outside-box
             case COUNTER -> new double[] { 0.72, 1.11, 0.90, 0.94, 0.60 };
             // Prefer long-range and outside-box (defensive, low block)
@@ -1642,6 +1646,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return switch (style) {
             case ATTACKING -> 1.15;
             case POSSESSION -> 1.05;
+            case WIDE_PLAY -> 1.04;
+            case CENTRAL_PLAY -> 1.04;
             case BALANCED -> 1.00;
             case COUNTER -> 0.95;
             case DEFENSIVE -> 0.85;
@@ -1718,6 +1724,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double base = switch (style) {
             case ATTACKING -> 0.42;
             case POSSESSION -> 0.38;
+            case WIDE_PLAY -> 0.36;
+            case CENTRAL_PLAY -> 0.36;
             case COUNTER -> 0.35;
             case DEFENSIVE -> 0.28;
             case BALANCED -> 0.35;
@@ -1767,6 +1775,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return switch (style) {
             case POSSESSION -> 58.0;
             case ATTACKING -> 52.0;
+            case WIDE_PLAY, CENTRAL_PLAY -> 50.0;
             case COUNTER -> 48.0;
             case DEFENSIVE -> 45.0;
             case BALANCED -> 50.0;
