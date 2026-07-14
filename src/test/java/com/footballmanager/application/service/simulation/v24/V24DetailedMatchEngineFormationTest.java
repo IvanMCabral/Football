@@ -1133,6 +1133,85 @@ class V24DetailedMatchEngineFormationTest {
                         + ", attackerResistance=" + attackerResistance);
     }
 
+    /**
+     * V25D99.61/77: a 5-4-1 should read as a low block, not merely as "one
+     * fewer attacker". The manager-facing harness found that 5-4-1 could
+     * concede too many useful opponent looks: this pins the shape contract so
+     * the block gives up possession/volume but clearly protects the centre and
+     * lowers opponent chance quality.
+     */
+    @Test
+    void fiveFourOneShapeActsAsLowBlockProtection() throws Exception {
+        List<SessionPlayer> fourFourTwo = makeLineup("442", 4, 4, 2);
+        List<SessionPlayer> fiveFourOne = makeLineup("541", 5, 4, 1);
+
+        Map<String, LineupSlotDTO> fourFourTwoSlots = slots442(fourFourTwo);
+        Map<String, LineupSlotDTO> fiveFourOneSlots = slots541(fiveFourOne);
+
+        double baselinePossession = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "possessionMultiplier");
+        double lowBlockPossession = invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "possessionMultiplier");
+        double baselineAttack = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "attackVolumeMultiplier");
+        double lowBlockAttack = invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "attackVolumeMultiplier");
+        double baselineResistance = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defensiveResistanceMultiplier");
+        double lowBlockResistance = invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "defensiveResistanceMultiplier");
+        double baselineCenterDefense = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseCenter");
+        double lowBlockCenterDefense = invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "defenseCenter");
+
+        assertTrue(lowBlockPossession < baselinePossession,
+                "5-4-1 should concede territory/possession versus 4-4-2. baseline="
+                        + baselinePossession + ", lowBlock=" + lowBlockPossession);
+        assertTrue(lowBlockAttack < baselineAttack,
+                "5-4-1 should attack with less volume than 4-4-2. baseline="
+                        + baselineAttack + ", lowBlock=" + lowBlockAttack);
+        assertTrue(lowBlockResistance <= baselineResistance - 0.10,
+                "5-4-1 should materially lower opponent chance volume/quality. baseline="
+                        + baselineResistance + ", lowBlock=" + lowBlockResistance);
+        assertTrue(lowBlockCenterDefense >= baselineCenterDefense + 0.15,
+                "5-4-1 should visibly protect the central lane. baseline="
+                        + baselineCenterDefense + ", lowBlock=" + lowBlockCenterDefense);
+    }
+
+    /**
+     * V25D99.77: 4-2-2-2 is a narrow box trade-off. It may be stretchable wide,
+     * but it should not be globally worse than a flat 4-4-2 just because it has
+     * the same 4/4/2 line counts. It must protect the middle and keep a real
+     * vertical attack identity.
+     */
+    @Test
+    void fourTwoTwoTwoKeepsNarrowBoxIdentityWithoutGlobalDefensiveCollapse() throws Exception {
+        List<SessionPlayer> fourFourTwo = makeLineup("442", 4, 4, 2);
+        List<SessionPlayer> fourTwoTwoTwo = makeLineup("4222", 4, 4, 2);
+
+        Map<String, LineupSlotDTO> fourFourTwoSlots = slots442(fourFourTwo);
+        Map<String, LineupSlotDTO> fourTwoTwoTwoSlots = slots4222(fourTwoTwoTwo);
+
+        double baselineAttack = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "attackVolumeMultiplier");
+        double boxAttack = invokeShapeMetric(fourTwoTwoTwo, fourTwoTwoTwoSlots, "4-2-2-2", "attackVolumeMultiplier");
+        double baselineResistance = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defensiveResistanceMultiplier");
+        double boxResistance = invokeShapeMetric(fourTwoTwoTwo, fourTwoTwoTwoSlots, "4-2-2-2", "defensiveResistanceMultiplier");
+        double baselineCenterDefense = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseCenter");
+        double boxCenterDefense = invokeShapeMetric(fourTwoTwoTwo, fourTwoTwoTwoSlots, "4-2-2-2", "defenseCenter");
+        double baselineWideDefense = (
+                invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseLeft")
+                        + invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseRight")) / 2.0;
+        double boxWideDefense = (
+                invokeShapeMetric(fourTwoTwoTwo, fourTwoTwoTwoSlots, "4-2-2-2", "defenseLeft")
+                        + invokeShapeMetric(fourTwoTwoTwo, fourTwoTwoTwoSlots, "4-2-2-2", "defenseRight")) / 2.0;
+
+        assertTrue(boxAttack >= baselineAttack,
+                "4-2-2-2 should keep vertical punch versus flat 4-4-2. baseline="
+                        + baselineAttack + ", box=" + boxAttack);
+        assertTrue(boxResistance <= baselineResistance + 0.03,
+                "4-2-2-2 may trade width, but should not globally collapse defensively. baseline="
+                        + baselineResistance + ", box=" + boxResistance);
+        assertTrue(boxCenterDefense > baselineCenterDefense,
+                "4-2-2-2 double pivot/inside AMs should protect the middle. baseline="
+                        + baselineCenterDefense + ", box=" + boxCenterDefense);
+        assertTrue(boxWideDefense < baselineWideDefense,
+                "4-2-2-2 should still expose some wide trade-off. baseline="
+                        + baselineWideDefense + ", box=" + boxWideDefense);
+    }
+
     // ========== Reflection helpers for C11c tests ==========
 
     /**
@@ -1196,17 +1275,127 @@ class V24DetailedMatchEngineFormationTest {
             Map<String, LineupSlotDTO> slots,
             String accessorName)
             throws Exception {
+        return invokeShapeMetric(starting, slots, null, accessorName);
+    }
+
+    private double invokeShapeMetric(
+            List<SessionPlayer> starting,
+            Map<String, LineupSlotDTO> slots,
+            String formation,
+            String accessorName)
+            throws Exception {
         SessionTeam team = makeTeam(HOME_UUID, "Home FC", "4-4-2");
         V24TeamMatchState state = V24TeamMatchState.create(team, starting, List.of(), TeamStyle.BALANCED, slots);
 
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "tacticalShapeProfile", V24TeamMatchState.class, Map.class);
+        Method method = formation == null
+                ? V24DetailedMatchEngine.class.getDeclaredMethod(
+                        "tacticalShapeProfile", V24TeamMatchState.class, Map.class)
+                : V24DetailedMatchEngine.class.getDeclaredMethod(
+                        "tacticalShapeProfile", V24TeamMatchState.class, String.class, Map.class);
         method.setAccessible(true);
-        Object profile = method.invoke(engine, state, slots);
+        Object profile = formation == null
+                ? method.invoke(engine, state, slots)
+                : method.invoke(engine, state, formation, slots);
         Method accessor = profile.getClass().getDeclaredMethod(accessorName);
         accessor.setAccessible(true);
         return (double) accessor.invoke(profile);
+    }
+
+    private List<SessionPlayer> makeLineup(String prefix, int defenders, int midfielders, int attackers) {
+        List<SessionPlayer> starting = new ArrayList<>();
+        starting.add(makePlayer(prefix + "-gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < defenders; i++) {
+            starting.add(makePlayer(prefix + "-def" + i, "DEF", 50, 74, 58));
+        }
+        for (int i = 0; i < midfielders; i++) {
+            starting.add(makePlayer(prefix + "-mid" + i, "MID", 74, 66, 80));
+        }
+        for (int i = 0; i < attackers; i++) {
+            starting.add(makePlayer(prefix + "-att" + i, "ATT", 86, 48, 80));
+        }
+        return starting;
+    }
+
+    private Map<String, LineupSlotDTO> slots442(List<SessionPlayer> starting) {
+        return slotsByLines(starting,
+                new double[] {18.0, 40.0, 60.0, 82.0}, 83.0,
+                new double[] {18.0, 40.0, 60.0, 82.0}, 55.0,
+                new double[] {42.0, 58.0}, 18.0);
+    }
+
+    private Map<String, LineupSlotDTO> slots541(List<SessionPlayer> starting) {
+        return slotsByLines(starting,
+                new double[] {14.0, 32.0, 50.0, 68.0, 86.0}, 88.0,
+                new double[] {18.0, 40.0, 60.0, 82.0}, 68.0,
+                new double[] {50.0}, 30.0);
+    }
+
+    private Map<String, LineupSlotDTO> slots4222(List<SessionPlayer> starting) {
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        int def = 0;
+        int mid = 0;
+        int att = 0;
+        double[] defX = {18.0, 40.0, 60.0, 82.0};
+        double[] pivotX = {42.0, 58.0};
+        double[] amX = {38.0, 62.0};
+        double[] attX = {42.0, 58.0};
+        for (SessionPlayer player : starting) {
+            String id = player.getSessionPlayerId();
+            switch (player.getPosition()) {
+                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "DEF" -> {
+                    slots.put(id, new LineupSlotDTO(id, "D" + def, defX[Math.min(def, defX.length - 1)], 83.0));
+                    def++;
+                }
+                case "MID" -> {
+                    boolean pivot = mid < 2;
+                    double[] xs = pivot ? pivotX : amX;
+                    double y = pivot ? 63.0 : 40.0;
+                    int idx = pivot ? mid : mid - 2;
+                    slots.put(id, new LineupSlotDTO(id, "M" + mid, xs[Math.min(idx, xs.length - 1)], y));
+                    mid++;
+                }
+                default -> {
+                    slots.put(id, new LineupSlotDTO(id, "A" + att, attX[Math.min(att, attX.length - 1)], 18.0));
+                    att++;
+                }
+            }
+        }
+        return slots;
+    }
+
+    private Map<String, LineupSlotDTO> slotsByLines(
+            List<SessionPlayer> starting,
+            double[] defX,
+            double defY,
+            double[] midX,
+            double midY,
+            double[] attX,
+            double attY) {
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        int def = 0;
+        int mid = 0;
+        int att = 0;
+        for (SessionPlayer player : starting) {
+            String id = player.getSessionPlayerId();
+            switch (player.getPosition()) {
+                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "DEF" -> {
+                    slots.put(id, new LineupSlotDTO(id, "D" + def, defX[Math.min(def, defX.length - 1)], defY));
+                    def++;
+                }
+                case "MID" -> {
+                    slots.put(id, new LineupSlotDTO(id, "M" + mid, midX[Math.min(mid, midX.length - 1)], midY));
+                    mid++;
+                }
+                default -> {
+                    slots.put(id, new LineupSlotDTO(id, "A" + att, attX[Math.min(att, attX.length - 1)], attY));
+                    att++;
+                }
+            }
+        }
+        return slots;
     }
 
     private Map<String, LineupSlotDTO> explicitWideShapeSlots(List<SessionPlayer> starting) {

@@ -1851,10 +1851,17 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 "Formation " + formation.name() + " has " + positions.size()
                     + " positions for " + starters.size() + " starters");
         }
+
+        List<SessionPlayer> remaining = new ArrayList<>(starters);
         Map<String, LineupSlotDTO> slots = new LinkedHashMap<>();
-        for (int i = 0; i < starters.size(); i++) {
-            SessionPlayer player = starters.get(i);
-            FormationPositionDTO position = positions.get(i);
+        for (FormationPositionDTO position : positions) {
+            SessionPlayer player = pickBestPlayerForFormationPosition(remaining, position);
+            if (player == null) {
+                throw new IllegalStateException(
+                    "Could not assign player to formation " + formation.name()
+                        + " position " + position.role());
+            }
+            remaining.remove(player);
             slots.put(player.getSessionPlayerId(), new LineupSlotDTO(
                 player.getSessionPlayerId(),
                 position.subdivisionId(),
@@ -1862,6 +1869,84 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 position.yPercent()));
         }
         return slots;
+    }
+
+    private SessionPlayer pickBestPlayerForFormationPosition(
+            List<SessionPlayer> candidates,
+            FormationPositionDTO position) {
+        if (candidates == null || candidates.isEmpty()) {
+            return null;
+        }
+        return candidates.stream()
+            .max(Comparator
+                .comparingInt((SessionPlayer player) -> formationPositionFitScore(player, position))
+                .thenComparingInt(this::formationMatrixPlayerStrength))
+            .orElse(null);
+    }
+
+    private int formationPositionFitScore(SessionPlayer player, FormationPositionDTO position) {
+        String playerProfile = matrixPlayerProfile(player);
+        String slotProfile = matrixSlotProfile(position != null ? position.role() : null);
+        if (playerProfile.equals(slotProfile)) return 100;
+        if ("WIDE_DEF".equals(slotProfile) && "DEF".equals(playerProfile)) return 92;
+        if ("DEF".equals(slotProfile) && "WIDE_DEF".equals(playerProfile)) return 90;
+        if ("WIDE_ATT".equals(slotProfile) && "ATT".equals(playerProfile)) return 88;
+        if ("ATT".equals(slotProfile) && "WIDE_ATT".equals(playerProfile)) return 86;
+        if ("AM".equals(slotProfile) && ("MID".equals(playerProfile) || "WIDE_ATT".equals(playerProfile))) return 82;
+        if ("MID".equals(slotProfile) && ("DM".equals(playerProfile) || "AM".equals(playerProfile))) return 80;
+        if ("DM".equals(slotProfile) && ("MID".equals(playerProfile) || "DEF".equals(playerProfile))) return 78;
+        if ("WIDE_MID".equals(slotProfile) && ("MID".equals(playerProfile) || "WIDE_ATT".equals(playerProfile) || "WIDE_DEF".equals(playerProfile))) return 76;
+        if ("MID".equals(slotProfile) && "WIDE_MID".equals(playerProfile)) return 74;
+        if ("ATT".equals(slotProfile) && "AM".equals(playerProfile)) return 70;
+        if ("AM".equals(slotProfile) && "ATT".equals(playerProfile)) return 68;
+        if ("DEF".equals(slotProfile) && "DM".equals(playerProfile)) return 66;
+        if ("DM".equals(slotProfile) && "WIDE_DEF".equals(playerProfile)) return 62;
+        if ("MID".equals(slotProfile) && ("DEF".equals(playerProfile) || "ATT".equals(playerProfile))) return 52;
+        if ("DEF".equals(slotProfile) && "MID".equals(playerProfile)) return 48;
+        if ("ATT".equals(slotProfile) && "MID".equals(playerProfile)) return 48;
+        if ("GK".equals(slotProfile) || "GK".equals(playerProfile)) return 0;
+        return 35;
+    }
+
+    private String matrixPlayerProfile(SessionPlayer player) {
+        if (player == null || player.getPosition() == null) return "MID";
+        String position = player.getPosition().toUpperCase(Locale.ROOT);
+        return switch (position) {
+            case "GK" -> "GK";
+            case "DEF" -> "DEF";
+            case "MID" -> "MID";
+            case "WINGER" -> "WIDE_ATT";
+            case "ATT" -> "ATT";
+            default -> "MID";
+        };
+    }
+
+    private String matrixSlotProfile(String role) {
+        if (role == null || role.isBlank()) return "MID";
+        String normalized = role.toUpperCase(Locale.ROOT);
+        return switch (normalized) {
+            case "GK" -> "GK";
+            case "LB", "RB", "LWB", "RWB" -> "WIDE_DEF";
+            case "CB" -> "DEF";
+            case "CDM", "DM" -> "DM";
+            case "LM", "RM" -> "WIDE_MID";
+            case "CAM", "AM" -> "AM";
+            case "LW", "RW" -> "WIDE_ATT";
+            case "ST", "CF" -> "ATT";
+            default -> "MID";
+        };
+    }
+
+    private int formationMatrixPlayerStrength(SessionPlayer player) {
+        if (player == null) return 0;
+        String profile = matrixPlayerProfile(player);
+        return switch (profile) {
+            case "GK" -> player.getDefense() + player.getMentality();
+            case "DEF", "WIDE_DEF" -> player.getDefense() * 2 + player.getMentality() + player.getStamina();
+            case "MID", "DM", "AM", "WIDE_MID" -> player.getTechnique() * 2 + player.getMentality() + player.getStamina();
+            case "ATT", "WIDE_ATT" -> player.getAttack() * 2 + player.getTechnique() + player.getSpeed();
+            default -> player.getAttack() + player.getDefense() + player.getTechnique() + player.getSpeed();
+        };
     }
 
     @Override
