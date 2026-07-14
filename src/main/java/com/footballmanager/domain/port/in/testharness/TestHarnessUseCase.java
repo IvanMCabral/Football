@@ -117,6 +117,8 @@ public interface TestHarnessUseCase {
         String playerId,
         Double targetXPercent,
         Double targetYPercent,
+        Double deltaXPercent,
+        Double deltaYPercent,
         long seedStart,
         int seedCount);
 

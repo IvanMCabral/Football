@@ -93,7 +93,7 @@ class V33CalibrationDiagnosticTest {
         System.out.printf("INT-A 85x75: total=%.3f  shots=%.1f%n", intA.avgTotalGoals, intA.avgTotalShots);
         System.out.printf("INT-B 85x70: total=%.3f  shots=%.1f%n", intB.avgTotalGoals, intB.avgTotalShots);
         System.out.printf("INT-C 85x65: total=%.3f  shots=%.1f%n", intC.avgTotalGoals, intC.avgTotalShots);
-        System.out.printf("INTERMEDIOS: avg=%.3f  (pre-C31 runtime reference 5.45, target [1.5, 3.0])%n", intermediosAvg);
+        System.out.printf("INTERMEDIOS: avg=%.3f  (V25D99.80 professional-tempo target [0.9, 1.5])%n", intermediosAvg);
         System.out.printf("DESIGUALES : topWins=%.1f%%  (pre-C31 runtime reference 100%%, target [80%% to 100%%])%n", desHomeWinPct);
         System.out.println("---- end pre-C31 regression ----");
 
@@ -103,18 +103,18 @@ class V33CalibrationDiagnosticTest {
         // Diagnostic (synthetic per-position attrs, no skills) produces lower
         // numbers than runtime — bands reflect the lower-bound to allow diagnostic
         // noise while catching actual calibration drift.
-        assertTrue(intermediosAvg >= 1.8 && intermediosAvg <= 2.6,
+        assertTrue(intermediosAvg >= 0.9 && intermediosAvg <= 1.5,
                 "pre-C31 intermedios avg=" + intermediosAvg
-                        + " is outside regression band [1.8, 2.6] (pre-C31 diagnostic reference 2.153, runtime 5.45). "
+                        + " is outside professional-tempo regression band [0.9, 1.5]. "
                         + "If this fails, the pre-C31 calibration has drifted — "
-                        + "check V24ShotXgCalculator lines 384 (no cap), 541 (statsAmp=0.025), 588 (statsAmp=0.025).");
+                        + "check V24DetailedMatchEngine professionalShotTempoMultiplier and V24ShotXgCalculator.baseXg.");
         assertTrue(desHomeWinPct >= 80.0 && desHomeWinPct <= 100.0,
                 "pre-C31 desiguales topWins=" + desHomeWinPct
                         + "% is outside regression band [80%, 100%] (pre-C31 runtime reference 100%). "
                         + "If this fails, the pre-C31 calibration has drifted.");
-        assertTrue(parejos.avgTotalGoals >= 0.9 && parejos.avgTotalGoals <= 1.4,
+        assertTrue(parejos.avgTotalGoals >= 0.45 && parejos.avgTotalGoals <= 0.9,
                 "pre-C31 parejos total=" + parejos.avgTotalGoals
-                        + " is outside regression band [0.9, 1.4] (pre-C31 diagnostic reference 1.160).");
+                        + " is outside professional-tempo regression band [0.45, 0.9].");
     }
 
     // ========== Helpers (reused from V31b / V33a Phase 1) ==========

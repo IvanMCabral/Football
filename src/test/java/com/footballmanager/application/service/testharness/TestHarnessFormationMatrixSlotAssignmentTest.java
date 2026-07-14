@@ -51,6 +51,34 @@ class TestHarnessFormationMatrixSlotAssignmentTest {
             "ATT must land high in the formation, not wherever its source index was");
     }
 
+    @Test
+    @DisplayName("Position pixel fallback keeps real roles away from generic midfield")
+    void positionPixelFallbackNormalizesRealFootballRoles() throws Exception {
+        TestHarnessUseCaseImpl useCase = new TestHarnessUseCaseImpl(null, null, null, null, null);
+        Method fallbackSubdivision = TestHarnessUseCaseImpl.class.getDeclaredMethod("fallbackSubdivision", String.class);
+        Method fallbackYPercent = TestHarnessUseCaseImpl.class.getDeclaredMethod("fallbackYPercent", String.class);
+        Method canonicalXPercent = TestHarnessUseCaseImpl.class.getDeclaredMethod("canonicalXPercent", String.class);
+        Method canonicalYPercent = TestHarnessUseCaseImpl.class.getDeclaredMethod("canonicalYPercent", String.class);
+        fallbackSubdivision.setAccessible(true);
+        fallbackYPercent.setAccessible(true);
+        canonicalXPercent.setAccessible(true);
+        canonicalYPercent.setAccessible(true);
+
+        String rbSlot = (String) fallbackSubdivision.invoke(useCase, "RB");
+        String cfSlot = (String) fallbackSubdivision.invoke(useCase, "CF");
+
+        assertEquals("S24-3", rbSlot, "RB fallback must stay wide/right defensive, not generic midfield");
+        assertEquals("S05-2", cfSlot, "CF fallback must stay high central, not generic midfield");
+        assertEquals(78.0, (double) fallbackYPercent.invoke(useCase, "RB"), 0.01);
+        assertEquals(18.0, (double) fallbackYPercent.invoke(useCase, "CF"), 0.01);
+        assertTrue(((java.util.Optional<Double>) canonicalXPercent.invoke(useCase, rbSlot)).orElseThrow() > 70.0,
+            "RB canonical x should be on the right side");
+        assertTrue(((java.util.Optional<Double>) canonicalYPercent.invoke(useCase, rbSlot)).orElseThrow() > 70.0,
+            "RB canonical y should be defensive");
+        assertTrue(((java.util.Optional<Double>) canonicalYPercent.invoke(useCase, cfSlot)).orElseThrow() < 30.0,
+            "CF canonical y should be attacking");
+    }
+
     private static SessionPlayer player(String id, String position) {
         SessionPlayer player = new SessionPlayer();
         player.setSessionPlayerId(id);

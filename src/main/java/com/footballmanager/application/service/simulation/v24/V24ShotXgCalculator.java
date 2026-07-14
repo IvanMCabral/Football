@@ -465,24 +465,18 @@ public class V24ShotXgCalculator {
         return clamp(xg);
     }
 
-    // V24D6U4: Base xG reduced ~45-55% to lower expected goals from ~4.5 to ~1.25 per team.
-    // Target distribution: P(0)=29%, P(1)=36%, P(2)=22%, P(3+)=13% (Poisson λ=1.25).
-    // Previous six-yard box was 0.38 → 0.20 (real football ~0.40-0.50 but with fewer chances).
-    // Outside box reduced from 0.08 → 0.04, long range 0.04 → 0.02.
-    // V25D26.1: baseXg reduced ~30% (multiplier 0.70) to compensate for the larger
-    // formationXgModifier amplitudes (range 0.55-1.65). V25D26 used ×0.86 which was
-    // insufficient — smoke showed λ=3.70 for 4-2-3-1 (gate upper 1.6). With ×0.70 the
-    // expected λ for 4-4-2 (mod=1.0) lands at ~1.5 (in gate) and 4-2-3-1 (mod=1.65) at
-    // ~2.5 — still above 1.6 but closer; the unit test V24ModelTuningDiagnosticTest
-    // validates with formation=4-3-3 hardcoded which gives λ ~2.0 with these values
-    // (acceptable since formation is the variable being tested).
+    // V25D99.80: paired with the V24DetailedMatchEngine shot-tempo governor.
+    // Fewer total attempts need each actual shot to represent a cleaner chance
+    // than the old 40+ shot-noise model. These bases intentionally sit between
+    // the older low-xG flood and real-world raw location xG; defensive/keeper/
+    // skill layers still pull them down heavily in simulation.
     private double baseXg(V24ShotLocation location) {
         return switch (location) {
-            case SIX_YARD_BOX -> 0.140;       // was 0.20 (×0.70)
-            case PENALTY_AREA_CENTER -> 0.084; // was 0.12 (×0.70)
-            case PENALTY_AREA_WIDE -> 0.070;  // was 0.09; calibrated so wide play can compete with central play
-            case OUTSIDE_BOX -> 0.028;        // was 0.04 (×0.70)
-            case LONG_RANGE -> 0.014;         // was 0.02 (×0.70)
+            case SIX_YARD_BOX -> 0.200;
+            case PENALTY_AREA_CENTER -> 0.120;
+            case PENALTY_AREA_WIDE -> 0.100;
+            case OUTSIDE_BOX -> 0.040;
+            case LONG_RANGE -> 0.020;
         };
     }
 

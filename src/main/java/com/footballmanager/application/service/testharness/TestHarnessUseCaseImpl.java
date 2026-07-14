@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -71,6 +72,9 @@ import java.util.stream.Collectors;
 public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
     private static final String AUTO_POSITION_PIXEL_PREFIX = "__AUTO_";
+    private static final String AUTO_PLAYER_SWAP_STARTER = "__AUTO_STARTER";
+    private static final String AUTO_PLAYER_SWAP_BENCH = "__AUTO_BENCH";
+    private static final String AUTO_PLAYER_SWAP_PREFIX = "__AUTO_SWAP_";
 
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
@@ -2140,21 +2144,35 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             homeStyle,
             awayStyle,
             seedStart);
-        SessionPlayer starter = findPlayer(userIsHome
-                ? baseContext.homeStartingPlayers()
-                : baseContext.awayStartingPlayers(),
-            starterPlayerId)
+        List<SessionPlayer> userStarters = userIsHome
+            ? baseContext.homeStartingPlayers()
+            : baseContext.awayStartingPlayers();
+        List<SessionPlayer> userBench = userIsHome
+            ? baseContext.homeBenchPlayers()
+            : baseContext.awayBenchPlayers();
+
+        String resolvedStarterPlayerId = starterPlayerId;
+        String resolvedBenchPlayerId = benchPlayerId;
+        if (isAutoPlayerSwapToken(resolvedStarterPlayerId) || isAutoPlayerSwapToken(resolvedBenchPlayerId)) {
+            String autoMode = autoPlayerSwapMode(resolvedStarterPlayerId, resolvedBenchPlayerId);
+            PlayerSwapAutoPair pair = chooseAutoPlayerSwapPair(userStarters, userBench, autoMode)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No automatic starter/bench swap candidate found in V24 match context for mode " + autoMode));
+            resolvedStarterPlayerId = pair.starter().getSessionPlayerId();
+            resolvedBenchPlayerId = pair.bench().getSessionPlayerId();
+        }
+
+        final String effectiveStarterPlayerId = resolvedStarterPlayerId;
+        final String effectiveBenchPlayerId = resolvedBenchPlayerId;
+        SessionPlayer starter = findPlayer(userStarters, effectiveStarterPlayerId)
             .orElseThrow(() -> new IllegalArgumentException(
-                "starterPlayerId '" + starterPlayerId + "' not in user starting XI"));
-        SessionPlayer bench = findPlayer(userIsHome
-                ? baseContext.homeBenchPlayers()
-                : baseContext.awayBenchPlayers(),
-            benchPlayerId)
+                "starterPlayerId '" + effectiveStarterPlayerId + "' not in user starting XI"));
+        SessionPlayer bench = findPlayer(userBench, effectiveBenchPlayerId)
             .orElseThrow(() -> new IllegalArgumentException(
-                "benchPlayerId '" + benchPlayerId + "' not on user bench"));
+                "benchPlayerId '" + effectiveBenchPlayerId + "' not on user bench"));
 
         String formation = currentFormation(career, userTeamId, userIsHome ? home : away);
-        String slotId = resolveSlotId(baseContext, userIsHome, starterPlayerId, requestedSlotId);
+        String slotId = resolveSlotId(baseContext, userIsHome, effectiveStarterPlayerId, requestedSlotId);
         SwapAccumulator baseline = new SwapAccumulator();
         SwapAccumulator swapped = new SwapAccumulator();
         SwapAccumulator baselinePreAutoSub = new SwapAccumulator();
@@ -2173,7 +2191,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             V24DetailedMatchResult baselineResult =
                 new V24DetailedMatchEngine().simulate(seededBase, new Random(seed));
             V24MatchContext swappedContext = buildInitialSwapContext(
-                seededBase, userTeamId, starterPlayerId, benchPlayerId);
+                seededBase, userTeamId, effectiveStarterPlayerId, effectiveBenchPlayerId);
             V24DetailedMatchResult swappedResult =
                 new V24DetailedMatchEngine().simulate(swappedContext, new Random(seed));
             V24DetailedMatchResult baselinePreAutoSubResult =
@@ -2197,11 +2215,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             seedStart,
             seedStart + seedCount - 1L,
             seedCount,
-            starterPlayerId,
+            effectiveStarterPlayerId,
             safeName(starter),
             starter.getPosition(),
             playerOverall(starter),
-            benchPlayerId,
+            effectiveBenchPlayerId,
             safeName(bench),
             bench.getPosition(),
             playerOverall(bench),
@@ -2282,6 +2300,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             String playerId,
             Double targetXPercent,
             Double targetYPercent,
+            Double deltaXPercent,
+            Double deltaYPercent,
             long seedStart,
             int seedCount) {
         if (matchId == null || matchId.isBlank()) {
@@ -2290,8 +2310,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (playerId == null || playerId.isBlank()) {
             return Mono.error(new IllegalArgumentException("playerId is required"));
         }
-        if (targetXPercent == null || targetYPercent == null) {
-            return Mono.error(new IllegalArgumentException("targetXPercent and targetYPercent are required"));
+        boolean hasAbsoluteTarget = targetXPercent != null && targetYPercent != null;
+        boolean hasRelativeDelta = deltaXPercent != null && deltaYPercent != null;
+        if (!hasAbsoluteTarget && !hasRelativeDelta) {
+            return Mono.error(new IllegalArgumentException(
+                "targetXPercent/targetYPercent or deltaXPercent/deltaYPercent are required"));
         }
         if (seedCount < 1 || seedCount > 100) {
             return Mono.error(new IllegalArgumentException("seedCount must be between 1 and 100"));
@@ -2307,8 +2330,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     optionalCareer.get(),
                     matchId,
                     playerId,
-                    clampPercent(targetXPercent),
-                    clampPercent(targetYPercent),
+                    hasAbsoluteTarget ? clampPercent(targetXPercent) : null,
+                    hasAbsoluteTarget ? clampPercent(targetYPercent) : null,
+                    hasRelativeDelta ? deltaXPercent : null,
+                    hasRelativeDelta ? deltaYPercent : null,
                     seedStart,
                     seedCount));
             });
@@ -2318,8 +2343,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             CareerSave career,
             String matchId,
             String playerId,
-            double targetXPercent,
-            double targetYPercent,
+            Double requestedTargetXPercent,
+            Double requestedTargetYPercent,
+            Double deltaXPercent,
+            Double deltaYPercent,
             long seedStart,
             int seedCount) {
         MatchFixture fixture = career.getTournamentState().getFixtures().stream()
@@ -2360,6 +2387,12 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         double fromY = baseSlot != null && baseSlot.customYPercent() != null
             ? baseSlot.customYPercent()
             : canonicalYPercent(slotId).orElse(fallbackYPercent(player.getPosition()));
+        double targetXPercent = deltaXPercent != null
+            ? clampPercent(fromX + deltaXPercent)
+            : requestedTargetXPercent;
+        double targetYPercent = deltaYPercent != null
+            ? clampPercent(fromY + deltaYPercent)
+            : requestedTargetYPercent;
 
         SwapAccumulator baseline = new SwapAccumulator();
         SwapAccumulator moved = new SwapAccumulator();
@@ -3268,11 +3301,20 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     }
 
     private String fallbackSubdivision(String position) {
-        return switch (position) {
+        String normalized = position != null ? position.toUpperCase(Locale.ROOT) : "";
+        return switch (normalized) {
             case "GK" -> "GK-1";
-            case "DEF" -> "S23-2";
-            case "ATT", "WINGER" -> "S05-2";
-            default -> "S14-2";
+            case "RB", "RWB" -> "S24-3";
+            case "LB", "LWB" -> "S22-1";
+            case "CB", "DEF" -> "S23-2";
+            case "DM", "CDM" -> "S20-2";
+            case "LM" -> "S16-1";
+            case "RM" -> "S18-3";
+            case "CM", "MID", "AM", "CAM" -> "S17-2";
+            case "LW" -> "S04-1";
+            case "RW" -> "S06-3";
+            case "ST", "CF", "ATT", "WINGER" -> "S05-2";
+            default -> "S17-2";
         };
     }
 
@@ -3456,6 +3498,125 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             .findFirst();
     }
 
+    private boolean isAutoPlayerSwapToken(String playerId) {
+        return AUTO_PLAYER_SWAP_STARTER.equals(playerId)
+            || AUTO_PLAYER_SWAP_BENCH.equals(playerId)
+            || (playerId != null && playerId.startsWith(AUTO_PLAYER_SWAP_PREFIX));
+    }
+
+    private String autoPlayerSwapMode(String starterPlayerId, String benchPlayerId) {
+        String token = starterPlayerId != null && starterPlayerId.startsWith(AUTO_PLAYER_SWAP_PREFIX)
+            ? starterPlayerId
+            : benchPlayerId;
+        if (token == null || !token.startsWith(AUTO_PLAYER_SWAP_PREFIX)) {
+            return "NATURAL";
+        }
+        return token.substring(AUTO_PLAYER_SWAP_PREFIX.length()).toUpperCase(Locale.ROOT);
+    }
+
+    private Optional<PlayerSwapAutoPair> chooseAutoPlayerSwapPair(
+            List<SessionPlayer> starters,
+            List<SessionPlayer> bench,
+            String mode) {
+        if (starters == null || bench == null || starters.isEmpty() || bench.isEmpty()) {
+            return Optional.empty();
+        }
+        List<SessionPlayer> outfieldStarters = starters.stream()
+            .filter(this::isOutfieldPlayer)
+            .filter(p -> p.getSessionPlayerId() != null && !p.getSessionPlayerId().isBlank())
+            .sorted(Comparator
+                .comparingInt((SessionPlayer p) -> impactSubPositionPriority(p.getPosition()))
+                .thenComparingInt(this::substitutionScore)
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+            .toList();
+        List<SessionPlayer> outfieldBench = bench.stream()
+            .filter(this::isOutfieldPlayer)
+            .filter(p -> p.getSessionPlayerId() != null && !p.getSessionPlayerId().isBlank())
+            .sorted(Comparator
+                .comparingInt((SessionPlayer p) -> -substitutionScore(p))
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+            .toList();
+
+        Optional<PlayerSwapAutoPair> stressPair = switch (String.valueOf(mode).toUpperCase(Locale.ROOT)) {
+            case "ATT_TO_DEF" -> chooseAutoSwapByLines(outfieldStarters, outfieldBench, "ATT", "DEF");
+            case "DEF_TO_ATT" -> chooseAutoSwapByLines(outfieldStarters, outfieldBench, "DEF", "ATT");
+            case "MID_TO_ATT" -> chooseAutoSwapByLines(outfieldStarters, outfieldBench, "MID", "ATT");
+            case "MID_TO_DEF" -> chooseAutoSwapByLines(outfieldStarters, outfieldBench, "MID", "DEF");
+            case "DOWNGRADE" -> chooseAutoSwapByOverallGap(outfieldStarters, outfieldBench, false);
+            case "UPGRADE" -> chooseAutoSwapByOverallGap(outfieldStarters, outfieldBench, true);
+            case "OUT_OF_LINE" -> chooseAutoSwapOutOfLine(outfieldStarters, outfieldBench);
+            default -> Optional.empty();
+        };
+        if (stressPair.isPresent()) {
+            return stressPair;
+        }
+
+        for (SessionPlayer starter : outfieldStarters) {
+            Optional<SessionPlayer> samePosition = outfieldBench.stream()
+                .filter(candidate -> samePosition(starter, candidate))
+                .findFirst();
+            if (samePosition.isPresent()) {
+                return Optional.of(new PlayerSwapAutoPair(starter, samePosition.get()));
+            }
+
+            Optional<SessionPlayer> sameLine = outfieldBench.stream()
+                .filter(candidate -> Objects.equals(
+                    positionPixelAutoLine(starter),
+                    positionPixelAutoLine(candidate)))
+                .findFirst();
+            if (sameLine.isPresent()) {
+                return Optional.of(new PlayerSwapAutoPair(starter, sameLine.get()));
+            }
+        }
+
+        if (!outfieldStarters.isEmpty() && !outfieldBench.isEmpty()) {
+            return Optional.of(new PlayerSwapAutoPair(outfieldStarters.get(0), outfieldBench.get(0)));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<PlayerSwapAutoPair> chooseAutoSwapByLines(
+            List<SessionPlayer> starters,
+            List<SessionPlayer> bench,
+            String starterLine,
+            String benchLine) {
+        return starters.stream()
+            .filter(starter -> starterLine.equals(positionPixelAutoLine(starter)))
+            .flatMap(starter -> bench.stream()
+                .filter(candidate -> benchLine.equals(positionPixelAutoLine(candidate)))
+                .map(candidate -> new PlayerSwapAutoPair(starter, candidate)))
+            .findFirst();
+    }
+
+    private Optional<PlayerSwapAutoPair> chooseAutoSwapOutOfLine(
+            List<SessionPlayer> starters,
+            List<SessionPlayer> bench) {
+        return starters.stream()
+            .flatMap(starter -> bench.stream()
+                .filter(candidate -> !Objects.equals(positionPixelAutoLine(starter), positionPixelAutoLine(candidate)))
+                .map(candidate -> new PlayerSwapAutoPair(starter, candidate)))
+            .findFirst();
+    }
+
+    private Optional<PlayerSwapAutoPair> chooseAutoSwapByOverallGap(
+            List<SessionPlayer> starters,
+            List<SessionPlayer> bench,
+            boolean upgrade) {
+        return starters.stream()
+            .flatMap(starter -> bench.stream()
+                .filter(candidate -> {
+                    int delta = playerOverall(candidate) - playerOverall(starter);
+                    return upgrade ? delta >= 4 : delta <= -4;
+                })
+                .sorted((a, b) -> {
+                    int deltaA = playerOverall(a) - playerOverall(starter);
+                    int deltaB = playerOverall(b) - playerOverall(starter);
+                    return upgrade ? Integer.compare(deltaB, deltaA) : Integer.compare(deltaA, deltaB);
+                })
+                .map(candidate -> new PlayerSwapAutoPair(starter, candidate)))
+            .findFirst();
+    }
+
     private Optional<SessionPlayer> resolvePositionPixelPlayer(List<SessionPlayer> players, String playerId) {
         if (players == null || playerId == null || playerId.isBlank()) {
             return Optional.empty();
@@ -3605,10 +3766,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     }
 
     private double fallbackYPercent(String position) {
-        return switch (position != null ? position : "") {
+        String normalized = position != null ? position.toUpperCase(Locale.ROOT) : "";
+        return switch (normalized) {
             case "GK" -> 94.0;
-            case "DEF" -> 78.0;
-            case "ATT", "WINGER" -> 18.0;
+            case "RB", "RWB", "LB", "LWB", "CB", "DEF" -> 78.0;
+            case "DM", "CDM" -> 66.0;
+            case "CM", "MID", "LM", "RM" -> 52.0;
+            case "AM", "CAM" -> 38.0;
+            case "ST", "CF", "LW", "RW", "ATT", "WINGER" -> 18.0;
             default -> 52.0;
         };
     }
@@ -4341,4 +4506,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return -1;
         }
     }
+
+    private record PlayerSwapAutoPair(
+        SessionPlayer starter,
+        SessionPlayer bench
+    ) {}
 }

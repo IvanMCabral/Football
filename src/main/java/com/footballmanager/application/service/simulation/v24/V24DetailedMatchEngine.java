@@ -609,9 +609,21 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // Keep the star signal as the larger anchor, but let the tactical
             // aggregate move the final input both up and down so every
             // meaningful player change can be measured by the harness.
-            int teamAttackInfluence = (int) Math.round((keyAttack * 0.55) + (aggregateAttack * 0.45));
+            // V25D99.85: the stress harness showed that extreme swaps
+            // (CB into ST slot, ST into DEF slot) were still too quiet because
+            // the single best attacker protected chance volume too much. Keep
+            // the star-player anchor, but let the slot/effectiveness-aware
+            // team aggregate carry the majority of the signal.
+            int teamAttackInfluence = (int) Math.round((keyAttack * 0.40) + (aggregateAttack * 0.60));
             double opponentDefenderStat = aggregateDefenderStat(opponent.startingPlayers(), opponentSlots);
             double chanceProbability = chanceProbability(possessor.style(), minute, teamAttackInfluence, keySpeed, keyDribbler, keySpeedster)
+                    // V25D99.80: the V24 minute loop was producing too many
+                    // low-value shot attempts (professional-feel issue in the
+                    // visual harness). Keep all tactical/player multipliers
+                    // active, but apply a global tempo governor so formation
+                    // changes read as cleaner chance quality/territory changes
+                    // instead of 40+ noisy shots every match.
+                    * professionalShotTempoMultiplier()
                     * Math.sqrt((1.0 + matchIntensity) / 2.0)
                     // V25D99.21: shape affects shot/chance volume. Attacking
                     // occupation and width raise chance creation; defensive
@@ -1470,7 +1482,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // scenario matrix. Shape and per-shot xG remain the main tactical
         // signal; this only ensures that a weak link in the back line is no
         // longer swallowed by the team average.
-        double delta = (70.0 - defenderStat) / 65.0;
+        // V25D99.85: make defensive personnel changes slightly more visible.
+        // The previous /65 curve was professional but too flat for stress
+        // swaps; a CB->ST or ST->CB test often disappeared into 0.00 deltas.
+        double delta = (70.0 - defenderStat) / 55.0;
         return clamp(1.0 + delta, 0.78, 1.35);
     }
 
@@ -1796,7 +1811,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double possession = 1.0 + midDelta + midfieldWidthBonus + centralOverloadBonus
                 - noOutletPenalty - excessiveWidthPenalty - midfieldShortagePenalty;
 
-        double attackDelta = (att - 2.0) * 0.095;
+        // V25D99.85: slightly stronger occupation curve so moving/replacing a
+        // real attacking slot is visible in the harness. This still stays
+        // bounded by the final clamp and is fed by effectiveness-weighted
+        // slot geometry, not by formation name alone.
+        double attackDelta = (att - 2.0) * 0.125;
         double usefulAttackWidth = (attWidth - 0.30) * 0.30;
         double supportFromMidfield = (66.6667 - midAvgY) / 66.6667 * 0.08;
         double advancedLineBonus = (22.2222 - attAvgY) / 22.2222 * 0.06;
@@ -1805,7 +1824,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double attackVolume = 1.0 + attackDelta + usefulAttackWidth + supportFromMidfield
                 + advancedLineBonus - sideImbalancePenalty - noGkPenalty;
 
-        double defDelta = (def - 4.0) * 0.080;
+        // V25D99.85: defensive occupation was under-read in player-swap stress
+        // tests. A defender removed from the back line, or an attacker forced
+        // into it, should affect opponent chance quality/volume more clearly.
+        double defDelta = (def - 4.0) * 0.105;
         double defensiveWidthBonus = Math.min(0.08, Math.max(0.0, defWidth - 0.34) * 0.20);
         double lowBlockBonus = Math.max(0.0, defAvgY - 74.0) * 0.004;
         double midfieldScreenBonus = Math.max(0.0, mid - 3.0) * 0.025;
@@ -1974,6 +1996,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double advantage = Math.max(0.0, bestEdge) * 0.120;
         double deadEnd = Math.max(0.0, -worstEdge) * 0.045;
         return clamp(1.0 + advantage - deadEnd, 0.86, 1.20);
+    }
+
+    private double professionalShotTempoMultiplier() {
+        return 0.68;
     }
 
     private double defensiveShapeShotQualityMultiplier(V24TacticalShapeProfile defense, V24ShotLocation location) {

@@ -4,6 +4,8 @@ public record PositionPixelMatrixSummaryRequest(
     String playerId,
     Double targetXPercent,
     Double targetYPercent,
+    Double deltaXPercent,
+    Double deltaYPercent,
     Long seedStart,
     Integer seedCount
 ) {}

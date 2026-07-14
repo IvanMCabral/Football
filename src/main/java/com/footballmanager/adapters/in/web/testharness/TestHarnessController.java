@@ -612,6 +612,8 @@ public class TestHarnessController {
                 request != null ? request.playerId() : null,
                 request != null ? request.targetXPercent() : null,
                 request != null ? request.targetYPercent() : null,
+                request != null ? request.deltaXPercent() : null,
+                request != null ? request.deltaYPercent() : null,
                 seedStart,
                 seedCount)
             .map(ResponseEntity::ok);
