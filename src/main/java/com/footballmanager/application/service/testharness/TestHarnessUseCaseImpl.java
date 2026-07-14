@@ -70,6 +70,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
+    private static final String AUTO_POSITION_PIXEL_PREFIX = "__AUTO_";
+
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
     // V24D20-SANDBOX-V2-MVP F5: replay endpoint dependencies
@@ -2346,9 +2348,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             homeStyle,
             awayStyle,
             seedStart);
-        SessionPlayer player = findPlayer(userIsHome ? baseContext.homeStartingPlayers() : baseContext.awayStartingPlayers(), playerId)
+        List<SessionPlayer> userStarters = userIsHome ? baseContext.homeStartingPlayers() : baseContext.awayStartingPlayers();
+        SessionPlayer player = resolvePositionPixelPlayer(userStarters, playerId)
             .orElseThrow(() -> new IllegalArgumentException("playerId '" + playerId + "' not in user starting XI"));
-        LineupSlotDTO baseSlot = (userIsHome ? baseContext.homeSlotsByPlayerId() : baseContext.awaySlotsByPlayerId()).get(playerId);
+        String resolvedPlayerId = player.getSessionPlayerId();
+        LineupSlotDTO baseSlot = (userIsHome ? baseContext.homeSlotsByPlayerId() : baseContext.awaySlotsByPlayerId()).get(resolvedPlayerId);
         String slotId = baseSlot != null ? baseSlot.subdivisionId() : fallbackSubdivision(player.getPosition());
         double fromX = baseSlot != null && baseSlot.customXPercent() != null
             ? baseSlot.customXPercent()
@@ -2374,7 +2378,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             V24MatchContext movedContext = buildMovedPositionContext(
                 seededBase,
                 userTeamId,
-                playerId,
+                resolvedPlayerId,
                 slotId,
                 targetXPercent,
                 targetYPercent);
@@ -2389,7 +2393,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         return new PositionPixelMatrixSummaryRow(
             matchId,
             currentFormation(career, userTeamId, userIsHome ? home : away),
-            playerId,
+            resolvedPlayerId,
             safeName(player),
             player.getPosition(),
             slotId,
@@ -2432,9 +2436,17 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             round3(movedAvg.centralXgFor() - baseAvg.centralXgFor()),
             round3(movedAvg.wideXgFor() - baseAvg.wideXgFor()),
             round3(movedAvg.longXgFor() - baseAvg.longXgFor()),
+            round2(movedAvg.leftWideShotsFor() - baseAvg.leftWideShotsFor()),
+            round2(movedAvg.rightWideShotsFor() - baseAvg.rightWideShotsFor()),
+            round3(movedAvg.leftWideXgFor() - baseAvg.leftWideXgFor()),
+            round3(movedAvg.rightWideXgFor() - baseAvg.rightWideXgFor()),
             round3(movedAvg.centralXgAgainst() - baseAvg.centralXgAgainst()),
             round3(movedAvg.wideXgAgainst() - baseAvg.wideXgAgainst()),
-            round3(movedAvg.longXgAgainst() - baseAvg.longXgAgainst()));
+            round3(movedAvg.longXgAgainst() - baseAvg.longXgAgainst()),
+            round2(movedAvg.leftWideShotsAgainst() - baseAvg.leftWideShotsAgainst()),
+            round2(movedAvg.rightWideShotsAgainst() - baseAvg.rightWideShotsAgainst()),
+            round3(movedAvg.leftWideXgAgainst() - baseAvg.leftWideXgAgainst()),
+            round3(movedAvg.rightWideXgAgainst() - baseAvg.rightWideXgAgainst()));
     }
 
     private List<ScenarioMatrixSummaryRow> executeScenarioMatrixSummary(
@@ -3444,6 +3456,39 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             .findFirst();
     }
 
+    private Optional<SessionPlayer> resolvePositionPixelPlayer(List<SessionPlayer> players, String playerId) {
+        if (players == null || playerId == null || playerId.isBlank()) {
+            return Optional.empty();
+        }
+        if (!playerId.startsWith(AUTO_POSITION_PIXEL_PREFIX)) {
+            return findPlayer(players, playerId);
+        }
+
+        String requestedLine = playerId.substring(AUTO_POSITION_PIXEL_PREFIX.length()).toUpperCase(Locale.ROOT);
+        Optional<SessionPlayer> exactLine = players.stream()
+            .filter(p -> p != null && requestedLine.equals(positionPixelAutoLine(p)))
+            .findFirst();
+        if (exactLine.isPresent()) {
+            return exactLine;
+        }
+        return players.stream()
+            .filter(p -> p != null && !"GK".equalsIgnoreCase(p.getPosition()))
+            .findFirst();
+    }
+
+    private String positionPixelAutoLine(SessionPlayer player) {
+        if (player == null || player.getPosition() == null) {
+            return "MID";
+        }
+        String position = player.getPosition().toUpperCase(Locale.ROOT);
+        return switch (position) {
+            case "GK" -> "GK";
+            case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> "DEF";
+            case "ATT", "ST", "CF", "LW", "RW", "WINGER" -> "ATT";
+            default -> "MID";
+        };
+    }
+
     private V24MatchContext buildInitialSwapContext(
             V24MatchContext context,
             String userTeamId,
@@ -3871,6 +3916,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         private double centralXgAgainst;
         private double wideXgAgainst;
         private double longXgAgainst;
+        private double leftWideShotsFor;
+        private double rightWideShotsFor;
+        private double leftWideShotsAgainst;
+        private double rightWideShotsAgainst;
+        private double leftWideXgFor;
+        private double rightWideXgFor;
+        private double leftWideXgAgainst;
+        private double rightWideXgAgainst;
 
         private void add(V24DetailedMatchResult result, boolean userIsHome) {
             ZoneCounts zones = countZones(result);
@@ -3894,11 +3947,19 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             centralXgAgainst += userIsHome ? zones.awayCentralXg() : zones.homeCentralXg();
             wideXgAgainst += userIsHome ? zones.awayWideXg() : zones.homeWideXg();
             longXgAgainst += userIsHome ? zones.awayLongXg() : zones.homeLongXg();
+            leftWideShotsFor += userIsHome ? zones.homeLeftWide() : zones.awayLeftWide();
+            rightWideShotsFor += userIsHome ? zones.homeRightWide() : zones.awayRightWide();
+            leftWideShotsAgainst += userIsHome ? zones.awayLeftWide() : zones.homeLeftWide();
+            rightWideShotsAgainst += userIsHome ? zones.awayRightWide() : zones.homeRightWide();
+            leftWideXgFor += userIsHome ? zones.homeLeftWideXg() : zones.awayLeftWideXg();
+            rightWideXgFor += userIsHome ? zones.homeRightWideXg() : zones.awayRightWideXg();
+            leftWideXgAgainst += userIsHome ? zones.awayLeftWideXg() : zones.homeLeftWideXg();
+            rightWideXgAgainst += userIsHome ? zones.awayRightWideXg() : zones.homeRightWideXg();
         }
 
         private SwapAverages averages() {
             if (count <= 0) {
-                return new SwapAverages(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                return new SwapAverages(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             }
             double avgGoalsFor = round2(goalsFor / count);
             double avgGoalsAgainst = round2(goalsAgainst / count);
@@ -3927,7 +3988,15 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 round3(longXgFor / count),
                 round3(centralXgAgainst / count),
                 round3(wideXgAgainst / count),
-                round3(longXgAgainst / count));
+                round3(longXgAgainst / count),
+                round2(leftWideShotsFor / count),
+                round2(rightWideShotsFor / count),
+                round2(leftWideShotsAgainst / count),
+                round2(rightWideShotsAgainst / count),
+                round3(leftWideXgFor / count),
+                round3(rightWideXgFor / count),
+                round3(leftWideXgAgainst / count),
+                round3(rightWideXgAgainst / count));
         }
     }
 
@@ -3952,7 +4021,15 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         double longXgFor,
         double centralXgAgainst,
         double wideXgAgainst,
-        double longXgAgainst
+        double longXgAgainst,
+        double leftWideShotsFor,
+        double rightWideShotsFor,
+        double leftWideShotsAgainst,
+        double rightWideShotsAgainst,
+        double leftWideXgFor,
+        double rightWideXgFor,
+        double leftWideXgAgainst,
+        double rightWideXgAgainst
     ) {}
 
     private record ZoneCounts(

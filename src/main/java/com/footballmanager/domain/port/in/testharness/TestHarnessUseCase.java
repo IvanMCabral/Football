@@ -500,9 +500,17 @@ public interface TestHarnessUseCase {
         double deltaCentralXgFor,
         double deltaWideXgFor,
         double deltaLongXgFor,
+        double deltaLeftWideShotsFor,
+        double deltaRightWideShotsFor,
+        double deltaLeftWideXgFor,
+        double deltaRightWideXgFor,
         double deltaCentralXgAgainst,
         double deltaWideXgAgainst,
-        double deltaLongXgAgainst
+        double deltaLongXgAgainst,
+        double deltaLeftWideShotsAgainst,
+        double deltaRightWideShotsAgainst,
+        double deltaLeftWideXgAgainst,
+        double deltaRightWideXgAgainst
     ) {}
 
     record LabMutationResult(
