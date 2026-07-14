@@ -1,8 +1,10 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -145,6 +147,160 @@ class V24DetailedMatchEngineFormationTest {
                         + "Last measured: shots442=" + shots442 + " shots433=" + shots433
                         + " goals442=" + goals442 + " goals433=" + goals433
                         + " xg442=" + xg442 + " xg433=" + xg433);
+    }
+
+    @Test
+    void defenderRosterChanceVolumeMultiplierRewardsAndPunishesDefensiveQuality() throws Exception {
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+            "defenderRosterChanceVolumeMultiplier",
+            double.class);
+        method.setAccessible(true);
+
+        double weakDefense = (double) method.invoke(engine, 45.0);
+        double neutralDefense = (double) method.invoke(engine, 70.0);
+        double eliteDefense = (double) method.invoke(engine, 95.0);
+
+        assertTrue(weakDefense > neutralDefense,
+            "Weak defensive roster should increase opponent chance volume.");
+        assertTrue(eliteDefense < neutralDefense,
+            "Elite defensive roster should suppress opponent chance volume.");
+        assertTrue(Math.abs(neutralDefense - 1.0) < 0.000001,
+            "Neutral defensive roster should leave chance volume unchanged.");
+        assertTrue(weakDefense <= 1.35 && eliteDefense >= 0.78,
+            "Defensive roster chance-volume multiplier must stay bounded but readable. "
+                + "weak=" + weakDefense + " elite=" + eliteDefense);
+        assertTrue(weakDefense - neutralDefense >= 0.28,
+            "A very weak defensive roster should be visibly readable in the harness. "
+                + "weak=" + weakDefense + " neutral=" + neutralDefense);
+        assertTrue(neutralDefense - eliteDefense >= 0.18,
+            "An elite defensive roster should visibly suppress chance volume. "
+                + "neutral=" + neutralDefense + " elite=" + eliteDefense);
+    }
+
+    @Test
+    void channelSensitiveDefenderStatMakesWeakWideDefenderHurtWideShotsMore() throws Exception {
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+            "aggregateDefenderStatForLocation",
+            List.class,
+            Map.class,
+            V24ShotLocation.class,
+            double.class);
+        method.setAccessible(true);
+
+        V24PlayerMatchState gk = V24PlayerMatchState.fromSessionPlayer(
+            makePlayer("chan_gk", "GK", 30, 82, 50), "teamC");
+        V24PlayerMatchState weakLeftBack = V24PlayerMatchState.fromSessionPlayer(
+            makePlayer("chan_lb", "DEF", 40, 25, 45), "teamC");
+        V24PlayerMatchState strongCenterBack = V24PlayerMatchState.fromSessionPlayer(
+            makePlayer("chan_cb", "DEF", 40, 95, 55), "teamC");
+        List<V24PlayerMatchState> defenders = List.of(gk, weakLeftBack, strongCenterBack);
+
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        slots.put(gk.sessionPlayerId(), new LineupSlotDTO(gk.sessionPlayerId(), "GK-1", 50.0, 93.0));
+        slots.put(weakLeftBack.sessionPlayerId(), new LineupSlotDTO(weakLeftBack.sessionPlayerId(), "S22-1", 18.0, 78.0));
+        slots.put(strongCenterBack.sessionPlayerId(), new LineupSlotDTO(strongCenterBack.sessionPlayerId(), "S23-2", 50.0, 80.0));
+
+        double wideDefense = (double) method.invoke(
+            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, 70.0);
+        double centralDefense = (double) method.invoke(
+            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_CENTER, 70.0);
+
+        assertTrue(wideDefense < centralDefense,
+            "A weak wide defender should reduce channel defensive quality more for wide shots "
+                + "than central shots. wideDefense=" + wideDefense + " centralDefense=" + centralDefense);
+    }
+
+    @Test
+    void channelSensitiveDefenderStatDistinguishesLeftAndRightWideShots() throws Exception {
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+            "aggregateDefenderStatForLocation",
+            List.class,
+            Map.class,
+            V24ShotLocation.class,
+            V24ShotCoordinate.class,
+            double.class);
+        method.setAccessible(true);
+
+        V24PlayerMatchState gk = V24PlayerMatchState.fromSessionPlayer(
+            makePlayer("lr_gk", "GK", 30, 82, 50), "teamLR");
+        V24PlayerMatchState weakLeftBack = V24PlayerMatchState.fromSessionPlayer(
+            makePlayer("lr_lb", "DEF", 40, 25, 45), "teamLR");
+        V24PlayerMatchState strongRightBack = V24PlayerMatchState.fromSessionPlayer(
+            makePlayer("lr_rb", "DEF", 40, 95, 55), "teamLR");
+        V24PlayerMatchState neutralCenterBack = V24PlayerMatchState.fromSessionPlayer(
+            makePlayer("lr_cb", "DEF", 40, 70, 55), "teamLR");
+        List<V24PlayerMatchState> defenders = List.of(gk, weakLeftBack, strongRightBack, neutralCenterBack);
+
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        slots.put(gk.sessionPlayerId(), new LineupSlotDTO(gk.sessionPlayerId(), "GK-1", 50.0, 94.0));
+        slots.put(weakLeftBack.sessionPlayerId(), new LineupSlotDTO(weakLeftBack.sessionPlayerId(), "S22-1", 18.0, 78.0));
+        slots.put(strongRightBack.sessionPlayerId(), new LineupSlotDTO(strongRightBack.sessionPlayerId(), "S24-1", 82.0, 78.0));
+        slots.put(neutralCenterBack.sessionPlayerId(), new LineupSlotDTO(neutralCenterBack.sessionPlayerId(), "S23-2", 50.0, 80.0));
+
+        V24ShotCoordinate leftWideShot = new V24ShotCoordinate(88.0, 28.0, V24ShotLocation.PENALTY_AREA_WIDE);
+        V24ShotCoordinate rightWideShot = new V24ShotCoordinate(88.0, 72.0, V24ShotLocation.PENALTY_AREA_WIDE);
+
+        double leftChannelDefense = (double) method.invoke(
+            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, leftWideShot, 70.0);
+        double rightChannelDefense = (double) method.invoke(
+            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, rightWideShot, 70.0);
+
+        assertTrue(leftChannelDefense < rightChannelDefense - 8.0,
+            "Left wide shots must feel the weak left defender more than the strong right defender. "
+                + "leftChannelDefense=" + leftChannelDefense
+                + " rightChannelDefense=" + rightChannelDefense);
+    }
+
+    @Test
+    void leftAndRightFlankCoordinateGeneratorKeepsWideShotsOnRequestedSide() {
+        V24ShotCoordinateGenerator generator = new V24ShotCoordinateGenerator();
+
+        for (int seed = 1; seed <= 100; seed++) {
+            V24ShotCoordinate left = generator.generateWideFlank(true, new Random(seed));
+            V24ShotCoordinate right = generator.generateWideFlank(false, new Random(seed));
+
+            assertTrue(left.location() == V24ShotLocation.PENALTY_AREA_WIDE,
+                "LEFT_FLANK generated coordinate must remain PENALTY_AREA_WIDE.");
+            assertTrue(right.location() == V24ShotLocation.PENALTY_AREA_WIDE,
+                "RIGHT_FLANK generated coordinate must remain PENALTY_AREA_WIDE.");
+            assertTrue(left.y() >= 18.0 && left.y() <= 42.0,
+                "LEFT_FLANK must place wide shots on the left channel. seed=" + seed + " y=" + left.y());
+            assertTrue(right.y() >= 58.0 && right.y() <= 82.0,
+                "RIGHT_FLANK must place wide shots on the right channel. seed=" + seed + " y=" + right.y());
+        }
+    }
+
+    @Test
+    void defenderChannelWeightChangesSmoothlyAroundLaneBoundaries() throws Exception {
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+            "defenderChannelWeight",
+            V24ShotLocation.class,
+            double.class,
+            V24ShotCoordinate.class);
+        method.setAccessible(true);
+
+        V24ShotCoordinate leftWideShot = new V24ShotCoordinate(88.0, 28.0, V24ShotLocation.PENALTY_AREA_WIDE);
+
+        double x34 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 34.0, leftWideShot);
+        double x35 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 35.0, leftWideShot);
+        double x36 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 36.0, leftWideShot);
+        double x64 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 64.0, leftWideShot);
+        double x65 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 65.0, leftWideShot);
+        double x66 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 66.0, leftWideShot);
+
+        assertTrue(Math.abs(x34 - x35) < 0.08 && Math.abs(x35 - x36) < 0.08,
+            "Wide defensive weight must not jump around the left/center lane boundary. "
+                + "x34=" + x34 + " x35=" + x35 + " x36=" + x36);
+        assertTrue(Math.abs(x64 - x65) < 0.08 && Math.abs(x65 - x66) < 0.08,
+            "Wide defensive weight must not jump around the center/right lane boundary. "
+                + "x64=" + x64 + " x65=" + x65 + " x66=" + x66);
+        assertTrue(x34 > x36,
+            "For a left-side shot, moving the defender gradually away from the left channel "
+                + "should gradually lower same-side defensive weight.");
     }
 
     // ========== V24D23-A B2: shot-location distribution is formation-aware ==========
@@ -755,6 +911,228 @@ class V24DetailedMatchEngineFormationTest {
                         + ", delta=" + (naturalAgg - misalignedAgg));
     }
 
+    /**
+     * V25D99.22.1: the actual match engine must consume the same visual
+     * free-positioning coordinates used by the formation editor preview.
+     *
+     * <p>Regression captured from the MVP editor: pushing one midfielder a bit
+     * higher from a 4-4-2-like shape felt visually more attacking, but the
+     * engine-side aggregate could only see a coarse MID label and/or the
+     * distance-from-ideal penalty. The result was backwards: both attack and
+     * midfield could drop even though the manager clearly made a more
+     * aggressive shape.
+     *
+     * <p>This test keeps the same 11 players and same tactical MID label, only
+     * changing one player's customY from CM-ish ({@code y=60}) to CAM-ish
+     * ({@code y=40}). The attacker aggregate must react upward, proving the
+     * pixel move is not ignored by the partido.
+     */
+    @Test
+    void visualForwardMoveOfMidfielderRaisesEngineAttackInput() throws Exception {
+        List<V24PlayerMatchState> states = new ArrayList<>();
+        states.add(V24PlayerMatchState.fromSessionPlayer(makePlayer("gk0", "GK", 30, 80, 50), "teamP"));
+        for (int i = 0; i < 4; i++) {
+            states.add(V24PlayerMatchState.fromSessionPlayer(
+                    makePlayer("def" + i, "DEF", 50, 70, 50), "teamP"));
+        }
+        for (int i = 0; i < 4; i++) {
+            states.add(V24PlayerMatchState.fromSessionPlayer(
+                    makePlayer("mid" + i, "MID", 76, 60, 82), "teamP"));
+        }
+        states.add(V24PlayerMatchState.fromSessionPlayer(makePlayer("att0", "ATT", 86, 50, 82), "teamP"));
+        states.add(V24PlayerMatchState.fromSessionPlayer(makePlayer("att1", "ATT", 85, 50, 82), "teamP"));
+
+        String movedMidfielderId = states.stream()
+                .filter(p -> "mid0".equals(p.name()))
+                .findFirst()
+                .orElseThrow()
+                .sessionPlayerId();
+
+        Map<String, LineupSlotDTO> baselineSlots = new HashMap<>();
+        baselineSlots.put(movedMidfielderId, new LineupSlotDTO(movedMidfielderId, "S5-2", 50.0, 60.0));
+
+        Map<String, LineupSlotDTO> advancedSlots = new HashMap<>();
+        advancedSlots.put(movedMidfielderId, new LineupSlotDTO(movedMidfielderId, "S5-2", 50.0, 40.0));
+
+        double baselineAttack = invokeAggregateAttackerStat(states, "4-4-2", baselineSlots);
+        double advancedAttack = invokeAggregateAttackerStat(states, "4-4-2", advancedSlots);
+
+        assertTrue(advancedAttack > baselineAttack,
+                "A same-label MID moved visually forward must increase engine attack input. "
+                        + "baseline=" + baselineAttack + ", advanced=" + advancedAttack);
+    }
+
+    /**
+     * V25D99.22.2: tactical shape must be continuous with the visual pitch.
+     * Moving one midfielder upward should gradually raise attack volume; moving
+     * one more pixel should not cause a formation-level cliff.
+     */
+    @Test
+    void visualForwardMoveChangesTacticalShapeSmoothly() throws Exception {
+        List<SessionPlayer> starting = new ArrayList<>();
+        starting.add(makePlayer("gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            starting.add(makePlayer("def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 4; i++) {
+            starting.add(makePlayer("mid" + i, "MID", 76, 60, 82));
+        }
+        starting.add(makePlayer("att0", "ATT", 86, 50, 82));
+        starting.add(makePlayer("att1", "ATT", 85, 50, 82));
+
+        String movedMidfielderId = starting.stream()
+                .filter(p -> "mid0".equals(p.getName()))
+                .findFirst()
+                .orElseThrow()
+                .getSessionPlayerId();
+
+        double attackAt60 = invokeAttackVolumeForMovedMidfielder(starting, movedMidfielderId, 60.0);
+        double attackAt40 = invokeAttackVolumeForMovedMidfielder(starting, movedMidfielderId, 40.0);
+        double attackAt39 = invokeAttackVolumeForMovedMidfielder(starting, movedMidfielderId, 39.0);
+
+        assertTrue(attackAt40 > attackAt60,
+                "Moving a midfielder visually forward must increase attack-volume shape. "
+                        + "y60=" + attackAt60 + ", y40=" + attackAt40);
+        assertTrue(Math.abs(attackAt39 - attackAt40) < 0.02,
+                "One-pixel/one-percent tactical movement must not create a cliff. "
+                        + "y40=" + attackAt40 + ", y39=" + attackAt39);
+    }
+
+    /**
+     * V25D99.76: horizontal pixels must feed the same channel story that the
+     * visual editor now shows in "Shape & canales". Moving a left attacker
+     * inward should reduce left-channel attack and increase central attack,
+     * while keeping the formation label unchanged.
+     */
+    @Test
+    void visualHorizontalMoveChangesAttackChannels() throws Exception {
+        List<SessionPlayer> starting = new ArrayList<>();
+        starting.add(makePlayer("gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            starting.add(makePlayer("def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 3; i++) {
+            starting.add(makePlayer("mid" + i, "MID", 76, 60, 82));
+        }
+        starting.add(makePlayer("lw0", "ATT", 86, 50, 82));
+        starting.add(makePlayer("st0", "ATT", 88, 50, 82));
+        starting.add(makePlayer("rw0", "ATT", 86, 50, 82));
+
+        String leftAttackerId = starting.stream()
+                .filter(p -> "lw0".equals(p.getName()))
+                .findFirst()
+                .orElseThrow()
+                .getSessionPlayerId();
+
+        Map<String, LineupSlotDTO> wideLeft = explicitWideShapeSlots(starting);
+        wideLeft.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 18.0, 18.0));
+
+        Map<String, LineupSlotDTO> movedCentral = explicitWideShapeSlots(starting);
+        movedCentral.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 54.0, 18.0));
+
+        double wideAttackLeft = invokeShapeMetric(starting, wideLeft, "attackLeft");
+        double wideAttackCenter = invokeShapeMetric(starting, wideLeft, "attackCenter");
+        double centralAttackLeft = invokeShapeMetric(starting, movedCentral, "attackLeft");
+        double centralAttackCenter = invokeShapeMetric(starting, movedCentral, "attackCenter");
+
+        assertTrue(centralAttackLeft < wideAttackLeft,
+                "Moving LW from left channel toward centre must reduce attackLeft. "
+                        + "wideLeft=" + wideAttackLeft + ", movedLeft=" + centralAttackLeft);
+        assertTrue(centralAttackCenter > wideAttackCenter,
+                "Moving LW from left channel toward centre must increase attackCenter. "
+                        + "wideCenter=" + wideAttackCenter + ", movedCenter=" + centralAttackCenter);
+    }
+
+    /**
+     * V25D99.26: the tactical shape must not treat an out-of-role player as a
+     * perfect midfielder just because his custom coordinates sit in the middle
+     * third. The editor/harness can visually place any player in a MID slot,
+     * but the match engine must still price the loss of midfield structure.
+     */
+    @Test
+    void outOfRoleMidfieldSlotLowersPossessionAndProtectionShape() throws Exception {
+        List<SessionPlayer> naturalMidfield = new ArrayList<>();
+        naturalMidfield.add(makePlayer("gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            naturalMidfield.add(makePlayer("def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 4; i++) {
+            naturalMidfield.add(makePlayer("mid" + i, "MID", 76, 60, 82));
+        }
+        naturalMidfield.add(makePlayer("att0", "ATT", 86, 50, 82));
+        naturalMidfield.add(makePlayer("att1", "ATT", 85, 50, 82));
+
+        List<SessionPlayer> forcedAttackerInMidfield = new ArrayList<>(naturalMidfield);
+        forcedAttackerInMidfield.set(5, makePlayer("mid0", "ATT", 76, 60, 82));
+
+        String movedPlayerId = "mid0";
+        Map<String, LineupSlotDTO> sameVisualMidSlot = Map.of(
+                movedPlayerId, new LineupSlotDTO(movedPlayerId, "S5-2", 50.0, 52.0));
+
+        double naturalPossession = invokeShapeMetric(naturalMidfield, sameVisualMidSlot, "possessionMultiplier");
+        double outOfRolePossession = invokeShapeMetric(
+                forcedAttackerInMidfield, sameVisualMidSlot, "possessionMultiplier");
+        double naturalResistance = invokeShapeMetric(naturalMidfield, sameVisualMidSlot, "defensiveResistanceMultiplier");
+        double outOfRoleResistance = invokeShapeMetric(
+                forcedAttackerInMidfield, sameVisualMidSlot, "defensiveResistanceMultiplier");
+
+        assertTrue(outOfRolePossession < naturalPossession,
+                "Replacing a natural MID with an ATT in the same visual MID slot must reduce possession shape. "
+                        + "natural=" + naturalPossession + ", outOfRole=" + outOfRolePossession);
+        assertTrue(outOfRoleResistance > naturalResistance,
+                "Replacing a natural MID with an ATT in the same visual MID slot must weaken protection "
+                        + "(higher opponent attack-volume multiplier). natural=" + naturalResistance
+                        + ", outOfRole=" + outOfRoleResistance);
+    }
+
+    /**
+     * V25D99.29: a technical attacker can stand in the central band, but he
+     * should not provide the same tempo/control/screen value as a true pivot.
+     * This protects the manager contract behind cases like
+     * Tchouameni -> Rodrygo in the stress harness.
+     */
+    @Test
+    void midfieldProfileLayerValuesPivotAboveAttackerInSameCentralSlot() throws Exception {
+        List<SessionPlayer> pivotLineup = makeBalancedLineupWithCustomMidfielder(
+                makeSkilledPlayer(
+                        "pivot0",
+                        "MID",
+                        68, 88, 78,
+                        72, 90, 88,
+                        Map.of(
+                                PlayerSkill.PASSER, 84,
+                                PlayerSkill.TACKLER, 88,
+                                PlayerSkill.MARKER, 78,
+                                PlayerSkill.PLAYMAKER, 72)));
+        List<SessionPlayer> attackerLineup = makeBalancedLineupWithCustomMidfielder(
+                makeSkilledPlayer(
+                        "pivot0",
+                        "ATT",
+                        88, 42, 86,
+                        86, 76, 70,
+                        Map.of(
+                                PlayerSkill.DRIBBLER, 88,
+                                PlayerSkill.SPEEDSTER, 86,
+                                PlayerSkill.SHOOTER, 82,
+                                PlayerSkill.PASSER, 58)));
+
+        Map<String, LineupSlotDTO> sameCentralSlot = Map.of(
+                "pivot0", new LineupSlotDTO("pivot0", "S14-2", 50.0, 52.0));
+
+        double pivotPossession = invokeShapeMetric(pivotLineup, sameCentralSlot, "possessionMultiplier");
+        double attackerPossession = invokeShapeMetric(attackerLineup, sameCentralSlot, "possessionMultiplier");
+        double pivotResistance = invokeShapeMetric(pivotLineup, sameCentralSlot, "defensiveResistanceMultiplier");
+        double attackerResistance = invokeShapeMetric(attackerLineup, sameCentralSlot, "defensiveResistanceMultiplier");
+
+        assertTrue(pivotPossession > attackerPossession,
+                "A true pivot must preserve more central control than an attacker in the same MID coordinate. "
+                        + "pivotPossession=" + pivotPossession + ", attackerPossession=" + attackerPossession);
+        assertTrue(pivotResistance < attackerResistance,
+                "A true pivot must protect the defense better than an attacker in the same MID coordinate "
+                        + "(lower opponent attack-volume multiplier). pivotResistance=" + pivotResistance
+                        + ", attackerResistance=" + attackerResistance);
+    }
+
     // ========== Reflection helpers for C11c tests ==========
 
     /**
@@ -764,11 +1142,19 @@ class V24DetailedMatchEngineFormationTest {
      */
     private double invokeAggregateAttackerStat(List<V24PlayerMatchState> players, String formation)
             throws Exception {
+        return invokeAggregateAttackerStat(players, formation, Map.of());
+    }
+
+    private double invokeAggregateAttackerStat(
+            List<V24PlayerMatchState> players,
+            String formation,
+            Map<String, LineupSlotDTO> slotsByPlayerId)
+            throws Exception {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "aggregateAttackerStat", List.class, String.class);
+                "aggregateAttackerStat", List.class, String.class, Map.class);
         method.setAccessible(true);
-        return (double) method.invoke(engine, players, formation);
+        return (double) method.invoke(engine, players, formation, slotsByPlayerId);
     }
 
     /**
@@ -780,9 +1166,112 @@ class V24DetailedMatchEngineFormationTest {
             throws Exception {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "aggregateDefenderStat", List.class);
+                "aggregateDefenderStat", List.class, Map.class);
         method.setAccessible(true);
-        return (double) method.invoke(engine, players);
+        return (double) method.invoke(engine, players, Map.of());
+    }
+
+    private double invokeAttackVolumeForMovedMidfielder(
+            List<SessionPlayer> starting,
+            String movedPlayerId,
+            double yPercent)
+            throws Exception {
+        SessionTeam team = makeTeam(HOME_UUID, "Home FC", "4-4-2");
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        slots.put(movedPlayerId, new LineupSlotDTO(movedPlayerId, "S5-2", 50.0, yPercent));
+        V24TeamMatchState state = V24TeamMatchState.create(team, starting, List.of(), TeamStyle.BALANCED, slots);
+
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+                "tacticalShapeProfile", V24TeamMatchState.class, Map.class);
+        method.setAccessible(true);
+        Object profile = method.invoke(engine, state, slots);
+        Method accessor = profile.getClass().getDeclaredMethod("attackVolumeMultiplier");
+        accessor.setAccessible(true);
+        return (double) accessor.invoke(profile);
+    }
+
+    private double invokeShapeMetric(
+            List<SessionPlayer> starting,
+            Map<String, LineupSlotDTO> slots,
+            String accessorName)
+            throws Exception {
+        SessionTeam team = makeTeam(HOME_UUID, "Home FC", "4-4-2");
+        V24TeamMatchState state = V24TeamMatchState.create(team, starting, List.of(), TeamStyle.BALANCED, slots);
+
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+                "tacticalShapeProfile", V24TeamMatchState.class, Map.class);
+        method.setAccessible(true);
+        Object profile = method.invoke(engine, state, slots);
+        Method accessor = profile.getClass().getDeclaredMethod(accessorName);
+        accessor.setAccessible(true);
+        return (double) accessor.invoke(profile);
+    }
+
+    private Map<String, LineupSlotDTO> explicitWideShapeSlots(List<SessionPlayer> starting) {
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        int def = 0;
+        int mid = 0;
+        int att = 0;
+        for (SessionPlayer player : starting) {
+            String id = player.getSessionPlayerId();
+            switch (player.getPosition()) {
+                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "DEF" -> {
+                    double[] xs = {18.0, 40.0, 60.0, 82.0};
+                    slots.put(id, new LineupSlotDTO(id, "D" + def, xs[Math.min(def, xs.length - 1)], 83.0));
+                    def++;
+                }
+                case "MID" -> {
+                    double[] xs = {18.0, 50.0, 82.0};
+                    slots.put(id, new LineupSlotDTO(id, "M" + mid, xs[Math.min(mid, xs.length - 1)], 55.0));
+                    mid++;
+                }
+                default -> {
+                    double[] xs = {18.0, 50.0, 82.0};
+                    slots.put(id, new LineupSlotDTO(id, "A" + att, xs[Math.min(att, xs.length - 1)], 18.0));
+                    att++;
+                }
+            }
+        }
+        return slots;
+    }
+
+    private List<SessionPlayer> makeBalancedLineupWithCustomMidfielder(SessionPlayer customMidfielder) {
+        List<SessionPlayer> starting = new ArrayList<>();
+        starting.add(makePlayer("gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            starting.add(makePlayer("def" + i, "DEF", 50, 72, 55));
+        }
+        starting.add(customMidfielder);
+        for (int i = 1; i < 4; i++) {
+            starting.add(makePlayer("mid" + i, "MID", 74, 64, 78));
+        }
+        starting.add(makePlayer("att0", "ATT", 86, 50, 82));
+        starting.add(makePlayer("att1", "ATT", 85, 50, 82));
+        return starting;
+    }
+
+    private SessionPlayer makeSkilledPlayer(
+            String id,
+            String position,
+            int attack,
+            int defense,
+            int technique,
+            int speed,
+            int stamina,
+            int mentality,
+            Map<PlayerSkill, Integer> skills) {
+        SessionPlayer player = SessionPlayer.custom(
+                id, 25, position,
+                attack, defense, technique,
+                speed, stamina, mentality,
+                BigDecimal.valueOf(attack * 1000L));
+        for (Map.Entry<PlayerSkill, Integer> skill : skills.entrySet()) {
+            player.setSkillLevel(skill.getKey(), skill.getValue());
+        }
+        return player;
     }
 
     /**

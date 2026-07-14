@@ -32,7 +32,7 @@ public final class V24FatigueModel {
             case ATTACKING -> 6;
             case POSSESSION -> 5;
             case COUNTER -> 5;
-            case WIDE_PLAY, CENTRAL_PLAY -> 5;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK, CENTRAL_PLAY -> 5;
             case DEFENSIVE -> 4;
             case BALANCED -> 5;
         };

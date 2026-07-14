@@ -91,7 +91,7 @@ public final class MatchQualityComputer {
             case DEFENSIVE   -> -0.02;
             case POSSESSION  -> +0.02;
             case COUNTER     -> -0.01;
-            case WIDE_PLAY, CENTRAL_PLAY -> 0.0;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK, CENTRAL_PLAY -> 0.0;
             case BALANCED    ->  0.0;
         };
         double awayAdj = switch (away) {
@@ -99,7 +99,7 @@ public final class MatchQualityComputer {
             case DEFENSIVE   -> +0.02;
             case POSSESSION  -> -0.02;
             case COUNTER     -> +0.01;
-            case WIDE_PLAY, CENTRAL_PLAY -> 0.0;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK, CENTRAL_PLAY -> 0.0;
             case BALANCED    ->  0.0;
         };
         return homeAdj + awayAdj;
@@ -111,7 +111,7 @@ public final class MatchQualityComputer {
             case DEFENSIVE  -> -0.10;
             case COUNTER    -> -0.08;
             case POSSESSION -> -0.05;
-            case WIDE_PLAY, CENTRAL_PLAY -> 0.0;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK, CENTRAL_PLAY -> 0.0;
             case BALANCED   ->  0.0;
         };
     }

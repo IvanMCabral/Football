@@ -480,7 +480,7 @@ public class V24ShotXgCalculator {
         return switch (location) {
             case SIX_YARD_BOX -> 0.140;       // was 0.20 (×0.70)
             case PENALTY_AREA_CENTER -> 0.084; // was 0.12 (×0.70)
-            case PENALTY_AREA_WIDE -> 0.063;  // was 0.09 (×0.70)
+            case PENALTY_AREA_WIDE -> 0.070;  // was 0.09; calibrated so wide play can compete with central play
             case OUTSIDE_BOX -> 0.028;        // was 0.04 (×0.70)
             case LONG_RANGE -> 0.014;         // was 0.02 (×0.70)
         };

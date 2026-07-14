@@ -4,8 +4,11 @@ import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.adapters.in.web.testharness.dto.CareerSnapshotResponse;
 import com.footballmanager.adapters.in.web.testharness.dto.CreateCustomCareerRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.CustomFixtureDTO;
+import com.footballmanager.adapters.in.web.testharness.dto.PlayerSwapMatrixSummaryRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.PositionPixelMatrixSummaryRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.ReplayMatchRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.ResetRoundRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.ScenarioMatrixSummaryRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.InjectPlayerStatsRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetStyleRequest;
@@ -305,6 +308,174 @@ public class TestHarnessController {
             }));
     }
 
+    @PostMapping("/labs/offensive-upgrade/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOffensiveUpgradeLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareOffensiveUpgradeLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/offensive-upgrade/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOffensiveUpgradeLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreOffensiveUpgradeLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/defensive-downgrade/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareDefensiveDowngradeLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareDefensiveDowngradeLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/defensive-downgrade/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreDefensiveDowngradeLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreDefensiveDowngradeLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-wide-defenders/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakWideDefendersLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareWeakWideDefendersLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-wide-defenders/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakWideDefendersLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreWeakWideDefendersLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-wide-defenders/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakWideDefendersLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareOpponentWeakWideDefendersLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-wide-defenders/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakWideDefendersLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreOpponentWeakWideDefendersLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-left-defender/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakLeftDefenderLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareOpponentWeakLeftDefenderLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-left-defender/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakLeftDefenderLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreOpponentWeakLeftDefenderLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-right-defender/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakRightDefenderLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareOpponentWeakRightDefenderLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-right-defender/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakRightDefenderLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreOpponentWeakRightDefenderLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-center-backs/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakCenterBacksLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareOpponentWeakCenterBacksLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/labs/opponent-weak-center-backs/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakCenterBacksLab(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreOpponentWeakCenterBacksLab(userId, matchId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-left-defender/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakLeftDefenderLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareWeakLeftDefenderLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-left-defender/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakLeftDefenderLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreWeakLeftDefenderLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-right-defender/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakRightDefenderLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareWeakRightDefenderLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-right-defender/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakRightDefenderLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreWeakRightDefenderLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-center-backs/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakCenterBacksLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareWeakCenterBacksLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/weak-center-backs/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakCenterBacksLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreWeakCenterBacksLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
     /**
      * GET /api/v1/test-harness/career/snapshot
      * Returns the current career state — REVISOR uses this to verify
@@ -348,6 +519,33 @@ public class TestHarnessController {
             .map(ResponseEntity::ok);
     }
 
+    @PostMapping("/match/{matchId}/formation-matrix")
+    public Mono<ResponseEntity<List<TestHarnessUseCase.FormationMatrixRow>>> formationMatrix(
+            @PathVariable String matchId,
+            @RequestBody(required = false) ReplayMatchRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        Long seedOverride = (request != null) ? request.seed() : null;
+
+        return testHarnessUseCase.runFormationMatrix(userId, matchId, seedOverride)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/formation-matrix/summary")
+    public Mono<ResponseEntity<List<TestHarnessUseCase.FormationMatrixSummaryRow>>> formationMatrixSummary(
+            @PathVariable String matchId,
+            @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
+        int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+
+        return testHarnessUseCase.runFormationMatrixSummary(userId, matchId, seedStart, seedCount)
+            .map(ResponseEntity::ok);
+    }
+
     @PostMapping("/match/{matchId}/scenario-matrix")
     public Mono<ResponseEntity<List<TestHarnessUseCase.ScenarioMatrixRow>>> scenarioMatrix(
             @PathVariable String matchId,
@@ -358,6 +556,64 @@ public class TestHarnessController {
         Long seedOverride = (request != null) ? request.seed() : null;
 
         return testHarnessUseCase.runScenarioMatrix(userId, matchId, seedOverride)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/scenario-matrix/summary")
+    public Mono<ResponseEntity<List<TestHarnessUseCase.ScenarioMatrixSummaryRow>>> scenarioMatrixSummary(
+            @PathVariable String matchId,
+            @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
+        int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+        String scenarioGroup = (request != null) ? request.scenarioGroup() : null;
+        String controlledTeamSide = (request != null) ? request.controlledTeamSide() : null;
+
+        return testHarnessUseCase.runScenarioMatrixSummary(userId, matchId, seedStart, seedCount, scenarioGroup, controlledTeamSide)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/player-swap-matrix/summary")
+    public Mono<ResponseEntity<TestHarnessUseCase.PlayerSwapMatrixSummaryRow>> playerSwapMatrixSummary(
+            @PathVariable String matchId,
+            @RequestBody PlayerSwapMatrixSummaryRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
+        int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+
+        return testHarnessUseCase.runPlayerSwapMatrixSummary(
+                userId,
+                matchId,
+                request != null ? request.starterPlayerId() : null,
+                request != null ? request.benchPlayerId() : null,
+                request != null ? request.slotId() : null,
+                seedStart,
+                seedCount)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/position-pixel-matrix/summary")
+    public Mono<ResponseEntity<TestHarnessUseCase.PositionPixelMatrixSummaryRow>> positionPixelMatrixSummary(
+            @PathVariable String matchId,
+            @RequestBody PositionPixelMatrixSummaryRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
+        int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+
+        return testHarnessUseCase.runPositionPixelMatrixSummary(
+                userId,
+                matchId,
+                request != null ? request.playerId() : null,
+                request != null ? request.targetXPercent() : null,
+                request != null ? request.targetYPercent() : null,
+                seedStart,
+                seedCount)
             .map(ResponseEntity::ok);
     }
 

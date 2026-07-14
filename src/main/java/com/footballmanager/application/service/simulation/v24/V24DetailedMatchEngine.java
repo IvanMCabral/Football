@@ -3,8 +3,10 @@ package com.footballmanager.application.service.simulation.v24;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.model.valueobject.PositionEffectivenessCalculator;
+import com.footballmanager.domain.model.valueobject.SubdivisionEffectivenessCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -322,8 +324,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // smooth and bounded: a few pixels only nudge the share; moving a line into
         // another zone or collapsing the team shape has a visible but not arcade-y
         // effect.
-        V24TacticalShapeProfile homeShape = tacticalShapeProfile(homeState, context.homeSlotsByPlayerId());
-        V24TacticalShapeProfile awayShape = tacticalShapeProfile(awayState, context.awaySlotsByPlayerId());
+        V24TacticalShapeProfile homeShape = tacticalShapeProfile(
+                homeState, context.homeFormation(), context.homeSlotsByPlayerId());
+        V24TacticalShapeProfile awayShape = tacticalShapeProfile(
+                awayState, context.awayFormation(), context.awaySlotsByPlayerId());
         double homePossAdj = homePossBase * (1.0 + homeMaxPasser / 300.0) * homeShape.possessionMultiplier();
         double awayPossAdj = awayPossBase * (1.0 + awayMaxPasser / 300.0) * awayShape.possessionMultiplier();
         double homeShare = homePossAdj / (homePossAdj + awayPossAdj);
@@ -439,6 +443,14 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     V24MatchEvent subEvent = scheduledSubEngine.manualSubstitute(
                             target, sub.playerOffId(), sub.playerOnId(), sub.effectiveMinute());
                     timeline.addEvent(subEvent);
+                    // V25D99.41.2: manualSubstitute toggles onPitch flags, but
+                    // does not move the incoming bench player into the mutable
+                    // starting list used by shooter/assist/shape selection in
+                    // this full replay. Without this, the player who "entered"
+                    // was still ignored by several engine layers until a later
+                    // re-apply path. Apply the same list swap immediately on
+                    // the first successful substitution.
+                    applyScheduledSubManually(target, sub);
                     appliedScheduledSubs.add(subKey);
                     log.debug("[LIVE-MATCH-F2-F2.5] Applied scheduled sub at minute {}: teamId={} off={} on={}",
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
@@ -453,6 +465,33 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId(), e.getMessage());
                 }
             }
+
+            // V25D99.41: recompute the live tactical picture every minute
+            // after scheduled/manual substitutions have been applied. Before
+            // this, homeShape/awayShape/homeShare were computed once before
+            // minute 1, so a manager sub changed shooter/defender lists but
+            // did not fully change possession, PASSER control or tactical
+            // shape multipliers for the rest of the match. That made large
+            // substitutions look like "Noise" in the 50-seed harness. Keep
+            // matchIntensity based on the starting XIs, but make everything
+            // that depends on the current on-pitch XI live.
+            homeMaxPasser = maxPasserSkill(homeState.startingPlayers());
+            awayMaxPasser = maxPasserSkill(awayState.startingPlayers());
+            Map<String, LineupSlotDTO> homeEffectiveSlots = effectiveSlotsForMinute(
+                    context.homeSlotsByPlayerId(),
+                    context.manualSubstitutions(),
+                    context.homeTeamId(),
+                    minute);
+            Map<String, LineupSlotDTO> awayEffectiveSlots = effectiveSlotsForMinute(
+                    context.awaySlotsByPlayerId(),
+                    context.manualSubstitutions(),
+                    context.awayTeamId(),
+                    minute);
+            homeShape = tacticalShapeProfile(homeState, context.homeFormation(), homeEffectiveSlots);
+            awayShape = tacticalShapeProfile(awayState, context.awayFormation(), awayEffectiveSlots);
+            homePossAdj = homePossBase * (1.0 + homeMaxPasser / 300.0) * homeShape.possessionMultiplier();
+            awayPossAdj = awayPossBase * (1.0 + awayMaxPasser / 300.0) * awayShape.possessionMultiplier();
+            homeShare = homePossAdj / (homePossAdj + awayPossAdj);
 
             // Determine possession for this minute
             double roll = random.nextDouble();
@@ -548,7 +587,31 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // multiplier to bring total down.
             V24TacticalShapeProfile possessorShape = homeHasPossession ? homeShape : awayShape;
             V24TacticalShapeProfile opponentShape = homeHasPossession ? awayShape : homeShape;
-            double chanceProbability = chanceProbability(possessor.style(), minute, keyAttack, keySpeed, keyDribbler, keySpeedster)
+            Map<String, LineupSlotDTO> possessorSlots = homeHasPossession
+                    ? homeEffectiveSlots
+                    : awayEffectiveSlots;
+            Map<String, LineupSlotDTO> opponentSlots = homeHasPossession
+                    ? awayEffectiveSlots
+                    : homeEffectiveSlots;
+            // V25D99.23: a substitution must matter even when the swapped
+            // player is not the single max-attack "key attacker". Keep the
+            // historical key-player signal as the anchor, but blend in the
+            // formation/slot-aware attacking aggregate so every outfield
+            // player can move team chance volume a little.
+            double aggregateAttack = aggregateAttackerStat(
+                    possessor.startingPlayers(),
+                    formation,
+                    possessorSlots);
+            // V25D99.34: do not protect the team attack with max(keyAttack,
+            // aggregate). That made non-key substitutions almost invisible:
+            // if a world-class forward stayed on the pitch, replacing a high
+            // value connector/second attacker could not lower chance volume.
+            // Keep the star signal as the larger anchor, but let the tactical
+            // aggregate move the final input both up and down so every
+            // meaningful player change can be measured by the harness.
+            int teamAttackInfluence = (int) Math.round((keyAttack * 0.55) + (aggregateAttack * 0.45));
+            double opponentDefenderStat = aggregateDefenderStat(opponent.startingPlayers(), opponentSlots);
+            double chanceProbability = chanceProbability(possessor.style(), minute, teamAttackInfluence, keySpeed, keyDribbler, keySpeedster)
                     * Math.sqrt((1.0 + matchIntensity) / 2.0)
                     // V25D99.21: shape affects shot/chance volume. Attacking
                     // occupation and width raise chance creation; defensive
@@ -557,11 +620,27 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     // player drags, instead of only changing the score layer.
                     * possessorShape.attackVolumeMultiplier()
                     * opponentShape.defensiveResistanceMultiplier()
+                    // V25D99.22.11: the defending roster must affect not only
+                    // shot quality/xG (attemptShot), but also chance volume.
+                    // Keep this deliberately small: shape remains the main
+                    // tactical volume layer, while very weak defenders create
+                    // a few more opponent chances and elite defenders suppress
+                    // a few without making matches deterministic.
+                    * defenderRosterChanceVolumeMultiplier(opponentDefenderStat)
+                    // V25D99.63: tactical style must matter while defending,
+                    // not only while attacking. Before this, DEFENSIVE mostly
+                    // surrendered possession and reduced own chances, but it
+                    // did not lower opponent chance volume, so a low block felt
+                    // passive rather than solid. Keep this as a posture layer:
+                    // defensive/counter shapes concede fewer opponent chances;
+                    // attacking shapes concede a little more space.
+                    * defensiveStyleChanceVolumeMultiplier(opponent.style())
                     * channelMismatchMultiplier(possessorShape, opponentShape);
             if (random.nextDouble() < chanceProbability) {
                 // Attempt a shot
                 attemptShot(possessor, opponent, selector, formation, opponentFormation,
-                        possessorShape, opponentShape, teamRole, minute, random, timeline);
+                        possessorShape, opponentShape, possessorSlots, opponentSlots,
+                        teamRole, minute, random, timeline);
             }
 
             // Chance created event (broader than shot)
@@ -696,6 +775,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             String opponentFormation,
             V24TacticalShapeProfile possessorShape,
             V24TacticalShapeProfile opponentShape,
+            Map<String, LineupSlotDTO> possessorSlotsByPlayerId,
+            Map<String, LineupSlotDTO> opponentSlotsByPlayerId,
             String teamRole,
             int minute,
             Random random,
@@ -709,8 +790,13 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // V25D27: compute aggregate teamAttack for the possessor and teamDefense for
         // the opponent. These amplify/dampen the formation modifier per the user
         // request that formation × stats should sum.
-        double possessorAttack = aggregateAttackerStat(possessor.startingPlayers(), formation);
-        double opponentDefense = aggregateDefenderStat(opponent.startingPlayers());
+        double possessorAttack = aggregateAttackerStat(
+                possessor.startingPlayers(),
+                formation,
+                possessorSlotsByPlayerId);
+        double opponentDefense = aggregateDefenderStat(
+                opponent.startingPlayers(),
+                opponentSlotsByPlayerId);
 
         // V25D33-F3: locate the opponent's on-pitch GK so we can pass their
         // skill map (WALL) and height to calculateXg. Reuses the same
@@ -729,6 +815,21 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // lane. This is the first engine layer for "play through wings/centre".
         V24ShotLocation location = selectShotLocation(
                 possessor.style(), formation, possessorShape, opponentShape, random);
+        // V25D99.22.22: coordinate is generated before xG so wide shots can
+        // use left/right defensive channel pressure. LEFT_FLANK/RIGHT_FLANK
+        // are internal calibration styles used by the harness; they behave
+        // like WIDE_PLAY in volume but bias the y-coordinate to one side.
+        V24ShotCoordinate shotCoord = generateShotCoordinate(location, possessor.style(), random);
+        // V25D99.22.14: make defensive quality channel-sensitive. A weak
+        // fullback/carrilero should hurt mainly wide chances; a weak CB/GK
+        // should hurt central chances. The global defender stat remains the
+        // fallback when slot coordinates are absent.
+        opponentDefense = aggregateDefenderStatForLocation(
+                opponent.startingPlayers(),
+                opponentSlotsByPlayerId,
+                location,
+                shotCoord,
+                opponentDefense);
 
         // Get assist provider via V24AssistModel
         var assistOpt = assistModel.selectAssistProvider(
@@ -786,13 +887,22 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 opponentGk != null ? opponentGk.heightCm() : null,
                 V24ShotEventType.OPEN_PLAY,
                 opponentDefenderSkills, null);
+        // V25D99.60: the visual/manual shape must influence not only how many
+        // shots are generated, but also how clean those shots are. A compact
+        // low block, a well-screened centre, or protected flanks should turn
+        // dangerous locations into slightly worse chances; conversely, dragging
+        // players away from a lane should make shots from that lane cleaner.
+        // This keeps the formation editor meaningful at pixel level without
+        // making formation labels hard-coded winners.
+        xg *= defensiveShapeShotQualityMultiplier(opponentShape, location);
+        // V25D99.63: defending style also changes shot cleanliness. DEFENSIVE
+        // and COUNTER should turn more shots into lower-quality attempts;
+        // ATTACKING/POSSESSION can leave more space if bypassed.
+        xg *= defensiveStyleShotQualityMultiplier(opponent.style(), location);
         possessor.addXg(xg);
 
         // V24C1: Action drain for shot attempt
         fatigueModel.applyDrain(shooter, 8);
-
-        // V24D3C: Generate shot coordinate for this attempt
-        V24ShotCoordinate shotCoord = coordGenerator.generate(location, random);
 
         // Resolve shot outcome (xG threshold + randomness)
         // V24D6U4-RE: Recalibrated onTarget base and goal threshold to hit
@@ -931,6 +1041,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return LOCATIONS[LOCATIONS.length - 1];
     }
 
+    private V24ShotCoordinate generateShotCoordinate(V24ShotLocation location, TeamStyle style, Random random) {
+        if (location == V24ShotLocation.PENALTY_AREA_WIDE && style == TeamStyle.LEFT_FLANK) {
+            return coordGenerator.generateWideFlank(true, random);
+        }
+        if (location == V24ShotLocation.PENALTY_AREA_WIDE && style == TeamStyle.RIGHT_FLANK) {
+            return coordGenerator.generateWideFlank(false, random);
+        }
+        return coordGenerator.generate(location, random);
+    }
+
     private V24ShotLocation selectShotLocation(TeamStyle style, String formation, Random random) {
         return selectShotLocation(style, formation, neutralShapeProfile(), neutralShapeProfile(), random);
     }
@@ -994,6 +1114,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // more PENALTY_AREA_CENTER.
             w[1] *= 1.20;  // PENALTY_AREA_CENTER +20%
         }
+        applyNamedFormationIdentityLocationShift(w, formation);
         if (possessorShape != null && opponentShape != null) {
             double centralAttack = possessorShape.attackCenter();
             double wideAttack = (possessorShape.attackLeft() + possessorShape.attackRight()) / 2.0;
@@ -1012,6 +1133,43 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             w[1] *= clamp(1.0 - flankImbalance * 0.10, 0.88, 1.0);
         }
         return w;
+    }
+
+    /**
+     * V25D99.58: the parser intentionally collapses some labels into broad
+     * families (e.g. 4-4-2 and 4-2-2-2 both have 4 mids + 2 forwards). This
+     * small named layer preserves tactical identity without turning formation
+     * names into hard tiers: geometry still carries the main signal, while the
+     * label nudges shot geography in the direction a coach would expect.
+     */
+    private void applyNamedFormationIdentityLocationShift(double[] w, String formation) {
+        if (w == null || w.length < 5 || formation == null) return;
+        switch (formation) {
+            case "4-2-2-2" -> {
+                // Narrow box: central combinations and edge-of-box shots, less
+                // classic touchline/cross volume than 4-4-2.
+                w[1] *= 1.10; // PENALTY_AREA_CENTER
+                w[2] *= 0.88; // PENALTY_AREA_WIDE
+                w[3] *= 1.06; // OUTSIDE_BOX
+            }
+            case "4-1-2-3" -> {
+                // Pivot 4-3-3: safer central circulation, slightly less chaotic
+                // six-yard crash than flat front-three 4-3-3.
+                w[0] *= 0.94; // SIX_YARD_BOX
+                w[1] *= 1.08; // PENALTY_AREA_CENTER
+                w[4] *= 0.92; // LONG_RANGE
+            }
+            case "3-5-2-CDM" -> {
+                // 3-5-2 with a real holder: more controlled central entries,
+                // less exposed wingback-only wide shot profile.
+                w[1] *= 1.07; // PENALTY_AREA_CENTER
+                w[2] *= 0.92; // PENALTY_AREA_WIDE
+                w[4] *= 0.95; // LONG_RANGE
+            }
+            default -> {
+                // No named adjustment.
+            }
+        }
     }
 
     private double[] computeLocationWeights(TeamStyle style, String formation) {
@@ -1037,9 +1195,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // Slow build-up, balanced penetration
             case POSSESSION -> new double[] { 1.20, 1.11, 0.90, 0.56, 0.30 };
             // Wide focus: more wing/cross attempts, fewer central tap-ins.
-            case WIDE_PLAY -> new double[] { 0.95, 0.90, 1.45, 0.95, 0.85 };
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> new double[] { 0.94, 0.88, 1.58, 0.98, 0.86 };
             // Central focus: more through-ball/box-center chances, fewer wide shots.
-            case CENTRAL_PLAY -> new double[] { 1.18, 1.28, 0.62, 0.92, 0.85 };
+            case CENTRAL_PLAY -> new double[] { 1.12, 1.20, 0.72, 0.94, 0.86 };
             // Fast breaks, more long-range and outside-box
             case COUNTER -> new double[] { 0.72, 1.11, 0.90, 0.94, 0.60 };
             // Prefer long-range and outside-box (defensive, low block)
@@ -1145,7 +1303,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * <p>Fallback: if fewer than 7 "attacking" players, averages all 11.
      * Returns 70.0 (median) if startingPlayers is empty.
      */
-    private double aggregateAttackerStat(List<V24PlayerMatchState> players, String formation) {
+    private double aggregateAttackerStat(
+            List<V24PlayerMatchState> players,
+            String formation,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
         if (players.isEmpty()) return 70.0;
         // Sort by attack descending and pick top-7
         List<V24PlayerMatchState> sorted = players.stream()
@@ -1161,7 +1322,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // on-pitch players — but the average is now effectiveness-weighted.
         double avg = sorted.stream()
                 .mapToDouble(p -> p.attack()
-                        * PositionEffectivenessCalculator.effectiveness(p.naturalPosition(), p.position()))
+                        * tacticalEffectiveness(p, slotsByPlayerId)
+                        * forwardIntentMultiplier(p, slotsByPlayerId))
                 .average()
                 .orElse(70.0);
         return avg;
@@ -1176,7 +1338,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * <p>Fallback: if no defenders found, returns avg defense of all 11.
      * Returns 70.0 (median) if startingPlayers is empty.
      */
-    private double aggregateDefenderStat(List<V24PlayerMatchState> players) {
+    private double aggregateDefenderStat(
+            List<V24PlayerMatchState> players,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
         if (players.isEmpty()) return 70.0;
         List<V24PlayerMatchState> defenders = players.stream()
                 .filter(V24PlayerMatchState::onPitch)
@@ -1199,13 +1363,164 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // multiplier (was losing 0.5 on odd sums).
         double avg = defenders.stream()
                 .mapToDouble(p -> {
-                    double eff = PositionEffectivenessCalculator.effectiveness(
-                            p.naturalPosition(), p.position());
+                    double eff = tacticalEffectiveness(p, slotsByPlayerId);
                     return ((p.defense() + p.mentality()) / 2.0) * eff;
                 })
                 .average()
                 .orElse(70.0);
-        return avg;
+        if (slotsByPlayerId == null || slotsByPlayerId.isEmpty()) {
+            return avg;
+        }
+        double weakestLink = defenders.stream()
+                .mapToDouble(p -> {
+                    double eff = tacticalEffectiveness(p, slotsByPlayerId);
+                    return ((p.defense() + p.mentality()) / 2.0) * eff;
+                })
+                .min()
+                .orElse(avg);
+        // V25D99.24: defensive substitutions were too diluted by a plain
+        // back-line average. Realistically, an opponent can target the weak
+        // link, especially over repeated possessions. Keep the average as the
+        // main signal, but blend in the weakest defender so replacing one
+        // strong starter with a clearly weaker backup becomes visible.
+        return (avg * 0.45) + (weakestLink * 0.55);
+    }
+
+    private double aggregateDefenderStatForLocation(
+            List<V24PlayerMatchState> players,
+            Map<String, LineupSlotDTO> slotsByPlayerId,
+            V24ShotLocation location,
+            double fallbackGlobalDefense) {
+        return aggregateDefenderStatForLocation(
+                players, slotsByPlayerId, location, null, fallbackGlobalDefense);
+    }
+
+    private double aggregateDefenderStatForLocation(
+            List<V24PlayerMatchState> players,
+            Map<String, LineupSlotDTO> slotsByPlayerId,
+            V24ShotLocation location,
+            V24ShotCoordinate shotCoordinate,
+            double fallbackGlobalDefense) {
+        if (players == null || players.isEmpty() || slotsByPlayerId == null || slotsByPlayerId.isEmpty()) {
+            return fallbackGlobalDefense;
+        }
+        List<V24PlayerMatchState> defenders = players.stream()
+                .filter(V24PlayerMatchState::onPitch)
+                .filter(p -> p.position().equals("DEF") || p.position().equals("GK"))
+                .toList();
+        if (defenders.isEmpty()) {
+            return fallbackGlobalDefense;
+        }
+
+        double weighted = 0.0;
+        double totalWeight = 0.0;
+        for (V24PlayerMatchState p : defenders) {
+            double x = tacticalXPercent(p, slotsByPlayerId);
+            double y = tacticalYPercent(p, slotsByPlayerId);
+            double channelWeight = defenderChannelWeight(location, x, shotCoordinate);
+            double depthWeight = "GK".equals(p.position()) ? 1.05 : clamp(y / 82.0, 0.45, 1.18);
+            double weight = channelWeight * depthWeight;
+            if (weight <= 0.0) continue;
+            double eff = tacticalEffectiveness(p, slotsByPlayerId);
+            double stat = ((p.defense() + p.mentality()) / 2.0) * eff;
+            weighted += stat * weight;
+            totalWeight += weight;
+        }
+        if (totalWeight <= 0.0) {
+            return fallbackGlobalDefense;
+        }
+        double channelDefense = weighted / totalWeight;
+        // Blend mostly with the channel so side/central defensive mismatches
+        // are readable in the harness, while still keeping some global
+        // defensive structure to avoid one odd coordinate deciding the whole
+        // possession.
+        return (channelDefense * 0.80) + (fallbackGlobalDefense * 0.20);
+    }
+
+    private double defenderChannelWeight(V24ShotLocation location, double xPercent, V24ShotCoordinate shotCoordinate) {
+        double distanceFromCenter = Math.abs(xPercent - 50.0) / 50.0;
+        double leftAffinity = laneLeftWeight(xPercent);
+        double centerAffinity = laneCenterWeight(xPercent);
+        double rightAffinity = laneRightWeight(xPercent);
+        double wideAffinity = Math.max(leftAffinity, rightAffinity);
+        return switch (location) {
+            case PENALTY_AREA_WIDE -> {
+                if (shotCoordinate == null) {
+                    yield clamp(0.30 + wideAffinity * 1.15 + distanceFromCenter * 0.18, 0.30, 1.58);
+                }
+                boolean shotLeft = shotCoordinate.y() < 50.0;
+                double sameSideAffinity = shotLeft ? leftAffinity : rightAffinity;
+                double oppositeSideAffinity = shotLeft ? rightAffinity : leftAffinity;
+                yield clamp(0.30
+                        + sameSideAffinity * 1.35
+                        + oppositeSideAffinity * 0.05
+                        + distanceFromCenter * 0.08,
+                        0.30, 1.68);
+            }
+            case SIX_YARD_BOX, PENALTY_AREA_CENTER -> clamp(0.45 + centerAffinity * 0.75, 0.45, 1.20);
+            case OUTSIDE_BOX -> clamp(0.85 + centerAffinity * 0.10, 0.85, 0.95);
+            case LONG_RANGE -> 0.70;
+        };
+    }
+
+    private double defenderRosterChanceVolumeMultiplier(double defenderStat) {
+        // Below 70: more opponent chance volume. Above 70: less opponent
+        // chance volume. V25D99.34 slightly widens the previous curve because
+        // defender substitutions were still too quiet in the multi-seed
+        // scenario matrix. Shape and per-shot xG remain the main tactical
+        // signal; this only ensures that a weak link in the back line is no
+        // longer swallowed by the team average.
+        double delta = (70.0 - defenderStat) / 65.0;
+        return clamp(1.0 + delta, 0.78, 1.35);
+    }
+
+    /**
+     * V25D99.22: pixel-aware player effectiveness inside the actual match
+     * engine. The preview/rating panel already uses customX/customY through
+     * {@link SubdivisionEffectivenessCalculator}; the live replay path must
+     * use the same continuous coordinates so a manager moving a player a few
+     * pixels can affect xG inputs, not only the coarse ATT/MID/DEF label.
+     */
+    private double tacticalEffectiveness(
+            V24PlayerMatchState player,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        if (player == null) {
+            return 1.0;
+        }
+        LineupSlotDTO slot = slotFor(player, slotsByPlayerId);
+        if (slot == null) {
+            return PositionEffectivenessCalculator.effectiveness(
+                    player.naturalPosition(), player.position());
+        }
+        double x = tacticalXPercent(player, slotsByPlayerId);
+        double y = tacticalYPercent(player, slotsByPlayerId);
+        return SubdivisionEffectivenessCalculator.effectiveness(
+                player.naturalPosition(),
+                x,
+                y,
+                player.position());
+    }
+
+    /**
+     * V25D99.22.1: mirror the preview's free-positioning attacking intent
+     * inside the match engine. A CM dragged 15-20% higher is no longer treated
+     * only as "farther from ideal" (penalty); it also contributes a little more
+     * to attack, so the partido responds in the same direction as the visual
+     * formation editor.
+     */
+    private double forwardIntentMultiplier(
+            V24PlayerMatchState player,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        if (player == null || "ATT".equals(player.position())) {
+            return 1.0;
+        }
+        LineupSlotDTO slot = slotFor(player, slotsByPlayerId);
+        if (slot == null || slot.customYPercent() == null || Double.isNaN(slot.customYPercent())) {
+            return 1.0;
+        }
+        double y = slot.customYPercent();
+        double forward = clamp((55.0 - y) / 40.0, 0.0, 1.0);
+        return 1.0 + (0.25 * forward);
     }
 
     /**
@@ -1326,17 +1641,65 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             double defenseRight
     ) {}
 
+    public record TacticalShapeDebug(
+            double possessionMultiplier,
+            double attackVolumeMultiplier,
+            double defensiveResistanceMultiplier,
+            double attackLeft,
+            double attackCenter,
+            double attackRight,
+            double defenseLeft,
+            double defenseCenter,
+            double defenseRight
+    ) {}
+
+    public TacticalShapeDebug debugTacticalShape(
+            SessionTeam team,
+            List<SessionPlayer> starting,
+            List<SessionPlayer> bench,
+            TeamStyle style,
+            String formation,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        V24TeamMatchState teamState = V24TeamMatchState.create(
+                team,
+                starting != null ? starting : List.of(),
+                bench != null ? bench : List.of(),
+                style,
+                slotsByPlayerId != null ? slotsByPlayerId : Map.of());
+        if (formation != null && !formation.isBlank()) {
+            teamState.setFormation(formation);
+        }
+        V24TacticalShapeProfile profile = tacticalShapeProfile(teamState, formation, slotsByPlayerId);
+        return new TacticalShapeDebug(
+                profile.possessionMultiplier(),
+                profile.attackVolumeMultiplier(),
+                profile.defensiveResistanceMultiplier(),
+                profile.attackLeft(),
+                profile.attackCenter(),
+                profile.attackRight(),
+                profile.defenseLeft(),
+                profile.defenseCenter(),
+                profile.defenseRight());
+    }
+
     private V24TacticalShapeProfile tacticalShapeProfile(
             V24TeamMatchState team,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        return tacticalShapeProfile(team, null, slotsByPlayerId);
+    }
+
+    private V24TacticalShapeProfile tacticalShapeProfile(
+            V24TeamMatchState team,
+            String formation,
             Map<String, LineupSlotDTO> slotsByPlayerId) {
         if (team == null || team.startingPlayers().isEmpty()) {
             return neutralShapeProfile();
         }
 
         int gk = 0;
-        int def = 0;
-        int mid = 0;
-        int att = 0;
+        double def = 0.0;
+        double mid = 0.0;
+        double att = 0.0;
         double widthSum = 0.0;
         int widthCount = 0;
         double defWidthSum = 0.0;
@@ -1345,9 +1708,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double defYSum = 0.0;
         double midYSum = 0.0;
         double attYSum = 0.0;
-        int leftLane = 0;
-        int centerLane = 0;
-        int rightLane = 0;
+        double leftLane = 0.0;
+        double centerLane = 0.0;
+        double rightLane = 0.0;
         double attackLeft = 0.0;
         double attackCenter = 0.0;
         double attackRight = 0.0;
@@ -1364,37 +1727,49 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
             double y = tacticalYPercent(p, slotsByPlayerId);
             double x = tacticalXPercent(p, slotsByPlayerId);
+            double eff = tacticalEffectiveness(p, slotsByPlayerId);
+            double structureEff = clamp(eff, 0.25, 1.0);
+            double midfieldEff = midfieldStructureEffectiveness(p, eff);
             double widthFromCenter = Math.min(1.0, Math.abs(x - 50.0) / 50.0);
-            if (y <= 22.2222) {
-                att++;
-                attWidthSum += widthFromCenter;
-                attYSum += y;
-            } else if (y <= 66.6667) {
-                mid++;
-                midWidthSum += widthFromCenter;
-                midYSum += y;
-            } else {
-                def++;
-                defWidthSum += widthFromCenter;
-                defYSum += y;
+            double attW = clamp((55.0 - y) / 38.0, 0.0, 1.0);
+            double defW = clamp((y - 65.0) / 18.0, 0.0, 1.0);
+            double shapeSum = attW + defW;
+            if (shapeSum > 1.0) {
+                attW /= shapeSum;
+                defW /= shapeSum;
+                shapeSum = 1.0;
             }
+            double midW = 1.0 - shapeSum;
 
-            if (x < 35.0) leftLane++;
-            else if (x > 65.0) rightLane++;
-            else centerLane++;
+            double weightedAttW = attW * structureEff;
+            double weightedMidW = midW * midfieldEff * midfieldProfileMultiplier(p);
+            double weightedDefW = defW * structureEff;
 
-            double attackWeight = clamp((100.0 - y) / 100.0, 0.0, 1.0);
-            double defenseWeight = clamp(y / 100.0, 0.0, 1.0);
-            if (x < 35.0) {
-                attackLeft += attackWeight;
-                defenseLeft += defenseWeight;
-            } else if (x > 65.0) {
-                attackRight += attackWeight;
-                defenseRight += defenseWeight;
-            } else {
-                attackCenter += attackWeight;
-                defenseCenter += defenseWeight;
-            }
+            att += weightedAttW;
+            mid += weightedMidW;
+            def += weightedDefW;
+            attWidthSum += widthFromCenter * weightedAttW;
+            midWidthSum += widthFromCenter * weightedMidW;
+            defWidthSum += widthFromCenter * weightedDefW;
+            attYSum += y * weightedAttW;
+            midYSum += y * weightedMidW;
+            defYSum += y * weightedDefW;
+
+            double leftWeight = laneLeftWeight(x);
+            double centerWeight = laneCenterWeight(x);
+            double rightWeight = laneRightWeight(x);
+            leftLane += leftWeight;
+            centerLane += centerWeight;
+            rightLane += rightWeight;
+
+            double attackWeight = clamp((100.0 - y) / 100.0, 0.0, 1.0) * structureEff;
+            double defenseWeight = clamp(y / 100.0, 0.0, 1.0) * structureEff;
+            attackLeft += attackWeight * leftWeight;
+            attackCenter += attackWeight * centerWeight;
+            attackRight += attackWeight * rightWeight;
+            defenseLeft += defenseWeight * leftWeight;
+            defenseCenter += defenseWeight * centerWeight;
+            defenseRight += defenseWeight * rightWeight;
 
             widthSum += widthFromCenter;
             widthCount++;
@@ -1417,8 +1792,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double centralOverloadBonus = Math.min(0.05, Math.max(0.0, centerShare - 0.45) * 0.10);
         double noOutletPenalty = Math.max(0.0, 0.22 - attWidth) * 0.18;
         double excessiveWidthPenalty = Math.max(0.0, width - 0.68) * 0.10;
-        double possession = clamp(1.0 + midDelta + midfieldWidthBonus + centralOverloadBonus
-                - noOutletPenalty - excessiveWidthPenalty, 0.84, 1.18);
+        double midfieldShortagePenalty = Math.max(0.0, 4.0 - mid) * 0.035;
+        double possession = 1.0 + midDelta + midfieldWidthBonus + centralOverloadBonus
+                - noOutletPenalty - excessiveWidthPenalty - midfieldShortagePenalty;
 
         double attackDelta = (att - 2.0) * 0.095;
         double usefulAttackWidth = (attWidth - 0.30) * 0.30;
@@ -1426,39 +1802,166 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double advancedLineBonus = (22.2222 - attAvgY) / 22.2222 * 0.06;
         double sideImbalancePenalty = Math.max(0.0, 0.72 - sideBalance) * 0.08;
         double noGkPenalty = gk == 1 ? 0.0 : 0.08;
-        double attackVolume = clamp(1.0 + attackDelta + usefulAttackWidth + supportFromMidfield
-                + advancedLineBonus - sideImbalancePenalty - noGkPenalty, 0.76, 1.30);
+        double attackVolume = 1.0 + attackDelta + usefulAttackWidth + supportFromMidfield
+                + advancedLineBonus - sideImbalancePenalty - noGkPenalty;
 
         double defDelta = (def - 4.0) * 0.080;
         double defensiveWidthBonus = Math.min(0.08, Math.max(0.0, defWidth - 0.34) * 0.20);
         double lowBlockBonus = Math.max(0.0, defAvgY - 74.0) * 0.004;
         double midfieldScreenBonus = Math.max(0.0, mid - 3.0) * 0.025;
+        double midfieldScreenPenalty = Math.max(0.0, 4.0 - mid) * 0.060;
         double flankGapPenalty = Math.max(0.0, 0.30 - defWidth) * 0.28;
         double centralGapPenalty = Math.max(0.0, defWidth - 0.72) * 0.16;
         double defensiveStrength = defDelta + defensiveWidthBonus + lowBlockBonus + midfieldScreenBonus
-                - flankGapPenalty - centralGapPenalty;
-        double resistance = clamp(1.0 - defensiveStrength, 0.76, 1.24);
+                - midfieldScreenPenalty - flankGapPenalty - centralGapPenalty;
+        double resistance = 1.0 - defensiveStrength;
+
+        // V25D99.58: preserve named tactical identity after the numeric parser
+        // groups similar labels. These are intentionally small nudges on top of
+        // the real slot geometry: the manual editor still wins, but a 4-1-2-3
+        // pivot no longer simulates as a byte-identical flat 4-3-3.
+        if ("4-1-2-3".equals(formation)) {
+            possession += 0.070;   // pivot improves circulation/control
+            attackVolume -= 0.040; // one safer midfielder, but still a real front three
+            resistance -= 0.140;   // lower opponent chance quality via central screen
+        } else if ("4-2-2-2".equals(formation)) {
+            possession -= 0.015;   // narrow box can be pressed toward touchlines
+            attackVolume += 0.040; // two ST + two inside AMs create vertical punches
+            resistance -= 0.010;   // still viable if the double pivot holds
+        } else if ("3-5-2-CDM".equals(formation)) {
+            possession += 0.025;   // holder gives cleaner reset option
+            attackVolume -= 0.020; // one CM sits instead of joining attacks
+            resistance -= 0.060;   // real central shield
+        } else if ("5-3-2".equals(formation)) {
+            possession += 0.015;   // extra security helps recycle possession
+            attackVolume -= 0.040; // fewer natural high/wide outlets
+            resistance -= 0.100;   // five defenders should reduce opponent quality
+        } else if ("5-4-1".equals(formation)) {
+            possession -= 0.020;   // low block concedes more territory
+            attackVolume -= 0.120; // one striker limits volume
+            resistance -= 0.140;   // but the block must be hard to break down
+        }
+
+        possession = clamp(possession, 0.84, 1.18);
+        attackVolume = clamp(attackVolume, 0.76, 1.30);
+        resistance = clamp(resistance, 0.68, 1.24);
+
+        double attackLeftChannel = normalizeChannel(attackLeft);
+        double attackCenterChannel = normalizeChannel(attackCenter);
+        double attackRightChannel = normalizeChannel(attackRight);
+        double defenseLeftChannel = normalizeChannel(defenseLeft);
+        double defenseCenterChannel = normalizeChannel(defenseCenter);
+        double defenseRightChannel = normalizeChannel(defenseRight);
+
+        if ("5-4-1".equals(formation)) {
+            // V25D99.61: a 5-4-1 low block is not merely "less attack"; it
+            // should be read as a compact box-protection shape. The raw lane
+            // math under-read its central cover because the five-man line is
+            // spread wide and the two CMs sit just off the exact centre lane.
+            defenseCenterChannel = clamp(defenseCenterChannel + 0.22, 0.35, 1.65);
+            defenseLeftChannel = clamp(defenseLeftChannel + 0.08, 0.35, 1.65);
+            defenseRightChannel = clamp(defenseRightChannel + 0.08, 0.35, 1.65);
+            attackCenterChannel = clamp(attackCenterChannel - 0.08, 0.35, 1.65);
+        } else if ("4-2-2-2".equals(formation)) {
+            // Narrow box has two pivots/inside AMs; it should still protect the
+            // middle even if it can be stretched wide.
+            defenseCenterChannel = clamp(defenseCenterChannel + 0.10, 0.35, 1.65);
+            defenseLeftChannel = clamp(defenseLeftChannel - 0.04, 0.35, 1.65);
+            defenseRightChannel = clamp(defenseRightChannel - 0.04, 0.35, 1.65);
+        }
 
         return new V24TacticalShapeProfile(
                 possession,
                 attackVolume,
                 resistance,
-                normalizeChannel(attackLeft),
-                normalizeChannel(attackCenter),
-                normalizeChannel(attackRight),
-                normalizeChannel(defenseLeft),
-                normalizeChannel(defenseCenter),
-                normalizeChannel(defenseRight));
+                attackLeftChannel,
+                attackCenterChannel,
+                attackRightChannel,
+                defenseLeftChannel,
+                defenseCenterChannel,
+                defenseRightChannel);
     }
 
     private V24TacticalShapeProfile neutralShapeProfile() {
         return new V24TacticalShapeProfile(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
     }
 
+    private double midfieldStructureEffectiveness(V24PlayerMatchState player, double tacticalEffectiveness) {
+        if (player == null) return 1.0;
+        double eff = clamp(tacticalEffectiveness, 0.0, 1.0);
+        // V25D99.27: midfield structure is a zone responsibility, not a label
+        // on the replacement player. The previous V25D99.26 pass squared only
+        // players whose tactical position was already MID, so an attacker
+        // swapped into a central MID coordinate could still count too much as
+        // midfield occupation. Squaring the role/geometry effectiveness for
+        // every contribution to the MID band keeps natural MIDs unchanged
+        // (eff ~= 1) while making out-of-role attackers/defenders lose central
+        // control, press resistance and screen value.
+        return clamp(eff * eff, 0.20, 1.0);
+    }
+
+    private double midfieldProfileMultiplier(V24PlayerMatchState player) {
+        if (player == null) return 1.0;
+        // V25D99.29: midfield is not one generic occupation number. A player
+        // in the central band needs tempo/control and defensive screen. This
+        // keeps a technical attacker useful, but stops him from replacing a
+        // pivot/box-to-box midfielder at full structural value.
+        double controlProfile =
+                player.technique() * 0.38
+                        + player.mentality() * 0.24
+                        + player.getSkillLevel(PlayerSkill.PASSER) * 0.16
+                        + player.getSkillLevel(PlayerSkill.PLAYMAKER) * 0.12
+                        + player.stamina() * 0.10;
+        double screenProfile =
+                player.defense() * 0.44
+                        + player.mentality() * 0.20
+                        + player.stamina() * 0.14
+                        + player.getSkillLevel(PlayerSkill.TACKLER) * 0.14
+                        + player.getSkillLevel(PlayerSkill.MARKER) * 0.08;
+        double midfieldProfile = (controlProfile * 0.56) + (screenProfile * 0.44);
+        double naturalMidfieldFit = midfieldNaturalFit(player);
+
+        // Around 70 is a professional neutral MID contribution. Bound the
+        // modifier so elite pivots matter and forwards/CBs in midfield lose
+        // structure without making the whole match deterministic.
+        return clamp((0.72 + (midfieldProfile / 250.0)) * naturalMidfieldFit, 0.50, 1.12);
+    }
+
+    private double midfieldNaturalFit(V24PlayerMatchState player) {
+        if (player == null) return 1.0;
+        String natural = player.naturalPosition() != null ? player.naturalPosition() : player.position();
+        String tactical = player.position();
+        // V25D99.30: coordinates can move a player into the central band, but
+        // the player still needs the natural habits of a midfielder to fully
+        // replace a pivot/box-to-box role. Forwards keep some creative value;
+        // defenders keep some screen value; neither should count as a complete
+        // midfield structure by label/coordinate alone.
+        return switch (natural) {
+            case "MID" -> 1.0;
+            case "DEF" -> "MID".equals(tactical) ? 0.84 : 0.78;
+            case "WINGER" -> 0.76;
+            case "ATT" -> 0.70;
+            case "GK" -> 0.20;
+            default -> 0.86;
+        };
+    }
+
     private double normalizeChannel(double raw) {
         // Around 2.0 means roughly two useful outfield contributions in that
         // lane. Clamp keeps extreme manual shapes meaningful without exploding.
         return clamp(raw / 2.0, 0.35, 1.65);
+    }
+
+    private double laneLeftWeight(double xPercent) {
+        return clamp((50.0 - xPercent) / 30.0, 0.0, 1.0);
+    }
+
+    private double laneRightWeight(double xPercent) {
+        return clamp((xPercent - 50.0) / 30.0, 0.0, 1.0);
+    }
+
+    private double laneCenterWeight(double xPercent) {
+        return 1.0 - Math.max(laneLeftWeight(xPercent), laneRightWeight(xPercent));
     }
 
     private double channelMismatchMultiplier(V24TacticalShapeProfile attack, V24TacticalShapeProfile defense) {
@@ -1471,6 +1974,29 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double advantage = Math.max(0.0, bestEdge) * 0.120;
         double deadEnd = Math.max(0.0, -worstEdge) * 0.045;
         return clamp(1.0 + advantage - deadEnd, 0.86, 1.20);
+    }
+
+    private double defensiveShapeShotQualityMultiplier(V24TacticalShapeProfile defense, V24ShotLocation location) {
+        if (defense == null || location == null) return 1.0;
+
+        double centralCover = defense.defenseCenter();
+        double wideCover = (defense.defenseLeft() + defense.defenseRight()) / 2.0;
+        double laneCover = switch (location) {
+            case SIX_YARD_BOX, PENALTY_AREA_CENTER -> centralCover;
+            case PENALTY_AREA_WIDE -> wideCover;
+            case OUTSIDE_BOX -> (centralCover * 0.65) + (wideCover * 0.35);
+            case LONG_RANGE -> centralCover;
+        };
+
+        double laneEffect = (laneCover - 1.0) * switch (location) {
+            case SIX_YARD_BOX -> 0.130;
+            case PENALTY_AREA_CENTER -> 0.110;
+            case PENALTY_AREA_WIDE -> 0.100;
+            case OUTSIDE_BOX -> 0.055;
+            case LONG_RANGE -> 0.035;
+        };
+        double resistanceEffect = (1.0 - defense.defensiveResistanceMultiplier()) * 0.180;
+        return clamp(1.0 - laneEffect - resistanceEffect, 0.76, 1.14);
     }
 
     private double tacticalYPercent(V24PlayerMatchState player, Map<String, LineupSlotDTO> slotsByPlayerId) {
@@ -1646,12 +2172,47 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return switch (style) {
             case ATTACKING -> 1.15;
             case POSSESSION -> 1.05;
-            case WIDE_PLAY -> 1.04;
-            case CENTRAL_PLAY -> 1.04;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 1.04;
+            case CENTRAL_PLAY -> 1.02;
             case BALANCED -> 1.00;
             case COUNTER -> 0.95;
             case DEFENSIVE -> 0.85;
         };
+    }
+
+    private double defensiveStyleChanceVolumeMultiplier(TeamStyle defendingStyle) {
+        if (defendingStyle == null) return 1.0;
+        return switch (defendingStyle) {
+            case DEFENSIVE -> 0.82;
+            case COUNTER -> 0.91;
+            case POSSESSION -> 0.96;
+            case BALANCED -> 1.00;
+            case CENTRAL_PLAY -> 1.01;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 1.03;
+            case ATTACKING -> 1.08;
+        };
+    }
+
+    private double defensiveStyleShotQualityMultiplier(TeamStyle defendingStyle, V24ShotLocation location) {
+        if (defendingStyle == null || location == null) return 1.0;
+        double base = switch (defendingStyle) {
+            case DEFENSIVE -> 0.91;
+            case COUNTER -> 0.96;
+            case POSSESSION -> 0.98;
+            case BALANCED -> 1.00;
+            case CENTRAL_PLAY -> 1.01;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 1.02;
+            case ATTACKING -> 1.06;
+        };
+        double laneAdjustment = switch (location) {
+            case SIX_YARD_BOX, PENALTY_AREA_CENTER -> defendingStyle == TeamStyle.DEFENSIVE ? 0.97 : 1.0;
+            case PENALTY_AREA_WIDE -> defendingStyle == TeamStyle.WIDE_PLAY
+                    || defendingStyle == TeamStyle.LEFT_FLANK
+                    || defendingStyle == TeamStyle.RIGHT_FLANK ? 0.98 : 1.0;
+            case OUTSIDE_BOX -> 1.0;
+            case LONG_RANGE -> defendingStyle == TeamStyle.DEFENSIVE ? 0.95 : 1.0;
+        };
+        return clamp(base * laneAdjustment, 0.84, 1.10);
     }
 
     private double chanceProbability(TeamStyle style, int minute) {
@@ -1724,8 +2285,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double base = switch (style) {
             case ATTACKING -> 0.42;
             case POSSESSION -> 0.38;
-            case WIDE_PLAY -> 0.36;
-            case CENTRAL_PLAY -> 0.36;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 0.36;
+            case CENTRAL_PLAY -> 0.34;
             case COUNTER -> 0.35;
             case DEFENSIVE -> 0.28;
             case BALANCED -> 0.35;
@@ -1766,7 +2327,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // DRIBBLER=0. DRIBBLER is multiplicative on chanceProbability — i.e.
         // a key attacker with DRIBBLER=95 produces ~31.7% more shot attempts
         // than one with DRIBBLER=0, ceteris paribus.
-        double dribblerMult = 1.0 + (dribblerSkill / 300.0);
+        // V25D99.25: softer DRIBBLER volume curve. The previous /300 curve
+        // made elite dribblers add ~30% team chance volume, which was too
+        // strong in player-swap harness comparisons. Keep the skill visible,
+        // but let it complement xG/duel quality instead of dominating shots.
+        double dribblerMult = 1.0 + (dribblerSkill / 600.0);
 
         return base * secondHalf * endGame * qualityMod * dribblerMult;
     }
@@ -1775,7 +2340,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         return switch (style) {
             case POSSESSION -> 58.0;
             case ATTACKING -> 52.0;
-            case WIDE_PLAY, CENTRAL_PLAY -> 50.0;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK, CENTRAL_PLAY -> 50.0;
             case COUNTER -> 48.0;
             case DEFENSIVE -> 45.0;
             case BALANCED -> 50.0;
@@ -1837,6 +2402,40 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // (not just have onPitch=true) so the shooter selection picks
         // it. See V24TeamMatchState#swapStartingBenchForF25 javadoc.
         team.swapStartingBenchForF25(sub.playerOffId(), sub.playerOnId());
+    }
+
+    private Map<String, LineupSlotDTO> effectiveSlotsForMinute(
+            Map<String, LineupSlotDTO> baseSlotsByPlayerId,
+            List<V24MatchContext.ScheduledSub> substitutions,
+            String teamId,
+            int minute) {
+        if (baseSlotsByPlayerId == null || baseSlotsByPlayerId.isEmpty()
+                || substitutions == null || substitutions.isEmpty()
+                || teamId == null) {
+            return baseSlotsByPlayerId;
+        }
+        Map<String, LineupSlotDTO> effective = null;
+        for (V24MatchContext.ScheduledSub sub : substitutions) {
+            if (sub == null
+                    || !teamId.equals(sub.teamId())
+                    || sub.effectiveMinute() > minute) {
+                continue;
+            }
+            LineupSlotDTO offSlot = baseSlotsByPlayerId.get(sub.playerOffId());
+            if (offSlot == null) {
+                continue;
+            }
+            if (effective == null) {
+                effective = new HashMap<>(baseSlotsByPlayerId);
+            }
+            // V25D99.41.1: a substitute inherits the exact visual/tactical
+            // slot of the player he replaces. Otherwise a bench DEF with no
+            // persisted lineup slot falls back to generic center-back
+            // coordinates, so replacing a wide defender could accidentally
+            // strengthen the centre instead of weakening that real slot.
+            effective.put(sub.playerOnId(), offSlot);
+        }
+        return effective != null ? effective : baseSlotsByPlayerId;
     }
 
     private V24DetailedMatchResult finalizeResult(

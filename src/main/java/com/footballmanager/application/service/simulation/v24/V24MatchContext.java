@@ -385,6 +385,44 @@ public final class V24MatchContext {
                 + homeTeamId + "') or away ('" + awayTeamId + "')");
     }
 
+    /**
+     * V25D99.22.3: return a new context with updated visual/tactical slots
+     * for one team. Used by the test harness and live tactical tooling to
+     * replay the same match after a manager moves players on the pitch by
+     * pixels, not only after changing the formation label.
+     */
+    public V24MatchContext withSlots(String teamId, Map<String, LineupSlotDTO> slotsByPlayerId) {
+        if (teamId == null || teamId.isBlank()) {
+            throw new IllegalArgumentException("teamId must not be blank");
+        }
+        Map<String, LineupSlotDTO> safeSlots = slotsByPlayerId != null ? slotsByPlayerId : Map.of();
+        if (homeTeamId.equals(teamId)) {
+            return new V24MatchContext(
+                    matchId, homeTeamId, awayTeamId,
+                    homeTeam, awayTeam,
+                    homeStartingPlayers, awayStartingPlayers,
+                    homeBenchPlayers, awayBenchPlayers,
+                    homeFormation, awayFormation,
+                    homeStyle, awayStyle,
+                    manualSubstitutions,
+                    safeSlots, awaySlotsByPlayerId);
+        }
+        if (awayTeamId.equals(teamId)) {
+            return new V24MatchContext(
+                    matchId, homeTeamId, awayTeamId,
+                    homeTeam, awayTeam,
+                    homeStartingPlayers, awayStartingPlayers,
+                    homeBenchPlayers, awayBenchPlayers,
+                    homeFormation, awayFormation,
+                    homeStyle, awayStyle,
+                    manualSubstitutions,
+                    homeSlotsByPlayerId, safeSlots);
+        }
+        throw new IllegalArgumentException(
+                "teamId '" + teamId + "' does not match home ('"
+                + homeTeamId + "') or away ('" + awayTeamId + "')");
+    }
+
     // ========== LIVE-MATCH-F2-LIVE F2 (B1) / F2.5 (B1): deferred manual substitution helper ==========
 
     /**

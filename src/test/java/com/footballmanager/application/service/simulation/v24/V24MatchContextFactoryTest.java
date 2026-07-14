@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -85,6 +86,33 @@ class V24MatchContextFactoryTest {
 
         assertEquals("3-5-2", ctx.homeFormation());
         assertEquals("4-2-3-1", ctx.awayFormation());
+    }
+
+    @Test
+    void carriesPersistedCustomSlotCoordinatesIntoMatchContextByPlayerId() {
+        CareerSave career = makeCareer("career-slot-custom", "home-t1", "away-t2",
+                makePlayers("h", 15, 75), makePlayers("a", 15, 70));
+        MatchFixture fixture = makeFixture("match-slot-custom", "home-t1", "away-t2", 1);
+        SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-4-2");
+        SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
+
+        String movedPlayerId = career.getTeamStarting11().get("home-t1").get(6);
+        Map<String, LineupSlotDTO> homeSlots = new HashMap<>();
+        homeSlots.put("GK-1", new LineupSlotDTO(career.getTeamStarting11().get("home-t1").get(0), "GK-1"));
+        homeSlots.put("S16-2", new LineupSlotDTO(movedPlayerId, "S16-2", 44.25, 37.75));
+        career.setTeamStarting11SubdivisionSlots(Map.of("home-t1", homeSlots));
+
+        V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 99L);
+
+        LineupSlotDTO movedSlot = ctx.homeSlotsByPlayerId().get(movedPlayerId);
+        assertNotNull(movedSlot,
+                "The V24 context must expose persisted modal slots keyed by playerId, "
+                        + "otherwise the match engine cannot consume custom pixel moves.");
+        assertEquals("S16-2", movedSlot.subdivisionId());
+        assertEquals(44.25, movedSlot.customXPercent());
+        assertEquals(37.75, movedSlot.customYPercent());
+        assertTrue(ctx.awaySlotsByPlayerId().isEmpty(),
+                "Only the team with persisted editor slots should receive slot metadata.");
     }
 
     // ========== Null-input rejection tests ==========

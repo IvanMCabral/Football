@@ -54,6 +54,19 @@ public final class V24ShotCoordinateGenerator {
     }
 
     /**
+     * Generate a wide shot coordinate biased to one flank. Intended for
+     * tactical calibration paths where the style explicitly loads one side.
+     */
+    public V24ShotCoordinate generateWideFlank(boolean left, Random random) {
+        Objects.requireNonNull(random, "random must not be null");
+        double x = randomInRange(random, 83.0, 93.0);
+        double y = left
+                ? randomInRange(random, 18.0, 42.0)
+                : randomInRange(random, 58.0, 82.0);
+        return new V24ShotCoordinate(x, y, V24ShotLocation.PENALTY_AREA_WIDE);
+    }
+
+    /**
      * Generate a penalty kick coordinate (fixed central position near penalty spot).
      */
     public V24ShotCoordinate penalty(Random random) {

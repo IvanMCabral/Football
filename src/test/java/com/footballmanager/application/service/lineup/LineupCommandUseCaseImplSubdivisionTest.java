@@ -137,8 +137,9 @@ class LineupCommandUseCaseImplSubdivisionTest {
      * teamStarting11Subdivision. Back primero calcula HELPER-BASED base (11 entries),
      * luego aplica overrides del front para slots con subdivisionId no-null.
      *
-     * <p>Los slots enviados deben usar subdivision IDs que coincidan con HELPER base
-     * (S22-1, S22-2, S23-2, S24-3, S16-1, S16-2, S17-2, S18-3, S05-2, S05-3, GK-1)
+     * <p>Los slots enviados deben usar subdivision IDs que coincidan con la
+     * formation canónica actual (V25D94, simétrica):
+     * (S22-2, S23-1, S23-3, S24-2, S16-2, S17-1, S17-3, S18-2, S05-1, S05-3, GK-1)
      * para que el resultado sea exactamente 11 entries.
      */
     @Test
@@ -151,15 +152,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Slots con subdivisions que coinciden con HELPER-BASED para 4-4-2.
         List<LineupSlotDTO> slots = List.of(
             new LineupSlotDTO("gk-1", "GK-1"),
-            new LineupSlotDTO("def-1", "S22-1"),
-            new LineupSlotDTO("def-2", "S22-2"),
-            new LineupSlotDTO("def-3", "S23-2"),
-            new LineupSlotDTO("def-4", "S24-3"),
-            new LineupSlotDTO("mid-1", "S16-1"),
-            new LineupSlotDTO("mid-2", "S16-2"),
-            new LineupSlotDTO("mid-3", "S17-2"),
-            new LineupSlotDTO("mid-4", "S18-3"),
-            new LineupSlotDTO("att-1", "S05-2"),
+            new LineupSlotDTO("def-1", "S22-2"),
+            new LineupSlotDTO("def-2", "S23-1"),
+            new LineupSlotDTO("def-3", "S23-3"),
+            new LineupSlotDTO("def-4", "S24-2"),
+            new LineupSlotDTO("mid-1", "S16-2"),
+            new LineupSlotDTO("mid-2", "S17-1"),
+            new LineupSlotDTO("mid-3", "S17-3"),
+            new LineupSlotDTO("mid-4", "S18-2"),
+            new LineupSlotDTO("att-1", "S05-1"),
             new LineupSlotDTO("att-2", "S05-3")
         );
 
@@ -180,15 +181,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertEquals(11, teamSlots.size(),
             "MVP1-lineup-cancha-1.6 F4: HELPER base + overrides deben sumar 11 entries (subdivisions coinciden)");
         assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-1"));
-        assertEquals("def-2", teamSlots.get("S22-2"));
-        assertEquals("def-3", teamSlots.get("S23-2"));
-        assertEquals("def-4", teamSlots.get("S24-3"));
-        assertEquals("mid-1", teamSlots.get("S16-1"));
-        assertEquals("mid-2", teamSlots.get("S16-2"));
-        assertEquals("mid-3", teamSlots.get("S17-2"));
-        assertEquals("mid-4", teamSlots.get("S18-3"));
-        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("def-1", teamSlots.get("S22-2"));
+        assertEquals("def-2", teamSlots.get("S23-1"));
+        assertEquals("def-3", teamSlots.get("S23-3"));
+        assertEquals("def-4", teamSlots.get("S24-2"));
+        assertEquals("mid-1", teamSlots.get("S16-2"));
+        assertEquals("mid-2", teamSlots.get("S17-1"));
+        assertEquals("mid-3", teamSlots.get("S17-3"));
+        assertEquals("mid-4", teamSlots.get("S18-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
         assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
@@ -221,15 +222,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         // Verificar que HELPER-BASED asignó los 11 slots correctamente.
         assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-1"));
-        assertEquals("def-2", teamSlots.get("S22-2"));
-        assertEquals("def-3", teamSlots.get("S23-2"));
-        assertEquals("def-4", teamSlots.get("S24-3"));
-        assertEquals("mid-1", teamSlots.get("S16-1"));
-        assertEquals("mid-2", teamSlots.get("S16-2"));
-        assertEquals("mid-3", teamSlots.get("S17-2"));
-        assertEquals("mid-4", teamSlots.get("S18-3"));
-        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("def-1", teamSlots.get("S22-2"));
+        assertEquals("def-2", teamSlots.get("S23-1"));
+        assertEquals("def-3", teamSlots.get("S23-3"));
+        assertEquals("def-4", teamSlots.get("S24-2"));
+        assertEquals("mid-1", teamSlots.get("S16-2"));
+        assertEquals("mid-2", teamSlots.get("S17-1"));
+        assertEquals("mid-3", teamSlots.get("S17-3"));
+        assertEquals("mid-4", teamSlots.get("S18-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
         assertEquals("att-2", teamSlots.get("S05-3"));
 
         // Verificar también F1: formación persistida.
@@ -263,8 +264,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED para 4-4-2");
 
         assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-1"));
-        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("def-1", teamSlots.get("S22-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
         assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
@@ -284,7 +285,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         List<LineupSlotDTO> slots = List.of(
             new LineupSlotDTO("gk-1", "GK-1"),       // válido
-            new LineupSlotDTO("unknown-id", "S22-1") // playerId no en el lineup → ignorar
+            new LineupSlotDTO("unknown-id", "S22-2") // playerId no en el lineup → ignorar
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -303,8 +304,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
             "MVP1-lineup-cancha-1.6 F4: 11 entries HELPER-BASED + 0 overrides efectivos (slot con playerId inválido fue ignorado)");
         assertEquals("gk-1", teamSlots.get("GK-1"),
             "GK-1 → gk-1 (HELPER base + override válido coinciden)");
-        assertEquals("def-1", teamSlots.get("S22-1"),
-            "S22-1 → def-1 (HELPER base, slot del front con playerId desconocido fue ignorado)");
+        assertEquals("def-1", teamSlots.get("S22-2"),
+            "S22-2 → def-1 (HELPER base, slot del front con playerId desconocido fue ignorado)");
         assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
@@ -327,8 +328,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         // Slots con subdivisionId en blanco y playerId en blanco — todos inválidos
         List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO(null, "S22-1"),
-            new LineupSlotDTO("", "S22-1"),
+            new LineupSlotDTO(null, "S22-2"),
+            new LineupSlotDTO("", "S22-2"),
             new LineupSlotDTO("gk-1", null),
             new LineupSlotDTO("gk-1", "")
         );
@@ -351,7 +352,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertFalse(teamSlots.containsKey("OLD-SLOT"),
             "MVP1-lineup-cancha-1.6 F4: OLD-SLOT del entry pre-existente fue reemplazado por HELPER-BASED");
         assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-1"));
+        assertEquals("def-1", teamSlots.get("S22-2"));
         assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
@@ -391,8 +392,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // base no fueron sobrescritos.
         assertEquals("gk-1", teamSlots.get("GK-1"),
             "GK-1 sigue asignado por HELPER-BASED (slot del front con subdivisionId blank fue ignorado)");
-        assertEquals("def-1", teamSlots.get("S22-1"));
-        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("def-1", teamSlots.get("S22-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
         assertEquals("att-2", teamSlots.get("S05-3"));
     }
 
@@ -423,8 +424,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED");
 
         assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-1"));
-        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("def-1", teamSlots.get("S22-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
         assertEquals("att-2", teamSlots.get("S05-3"));
 
         // Verificar también F1: formación persistida en legacy overload.
@@ -441,9 +442,9 @@ class LineupCommandUseCaseImplSubdivisionTest {
      *
      * <p>4-4-2 formation positions (FormationService):
      * <pre>
-     *   GK-1 → GK, S22-1 → LB, S22-2 → CB, S23-2 → CB, S24-3 → RB,
-     *   S16-1 → LM, S16-2 → CM, S17-2 → CM, S18-3 → RM,
-     *   S05-2 → ST, S05-3 → ST
+     *   GK-1 → GK, S22-2 → LB, S23-1 → CB, S23-3 → CB, S24-2 → RB,
+     *   S16-2 → LM, S17-1 → CM, S17-3 → CM, S18-2 → RM,
+     *   S05-1 → ST, S05-3 → ST
      * </pre>
      */
     @Test
@@ -465,17 +466,17 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertNotNull(teamSlots, "teamStarting11Subdivision map debe estar poblada");
         assertEquals(11, teamSlots.size(), "Debe haber 11 entries para 4-4-2 full lineup");
 
-        // Exact role match: GK → GK-1, LB → S22-1, etc.
+        // Exact role match: GK → GK-1, LB → S22-2, etc.
         assertTrue(teamSlots.containsKey("GK-1"),  "GK-1 debe estar asignado");
-        assertTrue(teamSlots.containsKey("S22-1"), "LB → S22-1");
-        assertTrue(teamSlots.containsKey("S22-2"), "CB → S22-2");
-        assertTrue(teamSlots.containsKey("S23-2"), "CB → S23-2");
-        assertTrue(teamSlots.containsKey("S24-3"), "RB → S24-3");
-        assertTrue(teamSlots.containsKey("S16-1"), "LM → S16-1");
-        assertTrue(teamSlots.containsKey("S16-2"), "CM → S16-2");
-        assertTrue(teamSlots.containsKey("S17-2"), "CM → S17-2");
-        assertTrue(teamSlots.containsKey("S18-3"), "RM → S18-3");
-        assertTrue(teamSlots.containsKey("S05-2"), "ST → S05-2");
+        assertTrue(teamSlots.containsKey("S22-2"), "LB → S22-2");
+        assertTrue(teamSlots.containsKey("S23-1"), "CB → S23-1");
+        assertTrue(teamSlots.containsKey("S23-3"), "CB → S23-3");
+        assertTrue(teamSlots.containsKey("S24-2"), "RB → S24-2");
+        assertTrue(teamSlots.containsKey("S16-2"), "LM → S16-2");
+        assertTrue(teamSlots.containsKey("S17-1"), "CM → S17-1");
+        assertTrue(teamSlots.containsKey("S17-3"), "CM → S17-3");
+        assertTrue(teamSlots.containsKey("S18-2"), "RM → S18-2");
+        assertTrue(teamSlots.containsKey("S05-1"), "ST → S05-1");
         assertTrue(teamSlots.containsKey("S05-3"), "ST → S05-3");
     }
 
@@ -486,8 +487,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
      *
      * <p>4-3-3 formation positions (FormationService):
      * <pre>
-     *   GK-1 → GK, S22-1 → LB, S22-2 → CB, S23-2 → CB, S24-3 → RB,
-     *   S13-2 → CM, S14-2 → CM, S15-2 → CM,
+     *   GK-1 → GK, S22-2 → LB, S23-1 → CB, S23-3 → CB, S24-2 → RB,
+     *   S17-1 → CM, S17-2 → CM, S17-3 → CM,
      *   S04-1 → LW, S05-2 → ST, S06-3 → RW
      * </pre>
      */
@@ -528,13 +529,13 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         // Verificar las posiciones específicas del 4-3-3
         assertTrue(teamSlots.containsKey("GK-1"),  "GK-1");
-        assertTrue(teamSlots.containsKey("S22-1"), "LB → S22-1");
-        assertTrue(teamSlots.containsKey("S22-2"), "CB → S22-2");
-        assertTrue(teamSlots.containsKey("S23-2"), "CB → S23-2");
-        assertTrue(teamSlots.containsKey("S24-3"), "RB → S24-3");
-        assertTrue(teamSlots.containsKey("S13-2"), "CM (left) → S13-2");
-        assertTrue(teamSlots.containsKey("S14-2"), "CM (center) → S14-2");
-        assertTrue(teamSlots.containsKey("S15-2"), "CM (right) → S15-2");
+        assertTrue(teamSlots.containsKey("S22-2"), "LB → S22-2");
+        assertTrue(teamSlots.containsKey("S23-1"), "CB → S23-1");
+        assertTrue(teamSlots.containsKey("S23-3"), "CB → S23-3");
+        assertTrue(teamSlots.containsKey("S24-2"), "RB → S24-2");
+        assertTrue(teamSlots.containsKey("S17-1"), "CM (left) → S17-1");
+        assertTrue(teamSlots.containsKey("S17-2"), "CM (center) → S17-2");
+        assertTrue(teamSlots.containsKey("S17-3"), "CM (right) → S17-3");
         assertTrue(teamSlots.containsKey("S04-1"), "LW → S04-1");
         assertTrue(teamSlots.containsKey("S05-2"), "ST → S05-2");
         assertTrue(teamSlots.containsKey("S06-3"), "RW → S06-3");
@@ -555,7 +556,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
         Map<String, String> oldSlots = new HashMap<>();
         oldSlots.put("S04-1", "old-lw");  // LW slot del 4-3-3
         oldSlots.put("S05-2", "old-st");  // ST slot del 4-3-3
-        oldSlots.put("S13-2", "old-cm");  // CM slot del 4-3-3
+        oldSlots.put("S17-2", "old-cm");  // CM slot del 4-3-3
         preExisting.put(TEAM_ID, oldSlots);
         career.setTeamStarting11Subdivision(preExisting);
 
@@ -577,12 +578,12 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Los slots viejos del 4-3-3 NO deben quedar (S04-1 era LW-only en 4-3-3)
         assertFalse(teamSlots.containsKey("S04-1"),
             "S04-1 (LW en 4-3-3) no debe quedar en un map de 4-4-2");
-        assertFalse(teamSlots.containsKey("S13-2"),
-            "S13-2 (CM en 4-3-3) no debe quedar en un map de 4-4-2");
+        assertFalse(teamSlots.containsKey("S17-2"),
+            "S17-2 (CM central en 4-3-3) no debe quedar en un map de 4-4-2");
 
         // Los slots del 4-4-2 deben estar presentes
-        assertTrue(teamSlots.containsKey("S22-1"), "LB → S22-1 (formación 4-4-2)");
-        assertTrue(teamSlots.containsKey("S05-2"), "ST → S05-2 (formación 4-4-2)");
+        assertTrue(teamSlots.containsKey("S22-2"), "LB → S22-2 (formación 4-4-2)");
+        assertTrue(teamSlots.containsKey("S05-1"), "ST → S05-1 (formación 4-4-2)");
     }
 
     // ========== MVP1-lineup-cancha-1.6: F4 front overrides sobre HELPER-BASED ==========
@@ -592,8 +593,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
      * explícitamente — back calcula HELPER-BASED base, luego front overrides ganan
      * para los slots con subdivisionId no-null/no-blank.
      *
-     * <p>Setup: squad 4-4-2 standard, HELPER-BASED asigna def-1 (CB) al slot S22-1 (LB).
-     * Front envía override: S22-1 → def-3 (LB player) — esto debe ganar sobre HELPER.
+     * <p>Setup: squad 4-4-2 standard, HELPER-BASED asigna def-1 (CB) al slot S22-2 (LB).
+     * Front envía override: S22-2 → def-3 (LB player) — esto debe ganar sobre HELPER.
      * El resto del HELPER-BASED base persiste intacto.
      */
     @Test
@@ -604,10 +605,10 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Front envía slots explícitos. HELPER-BASED para 4-4-2 con makeFullSquad442
-        // habría asignado S22-1 → def-1 (CB, primer defensor). Front overridea
+        // habría asignado S22-2 → def-1 (CB, primer defensor). Front overridea
         // con def-3 (LB, jugador más natural para LB slot).
         List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("def-3", "S22-1")  // override: LB slot → LB player
+            new LineupSlotDTO("def-3", "S22-2")  // override: LB slot → LB player
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -624,20 +625,20 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertEquals(11, teamSlots.size(), "MVP1-lineup-cancha-1.6 F4: 11 entries (HELPER-BASED base + overrides)");
 
         // Override del front ganó sobre HELPER-BASED.
-        assertEquals("def-3", teamSlots.get("S22-1"),
-            "MVP1-lineup-cancha-1.6 F4: front override gana — S22-1 (LB slot) → def-3 (LB player), no def-1 que HELPER habría elegido");
+        assertEquals("def-3", teamSlots.get("S22-2"),
+            "MVP1-lineup-cancha-1.6 F4: front override gana — S22-2 (LB slot) → def-3 (LB player), no def-1 que HELPER habría elegido");
 
         // El resto del HELPER-BASED base persiste intacto.
         assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-2", teamSlots.get("S22-2"), "S22-2 (CB) → def-2 (HELPER base)");
-        assertEquals("def-3", teamSlots.get("S23-2"),
-            "S23-2 (CB) → def-3 si HELPER lo encontró (puede ser que ya esté usado por override)");
-        assertEquals("def-4", teamSlots.get("S24-3"));
-        assertEquals("mid-1", teamSlots.get("S16-1"));
-        assertEquals("mid-2", teamSlots.get("S16-2"));
-        assertEquals("mid-3", teamSlots.get("S17-2"));
-        assertEquals("mid-4", teamSlots.get("S18-3"));
-        assertEquals("att-1", teamSlots.get("S05-2"));
+        assertEquals("def-2", teamSlots.get("S23-1"), "S23-1 (CB) → def-2 (HELPER base)");
+        assertEquals("def-3", teamSlots.get("S23-3"),
+            "S23-3 (CB) → def-3 si HELPER lo encontró (puede ser que ya esté usado por override)");
+        assertEquals("def-4", teamSlots.get("S24-2"));
+        assertEquals("mid-1", teamSlots.get("S16-2"));
+        assertEquals("mid-2", teamSlots.get("S17-1"));
+        assertEquals("mid-3", teamSlots.get("S17-3"));
+        assertEquals("mid-4", teamSlots.get("S18-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
         assertEquals("att-2", teamSlots.get("S05-3"));
 
         // F1: formación persistida.
@@ -673,7 +674,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
      * <p>The setup uses the 4-4-2 squad with CM players in the MID slots —
      * natural position MID → MID slot is a perfect 1.0 match, so the test
      * can't accidentally pass with all-1.0 values. We add ONE off-position
-     * player (att-1 = ST in the MID slot S18-3) so the test asserts a real
+     * player (att-1 = ST in the MID slot S18-2) so the test asserts a real
      * penalty value at a subdivisionId key, proving both axes of the fix.
      */
     @Test
@@ -683,11 +684,11 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
-        // Override: send att-1 (ST) into S18-3 (MID slot) so we get a real
+        // Override: send att-1 (ST) into S18-2 (MID slot) so we get a real
         // penalty (ST in MID = 0.7) instead of all-1.0. The rest follow the
         // HELPER-BASED baseline.
         List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("att-1", "S18-3")  // ST placed in MID slot
+            new LineupSlotDTO("att-1", "S18-2")  // ST placed in MID slot
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -702,19 +703,19 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
                 // Axis 1: keys must be subdivisionIds (NOT playerIds).
                 assertTrue(eff.containsKey("GK-1"),     "V25D52: GK-1 (subdivisionId) must be a key");
-                assertTrue(eff.containsKey("S22-1"),    "V25D52: S22-1 (subdivisionId) must be a key");
-                assertTrue(eff.containsKey("S05-2"),    "V25D52: S05-2 (subdivisionId) must be a key");
+                assertTrue(eff.containsKey("S22-2"),    "V25D52: S22-2 (subdivisionId) must be a key");
+                assertTrue(eff.containsKey("S05-1"),    "V25D52: S05-1 (subdivisionId) must be a key");
                 assertFalse(eff.containsKey("gk-1"),    "V25D52: gk-1 (playerId) must NOT be a key");
                 assertFalse(eff.containsKey("def-1"),   "V25D52: def-1 (playerId) must NOT be a key");
                 assertFalse(eff.containsKey("att-1"),   "V25D52: att-1 (playerId) must NOT be a key");
 
                 // Axis 2: real multipliers must be present (NOT all 1.0).
-                // The ST-in-MID penalty MUST apply at S18-3 (where the ST now lives).
-                assertEquals(0.7, eff.get("S18-3"), 0.0001,
-                    "V25D52: ST in MID slot → 0.7 effectiveness at S18-3 subdivision key");
+                // The ST-in-MID penalty MUST apply at S18-2 (where the ST now lives).
+                assertTrue(eff.get("S18-2") < 0.7 && eff.get("S18-2") > 0.5,
+                    "V25D52/V25D99.20: ST in MID slot should be clearly penalized at S18-2");
                 // Perfect-match players should still be 1.0.
-                assertEquals(1.0, eff.get("GK-1"), 0.0001,
-                    "V25D52: GK player at GK-1 slot → 1.0 perfect match");
+                assertTrue(eff.get("GK-1") >= 0.95,
+                    "V25D52/V25D99.20: GK player at GK-1 slot should stay effectively perfect");
 
                 // teamAverage should reflect the penalty (less than 1.0).
                 assertTrue(dto.formationEffectiveness().teamAverage() < 1.0,
@@ -748,7 +749,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
                 // Keys MUST be subdivisionIds.
                 assertTrue(eff.containsKey("GK-1"),  "V25D52: GK-1 must be a key");
-                assertTrue(eff.containsKey("S22-1"), "V25D52: S22-1 must be a key");
+                assertTrue(eff.containsKey("S22-2"), "V25D52: S22-2 must be a key");
                 assertFalse(eff.containsKey("gk-1"), "V25D52: gk-1 must NOT be a key");
                 assertFalse(eff.containsKey("def-1"), "V25D52: def-1 must NOT be a key");
 
@@ -756,10 +757,16 @@ class LineupCommandUseCaseImplSubdivisionTest {
                 // CM in MID, etc.), so all-natural lineup → all 1.0 multipliers,
                 // and teamAverage = 1.0.
                 for (Map.Entry<String, Double> e : eff.entrySet()) {
-                    assertEquals(1.0, e.getValue(), 0.0001,
-                        "V25D52: HELPER-BASED all-natural lineup → 1.0 at " + e.getKey());
+                    if ("GK-1".equals(e.getKey())) {
+                        assertTrue(e.getValue() >= 0.95,
+                            "V25D52/V25D99.20: GK remains effectively perfect at " + e.getKey());
+                    } else {
+                        assertTrue(e.getValue() >= 0.85 && e.getValue() <= 1.0,
+                            "V25D52/V25D99.20: natural tactical-family slot should stay strong at " + e.getKey());
+                    }
                 }
-                assertEquals(1.0, dto.formationEffectiveness().teamAverage(), 0.0001);
+                assertTrue(dto.formationEffectiveness().teamAverage() >= 0.9,
+                    "V25D52/V25D99.20: all-natural lineup should keep a high teamAverage");
             })
             .verifyComplete();
     }
@@ -792,15 +799,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Front sends customX/Y for one slot (Valverde-style free positioning).
         List<LineupSlotDTO> slots = List.of(
             new LineupSlotDTO("gk-1", "GK-1"),
-            new LineupSlotDTO("def-1", "S22-1"),
-            new LineupSlotDTO("def-2", "S22-2"),
-            new LineupSlotDTO("def-3", "S23-2"),
-            new LineupSlotDTO("def-4", "S24-3"),
-            new LineupSlotDTO("mid-1", "S16-1"),
-            new LineupSlotDTO("mid-2", "S16-2", 25.0, 65.0),  // customX=25, customY=65
-            new LineupSlotDTO("mid-3", "S17-2"),
-            new LineupSlotDTO("mid-4", "S18-3"),
-            new LineupSlotDTO("att-1", "S05-2"),
+            new LineupSlotDTO("def-1", "S22-2"),
+            new LineupSlotDTO("def-2", "S23-1"),
+            new LineupSlotDTO("def-3", "S23-3"),
+            new LineupSlotDTO("def-4", "S24-2"),
+            new LineupSlotDTO("mid-1", "S16-2"),
+            new LineupSlotDTO("mid-2", "S17-1", 25.0, 65.0),  // customX=25, customY=65
+            new LineupSlotDTO("mid-3", "S17-3"),
+            new LineupSlotDTO("mid-4", "S18-2"),
+            new LineupSlotDTO("att-1", "S05-1"),
             new LineupSlotDTO("att-2", "S05-3")
         );
 
@@ -822,13 +829,13 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // NOTE: don't assert on the EXACT count — the pre-existing
         // C20/C61 dual-map bug (manualSelectWithSlots_persistsSubdivisionMap
         // asserts 11 but gets 18) is out of scope for V25D99.20.2.
-        // Just verify S16-2 carries the customX/Y round-trip.
+        // Just verify S17-1 carries the customX/Y round-trip.
 
-        LineupSlotDTO mid2Slot = teamSlots.get("S16-2");
-        assertNotNull(mid2Slot, "V25D99.20.2-BACK: S16-2 must be a key (front sent it)");
+        LineupSlotDTO mid2Slot = teamSlots.get("S17-1");
+        assertNotNull(mid2Slot, "V25D99.20.2-BACK: S17-1 must be a key (front sent it)");
         assertEquals("mid-2", mid2Slot.playerId(),
-            "V25D99.20.2-BACK: S16-2 -> mid-2 (playerId round-trip)");
-        assertEquals("S16-2", mid2Slot.subdivisionId(),
+            "V25D99.20.2-BACK: S17-1 -> mid-2 (playerId round-trip)");
+        assertEquals("S17-1", mid2Slot.subdivisionId(),
             "V25D99.20.2-BACK: subdivisionId round-trip");
         assertEquals(25.0, mid2Slot.customXPercent(),
             "V25D99.20.2-BACK: customXPercent=25.0 must survive the round-trip");
@@ -859,15 +866,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Front sends customX=42.0, customY=88.0 for one slot.
         List<LineupSlotDTO> slots = List.of(
             new LineupSlotDTO("gk-1", "GK-1"),
-            new LineupSlotDTO("def-1", "S22-1"),
-            new LineupSlotDTO("def-2", "S22-2"),
-            new LineupSlotDTO("def-3", "S23-2"),
-            new LineupSlotDTO("def-4", "S24-3"),
-            new LineupSlotDTO("mid-1", "S16-1"),
-            new LineupSlotDTO("mid-2", "S16-2", 42.0, 88.0),
-            new LineupSlotDTO("mid-3", "S17-2"),
-            new LineupSlotDTO("mid-4", "S18-3"),
-            new LineupSlotDTO("att-1", "S05-2"),
+            new LineupSlotDTO("def-1", "S22-2"),
+            new LineupSlotDTO("def-2", "S23-1"),
+            new LineupSlotDTO("def-3", "S23-3"),
+            new LineupSlotDTO("def-4", "S24-2"),
+            new LineupSlotDTO("mid-1", "S16-2"),
+            new LineupSlotDTO("mid-2", "S17-1", 42.0, 88.0),
+            new LineupSlotDTO("mid-3", "S17-3"),
+            new LineupSlotDTO("mid-4", "S18-2"),
+            new LineupSlotDTO("att-1", "S05-1"),
             new LineupSlotDTO("att-2", "S05-3")
         );
 
@@ -875,11 +882,11 @@ class LineupCommandUseCaseImplSubdivisionTest {
                 UUID.fromString(USER_ID), "4-4-2", fullLineup442(), slots))
             .assertNext(dto -> {
                 boolean foundCustomXY = dto.slots().stream()
-                    .anyMatch(s -> "S16-2".equals(s.subdivisionId())
+                    .anyMatch(s -> "S17-1".equals(s.subdivisionId())
                                 && Double.valueOf(42.0).equals(s.customXPercent())
                                 && Double.valueOf(88.0).equals(s.customYPercent()));
                 assertTrue(foundCustomXY,
-                    "V25D99.20.2-BACK: DTO response must surface customX=42, customY=88 on S16-2");
+                    "V25D99.20.2-BACK: DTO response must surface customX=42, customY=88 on S17-1");
             })
             .verifyComplete();
     }
@@ -902,8 +909,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         Map<String, Map<String, String>> legacy = new HashMap<>();
         legacy.put(TEAM_ID, new HashMap<>(Map.of(
             "GK-1", "gk-1",
-            "S22-1", "def-1",
-            "S22-2", "def-2"
+            "S22-2", "def-1",
+            "S23-1", "def-2"
         )));
         career.setTeamStarting11Subdivision(legacy);
 

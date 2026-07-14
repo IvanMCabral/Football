@@ -218,6 +218,26 @@ public class MatchSimulationOrchestrator {
             if (firstFixture != null && firstFixture.getRound() != careerCurrentRound) {
                 int fixtureRound = firstFixture.getRound();
                 if (fixtureRound < careerCurrentRound) {
+                    final int backfillCurrentRound = careerCurrentRound;
+                    boolean hasPendingBackfill = results.stream()
+                            .map(MatchResultProcessor.MatchResultInfo::matchId)
+                            .map(tournamentState::getFixture)
+                            .anyMatch(f -> f != null
+                                    && f.getRound() < backfillCurrentRound
+                                    && f.getStatus() == com.footballmanager.domain.model.valueobject.MatchStatus.PENDING);
+
+                    if (hasPendingBackfill) {
+                        log.warn("[orchestrator] userId={} stale pending matchId {} from round={} (careerCurrentRound={}) - backfilling fixture results without advancing currentRound",
+                                userId, firstMatchId, fixtureRound, careerCurrentRound);
+                        int processed = resultProcessor.process(career, results);
+                        if (processed == 0) {
+                            return null;
+                        }
+                        careerSessionService.saveCareer(career)
+                                .block(java.time.Duration.ofSeconds(10));
+                        roundEngineRegistry.unregister(userUUID);
+                        return career;
+                    }
                     log.warn("[orchestrator] userId={} stale matchId {} from round={} (careerCurrentRound={}) — already processed, skipping",
                             userId, firstMatchId, fixtureRound, careerCurrentRound);
                     return null;

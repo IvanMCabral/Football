@@ -27,7 +27,7 @@ class TacticalChemistryCalculatorTest {
     );
 
     private static final Map<String, double[]> COORDS = Map.ofEntries(
-            Map.entry("GK-1", new double[]{50.0, 96.0}),
+            Map.entry("GK-1", new double[]{50.0, 98.0}),
             Map.entry("S22-2", new double[]{16.65, 83.0}),
             Map.entry("S23-1", new double[]{38.85, 83.0}),
             Map.entry("S23-3", new double[]{61.05, 83.0}),

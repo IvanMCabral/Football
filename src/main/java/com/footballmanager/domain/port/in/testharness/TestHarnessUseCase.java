@@ -94,7 +94,71 @@ public interface TestHarnessUseCase {
      */
     Mono<MatchFixture> replayMatch(UUID userId, String matchId, Long seedOverride);
 
+    Mono<List<FormationMatrixRow>> runFormationMatrix(UUID userId, String matchId, Long seedOverride);
+
+    Mono<List<FormationMatrixSummaryRow>> runFormationMatrixSummary(UUID userId, String matchId, long seedStart, int seedCount);
+
     Mono<List<ScenarioMatrixRow>> runScenarioMatrix(UUID userId, String matchId, Long seedOverride);
+
+    Mono<List<ScenarioMatrixSummaryRow>> runScenarioMatrixSummary(UUID userId, String matchId, long seedStart, int seedCount, String scenarioGroup, String controlledTeamSide);
+
+    Mono<PlayerSwapMatrixSummaryRow> runPlayerSwapMatrixSummary(
+        UUID userId,
+        String matchId,
+        String starterPlayerId,
+        String benchPlayerId,
+        String slotId,
+        long seedStart,
+        int seedCount);
+
+    Mono<PositionPixelMatrixSummaryRow> runPositionPixelMatrixSummary(
+        UUID userId,
+        String matchId,
+        String playerId,
+        Double targetXPercent,
+        Double targetYPercent,
+        long seedStart,
+        int seedCount);
+
+    Mono<LabMutationResult> prepareOffensiveUpgradeLab(UUID userId);
+
+    Mono<LabMutationResult> restoreOffensiveUpgradeLab(UUID userId);
+
+    Mono<LabMutationResult> prepareDefensiveDowngradeLab(UUID userId);
+
+    Mono<LabMutationResult> restoreDefensiveDowngradeLab(UUID userId);
+
+    Mono<LabMutationResult> prepareWeakWideDefendersLab(UUID userId);
+
+    Mono<LabMutationResult> restoreWeakWideDefendersLab(UUID userId);
+
+    Mono<LabMutationResult> prepareOpponentWeakWideDefendersLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> restoreOpponentWeakWideDefendersLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> prepareOpponentWeakLeftDefenderLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> restoreOpponentWeakLeftDefenderLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> prepareOpponentWeakRightDefenderLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> restoreOpponentWeakRightDefenderLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> prepareOpponentWeakCenterBacksLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> restoreOpponentWeakCenterBacksLab(UUID userId, String matchId);
+
+    Mono<LabMutationResult> prepareWeakLeftDefenderLab(UUID userId);
+
+    Mono<LabMutationResult> restoreWeakLeftDefenderLab(UUID userId);
+
+    Mono<LabMutationResult> prepareWeakRightDefenderLab(UUID userId);
+
+    Mono<LabMutationResult> restoreWeakRightDefenderLab(UUID userId);
+
+    Mono<LabMutationResult> prepareWeakCenterBacksLab(UUID userId);
+
+    Mono<LabMutationResult> restoreWeakCenterBacksLab(UUID userId);
 
     /**
      * V24D24.3-HOTFIX: Reset every fixture of a round back to PENDING,
@@ -169,7 +233,281 @@ public interface TestHarnessUseCase {
         int awayCentralShots,
         int awayWideShots,
         int awayLongShots,
+        double homeCentralXg,
+        double homeWideXg,
+        double homeLongXg,
+        int homeLeftWideShots,
+        int homeRightWideShots,
+        double homeLeftWideXg,
+        double homeRightWideXg,
+        double awayCentralXg,
+        double awayWideXg,
+        double awayLongXg,
+        int awayLeftWideShots,
+        int awayRightWideShots,
+        double awayLeftWideXg,
+        double awayRightWideXg,
         long tacticalChanges,
         long substitutions
+    ) {}
+
+    record FormationMatrixRow(
+        String formation,
+        int homeGoals,
+        int awayGoals,
+        double homeXg,
+        double awayXg,
+        int homeShots,
+        int awayShots,
+        int homePossession,
+        int awayPossession,
+        int homeCentralShots,
+        int homeWideShots,
+        int homeLongShots,
+        int awayCentralShots,
+        int awayWideShots,
+        int awayLongShots,
+        double shapePossessionMultiplier,
+        double shapeAttackVolumeMultiplier,
+        double shapeDefensiveResistanceMultiplier,
+        double shapeAttackLeft,
+        double shapeAttackCenter,
+        double shapeAttackRight,
+        double shapeDefenseLeft,
+        double shapeDefenseCenter,
+        double shapeDefenseRight
+    ) {}
+
+    record FormationMatrixSummaryRow(
+        String formation,
+        long seedStart,
+        long seedEnd,
+        int seedCount,
+        double avgGoalsFor,
+        double avgGoalsAgainst,
+        double avgGoalDiff,
+        double avgPossessionFor,
+        double avgShotsFor,
+        double avgShotsAgainst,
+        double avgShotDiff,
+        double avgXgFor,
+        double avgXgAgainst,
+        double avgXgDiff,
+        double avgCentralShotsFor,
+        double avgWideShotsFor,
+        double avgLongShotsFor,
+        double avgCentralShotsAgainst,
+        double avgWideShotsAgainst,
+        double avgLongShotsAgainst,
+        double avgShapePossessionMultiplier,
+        double avgShapeAttackVolumeMultiplier,
+        double avgShapeDefensiveResistanceMultiplier,
+        double avgShapeAttackLeft,
+        double avgShapeAttackCenter,
+        double avgShapeAttackRight,
+        double avgShapeDefenseLeft,
+        double avgShapeDefenseCenter,
+        double avgShapeDefenseRight
+    ) {}
+
+    record ScenarioMatrixSummaryRow(
+        String scenario,
+        String actionType,
+        String actionDetail,
+        int seedCount,
+        double avgUserXgDelta,
+        double minUserXgDelta,
+        double maxUserXgDelta,
+        double avgOpponentXgDelta,
+        double avgUserShotsDelta,
+        double avgOpponentShotsDelta,
+        double avgUserPossessionDelta,
+        double avgUserCentralDelta,
+        double avgUserWideDelta,
+        double avgOpponentCentralDelta,
+        double avgOpponentWideDelta,
+        double avgUserCentralXgDelta,
+        double avgUserWideXgDelta,
+        double avgOpponentCentralXgDelta,
+        double avgOpponentWideXgDelta,
+        double avgUserLeftWideDelta,
+        double avgUserRightWideDelta,
+        double avgOpponentLeftWideDelta,
+        double avgOpponentRightWideDelta,
+        double avgUserLeftWideXgDelta,
+        double avgUserRightWideXgDelta,
+        double avgOpponentLeftWideXgDelta,
+        double avgOpponentRightWideXgDelta,
+        String baselineScenario
+    ) {}
+
+    record PlayerSwapMatrixSummaryRow(
+        String matchId,
+        String formation,
+        String slotId,
+        long seedStart,
+        long seedEnd,
+        int seedCount,
+        String baselinePlayerId,
+        String baselinePlayerName,
+        String baselinePlayerPosition,
+        Integer baselinePlayerOverall,
+        String swapPlayerId,
+        String swapPlayerName,
+        String swapPlayerPosition,
+        Integer swapPlayerOverall,
+        double baselineAvgGoalsFor,
+        double baselineAvgGoalsAgainst,
+        double baselineAvgGoalDiff,
+        double baselineAvgShotsFor,
+        double baselineAvgShotsAgainst,
+        double baselineAvgPossessionFor,
+        double baselineAvgXgFor,
+        double baselineAvgXgAgainst,
+        double baselineAvgXgDiff,
+        double baselineAvgCentralShotsFor,
+        double baselineAvgWideShotsFor,
+        double baselineAvgLongShotsFor,
+        double baselineAvgCentralShotsAgainst,
+        double baselineAvgWideShotsAgainst,
+        double baselineAvgLongShotsAgainst,
+        double baselineAvgCentralXgFor,
+        double baselineAvgWideXgFor,
+        double baselineAvgLongXgFor,
+        double baselineAvgCentralXgAgainst,
+        double baselineAvgWideXgAgainst,
+        double baselineAvgLongXgAgainst,
+        double swappedAvgGoalsFor,
+        double swappedAvgGoalsAgainst,
+        double swappedAvgGoalDiff,
+        double swappedAvgShotsFor,
+        double swappedAvgShotsAgainst,
+        double swappedAvgPossessionFor,
+        double swappedAvgXgFor,
+        double swappedAvgXgAgainst,
+        double swappedAvgXgDiff,
+        double swappedAvgCentralShotsFor,
+        double swappedAvgWideShotsFor,
+        double swappedAvgLongShotsFor,
+        double swappedAvgCentralShotsAgainst,
+        double swappedAvgWideShotsAgainst,
+        double swappedAvgLongShotsAgainst,
+        double swappedAvgCentralXgFor,
+        double swappedAvgWideXgFor,
+        double swappedAvgLongXgFor,
+        double swappedAvgCentralXgAgainst,
+        double swappedAvgWideXgAgainst,
+        double swappedAvgLongXgAgainst,
+        double deltaGoalsFor,
+        double deltaGoalsAgainst,
+        double deltaGoalDiff,
+        double deltaShotsFor,
+        double deltaShotsAgainst,
+        double deltaPossessionFor,
+        double deltaXgFor,
+        double deltaXgAgainst,
+        double deltaXgDiff,
+        double deltaCentralShotsFor,
+        double deltaWideShotsFor,
+        double deltaLongShotsFor,
+        double deltaCentralShotsAgainst,
+        double deltaWideShotsAgainst,
+        double deltaLongShotsAgainst,
+        double deltaCentralXgFor,
+        double deltaWideXgFor,
+        double deltaLongXgFor,
+        double deltaCentralXgAgainst,
+        double deltaWideXgAgainst,
+        double deltaLongXgAgainst,
+        double preAutoSubDeltaShotsFor,
+        double preAutoSubDeltaShotsAgainst,
+        double preAutoSubDeltaXgFor,
+        double preAutoSubDeltaXgAgainst,
+        double preAutoSubDeltaXgDiff
+    ) {}
+
+    record PositionPixelMatrixSummaryRow(
+        String matchId,
+        String formation,
+        String playerId,
+        String playerName,
+        String playerPosition,
+        String slotId,
+        double fromXPercent,
+        double fromYPercent,
+        double targetXPercent,
+        double targetYPercent,
+        long seedStart,
+        long seedEnd,
+        int seedCount,
+        double baselineAvgGoalsFor,
+        double baselineAvgGoalsAgainst,
+        double baselineAvgGoalDiff,
+        double baselineAvgShotsFor,
+        double baselineAvgShotsAgainst,
+        double baselineAvgPossessionFor,
+        double baselineAvgXgFor,
+        double baselineAvgXgAgainst,
+        double baselineAvgXgDiff,
+        double baselineAvgCentralShotsFor,
+        double baselineAvgWideShotsFor,
+        double baselineAvgLongShotsFor,
+        double baselineAvgCentralShotsAgainst,
+        double baselineAvgWideShotsAgainst,
+        double baselineAvgLongShotsAgainst,
+        double baselineAvgCentralXgFor,
+        double baselineAvgWideXgFor,
+        double baselineAvgLongXgFor,
+        double baselineAvgCentralXgAgainst,
+        double baselineAvgWideXgAgainst,
+        double baselineAvgLongXgAgainst,
+        double movedAvgGoalsFor,
+        double movedAvgGoalsAgainst,
+        double movedAvgGoalDiff,
+        double movedAvgShotsFor,
+        double movedAvgShotsAgainst,
+        double movedAvgPossessionFor,
+        double movedAvgXgFor,
+        double movedAvgXgAgainst,
+        double movedAvgXgDiff,
+        double movedAvgCentralShotsFor,
+        double movedAvgWideShotsFor,
+        double movedAvgLongShotsFor,
+        double movedAvgCentralShotsAgainst,
+        double movedAvgWideShotsAgainst,
+        double movedAvgLongShotsAgainst,
+        double movedAvgCentralXgFor,
+        double movedAvgWideXgFor,
+        double movedAvgLongXgFor,
+        double movedAvgCentralXgAgainst,
+        double movedAvgWideXgAgainst,
+        double movedAvgLongXgAgainst,
+        double deltaGoalsFor,
+        double deltaGoalsAgainst,
+        double deltaGoalDiff,
+        double deltaShotsFor,
+        double deltaShotsAgainst,
+        double deltaPossessionFor,
+        double deltaXgFor,
+        double deltaXgAgainst,
+        double deltaXgDiff,
+        double deltaCentralShotsFor,
+        double deltaWideShotsFor,
+        double deltaLongShotsFor,
+        double deltaCentralShotsAgainst,
+        double deltaWideShotsAgainst,
+        double deltaLongShotsAgainst,
+        double deltaCentralXgFor,
+        double deltaWideXgFor,
+        double deltaLongXgFor,
+        double deltaCentralXgAgainst,
+        double deltaWideXgAgainst,
+        double deltaLongXgAgainst
+    ) {}
+
+    record LabMutationResult(
+        String labKey,
+        String message,
+        Map<String, Object> details
     ) {}
 }

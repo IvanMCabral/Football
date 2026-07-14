@@ -195,14 +195,12 @@ class MatchSimulationOrchestratorTest {
     }
 
     @Test
-    @DisplayName("C55.8 B1.a: stale matchId (fixture.round < careerCurrentRound) is idempotently skipped")
-    void processMatchDayResults_staleMatchId_isIdempotentlySkipped() {
-        // Career at R5, totalRounds=10. The caller sends a result for an R3 fixture
-        // (stale: it was already processed in a previous round and the orchestrator
-        // has advanced past it). Before the fix this caused silent null return.
+    @DisplayName("V25D100.18: stale pending matchId backfills fixture result without advancing currentRound")
+    void processMatchDayResults_stalePendingMatchId_backfillsWithoutAdvancingCurrentRound() {
         CareerSave career = makeCareer(5, 10, Map.of(
                 3, List.<String[]>of(new String[]{USER_TEAM, OTHER_TEAM_A})
         ));
+        seedStandings(career, USER_TEAM, OTHER_TEAM_A);
         when(careerSessionService.getCareerFromCache(USER_ID)).thenReturn(Mono.just(career));
 
         MatchResultProcessor.MatchResultInfo staleResult =
@@ -213,9 +211,40 @@ class MatchSimulationOrchestratorTest {
 
         TournamentState state = career.getTournamentState();
         assertEquals(5, state.getCurrentRound(),
-                "Stale matchId must NOT advance or disturb currentRound");
+                "Stale pending backfill must NOT advance or disturb currentRound");
         assertEquals(CareerPhase.PRE_MATCH, state.getCareerPhase(),
-                "Stale matchId must NOT trigger any phase transition");
+                "Stale pending backfill must NOT trigger phase transitions");
+
+        MatchFixture fixture = state.getFixture("match-r3-1");
+        assertNotNull(fixture.getResult(), "R3 fixture must have its result backfilled");
+        assertEquals(1, fixture.getResult().getHomeGoals());
+        assertEquals(0, fixture.getResult().getAwayGoals());
+
+        verify(careerSessionService).saveCareer(career);
+        verify(roundEngineRegistry).unregister(USER_ID);
+    }
+
+    @Test
+    @DisplayName("C55.8 B1.a: stale completed matchId remains idempotently skipped")
+    void processMatchDayResults_staleCompletedMatchId_isIdempotentlySkipped() {
+        CareerSave career = makeCareer(5, 10, Map.of(
+                3, List.<String[]>of(new String[]{USER_TEAM, OTHER_TEAM_A})
+        ));
+        MatchFixture fixture = career.getTournamentState().getFixture("match-r3-1");
+        fixture.complete(new MatchFixture.MatchResultData(2, 0, 50, 50, 5, 2));
+        when(careerSessionService.getCareerFromCache(USER_ID)).thenReturn(Mono.just(career));
+
+        MatchResultProcessor.MatchResultInfo staleResult =
+                new MatchResultProcessor.MatchResultInfo("match-r3-1", 1, 0);
+
+        orchestrator.processMatchDayResults(USER_ID_STR, List.of(staleResult))
+                .block(Duration.ofSeconds(5));
+
+        TournamentState state = career.getTournamentState();
+        assertEquals(5, state.getCurrentRound(),
+                "Completed stale matchId must NOT advance or disturb currentRound");
+        assertEquals(2, fixture.getResult().getHomeGoals(),
+                "Completed stale result must remain unchanged");
         verify(careerSessionService, never()).saveCareer(any());
         verify(roundEngineRegistry, never()).unregister(any());
     }

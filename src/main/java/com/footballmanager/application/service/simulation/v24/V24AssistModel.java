@@ -161,7 +161,7 @@ public final class V24AssistModel {
         return switch (style) {
             case POSSESSION -> 0.08;
             case ATTACKING -> 0.05;
-            case WIDE_PLAY -> 0.04;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 0.04;
             case CENTRAL_PLAY -> 0.04;
             case COUNTER -> 0.03;
             case DEFENSIVE -> -0.05;

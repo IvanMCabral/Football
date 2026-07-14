@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
  */
 @Component
 public final class V24MatchContextFactory {
+
+    private final FormationService formationService = new FormationService();
 
     /**
      * Builds a V24MatchContext from career/session data.
@@ -130,8 +133,10 @@ public final class V24MatchContextFactory {
                 ? persistedFormations.get(awayTeamId)
                 : awayTeam.getFormation();
 
-        Map<String, LineupSlotDTO> homeSlotsByPlayerId = resolveSlotsByPlayerId(career, homeTeamId);
-        Map<String, LineupSlotDTO> awaySlotsByPlayerId = resolveSlotsByPlayerId(career, awayTeamId);
+        Map<String, LineupSlotDTO> homeSlotsByPlayerId =
+                resolveSlotsByPlayerId(career, homeTeamId, homeFormation);
+        Map<String, LineupSlotDTO> awaySlotsByPlayerId =
+                resolveSlotsByPlayerId(career, awayTeamId, awayFormation);
 
         return new V24MatchContext(
                 matchId,
@@ -371,7 +376,7 @@ public final class V24MatchContextFactory {
      * decisions into the V24 match context, keyed by playerId for O(1) lookup
      * when building mutable {@link V24PlayerMatchState} copies.
      */
-    private Map<String, LineupSlotDTO> resolveSlotsByPlayerId(CareerSave career, String teamId) {
+    private Map<String, LineupSlotDTO> resolveSlotsByPlayerId(CareerSave career, String teamId, String formation) {
         if (career == null || teamId == null || teamId.isBlank()) return Map.of();
         Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
         if (allSlots == null || allSlots.isEmpty()) return Map.of();
@@ -381,8 +386,37 @@ public final class V24MatchContextFactory {
         Map<String, LineupSlotDTO> byPlayerId = new LinkedHashMap<>();
         for (LineupSlotDTO slot : teamSlots.values()) {
             if (slot == null || slot.playerId() == null || slot.playerId().isBlank()) continue;
-            byPlayerId.put(slot.playerId(), slot);
+            byPlayerId.put(slot.playerId(), enrichWithFormationCoords(slot, formation));
         }
         return byPlayerId;
+    }
+
+    /**
+     * V25D99.58: persisted subdivision slots identify the tactical cell
+     * (e.g. S17-2), but the same subdivision can have different professional
+     * coordinates depending on formation. The match engine consumes only the
+     * slot DTO, so canonical non-manual slots must carry the selected
+     * formation's x/y here; otherwise 4-1-2-3 collapses into flat 4-3-3 and
+     * similar variants become tactical clones. Manual drag coordinates still
+     * win and pass through unchanged.
+     */
+    private LineupSlotDTO enrichWithFormationCoords(LineupSlotDTO slot, String formation) {
+        if (slot == null || slot.subdivisionId() == null || formation == null || formation.isBlank()) {
+            return slot;
+        }
+        boolean hasManualX = slot.customXPercent() != null && Double.isFinite(slot.customXPercent());
+        boolean hasManualY = slot.customYPercent() != null && Double.isFinite(slot.customYPercent());
+        if (hasManualX && hasManualY) {
+            return slot;
+        }
+        double[] coords = formationService.getCoordsBySubdivision(formation, slot.subdivisionId());
+        if (coords == null || coords.length < 2) {
+            return slot;
+        }
+        return new LineupSlotDTO(
+                slot.playerId(),
+                slot.subdivisionId(),
+                hasManualX ? slot.customXPercent() : coords[0],
+                hasManualY ? slot.customYPercent() : coords[1]);
     }
 }

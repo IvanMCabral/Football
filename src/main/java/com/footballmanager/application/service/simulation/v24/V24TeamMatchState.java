@@ -200,6 +200,11 @@ public class V24TeamMatchState {
         benchPlayers.remove(onPlayer);
         offPlayer.substituteOff();
         onPlayer.setTeamId(teamId);
+        // V25D99.41.2: the incoming player occupies the tactical role of
+        // the player he replaces. His naturalPosition stays unchanged, so
+        // effectiveness penalties still apply when a player is used out of
+        // role, but the match engine reads him in the correct live slot.
+        onPlayer.setPosition(offPlayer.position());
         onPlayer.substituteOn();
         benchPlayers.add(offPlayer);
         startingPlayers.add(onPlayer);

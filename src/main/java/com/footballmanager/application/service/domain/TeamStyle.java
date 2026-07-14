@@ -29,6 +29,12 @@ public enum TeamStyle {
     /** Attack preference through wide channels / wings. */
     WIDE_PLAY,
 
+    /** Attack preference through the left flank. Internal harness/calibration style. */
+    LEFT_FLANK,
+
+    /** Attack preference through the right flank. Internal harness/calibration style. */
+    RIGHT_FLANK,
+
     /** Attack preference through the central lane. */
     CENTRAL_PLAY
 }
