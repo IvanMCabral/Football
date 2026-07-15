@@ -138,6 +138,32 @@ class SubdivisionEffectivenessCalculatorTest {
     }
 
     @Test
+    @DisplayName("Null or blank natural position falls back to base instead of MapN pk null")
+    void nullNatural_legacyFallback() {
+        double nullEff = SubdivisionEffectivenessCalculator.effectiveness(
+                null, 50.0, 60.0, "MID");
+        double blankEff = SubdivisionEffectivenessCalculator.effectiveness(
+                "   ", 50.0, 60.0, "MID");
+
+        assertEquals(1.0, nullEff, EPS);
+        assertEquals(1.0, blankEff, EPS);
+        assertNull(SubdivisionEffectivenessCalculator.idealCoordsFor(null));
+        assertNull(SubdivisionEffectivenessCalculator.idealCoordsFor(" "));
+    }
+
+    @Test
+    @DisplayName("Natural position lookup is case-insensitive")
+    void naturalLookup_caseInsensitive() {
+        double upper = SubdivisionEffectivenessCalculator.effectiveness(
+                "CM", 38.85, 60.0, "MID");
+        double lower = SubdivisionEffectivenessCalculator.effectiveness(
+                " cm ", 38.85, 60.0, "MID");
+
+        assertEquals(upper, lower, EPS);
+        assertArrayEquals(new double[]{50.0, 60.0}, SubdivisionEffectivenessCalculator.idealCoordsFor(" cm "));
+    }
+
+    @Test
     @DisplayName("Floor: refined effectiveness never below 0.05 (unless base = 0)")
     void floorHolds() {
         // Far corner drag should still leave a small positive contribution.

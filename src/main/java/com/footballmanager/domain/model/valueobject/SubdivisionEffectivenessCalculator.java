@@ -143,6 +143,10 @@ public final class SubdivisionEffectivenessCalculator {
         if (baseEff <= 0.0) {
             return 0.0;  // hard caps propagate (GK <-> non-GK)
         }
+        String normalizedNatural = naturalPos != null ? naturalPos.trim().toUpperCase() : null;
+        if (normalizedNatural == null || normalizedNatural.isBlank()) {
+            return baseEff;
+        }
 
         // V25D99.16-BACK: backward compat — null / NaN coords → return
         // baseEff unchanged. Pre-V25D99.16 callers that don't have xPct
@@ -151,7 +155,7 @@ public final class SubdivisionEffectivenessCalculator {
             return baseEff;
         }
 
-        double[] ideal = IDEAL_COORDS.get(naturalPos);
+        double[] ideal = IDEAL_COORDS.get(normalizedNatural);
         if (ideal == null) {
             // Unknown natural (e.g., legacy "FORWARD_MID" or future
             // 16-cat position). Skip penalty — base covers it.
@@ -177,6 +181,9 @@ public final class SubdivisionEffectivenessCalculator {
      *         position is not in the IDEAL_COORDS map.
      */
     public static double[] idealCoordsFor(String naturalPos) {
-        return IDEAL_COORDS.get(naturalPos);
+        if (naturalPos == null || naturalPos.isBlank()) {
+            return null;
+        }
+        return IDEAL_COORDS.get(naturalPos.trim().toUpperCase());
     }
 }

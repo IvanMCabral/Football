@@ -175,6 +175,26 @@ class LineupQueryUseCaseImplTest {
             .verifyComplete();
     }
 
+    @Test
+    @DisplayName("getCurrentLineup: null user team id returns empty lineup instead of MapN pk null")
+    void getCurrentLineup_nullUserTeamId_returnsEmptyLineup() {
+        CareerSave career = makeCareerWithLineup(List.of(), List.of());
+        career.setUserSessionTeamId(null);
+        career.setTeamStarting11(Map.of(TEAM_ID, List.of("ghost-player")));
+
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+
+        StepVerifier.create(useCase.getCurrentLineup(UUID.fromString(USER_ID)))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(false, dto.confirmed());
+                assertTrue(dto.players().isEmpty());
+                assertTrue(dto.slots().isEmpty());
+                assertEquals(0, dto.chemistryScore());
+            })
+            .verifyComplete();
+    }
+
     /**
      * MVP1-lineup-cancha-1.6 (F3): si teamStarting11Formation TIENE valor para el
      * team, getCurrentLineup debe retornar ESA formación, no la inferida.

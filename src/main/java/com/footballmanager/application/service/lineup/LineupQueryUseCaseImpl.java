@@ -83,6 +83,11 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
     private LineupDTO buildLineupDTO(CareerSave career) {
         String userTeamId = career.getUserSessionTeamId();
+        if (userTeamId == null || userTeamId.isBlank()) {
+            return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0,
+                    ChemistryBreakdownDTO.empty(),
+                    FormationEffectivenessDTO.empty());
+        }
         List<String> lineupIds = career.getTeamStarting11().get(userTeamId);
 
         if (lineupIds == null || lineupIds.isEmpty()) {

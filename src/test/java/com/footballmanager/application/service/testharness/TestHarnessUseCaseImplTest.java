@@ -148,6 +148,33 @@ class TestHarnessUseCaseImplTest {
         verify(careerRepository, never()).findById(anyString());
     }
 
+    @Test
+    @DisplayName("positionPixelMatrixSummary: moving a starter returns summary instead of pk/null error")
+    void positionPixelMatrixSummary_movingStarterReturnsSummary() {
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+
+        useCase.runPositionPixelMatrixSummary(
+                USER_ID,
+                "match-001",
+                "u-p3",
+                null,
+                null,
+                0.0,
+                -1.0,
+                12345L,
+                3)
+            .as(StepVerifier::create)
+            .assertNext(row -> {
+                assertThat(row.matchId()).isEqualTo("match-001");
+                assertThat(row.playerId()).isEqualTo("u-p3");
+                assertThat(row.playerName()).isEqualTo("Player u-p3");
+                assertThat(row.seedCount()).isEqualTo(3);
+                assertThat(row.targetYPercent()).isLessThan(row.fromYPercent());
+            })
+            .verifyComplete();
+    }
+
     // ========== replaceFixtures ==========
 
     @Test
