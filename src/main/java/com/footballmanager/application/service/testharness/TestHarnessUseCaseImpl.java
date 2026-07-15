@@ -2021,16 +2021,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         }
         long seed = (seedOverride != null) ? seedOverride : 12345L;
 
-        return careerRepository.findById(userId.toString())
-            .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
-            .flatMap(optionalCareer -> {
-                if (optionalCareer.isEmpty()) {
-                    return Mono.error(new IllegalStateException(
-                        "Career not found for userId=" + userId));
-                }
-                return Mono.fromSupplier(() -> executeScenarioMatrix(optionalCareer.get(), matchId, seed));
-            });
+        return loadLiveCareer(userId)
+            .flatMap(career -> Mono.fromSupplier(() -> executeScenarioMatrix(career, matchId, seed)));
     }
 
     @Override
@@ -2048,17 +2040,37 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return Mono.error(new IllegalArgumentException("seedCount must be between 1 and 100"));
         }
 
-        return careerRepository.findById(userId.toString())
+        return loadLiveCareer(userId)
+            .flatMap(career -> Mono.fromSupplier(() ->
+                executeScenarioMatrixSummary(career, matchId, seedStart, seedCount, scenarioGroup, controlledTeamSide)));
+    }
+
+    /**
+     * Panel C in the debug harness is fed by CareerSessionService
+     * (/career/fixtures/round-with-bye). Scenario matrix actions must read the
+     * same live career source, otherwise the UI can select a matchId from the
+     * cache while the smoke looks in an older Redis snapshot and reports a
+     * misleading 404 "Match not found".
+     *
+     * <p>Keep a repository fallback for older unit tests and defensive local
+     * flows where the cache facade is unavailable or returns empty.
+     */
+    private Mono<CareerSave> loadLiveCareer(UUID userId) {
+        Mono<CareerSave> cachedCareer = null;
+        if (careerSessionService != null) {
+            cachedCareer = careerSessionService.getCareerFromCache(userId);
+        }
+        Mono<CareerSave> repositoryCareer = Mono.defer(() -> careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
-            .flatMap(optionalCareer -> {
-                if (optionalCareer.isEmpty()) {
-                    return Mono.error(new IllegalStateException(
-                        "Career not found for userId=" + userId));
-                }
-                return Mono.fromSupplier(() ->
-                    executeScenarioMatrixSummary(optionalCareer.get(), matchId, seedStart, seedCount, scenarioGroup, controlledTeamSide));
-            });
+                "No career for userId=" + userId + " - call create-custom first")))
+            .flatMap(optionalCareer -> optionalCareer
+                .map(Mono::just)
+                .orElseGet(() -> Mono.error(new IllegalStateException(
+                    "Career not found for userId=" + userId)))));
+
+        return cachedCareer != null
+            ? cachedCareer.switchIfEmpty(repositoryCareer)
+            : repositoryCareer;
     }
 
     @Override

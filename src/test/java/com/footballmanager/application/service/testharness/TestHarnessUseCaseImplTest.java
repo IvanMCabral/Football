@@ -132,6 +132,22 @@ class TestHarnessUseCaseImplTest {
         career.getTournamentState().setFixtures(List.of(completed));
     }
 
+    @Test
+    @DisplayName("scenarioMatrix: uses live cached career so Panel C matchIds resolve")
+    void scenarioMatrix_usesLiveCachedCareerForPanelCMatchIds() {
+        when(careerSessionService.getCareerFromCache(USER_ID))
+            .thenReturn(Mono.just(career));
+
+        useCase.runScenarioMatrix(USER_ID, "match-001", 12345L)
+            .as(StepVerifier::create)
+            .assertNext(rows -> assertThat(rows)
+                .extracting(TestHarnessUseCase.ScenarioMatrixRow::scenario)
+                .contains("base-balanced"))
+            .verifyComplete();
+
+        verify(careerRepository, never()).findById(anyString());
+    }
+
     // ========== replaceFixtures ==========
 
     @Test
