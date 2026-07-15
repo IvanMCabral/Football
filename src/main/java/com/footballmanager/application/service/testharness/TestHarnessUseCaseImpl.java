@@ -1736,7 +1736,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     }
 
     @Override
-    public Mono<List<FormationMatrixRow>> runFormationMatrix(UUID userId, String matchId, Long seedOverride) {
+    public Mono<List<FormationMatrixRow>> runFormationMatrix(UUID userId, String matchId, Long seedOverride, String controlledTeamSide) {
         if (matchId == null || matchId.isBlank()) {
             return Mono.error(new IllegalArgumentException("matchId is required"));
         }
@@ -1750,11 +1750,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     return Mono.error(new IllegalStateException(
                         "Career not found for userId=" + userId));
                 }
-                return Mono.fromSupplier(() -> executeFormationMatrix(optionalCareer.get(), matchId, seed));
+                return Mono.fromSupplier(() -> executeFormationMatrix(optionalCareer.get(), matchId, seed, controlledTeamSide));
             });
     }
 
-    private List<FormationMatrixRow> executeFormationMatrix(CareerSave career, String matchId, long seed) {
+    private List<FormationMatrixRow> executeFormationMatrix(CareerSave career, String matchId, long seed, String controlledTeamSide) {
         MatchFixture fixture = career.getTournamentState().getFixtures().stream()
             .filter(f -> f.getMatchId().equals(matchId))
             .findFirst()
@@ -1770,12 +1770,12 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     + ", away=" + fixture.getAwayTeamId() + ")");
         }
 
-        String userTeamId = career.getUserSessionTeamId();
-        boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
-        boolean userIsAway = fixture.getAwayTeamId().equals(userTeamId);
-        if (!userIsHome && !userIsAway) {
+        String controlledTeamId = resolveControlledTeamId(career, fixture, controlledTeamSide);
+        boolean controlledIsHome = fixture.getHomeTeamId().equals(controlledTeamId);
+        boolean controlledIsAway = fixture.getAwayTeamId().equals(controlledTeamId);
+        if (!controlledIsHome && !controlledIsAway) {
             throw new IllegalArgumentException(
-                "Formation matrix requires a match involving the user team: " + userTeamId);
+                "Formation matrix controlled team is not part of match: " + controlledTeamId);
         }
 
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
@@ -1789,10 +1789,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             homeStyle,
             awayStyle,
             seed);
-        List<SessionPlayer> userStarters = userIsHome
+        List<SessionPlayer> userStarters = controlledIsHome
             ? baseContext.homeStartingPlayers()
             : baseContext.awayStartingPlayers();
-        List<SessionPlayer> userBench = userIsHome
+        List<SessionPlayer> userBench = controlledIsHome
             ? baseContext.homeBenchPlayers()
             : baseContext.awayBenchPlayers();
         if (userStarters.size() != 11) {
@@ -1805,13 +1805,13 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         for (FormationDTO formation : formationService.getAllFormations()) {
             Map<String, LineupSlotDTO> slots = buildFormationMatrixSlots(userStarters, formation);
             V24MatchContext shapedContext = baseContext
-                .withNewFormation(userTeamId, formation.name())
-                .withSlots(userTeamId, slots);
+                .withNewFormation(controlledTeamId, formation.name())
+                .withSlots(controlledTeamId, slots);
             V24DetailedMatchEngine.TacticalShapeDebug shapeDebug = engine.debugTacticalShape(
-                userIsHome ? home : away,
+                controlledIsHome ? home : away,
                 userStarters,
                 userBench,
-                userIsHome ? homeStyle : awayStyle,
+                controlledIsHome ? homeStyle : awayStyle,
                 formation.name(),
                 slots);
             V24DetailedMatchResult result =
@@ -1960,7 +1960,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             UUID userId,
             String matchId,
             long seedStart,
-            int seedCount) {
+            int seedCount,
+            String controlledTeamSide) {
         if (matchId == null || matchId.isBlank()) {
             return Mono.error(new IllegalArgumentException("matchId is required"));
         }
@@ -1977,7 +1978,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                         "Career not found for userId=" + userId));
                 }
                 return Mono.fromSupplier(() ->
-                    executeFormationMatrixSummary(optionalCareer.get(), matchId, seedStart, seedCount));
+                    executeFormationMatrixSummary(optionalCareer.get(), matchId, seedStart, seedCount, controlledTeamSide));
             });
     }
 
@@ -1985,27 +1986,23 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             CareerSave career,
             String matchId,
             long seedStart,
-            int seedCount) {
+            int seedCount,
+            String controlledTeamSide) {
         MatchFixture fixture = career.getTournamentState().getFixtures().stream()
             .filter(f -> f.getMatchId().equals(matchId))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException(
                 "Match not found in current tournament: " + matchId));
-        String userTeamId = career.getUserSessionTeamId();
-        boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
-        boolean userIsAway = fixture.getAwayTeamId().equals(userTeamId);
-        if (!userIsHome && !userIsAway) {
-            throw new IllegalArgumentException(
-                "Formation matrix summary requires a match involving the user team: " + userTeamId);
-        }
+        String controlledTeamId = resolveControlledTeamId(career, fixture, controlledTeamSide);
+        boolean controlledIsHome = fixture.getHomeTeamId().equals(controlledTeamId);
 
         Map<String, FormationSummaryAccumulator> byFormation = new LinkedHashMap<>();
         for (int i = 0; i < seedCount; i++) {
             long seed = seedStart + i;
-            for (FormationMatrixRow row : executeFormationMatrix(career, matchId, seed)) {
+            for (FormationMatrixRow row : executeFormationMatrix(career, matchId, seed, controlledTeamSide)) {
                 byFormation
                     .computeIfAbsent(row.formation(), FormationSummaryAccumulator::new)
-                    .add(row, userIsHome);
+                    .add(row, controlledIsHome);
             }
         }
 

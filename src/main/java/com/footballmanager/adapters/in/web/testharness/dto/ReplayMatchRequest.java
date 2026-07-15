@@ -13,5 +13,6 @@ package com.footballmanager.adapters.in.web.testharness.dto;
  * what REVISOR needs for the deterministic test sandbox v2 MVP.
  */
 public record ReplayMatchRequest(
-    Long seed
+    Long seed,
+    String controlledTeamSide
 ) {}

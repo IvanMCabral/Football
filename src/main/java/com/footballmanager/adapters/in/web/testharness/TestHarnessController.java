@@ -527,8 +527,9 @@ public class TestHarnessController {
 
         UUID userId = controllerHelper.getUserId(authentication);
         Long seedOverride = (request != null) ? request.seed() : null;
+        String controlledTeamSide = (request != null) ? request.controlledTeamSide() : null;
 
-        return testHarnessUseCase.runFormationMatrix(userId, matchId, seedOverride)
+        return testHarnessUseCase.runFormationMatrix(userId, matchId, seedOverride, controlledTeamSide)
             .map(ResponseEntity::ok);
     }
 
@@ -541,8 +542,9 @@ public class TestHarnessController {
         UUID userId = controllerHelper.getUserId(authentication);
         long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
         int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+        String controlledTeamSide = (request != null) ? request.controlledTeamSide() : null;
 
-        return testHarnessUseCase.runFormationMatrixSummary(userId, matchId, seedStart, seedCount)
+        return testHarnessUseCase.runFormationMatrixSummary(userId, matchId, seedStart, seedCount, controlledTeamSide)
             .map(ResponseEntity::ok);
     }
 

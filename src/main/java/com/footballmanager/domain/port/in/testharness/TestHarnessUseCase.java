@@ -94,9 +94,9 @@ public interface TestHarnessUseCase {
      */
     Mono<MatchFixture> replayMatch(UUID userId, String matchId, Long seedOverride);
 
-    Mono<List<FormationMatrixRow>> runFormationMatrix(UUID userId, String matchId, Long seedOverride);
+    Mono<List<FormationMatrixRow>> runFormationMatrix(UUID userId, String matchId, Long seedOverride, String controlledTeamSide);
 
-    Mono<List<FormationMatrixSummaryRow>> runFormationMatrixSummary(UUID userId, String matchId, long seedStart, int seedCount);
+    Mono<List<FormationMatrixSummaryRow>> runFormationMatrixSummary(UUID userId, String matchId, long seedStart, int seedCount, String controlledTeamSide);
 
     Mono<List<ScenarioMatrixRow>> runScenarioMatrix(UUID userId, String matchId, Long seedOverride);
 
