@@ -255,6 +255,37 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     @Test
+    void fiveThreeTwoBackFiveRaisesBothWideDefensiveChannels() {
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        List<SessionPlayer> starting = makeMixedLineup("shape", 1, 5, 3, 0, 2);
+        SessionTeam team = makeTeam(HOME_UUID, "Shape FC", "5-3-2");
+
+        V24DetailedMatchEngine.TacticalShapeDebug shape532 = engine.debugTacticalShape(
+            team, starting, List.of(), TeamStyle.BALANCED, "5-3-2", fiveThreeTwoSlots(starting));
+        V24DetailedMatchEngine.TacticalShapeDebug shape442 = engine.debugTacticalShape(
+            team, starting, List.of(), TeamStyle.BALANCED, "4-4-2", fourFourTwoSlots(starting));
+
+        assertTrue(shape532.defenseLeft() > shape442.defenseLeft() + 0.08,
+            "5-3-2 must visibly improve left-channel defensive cover versus a flat 4-4-2. "
+                + "532Left=" + shape532.defenseLeft() + " 442Left=" + shape442.defenseLeft());
+        assertTrue(shape532.defenseRight() > shape442.defenseRight() + 0.08,
+            "5-3-2 must visibly improve right-channel defensive cover versus a flat 4-4-2. "
+                + "532Right=" + shape532.defenseRight() + " 442Right=" + shape442.defenseRight());
+        assertTrue(shape532.defenseCenter() > 1.0,
+            "5-3-2 should still protect the central box with three CBs. "
+                + "532Center=" + shape532.defenseCenter());
+        assertTrue(shape532.defensiveResistanceMultiplier() < shape442.defensiveResistanceMultiplier() - 0.04,
+            "5-3-2 should reduce opponent chance quality/volume versus a flat 4-4-2, "
+                + "otherwise a visual back five can still concede too many shots. "
+                + "532Resistance=" + shape532.defensiveResistanceMultiplier()
+                + " 442Resistance=" + shape442.defensiveResistanceMultiplier());
+        assertTrue(shape532.attackVolumeMultiplier() < shape442.attackVolumeMultiplier(),
+            "5-3-2 gains defensive coverage but should not gain attacking volume over 4-4-2. "
+                + "532Attack=" + shape532.attackVolumeMultiplier()
+                + " 442Attack=" + shape442.attackVolumeMultiplier());
+    }
+
+    @Test
     void leftAndRightFlankCoordinateGeneratorKeepsWideShotsOnRequestedSide() {
         V24ShotCoordinateGenerator generator = new V24ShotCoordinateGenerator();
 
@@ -509,6 +540,42 @@ class V24DetailedMatchEngineFormationTest {
             list.add(makePlayer(prefix + "_att" + i, "ATT", 90, 70, 70));
         }
         return list;
+    }
+
+    private Map<String, LineupSlotDTO> fiveThreeTwoSlots(List<SessionPlayer> players) {
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        putSlot(slots, players.get(0), "GK-1", 50.0, 98.0);
+        putSlot(slots, players.get(1), "S22-1", 5.5, 76.0);
+        putSlot(slots, players.get(2), "S22-2", 27.7, 78.0);
+        putSlot(slots, players.get(3), "S23-2", 50.0, 80.0);
+        putSlot(slots, players.get(4), "S24-2", 72.2, 78.0);
+        putSlot(slots, players.get(5), "S24-3", 94.4, 76.0);
+        putSlot(slots, players.get(6), "S17-1", 38.5, 61.0);
+        putSlot(slots, players.get(7), "S17-2", 50.0, 66.0);
+        putSlot(slots, players.get(8), "S17-3", 61.5, 61.0);
+        putSlot(slots, players.get(9), "S05-1", 38.5, 17.0);
+        putSlot(slots, players.get(10), "S05-3", 61.5, 17.0);
+        return slots;
+    }
+
+    private Map<String, LineupSlotDTO> fourFourTwoSlots(List<SessionPlayer> players) {
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        putSlot(slots, players.get(0), "GK-1", 50.0, 98.0);
+        putSlot(slots, players.get(1), "S22-2", 18.0, 83.0);
+        putSlot(slots, players.get(2), "S23-1", 38.5, 83.0);
+        putSlot(slots, players.get(3), "S23-3", 61.5, 83.0);
+        putSlot(slots, players.get(4), "S24-2", 82.0, 83.0);
+        putSlot(slots, players.get(5), "S16-2", 18.0, 50.0);
+        putSlot(slots, players.get(6), "S17-1", 38.5, 50.0);
+        putSlot(slots, players.get(7), "S17-3", 61.5, 50.0);
+        putSlot(slots, players.get(8), "S18-2", 82.0, 50.0);
+        putSlot(slots, players.get(9), "S05-1", 38.5, 17.0);
+        putSlot(slots, players.get(10), "S05-3", 61.5, 17.0);
+        return slots;
+    }
+
+    private void putSlot(Map<String, LineupSlotDTO> slots, SessionPlayer player, String slotId, double x, double y) {
+        slots.put(player.getSessionPlayerId(), new LineupSlotDTO(player.getSessionPlayerId(), slotId, x, y));
     }
 
     private SessionPlayer makePlayer(String id, String position, int attack, int defense, int technique) {
@@ -1156,6 +1223,12 @@ class V24DetailedMatchEngineFormationTest {
         double lowBlockResistance = invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "defensiveResistanceMultiplier");
         double baselineCenterDefense = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseCenter");
         double lowBlockCenterDefense = invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "defenseCenter");
+        double baselineWideDefense = (
+                invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseLeft")
+                        + invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseRight")) / 2.0;
+        double lowBlockWideDefense = (
+                invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "defenseLeft")
+                        + invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "defenseRight")) / 2.0;
 
         assertTrue(lowBlockPossession < baselinePossession,
                 "5-4-1 should concede territory/possession versus 4-4-2. baseline="
@@ -1169,6 +1242,9 @@ class V24DetailedMatchEngineFormationTest {
         assertTrue(lowBlockCenterDefense >= baselineCenterDefense + 0.15,
                 "5-4-1 should visibly protect the central lane. baseline="
                         + baselineCenterDefense + ", lowBlock=" + lowBlockCenterDefense);
+        assertTrue(lowBlockWideDefense >= baselineWideDefense + 0.08,
+                "5-4-1 should protect wide lanes too; a low block is not only central CB cover. baseline="
+                        + baselineWideDefense + ", lowBlock=" + lowBlockWideDefense);
     }
 
     /**

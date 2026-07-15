@@ -1857,11 +1857,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         } else if ("5-3-2".equals(formation)) {
             possession += 0.015;   // extra security helps recycle possession
             attackVolume -= 0.040; // fewer natural high/wide outlets
-            resistance -= 0.100;   // five defenders should reduce opponent quality
+            resistance -= 0.180;   // five defenders should reduce opponent quality/volume
         } else if ("5-4-1".equals(formation)) {
             possession -= 0.020;   // low block concedes more territory
             attackVolume -= 0.120; // one striker limits volume
-            resistance -= 0.140;   // but the block must be hard to break down
+            resistance -= 0.220;   // but the block must be hard to break down
         }
 
         possession = clamp(possession, 0.84, 1.18);
@@ -1880,10 +1880,21 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // should be read as a compact box-protection shape. The raw lane
             // math under-read its central cover because the five-man line is
             // spread wide and the two CMs sit just off the exact centre lane.
-            defenseCenterChannel = clamp(defenseCenterChannel + 0.22, 0.35, 1.65);
-            defenseLeftChannel = clamp(defenseLeftChannel + 0.08, 0.35, 1.65);
-            defenseRightChannel = clamp(defenseRightChannel + 0.08, 0.35, 1.65);
+            defenseCenterChannel = clamp(defenseCenterChannel + 0.26, 0.35, 1.65);
+            defenseLeftChannel = clamp(defenseLeftChannel + 0.16, 0.35, 1.65);
+            defenseRightChannel = clamp(defenseRightChannel + 0.16, 0.35, 1.65);
             attackCenterChannel = clamp(attackCenterChannel - 0.08, 0.35, 1.65);
+        } else if ("5-3-2".equals(formation)) {
+            // V25D99.164: a true back five has two wingbacks in the defensive
+            // line. The geometry is already visual and editable, but raw lane
+            // normalization under-read the wide cover because the wingbacks sit
+            // very wide while the three CBs carry most of the central weight.
+            // Keep this smaller than 5-4-1: 5-3-2 has an extra striker and a
+            // thinner midfield screen, so it should protect the flanks/box but
+            // not become a bunker with two forwards.
+            defenseCenterChannel = clamp(defenseCenterChannel + 0.14, 0.35, 1.65);
+            defenseLeftChannel = clamp(defenseLeftChannel + 0.24, 0.35, 1.65);
+            defenseRightChannel = clamp(defenseRightChannel + 0.24, 0.35, 1.65);
         } else if ("4-2-2-2".equals(formation)) {
             // Narrow box has two pivots/inside AMs; it should still protect the
             // middle even if it can be stretched wide.
@@ -1994,8 +2005,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double bestEdge = Math.max(leftEdge, Math.max(centerEdge, rightEdge));
         double worstEdge = Math.min(leftEdge, Math.min(centerEdge, rightEdge));
         double advantage = Math.max(0.0, bestEdge) * 0.120;
-        double deadEnd = Math.max(0.0, -worstEdge) * 0.045;
-        return clamp(1.0 + advantage - deadEnd, 0.86, 1.20);
+        // V25D99.164: blocked lanes were too soft. A single open lane should
+        // still matter, but if the defense covers two/three channels the attack
+        // must create fewer situations, not merely lower-xG shots. This makes
+        // manual compact/wide defensive shapes visible in the same way the
+        // modal shows them.
+        double deadEnd = Math.max(0.0, -worstEdge) * 0.080;
+        double laneClosure = (Math.max(0.0, -leftEdge)
+                + Math.max(0.0, -centerEdge)
+                + Math.max(0.0, -rightEdge)) / 3.0 * 0.045;
+        return clamp(1.0 + advantage - deadEnd - laneClosure, 0.82, 1.20);
     }
 
     private double professionalShotTempoMultiplier() {
