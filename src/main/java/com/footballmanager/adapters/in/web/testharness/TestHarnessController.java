@@ -594,7 +594,8 @@ public class TestHarnessController {
                 request != null ? request.benchPlayerId() : null,
                 request != null ? request.slotId() : null,
                 seedStart,
-                seedCount)
+                seedCount,
+                request != null ? request.controlledTeamSide() : null)
             .map(ResponseEntity::ok);
     }
 
@@ -617,7 +618,8 @@ public class TestHarnessController {
                 request != null ? request.deltaXPercent() : null,
                 request != null ? request.deltaYPercent() : null,
                 seedStart,
-                seedCount)
+                seedCount,
+                request != null ? request.controlledTeamSide() : null)
             .map(ResponseEntity::ok);
     }
 

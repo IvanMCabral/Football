@@ -2078,7 +2078,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             String benchPlayerId,
             String slotId,
             long seedStart,
-            int seedCount) {
+            int seedCount,
+            String controlledTeamSide) {
         if (matchId == null || matchId.isBlank()) {
             return Mono.error(new IllegalArgumentException("matchId is required"));
         }
@@ -2110,8 +2111,28 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     benchPlayerId,
                     slotId,
                     seedStart,
-                    seedCount));
+                    seedCount,
+                    controlledTeamSide));
             });
+    }
+
+    public Mono<PlayerSwapMatrixSummaryRow> runPlayerSwapMatrixSummary(
+            UUID userId,
+            String matchId,
+            String starterPlayerId,
+            String benchPlayerId,
+            String slotId,
+            long seedStart,
+            int seedCount) {
+        return runPlayerSwapMatrixSummary(
+            userId,
+            matchId,
+            starterPlayerId,
+            benchPlayerId,
+            slotId,
+            seedStart,
+            seedCount,
+            null);
     }
 
     private PlayerSwapMatrixSummaryRow executePlayerSwapMatrixSummary(
@@ -2121,7 +2142,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             String benchPlayerId,
             String requestedSlotId,
             long seedStart,
-            int seedCount) {
+            int seedCount,
+            String controlledTeamSide) {
 
         MatchFixture fixture = career.getTournamentState().getFixtures().stream()
             .filter(f -> f.getMatchId().equals(matchId))
@@ -2135,12 +2157,12 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             throw new IllegalStateException("SessionTeam not found for match " + matchId);
         }
 
-        String userTeamId = career.getUserSessionTeamId();
-        boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
-        boolean userIsAway = fixture.getAwayTeamId().equals(userTeamId);
+        String controlledTeamId = resolveControlledTeamId(career, fixture, controlledTeamSide);
+        boolean userIsHome = fixture.getHomeTeamId().equals(controlledTeamId);
+        boolean userIsAway = fixture.getAwayTeamId().equals(controlledTeamId);
         if (!userIsHome && !userIsAway) {
             throw new IllegalArgumentException(
-                "Player swap matrix requires a match involving the user team: " + userTeamId);
+                "Player swap matrix controlled team is not part of match: " + controlledTeamId);
         }
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
         TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
@@ -2180,7 +2202,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             .orElseThrow(() -> new IllegalArgumentException(
                 "benchPlayerId '" + effectiveBenchPlayerId + "' not on user bench"));
 
-        String formation = currentFormation(career, userTeamId, userIsHome ? home : away);
+        String formation = currentFormation(career, controlledTeamId, userIsHome ? home : away);
         String slotId = resolveSlotId(baseContext, userIsHome, effectiveStarterPlayerId, requestedSlotId);
         SwapAccumulator baseline = new SwapAccumulator();
         SwapAccumulator swapped = new SwapAccumulator();
@@ -2200,7 +2222,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             V24DetailedMatchResult baselineResult =
                 new V24DetailedMatchEngine().simulate(seededBase, new Random(seed));
             V24MatchContext swappedContext = buildInitialSwapContext(
-                seededBase, userTeamId, effectiveStarterPlayerId, effectiveBenchPlayerId);
+                seededBase, controlledTeamId, effectiveStarterPlayerId, effectiveBenchPlayerId);
             V24DetailedMatchResult swappedResult =
                 new V24DetailedMatchEngine().simulate(swappedContext, new Random(seed));
             V24DetailedMatchResult baselinePreAutoSubResult =
@@ -2312,7 +2334,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             Double deltaXPercent,
             Double deltaYPercent,
             long seedStart,
-            int seedCount) {
+            int seedCount,
+            String controlledTeamSide) {
         if (matchId == null || matchId.isBlank()) {
             return Mono.error(new IllegalArgumentException("matchId is required"));
         }
@@ -2344,8 +2367,32 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     hasRelativeDelta ? deltaXPercent : null,
                     hasRelativeDelta ? deltaYPercent : null,
                     seedStart,
-                    seedCount));
+                    seedCount,
+                    controlledTeamSide));
             });
+    }
+
+    public Mono<PositionPixelMatrixSummaryRow> runPositionPixelMatrixSummary(
+            UUID userId,
+            String matchId,
+            String playerId,
+            Double targetXPercent,
+            Double targetYPercent,
+            Double deltaXPercent,
+            Double deltaYPercent,
+            long seedStart,
+            int seedCount) {
+        return runPositionPixelMatrixSummary(
+            userId,
+            matchId,
+            playerId,
+            targetXPercent,
+            targetYPercent,
+            deltaXPercent,
+            deltaYPercent,
+            seedStart,
+            seedCount,
+            null);
     }
 
     private PositionPixelMatrixSummaryRow executePositionPixelMatrixSummary(
@@ -2357,7 +2404,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             Double deltaXPercent,
             Double deltaYPercent,
             long seedStart,
-            int seedCount) {
+            int seedCount,
+            String controlledTeamSide) {
         MatchFixture fixture = career.getTournamentState().getFixtures().stream()
             .filter(f -> f.getMatchId().equals(matchId))
             .findFirst()
@@ -2367,11 +2415,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (home == null || away == null) {
             throw new IllegalStateException("SessionTeam not found for match " + matchId);
         }
-        String userTeamId = career.getUserSessionTeamId();
-        boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
-        boolean userIsAway = fixture.getAwayTeamId().equals(userTeamId);
+        String controlledTeamId = resolveControlledTeamId(career, fixture, controlledTeamSide);
+        boolean userIsHome = fixture.getHomeTeamId().equals(controlledTeamId);
+        boolean userIsAway = fixture.getAwayTeamId().equals(controlledTeamId);
         if (!userIsHome && !userIsAway) {
-            throw new IllegalArgumentException("Position pixel matrix requires a match involving the user team: " + userTeamId);
+            throw new IllegalArgumentException("Position pixel matrix controlled team is not part of match: " + controlledTeamId);
         }
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
         TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
@@ -2419,7 +2467,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 new V24DetailedMatchEngine().simulate(seededBase, new Random(seed));
             V24MatchContext movedContext = buildMovedPositionContext(
                 seededBase,
-                userTeamId,
+                controlledTeamId,
                 resolvedPlayerId,
                 slotId,
                 targetXPercent,
@@ -2434,7 +2482,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         SwapAverages movedAvg = moved.averages();
         return new PositionPixelMatrixSummaryRow(
             matchId,
-            currentFormation(career, userTeamId, userIsHome ? home : away),
+            currentFormation(career, controlledTeamId, userIsHome ? home : away),
             resolvedPlayerId,
             safeName(player),
             player.getPosition(),

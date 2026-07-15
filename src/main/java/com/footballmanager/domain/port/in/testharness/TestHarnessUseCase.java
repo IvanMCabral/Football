@@ -109,7 +109,8 @@ public interface TestHarnessUseCase {
         String benchPlayerId,
         String slotId,
         long seedStart,
-        int seedCount);
+        int seedCount,
+        String controlledTeamSide);
 
     Mono<PositionPixelMatrixSummaryRow> runPositionPixelMatrixSummary(
         UUID userId,
@@ -120,7 +121,8 @@ public interface TestHarnessUseCase {
         Double deltaXPercent,
         Double deltaYPercent,
         long seedStart,
-        int seedCount);
+        int seedCount,
+        String controlledTeamSide);
 
     Mono<LabMutationResult> prepareOffensiveUpgradeLab(UUID userId);
 

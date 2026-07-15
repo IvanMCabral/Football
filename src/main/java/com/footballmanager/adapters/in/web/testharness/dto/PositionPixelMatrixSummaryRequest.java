@@ -7,5 +7,6 @@ public record PositionPixelMatrixSummaryRequest(
     Double deltaXPercent,
     Double deltaYPercent,
     Long seedStart,
-    Integer seedCount
+    Integer seedCount,
+    String controlledTeamSide
 ) {}

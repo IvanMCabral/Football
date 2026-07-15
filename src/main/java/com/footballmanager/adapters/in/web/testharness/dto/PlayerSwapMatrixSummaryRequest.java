@@ -15,5 +15,6 @@ public record PlayerSwapMatrixSummaryRequest(
     String benchPlayerId,
     String slotId,
     Long seedStart,
-    Integer seedCount
+    Integer seedCount,
+    String controlledTeamSide
 ) {}
