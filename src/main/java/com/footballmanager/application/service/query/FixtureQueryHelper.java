@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.query;
 
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 
@@ -87,8 +88,10 @@ public final class FixtureQueryHelper {
                 f.getMatchId(),
                 f.getHomeTeamId(),
                 getTeamName(teamNames, f.getHomeTeamId()),
+                null,   // homeStrength — requires CareerSave
                 f.getAwayTeamId(),
                 getTeamName(teamNames, f.getAwayTeamId()),
+                null,   // awayStrength — requires CareerSave
                 f.getRound(),
                 f.getStatus() != null ? f.getStatus().name() : "PENDING",
                 f.getResult() != null ? f.getResult().getHomeGoals() : null,
@@ -127,12 +130,16 @@ public final class FixtureQueryHelper {
         }
         String homeFormation = resolveFormation(career, f.getHomeTeamId());
         String awayFormation = resolveFormation(career, f.getAwayTeamId());
+        TeamStrengthInfo homeStrength = buildTeamStrengthInfo(career, f.getHomeTeamId());
+        TeamStrengthInfo awayStrength = buildTeamStrengthInfo(career, f.getAwayTeamId());
         return new MatchInfo(
                 f.getMatchId(),
                 f.getHomeTeamId(),
                 getTeamName(teamNames, f.getHomeTeamId()),
+                homeStrength,
                 f.getAwayTeamId(),
                 getTeamName(teamNames, f.getAwayTeamId()),
+                awayStrength,
                 f.getRound(),
                 f.getStatus() != null ? f.getStatus().name() : "PENDING",
                 f.getResult() != null ? f.getResult().getHomeGoals() : null,
@@ -185,6 +192,64 @@ public final class FixtureQueryHelper {
             }
         }
         return count > 0 ? totalOvr / count : 70;
+    }
+
+    private static TeamStrengthInfo buildTeamStrengthInfo(CareerSave career, String teamId) {
+        if (career == null || teamId == null) {
+            return null;
+        }
+        java.util.List<String> squadIds = career.getSquadPlayerIds(teamId);
+        java.util.List<SessionPlayer> squad = playersForIds(career, squadIds);
+        java.util.List<String> starterIds = career.getTeamStarting11() != null
+                ? career.getTeamStarting11().get(teamId)
+                : null;
+        java.util.List<SessionPlayer> starters = playersForIds(career, starterIds);
+        return new TeamStrengthInfo(
+                averageOverall(squad),
+                starters.isEmpty() ? null : averageOverall(starters),
+                averageMetric(squad, SessionPlayer::getEnergy),
+                averageMetric(squad, SessionPlayer::getForm),
+                averageMetric(squad, SessionPlayer::getStamina),
+                squad.size(),
+                starters.size()
+        );
+    }
+
+    private static java.util.List<SessionPlayer> playersForIds(CareerSave career, java.util.List<String> playerIds) {
+        if (career == null || playerIds == null || playerIds.isEmpty()) {
+            return java.util.List.of();
+        }
+        java.util.List<SessionPlayer> players = new java.util.ArrayList<>();
+        for (String playerId : playerIds) {
+            SessionPlayer player = career.getSessionPlayer(playerId);
+            if (player != null) {
+                players.add(player);
+            }
+        }
+        return players;
+    }
+
+    private static Integer averageOverall(java.util.List<SessionPlayer> players) {
+        return averageMetric(players, SessionPlayer::calculateOverall);
+    }
+
+    private static Integer averageMetric(
+            java.util.List<SessionPlayer> players,
+            java.util.function.Function<SessionPlayer, Integer> metric
+    ) {
+        if (players == null || players.isEmpty()) {
+            return null;
+        }
+        int total = 0;
+        int count = 0;
+        for (SessionPlayer player : players) {
+            Integer value = metric.apply(player);
+            if (value != null) {
+                total += value;
+                count++;
+            }
+        }
+        return count > 0 ? Math.round((float) total / count) : null;
     }
 
     public static LeagueMatchInfo toLeagueMatchInfo(MatchFixture f, Map<String, String> teamNames, String careerId) {

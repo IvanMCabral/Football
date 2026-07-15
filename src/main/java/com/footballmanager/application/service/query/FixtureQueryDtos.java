@@ -14,8 +14,10 @@ public final class FixtureQueryDtos {
             String matchId,
             String homeTeamId,
             String homeTeamName,
+            TeamStrengthInfo homeStrength,
             String awayTeamId,
             String awayTeamName,
+            TeamStrengthInfo awayStrength,
             Integer round,
             String status,
             Integer homeGoals,
@@ -30,6 +32,16 @@ public final class FixtureQueryDtos {
             // recorded yet (e.g. brand-new career, BYE team).
             String homeFormation,
             String awayFormation
+    ) {}
+
+    public record TeamStrengthInfo(
+            Integer squadOvr,
+            Integer startingOvr,
+            Integer avgEnergy,
+            Integer avgForm,
+            Integer avgStamina,
+            Integer squadSize,
+            Integer starterCount
     ) {}
 
     public record RoundInfo(
