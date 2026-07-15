@@ -373,6 +373,91 @@ class LineupCommandUseCaseImplAutoSelectTest {
 
     // ========== MVP1-lineup-cancha-1.6: HELPER-BASED match (F2) + formation persistence (F1) ==========
 
+    @Test
+    @DisplayName("V25D99.20.8-BACK: autoSelect 4-4-2 usa WINGER para banda antes que forzar un ATT como MID")
+    void autoSelect_4_4_2_prefersWingerForWideMidfield() {
+        List<SessionPlayer> squad442WithWinger = List.of(
+            makePlayer("gk-wing", "GK Wing", "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-wing", "CB A Wing", "CB", 78, 80, false, false, 0),
+            makePlayer("cb2-wing", "CB B Wing", "CB", 77, 80, false, false, 0),
+            makePlayer("lb-wing", "LB Wing", "LB", 76, 80, false, false, 0),
+            makePlayer("rb-wing", "RB Wing", "RB", 75, 80, false, false, 0),
+            makePlayer("cm1-wing", "CM A Wing", "CM", 74, 80, false, false, 0),
+            makePlayer("cm2-wing", "CM B Wing", "CM", 73, 80, false, false, 0),
+            makePlayer("cm3-wing", "CM C Wing", "CM", 72, 80, false, false, 0),
+            makePlayer("wing-wing", "Natural Winger", "WINGER", 71, 80, false, false, 0),
+            makePlayer("st1-wing", "ST A Wing", "ST", 84, 80, false, false, 0),
+            makePlayer("st2-wing", "ST B Wing", "ST", 83, 80, false, false, 0),
+            makePlayer("st3-wing", "Extra Central Forward", "ATT", 90, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squad442WithWinger);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+                assertTrue(dto.players().stream().anyMatch(p -> "Natural Winger".equals(p.name())),
+                    "Si hay WINGER disponible, debe cubrir la banda del 4-4-2 antes que un ATT central");
+                assertFalse(dto.players().stream().anyMatch(p -> "ST B Wing".equals(p.name())),
+                    "Con tres delanteros centrales y un winger, el tercero de la rotacion debe quedar fuera antes que el winger natural");
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor.capture());
+        Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertTrue(
+            "wing-wing".equals(teamSlots.get("S16-2")) || "wing-wing".equals(teamSlots.get("S18-2")),
+            "El WINGER natural debe quedar en LM/RM del 4-4-2, no gastarse en un CM");
+    }
+
+    @Test
+    @DisplayName("V25D99.20.8-BACK: autoSelect 4-3-3 reserva WINGER para LW/RW, no para CM")
+    void autoSelect_4_3_3_prefersWingersForFrontThree() {
+        List<SessionPlayer> squad433WithWingers = List.of(
+            makePlayer("gk-433wing", "GK 433 Wing", "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-433wing", "CB A 433 Wing", "CB", 78, 80, false, false, 0),
+            makePlayer("cb2-433wing", "CB B 433 Wing", "CB", 77, 80, false, false, 0),
+            makePlayer("lb-433wing", "LB 433 Wing", "LB", 76, 80, false, false, 0),
+            makePlayer("rb-433wing", "RB 433 Wing", "RB", 75, 80, false, false, 0),
+            makePlayer("cm1-433wing", "CM A 433 Wing", "CM", 74, 80, false, false, 0),
+            makePlayer("cm2-433wing", "CM B 433 Wing", "CM", 73, 80, false, false, 0),
+            makePlayer("cm3-433wing", "CM C 433 Wing", "CM", 72, 80, false, false, 0),
+            makePlayer("lw-433wing", "Natural Left Winger", "WINGER", 71, 80, false, false, 0),
+            makePlayer("rw-433wing", "Natural Right Winger", "WINGER", 70, 80, false, false, 0),
+            makePlayer("st-433wing", "Central Striker", "ST", 84, 80, false, false, 0),
+            makePlayer("att-433wing", "Extra Central Forward 433", "ATT", 83, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squad433WithWingers);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+                assertTrue(dto.players().stream().anyMatch(p -> "Natural Left Winger".equals(p.name())));
+                assertTrue(dto.players().stream().anyMatch(p -> "Natural Right Winger".equals(p.name())));
+                assertFalse(dto.players().stream().anyMatch(p -> "Extra Central Forward 433".equals(p.name())),
+                    "El segundo ATT central no debe desplazar a un winger natural en un 4-3-3");
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor.capture());
+        Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertTrue(
+            Set.of("lw-433wing", "rw-433wing").contains(teamSlots.get("S04-1"))
+                && Set.of("lw-433wing", "rw-433wing").contains(teamSlots.get("S06-3")),
+            "Los WINGER naturales deben quedar en LW/RW del 4-3-3, no en los CM");
+    }
+
     /**
      * MVP1-lineup-cancha-1.6 (Test 3, F2): HELPER-BASED match asigna los 11 slots
      * de un 4-3-3 con squad de posiciones mixtas (CB/LB/RB/CDM/CAM/CM/LW/ST/RW).
