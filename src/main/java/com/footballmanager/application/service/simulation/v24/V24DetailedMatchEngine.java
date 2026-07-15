@@ -1207,7 +1207,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // Slow build-up, balanced penetration
             case POSSESSION -> new double[] { 1.20, 1.11, 0.90, 0.56, 0.30 };
             // Wide focus: more wing/cross attempts, fewer central tap-ins.
-            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> new double[] { 0.94, 0.88, 1.58, 0.98, 0.86 };
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> new double[] { 0.98, 0.94, 1.42, 0.98, 0.86 };
             // Central focus: more through-ball/box-center chances, fewer wide shots.
             case CENTRAL_PLAY -> new double[] { 1.12, 1.20, 0.72, 0.94, 0.86 };
             // Fast breaks, more long-range and outside-box
@@ -2214,7 +2214,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             case POSSESSION -> 0.96;
             case BALANCED -> 1.00;
             case CENTRAL_PLAY -> 1.01;
-            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 1.03;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 1.01;
             case ATTACKING -> 1.08;
         };
     }
@@ -2227,7 +2227,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             case POSSESSION -> 0.98;
             case BALANCED -> 1.00;
             case CENTRAL_PLAY -> 1.01;
-            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 1.02;
+            case WIDE_PLAY, LEFT_FLANK, RIGHT_FLANK -> 1.01;
             case ATTACKING -> 1.06;
         };
         double laneAdjustment = switch (location) {

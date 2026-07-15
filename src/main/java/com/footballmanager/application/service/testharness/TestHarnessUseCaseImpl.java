@@ -2841,14 +2841,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             ScenarioAction.position(plan)));
 
         List.of(
-            buildShapePlan(baseContext, userTeamId, "compact-center", ShapePreset.COMPACT_CENTER),
-            buildShapePlan(baseContext, userTeamId, "wide-overload", ShapePreset.WIDE_OVERLOAD),
-            buildShapePlan(baseContext, userTeamId, "attacking-step", ShapePreset.ATTACKING_STEP),
-            buildShapePlan(baseContext, userTeamId, "attacking-high", ShapePreset.ATTACKING_HIGH),
-            buildShapePlan(baseContext, userTeamId, "defensive-step", ShapePreset.DEFENSIVE_STEP),
-            buildShapePlan(baseContext, userTeamId, "defensive-low", ShapePreset.DEFENSIVE_LOW),
-            buildShapePlan(baseContext, userTeamId, "left-overload", ShapePreset.LEFT_OVERLOAD),
-            buildShapePlan(baseContext, userTeamId, "right-overload", ShapePreset.RIGHT_OVERLOAD)
+            buildShapePlan(baseContext, userTeamId, formation, "compact-center", ShapePreset.COMPACT_CENTER),
+            buildShapePlan(baseContext, userTeamId, formation, "wide-overload", ShapePreset.WIDE_OVERLOAD),
+            buildShapePlan(baseContext, userTeamId, formation, "attacking-step", ShapePreset.ATTACKING_STEP),
+            buildShapePlan(baseContext, userTeamId, formation, "attacking-high", ShapePreset.ATTACKING_HIGH),
+            buildShapePlan(baseContext, userTeamId, formation, "defensive-step", ShapePreset.DEFENSIVE_STEP),
+            buildShapePlan(baseContext, userTeamId, formation, "defensive-low", ShapePreset.DEFENSIVE_LOW),
+            buildShapePlan(baseContext, userTeamId, formation, "left-overload", ShapePreset.LEFT_OVERLOAD),
+            buildShapePlan(baseContext, userTeamId, formation, "right-overload", ShapePreset.RIGHT_OVERLOAD)
         ).forEach(planOpt -> planOpt.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup,
             career,
             fixture,
@@ -3218,6 +3218,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     private Optional<PositionPlan> buildShapePlan(
             V24MatchContext context,
             String userTeamId,
+            String formation,
             String shapeName,
             ShapePreset preset) {
 
@@ -3239,12 +3240,13 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         Map<String, Integer> positionIndex = new HashMap<>();
         Map<String, LineupSlotDTO> moved = new LinkedHashMap<>(baseSlots);
+        Map<String, double[]> formationCoords = formationService.getCoordsByFormation(formation);
         for (SessionPlayer player : starters) {
             if (player == null || player.getSessionPlayerId() == null) continue;
             String position = player.getPosition() != null ? player.getPosition() : "MID";
             int index = positionIndex.merge(position, 1, Integer::sum) - 1;
-            double[] coords = shapeCoords(position, index, preset);
             LineupSlotDTO previous = baseSlots.get(player.getSessionPlayerId());
+            double[] coords = shapeCoords(position, index, preset, previous, formationCoords);
             moved.put(player.getSessionPlayerId(), new LineupSlotDTO(
                 player.getSessionPlayerId(),
                 previous != null ? previous.subdivisionId() : fallbackSubdivision(position),
@@ -3260,18 +3262,29 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             moved));
     }
 
-    private double[] shapeCoords(String position, int index, ShapePreset preset) {
+    private double[] shapeCoords(
+            String position,
+            int index,
+            ShapePreset preset,
+            LineupSlotDTO previous,
+            Map<String, double[]> formationCoords) {
+        double[] canonical = previous != null && previous.subdivisionId() != null
+            ? formationCoords.get(previous.subdivisionId())
+            : null;
         if ("GK".equals(position)) {
-            return new double[] {50.0, 94.0};
+            return new double[] {
+                previous != null && previous.customXPercent() != null ? previous.customXPercent() : canonical != null ? canonical[0] : 50.0,
+                previous != null && previous.customYPercent() != null ? previous.customYPercent() : canonical != null ? canonical[1] : 94.0
+            };
         }
 
-        double y = switch (position) {
+        double y = previous != null && previous.customYPercent() != null ? previous.customYPercent() : canonical != null ? canonical[1] : switch (position) {
             case "DEF" -> 78.0;
             case "ATT" -> 18.0;
             case "WINGER" -> 30.0;
             default -> 52.0;
         };
-        double x = switch (position) {
+        double x = previous != null && previous.customXPercent() != null ? previous.customXPercent() : canonical != null ? canonical[0] : switch (position) {
             case "DEF" -> pick(index, 18.0, 38.0, 62.0, 82.0, 50.0);
             case "ATT" -> pick(index, 42.0, 58.0, 50.0, 35.0, 65.0);
             case "WINGER" -> pick(index, 18.0, 82.0, 30.0, 70.0, 50.0);
@@ -3279,8 +3292,18 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         };
 
         switch (preset) {
-            case COMPACT_CENTER -> x = 50.0 + ((x - 50.0) * 0.35);
-            case WIDE_OVERLOAD -> x = 50.0 + ((x - 50.0) * 1.25);
+            case COMPACT_CENTER -> x = 50.0 + ((x - 50.0) * switch (position) {
+                case "DEF" -> 0.75;
+                case "ATT" -> 0.65;
+                case "WINGER" -> 0.55;
+                default -> 0.55;
+            });
+            case WIDE_OVERLOAD -> x = 50.0 + ((x - 50.0) * switch (position) {
+                case "DEF" -> 1.03;
+                case "ATT" -> 1.06;
+                case "WINGER" -> 1.14;
+                default -> 1.12;
+            });
             case ATTACKING_STEP -> y = Math.max(8.0, y - ("DEF".equals(position) ? 3.0 : 5.0));
             case ATTACKING_HIGH -> y = Math.max(8.0, y - ("DEF".equals(position) ? 3.0 : 6.0));
             case DEFENSIVE_STEP -> y = Math.min(92.0, y + switch (position) {
@@ -3297,8 +3320,18 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 case "ATT" -> 6.0;
                 default -> 7.0;
             });
-            case LEFT_OVERLOAD -> x = clamp(x - 18.0, 8.0, 92.0);
-            case RIGHT_OVERLOAD -> x = clamp(x + 18.0, 8.0, 92.0);
+            case LEFT_OVERLOAD -> x = clamp(x - switch (position) {
+                case "DEF" -> 5.0;
+                case "ATT" -> 8.0;
+                case "WINGER" -> 12.0;
+                default -> 12.0;
+            }, 8.0, 92.0);
+            case RIGHT_OVERLOAD -> x = clamp(x + switch (position) {
+                case "DEF" -> 5.0;
+                case "ATT" -> 8.0;
+                case "WINGER" -> 12.0;
+                default -> 12.0;
+            }, 8.0, 92.0);
         }
         return new double[] {clamp(x, 0.0, 100.0), clamp(y, 0.0, 100.0)};
     }
