@@ -3237,6 +3237,18 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (starters == null || starters.isEmpty()) {
             return Optional.empty();
         }
+        long visualSlotCoverage = starters.stream()
+            .filter(Objects::nonNull)
+            .map(SessionPlayer::getSessionPlayerId)
+            .filter(Objects::nonNull)
+            .filter(playerId -> {
+                LineupSlotDTO slot = baseSlots.get(playerId);
+                return slot != null && slot.subdivisionId() != null && !slot.subdivisionId().isBlank();
+            })
+            .count();
+        if (visualSlotCoverage < Math.min(10, starters.size())) {
+            return Optional.empty();
+        }
 
         Map<String, Integer> positionIndex = new HashMap<>();
         Map<String, LineupSlotDTO> moved = new LinkedHashMap<>(baseSlots);
@@ -3299,10 +3311,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 default -> 0.55;
             });
             case WIDE_OVERLOAD -> x = 50.0 + ((x - 50.0) * switch (position) {
-                case "DEF" -> 1.03;
-                case "ATT" -> 1.06;
-                case "WINGER" -> 1.14;
-                default -> 1.12;
+                case "DEF" -> 1.00;
+                case "ATT" -> 1.03;
+                case "WINGER" -> 1.08;
+                default -> 1.07;
             });
             case ATTACKING_STEP -> y = Math.max(8.0, y - ("DEF".equals(position) ? 3.0 : 5.0));
             case ATTACKING_HIGH -> y = Math.max(8.0, y - ("DEF".equals(position) ? 3.0 : 6.0));
