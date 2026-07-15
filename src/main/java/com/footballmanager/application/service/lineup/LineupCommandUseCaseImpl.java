@@ -346,8 +346,10 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         // This keeps LWB/RWB defensive and LW/RW attacking instead of relying
         // on coarse enum counts that collapse wingback/winger variants.
         OutfieldRoleNeeds roleNeeds = getOutfieldRoleNeeds(formation);
-        boolean hasWideMidfieldSlots = formationHasAnyRole(formation, Set.of("LM", "RM", "LWB", "RWB"));
-        boolean hasWideAttackingSlots = formationHasAnyRole(formation, Set.of("LW", "RW"));
+        int wideAttackingSlots = countFormationRoles(formation, Set.of("LW", "RW"));
+        boolean hasWideAttackingSlots = wideAttackingSlots > 0 && roleNeeds.attackers() >= wideAttackingSlots + 1;
+        boolean hasWideMidfieldSlots = formationHasAnyRole(formation, Set.of("LM", "RM", "LWB", "RWB"))
+            || (wideAttackingSlots > 0 && !hasWideAttackingSlots);
 
         fillRow(availablePlayers, lineup, alreadyTaken, warnings,
             roleNeeds.defenders(), "DEF", lineupHelper::isDefender);
@@ -360,7 +362,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         // 4. ATT — same off-position fallback pattern.
         if (hasWideAttackingSlots) {
             fillAttackingRowWithWideSlotPreference(formation, availablePlayers, lineup, alreadyTaken, warnings,
-                roleNeeds.attackers());
+                roleNeeds.attackers(), wideAttackingSlots);
         } else {
             fillRow(availablePlayers, lineup, alreadyTaken, warnings,
                 roleNeeds.attackers(), "ATT",
@@ -460,36 +462,10 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
     }
 
     private OutfieldRoleNeeds getOutfieldRoleNeeds(Formation formation) {
-        OutfieldRoleNeeds fallback = new OutfieldRoleNeeds(
+        return new OutfieldRoleNeeds(
                 formation.getDefenders(),
                 formation.getMidfielders(),
                 formation.getAttackers());
-        if (formationService == null || formation == null) {
-            return fallback;
-        }
-        FormationDTO formationDto = formationService.getFormationByName(formation.getCode());
-        if (formationDto == null || formationDto.positions() == null) {
-            return fallback;
-        }
-
-        int defenders = 0;
-        int midfielders = 0;
-        int attackers = 0;
-        for (FormationPositionDTO pos : formationDto.positions()) {
-            String role = pos.role();
-            if (isDefensiveSlotRole(role)) {
-                defenders++;
-            } else if (isMidfieldSlotRole(role)) {
-                midfielders++;
-            } else if (isAttackingSlotRole(role)) {
-                attackers++;
-            }
-        }
-
-        if (defenders + midfielders + attackers != LineupRules.TARGET_LINEUP_PLAYERS - 1) {
-            return fallback;
-        }
-        return new OutfieldRoleNeeds(defenders, midfielders, attackers);
     }
 
     private boolean isDefensiveSlotRole(String role) {
@@ -533,12 +509,13 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             List<SessionPlayer> lineup,
             Set<String> alreadyTaken,
             List<LineupWarningDTO> warnings,
-            int slotsNeeded) {
+            int slotsNeeded,
+            int wideSlots) {
         if (slotsNeeded <= 0) {
             return;
         }
 
-        int wideSlots = countFormationRoles(formation, Set.of("LW", "RW"));
+        wideSlots = Math.min(wideSlots, slotsNeeded);
         int centralSlots = Math.max(0, slotsNeeded - wideSlots);
         int before = lineup.size();
 

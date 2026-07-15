@@ -393,7 +393,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
 
         CareerSave career = makeCareer(squad442WithWinger);
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
-        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .assertNext(dto -> {
@@ -435,7 +435,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
 
         CareerSave career = makeCareer(squad433WithWingers);
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
-        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
 
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
             .assertNext(dto -> {
@@ -456,6 +456,66 @@ class LineupCommandUseCaseImplAutoSelectTest {
             Set.of("lw-433wing", "rw-433wing").contains(teamSlots.get("S04-1"))
                 && Set.of("lw-433wing", "rw-433wing").contains(teamSlots.get("S06-3")),
             "Los WINGER naturales deben quedar en LW/RW del 4-3-3, no en los CM");
+    }
+
+    @Test
+    @DisplayName("V25D99.20.9-BACK: autoSelect distingue carrileros de linea media y extremos mediapunta")
+    void autoSelect_respectsFormationLineCountsForWingRoles() {
+        List<SessionPlayer> squadWithWingRoles = List.of(
+            makePlayer("gk-line", "GK Line", "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-line", "CB A Line", "CB", 78, 80, false, false, 0),
+            makePlayer("cb2-line", "CB B Line", "CB", 77, 80, false, false, 0),
+            makePlayer("cb3-line", "CB C Line", "CB", 76, 80, false, false, 0),
+            makePlayer("cb4-line", "Extra CB Line", "CB", 90, 80, false, false, 0),
+            makePlayer("cm1-line", "CM A Line", "CM", 74, 80, false, false, 0),
+            makePlayer("cm2-line", "CM B Line", "CM", 73, 80, false, false, 0),
+            makePlayer("cm3-line", "CM C Line", "CM", 72, 80, false, false, 0),
+            makePlayer("wing1-line", "Wing A Line", "WINGER", 71, 80, false, false, 0),
+            makePlayer("wing2-line", "Wing B Line", "WINGER", 70, 80, false, false, 0),
+            makePlayer("st1-line", "ST A Line", "ST", 84, 80, false, false, 0),
+            makePlayer("st2-line", "ST B Line", "ST", 83, 80, false, false, 0)
+        );
+
+        CareerSave career352 = makeCareer(squadWithWingRoles);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career352));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "3-5-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor352 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor352.capture());
+        Map<String, String> slots352 = captor352.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertTrue(Set.of("wing1-line", "wing2-line").contains(slots352.get("S15-1")));
+        assertTrue(Set.of("wing1-line", "wing2-line").contains(slots352.get("S18-3")));
+        assertFalse(Set.of("S15-1", "S17-1", "S17-2", "S17-3", "S18-3").stream()
+            .map(slots352::get)
+            .anyMatch("cb4-line"::equals),
+            "El central extra puede ganar un puesto de CB, pero no debe invadir la linea media del 3-5-2");
+
+        clearInvocations(careerSessionService);
+        CareerSave career4231 = makeCareer(squadWithWingRoles);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career4231));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-2-3-1"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+                assertTrue(dto.players().stream().anyMatch(p -> "Wing A Line".equals(p.name())));
+                assertTrue(dto.players().stream().anyMatch(p -> "Wing B Line".equals(p.name())));
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor4231 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor4231.capture());
+        Map<String, String> slots4231 = captor4231.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertTrue(Set.of("wing1-line", "wing2-line").contains(slots4231.get("S10-2")));
+        assertTrue(Set.of("wing1-line", "wing2-line").contains(slots4231.get("S12-2")));
     }
 
     /**
