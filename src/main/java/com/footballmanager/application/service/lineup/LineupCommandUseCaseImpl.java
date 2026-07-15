@@ -358,6 +358,8 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         fillRow(availablePlayers, lineup, alreadyTaken, warnings,
             roleNeeds.attackers(), "ATT", lineupHelper::isAttacker);
 
+        includeSpecificRoleIfNeeded(formation, availablePlayers, lineup, alreadyTaken, "CAM");
+
         // V25D59-C19 P0: validate the lineup reached exactly 11 slots before
         // persisting. Defensive — the algorithm above should always reach 11
         // for a squad of ≥11, but if a future formation breaks the invariant
@@ -370,6 +372,72 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         }
 
         return new AutoSelectResult(lineup, warnings);
+    }
+
+    private void includeSpecificRoleIfNeeded(
+            Formation formation,
+            List<SessionPlayer> availablePlayers,
+            List<SessionPlayer> lineup,
+            Set<String> alreadyTaken,
+            String role) {
+        if (!formationHasRole(formation, role)) {
+            return;
+        }
+        boolean alreadyCovered = lineup.stream()
+            .anyMatch(player -> isSpecificNaturalRoleCover(role, player.getPosition()));
+        if (alreadyCovered) {
+            return;
+        }
+        SessionPlayer bestNatural = availablePlayers.stream()
+            .filter(player -> player.getSessionPlayerId() != null)
+            .filter(player -> !alreadyTaken.contains(player.getSessionPlayerId()))
+            .filter(player -> isSpecificNaturalRoleCover(role, player.getPosition()))
+            .findFirst()
+            .orElse(null);
+        if (bestNatural == null) {
+            return;
+        }
+        for (int i = lineup.size() - 1; i >= 0; i--) {
+            SessionPlayer selected = lineup.get(i);
+            if (selected.getSessionPlayerId() == null || "GK".equals(selected.getPosition())) {
+                continue;
+            }
+            if (isCentralForwardPosition(selected.getPosition()) || lineupHelper.isDefender(selected.getPosition())) {
+                continue;
+            }
+            if (roleAwareSlotMatch(role, selected.getPosition())) {
+                continue;
+            }
+            alreadyTaken.remove(selected.getSessionPlayerId());
+            lineup.set(i, bestNatural);
+            alreadyTaken.add(bestNatural.getSessionPlayerId());
+            return;
+        }
+    }
+
+    private boolean formationHasRole(Formation formation, String role) {
+        if (formationService == null || formation == null || role == null) {
+            return false;
+        }
+        FormationDTO formationDto = formationService.getFormationByName(formation.getCode());
+        return formationDto != null
+            && formationDto.positions() != null
+            && formationDto.positions().stream().anyMatch(pos -> role.equals(pos.role()));
+    }
+
+    private boolean isSpecificNaturalRoleCover(String role, String playerPosition) {
+        if (role == null || playerPosition == null) {
+            return false;
+        }
+        String r = role.toUpperCase();
+        String p = playerPosition.toUpperCase();
+        if (r.equals(p)) {
+            return true;
+        }
+        if ("CAM".equals(r)) {
+            return "AM".equals(p);
+        }
+        return roleAwareSlotMatch(role, playerPosition);
     }
 
     private OutfieldRoleNeeds getOutfieldRoleNeeds(Formation formation) {
@@ -648,35 +716,73 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         }
         Map<String, LineupSlotDTO> slotMap = new HashMap<>();
         Set<String> usedPlayerIds = new HashSet<>();
-        for (FormationPositionDTO pos : formationDto.positions()) {
+        List<FormationPositionDTO> positions = formationDto.positions();
+        for (int positionIndex = 0; positionIndex < positions.size(); positionIndex++) {
+            FormationPositionDTO pos = positions.get(positionIndex);
             String role = pos.role();
             String subdivisionId = pos.subdivisionId();
             if (role == null || subdivisionId == null || subdivisionId.isBlank()) {
                 continue;
             }
             boolean assigned = false;
-            // Phase 1: helper-based match (natural / compatible position).
+            // Phase 1: helper/category-compatible match.
+            SessionPlayer bestMatch = null;
+            int bestScore = Integer.MIN_VALUE;
             for (SessionPlayer player : lineup) {
                 String playerId = player.getSessionPlayerId();
                 if (playerId == null || usedPlayerIds.contains(playerId)) {
                     continue;
                 }
-                boolean matches = switch (role) {
-                    case "GK" -> "GK".equals(player.getPosition());
-                    case "LB", "CB", "RB", "LWB", "RWB" -> lineupHelper.isDefender(player.getPosition());
-                    case "CDM", "CM", "CAM", "LM", "RM" -> lineupHelper.isMidfielder(player.getPosition());
-                    case "LW", "RW", "CF", "ST" -> lineupHelper.isAttacker(player.getPosition());
-                    default -> false;
-                };
-                if (matches) {
+                boolean compatible = isAutoSelect
+                    ? autoSelectSlotMatch(role, player.getPosition())
+                    : categorySlotMatch(role, player.getPosition());
+                if (!compatible) {
+                    continue;
+                }
+                if (isAutoSelect
+                    && shouldReserveCentralForwardForRemainingSlots(
+                        role,
+                        player.getPosition(),
+                        lineup,
+                        usedPlayerIds,
+                        positions,
+                        positionIndex)) {
+                    continue;
+                }
+                int score = isAutoSelect ? roleFitScore(role, player.getPosition()) : 1;
+                if (bestMatch == null || score > bestScore) {
+                    bestMatch = player;
+                    bestScore = score;
+                }
+                if (!isAutoSelect) {
+                    break;
                     // V25D99.20.2-BACK: store LineupSlotDTO with playerId +
                     // subdivisionId. customX/Y null at auto-select stage
                     // (canonical coords only — manual-select overrides
                     // these if the front sent free-positioning coords).
-                    slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
-                    usedPlayerIds.add(playerId);
-                    assigned = true;
-                    break;
+                }
+            }
+            if (bestMatch != null) {
+                String playerId = bestMatch.getSessionPlayerId();
+                slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
+                usedPlayerIds.add(playerId);
+                assigned = true;
+            }
+            // Phase 2: category-compatible match. This preserves robustness for
+            // broad seed roles (DEF/MID/ATT) and thin squads, but only after
+            // trying a specific slot-role fit first.
+            if (!assigned) {
+                for (SessionPlayer player : lineup) {
+                    String playerId = player.getSessionPlayerId();
+                    if (playerId == null || usedPlayerIds.contains(playerId)) {
+                        continue;
+                    }
+                    if (categorySlotMatch(role, player.getPosition())) {
+                        slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
+                        usedPlayerIds.add(playerId);
+                        assigned = true;
+                        break;
+                    }
                 }
             }
             // V25D60-C20 P0 + V25D61-C20.1 P0: off-position fallback. If no
@@ -714,5 +820,100 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             }
         }
         return slotMap;
+    }
+
+    private boolean categorySlotMatch(String role, String playerPosition) {
+        return switch (role) {
+            case "GK" -> "GK".equals(playerPosition);
+            case "LB", "CB", "RB", "LWB", "RWB" -> lineupHelper.isDefender(playerPosition);
+            case "CDM", "CM", "CAM", "LM", "RM" -> lineupHelper.isMidfielder(playerPosition);
+            case "LW", "RW" -> roleAwareSlotMatch(role, playerPosition) || lineupHelper.isAttacker(playerPosition);
+            case "CF", "ST" -> lineupHelper.isAttacker(playerPosition);
+            default -> false;
+        };
+    }
+
+    private boolean autoSelectSlotMatch(String role, String playerPosition) {
+        return roleAwareSlotMatch(role, playerPosition) || categorySlotMatch(role, playerPosition);
+    }
+
+    private boolean shouldReserveCentralForwardForRemainingSlots(
+            String currentRole,
+            String playerPosition,
+            List<SessionPlayer> lineup,
+            Set<String> usedPlayerIds,
+            List<FormationPositionDTO> positions,
+            int currentPositionIndex) {
+        if (isCentralForwardRole(currentRole) || !isCentralForwardPosition(playerPosition)) {
+            return false;
+        }
+        int remainingCentralForwardSlots = 0;
+        for (int i = currentPositionIndex + 1; i < positions.size(); i++) {
+            if (isCentralForwardRole(positions.get(i).role())) {
+                remainingCentralForwardSlots++;
+            }
+        }
+        if (remainingCentralForwardSlots <= 0) {
+            return false;
+        }
+        long unusedCentralForwards = lineup.stream()
+            .filter(player -> player.getSessionPlayerId() != null)
+            .filter(player -> !usedPlayerIds.contains(player.getSessionPlayerId()))
+            .filter(player -> isCentralForwardPosition(player.getPosition()))
+            .count();
+        return unusedCentralForwards <= remainingCentralForwardSlots;
+    }
+
+    private boolean isCentralForwardRole(String role) {
+        return "ST".equals(role) || "CF".equals(role);
+    }
+
+    private boolean isCentralForwardPosition(String position) {
+        return "ST".equals(position) || "CF".equals(position) || "ATT".equals(position);
+    }
+
+    private boolean roleAwareSlotMatch(String role, String playerPosition) {
+        if (role == null || playerPosition == null) {
+            return false;
+        }
+        String r = role.toUpperCase();
+        String p = playerPosition.toUpperCase();
+        if (r.equals(p)) {
+            return true;
+        }
+        return switch (r) {
+            case "GK" -> "GK".equals(p);
+            case "CB" -> p.equals("DEF") || p.equals("CB");
+            case "LB" -> p.equals("DEF") || p.equals("LB") || p.equals("LWB");
+            case "RB" -> p.equals("DEF") || p.equals("RB") || p.equals("RWB");
+            case "LWB" -> p.equals("LWB") || p.equals("LB") || p.equals("LM") || p.equals("LW") || p.equals("WINGER");
+            case "RWB" -> p.equals("RWB") || p.equals("RB") || p.equals("RM") || p.equals("RW") || p.equals("WINGER");
+            case "CDM" -> p.equals("MID") || p.equals("CDM") || p.equals("DM") || p.equals("CM");
+            case "CM" -> p.equals("MID") || p.equals("CM") || p.equals("CDM") || p.equals("CAM") || p.equals("DM");
+            case "CAM" -> p.equals("MID") || p.equals("CAM") || p.equals("AM") || p.equals("CM") || p.equals("CF");
+            case "LM" -> p.equals("MID") || p.equals("LM") || p.equals("LW") || p.equals("LWB") || p.equals("WINGER");
+            case "RM" -> p.equals("MID") || p.equals("RM") || p.equals("RW") || p.equals("RWB") || p.equals("WINGER");
+            case "LW" -> p.equals("LW") || p.equals("LM") || p.equals("WINGER");
+            case "RW" -> p.equals("RW") || p.equals("RM") || p.equals("WINGER");
+            case "CF" -> p.equals("ATT") || p.equals("CF") || p.equals("ST") || p.equals("CAM") || p.equals("AM");
+            case "ST" -> p.equals("ATT") || p.equals("ST") || p.equals("CF");
+            default -> false;
+        };
+    }
+
+    private int roleFitScore(String role, String playerPosition) {
+        if (role == null || playerPosition == null) {
+            return -100;
+        }
+        if (role.equalsIgnoreCase(playerPosition)) {
+            return 100;
+        }
+        if (roleAwareSlotMatch(role, playerPosition)) {
+            return 80;
+        }
+        if (categorySlotMatch(role, playerPosition)) {
+            return 10;
+        }
+        return -100;
     }
 }

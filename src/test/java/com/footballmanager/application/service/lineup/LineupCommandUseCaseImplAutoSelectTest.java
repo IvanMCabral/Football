@@ -422,9 +422,10 @@ class LineupCommandUseCaseImplAutoSelectTest {
             "MVP1-lineup-cancha-1.6 F2: HELPER-BASED llena los 11 slots aunque el squad tenga CDM/CAM (no-CM midfielders)");
 
         // Verificar que los slots que EXACT habría fallado (CDM/CAM slots) están asignados.
-        assertNotNull(teamSlots.get("S13-2"), "S13-2 (CM-left) → CDM/CAM/CM via isMidfielder");
-        assertNotNull(teamSlots.get("S14-2"), "S14-2 (CM-center) → CDM/CAM/CM via isMidfielder");
-        assertNotNull(teamSlots.get("S15-2"), "S15-2 (CM-right) → CDM/CAM/CM via isMidfielder");
+        assertEquals(11, teamSlots.values().stream().distinct().count(),
+            "MVP1-lineup-cancha-1.6 F2: cada jugador seleccionado queda en un unico slot");
+        assertTrue(teamSlots.values().containsAll(lineup),
+            "MVP1-lineup-cancha-1.6 F2: CDM/CAM/CM y extremos quedan asignados sin depender de IDs visuales antiguos");
 
         // Verificar formación persistida (F1).
         assertEquals("4-3-3", saved.getTeamStarting11Formation().get(TEAM_ID),
@@ -492,13 +493,10 @@ class LineupCommandUseCaseImplAutoSelectTest {
         // Slots que EXACT no habría podido llenar (no hay CB ni CM en el squad):
         // - S22-2 y S23-2 (CB slots) → HELPER matchea con LB/RB via isDefender
         // - S13-2, S14-2, S15-2 (CM slots) → HELPER matchea con CDM/CAM/LM via isMidfielder
-        assertNotNull(teamSlots.get("S22-1"), "S22-1 (LB) → primer LB");
-        assertNotNull(teamSlots.get("S22-2"), "S22-2 (CB) → HELPER llenó con LB/RB (EXACT habría fallado)");
-        assertNotNull(teamSlots.get("S23-2"), "S23-2 (CB) → HELPER llenó con LB/RB (EXACT habría fallado)");
-        assertNotNull(teamSlots.get("S24-3"), "S24-3 (RB) → primer RB");
-        assertNotNull(teamSlots.get("S13-2"), "S13-2 (CM) → HELPER llenó con CDM/CAM/LM (EXACT habría fallado)");
-        assertNotNull(teamSlots.get("S14-2"), "S14-2 (CM) → HELPER llenó con CDM/CAM/LM (EXACT habría fallado)");
-        assertNotNull(teamSlots.get("S15-2"), "S15-2 (CM) → HELPER llenó con CDM/CAM/LM (EXACT habría fallado)");
+        assertEquals(11, teamSlots.values().stream().distinct().count(),
+            "MVP1-lineup-cancha-1.6 F2: HELPER lleno 11 slots sin duplicar jugadores");
+        assertTrue(teamSlots.values().containsAll(lineup),
+            "MVP1-lineup-cancha-1.6 F2: laterales/volantes/extremos cubren la formacion sin depender de IDs visuales antiguos");
 
         // Verificar formación persistida (F1).
         assertEquals("4-3-3", saved.getTeamStarting11Formation().get(TEAM_ID),
@@ -957,5 +955,45 @@ class LineupCommandUseCaseImplAutoSelectTest {
         assertNotNull(teamSlots);
         assertEquals(11, teamSlots.size(),
             "V25D60-C20 P0: subdivision map debe tener 11 entries incluso en el worst-case (no DEF ni MID natural)");
+    }
+
+    @Test
+    @DisplayName("V25D99.111: autoSelect 3-4-1-2 reserva delanteros y pone CAM natural en CAM")
+    void autoSelect_3_4_1_2_reservesStrikersAndUsesNaturalCam() {
+        List<SessionPlayer> squad3412 = List.of(
+            makePlayer("gk-3412", "GK 3412", "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-3412", "CB A 3412", "CB", 80, 80, false, false, 0),
+            makePlayer("cb2-3412", "CB B 3412", "CB", 79, 80, false, false, 0),
+            makePlayer("cb3-3412", "CB C 3412", "CB", 78, 80, false, false, 0),
+            makePlayer("lb-3412", "LB 3412", "LB", 77, 80, false, false, 0),
+            makePlayer("rb-3412", "RB 3412", "RB", 76, 80, false, false, 0),
+            makePlayer("cm1-3412", "CM A 3412", "CM", 75, 80, false, false, 0),
+            makePlayer("cm2-3412", "CM B 3412", "CM", 74, 80, false, false, 0),
+            makePlayer("cam-3412", "CAM 3412", "CAM", 73, 80, false, false, 0),
+            makePlayer("cf-3412", "CF 3412", "CF", 82, 80, false, false, 0),
+            makePlayer("st-3412", "ST 3412", "ST", 81, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squad3412);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "3-4-1-2"))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor.capture());
+        Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+
+        assertNotNull(teamSlots);
+        assertEquals("cam-3412", teamSlots.get("S11-2"),
+            "V25D99.111: si la formacion pide CAM y hay CAM natural, no debe robar CF para ese slot");
+        assertTrue(List.of("cf-3412", "st-3412").contains(teamSlots.get("S05-1")),
+            "V25D99.111: primer ST debe quedar cubierto por CF/ST natural");
+        assertTrue(List.of("cf-3412", "st-3412").contains(teamSlots.get("S05-3")),
+            "V25D99.111: segundo ST debe quedar cubierto por CF/ST natural");
+        assertNotEquals(teamSlots.get("S05-1"), teamSlots.get("S05-3"),
+            "V25D99.111: los dos ST no deben duplicar jugador");
     }
 }
