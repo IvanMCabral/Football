@@ -491,7 +491,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     private boolean isAutoSelectMidfieldCandidate(String playerPosition, boolean formationHasWideMidfieldSlots) {
         return lineupHelper.isMidfielder(playerPosition)
-            || (formationHasWideMidfieldSlots && isGenericWingerPosition(playerPosition));
+            || isGenericWingerPosition(playerPosition);
     }
 
     private boolean isAutoSelectAttackingCandidate(String playerPosition, boolean formationHasWideAttackingSlots) {
@@ -613,6 +613,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         if (stillNeeded > 0) {
             List<SessionPlayer> offPosFill = availablePlayers.stream()
                 .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
+                .sorted(
+                    Comparator
+                        .comparingInt((SessionPlayer p) -> tacticalFallbackScore(positionGroup, p.getPosition()))
+                        .reversed()
+                        .thenComparing(Comparator.comparing(SessionPlayer::calculateOverall).reversed()))
                 .limit(stillNeeded)
                 .collect(Collectors.toList());
             lineup.addAll(offPosFill);
@@ -624,6 +629,43 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 warnings.add(LineupWarningDTO.offPositionFill(positionGroup, (int) offPosCount));
             }
         }
+    }
+
+    /**
+     * When a formation row cannot be filled naturally, choose the least-bad
+     * tactical fallback before raw OVR. This keeps auto-select professional:
+     * a lower-rated winger/half-space profile is usually a better emergency
+     * midfield fill than a pure striker, while a defender is a better defensive
+     * emergency fill than a forward.
+     */
+    private int tacticalFallbackScore(String positionGroup, String playerPosition) {
+        if (positionGroup == null || playerPosition == null) {
+            return 0;
+        }
+        String group = positionGroup.toUpperCase();
+        String pos = playerPosition.toUpperCase();
+        return switch (group) {
+            case "DEF" -> switch (pos) {
+                case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> 100;
+                case "CDM", "DM", "CM", "MID" -> 65;
+                case "LM", "RM", "LW", "RW", "WINGER" -> 45;
+                default -> 10;
+            };
+            case "MID" -> switch (pos) {
+                case "MID", "CM", "CDM", "DM", "CAM", "AM", "LM", "RM", "LW", "RW" -> 100;
+                case "WINGER", "LWB", "RWB" -> 75;
+                case "DEF", "CB", "LB", "RB" -> 55;
+                case "CF", "ST", "ATT" -> 35;
+                default -> 10;
+            };
+            case "ATT" -> switch (pos) {
+                case "ATT", "CF", "ST", "LW", "RW", "WINGER" -> 100;
+                case "CAM", "AM", "LM", "RM", "MID" -> 65;
+                case "CM", "CDM", "DM" -> 45;
+                default -> 10;
+            };
+            default -> 0;
+        };
     }
 
     private LineupDTO buildLineupDTO(List<SessionPlayer> players, Formation formation,
@@ -830,8 +872,20 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         positionIndex)) {
                     continue;
                 }
+                if (isAutoSelect
+                    && shouldReserveWideFallbackForRemainingMidfieldSlots(
+                        role,
+                        player.getPosition(),
+                        lineup,
+                        usedPlayerIds,
+                        positions,
+                        positionIndex)) {
+                    continue;
+                }
                 int score = isAutoSelect ? roleFitScore(role, player.getPosition()) : 1;
-                if (bestMatch == null || score > bestScore) {
+                if (bestMatch == null
+                    || score > bestScore
+                    || (score == bestScore && player.calculateOverall() > bestMatch.calculateOverall())) {
                     bestMatch = player;
                     bestScore = score;
                 }
@@ -945,12 +999,72 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         return unusedCentralForwards <= remainingCentralForwardSlots;
     }
 
+    private boolean shouldReserveWideFallbackForRemainingMidfieldSlots(
+            String currentRole,
+            String playerPosition,
+            List<SessionPlayer> lineup,
+            Set<String> usedPlayerIds,
+            List<FormationPositionDTO> positions,
+            int currentPositionIndex) {
+        if (isCentralMidfieldRole(currentRole) || "LM".equals(currentRole) || "RM".equals(currentRole) || !isWideMidfieldFallbackPosition(playerPosition)) {
+            return false;
+        }
+        int remainingMidfieldSlots = 0;
+        for (int i = currentPositionIndex + 1; i < positions.size(); i++) {
+            String remainingRole = positions.get(i).role();
+            if (isCentralMidfieldRole(remainingRole) || "LM".equals(remainingRole) || "RM".equals(remainingRole)) {
+                remainingMidfieldSlots++;
+            }
+        }
+        if (remainingMidfieldSlots <= 0) {
+            return false;
+        }
+        long unusedNaturalMidfieldFits = lineup.stream()
+            .filter(player -> player.getSessionPlayerId() != null)
+            .filter(player -> !usedPlayerIds.contains(player.getSessionPlayerId()))
+            .filter(player -> !isSamePositionFamily(player.getPosition(), playerPosition))
+            .filter(player -> isNaturalMidfieldPosition(player.getPosition()))
+            .count();
+        return unusedNaturalMidfieldFits < remainingMidfieldSlots;
+    }
+
     private boolean isCentralForwardRole(String role) {
         return "ST".equals(role) || "CF".equals(role);
     }
 
     private boolean isCentralForwardPosition(String position) {
         return "ST".equals(position) || "CF".equals(position) || "ATT".equals(position);
+    }
+
+    private boolean isCentralMidfieldRole(String role) {
+        return "CDM".equals(role) || "CM".equals(role) || "CAM".equals(role);
+    }
+
+    private boolean isNaturalMidfieldPosition(String position) {
+        return "MID".equals(position)
+            || "CM".equals(position)
+            || "CDM".equals(position)
+            || "DM".equals(position)
+            || "CAM".equals(position)
+            || "AM".equals(position)
+            || "LM".equals(position)
+            || "RM".equals(position)
+            || "LW".equals(position)
+            || "RW".equals(position);
+    }
+
+    private boolean isWideMidfieldFallbackPosition(String position) {
+        return "WINGER".equals(position)
+            || "LW".equals(position)
+            || "RW".equals(position)
+            || "LM".equals(position)
+            || "RM".equals(position)
+            || "LWB".equals(position)
+            || "RWB".equals(position);
+    }
+
+    private boolean isSamePositionFamily(String left, String right) {
+        return left != null && right != null && left.equalsIgnoreCase(right);
     }
 
     private boolean roleAwareSlotMatch(String role, String playerPosition) {
@@ -970,7 +1084,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             case "LWB" -> p.equals("LWB") || p.equals("LB") || p.equals("LM") || p.equals("LW") || p.equals("WINGER");
             case "RWB" -> p.equals("RWB") || p.equals("RB") || p.equals("RM") || p.equals("RW") || p.equals("WINGER");
             case "CDM" -> p.equals("MID") || p.equals("CDM") || p.equals("DM") || p.equals("CM");
-            case "CM" -> p.equals("MID") || p.equals("CM") || p.equals("CDM") || p.equals("CAM") || p.equals("DM");
+            case "CM" -> p.equals("MID") || p.equals("CM") || p.equals("CDM") || p.equals("CAM") || p.equals("DM") || p.equals("WINGER");
             case "CAM" -> p.equals("MID") || p.equals("CAM") || p.equals("AM") || p.equals("CM") || p.equals("CF");
             case "LM" -> p.equals("MID") || p.equals("LM") || p.equals("LW") || p.equals("LWB") || p.equals("WINGER");
             case "RM" -> p.equals("MID") || p.equals("RM") || p.equals("RW") || p.equals("RWB") || p.equals("WINGER");
@@ -994,6 +1108,10 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         int specificScore = specificWideRoleFitScore(r, p);
         if (specificScore > Integer.MIN_VALUE) {
             return specificScore;
+        }
+        int midfieldFallbackScore = specificCentralMidfieldFallbackScore(r, p);
+        if (midfieldFallbackScore > Integer.MIN_VALUE) {
+            return midfieldFallbackScore;
         }
         if (roleAwareSlotMatch(role, playerPosition)) {
             return 80;
@@ -1024,6 +1142,19 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 case "LM", "RM" -> 92;
                 case "LB", "RB" -> 90;
                 case "DEF" -> 65;
+                default -> Integer.MIN_VALUE;
+            };
+            default -> Integer.MIN_VALUE;
+        };
+    }
+
+    private int specificCentralMidfieldFallbackScore(String role, String playerPosition) {
+        return switch (role) {
+            case "CDM", "CM", "CAM" -> switch (playerPosition) {
+                case "LM", "RM" -> 45;
+                case "WINGER", "LWB", "RWB" -> 35;
+                case "LW", "RW" -> 25;
+                case "ATT", "CF", "ST" -> 5;
                 default -> Integer.MIN_VALUE;
             };
             default -> Integer.MIN_VALUE;

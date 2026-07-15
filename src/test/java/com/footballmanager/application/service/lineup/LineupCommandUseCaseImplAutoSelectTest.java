@@ -459,6 +459,53 @@ class LineupCommandUseCaseImplAutoSelectTest {
     }
 
     @Test
+    @DisplayName("V25D99.162-BACK: autoSelect MID fallback prefiere perfil tactico cercano antes que OVR bruto")
+    void autoSelect_midfieldFallback_prefersTacticalFitOverRawOvr() {
+        List<SessionPlayer> squadThinMidfield = List.of(
+            makePlayer("gk-midfit", "GK MidFit", "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-midfit", "CB A MidFit", "CB", 78, 80, false, false, 0),
+            makePlayer("cb2-midfit", "CB B MidFit", "CB", 77, 80, false, false, 0),
+            makePlayer("lb-midfit", "LB MidFit", "LB", 76, 80, false, false, 0),
+            makePlayer("rb-midfit", "RB MidFit", "RB", 75, 80, false, false, 0),
+            makePlayer("cm1-midfit", "CM A MidFit", "CM", 74, 80, false, false, 0),
+            makePlayer("cm2-midfit", "CM B MidFit", "CM", 73, 80, false, false, 0),
+            makePlayer("wing-midfit", "Emergency Winger MidFit", "WINGER", 68, 80, false, false, 0),
+            makePlayer("lw-midfit", "Natural Left Winger MidFit", "LW", 72, 80, false, false, 0),
+            makePlayer("rw-midfit", "Natural Right Winger MidFit", "RW", 71, 80, false, false, 0),
+            makePlayer("st-midfit", "Central Striker MidFit", "ST", 84, 80, false, false, 0),
+            makePlayer("att-midfit", "High OVR Pure Forward MidFit", "ATT", 90, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(squadThinMidfield);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-3-3"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+                assertTrue(dto.players().stream().anyMatch(p -> "Emergency Winger MidFit".equals(p.name())),
+                    "El hueco de MID debe cubrirse con el perfil tactico mas cercano aunque tenga menor OVR");
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor.capture());
+        Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(teamSlots);
+        assertTrue(
+            "wing-midfit".equals(teamSlots.get("S17-1"))
+                || "wing-midfit".equals(teamSlots.get("S17-2"))
+                || "wing-midfit".equals(teamSlots.get("S17-3")),
+            "El WINGER de emergencia debe ocupar uno de los CM slots, no quedar fuera por OVR bruto. slots=" + teamSlots);
+        assertFalse(
+            "att-midfit".equals(teamSlots.get("S17-1"))
+                || "att-midfit".equals(teamSlots.get("S17-2"))
+                || "att-midfit".equals(teamSlots.get("S17-3")),
+            "Un ATT puro de mayor OVR puede competir como delantero, pero no debe ocupar el fallback de CM");
+    }
+
+    @Test
     @DisplayName("V25D99.20.9-BACK: autoSelect distingue carrileros de linea media y extremos mediapunta")
     void autoSelect_respectsFormationLineCountsForWingRoles() {
         List<SessionPlayer> squadWithWingRoles = List.of(
