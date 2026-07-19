@@ -4900,7 +4900,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         return off != null
             && on != null
             && off.getPosition() != null
-            && off.getPosition().equals(on.getPosition());
+            && (off.getPosition().equals(on.getPosition())
+                || Objects.equals(positionPixelAutoLine(off), positionPixelAutoLine(on)));
     }
 
     private SubPlan toSubPlan(SessionPlayer off, SessionPlayer on) {
@@ -4915,16 +4916,12 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     }
 
     private int impactSubPositionPriority(String position) {
-        if ("ATT".equals(position) || "WINGER".equals(position)) {
-            return 0;
-        }
-        if ("MID".equals(position)) {
-            return 1;
-        }
-        if ("DEF".equals(position)) {
-            return 2;
-        }
-        return 3;
+        return switch (positionPixelAutoLine(position)) {
+            case "ATT" -> 0;
+            case "MID" -> 1;
+            case "DEF" -> 2;
+            default -> 3;
+        };
     }
 
     private boolean isOutfieldPlayer(SessionPlayer player) {
@@ -4943,7 +4940,16 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (player == null) {
             return 0;
         }
-        return switch (player.getPosition()) {
+        String normalizedLine = positionPixelAutoLine(player);
+        if ("WINGER".equalsIgnoreCase(player.getPosition())
+            || "LW".equalsIgnoreCase(player.getPosition())
+            || "RW".equalsIgnoreCase(player.getPosition())) {
+            return safeInt(player.getAttack()) * 2
+                + safeInt(player.getSpeed()) * 2
+                + safeInt(player.getTechnique())
+                + safeInt(player.getMentality());
+        }
+        return switch (normalizedLine) {
             case "DEF" -> safeInt(player.getDefense()) * 3
                 + safeInt(player.getMentality()) * 2
                 + safeInt(player.getSpeed())
@@ -5122,7 +5128,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (player == null || player.getPosition() == null) {
             return "MID";
         }
-        String position = player.getPosition().toUpperCase(Locale.ROOT);
+        return positionPixelAutoLine(player.getPosition());
+    }
+
+    private String positionPixelAutoLine(String rawPosition) {
+        if (rawPosition == null || rawPosition.isBlank()) {
+            return "MID";
+        }
+        String position = rawPosition.toUpperCase(Locale.ROOT);
         return switch (position) {
             case "GK" -> "GK";
             case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> "DEF";
