@@ -4221,6 +4221,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             buildShapePlan(baseContext, userTeamId, formation, "wide-overload", ShapePreset.WIDE_OVERLOAD),
             buildShapePlan(baseContext, userTeamId, formation, "attacking-step", ShapePreset.ATTACKING_STEP),
             buildShapePlan(baseContext, userTeamId, formation, "attacking-high", ShapePreset.ATTACKING_HIGH),
+            buildShapePlan(baseContext, userTeamId, formation, "high-press", ShapePreset.HIGH_PRESS),
+            buildShapePlan(baseContext, userTeamId, formation, "double-striker", ShapePreset.DOUBLE_STRIKER),
+            buildShapePlan(baseContext, userTeamId, formation, "all-out", ShapePreset.ALL_OUT),
             buildShapePlan(baseContext, userTeamId, formation, "defensive-step", ShapePreset.DEFENSIVE_STEP),
             buildShapePlan(baseContext, userTeamId, formation, "defensive-low", ShapePreset.DEFENSIVE_LOW),
             buildShapePlan(baseContext, userTeamId, formation, "left-overload", ShapePreset.LEFT_OVERLOAD),
@@ -4384,6 +4387,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 || key.contains("formation")
                 || key.contains("position")
                 || key.contains("attacking")
+                || key.contains("press")
+                || key.contains("striker")
+                || key.contains("all-out")
                 || key.contains("compact")
                 || key.contains("offensive"));
             case "DEFENSE" -> key.contains("defensive")
@@ -4714,6 +4720,41 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             });
             case ATTACKING_STEP -> y = Math.max(8.0, y - ("DEF".equals(position) ? 3.0 : 5.0));
             case ATTACKING_HIGH -> y = Math.max(8.0, y - ("DEF".equals(position) ? 3.0 : 6.0));
+            case HIGH_PRESS -> y = Math.max(8.0, y - switch (position) {
+                case "DEF" -> 7.0;
+                case "MID" -> 8.0;
+                case "WINGER" -> 7.0;
+                case "ATT" -> 4.0;
+                default -> 7.0;
+            });
+            case DOUBLE_STRIKER -> {
+                y = switch (position) {
+                    case "ATT" -> Math.max(8.0, y - 4.0);
+                    case "WINGER" -> Math.max(10.0, y - 9.0);
+                    case "MID" -> Math.max(18.0, y - 5.0);
+                    case "DEF" -> Math.max(60.0, y - 2.0);
+                    default -> Math.max(8.0, y - 4.0);
+                };
+                if ("WINGER".equals(position) || "ATT".equals(position)) {
+                    x = 50.0 + ((x - 50.0) * 0.72);
+                }
+            }
+            case ALL_OUT -> {
+                y = Math.max(8.0, y - switch (position) {
+                    case "DEF" -> 6.0;
+                    case "MID" -> 10.0;
+                    case "WINGER" -> 12.0;
+                    case "ATT" -> 7.0;
+                    default -> 9.0;
+                });
+                x = 50.0 + ((x - 50.0) * switch (position) {
+                    case "DEF" -> 0.88;
+                    case "MID" -> 0.82;
+                    case "WINGER" -> 0.90;
+                    case "ATT" -> 0.75;
+                    default -> 0.85;
+                });
+            }
             case DEFENSIVE_STEP -> y = Math.min(92.0, y + switch (position) {
                 case "DEF" -> 10.0;
                 case "MID" -> 7.0;
@@ -5788,6 +5829,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         WIDE_OVERLOAD,
         ATTACKING_STEP,
         ATTACKING_HIGH,
+        HIGH_PRESS,
+        DOUBLE_STRIKER,
+        ALL_OUT,
         DEFENSIVE_STEP,
         DEFENSIVE_LOW,
         LEFT_OVERLOAD,
