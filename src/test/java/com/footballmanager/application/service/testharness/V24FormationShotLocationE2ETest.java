@@ -139,7 +139,7 @@ class V24FormationShotLocationE2ETest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, matchEngineRegistry);
+            v24ContextFactory, v24StoragePort, null, matchEngineRegistry);
     }
 
     // ========== Test 1 — formation change produces measurable xG delta (with seed-scan fallback) ==========

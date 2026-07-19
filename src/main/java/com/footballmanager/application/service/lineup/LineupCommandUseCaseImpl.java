@@ -22,11 +22,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -223,8 +225,14 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // SubdivisionEffectivenessCalculator always saw canonical
                 // coords (causing 1px-drag sensitivity = no observable
                 // penalty because the back's penalty was always 0).
-                Map<String, LineupSlotDTO> slotMap = buildAutoSelectSlotMap(formation, selectedPlayers, false);
-                if (slots != null && !slots.isEmpty()) {
+                boolean hasExplicitSlotOverrides = slots != null && !slots.isEmpty();
+                boolean hasCustomSlotOverrides = hasExplicitSlotOverrides
+                    && slots.stream().anyMatch(this::hasCustomCoordinates);
+                Map<String, LineupSlotDTO> slotMap = buildAutoSelectSlotMap(
+                    formation,
+                    selectedPlayers,
+                    !hasExplicitSlotOverrides && selectedPlayers.size() == LineupRules.TARGET_LINEUP_PLAYERS);
+                if (hasExplicitSlotOverrides) {
                     // Override con lo que el front envió explícitamente
                     // (autoridad del front si el usuario asignó manualmente).
                     // V25D99.20.2-BACK: keep the front's customXPercent and
@@ -254,6 +262,12 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 return careerSessionService.saveCareer(career)
                     .thenReturn(buildLineupDTO(selectedPlayers, formation, warnings, slotMap));
             });
+    }
+
+    private boolean hasCustomCoordinates(LineupSlotDTO slot) {
+        return slot != null
+            && ((slot.customXPercent() != null && Double.isFinite(slot.customXPercent()))
+                || (slot.customYPercent() != null && Double.isFinite(slot.customYPercent())));
     }
 
     @Override
@@ -348,16 +362,26 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         OutfieldRoleNeeds roleNeeds = getOutfieldRoleNeeds(formation);
         int wideAttackingSlots = countFormationRoles(formation, Set.of("LW", "RW"));
         boolean hasWideAttackingSlots = wideAttackingSlots > 0 && roleNeeds.attackers() >= wideAttackingSlots + 1;
+        int wideMidfieldSlots = countFormationRoles(formation, Set.of("LM", "RM", "LWB", "RWB"))
+            + (hasWideAttackingSlots ? 0 : wideAttackingSlots);
         boolean hasWideMidfieldSlots = formationHasAnyRole(formation, Set.of("LM", "RM", "LWB", "RWB"))
             || (wideAttackingSlots > 0 && !hasWideAttackingSlots);
 
         fillRow(availablePlayers, lineup, alreadyTaken, warnings,
             roleNeeds.defenders(), "DEF", lineupHelper::isDefender);
 
-        // 3. MID — same off-position fallback pattern.
-        fillRow(availablePlayers, lineup, alreadyTaken, warnings,
-            roleNeeds.midfielders(), "MID",
-            playerPosition -> isAutoSelectMidfieldCandidate(playerPosition, hasWideMidfieldSlots));
+        // 3. MID — when the visual formation has wide MID/wingback/AM
+        // slots, reserve enough wide profiles before filling central mids.
+        // Otherwise a high-OVR central midfielder can steal RW/LW and leave
+        // natural wingers on the bench, which makes the modal feel fake.
+        if (wideMidfieldSlots > 0) {
+            fillMidfieldRowWithWideSlotPreference(availablePlayers, lineup, alreadyTaken, warnings,
+                roleNeeds.midfielders(), wideMidfieldSlots, hasWideAttackingSlots);
+        } else {
+            fillRow(availablePlayers, lineup, alreadyTaken, warnings,
+                roleNeeds.midfielders(), "MID",
+                playerPosition -> isAutoSelectMidfieldCandidate(playerPosition, hasWideMidfieldSlots && !hasWideAttackingSlots));
+        }
 
         // 4. ATT — same off-position fallback pattern.
         if (hasWideAttackingSlots) {
@@ -370,6 +394,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         }
 
         includeSpecificRoleIfNeeded(formation, availablePlayers, lineup, alreadyTaken, "CAM");
+        ensureWideRoleDepthIfNeeded(formation, availablePlayers, lineup, alreadyTaken);
 
         // V25D59-C19 P0: validate the lineup reached exactly 11 slots before
         // persisting. Defensive — the algorithm above should always reach 11
@@ -461,6 +486,61 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         return roleAwareSlotMatch(role, playerPosition);
     }
 
+    private void ensureWideRoleDepthIfNeeded(
+            Formation formation,
+            List<SessionPlayer> availablePlayers,
+            List<SessionPlayer> lineup,
+            Set<String> alreadyTaken) {
+        int neededWideRoles = countFormationRoles(formation, Set.of("LW", "RW", "LM", "RM", "LWB", "RWB"));
+        if (neededWideRoles <= 0) {
+            return;
+        }
+        long selectedWideProfiles = lineup.stream()
+            .filter(player -> isWideAttackingNatural(player.getPosition()))
+            .count();
+        int missingWideProfiles = neededWideRoles - (int) selectedWideProfiles;
+        if (missingWideProfiles <= 0) {
+            return;
+        }
+
+        List<SessionPlayer> availableWideProfiles = availablePlayers.stream()
+            .filter(player -> player.getSessionPlayerId() != null)
+            .filter(player -> !alreadyTaken.contains(player.getSessionPlayerId()))
+            .filter(player -> isWideAttackingNatural(player.getPosition()))
+            .limit(missingWideProfiles)
+            .collect(Collectors.toList());
+        for (SessionPlayer wideProfile : availableWideProfiles) {
+            int replaceIndex = findReplaceableNonWideIndex(lineup);
+            if (replaceIndex < 0) {
+                return;
+            }
+            SessionPlayer replaced = lineup.get(replaceIndex);
+            if (replaced.getSessionPlayerId() != null) {
+                alreadyTaken.remove(replaced.getSessionPlayerId());
+            }
+            lineup.set(replaceIndex, wideProfile);
+            alreadyTaken.add(wideProfile.getSessionPlayerId());
+        }
+    }
+
+    private int findReplaceableNonWideIndex(List<SessionPlayer> lineup) {
+        for (int i = lineup.size() - 1; i >= 0; i--) {
+            SessionPlayer player = lineup.get(i);
+            if (player == null || player.getSessionPlayerId() == null) {
+                continue;
+            }
+            String position = player.getPosition();
+            if ("GK".equals(position)
+                || lineupHelper.isDefender(position)
+                || isCentralForwardPosition(position)
+                || isWideAttackingNatural(position)) {
+                continue;
+            }
+            return i;
+        }
+        return -1;
+    }
+
     private OutfieldRoleNeeds getOutfieldRoleNeeds(Formation formation) {
         return new OutfieldRoleNeeds(
                 formation.getDefenders(),
@@ -491,7 +571,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     private boolean isAutoSelectMidfieldCandidate(String playerPosition, boolean formationHasWideMidfieldSlots) {
         return lineupHelper.isMidfielder(playerPosition)
-            || isGenericWingerPosition(playerPosition);
+            || (formationHasWideMidfieldSlots && isGenericWingerPosition(playerPosition));
     }
 
     private boolean isAutoSelectAttackingCandidate(String playerPosition, boolean formationHasWideAttackingSlots) {
@@ -529,7 +609,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
         List<SessionPlayer> centralPlayers = availablePlayers.stream()
             .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
-            .filter(p -> lineupHelper.isAttacker(p.getPosition()))
+            .filter(p -> isCentralForwardPosition(p.getPosition()))
             .limit(centralSlots)
             .collect(Collectors.toList());
         lineup.addAll(centralPlayers);
@@ -548,6 +628,70 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 .count();
             if (offPosCount > 0) {
                 warnings.add(LineupWarningDTO.offPositionFill("ATT", (int) offPosCount));
+            }
+        }
+    }
+
+    private void fillMidfieldRowWithWideSlotPreference(
+            List<SessionPlayer> availablePlayers,
+            List<SessionPlayer> lineup,
+            Set<String> alreadyTaken,
+            List<LineupWarningDTO> warnings,
+            int slotsNeeded,
+            int wideSlots,
+            boolean reserveGenericWingersForAttack) {
+        if (slotsNeeded <= 0) {
+            return;
+        }
+
+        wideSlots = Math.min(wideSlots, slotsNeeded);
+        int centralSlots = Math.max(0, slotsNeeded - wideSlots);
+        int before = lineup.size();
+
+        List<SessionPlayer> widePlayers = availablePlayers.stream()
+            .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
+            .filter(p -> reserveGenericWingersForAttack
+                ? isDedicatedWideMidfieldNatural(p.getPosition())
+                : isWideMidfieldNatural(p.getPosition()))
+            .limit(wideSlots)
+            .collect(Collectors.toList());
+        lineup.addAll(widePlayers);
+        widePlayers.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
+
+        List<SessionPlayer> centralPlayers = availablePlayers.stream()
+            .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
+            .filter(p -> lineupHelper.isMidfielder(p.getPosition()))
+            .limit(centralSlots)
+            .collect(Collectors.toList());
+        lineup.addAll(centralPlayers);
+        centralPlayers.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
+
+        int stillNeeded = slotsNeeded - (lineup.size() - before);
+        if (stillNeeded > 0) {
+            List<SessionPlayer> fallbackPool = availablePlayers.stream()
+                .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
+                .collect(Collectors.toList());
+            List<SessionPlayer> nonCentralForwardFallbackPool = fallbackPool.stream()
+                .filter(p -> !isCentralForwardPosition(p.getPosition()))
+                .collect(Collectors.toList());
+            if (nonCentralForwardFallbackPool.size() >= stillNeeded) {
+                fallbackPool = nonCentralForwardFallbackPool;
+            }
+            List<SessionPlayer> fallback = fallbackPool.stream()
+                .sorted(
+                    Comparator
+                        .comparingInt((SessionPlayer p) -> tacticalFallbackScore("MID", p.getPosition()))
+                        .reversed()
+                        .thenComparing(Comparator.comparing(SessionPlayer::calculateOverall).reversed()))
+                .limit(stillNeeded)
+                .collect(Collectors.toList());
+            lineup.addAll(fallback);
+            fallback.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
+            long offPosCount = fallback.stream()
+                .filter(p -> !isAutoSelectMidfieldCandidate(p.getPosition(), true))
+                .count();
+            if (offPosCount > 0) {
+                warnings.add(LineupWarningDTO.offPositionFill("MID", (int) offPosCount));
             }
         }
     }
@@ -571,6 +715,26 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         }
         return switch (playerPosition.toUpperCase()) {
             case "WINGER", "LW", "RW", "LM", "RM" -> true;
+            default -> false;
+        };
+    }
+
+    private boolean isWideMidfieldNatural(String playerPosition) {
+        if (playerPosition == null) {
+            return false;
+        }
+        return switch (playerPosition.toUpperCase(Locale.ROOT)) {
+            case "WINGER", "LW", "RW", "LM", "RM", "LWB", "RWB", "LB", "RB" -> true;
+            default -> false;
+        };
+    }
+
+    private boolean isDedicatedWideMidfieldNatural(String playerPosition) {
+        if (playerPosition == null) {
+            return false;
+        }
+        return switch (playerPosition.toUpperCase(Locale.ROOT)) {
+            case "LM", "RM", "LWB", "RWB", "LB", "RB" -> true;
             default -> false;
         };
     }
@@ -840,8 +1004,13 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         Map<String, LineupSlotDTO> slotMap = new HashMap<>();
         Set<String> usedPlayerIds = new HashSet<>();
         List<FormationPositionDTO> positions = formationDto.positions();
-        for (int positionIndex = 0; positionIndex < positions.size(); positionIndex++) {
-            FormationPositionDTO pos = positions.get(positionIndex);
+        List<FormationPositionDTO> assignmentPositions = isAutoSelect
+            ? positions.stream()
+                .sorted(Comparator.comparingInt(this::autoSelectAssignmentPriority))
+                .toList()
+            : positions;
+        for (int positionIndex = 0; positionIndex < assignmentPositions.size(); positionIndex++) {
+            FormationPositionDTO pos = assignmentPositions.get(positionIndex);
             String role = pos.role();
             String subdivisionId = pos.subdivisionId();
             if (role == null || subdivisionId == null || subdivisionId.isBlank()) {
@@ -868,7 +1037,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         player.getPosition(),
                         lineup,
                         usedPlayerIds,
-                        positions,
+                        assignmentPositions,
                         positionIndex)) {
                     continue;
                 }
@@ -878,11 +1047,13 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         player.getPosition(),
                         lineup,
                         usedPlayerIds,
-                        positions,
+                        assignmentPositions,
                         positionIndex)) {
                     continue;
                 }
-                int score = isAutoSelect ? roleFitScore(role, player.getPosition()) : 1;
+                int score = isAutoSelect
+                    ? roleFitScore(role, player.getPosition()) + curatedRoleSlotBonus(player, pos)
+                    : 1;
                 if (bestMatch == null
                     || score > bestScore
                     || (score == bestScore && player.calculateOverall() > bestMatch.calculateOverall())) {
@@ -938,23 +1109,56 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             // 7 players + 4-4-2 → 8 slots with a duplicated playerId), breaking
             // the [MIN, MAX] contract.
             if (!assigned && isAutoSelect) {
-                for (SessionPlayer player : lineup) {
-                    String playerId = player.getSessionPlayerId();
-                    if (playerId == null || usedPlayerIds.contains(playerId)) {
-                        continue;
-                    }
-                    // V25D99.20.2-BACK: wrap the off-position fallback playerId
-                    // in a LineupSlotDTO with the subdivisionId and no
-                    // customX/Y override (canonical coords for off-position
-                    // players, penalty surfaced by FormationEffectiveness
-                    // downstream).
-                    slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
-                    usedPlayerIds.add(playerId);
-                    break;
-                }
+                lineup.stream()
+                    .filter(player -> player.getSessionPlayerId() != null)
+                    .filter(player -> !usedPlayerIds.contains(player.getSessionPlayerId()))
+                    .max(
+                        Comparator
+                            .comparingInt((SessionPlayer player) -> roleFitScore(role, player.getPosition()))
+                            .thenComparingInt(player -> tacticalFallbackScore(tacticalPositionGroupForRole(role), player.getPosition()))
+                            .thenComparing(SessionPlayer::calculateOverall))
+                    .ifPresent(player -> {
+                        // V25D99.20.2-BACK: wrap the off-position fallback
+                        // playerId in a LineupSlotDTO with the subdivisionId
+                        // and no customX/Y override (canonical coords for
+                        // off-position players, penalty surfaced by
+                        // FormationEffectiveness downstream).
+                        String playerId = player.getSessionPlayerId();
+                        slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
+                        usedPlayerIds.add(playerId);
+                    });
             }
         }
         return slotMap;
+    }
+
+    private String tacticalPositionGroupForRole(String role) {
+        if (role == null) {
+            return "";
+        }
+        return switch (role.toUpperCase(Locale.ROOT)) {
+            case "LB", "CB", "RB" -> "DEF";
+            case "LWB", "RWB", "CDM", "CM", "CAM", "LM", "RM" -> "MID";
+            case "LW", "RW", "CF", "ST" -> "ATT";
+            default -> "";
+        };
+    }
+
+    private int autoSelectAssignmentPriority(FormationPositionDTO position) {
+        if (position == null || position.role() == null) {
+            return 99;
+        }
+        return switch (position.role().toUpperCase(Locale.ROOT)) {
+            case "GK" -> 0;
+            case "ST", "CF" -> 10;
+            case "CB" -> 20;
+            case "LW", "RW" -> 25;
+            case "CDM", "CM", "CAM" -> 30;
+            case "LB", "RB" -> 40;
+            case "LWB", "RWB" -> 50;
+            case "LM", "RM" -> 60;
+            default -> 90;
+        };
     }
 
     private boolean categorySlotMatch(String role, String playerPosition) {
@@ -1122,6 +1326,86 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         return -100;
     }
 
+    private int curatedRoleSlotBonus(SessionPlayer player, FormationPositionDTO slot) {
+        CuratedPlayerRoleProfile profile = curatedPlayerRoleProfile(player);
+        if (profile == null || slot == null || slot.role() == null) {
+            return 0;
+        }
+        String role = slot.role().toUpperCase(Locale.ROOT);
+        int bonus = 0;
+        if (profile.roles().contains(role)) {
+            bonus += 26;
+        } else if (curatedRoleFamilyMatch(profile.roles(), role)) {
+            bonus += 12;
+        }
+        String slotSide = tacticalSlotSide(slot);
+        if ("LEFT".equals(slotSide) || "RIGHT".equals(slotSide)) {
+            if (profile.sides().contains(slotSide) || profile.sides().contains("BOTH")) {
+                bonus += 22;
+            } else if (profile.sides().contains(oppositeSide(slotSide))) {
+                bonus -= 34;
+            }
+        } else if ("CENTER".equals(slotSide) && profile.sides().contains("CENTER")) {
+            bonus += 8;
+        }
+        return bonus;
+    }
+
+    private boolean curatedRoleFamilyMatch(Set<String> playerRoles, String slotRole) {
+        if (Set.of("LB", "LWB", "LM", "LW").contains(slotRole)) {
+            return playerRoles.stream().anyMatch(Set.of("LB", "LWB", "LM", "LW")::contains);
+        }
+        if (Set.of("RB", "RWB", "RM", "RW").contains(slotRole)) {
+            return playerRoles.stream().anyMatch(Set.of("RB", "RWB", "RM", "RW")::contains);
+        }
+        if (Set.of("CB", "CDM", "CM", "CAM", "ST", "CF").contains(slotRole)) {
+            return playerRoles.stream().anyMatch(Set.of("CB", "CDM", "CM", "CAM", "ST", "CF")::contains);
+        }
+        return false;
+    }
+
+    private String tacticalSlotSide(FormationPositionDTO slot) {
+        String role = slot.role() != null ? slot.role().toUpperCase(Locale.ROOT) : "";
+        if (Set.of("LB", "LWB", "LM", "LW").contains(role)) return "LEFT";
+        if (Set.of("RB", "RWB", "RM", "RW").contains(role)) return "RIGHT";
+        if (Set.of("GK", "CB", "CDM", "CM", "ST", "CF").contains(role)) return "CENTER";
+        Double x = slot.xPercent();
+        if (x != null && x <= 42) return "LEFT";
+        if (x != null && x >= 58) return "RIGHT";
+        return "CENTER";
+    }
+
+    private String oppositeSide(String side) {
+        return "LEFT".equals(side) ? "RIGHT" : "LEFT";
+    }
+
+    private CuratedPlayerRoleProfile curatedPlayerRoleProfile(SessionPlayer player) {
+        if (player == null || player.getName() == null) {
+            return null;
+        }
+        return switch (normalizePlayerName(player.getName())) {
+            case "dani carvajal" -> new CuratedPlayerRoleProfile(Set.of("RB", "RWB"), Set.of("RIGHT"));
+            case "david alaba" -> new CuratedPlayerRoleProfile(Set.of("CB", "LB"), Set.of("LEFT", "CENTER"));
+            case "ferland mendy", "fran garcia" -> new CuratedPlayerRoleProfile(Set.of("LB", "LWB"), Set.of("LEFT"));
+            case "lucas vazquez" -> new CuratedPlayerRoleProfile(Set.of("RB", "RM", "RWB"), Set.of("RIGHT"));
+            case "vinicius junior" -> new CuratedPlayerRoleProfile(Set.of("LW", "LM"), Set.of("LEFT"));
+            case "rodrygo goes" -> new CuratedPlayerRoleProfile(Set.of("RW", "LW", "ST", "CF"), Set.of("RIGHT", "BOTH"));
+            case "brahim diaz" -> new CuratedPlayerRoleProfile(Set.of("RW", "CAM", "RM"), Set.of("RIGHT", "CENTER"));
+            case "federico valverde" -> new CuratedPlayerRoleProfile(Set.of("CM", "RM", "CDM"), Set.of("CENTER", "RIGHT"));
+            case "eduardo camavinga" -> new CuratedPlayerRoleProfile(Set.of("CM", "CDM", "LB"), Set.of("CENTER", "LEFT"));
+            default -> null;
+        };
+    }
+
+    private String normalizePlayerName(String name) {
+        return Normalizer.normalize(name, Normalizer.Form.NFD)
+            .replaceAll("\\p{M}", "")
+            .toLowerCase(Locale.ROOT)
+            .trim();
+    }
+
+    private record CuratedPlayerRoleProfile(Set<String> roles, Set<String> sides) {}
+
     private int specificWideRoleFitScore(String role, String playerPosition) {
         return switch (role) {
             case "LM", "RM" -> switch (playerPosition) {
@@ -1137,11 +1421,18 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 case "ATT" -> 70;
                 default -> Integer.MIN_VALUE;
             };
-            case "LWB", "RWB" -> switch (playerPosition) {
-                case "WINGER" -> 94;
-                case "LM", "RM" -> 92;
-                case "LB", "RB" -> 90;
+            case "LWB" -> switch (playerPosition) {
+                case "LW", "LM", "LWB", "LB" -> 94;
+                case "WINGER" -> 90;
                 case "DEF" -> 65;
+                case "RW", "RM", "RWB", "RB" -> 25;
+                default -> Integer.MIN_VALUE;
+            };
+            case "RWB" -> switch (playerPosition) {
+                case "RW", "RM", "RWB", "RB" -> 94;
+                case "WINGER" -> 90;
+                case "DEF" -> 65;
+                case "LW", "LM", "LWB", "LB" -> 25;
                 default -> Integer.MIN_VALUE;
             };
             default -> Integer.MIN_VALUE;

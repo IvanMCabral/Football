@@ -459,7 +459,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     }
 
     @Test
-    @DisplayName("V25D99.162-BACK: autoSelect MID fallback prefiere perfil tactico cercano antes que OVR bruto")
+    @DisplayName("V25D99.162-BACK: autoSelect reserva WINGER para front-three y usa fallback cercano en CM")
     void autoSelect_midfieldFallback_prefersTacticalFitOverRawOvr() {
         List<SessionPlayer> squadThinMidfield = List.of(
             makePlayer("gk-midfit", "GK MidFit", "GK", 80, 80, false, false, 0),
@@ -485,7 +485,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
                 assertNotNull(dto);
                 assertEquals(11, dto.players().size());
                 assertTrue(dto.players().stream().anyMatch(p -> "Emergency Winger MidFit".equals(p.name())),
-                    "El hueco de MID debe cubrirse con el perfil tactico mas cercano aunque tenga menor OVR");
+                    "El WINGER generico debe entrar en el XI por encaje tactico aunque tenga menor OVR");
             })
             .verifyComplete();
 
@@ -494,10 +494,14 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots);
         assertTrue(
-            "wing-midfit".equals(teamSlots.get("S17-1"))
-                || "wing-midfit".equals(teamSlots.get("S17-2"))
-                || "wing-midfit".equals(teamSlots.get("S17-3")),
-            "El WINGER de emergencia debe ocupar uno de los CM slots, no quedar fuera por OVR bruto. slots=" + teamSlots);
+            "wing-midfit".equals(teamSlots.get("S04-1"))
+                || "wing-midfit".equals(teamSlots.get("S06-3")),
+            "En un 4-3-3 el WINGER generico debe reservarse para LW/RW antes que caer en CM. slots=" + teamSlots);
+        assertTrue(
+            "rw-midfit".equals(teamSlots.get("S17-1"))
+                || "rw-midfit".equals(teamSlots.get("S17-2"))
+                || "rw-midfit".equals(teamSlots.get("S17-3")),
+            "Si falta un CM, el fallback debe ser un perfil de banda/medio cercano y no un ATT puro. slots=" + teamSlots);
         assertFalse(
             "att-midfit".equals(teamSlots.get("S17-1"))
                 || "att-midfit".equals(teamSlots.get("S17-2"))
@@ -514,6 +518,8 @@ class LineupCommandUseCaseImplAutoSelectTest {
             makePlayer("cb2-line", "CB B Line", "CB", 77, 80, false, false, 0),
             makePlayer("cb3-line", "CB C Line", "CB", 76, 80, false, false, 0),
             makePlayer("cb4-line", "Extra CB Line", "CB", 90, 80, false, false, 0),
+            makePlayer("lb-line", "LB Line", "LB", 69, 80, false, false, 0),
+            makePlayer("rb-line", "RB Line", "RB", 68, 80, false, false, 0),
             makePlayer("cm1-line", "CM A Line", "CM", 74, 80, false, false, 0),
             makePlayer("cm2-line", "CM B Line", "CM", 73, 80, false, false, 0),
             makePlayer("cm3-line", "CM C Line", "CM", 72, 80, false, false, 0),
@@ -563,6 +569,108 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> slots4231 = captor4231.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertTrue(Set.of("wing1-line", "wing2-line").contains(slots4231.get("S10-2")));
         assertTrue(Set.of("wing1-line", "wing2-line").contains(slots4231.get("S12-2")));
+
+        clearInvocations(careerSessionService);
+        CareerSave career343 = makeCareer(squadWithWingRoles);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career343));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "3-4-3"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+                assertTrue(dto.players().stream().anyMatch(p -> "Wing A Line".equals(p.name())));
+                assertTrue(dto.players().stream().anyMatch(p -> "Wing B Line".equals(p.name())));
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor343 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor343.capture());
+        Map<String, String> slots343 = captor343.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertTrue(Set.of("wing1-line", "wing2-line").contains(slots343.get("S04-1")),
+            "En 3-4-3 el WINGER natural debe reservarse para LW antes que carrilero/midfield fallback");
+        assertTrue(Set.of("wing1-line", "wing2-line").contains(slots343.get("S06-3")),
+            "En 3-4-3 el WINGER natural debe reservarse para RW antes que carrilero/midfield fallback");
+        assertFalse(Set.of("st1-line", "st2-line").contains(slots343.get("S15-1")),
+            "En 3-4-3 un delantero puro no debe ocupar LWB si hay laterales/carrileros disponibles. slots=" + slots343);
+        assertFalse(Set.of("st1-line", "st2-line").contains(slots343.get("S18-3")),
+            "En 3-4-3 un delantero puro no debe ocupar RWB si hay laterales/carrileros disponibles. slots=" + slots343);
+    }
+
+    @Test
+    @DisplayName("V25D99.288-BACK: autoSelect respeta lado natural LB/RB para carrileros LWB/RWB")
+    void autoSelect_3_5_2_keepsFullbacksOnNaturalSideForWingbacks() {
+        List<SessionPlayer> squadWithSideSpecificFullbacks = List.of(
+            makePlayer("gk-side", "GK Side", "GK", 80, 80, false, false, 0),
+            makePlayer("cb1-side", "CB A Side", "CB", 78, 80, false, false, 0),
+            makePlayer("cb2-side", "CB B Side", "CB", 77, 80, false, false, 0),
+            makePlayer("cb3-side", "CB C Side", "CB", 76, 80, false, false, 0),
+            makePlayer("rb-side", "Right Back Side", "RB", 75, 80, false, false, 0),
+            makePlayer("lb-side", "Left Back Side", "LB", 75, 80, false, false, 0),
+            makePlayer("cm1-side", "CM A Side", "CM", 74, 80, false, false, 0),
+            makePlayer("cm2-side", "CM B Side", "CM", 73, 80, false, false, 0),
+            makePlayer("cm3-side", "CM C Side", "CM", 72, 80, false, false, 0),
+            makePlayer("st1-side", "ST A Side", "ST", 84, 80, false, false, 0),
+            makePlayer("st2-side", "ST B Side", "ST", 83, 80, false, false, 0)
+        );
+
+        CareerSave career352 = makeCareer(squadWithSideSpecificFullbacks);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career352));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "3-5-2"))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+            })
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor352 = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor352.capture());
+        Map<String, String> slots352 = captor352.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+
+        assertEquals("lb-side", slots352.get("S15-1"), "El carrilero izquierdo debe priorizar LB/LWB/LM/LW, no cruzar un RB");
+        assertEquals("rb-side", slots352.get("S18-3"), "El carrilero derecho debe priorizar RB/RWB/RM/RW, no cruzar un LB");
+    }
+
+    @Test
+    @DisplayName("V25D99.289-BACK: autoSelect 4-2-3-1 no deja WINGER sanos en banco con MID improvisado en RW")
+    void autoSelect_4_2_3_1_realWideProfilesBeatCentralMidAtRw() {
+        List<SessionPlayer> lasPalmasLikeSquad = List.of(
+            makePlayer("gk-lp", "Aaron Escandell", "GK", 76, 80, false, false, 0),
+            makePlayer("rb-lp", "Alex Suarez", "DEF", 76, 80, false, false, 0),
+            makePlayer("lb-lp", "Marcos Cardenas", "DEF", 75, 80, false, false, 0),
+            makePlayer("cb1-lp", "Scott McKenna", "DEF", 76, 80, false, false, 0),
+            makePlayer("cb2-lp", "Sergi Cardona", "DEF", 76, 80, false, false, 0),
+            makePlayer("cm1-lp", "Kirian Rodriguez", "MID", 78, 80, false, false, 0),
+            makePlayer("cm2-lp", "Enzo Loiodice", "MID", 77, 80, false, false, 0),
+            makePlayer("cam-lp", "Alberto Moleiro", "MID", 80, 80, false, false, 0),
+            makePlayer("campana-lp", "Campaña", "MID", 79, 80, false, false, 0),
+            makePlayer("manu-lp", "Manu Fuster", "WINGER", 76, 80, false, false, 0),
+            makePlayer("marvin-lp", "Marvin Park", "WINGER", 72, 80, false, false, 0),
+            makePlayer("pejino-lp", "Pejino", "WINGER", 72, 80, false, false, 0),
+            makePlayer("st-lp", "Oliver McBurnie", "ATT", 78, 80, false, false, 0),
+            makePlayer("st2-lp", "Fábio Silva", "ATT", 78, 80, false, false, 0)
+        );
+
+        CareerSave career = makeCareer(lasPalmasLikeSquad);
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        doAnswer(inv -> Mono.just(inv.getArgument(0))).when(careerSessionService).saveCareer(any());
+
+        StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-2-3-1"))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor.capture());
+        Map<String, String> slots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+        assertNotNull(slots);
+        assertTrue(Set.of("manu-lp", "marvin-lp", "pejino-lp").contains(slots.get("S10-2")),
+            "RW debe ser WINGER natural si hay WINGER sano disponible. slots=" + slots);
+        assertTrue(Set.of("manu-lp", "marvin-lp", "pejino-lp").contains(slots.get("S12-2")),
+            "LW debe ser WINGER natural si hay WINGER sano disponible. slots=" + slots);
+        assertNotEquals("campana-lp", slots.get("S10-2"),
+            "Campaña MID no debe quedar de RW mientras Marvin/Pejino WINGER están disponibles. slots=" + slots);
     }
 
     /**

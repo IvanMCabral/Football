@@ -180,6 +180,44 @@ class V24MatchContextFactoryTest {
     }
 
     @Test
+    void derivesCpuStartingXiByFormationRolesNotSquadOrder() {
+        List<SessionPlayer> unorderedHome = List.of(
+                makePlayer("h-gk-bench", "GK", 62),
+                makePlayer("h-gk-elite", "GK", 88),
+                makePlayer("h-cb1", "CB", 82),
+                makePlayer("h-cb2", "CB", 81),
+                makePlayer("h-lb", "LB", 80),
+                makePlayer("h-rb", "RB", 80),
+                makePlayer("h-cm1", "CM", 84),
+                makePlayer("h-cm2", "CM", 83),
+                makePlayer("h-cdm", "CDM", 82),
+                makePlayer("h-lw", "LW", 86),
+                makePlayer("h-rw", "RW", 85),
+                makePlayer("h-st", "ST", 87),
+                makePlayer("h-extra-cm", "CM", 70)
+        );
+        CareerSave career = makeCareerWithNoStarting11("career-role-fallback", "home-t1", "away-t2",
+                unorderedHome, makePlayers("a", 15, 70));
+        MatchFixture fixture = makeFixture("match-role-fallback", "home-t1", "away-t2", 1);
+        SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-3-3");
+        SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
+
+        V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
+
+        List<String> starterNames = ctx.homeStartingPlayers().stream()
+                .map(SessionPlayer::getName)
+                .toList();
+        assertEquals(11, starterNames.size());
+        assertTrue(starterNames.contains("h-gk-elite"),
+                "Fallback must choose the best compatible GK, not the first GK in squad order.");
+        assertFalse(starterNames.contains("h-gk-bench"),
+                "A second/weak GK should not consume an outfield slot in CPU fallback.");
+        assertTrue(starterNames.contains("h-st"));
+        assertTrue(starterNames.contains("h-lw"));
+        assertTrue(starterNames.contains("h-rw"));
+    }
+
+    @Test
     void derivesStartingXiFromSquadWhenMissingAway() {
         // V24D6M11: Away starting XI missing — should derive from squad.
         CareerSave career = makeCareerWithNoAwayStarting11("career-6", "home-t1", "away-t2",
@@ -500,6 +538,13 @@ class V24MatchContextFactoryTest {
             list.add(p);
         }
         return list;
+    }
+
+    private SessionPlayer makePlayer(String id, String position, int ovr) {
+        return SessionPlayer.custom(
+                id, 25, position,
+                ovr, ovr, ovr, ovr, ovr, ovr,
+                BigDecimal.valueOf(ovr * 1000L));
     }
 
     private MatchFixture makeFixture(String matchId, String homeTeamId, String awayTeamId, int round) {

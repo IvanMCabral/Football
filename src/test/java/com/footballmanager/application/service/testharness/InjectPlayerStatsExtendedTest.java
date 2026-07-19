@@ -69,7 +69,7 @@ class InjectPlayerStatsExtendedTest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, matchEngineRegistry);
+            v24ContextFactory, v24StoragePort, null, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);

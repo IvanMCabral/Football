@@ -8,6 +8,7 @@ import com.footballmanager.adapters.in.web.testharness.dto.PlayerSwapMatrixSumma
 import com.footballmanager.adapters.in.web.testharness.dto.PositionPixelMatrixSummaryRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.ReplayMatchRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.ResetRoundRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.RoleSlotImpactRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.ScenarioMatrixSummaryRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.InjectPlayerStatsRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
@@ -519,6 +520,39 @@ public class TestHarnessController {
             .map(ResponseEntity::ok);
     }
 
+    @PostMapping("/match/{matchId}/preview-summary")
+    public Mono<ResponseEntity<TestHarnessUseCase.MatchPreviewSummary>> previewSummary(
+            @PathVariable String matchId,
+            @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null)
+            ? request.seedStart()
+            : 12345L;
+        int seedCount = (request != null && request.seedCount() != null)
+            ? request.seedCount()
+            : 5;
+        String controlledTeamSide = (request != null) ? request.controlledTeamSide() : "USER";
+
+        return testHarnessUseCase.runMatchPreviewSummary(
+                userId, matchId, seedStart, seedCount, controlledTeamSide)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/lineup-diagnostic")
+    public Mono<ResponseEntity<TestHarnessUseCase.LineupDiagnostic>> lineupDiagnostic(
+            @PathVariable String matchId,
+            @RequestBody(required = false) ReplayMatchRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        Long seedOverride = (request != null) ? request.seed() : null;
+
+        return testHarnessUseCase.lineupDiagnostic(userId, matchId, seedOverride)
+            .map(ResponseEntity::ok);
+    }
+
     @PostMapping("/match/{matchId}/formation-matrix")
     public Mono<ResponseEntity<List<TestHarnessUseCase.FormationMatrixRow>>> formationMatrix(
             @PathVariable String matchId,
@@ -545,6 +579,19 @@ public class TestHarnessController {
         String controlledTeamSide = (request != null) ? request.controlledTeamSide() : null;
 
         return testHarnessUseCase.runFormationMatrixSummary(userId, matchId, seedStart, seedCount, controlledTeamSide)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/side-mirror-synthetic")
+    public Mono<ResponseEntity<List<TestHarnessUseCase.SideMirrorSyntheticLabRow>>> sideMirrorSyntheticLab(
+            @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
+        int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+
+        return testHarnessUseCase.runSideMirrorSyntheticLab(userId, seedStart, seedCount)
             .map(ResponseEntity::ok);
     }
 
@@ -617,6 +664,27 @@ public class TestHarnessController {
                 request != null ? request.targetYPercent() : null,
                 request != null ? request.deltaXPercent() : null,
                 request != null ? request.deltaYPercent() : null,
+                seedStart,
+                seedCount,
+                request != null ? request.controlledTeamSide() : null)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/role-slot-impact/summary")
+    public Mono<ResponseEntity<List<TestHarnessUseCase.RoleSlotImpactSummaryRow>>> roleSlotImpactSummary(
+            @PathVariable String matchId,
+            @RequestBody(required = false) RoleSlotImpactRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
+        int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+
+        return testHarnessUseCase.runRoleSlotImpactSummary(
+                userId,
+                matchId,
+                request != null ? request.slotId() : null,
+                request != null ? request.naturalPositions() : null,
                 seedStart,
                 seedCount,
                 request != null ? request.controlledTeamSide() : null)

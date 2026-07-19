@@ -87,9 +87,14 @@ public final class SubdivisionEffectivenessCalculator {
             // 5-cat fallback (no granular pos — use zone centroid).
             Map.entry("DEF",    new double[]{50.0, 83.0}),
             Map.entry("MID",    new double[]{50.0, 60.0}),
-            Map.entry("WINGER", new double[]{50.0, 60.0}),
+            Map.entry("WINGER", new double[]{10.0, 45.0}),
             Map.entry("ATT",    new double[]{50.0, 17.0})
     );
+
+    private static final double[][] GENERIC_WINGER_IDEALS = new double[][]{
+            {10.0, 45.0},
+            {90.0, 45.0}
+    };
 
     /**
      * Distance normalization: a fully-opposite drag (100% field width OR
@@ -162,13 +167,94 @@ public final class SubdivisionEffectivenessCalculator {
             return baseEff;
         }
 
-        double dx = slotXPercent - ideal[0];
-        double dy = slotYPercent - ideal[1];
-        double distance = Math.sqrt(dx * dx + dy * dy);
+        double distance = distanceFromIdeal(normalizedNatural, slotXPercent, slotYPercent, ideal);
         double normalized = Math.min(1.0, distance / MAX_DISTANCE);
         double penalty = MAX_PENALTY * normalized;
         double refined = baseEff * (1.0 - penalty);
-        return Math.max(EFF_FLOOR, refined);
+        refined *= tacticalSlotRoleMultiplier(normalizedNatural, slotXPercent, slotYPercent, slotCategory);
+        return Math.min(1.0, Math.max(EFF_FLOOR, refined));
+    }
+
+    /**
+     * V25D99.298: the visual editor distinguishes a real RW/LW responsibility
+     * from a generic ATT-zone responsibility. A broad MID can help high up the
+     * pitch, but should not behave like a natural winger when placed on the
+     * touchline. This multiplier keeps the shared preview/match-engine math
+     * consistent with the modal's off-role warning.
+     */
+    private static double tacticalSlotRoleMultiplier(
+            String normalizedNatural,
+            double slotXPercent,
+            double slotYPercent,
+            String slotCategory) {
+        if ("ATT".equals(slotCategory) && isWideForwardLane(slotXPercent, slotYPercent)) {
+            return switch (normalizedNatural) {
+                case "WINGER", "LW", "RW" -> 1.08;
+                case "ATT", "ST", "CF" -> 0.96;
+                case "MID", "CM", "CDM", "CAM", "LM", "RM" -> 0.82;
+                case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> 0.66;
+                default -> 1.0;
+            };
+        }
+
+        if ("MID".equals(slotCategory) && isCentralMidfieldLane(slotXPercent, slotYPercent)) {
+            return switch (normalizedNatural) {
+                case "MID", "CM", "CDM", "CAM" -> 1.0;
+                case "LM", "RM" -> 0.94;
+                case "WINGER", "LW", "RW" -> 0.88;
+                case "ATT", "ST", "CF" -> 0.78;
+                case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> 0.84;
+                default -> 1.0;
+            };
+        }
+
+        if ("DEF".equals(slotCategory) && isCentralDefensiveLane(slotXPercent, slotYPercent)) {
+            return switch (normalizedNatural) {
+                case "DEF", "CB" -> 1.0;
+                case "LB", "RB", "LWB", "RWB" -> 0.94;
+                case "MID", "CM", "CDM" -> 0.86;
+                case "CAM", "LM", "RM", "WINGER", "LW", "RW" -> 0.72;
+                case "ATT", "ST", "CF" -> 0.62;
+                default -> 1.0;
+            };
+        }
+
+        return 1.0;
+    }
+
+    private static boolean isWideForwardLane(double slotXPercent, double slotYPercent) {
+        double widthFromCenter = Math.abs(slotXPercent - 50.0) / 50.0;
+        return slotYPercent <= 35.0 && widthFromCenter >= 0.62;
+    }
+
+    private static boolean isCentralMidfieldLane(double slotXPercent, double slotYPercent) {
+        double widthFromCenter = Math.abs(slotXPercent - 50.0) / 50.0;
+        return slotYPercent >= 42.0 && slotYPercent <= 72.0 && widthFromCenter <= 0.36;
+    }
+
+    private static boolean isCentralDefensiveLane(double slotXPercent, double slotYPercent) {
+        double widthFromCenter = Math.abs(slotXPercent - 50.0) / 50.0;
+        return slotYPercent >= 72.0 && widthFromCenter <= 0.36;
+    }
+
+    private static double distanceFromIdeal(String normalizedNatural,
+                                            double slotXPercent,
+                                            double slotYPercent,
+                                            double[] defaultIdeal) {
+        if ("WINGER".equals(normalizedNatural)) {
+            double best = Double.POSITIVE_INFINITY;
+            for (double[] ideal : GENERIC_WINGER_IDEALS) {
+                best = Math.min(best, distance(slotXPercent, slotYPercent, ideal));
+            }
+            return best;
+        }
+        return distance(slotXPercent, slotYPercent, defaultIdeal);
+    }
+
+    private static double distance(double slotXPercent, double slotYPercent, double[] ideal) {
+        double dx = slotXPercent - ideal[0];
+        double dy = slotYPercent - ideal[1];
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     /**

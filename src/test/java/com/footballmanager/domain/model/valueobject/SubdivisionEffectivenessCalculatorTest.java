@@ -126,6 +126,85 @@ class SubdivisionEffectivenessCalculatorTest {
     }
 
     @Test
+    @DisplayName("Generic WINGER prefers either flank over central CM fallback")
+    void genericWinger_prefersFlankOverCentralMidfield() {
+        double wideLeftMid = SubdivisionEffectivenessCalculator.effectiveness(
+                "WINGER", 16.65, 60.0, "MID");
+        double wideRightMid = SubdivisionEffectivenessCalculator.effectiveness(
+                "WINGER", 83.25, 60.0, "MID");
+        double centralMid = SubdivisionEffectivenessCalculator.effectiveness(
+                "WINGER", 49.95, 60.0, "MID");
+
+        assertTrue(wideLeftMid > centralMid,
+                "Generic winger should fit a wide-mid lane better than central CM: "
+                        + wideLeftMid + " > " + centralMid);
+        assertTrue(wideRightMid > centralMid,
+                "Generic winger should accept either side band better than central CM: "
+                        + wideRightMid + " > " + centralMid);
+        assertTrue(Math.abs(wideLeftMid - wideRightMid) < 0.03,
+                "Generic winger should be side-agnostic, not punish left/right choice: "
+                        + wideLeftMid + " vs " + wideRightMid);
+    }
+
+    @Test
+    @DisplayName("V25D99.359: WINGER as central MID fallback is visibly penalized")
+    void wingerInCentralMidfieldFallback_getsExtraRolePenalty() {
+        double wideMid = SubdivisionEffectivenessCalculator.effectiveness(
+                "WINGER", 16.65, 60.0, "MID");
+        double centralMid = SubdivisionEffectivenessCalculator.effectiveness(
+                "WINGER", 49.95, 60.0, "MID");
+        double naturalCm = SubdivisionEffectivenessCalculator.effectiveness(
+                "CM", 49.95, 60.0, "MID");
+
+        assertTrue(wideMid > centralMid + 0.08,
+                "Un WINGER puede cubrir carril ancho, pero como CM puro debe sufrir fallback visible: "
+                        + wideMid + " > " + centralMid);
+        assertTrue(naturalCm > centralMid + 0.15,
+                "Un CM natural debe sentirse bastante mejor que un WINGER improvisado como mediocentro: "
+                        + naturalCm + " > " + centralMid);
+    }
+
+    @Test
+    @DisplayName("V25D99.359: ATT fallback in central MID/DEF lanes is clearly costly")
+    void attackerInCentralFallbackLanes_getsClearPenalty() {
+        double strikerAsMid = SubdivisionEffectivenessCalculator.effectiveness(
+                "ST", 50.0, 60.0, "MID");
+        double strikerAsCb = SubdivisionEffectivenessCalculator.effectiveness(
+                "ST", 50.0, 83.0, "DEF");
+        double naturalCm = SubdivisionEffectivenessCalculator.effectiveness(
+                "CM", 50.0, 60.0, "MID");
+        double naturalCb = SubdivisionEffectivenessCalculator.effectiveness(
+                "CB", 50.0, 83.0, "DEF");
+
+        assertTrue(strikerAsMid < 0.55,
+                "Un ST como mediocentro central debe ser fallback costoso: " + strikerAsMid);
+        assertTrue(strikerAsCb < 0.20,
+                "Un ST como central debe ser un fallback defensivo grave: " + strikerAsCb);
+        assertTrue(naturalCm > strikerAsMid + 0.40,
+                "CM natural debe superar claramente al ST improvisado: " + naturalCm + " vs " + strikerAsMid);
+        assertTrue(naturalCb > strikerAsCb + 0.70,
+                "CB natural debe superar claramente al ST improvisado: " + naturalCb + " vs " + strikerAsCb);
+    }
+
+    @Test
+    @DisplayName("V25D99.298: RW/LW alto premia extremo natural y castiga MID improvisado")
+    void wideForwardLane_prefersNaturalWingerOverCentralMidfielder() {
+        double wingerAtRw = SubdivisionEffectivenessCalculator.effectiveness(
+                "WINGER", 90.0, 18.0, "ATT");
+        double midAtRw = SubdivisionEffectivenessCalculator.effectiveness(
+                "MID", 90.0, 18.0, "ATT");
+        double defAtRw = SubdivisionEffectivenessCalculator.effectiveness(
+                "DEF", 90.0, 18.0, "ATT");
+
+        assertTrue(wingerAtRw > midAtRw + 0.20,
+                "Un extremo natural debe notarse más que un MID improvisado en RW: "
+                        + wingerAtRw + " vs " + midAtRw);
+        assertTrue(midAtRw > defAtRw,
+                "Un MID improvisado conserva algo de aporte, pero un DEF en RW debe sufrir más: "
+                        + midAtRw + " > " + defAtRw);
+    }
+
+    @Test
     @DisplayName("Unknown natural position falls back to base (backward compat)")
     void unknownNatural_legacyFallback() {
         // "FUTURE_POS" is not in the IDEAL_COORDS map, so geometry
@@ -183,6 +262,7 @@ class SubdivisionEffectivenessCalculatorTest {
         assertArrayEquals(new double[]{50.0, 60.0}, SubdivisionEffectivenessCalculator.idealCoordsFor("CM"));
         // 5-cat fallback works too.
         assertArrayEquals(new double[]{50.0, 83.0}, SubdivisionEffectivenessCalculator.idealCoordsFor("DEF"));
+        assertArrayEquals(new double[]{10.0, 45.0}, SubdivisionEffectivenessCalculator.idealCoordsFor("WINGER"));
         // Unknown returns null (caller skips geometry penalty).
         assertNull(SubdivisionEffectivenessCalculator.idealCoordsFor("FOO"));
     }

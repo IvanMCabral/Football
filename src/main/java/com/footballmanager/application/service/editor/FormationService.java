@@ -69,6 +69,15 @@ public class FormationService {
     private static final double FIVE_BACK_WIDE_RIGHT_X = 90.0;
     private static final double SINGLE_STRIKER_Y = 14.0;
     private static final double FRONT_THREE_WIDE_Y = 18.0;
+    /**
+     * V25D99.179: fixed goalkeeper anchor.
+     *
+     * <p>98% placed the GK marker visually against / slightly beyond the
+     * bottom touchline once the front-end card height was applied. The keeper
+     * must still sit deep in the small box, but fully inside the pitch so the
+     * protected zone is visually trustworthy.
+     */
+    private static final double GOALKEEPER_Y = 93.5;
 
     private final List<FormationDTO> cachedFormations;
 
@@ -164,7 +173,7 @@ public class FormationService {
             "4 defensores, 4 mediocampistas, 2 delanteros",
             4, 4, 2, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — SYMMETRIC V25D94
                 pos(1, "LB", CELL_CENTER_COL0_MID,  83.0, 7.0, "S22-2"),
                 pos(2, "CB", CELL_CENTER_COL1_LEFT, 83.0, 6.0, "S23-1"),
@@ -188,7 +197,7 @@ public class FormationService {
             "4 defensores, 3 mediocampistas, 3 delanteros",
             4, 3, 3, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — SYMMETRIC V25D94
                 pos(1, "LB", CELL_CENTER_COL0_MID,  83.0, 7.0, "S22-2"),
                 pos(2, "CB", CELL_CENTER_COL1_LEFT, 83.0, 6.0, "S23-1"),
@@ -213,7 +222,7 @@ public class FormationService {
             "3 defensores, 2 WB + 3 CM, 2 delanteros",
             3, 5, 2, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
                 pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
                 pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
@@ -237,7 +246,7 @@ public class FormationService {
             "4 defensores, 2 CDM + 3 CAM, 1 delantero",
             4, 5, 1, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — SYMMETRIC V25D94
                 pos(1, "LB", CELL_CENTER_COL0_MID,  83.0, 7.0, "S22-2"),
                 pos(2, "CB", CELL_CENTER_COL1_LEFT, 83.0, 6.0, "S23-1"),
@@ -263,7 +272,7 @@ public class FormationService {
             "5 defensores, 3 mediocampistas centrales, 2 delanteros",
             5, 3, 2, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — 5-CB SPANS FULL WIDTH V25D94
                 pos(1, "LWB", FIVE_BACK_WIDE_LEFT_X,  76.0, 8.0, "S22-1"),
                 pos(2, "CB",  FIVE_BACK_LEFT_CB_X,    78.0, 6.0, "S22-2"),
@@ -287,7 +296,7 @@ public class FormationService {
             "4 defensores, 1 CDM + LM + 2 CM + RM, 1 delantero",
             4, 5, 1, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — SYMMETRIC V25D94
                 pos(1, "LB", CELL_CENTER_COL0_MID,  83.0, 7.0, "S22-2"),
                 pos(2, "CB", CELL_CENTER_COL1_LEFT, 83.0, 6.0, "S23-1"),
@@ -312,7 +321,7 @@ public class FormationService {
             "3 defensores, LWB + 2 CM + RWB, 2 wingers + 1 delantero",
             3, 4, 3, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
                 pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
                 pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
@@ -338,7 +347,7 @@ public class FormationService {
             "3 defensores, 1 CDM + 2 CM + 2 WB, 2 delanteros",
             3, 5, 2, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
                 pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
                 pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
@@ -367,7 +376,7 @@ public class FormationService {
             "5 defensores, LM + 2 CM + RM, 1 delantero",
             5, 4, 1, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — low five-man block. Keep it below the
                 // 5-3-2 so the engine reads this as protection-first, not as a
                 // duplicate five-defender shape with one fewer outlet.
@@ -395,7 +404,7 @@ public class FormationService {
             "3 defensores, LWB + 2 CM + RWB, 1 CAM, 2 delanteros",
             3, 5, 2, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — 3-CB SYMMETRIC V25D94
                 pos(1, "CB", CELL_CENTER_COL0_RIGHT, 76.0, 7.0, "S22-3"),
                 pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
@@ -421,7 +430,7 @@ public class FormationService {
             "4 defensores, 2 CDM, 2 mediapuntas interiores, 2 delanteros",
             4, 4, 2, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — SYMMETRIC V25D94
                 pos(1, "LB", CELL_CENTER_COL0_MID,  83.0, 7.0, "S22-2"),
                 pos(2, "CB", CELL_CENTER_COL1_LEFT, 83.0, 6.0, "S23-1"),
@@ -448,7 +457,7 @@ public class FormationService {
             "4 defensores, 1 CDM + 2 CM, 2 wingers + 1 delantero",
             4, 3, 3, 10,
             List.of(
-                pos(0, "GK", 50.0, 98.0, 5.0, "GK-1"),
+                pos(0, "GK", 50.0, GOALKEEPER_Y, 5.0, "GK-1"),
                 // DEF line (row 7) — SYMMETRIC V25D94
                 pos(1, "LB", CELL_CENTER_COL0_MID,  83.0, 7.0, "S22-2"),
                 pos(2, "CB", CELL_CENTER_COL1_LEFT, 83.0, 6.0, "S23-1"),

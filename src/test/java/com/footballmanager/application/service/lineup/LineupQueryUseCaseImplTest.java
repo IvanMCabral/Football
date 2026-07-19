@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
@@ -191,6 +192,59 @@ class LineupQueryUseCaseImplTest {
                 assertTrue(dto.players().isEmpty());
                 assertTrue(dto.slots().isEmpty());
                 assertEquals(0, dto.chemistryScore());
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("V25D99.298: getCurrentLineup filtra slots stale/duplicados y devuelve maximo 11")
+    void getCurrentLineup_filtersStaleAndDuplicatedPersistedSlots() {
+        List<SessionPlayer> squad442 = List.of(
+            makeHealthy("gk-clean", "GK Clean", "GK"),
+            makeHealthy("def1-clean", "Def A Clean", "CB"),
+            makeHealthy("def2-clean", "Def B Clean", "CB"),
+            makeHealthy("def3-clean", "Def C Clean", "LB"),
+            makeHealthy("def4-clean", "Def D Clean", "RB"),
+            makeHealthy("mid1-clean", "Mid A Clean", "CM"),
+            makeHealthy("mid2-clean", "Mid B Clean", "CM"),
+            makeHealthy("mid3-clean", "Mid C Clean", "LM"),
+            makeHealthy("mid4-clean", "Mid D Clean", "RM"),
+            makeHealthy("att1-clean", "Att A Clean", "ST"),
+            makeHealthy("att2-clean", "Att B Clean", "ST"),
+            makeHealthy("bench-clean", "Bench Clean", "ST")
+        );
+        List<String> lineup442 = List.of(
+            "gk-clean", "def1-clean", "def2-clean", "def3-clean", "def4-clean",
+            "mid1-clean", "mid2-clean", "mid3-clean", "mid4-clean", "att1-clean", "att2-clean");
+        CareerSave career = makeCareerWithLineup(squad442, lineup442);
+        career.setTeamStarting11Formation(Map.of(TEAM_ID, "4-4-2"));
+
+        Map<String, LineupSlotDTO> dirtySlots = new java.util.LinkedHashMap<>();
+        dirtySlots.put("GK-1", new LineupSlotDTO("gk-clean", "GK-1"));
+        dirtySlots.put("S22-2", new LineupSlotDTO("def1-clean", "S22-2"));
+        dirtySlots.put("S23-1", new LineupSlotDTO("def2-clean", "S23-1"));
+        dirtySlots.put("S23-3", new LineupSlotDTO("def3-clean", "S23-3"));
+        dirtySlots.put("S24-2", new LineupSlotDTO("def4-clean", "S24-2"));
+        dirtySlots.put("S16-2", new LineupSlotDTO("mid1-clean", "S16-2"));
+        dirtySlots.put("S17-1", new LineupSlotDTO("mid2-clean", "S17-1"));
+        dirtySlots.put("S17-3", new LineupSlotDTO("mid3-clean", "S17-3"));
+        dirtySlots.put("S18-2", new LineupSlotDTO("mid4-clean", "S18-2"));
+        dirtySlots.put("S05-1", new LineupSlotDTO("att1-clean", "S05-1"));
+        dirtySlots.put("S05-3", new LineupSlotDTO("att2-clean", "S05-3"));
+        dirtySlots.put("S04-1-stale-bench", new LineupSlotDTO("bench-clean", "S04-1"));
+        dirtySlots.put("S06-3-duplicate", new LineupSlotDTO("att2-clean", "S06-3"));
+        career.setTeamStarting11SubdivisionSlots(Map.of(TEAM_ID, dirtySlots));
+
+        when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
+
+        StepVerifier.create(useCase.getCurrentLineup(UUID.fromString(USER_ID)))
+            .assertNext(dto -> {
+                assertNotNull(dto);
+                assertEquals(11, dto.players().size());
+                assertEquals(11, dto.slots().size(),
+                    "La respuesta no debe arrastrar slots viejos de banco ni duplicados");
+                assertTrue(dto.slots().stream().noneMatch(slot -> "bench-clean".equals(slot.playerId())));
+                assertEquals(11, dto.slots().stream().map(LineupSlotDTO::playerId).distinct().count());
             })
             .verifyComplete();
     }

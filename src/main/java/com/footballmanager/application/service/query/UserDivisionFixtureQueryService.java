@@ -31,7 +31,8 @@ public class UserDivisionFixtureQueryService {
             // V24D24.3-FIX: build teamNames from the actual fixtures of this round so
             // cross-division fixtures injected via test-harness replaceFixtures resolve
             // to real names instead of falling back to UUIDs (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
-            Set<String> teamIdsInFixtures = FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures);
+            Set<String> teamIdsInFixtures = new HashSet<>(userDivision.getTeamIds());
+            teamIdsInFixtures.addAll(FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures));
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, teamIdsInFixtures);
 
             return fixtures.stream()
@@ -191,7 +192,8 @@ public class UserDivisionFixtureQueryService {
             // V24D24.3-FIX: include cross-division teams from this round's fixtures
             // (BUG_FIXTURES_TEAM_NAMES_UUID_V2). user-division set ⊂ fixture set,
             // so this is a superset and never shrinks the map.
-            Set<String> teamIdsInFixtures = FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures);
+            Set<String> teamIdsInFixtures = new HashSet<>(userDivision.getTeamIds());
+            teamIdsInFixtures.addAll(FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures));
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, teamIdsInFixtures);
             List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
 

@@ -8,6 +8,7 @@ import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -305,6 +306,69 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     @Test
+    void balancedWideShotsBiasTowardOpponentWeakerDefensiveSide() throws Exception {
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Class<?> shapeClass = Class.forName(
+            "com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine$V24TacticalShapeProfile");
+        Constructor<?> shapeCtor = shapeClass.getDeclaredConstructor(
+            double.class, double.class, double.class,
+            double.class, double.class, double.class,
+            double.class, double.class, double.class);
+        shapeCtor.setAccessible(true);
+        Object balancedAttack = shapeCtor.newInstance(
+            1.0, 1.0, 1.0,
+            0.72, 0.78, 0.72,
+            0.90, 0.90, 0.90);
+        Object weakRightDefense = shapeCtor.newInstance(
+            1.0, 1.0, 1.0,
+            0.72, 0.78, 0.72,
+            0.88, 0.90, 0.58);
+        Object weakLeftDefense = shapeCtor.newInstance(
+            1.0, 1.0, 1.0,
+            0.72, 0.78, 0.72,
+            0.58, 0.90, 0.88);
+
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+            "generateShotCoordinate",
+            V24ShotLocation.class,
+            TeamStyle.class,
+            shapeClass,
+            shapeClass,
+            Random.class);
+        method.setAccessible(true);
+
+        int leftAttackWhenOpponentRightWeak = 0;
+        int rightAttackWhenOpponentLeftWeak = 0;
+        Random rightRandom = new Random(12345L);
+        Random leftRandom = new Random(54321L);
+        for (int i = 0; i < 200; i++) {
+            V24ShotCoordinate rightWeak = (V24ShotCoordinate) method.invoke(
+                engine,
+                V24ShotLocation.PENALTY_AREA_WIDE,
+                TeamStyle.BALANCED,
+                balancedAttack,
+                weakRightDefense,
+                rightRandom);
+            V24ShotCoordinate leftWeak = (V24ShotCoordinate) method.invoke(
+                engine,
+                V24ShotLocation.PENALTY_AREA_WIDE,
+                TeamStyle.BALANCED,
+                balancedAttack,
+                weakLeftDefense,
+                leftRandom);
+            if (rightWeak.y() < 50.0) leftAttackWhenOpponentRightWeak++;
+            if (leftWeak.y() > 50.0) rightAttackWhenOpponentLeftWeak++;
+        }
+
+        assertTrue(leftAttackWhenOpponentRightWeak >= 120,
+            "Wide shots should attack our left lane against the opponent's weak right side. leftAttackCount="
+                + leftAttackWhenOpponentRightWeak);
+        assertTrue(rightAttackWhenOpponentLeftWeak >= 120,
+            "Wide shots should attack our right lane against the opponent's weak left side. rightAttackCount="
+                + rightAttackWhenOpponentLeftWeak);
+    }
+
+    @Test
     void defenderChannelWeightChangesSmoothlyAroundLaneBoundaries() throws Exception {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
@@ -378,8 +442,30 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V24D23-A: verify the {@code defenders()==3} modifier (3-5-2,
-     * 3-4-3, 5-3-2) shifts the aggregate shot location distribution
+     * V25D99.189: a 3-4-3 has a back three, but also has natural high/wide
+     * attackers. It must not be treated like a narrow 3-5-2 for shot
+     * geography, otherwise the harness reads every formation as central and
+     * wide players/carrileros stop feeling like real tactical decisions.
+     */
+    @Test
+    void selectShotLocation_threeFourThreeKeepsWideAttackingIdentity() {
+        final int samples = 20000;
+        Map<V24ShotLocation, Integer> counts343 = aggregateShotLocations("3-4-3", samples);
+        Map<V24ShotLocation, Integer> counts442 = aggregateShotLocations("4-4-2", samples);
+
+        double wideShare343 = counts343.get(V24ShotLocation.PENALTY_AREA_WIDE) / (double) samples;
+        double wideShare442 = counts442.get(V24ShotLocation.PENALTY_AREA_WIDE) / (double) samples;
+
+        assertTrue(wideShare343 > wideShare442 * 1.08,
+            "3-4-3 should keep a visible wide attacking identity despite using a back three. "
+                + "Observed wide share: 3-4-3=" + wideShare343
+                + ", 4-4-2=" + wideShare442
+                + " (ratio " + (wideShare343 / Math.max(wideShare442, 1e-9)) + ").");
+    }
+
+    /**
+     * V24D23-A/V25D99.189: verify the narrow {@code defenders()==3} modifier (3-5-2)
+     * shifts the aggregate shot location distribution
      * away from {@link V24ShotLocation#PENALTY_AREA_WIDE} relative to a
      * 4-defender formation (4-4-2). Direct unit-level isolation of the
      * {@code selectShotLocation(style, formation, random)} method via
@@ -1029,6 +1115,41 @@ class V24DetailedMatchEngineFormationTest {
                         + "baseline=" + baselineAttack + ", advanced=" + advancedAttack);
     }
 
+    @Test
+    void visualForwardMoveOfAttackerRaisesEngineAttackInput() throws Exception {
+        List<V24PlayerMatchState> states = new ArrayList<>();
+        states.add(V24PlayerMatchState.fromSessionPlayer(makePlayer("gk0", "GK", 30, 80, 50), "teamAF"));
+        for (int i = 0; i < 4; i++) {
+            states.add(V24PlayerMatchState.fromSessionPlayer(
+                    makePlayer("def" + i, "DEF", 50, 70, 50), "teamAF"));
+        }
+        for (int i = 0; i < 4; i++) {
+            states.add(V24PlayerMatchState.fromSessionPlayer(
+                    makePlayer("mid" + i, "MID", 76, 60, 82), "teamAF"));
+        }
+        states.add(V24PlayerMatchState.fromSessionPlayer(makePlayer("att0", "ATT", 88, 50, 82), "teamAF"));
+        states.add(V24PlayerMatchState.fromSessionPlayer(makePlayer("att1", "ATT", 86, 50, 82), "teamAF"));
+
+        String movedAttackerId = states.stream()
+                .filter(p -> "att0".equals(p.name()))
+                .findFirst()
+                .orElseThrow()
+                .sessionPlayerId();
+
+        Map<String, LineupSlotDTO> baselineSlots = new HashMap<>();
+        baselineSlots.put(movedAttackerId, new LineupSlotDTO(movedAttackerId, "A0", 40.0, 22.0));
+
+        Map<String, LineupSlotDTO> advancedSlots = new HashMap<>();
+        advancedSlots.put(movedAttackerId, new LineupSlotDTO(movedAttackerId, "A0", 40.0, 12.0));
+
+        double baselineAttack = invokeAggregateAttackerStat(states, "4-4-2", baselineSlots);
+        double advancedAttack = invokeAggregateAttackerStat(states, "4-4-2", advancedSlots);
+
+        assertTrue(advancedAttack > baselineAttack,
+                "An ATT moved visually forward must increase engine attack input. "
+                        + "baseline=" + baselineAttack + ", advanced=" + advancedAttack);
+    }
+
     /**
      * V25D99.22.2: tactical shape must be continuous with the visual pitch.
      * Moving one midfielder upward should gradually raise attack volume; moving
@@ -1248,6 +1369,132 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
+     * V25D99.340: the 5-4-1 low-block protection must come from the visual
+     * geometry, not only from the formation label. Moving the midfield line
+     * lower should protect more and avoid becoming a free attacking boost;
+     * pushing it higher should add outlet/press height while weakening the
+     * bunker shell.
+     */
+    @Test
+    void fiveFourOneMidfieldPixelsTradeOutletForLowBlockCover() throws Exception {
+        List<SessionPlayer> starting = makeLineup("541-pixels", 5, 4, 1);
+
+        Map<String, LineupSlotDTO> baseSlots = slots541(starting);
+        Map<String, LineupSlotDTO> highSecondLine = moveMidfieldSlotsY(baseSlots, 50.0);
+        Map<String, LineupSlotDTO> lowSecondLine = moveMidfieldSlotsY(baseSlots, 82.0);
+
+        double highAttack = invokeShapeMetric(starting, highSecondLine, "5-4-1", "attackVolumeMultiplier");
+        double baseAttack = invokeShapeMetric(starting, baseSlots, "5-4-1", "attackVolumeMultiplier");
+        double lowAttack = invokeShapeMetric(starting, lowSecondLine, "5-4-1", "attackVolumeMultiplier");
+        double highResistance = invokeShapeMetric(
+                starting, highSecondLine, "5-4-1", "defensiveResistanceMultiplier");
+        double baseResistance = invokeShapeMetric(
+                starting, baseSlots, "5-4-1", "defensiveResistanceMultiplier");
+        double lowResistance = invokeShapeMetric(
+                starting, lowSecondLine, "5-4-1", "defensiveResistanceMultiplier");
+        double highWideDefense = averageWideDefense(starting, highSecondLine, "5-4-1");
+        double baseWideDefense = averageWideDefense(starting, baseSlots, "5-4-1");
+        double lowWideDefense = averageWideDefense(starting, lowSecondLine, "5-4-1");
+
+        assertTrue(highAttack > baseAttack,
+                "Pushing the 5-4-1 second line higher should add outlet/attack volume. high="
+                        + highAttack + ", base=" + baseAttack);
+        assertTrue(lowAttack < highAttack && lowAttack <= baseAttack + 0.05,
+                "Dropping the 5-4-1 second line can have a small context tradeoff, "
+                        + "but should stay below the high-line outlet and not become a free attack boost. "
+                        + "base=" + baseAttack + ", low=" + lowAttack + ", high=" + highAttack);
+        assertTrue(highResistance > baseResistance,
+                "Pushing the 5-4-1 second line higher should weaken low-block resistance. high="
+                        + highResistance + ", base=" + baseResistance);
+        assertTrue(lowResistance >= baseResistance,
+                "Dropping the 5-4-1 second line should not weaken low-block resistance. base="
+                        + baseResistance + ", low=" + lowResistance);
+        assertTrue(lowWideDefense > baseWideDefense,
+                "Dropping the 5-4-1 second line should improve wide cover. low="
+                        + lowWideDefense + ", base=" + baseWideDefense);
+        assertTrue(baseWideDefense > highWideDefense,
+                "Pushing the 5-4-1 second line higher should expose wide cover. base="
+                        + baseWideDefense + ", high=" + highWideDefense);
+    }
+
+    /**
+     * V25D99.217: 3-5-2-CDM is visually a 3-CB + LWB/RWB shape, not a narrow
+     * back three. The side-mirror harness showed width OK but poor lateral
+     * response; this pins the engine-side channel contract so the CDM variant
+     * keeps real carrilero cover while the holder improves central protection.
+     */
+    @Test
+    void threeFiveTwoCdmReadsWingbacksAsWideCover() throws Exception {
+        List<SessionPlayer> fourFourTwo = makeLineup("442", 4, 4, 2);
+        List<SessionPlayer> threeFiveTwo = makeLineup("352", 3, 5, 2);
+        List<SessionPlayer> threeFiveTwoCdm = makeLineup("352cdm", 3, 5, 2);
+
+        Map<String, LineupSlotDTO> fourFourTwoSlots = slots442(fourFourTwo);
+        Map<String, LineupSlotDTO> threeFiveTwoSlots = slots352(threeFiveTwo);
+        Map<String, LineupSlotDTO> threeFiveTwoCdmSlots = slots352Cdm(threeFiveTwoCdm);
+
+        double baselineWideDefense = (
+                invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseLeft")
+                        + invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseRight")) / 2.0;
+        double plainWideDefense = (
+                invokeShapeMetric(threeFiveTwo, threeFiveTwoSlots, "3-5-2", "defenseLeft")
+                        + invokeShapeMetric(threeFiveTwo, threeFiveTwoSlots, "3-5-2", "defenseRight")) / 2.0;
+        double cdmWideDefense = (
+                invokeShapeMetric(threeFiveTwoCdm, threeFiveTwoCdmSlots, "3-5-2-CDM", "defenseLeft")
+                        + invokeShapeMetric(threeFiveTwoCdm, threeFiveTwoCdmSlots, "3-5-2-CDM", "defenseRight")) / 2.0;
+        double plainCenterDefense = invokeShapeMetric(
+                threeFiveTwo, threeFiveTwoSlots, "3-5-2", "defenseCenter");
+        double cdmCenterDefense = invokeShapeMetric(
+                threeFiveTwoCdm, threeFiveTwoCdmSlots, "3-5-2-CDM", "defenseCenter");
+
+        assertTrue(cdmWideDefense >= baselineWideDefense + 0.04,
+                "3-5-2-CDM has LWB/RWB and should slightly improve wide cover versus a flat 4-4-2, "
+                        + "without pretending midfield wingbacks are a pure back five. baseline="
+                        + baselineWideDefense + ", cdm=" + cdmWideDefense);
+        assertTrue(cdmWideDefense >= plainWideDefense - 0.03,
+                "3-5-2-CDM should not lose carrilero cover versus plain 3-5-2. plain="
+                        + plainWideDefense + ", cdm=" + cdmWideDefense);
+        assertTrue(cdmCenterDefense > plainCenterDefense,
+                "The CDM holder should improve central channel protection versus plain 3-5-2. plain="
+                        + plainCenterDefense + ", cdm=" + cdmCenterDefense);
+    }
+
+    /**
+     * V25D99.220: carrileros must react to pixel height. In the manager UI,
+     * pushing LWB/RWB higher should create more lateral attack and less cover;
+     * dropping them should protect more and attack less. This pins the visual
+     * editor -> tactical shape -> engine contract for 3-5-2-CDM.
+     */
+    @Test
+    void threeFiveTwoCdmWingbackPixelsTradeAttackForCover() throws Exception {
+        List<SessionPlayer> starting = makeLineup("352cdm-pixels", 3, 5, 2);
+
+        Map<String, LineupSlotDTO> middleWingbacks = slots352Cdm(starting);
+        Map<String, LineupSlotDTO> highWingbacks = moveWideMidfieldSlotsY(middleWingbacks, 42.0);
+        Map<String, LineupSlotDTO> lowWingbacks = moveWideMidfieldSlotsY(middleWingbacks, 76.0);
+
+        double middleAttack = averageWideAttack(starting, middleWingbacks, "3-5-2-CDM");
+        double highAttack = averageWideAttack(starting, highWingbacks, "3-5-2-CDM");
+        double lowAttack = averageWideAttack(starting, lowWingbacks, "3-5-2-CDM");
+        double middleDefense = averageWideDefense(starting, middleWingbacks, "3-5-2-CDM");
+        double highDefense = averageWideDefense(starting, highWingbacks, "3-5-2-CDM");
+        double lowDefense = averageWideDefense(starting, lowWingbacks, "3-5-2-CDM");
+
+        assertTrue(highAttack > middleAttack,
+                "Moving 3-5-2-CDM wingbacks higher must increase wide attack. middle="
+                        + middleAttack + ", high=" + highAttack);
+        assertTrue(middleAttack > lowAttack,
+                "Moving 3-5-2-CDM wingbacks lower must reduce wide attack. middle="
+                        + middleAttack + ", low=" + lowAttack);
+        assertTrue(lowDefense > middleDefense,
+                "Moving 3-5-2-CDM wingbacks lower must increase wide cover. middle="
+                        + middleDefense + ", low=" + lowDefense);
+        assertTrue(middleDefense > highDefense,
+                "Moving 3-5-2-CDM wingbacks higher must reduce wide cover. middle="
+                        + middleDefense + ", high=" + highDefense);
+    }
+
+    /**
      * V25D99.77: 4-2-2-2 is a narrow box trade-off. It may be stretchable wide,
      * but it should not be globally worse than a flat 4-4-2 just because it has
      * the same 4/4/2 line counts. It must protect the middle and keep a real
@@ -1378,6 +1625,26 @@ class V24DetailedMatchEngineFormationTest {
         return (double) accessor.invoke(profile);
     }
 
+    private double averageWideAttack(
+            List<SessionPlayer> starting,
+            Map<String, LineupSlotDTO> slots,
+            String formation)
+            throws Exception {
+        return (
+                invokeShapeMetric(starting, slots, formation, "attackLeft")
+                        + invokeShapeMetric(starting, slots, formation, "attackRight")) / 2.0;
+    }
+
+    private double averageWideDefense(
+            List<SessionPlayer> starting,
+            Map<String, LineupSlotDTO> slots,
+            String formation)
+            throws Exception {
+        return (
+                invokeShapeMetric(starting, slots, formation, "defenseLeft")
+                        + invokeShapeMetric(starting, slots, formation, "defenseRight")) / 2.0;
+    }
+
     private List<SessionPlayer> makeLineup(String prefix, int defenders, int midfielders, int attackers) {
         List<SessionPlayer> starting = new ArrayList<>();
         starting.add(makePlayer(prefix + "-gk0", "GK", 30, 80, 50));
@@ -1405,6 +1672,81 @@ class V24DetailedMatchEngineFormationTest {
                 new double[] {14.0, 32.0, 50.0, 68.0, 86.0}, 88.0,
                 new double[] {18.0, 40.0, 60.0, 82.0}, 68.0,
                 new double[] {50.0}, 30.0);
+    }
+
+    private Map<String, LineupSlotDTO> slots352(List<SessionPlayer> starting) {
+        return slotsByLines(starting,
+                new double[] {32.0, 50.0, 68.0}, 82.0,
+                new double[] {14.0, 36.0, 50.0, 64.0, 86.0}, 56.0,
+                new double[] {42.0, 58.0}, 18.0);
+    }
+
+    private Map<String, LineupSlotDTO> slots352Cdm(List<SessionPlayer> starting) {
+        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        int def = 0;
+        int mid = 0;
+        int att = 0;
+        double[] defX = {32.0, 50.0, 68.0};
+        double[] midX = {50.0, 38.0, 62.0, 14.0, 86.0};
+        double[] midY = {66.0, 53.0, 53.0, 53.0, 53.0};
+        double[] attX = {42.0, 58.0};
+        for (SessionPlayer player : starting) {
+            String id = player.getSessionPlayerId();
+            switch (player.getPosition()) {
+                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "DEF" -> {
+                    slots.put(id, new LineupSlotDTO(id, "D" + def, defX[Math.min(def, defX.length - 1)], 82.0));
+                    def++;
+                }
+                case "MID" -> {
+                    int idx = Math.min(mid, midX.length - 1);
+                    slots.put(id, new LineupSlotDTO(id, "M" + mid, midX[idx], midY[idx]));
+                    mid++;
+                }
+                default -> {
+                    slots.put(id, new LineupSlotDTO(id, "A" + att, attX[Math.min(att, attX.length - 1)], 18.0));
+                    att++;
+                }
+            }
+        }
+        return slots;
+    }
+
+    private Map<String, LineupSlotDTO> moveWideMidfieldSlotsY(
+            Map<String, LineupSlotDTO> baseSlots,
+            double yPercent) {
+        Map<String, LineupSlotDTO> moved = new HashMap<>(baseSlots);
+        for (Map.Entry<String, LineupSlotDTO> entry : baseSlots.entrySet()) {
+            LineupSlotDTO slot = entry.getValue();
+            if (slot == null) continue;
+            double x = slot.customXPercent();
+            if (x <= 18.0 || x >= 82.0) {
+                moved.put(entry.getKey(), new LineupSlotDTO(
+                        slot.playerId(),
+                        slot.subdivisionId(),
+                        slot.customXPercent(),
+                        yPercent));
+            }
+        }
+        return moved;
+    }
+
+    private Map<String, LineupSlotDTO> moveMidfieldSlotsY(
+            Map<String, LineupSlotDTO> baseSlots,
+            double yPercent) {
+        Map<String, LineupSlotDTO> moved = new HashMap<>(baseSlots);
+        for (Map.Entry<String, LineupSlotDTO> entry : baseSlots.entrySet()) {
+            LineupSlotDTO slot = entry.getValue();
+            if (slot == null || slot.subdivisionId() == null || !slot.subdivisionId().startsWith("M")) {
+                continue;
+            }
+            moved.put(entry.getKey(), new LineupSlotDTO(
+                    slot.playerId(),
+                    slot.subdivisionId(),
+                    slot.customXPercent(),
+                    yPercent));
+        }
+        return moved;
     }
 
     private Map<String, LineupSlotDTO> slots4222(List<SessionPlayer> starting) {

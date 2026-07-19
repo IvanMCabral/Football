@@ -1,10 +1,13 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.simulation.v24.BaselineState;
+import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -24,7 +27,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -36,6 +41,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -64,6 +70,7 @@ class TestHarnessUseCaseImplTest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    @Mock private BaselineStateStoragePort baselineStoragePort;
     // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
     // resetRound() use case (the previous 4-arg constructor was extended
     // with this dependency). Mockito's default `@Mock` is good enough
@@ -88,7 +95,9 @@ class TestHarnessUseCaseImplTest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, matchEngineRegistry);
+            v24ContextFactory, v24StoragePort, baselineStoragePort, matchEngineRegistry);
+        lenient().when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
+            .thenReturn(Mono.empty());
 
         career = new CareerSave();
         career.setUserId(USER_ID);
@@ -133,6 +142,80 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
+    @DisplayName("V25D99.291: XI efectivo explica fallback de carrilero cuando LWB/RWB no tiene perfil natural")
+    void lineupDiagnosticRead_explainsWingbackFallback() throws Exception {
+        SessionPlayer player = new SessionPlayer();
+        player.setName("Murcia Athletic CDM #5407");
+
+        String read = invokeAssignmentRead(player, "CDM", "LWB", "LEFT", "Revisar rol");
+
+        assertThat(read).contains("fallback de carrilero");
+        assertThat(read).contains("faltan perfiles naturales compatibles");
+        assertThat(read).contains("(LWB/LB/LM/LW/WINGER/DEF)");
+        assertThat(read).contains("alerta tactica");
+    }
+
+    @Test
+    @DisplayName("V25D99.292: XI efectivo explica fallback defensivo cuando un perfil ofensivo cae en CB")
+    void lineupDiagnosticRead_explainsDefensiveFallback() throws Exception {
+        SessionPlayer player = new SessionPlayer();
+        player.setName("Murcia Athletic CAM #6808");
+
+        String read = invokeAssignmentRead(player, "CAM", "CB", "CENTER", "Revisar rol");
+
+        assertThat(read).contains("fallback defensivo");
+        assertThat(read).contains("faltan perfiles naturales compatibles");
+        assertThat(read).contains("(CB/DEF/CDM/LB/RB/LWB/RWB)");
+        assertThat(read).contains("expone duelos y coberturas");
+    }
+
+    @Test
+    @DisplayName("V25D99.292: XI efectivo explica fallback ofensivo cuando un mediocentro cae en ST")
+    void lineupDiagnosticRead_explainsAttackingFallback() throws Exception {
+        SessionPlayer player = new SessionPlayer();
+        player.setName("Murcia Athletic CM #4651");
+
+        String read = invokeAssignmentRead(player, "CM", "ST", "CENTER", "Revisar rol");
+
+        assertThat(read).contains("fallback ofensivo");
+        assertThat(read).contains("faltan perfiles naturales compatibles");
+        assertThat(read).contains("(ST/CF/ATT/CAM/WINGER/LW/RW)");
+        assertThat(read).contains("amenaza, desmarques y definicion");
+    }
+
+    private String invokeAssignmentRead(
+            SessionPlayer player,
+            String natural,
+            String slotRole,
+            String slotSide,
+            String verdict) throws Exception {
+        Class<?> profileClass = Class.forName(
+            "com.footballmanager.application.service.testharness.TestHarnessUseCaseImpl$CuratedMatrixRoleProfile");
+        Method assignmentRead = TestHarnessUseCaseImpl.class.getDeclaredMethod(
+            "assignmentRead",
+            SessionPlayer.class,
+            String.class,
+            String.class,
+            String.class,
+            profileClass,
+            String.class,
+            int.class,
+            int.class);
+        assignmentRead.setAccessible(true);
+
+        return (String) assignmentRead.invoke(
+            useCase,
+            player,
+            natural,
+            slotRole,
+            slotSide,
+            null,
+            verdict,
+            0,
+            0);
+    }
+
+    @Test
     @DisplayName("scenarioMatrix: uses live cached career so Panel C matchIds resolve")
     void scenarioMatrix_usesLiveCachedCareerForPanelCMatchIds() {
         when(careerSessionService.getCareerFromCache(USER_ID))
@@ -171,6 +254,185 @@ class TestHarnessUseCaseImplTest {
                 assertThat(row.playerName()).isEqualTo("Player u-p3");
                 assertThat(row.seedCount()).isEqualTo(3);
                 assertThat(row.targetYPercent()).isLessThan(row.fromYPercent());
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("positionPixelMatrixSummary: 1px near MID/DEF border keeps natural MID as MID")
+    void positionPixelMatrixSummary_midDefBorderUsesTransitionBuffer() {
+        career.replaceTeamStarting11SubdivisionRaw("user-team-id", Map.of(
+            "u-p3", new LineupSlotDTO("u-p3", "S17-1", 38.85, 66.0)
+        ));
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+
+        useCase.runPositionPixelMatrixSummary(
+                USER_ID,
+                "match-001",
+                "u-p3",
+                38.85,
+                67.0,
+                null,
+                null,
+                12345L,
+                3)
+            .as(StepVerifier::create)
+            .assertNext(row -> {
+                assertThat(row.fromYPercent()).isEqualTo(66.0);
+                assertThat(row.targetYPercent()).isEqualTo(67.0);
+                assertThat(row.baselineTacticalPosition()).isEqualTo("MID");
+                assertThat(row.movedTacticalPosition()).isEqualTo("MID");
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("opponent weak right lab: fallback picks nearest right defender, not first defender")
+    void prepareOpponentWeakRightDefenderLab_fallbackPicksNearestRightDefender() {
+        List<SessionPlayer> rivalSquad = career.getTeamSquad("rival-1");
+        SessionPlayer leftDef = rivalSquad.get(0);
+        SessionPlayer centerLeftDef = rivalSquad.get(1);
+        SessionPlayer nearestRightDef = rivalSquad.get(2);
+        leftDef.setPosition("DEF");
+        centerLeftDef.setPosition("DEF");
+        nearestRightDef.setPosition("DEF");
+
+        career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
+            leftDef.getSessionPlayerId(), new LineupSlotDTO(leftDef.getSessionPlayerId(), "S22-1", 18.0, 78.0),
+            centerLeftDef.getSessionPlayerId(), new LineupSlotDTO(centerLeftDef.getSessionPlayerId(), "S23-1", 42.0, 78.0),
+            nearestRightDef.getSessionPlayerId(), new LineupSlotDTO(nearestRightDef.getSessionPlayerId(), "S23-3", 58.0, 78.0)
+        ));
+
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+        useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
+            .as(StepVerifier::create)
+            .assertNext(result -> {
+                assertThat(result.labKey()).isEqualTo("prepare-opponent-weak-right-defender-lab");
+                assertThat(nearestRightDef.getDefense()).isEqualTo(25);
+                assertThat(leftDef.getDefense()).isEqualTo(70);
+                assertThat(centerLeftDef.getDefense()).isEqualTo(70);
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("opponent weak right lab: can target tactical right channel even without natural DEF there")
+    void prepareOpponentWeakRightDefenderLab_targetsTacticalRightChannelWhenNaturalDefMissing() {
+        List<SessionPlayer> rivalSquad = career.getTeamSquad("rival-1");
+        SessionPlayer leftSlotPlayer = rivalSquad.get(0);
+        SessionPlayer rightSlotPlayer = rivalSquad.get(1);
+        leftSlotPlayer.setPosition("MID");
+        rightSlotPlayer.setPosition("MID");
+
+        career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
+            leftSlotPlayer.getSessionPlayerId(), new LineupSlotDTO(leftSlotPlayer.getSessionPlayerId(), "S22-1", 18.0, 78.0),
+            rightSlotPlayer.getSessionPlayerId(), new LineupSlotDTO(rightSlotPlayer.getSessionPlayerId(), "S24-3", 82.0, 78.0)
+        ));
+
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
+            .as(StepVerifier::create)
+            .assertNext(result -> {
+                assertThat(result.labKey()).isEqualTo("prepare-opponent-weak-right-defender-lab");
+                assertThat(rightSlotPlayer.getDefense()).isEqualTo(25);
+                assertThat(leftSlotPlayer.getDefense()).isEqualTo(70);
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("opponent weak right lab: uses tactical side when natural defenders are not enough")
+    void prepareOpponentWeakRightDefenderLab_usesTacticalSideWhenNaturalDefendersAreSparse() {
+        List<SessionPlayer> rivalSquad = career.getTeamSquad("rival-1");
+        SessionPlayer loneNaturalDef = rivalSquad.get(0);
+        SessionPlayer leftWingBack = rivalSquad.get(1);
+        SessionPlayer rightWingBack = rivalSquad.get(2);
+        loneNaturalDef.setPosition("DEF");
+        leftWingBack.setPosition("MID");
+        rightWingBack.setPosition("MID");
+
+        career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
+            loneNaturalDef.getSessionPlayerId(), new LineupSlotDTO(loneNaturalDef.getSessionPlayerId(), "S23-2", 50.0, 78.0),
+            leftWingBack.getSessionPlayerId(), new LineupSlotDTO(leftWingBack.getSessionPlayerId(), "S22-1", 18.0, 78.0),
+            rightWingBack.getSessionPlayerId(), new LineupSlotDTO(rightWingBack.getSessionPlayerId(), "S24-3", 82.0, 78.0)
+        ));
+
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
+            .as(StepVerifier::create)
+            .assertNext(result -> {
+                assertThat(result.labKey()).isEqualTo("prepare-opponent-weak-right-defender-lab");
+                assertThat(rightWingBack.getDefense()).isEqualTo(25);
+                assertThat(leftWingBack.getDefense()).isEqualTo(70);
+                assertThat(loneNaturalDef.getDefense()).isEqualTo(70);
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("opponent weak right lab: with no slots and sparse defenders uses far side field player")
+    void prepareOpponentWeakRightDefenderLab_noSlotsSparseDefendersUsesFarSideFieldPlayer() {
+        List<SessionPlayer> rivalSquad = career.getTeamSquad("rival-1");
+        SessionPlayer loneNaturalDef = rivalSquad.get(0);
+        SessionPlayer farSideFieldPlayer = rivalSquad.get(rivalSquad.size() - 1);
+        rivalSquad.forEach(player -> player.setPosition("MID"));
+        loneNaturalDef.setPosition("DEF");
+        farSideFieldPlayer.setPosition("MID");
+
+        career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of());
+
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
+            .as(StepVerifier::create)
+            .assertNext(result -> {
+                assertThat(result.labKey()).isEqualTo("prepare-opponent-weak-right-defender-lab");
+                assertThat(farSideFieldPlayer.getDefense()).isEqualTo(25);
+                assertThat(loneNaturalDef.getDefense()).isEqualTo(70);
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("opponent weak left lab: ignores single stale side slot from previous lab")
+    void prepareOpponentWeakLeftDefenderLab_ignoresSingleStaleSideSlot() {
+        List<SessionPlayer> rivalSquad = career.getTeamSquad("rival-1");
+        SessionPlayer staleRightSlotDef = rivalSquad.get(0);
+        SessionPlayer fallbackLeftDef = rivalSquad.get(1);
+        staleRightSlotDef.setPosition("DEF");
+        fallbackLeftDef.setPosition("DEF");
+
+        career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
+            staleRightSlotDef.getSessionPlayerId(),
+            new LineupSlotDTO(staleRightSlotDef.getSessionPlayerId(), "S24-3", 82.0, 78.0)
+        ));
+
+        when(careerRepository.findById(USER_ID.toString()))
+            .thenReturn(Mono.just(Optional.of(career)));
+        when(careerRepository.save(any(CareerSave.class)))
+            .thenReturn(Mono.empty());
+
+        useCase.prepareOpponentWeakLeftDefenderLab(USER_ID, "match-001")
+            .as(StepVerifier::create)
+            .assertNext(result -> {
+                assertThat(result.labKey()).isEqualTo("prepare-opponent-weak-left-defender-lab");
+                assertThat(staleRightSlotDef.getDefense()).isEqualTo(25);
+                assertThat(fallbackLeftDef.getDefense()).isEqualTo(70);
             })
             .verifyComplete();
     }
@@ -546,6 +808,7 @@ class TestHarnessUseCaseImplTest {
         // Old V24 detail cleared
         verify(v24StoragePort, times(1)).deleteByMatchId(
             org.mockito.ArgumentMatchers.anyString(), eq("match-001"));
+        verify(baselineStoragePort, times(1)).save(anyString(), any(BaselineState.class));
     }
 
     @Test

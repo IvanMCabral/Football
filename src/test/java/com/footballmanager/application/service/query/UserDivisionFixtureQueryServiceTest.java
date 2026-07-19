@@ -48,6 +48,9 @@ class UserDivisionFixtureQueryServiceTest {
     private static final String DIV_A_TEAM = "div-a-team-uuid-002";
     private static final String DIV_A_TEAM_NAME = "Boca Juniors";
 
+    private static final String DIV_A_BYE_TEAM = "div-a-team-uuid-003";
+    private static final String DIV_A_BYE_TEAM_NAME = "Independiente";
+
     private static final String DIV_B_TEAM_1 = "div-b-team-uuid-101";
     private static final String DIV_B_TEAM_1_NAME = "Atletico Naranja";
 
@@ -102,6 +105,14 @@ class UserDivisionFixtureQueryServiceTest {
         }
         save.setTournamentState(ts);
 
+        return save;
+    }
+
+    private CareerSave buildCareerWithOddUserDivision(List<MatchFixture> fixtures) {
+        CareerSave save = buildCareerWithTwoDivisions(fixtures);
+        addTeam(save.getTeamManager(), DIV_A_BYE_TEAM, DIV_A_BYE_TEAM_NAME);
+        Division userDiv = save.getUserDivision();
+        userDiv.setTeamIds(new ArrayList<>(List.of(USER_TEAM, DIV_A_TEAM, DIV_A_BYE_TEAM)));
         return save;
     }
 
@@ -175,6 +186,22 @@ class UserDivisionFixtureQueryServiceTest {
         assertEquals(DIV_B_TEAM_2_NAME, crossMatch.awayTeamName(),
                 "Cross-division awayTeamId must resolve to real name (NOT UUID). "
               + "Before V24D24.3-FIX this was: " + DIV_B_TEAM_2);
+    }
+
+    @Test
+    @DisplayName("getRoundWithBye — odd user division resolves BYE team name, not raw ID")
+    void getRoundWithBye_oddUserDivision_resolvesByeTeamName() {
+        CareerSave save = buildCareerWithOddUserDivision(List.of(
+                fixture("m1", USER_TEAM, DIV_A_TEAM, 1)
+        ));
+
+        RoundFixturesWithBye result = service.getRoundWithBye(save, 1).block();
+
+        assertNotNull(result);
+        assertEquals(DIV_A_BYE_TEAM_NAME, result.byeTeam(),
+                "BYE team does not appear in round fixtures, so getRoundWithBye must still hydrate it from the user division team list.");
+        assertNotEquals(DIV_A_BYE_TEAM, result.byeTeam(),
+                "BYE label must not leak the raw sessionTeamId/UUID to the live screen.");
     }
 
     // ========== getAllRoundsWithBye ==========

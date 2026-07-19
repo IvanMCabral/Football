@@ -148,7 +148,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             ))
             .toList();
 
-        List<LineupSlotDTO> slots = buildSlotsFromSubdivisionMap(career, userTeamId);
+        List<LineupSlotDTO> slots = buildSlotsFromSubdivisionMap(career, userTeamId, lineup);
 
         // V25D41 (Sprint C6): compute team chemistry from the actual SessionPlayer
         // objects (we have the lineup List<SessionPlayer> here, not just the DTOs).
@@ -303,7 +303,10 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         return warnings;
     }
 
-    private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(CareerSave career, String userTeamId) {
+    private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(
+            CareerSave career,
+            String userTeamId,
+            List<SessionPlayer> currentLineup) {
         // V25D99.20.2-BACK: use the typed slot getter so we preserve
         // customXPercent / customYPercent on the LineupSlotDTOs. The
         // legacy String-only getter would discard these overrides and the
@@ -319,9 +322,26 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             return List.of();
         }
 
-        List<LineupSlotDTO> result = new ArrayList<>(teamSlots.size());
+        List<String> allowedPlayerIds = currentLineup == null
+                ? List.of()
+                : currentLineup.stream()
+                        .map(SessionPlayer::getSessionPlayerId)
+                        .filter(Objects::nonNull)
+                        .toList();
+        if (allowedPlayerIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<LineupSlotDTO> result = new ArrayList<>(Math.min(teamSlots.size(), allowedPlayerIds.size()));
+        java.util.Set<String> seenPlayerIds = new java.util.LinkedHashSet<>();
         for (Map.Entry<String, LineupSlotDTO> entry : teamSlots.entrySet()) {
             LineupSlotDTO inner = entry.getValue();
+            if (inner == null || inner.playerId() == null || !allowedPlayerIds.contains(inner.playerId())) {
+                continue;
+            }
+            if (!seenPlayerIds.add(inner.playerId())) {
+                continue;
+            }
             // Outer key + inner subdivisionId should agree for fresh
             // writes. If they differ (e.g. legacy wrapped value with
             // null inner subdivisionId), prefer the inner when set, else
@@ -336,6 +356,9 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                     subdivisionId,
                     inner.customXPercent(),
                     inner.customYPercent()));
+            if (result.size() >= allowedPlayerIds.size()) {
+                break;
+            }
         }
         return result;
     }

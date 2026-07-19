@@ -133,11 +133,39 @@ public class V24TeamMatchState {
         Double customY = slot.customYPercent();
         if (customY != null && Double.isFinite(customY)) {
             double y = Math.max(0.0, Math.min(100.0, customY));
+            String naturalLine = tacticalLineForNaturalPosition(naturalPosition);
+            if (isNear(y, 22.2222, 2.0)) {
+                if ("ATT".equals(naturalLine) || "MID".equals(naturalLine)) {
+                    return naturalLine;
+                }
+            }
+            if (isNear(y, 66.6667, 2.0)) {
+                if ("MID".equals(naturalLine) || "DEF".equals(naturalLine)) {
+                    return naturalLine;
+                }
+            }
             if (y <= 22.2222) return "ATT";
             if (y <= 66.6667) return "MID";
             return "DEF";
         }
         return FormationInferer.categoryFor(slot.subdivisionId());
+    }
+
+    private static boolean isNear(double value, double pivot, double radius) {
+        return Math.abs(value - pivot) <= radius;
+    }
+
+    private static String tacticalLineForNaturalPosition(String naturalPosition) {
+        if (naturalPosition == null || naturalPosition.isBlank()) {
+            return "";
+        }
+        return switch (naturalPosition.toUpperCase()) {
+            case "GK" -> "GK";
+            case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> "DEF";
+            case "MID", "CM", "CDM", "DM", "CAM", "AM", "LM", "RM" -> "MID";
+            case "ATT", "ST", "CF", "LW", "RW", "WINGER" -> "ATT";
+            default -> "";
+        };
     }
 
     public String teamId() { return teamId; }

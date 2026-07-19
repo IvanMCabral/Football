@@ -20,7 +20,7 @@ class TestHarnessFormationMatrixSlotAssignmentTest {
     @DisplayName("Formation matrix assigns shuffled starters by role, not list index")
     @SuppressWarnings("unchecked")
     void formationMatrixSlotsUseRoleFitInsteadOfStarterIndex() throws Exception {
-        TestHarnessUseCaseImpl useCase = new TestHarnessUseCaseImpl(null, null, null, null, null);
+        TestHarnessUseCaseImpl useCase = new TestHarnessUseCaseImpl(null, null, null, null, null, null);
         FormationDTO formation = new FormationService().getFormationByName("4-4-2");
         List<SessionPlayer> shuffled = List.of(
             player("att0", "ATT"),
@@ -54,7 +54,7 @@ class TestHarnessFormationMatrixSlotAssignmentTest {
     @Test
     @DisplayName("Position pixel fallback keeps real roles away from generic midfield")
     void positionPixelFallbackNormalizesRealFootballRoles() throws Exception {
-        TestHarnessUseCaseImpl useCase = new TestHarnessUseCaseImpl(null, null, null, null, null);
+        TestHarnessUseCaseImpl useCase = new TestHarnessUseCaseImpl(null, null, null, null, null, null);
         Method fallbackSubdivision = TestHarnessUseCaseImpl.class.getDeclaredMethod("fallbackSubdivision", String.class);
         Method fallbackYPercent = TestHarnessUseCaseImpl.class.getDeclaredMethod("fallbackYPercent", String.class);
         Method canonicalXPercent = TestHarnessUseCaseImpl.class.getDeclaredMethod("canonicalXPercent", String.class);

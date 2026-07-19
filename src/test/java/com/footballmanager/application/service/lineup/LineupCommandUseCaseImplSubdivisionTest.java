@@ -132,6 +132,34 @@ class LineupCommandUseCaseImplSubdivisionTest {
         );
     }
 
+    private void assertExplicit442Slots(Map<String, String> teamSlots) {
+        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertEquals("def-1", teamSlots.get("S22-2"));
+        assertEquals("def-2", teamSlots.get("S23-1"));
+        assertEquals("def-3", teamSlots.get("S23-3"));
+        assertEquals("def-4", teamSlots.get("S24-2"));
+        assertEquals("mid-1", teamSlots.get("S16-2"));
+        assertEquals("mid-2", teamSlots.get("S17-1"));
+        assertEquals("mid-3", teamSlots.get("S17-3"));
+        assertEquals("mid-4", teamSlots.get("S18-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
+    }
+
+    private void assertAutoProfile442Slots(Map<String, String> teamSlots) {
+        assertEquals("gk-1", teamSlots.get("GK-1"));
+        assertEquals("def-3", teamSlots.get("S22-2"));
+        assertEquals("def-1", teamSlots.get("S23-1"));
+        assertEquals("def-2", teamSlots.get("S23-3"));
+        assertEquals("def-4", teamSlots.get("S24-2"));
+        assertEquals("mid-3", teamSlots.get("S16-2"));
+        assertEquals("mid-1", teamSlots.get("S17-1"));
+        assertEquals("mid-2", teamSlots.get("S17-3"));
+        assertEquals("mid-4", teamSlots.get("S18-2"));
+        assertEquals("att-1", teamSlots.get("S05-1"));
+        assertEquals("att-2", teamSlots.get("S05-3"));
+    }
+
     /**
      * MVP1-lineup-cancha-1.6: persiste subdivisionId por jugador en
      * teamStarting11Subdivision. Back primero calcula HELPER-BASED base (11 entries),
@@ -180,17 +208,41 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertNotNull(teamSlots, "teamStarting11Subdivision map should be populated");
         assertEquals(11, teamSlots.size(),
             "MVP1-lineup-cancha-1.6 F4: HELPER base + overrides deben sumar 11 entries (subdivisions coinciden)");
-        assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-2"));
-        assertEquals("def-2", teamSlots.get("S23-1"));
-        assertEquals("def-3", teamSlots.get("S23-3"));
-        assertEquals("def-4", teamSlots.get("S24-2"));
-        assertEquals("mid-1", teamSlots.get("S16-2"));
-        assertEquals("mid-2", teamSlots.get("S17-1"));
-        assertEquals("mid-3", teamSlots.get("S17-3"));
-        assertEquals("mid-4", teamSlots.get("S18-2"));
-        assertEquals("att-1", teamSlots.get("S05-1"));
-        assertEquals("att-2", teamSlots.get("S05-3"));
+        assertExplicit442Slots(teamSlots);
+    }
+
+    @Test
+    @DisplayName("V25D99.293: manualSelectWithSlots respeta swaps de jugador aunque no haya coordenadas custom")
+    void manualSelectWithSlots_persistsExplicitPlayerSlotSwapWithoutCustomCoordinates() {
+        CareerSave career = makeCareer(makeFullSquad442());
+        when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
+        when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        List<LineupSlotDTO> slots = List.of(
+            new LineupSlotDTO("gk-1", "GK-1"),
+            new LineupSlotDTO("att-1", "S23-1"),
+            new LineupSlotDTO("def-2", "S23-3"),
+            new LineupSlotDTO("def-3", "S22-2"),
+            new LineupSlotDTO("def-4", "S24-2"),
+            new LineupSlotDTO("mid-1", "S16-2"),
+            new LineupSlotDTO("mid-2", "S17-1"),
+            new LineupSlotDTO("mid-3", "S17-3"),
+            new LineupSlotDTO("mid-4", "S18-2"),
+            new LineupSlotDTO("def-1", "S05-1"),
+            new LineupSlotDTO("att-2", "S05-3")
+        );
+
+        StepVerifier.create(useCase.manualSelectLineupWithSlots(
+                UUID.fromString(USER_ID), "4-4-2", fullLineup442(), slots))
+            .assertNext(dto -> assertEquals(11, dto.players().size()))
+            .verifyComplete();
+
+        ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
+        verify(careerSessionService).saveCareer(captor.capture());
+        Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
+
+        assertEquals("att-1", teamSlots.get("S23-1"), "ST enviado explicitamente a CB debe llegar al motor");
+        assertEquals("def-1", teamSlots.get("S05-1"), "Defensor desplazado debe quedar en el slot ofensivo enviado");
     }
 
     /**
@@ -219,19 +271,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
         assertNotNull(teamSlots,
             "MVP1-lineup-cancha-1.6 F4: slots null → back completa los 11 slots HELPER-BASED");
         assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED para 4-4-2");
-
-        // Verificar que HELPER-BASED asignó los 11 slots correctamente.
-        assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-2"));
-        assertEquals("def-2", teamSlots.get("S23-1"));
-        assertEquals("def-3", teamSlots.get("S23-3"));
-        assertEquals("def-4", teamSlots.get("S24-2"));
-        assertEquals("mid-1", teamSlots.get("S16-2"));
-        assertEquals("mid-2", teamSlots.get("S17-1"));
-        assertEquals("mid-3", teamSlots.get("S17-3"));
-        assertEquals("mid-4", teamSlots.get("S18-2"));
-        assertEquals("att-1", teamSlots.get("S05-1"));
-        assertEquals("att-2", teamSlots.get("S05-3"));
+        assertAutoProfile442Slots(teamSlots);
 
         // Verificar también F1: formación persistida.
         assertEquals("4-4-2", saved.getTeamStarting11Formation().get(TEAM_ID),
@@ -263,10 +303,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             "MVP1-lineup-cancha-1.6 F4: slots vacío → back completa los 11 slots HELPER-BASED");
         assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED para 4-4-2");
 
-        assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-2"));
-        assertEquals("att-1", teamSlots.get("S05-1"));
-        assertEquals("att-2", teamSlots.get("S05-3"));
+        assertAutoProfile442Slots(teamSlots);
     }
 
     /**
@@ -351,9 +388,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // El entry viejo fue sobrescrito por HELPER-BASED.
         assertFalse(teamSlots.containsKey("OLD-SLOT"),
             "MVP1-lineup-cancha-1.6 F4: OLD-SLOT del entry pre-existente fue reemplazado por HELPER-BASED");
-        assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-2"));
-        assertEquals("att-2", teamSlots.get("S05-3"));
+        assertExplicit442Slots(teamSlots);
     }
 
     /**
@@ -390,11 +425,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         // Slots del front con subdivisionId blank se ignoraron — los del HELPER-BASED
         // base no fueron sobrescritos.
-        assertEquals("gk-1", teamSlots.get("GK-1"),
-            "GK-1 sigue asignado por HELPER-BASED (slot del front con subdivisionId blank fue ignorado)");
-        assertEquals("def-1", teamSlots.get("S22-2"));
-        assertEquals("att-1", teamSlots.get("S05-1"));
-        assertEquals("att-2", teamSlots.get("S05-3"));
+        assertExplicit442Slots(teamSlots);
     }
 
     /**
@@ -423,10 +454,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             "MVP1-lineup-cancha-1.6 F4: overload legacy → back completa HELPER-BASED igual");
         assertEquals(11, teamSlots.size(), "Debe haber 11 entries HELPER-BASED");
 
-        assertEquals("gk-1", teamSlots.get("GK-1"));
-        assertEquals("def-1", teamSlots.get("S22-2"));
-        assertEquals("att-1", teamSlots.get("S05-1"));
-        assertEquals("att-2", teamSlots.get("S05-3"));
+        assertAutoProfile442Slots(teamSlots);
 
         // Verificar también F1: formación persistida en legacy overload.
         assertEquals("4-4-2", saved.getTeamStarting11Formation().get(TEAM_ID),

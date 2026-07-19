@@ -7,6 +7,8 @@ import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
+import com.footballmanager.application.service.simulation.v24.BaselineState;
+import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
@@ -25,6 +27,7 @@ import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
+import com.footballmanager.domain.model.valueobject.PositionEffectivenessCalculator;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -47,6 +52,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * V24D20-TESTHARNESS — Impl of {@link TestHarnessUseCase}.
@@ -81,6 +87,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     // V24D20-SANDBOX-V2-MVP F5: replay endpoint dependencies
     private final V24MatchContextFactory v24ContextFactory;
     private final V24DetailedMatchStoragePort v24StoragePort;
+    private final BaselineStateStoragePort baselineStoragePort;
     private final FormationService formationService = new FormationService();
     // V24D24.3-HOTFIX: resetRound needs to evict cached MatchSessions so
     // the next /match-engine/rounds/start call rebuilds the engine from
@@ -1292,12 +1299,20 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return List.of();
         }
         if (slots == null || slots.isEmpty()) {
-            return firstSquadDefenders(squad, limit);
+            return squadDefendersByChannelOrder(squad, channel, limit);
         }
 
         Map<String, SessionPlayer> byId = squad.stream()
             .filter(p -> p != null && p.getSessionPlayerId() != null)
             .collect(Collectors.toMap(SessionPlayer::getSessionPlayerId, p -> p, (a, b) -> a));
+
+        List<LineupSlotDTO> allStartingSlots = slots.values().stream()
+            .filter(slot -> slot != null && slot.playerId() != null)
+            .filter(slot -> byId.get(slot.playerId()) != null)
+            .toList();
+        if (allStartingSlots.size() < 2 && channel != DefenderChannel.CENTER) {
+            return squadDefendersByChannelOrder(squad, channel, limit);
+        }
 
         List<SessionPlayer> channelPlayers = slots.values().stream()
             .filter(slot -> slot != null && slot.playerId() != null)
@@ -1314,10 +1329,48 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return channelPlayers;
         }
 
-        return slots.values().stream()
+        List<SessionPlayer> tacticalChannelPlayers = slots.values().stream()
             .filter(slot -> slot != null && slot.playerId() != null)
+            .filter(slot -> {
+                Double x = slotXPercent(slot);
+                return x != null && channel.matches(x);
+            })
             .map(slot -> byId.get(slot.playerId()))
-            .filter(p -> p != null && "DEF".equals(p.getPosition()))
+            .filter(p -> p != null)
+            .distinct()
+            .limit(limit)
+            .toList();
+        if (!tacticalChannelPlayers.isEmpty()) {
+            return tacticalChannelPlayers;
+        }
+
+        List<LineupSlotDTO> defenderSlots = slots.values().stream()
+            .filter(slot -> slot != null && slot.playerId() != null)
+            .filter(slot -> {
+                SessionPlayer player = byId.get(slot.playerId());
+                return player != null && "DEF".equals(player.getPosition());
+            })
+            .toList();
+
+        List<LineupSlotDTO> nearestSlots = !defenderSlots.isEmpty()
+            && (channel == DefenderChannel.CENTER || defenderSlots.size() >= 2)
+            ? defenderSlots
+            : allStartingSlots;
+        if (nearestSlots.isEmpty()) {
+            return squadDefendersByChannelOrder(squad, channel, limit);
+        }
+
+        return nearestSlots.stream()
+            .sorted((a, b) -> {
+                double ax = Optional.ofNullable(slotXPercent(a)).orElse(50.0);
+                double bx = Optional.ofNullable(slotXPercent(b)).orElse(50.0);
+                return switch (channel) {
+                    case LEFT -> Double.compare(ax, bx);
+                    case RIGHT -> Double.compare(bx, ax);
+                    case CENTER -> Double.compare(Math.abs(ax - 50.0), Math.abs(bx - 50.0));
+                };
+            })
+            .map(slot -> byId.get(slot.playerId()))
             .distinct()
             .limit(limit)
             .toList();
@@ -1341,6 +1394,35 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             .filter(p -> p != null
                 && p.getSessionPlayerId() != null
                 && "DEF".equals(p.getPosition()))
+            .limit(limit)
+            .toList();
+    }
+
+    private List<SessionPlayer> squadDefendersByChannelOrder(
+            List<SessionPlayer> squad,
+            DefenderChannel channel,
+            int limit) {
+        if (squad == null || squad.isEmpty() || limit <= 0) {
+            return List.of();
+        }
+        List<SessionPlayer> defenders = squad.stream()
+            .filter(p -> p != null
+                && p.getSessionPlayerId() != null
+                && "DEF".equals(p.getPosition()))
+            .toList();
+        List<SessionPlayer> sideCandidates = defenders.size() >= Math.max(2, limit)
+            ? defenders
+            : squad.stream()
+                .filter(p -> p != null && p.getSessionPlayerId() != null)
+                .filter(p -> !"GK".equals(p.getPosition()))
+                .toList();
+        if (channel == DefenderChannel.RIGHT) {
+            return IntStream.range(0, sideCandidates.size())
+                .mapToObj(i -> sideCandidates.get(sideCandidates.size() - 1 - i))
+                .limit(limit)
+                .toList();
+        }
+        return sideCandidates.stream()
             .limit(limit)
             .toList();
     }
@@ -1614,6 +1696,705 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             });
     }
 
+    @Override
+    public Mono<MatchPreviewSummary> runMatchPreviewSummary(
+            UUID userId,
+            String matchId,
+            long seedStart,
+            int seedCount,
+            String controlledTeamSide) {
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("matchId is required"));
+        }
+        int safeSeedCount = Math.max(1, Math.min(50, seedCount));
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " — call create-custom first")))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                CareerSave career = optionalCareer.get();
+                MatchFixture fixture = career.getTournamentState().getFixtures().stream()
+                    .filter(f -> f.getMatchId().equals(matchId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        "Match not found in current tournament: " + matchId));
+                SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
+                SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
+                if (home == null || away == null) {
+                    return Mono.error(new IllegalStateException(
+                        "SessionTeam not found for match " + matchId
+                        + " (home=" + fixture.getHomeTeamId()
+                        + ", away=" + fixture.getAwayTeamId() + ")"));
+                }
+
+                boolean userIsHome = previewControlledTeamIsHome(career, fixture, controlledTeamSide);
+                PreviewSums sums = new PreviewSums();
+                for (int i = 0; i < safeSeedCount; i++) {
+                    long seed = seedStart + i;
+                    V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
+                    V24DetailedMatchResult result = new V24DetailedMatchEngine()
+                        .simulate(context, new Random(seed));
+                    addPreviewSample(sums, result, userIsHome);
+                }
+
+                SessionTeam controlledTeam = userIsHome ? home : away;
+                String side = userIsHome ? "HOME" : "AWAY";
+                int n = safeSeedCount;
+                return Mono.just(new MatchPreviewSummary(
+                    matchId,
+                    side,
+                    seedStart,
+                    seedStart + safeSeedCount - 1L,
+                    safeSeedCount,
+                    controlledTeam.getName(),
+                    controlledTeam.getFormation(),
+                    round2(sums.goalsFor / n),
+                    round2(sums.goalsAgainst / n),
+                    round2((sums.goalsFor - sums.goalsAgainst) / n),
+                    round2(sums.possessionFor / n),
+                    round2(sums.shotsFor / n),
+                    round2(sums.shotsAgainst / n),
+                    round2((sums.shotsFor - sums.shotsAgainst) / n),
+                    round3(sums.xgFor / n),
+                    round3(sums.xgAgainst / n),
+                    round3((sums.xgFor - sums.xgAgainst) / n),
+                    round2(sums.centralShotsFor / n),
+                    round2(sums.wideShotsFor / n),
+                    round2(sums.longShotsFor / n),
+                    round2(sums.centralShotsAgainst / n),
+                    round2(sums.wideShotsAgainst / n),
+                    round2(sums.longShotsAgainst / n)
+                ));
+            });
+    }
+
+    private boolean previewControlledTeamIsHome(
+            CareerSave career,
+            MatchFixture fixture,
+            String controlledTeamSide) {
+        String side = controlledTeamSide == null ? "USER" : controlledTeamSide.trim().toUpperCase(Locale.ROOT);
+        if ("HOME".equals(side)) return true;
+        if ("AWAY".equals(side)) return false;
+        String userTeamId = career.getUserSessionTeamId();
+        return Objects.equals(fixture.getHomeTeamId(), userTeamId);
+    }
+
+    private void addPreviewSample(PreviewSums sums, V24DetailedMatchResult result, boolean userIsHome) {
+        sums.goalsFor += userIsHome ? result.homeGoals() : result.awayGoals();
+        sums.goalsAgainst += userIsHome ? result.awayGoals() : result.homeGoals();
+        sums.possessionFor += userIsHome ? result.homePossession() : result.awayPossession();
+        sums.shotsFor += userIsHome ? result.homeShots() : result.awayShots();
+        sums.shotsAgainst += userIsHome ? result.awayShots() : result.homeShots();
+        sums.xgFor += userIsHome ? result.homeXg() : result.awayXg();
+        sums.xgAgainst += userIsHome ? result.awayXg() : result.homeXg();
+
+        String ownTeamId = userIsHome ? result.homeTeamId() : result.awayTeamId();
+        if (result.timeline() == null || result.timeline().events() == null) {
+            return;
+        }
+        for (V24MatchEvent event : result.timeline().events()) {
+            if (!previewIsShotLike(event)) continue;
+            boolean ownShot = Objects.equals(event.teamId(), ownTeamId);
+            V24ShotLocation location = event.shotCoordinate() != null
+                ? event.shotCoordinate().location()
+                : null;
+            if (location == V24ShotLocation.PENALTY_AREA_WIDE) {
+                if (ownShot) sums.wideShotsFor += 1.0; else sums.wideShotsAgainst += 1.0;
+            } else if (location == V24ShotLocation.OUTSIDE_BOX || location == V24ShotLocation.LONG_RANGE) {
+                if (ownShot) sums.longShotsFor += 1.0; else sums.longShotsAgainst += 1.0;
+            } else {
+                if (ownShot) sums.centralShotsFor += 1.0; else sums.centralShotsAgainst += 1.0;
+            }
+        }
+    }
+
+    private boolean previewIsShotLike(V24MatchEvent event) {
+        if (event == null || event.xg() <= 0.0) return false;
+        return event.type() == V24MatchEventType.SHOT
+            || event.type() == V24MatchEventType.SHOT_ON_TARGET
+            || event.type() == V24MatchEventType.MISS
+            || event.type() == V24MatchEventType.BLOCK
+            || event.type() == V24MatchEventType.GOAL;
+    }
+
+    private static final class PreviewSums {
+        double goalsFor;
+        double goalsAgainst;
+        double possessionFor;
+        double shotsFor;
+        double shotsAgainst;
+        double xgFor;
+        double xgAgainst;
+        double centralShotsFor;
+        double wideShotsFor;
+        double longShotsFor;
+        double centralShotsAgainst;
+        double wideShotsAgainst;
+        double longShotsAgainst;
+    }
+
+    @Override
+    public Mono<LineupDiagnostic> lineupDiagnostic(UUID userId, String matchId, Long seedOverride) {
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("matchId is required"));
+        }
+        long seed = (seedOverride != null) ? seedOverride : 12345L;
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " — call create-custom first")))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                CareerSave career = optionalCareer.get();
+                MatchFixture fixture = career.getTournamentState().getFixtures().stream()
+                    .filter(f -> f.getMatchId().equals(matchId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        "Match not found in current tournament: " + matchId));
+                SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
+                SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
+                if (home == null || away == null) {
+                    return Mono.error(new IllegalStateException(
+                        "SessionTeam not found for match " + matchId
+                        + " (home=" + fixture.getHomeTeamId()
+                        + ", away=" + fixture.getAwayTeamId() + ")"));
+                }
+                V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
+                return Mono.just(new LineupDiagnostic(
+                    matchId,
+                    seed,
+                    buildLineupDiagnosticTeam(
+                        context.homeTeamId(),
+                        context.homeTeam().getName(),
+                        context.homeFormation(),
+                        context.homeStyle(),
+                        context.homeStartingPlayers(),
+                        context.homeSlotsByPlayerId()),
+                    buildLineupDiagnosticTeam(
+                        context.awayTeamId(),
+                        context.awayTeam().getName(),
+                        context.awayFormation(),
+                        context.awayStyle(),
+                        context.awayStartingPlayers(),
+                        context.awaySlotsByPlayerId())
+                ));
+            });
+    }
+
+    private LineupDiagnosticTeam buildLineupDiagnosticTeam(
+            String teamId,
+            String teamName,
+            String formation,
+            TeamStyle style,
+            List<SessionPlayer> starters,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        List<LineupDiagnosticPlayer> players = starters.stream()
+            .map(player -> buildLineupDiagnosticPlayer(
+                player,
+                resolveDiagnosticSlot(player, formation, starters, slotsByPlayerId)))
+            .toList();
+        double avgOverall = players.stream()
+            .mapToInt(LineupDiagnosticPlayer::overall)
+            .average()
+            .orElse(0.0);
+        double avgCollective = players.stream()
+            .mapToDouble(LineupDiagnosticPlayer::collective)
+            .average()
+            .orElse(0.0);
+        double avgEffectiveness = players.stream()
+            .mapToDouble(LineupDiagnosticPlayer::effectiveness)
+            .average()
+            .orElse(0.0);
+        return new LineupDiagnosticTeam(
+            teamId,
+            teamName,
+            formation,
+            style,
+            round2(avgOverall),
+            round2(avgCollective),
+            round3(avgEffectiveness),
+            players.size(),
+            buildLineupWidthDiagnostic(players),
+            players
+        );
+    }
+
+    private LineupWidthDiagnostic buildLineupWidthDiagnostic(List<LineupDiagnosticPlayer> players) {
+        List<LineupDiagnosticPlayer> outfield = players == null
+            ? List.of()
+            : players.stream()
+                .filter(Objects::nonNull)
+                .filter(player -> !"GK".equalsIgnoreCase(player.tacticalPosition()))
+                .toList();
+        int leftCount = 0;
+        int centerCount = 0;
+        int rightCount = 0;
+        double leftXSum = 0.0;
+        double rightXSum = 0.0;
+        for (LineupDiagnosticPlayer player : outfield) {
+            String side = diagnosticPlayerLane(player);
+            if ("LEFT".equals(side)) {
+                leftCount++;
+                leftXSum += player.xPercent() != null ? player.xPercent() : 25.0;
+            } else if ("RIGHT".equals(side)) {
+                rightCount++;
+                rightXSum += player.xPercent() != null ? player.xPercent() : 75.0;
+            } else {
+                centerCount++;
+            }
+        }
+        int wideCount = leftCount + rightCount;
+        double leftAvgX = leftCount > 0 ? round2(leftXSum / leftCount) : 0.0;
+        double rightAvgX = rightCount > 0 ? round2(rightXSum / rightCount) : 0.0;
+        double widthScore = outfield.isEmpty() ? 0.0 : round2((wideCount * 100.0) / outfield.size());
+        double sideBalance = wideCount == 0 ? 0.0 : round2(100.0 - (Math.abs(leftCount - rightCount) * 100.0 / wideCount));
+        String verdict;
+        if (wideCount < 2) {
+            verdict = "Revisar ancho";
+        } else if (sideBalance < 45.0) {
+            verdict = "Revisar lado";
+        } else if (widthScore < 35.0) {
+            verdict = "Estrecha";
+        } else if (sideBalance < 70.0) {
+            verdict = "Parcial";
+        } else {
+            verdict = "OK";
+        }
+        return new LineupWidthDiagnostic(
+            leftCount,
+            centerCount,
+            rightCount,
+            wideCount,
+            leftAvgX,
+            rightAvgX,
+            widthScore,
+            sideBalance,
+            verdict,
+            lineupWidthRead(leftCount, centerCount, rightCount, widthScore, sideBalance, verdict)
+        );
+    }
+
+    private String diagnosticPlayerLane(LineupDiagnosticPlayer player) {
+        String roleSide = player.slotSide();
+        if ("LEFT".equals(roleSide) || "RIGHT".equals(roleSide)) {
+            return roleSide;
+        }
+        Double x = player.xPercent();
+        if (x != null && Double.isFinite(x)) {
+            if (x <= 42.0) return "LEFT";
+            if (x >= 58.0) return "RIGHT";
+        }
+        return "CENTER";
+    }
+
+    private String lineupWidthRead(
+            int leftCount,
+            int centerCount,
+            int rightCount,
+            double widthScore,
+            double sideBalance,
+            String verdict) {
+        String base = "Carriles: izquierda " + leftCount
+            + ", centro " + centerCount
+            + ", derecha " + rightCount
+            + ". Ancho " + widthScore + "%, balance lateral " + sideBalance + "%.";
+        return switch (verdict) {
+            case "OK" -> base + " La estructura ofrece salida por ambos lados.";
+            case "Parcial" -> base + " Hay banda, pero un lado queda mas cargado que el otro.";
+            case "Estrecha" -> base + " La formacion concentra demasiados jugadores por dentro.";
+            case "Revisar lado" -> base + " Un carril queda claramente mas poblado; revisar roles o movimientos.";
+            default -> base + " Falta presencia real de banda; puede explicar espejos laterales pobres.";
+        };
+    }
+
+    private LineupDiagnosticPlayer buildLineupDiagnosticPlayer(
+            SessionPlayer player,
+            ResolvedDiagnosticSlot slot) {
+        String natural = safePosition(player.getPosition());
+        String tactical = tacticalPositionForDiagnostic(slot, natural);
+        String slotRole = slot != null && slot.role() != null ? slot.role() : tactical;
+        String slotSide = diagnosticSlotSide(slot);
+        CuratedMatrixRoleProfile profile = curatedMatrixRoleProfile(player);
+        int roleBonus = diagnosticRoleBonus(profile, slotRole);
+        int sideBonus = diagnosticSideBonus(profile, slotSide);
+        int assignmentScore = formationPositionFitScore(player, diagnosticFormationPosition(slot));
+        String assignmentVerdict = assignmentVerdict(natural, tactical, roleBonus, sideBonus, assignmentScore);
+        String assignmentRead = assignmentRead(player, natural, slotRole, slotSide, profile, assignmentVerdict, roleBonus, sideBonus);
+        double effectiveness = slot != null
+            && slot.xPercent() != null && Double.isFinite(slot.xPercent())
+            && slot.yPercent() != null && Double.isFinite(slot.yPercent())
+            ? com.footballmanager.domain.model.valueobject.SubdivisionEffectivenessCalculator
+                .effectiveness(natural, slot.xPercent(), slot.yPercent(), tactical)
+            : PositionEffectivenessCalculator.effectiveness(natural, tactical);
+        int attack = intOr(player.getAttack(), 50);
+        int defense = intOr(player.getDefense(), 50);
+        int technique = intOr(player.getTechnique(), 50);
+        int speed = intOr(player.getSpeed(), 50);
+        int stamina = intOr(player.getStamina(), 50);
+        int mentality = intOr(player.getMentality(), 50);
+        int overall = (int) Math.round((attack + defense + technique + speed + stamina + mentality) / 6.0);
+        double baseCollective = "GK".equals(natural)
+            ? ((defense + mentality) / 2.0)
+            : ((attack + defense + mentality) / 3.0);
+        return new LineupDiagnosticPlayer(
+            player.getSessionPlayerId(),
+            player.getName(),
+            natural,
+            tactical,
+            slotRole,
+            slotSide,
+            slot != null ? slot.subdivisionId() : null,
+            slot != null ? finiteOrNull(slot.xPercent()) : null,
+            slot != null ? finiteOrNull(slot.yPercent()) : null,
+            slot != null ? slot.source() : "missing",
+            profile != null ? String.join(" · ", profile.roles()) : "-",
+            profile != null ? String.join(" · ", profile.sides()) : "-",
+            roleBonus,
+            sideBonus,
+            assignmentScore,
+            assignmentVerdict,
+            assignmentRead,
+            attack,
+            defense,
+            technique,
+            speed,
+            stamina,
+            mentality,
+            overall,
+            round3(effectiveness),
+            round2(baseCollective * effectiveness)
+        );
+    }
+
+    /**
+     * V25D99.174: XI efectivo must be a true pitch diagnostic, not just a player
+     * list. The match engine can receive either persisted/manual slots or a
+     * default formation with no saved slots. For the latter, derive the
+     * canonical slot from FormationService so the debug UI can show the same
+     * base coordinates the manager sees in the modal.
+     */
+    private ResolvedDiagnosticSlot resolveDiagnosticSlot(
+            SessionPlayer player,
+            String formation,
+            List<SessionPlayer> starters,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        LineupSlotDTO manual = slotsByPlayerId != null ? slotsByPlayerId.get(player.getSessionPlayerId()) : null;
+        FormationPositionDTO canonical = null;
+        if (manual != null && manual.subdivisionId() != null && !manual.subdivisionId().isBlank()) {
+            canonical = findFormationPosition(formation, manual.subdivisionId());
+        }
+        if (canonical == null) {
+            canonical = canonicalPositionByStarterIndex(formation, starters, player);
+        }
+        if (manual == null && canonical == null) {
+            return null;
+        }
+        String subdivisionId = manual != null && manual.subdivisionId() != null && !manual.subdivisionId().isBlank()
+            ? manual.subdivisionId()
+            : canonical != null ? canonical.subdivisionId() : null;
+        boolean hasCustomX = manual != null && finiteOrNull(manual.customXPercent()) != null;
+        boolean hasCustomY = manual != null && finiteOrNull(manual.customYPercent()) != null;
+        Double xPercent = hasCustomX
+            ? manual.customXPercent()
+            : canonical != null ? canonical.xPercent() : null;
+        Double yPercent = hasCustomY
+            ? manual.customYPercent()
+            : canonical != null ? canonical.yPercent() : null;
+        String source = (hasCustomX || hasCustomY)
+            ? "modal-custom"
+            : manual != null ? "persisted-slot" : "canonical";
+        return new ResolvedDiagnosticSlot(
+            subdivisionId,
+            canonical != null ? canonical.role() : null,
+            xPercent,
+            yPercent,
+            source);
+    }
+
+    private FormationPositionDTO canonicalPositionByStarterIndex(
+            String formation,
+            List<SessionPlayer> starters,
+            SessionPlayer player) {
+        if (formation == null || formation.isBlank() || starters == null || starters.isEmpty() || player == null) {
+            return null;
+        }
+        List<FormationPositionDTO> positions = formationPositions(formation);
+        if (positions.isEmpty()) return null;
+        int index = -1;
+        for (int i = 0; i < starters.size(); i++) {
+            SessionPlayer starter = starters.get(i);
+            if (starter != null && Objects.equals(starter.getSessionPlayerId(), player.getSessionPlayerId())) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0 || index >= positions.size()) return null;
+        return positions.get(index);
+    }
+
+    private FormationPositionDTO findFormationPosition(String formation, String subdivisionId) {
+        if (formation == null || formation.isBlank() || subdivisionId == null || subdivisionId.isBlank()) {
+            return null;
+        }
+        return formationPositions(formation).stream()
+            .filter(position -> subdivisionId.equals(position.subdivisionId()))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private List<FormationPositionDTO> formationPositions(String formation) {
+        try {
+            FormationDTO dto = formationService.getFormationByName(formation);
+            if (dto == null || dto.positions() == null) return List.of();
+            return dto.positions().stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(
+                    FormationPositionDTO::index,
+                    Comparator.nullsLast(Integer::compareTo)))
+                .toList();
+        } catch (Exception ignored) {
+            return List.of();
+        }
+    }
+
+    private String tacticalPositionForDiagnostic(ResolvedDiagnosticSlot slot, String naturalPosition) {
+        if (slot == null) return naturalPosition;
+        if ("GK-1".equals(slot.subdivisionId()) || "GK".equalsIgnoreCase(naturalPosition)) {
+            return "GK";
+        }
+        Double customY = slot.yPercent();
+        if (customY != null && Double.isFinite(customY)) {
+            double y = Math.max(0.0, Math.min(100.0, customY));
+            String naturalLine = tacticalLineForNaturalPosition(naturalPosition);
+            if (isNear(y, 34.0, 2.0)) {
+                if ("ATT".equals(naturalLine) || "MID".equals(naturalLine)) {
+                    return naturalLine;
+                }
+            }
+            if (isNear(y, 67.0, 2.0)) {
+                if ("MID".equals(naturalLine) || "DEF".equals(naturalLine)) {
+                    return naturalLine;
+                }
+            }
+            if (y < 34.0) return "ATT";
+            if (y < 67.0) return "MID";
+            return "DEF";
+        }
+        String category = com.footballmanager.domain.model.valueobject.FormationInferer.categoryFor(slot.subdivisionId());
+        return (category == null || category.isBlank()) ? naturalPosition : category;
+    }
+
+    private boolean isNear(double value, double pivot, double radius) {
+        return Math.abs(value - pivot) <= radius;
+    }
+
+    private String tacticalLineForNaturalPosition(String naturalPosition) {
+        if (naturalPosition == null || naturalPosition.isBlank()) {
+            return "";
+        }
+        return switch (naturalPosition.toUpperCase(Locale.ROOT)) {
+            case "GK" -> "GK";
+            case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> "DEF";
+            case "MID", "CM", "CDM", "DM", "CAM", "AM", "LM", "RM" -> "MID";
+            case "ATT", "ST", "CF", "LW", "RW", "WINGER" -> "ATT";
+            default -> "";
+        };
+    }
+
+    private String diagnosticRoleLine(String role) {
+        if (role == null || role.isBlank()) return "";
+        return switch (role.toUpperCase(Locale.ROOT)) {
+            case "GK" -> "GK";
+            case "LB", "CB", "RB", "LWB", "RWB" -> "DEF";
+            case "CDM", "CM", "CAM", "LM", "RM" -> "MID";
+            case "LW", "RW", "CF", "ST" -> "ATT";
+            default -> "";
+        };
+    }
+
+    private record ResolvedDiagnosticSlot(
+        String subdivisionId,
+        String role,
+        Double xPercent,
+        Double yPercent,
+        String source
+    ) {}
+
+    private FormationPositionDTO diagnosticFormationPosition(ResolvedDiagnosticSlot slot) {
+        if (slot == null) {
+            return new FormationPositionDTO(null, null, null, null, null, null);
+        }
+        return new FormationPositionDTO(
+            null,
+            slot.role(),
+            slot.xPercent(),
+            slot.yPercent(),
+            null,
+            slot.subdivisionId());
+    }
+
+    private String diagnosticSlotSide(ResolvedDiagnosticSlot slot) {
+        if (slot == null) return "UNKNOWN";
+        return matrixSlotSide(diagnosticFormationPosition(slot));
+    }
+
+    private int diagnosticRoleBonus(CuratedMatrixRoleProfile profile, String slotRole) {
+        if (profile == null || slotRole == null || slotRole.isBlank()) return 0;
+        String role = slotRole.toUpperCase(Locale.ROOT);
+        if (profile.roles().contains(role)) return 26;
+        if (curatedMatrixRoleFamilyMatch(profile.roles(), role)) return 12;
+        return 0;
+    }
+
+    private int diagnosticSideBonus(CuratedMatrixRoleProfile profile, String slotSide) {
+        if (profile == null || slotSide == null) return 0;
+        if ("LEFT".equals(slotSide) || "RIGHT".equals(slotSide)) {
+            if (profile.sides().contains(slotSide) || profile.sides().contains("BOTH")) return 22;
+            if (profile.sides().contains(matrixOppositeSide(slotSide))) return -34;
+        }
+        if ("CENTER".equals(slotSide) && profile.sides().contains("CENTER")) return 8;
+        return 0;
+    }
+
+    private String assignmentVerdict(String natural, String tactical, int roleBonus, int sideBonus, int assignmentScore) {
+        if ("GK".equals(natural)) return "OK";
+        if (sideBonus < 0) return "Revisar lado";
+        if (assignmentScore < 70) return "Revisar rol";
+        if (roleBonus > 0 || sideBonus > 0 || Objects.equals(natural, tactical)) return "OK";
+        return "Aceptable";
+    }
+
+    private String assignmentRead(
+            SessionPlayer player,
+            String natural,
+            String slotRole,
+            String slotSide,
+            CuratedMatrixRoleProfile profile,
+            String verdict,
+            int roleBonus,
+            int sideBonus) {
+        String name = player != null ? player.getName() : "Jugador";
+        if (isWingbackFallback(slotRole, natural)) {
+            return name + " queda en " + slotRole
+                + " como fallback de carrilero: faltan perfiles naturales compatibles "
+                + compatibleWingbackProfiles(slotRole)
+                + ". Es jugable, pero debe penalizarse y leerse como alerta tactica.";
+        }
+        if (isDefensiveLineFallback(slotRole, natural)) {
+            return name + " queda en " + slotRole
+                + " como fallback defensivo: faltan perfiles naturales compatibles "
+                + compatibleDefensiveProfiles(slotRole)
+                + ". Puede sostener la formacion, pero expone duelos y coberturas.";
+        }
+        if (isAttackingLineFallback(slotRole, natural)) {
+            return name + " queda en " + slotRole
+                + " como fallback ofensivo: faltan perfiles naturales compatibles "
+                + compatibleAttackingProfiles(slotRole)
+                + ". Puede completar el once, pero debe afectar amenaza, desmarques y definicion.";
+        }
+        if ("Revisar lado".equals(verdict)) {
+            return name + " queda en " + slotSide + " pero su perfil prefiere "
+                + (profile != null ? String.join("/", profile.sides()) : "otro lado") + ".";
+        }
+        if ("Revisar rol".equals(verdict)) {
+            return name + " queda en " + slotRole + " con bajo encaje para su perfil.";
+        }
+        if (roleBonus > 0 && sideBonus > 0) {
+            return "Encaja por rol y lado.";
+        }
+        if (roleBonus > 0) {
+            return "Encaja por rol; lado neutro o no curado.";
+        }
+        if (sideBonus > 0) {
+            return "Encaja por lado; rol aceptable por familia/categoria.";
+        }
+        return "Asignacion aceptable sin perfil curado fuerte.";
+    }
+
+    private boolean isWingbackFallback(String slotRole, String natural) {
+        if (slotRole == null || natural == null) return false;
+        String role = slotRole.toUpperCase(Locale.ROOT);
+        String playerPosition = natural.toUpperCase(Locale.ROOT);
+        if ("LWB".equals(role)) {
+            return !Set.of("LWB", "LB", "LM", "LW", "WINGER", "DEF").contains(playerPosition);
+        }
+        if ("RWB".equals(role)) {
+            return !Set.of("RWB", "RB", "RM", "RW", "WINGER", "DEF").contains(playerPosition);
+        }
+        return false;
+    }
+
+    private String compatibleWingbackProfiles(String slotRole) {
+        if (slotRole == null) return "(LWB/RWB/LB/RB/LM/RM/LW/RW/WINGER)";
+        return switch (slotRole.toUpperCase(Locale.ROOT)) {
+            case "LWB" -> "(LWB/LB/LM/LW/WINGER/DEF)";
+            case "RWB" -> "(RWB/RB/RM/RW/WINGER/DEF)";
+            default -> "(LWB/RWB/LB/RB/LM/RM/LW/RW/WINGER)";
+        };
+    }
+
+    private boolean isDefensiveLineFallback(String slotRole, String natural) {
+        if (slotRole == null || natural == null) return false;
+        String role = slotRole.toUpperCase(Locale.ROOT);
+        String playerPosition = natural.toUpperCase(Locale.ROOT);
+        return switch (role) {
+            case "CB" -> !Set.of("CB", "DEF", "CDM", "LB", "RB", "LWB", "RWB").contains(playerPosition);
+            case "LB" -> !Set.of("LB", "LWB", "LM", "LW", "DEF", "CB").contains(playerPosition);
+            case "RB" -> !Set.of("RB", "RWB", "RM", "RW", "DEF", "CB").contains(playerPosition);
+            default -> false;
+        };
+    }
+
+    private String compatibleDefensiveProfiles(String slotRole) {
+        if (slotRole == null) return "(CB/LB/RB/LWB/RWB/DEF/CDM)";
+        return switch (slotRole.toUpperCase(Locale.ROOT)) {
+            case "CB" -> "(CB/DEF/CDM/LB/RB/LWB/RWB)";
+            case "LB" -> "(LB/LWB/LM/LW/DEF/CB)";
+            case "RB" -> "(RB/RWB/RM/RW/DEF/CB)";
+            default -> "(CB/LB/RB/LWB/RWB/DEF/CDM)";
+        };
+    }
+
+    private boolean isAttackingLineFallback(String slotRole, String natural) {
+        if (slotRole == null || natural == null) return false;
+        String role = slotRole.toUpperCase(Locale.ROOT);
+        String playerPosition = natural.toUpperCase(Locale.ROOT);
+        return switch (role) {
+            case "ST", "CF" -> !Set.of("ST", "CF", "ATT", "CAM", "WINGER", "LW", "RW").contains(playerPosition);
+            case "LW" -> !Set.of("LW", "LM", "WINGER", "ATT", "CF", "ST", "LWB").contains(playerPosition);
+            case "RW" -> !Set.of("RW", "RM", "WINGER", "ATT", "CF", "ST", "RWB").contains(playerPosition);
+            default -> false;
+        };
+    }
+
+    private String compatibleAttackingProfiles(String slotRole) {
+        if (slotRole == null) return "(ST/CF/ATT/CAM/LW/RW/WINGER)";
+        return switch (slotRole.toUpperCase(Locale.ROOT)) {
+            case "ST", "CF" -> "(ST/CF/ATT/CAM/WINGER/LW/RW)";
+            case "LW" -> "(LW/LM/WINGER/ATT/CF/ST/LWB)";
+            case "RW" -> "(RW/RM/WINGER/ATT/CF/ST/RWB)";
+            default -> "(ST/CF/ATT/CAM/LW/RW/WINGER)";
+        };
+    }
+
+    private String safePosition(String position) {
+        return (position == null || position.isBlank()) ? "MID" : position;
+    }
+
+    private Integer intOr(Integer value, int fallback) {
+        return value != null ? value : fallback;
+    }
+
+    private Double finiteOrNull(Double value) {
+        if (value != null && Double.isFinite(value)) return value;
+        return null;
+    }
+
     private Mono<MatchFixture> executeReplayMatch(CareerSave career, String matchId, long seed) {
         MatchFixture fixture = career.getTournamentState().getFixtures().stream()
             .filter(f -> f.getMatchId().equals(matchId))
@@ -1639,6 +2420,31 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         V24DetailedMatchResult result = engine.simulate(context, new Random(seed));
+
+        // V25D99.277: replayMatch powers the professional harness flow
+        // "change formation/player/pixels -> replay -> open Match Compare".
+        // Match Compare needs two persisted pieces: the live detail (saved
+        // below) and the baseline snapshot that can be re-simulated with the
+        // same seed. Live matches create this baseline in RoundController; the
+        // harness replay path must do the same or the compare button opens a
+        // valid route that returns 404.
+        try {
+            String careerId = career.getData().getCareerId();
+            BaselineState baseline = BaselineState.empty(careerId, seed, context);
+            baselineStoragePort.save(careerId, baseline)
+                .onErrorResume(e -> {
+                    log.warn("[V25D99.277] replayMatch: failed to persist baseline "
+                        + "for matchId={}, continuing (compare may 404): {}",
+                        matchId, e.getMessage());
+                    return Mono.empty();
+                })
+                .block();
+            log.info("[V25D99.277] replayMatch: persisted baseline for Match Compare "
+                + "matchId={}, careerId={}, seed={}", matchId, careerId, seed);
+        } catch (Exception e) {
+            log.warn("[V25D99.277] replayMatch: failed to prepare Match Compare baseline "
+                + "for matchId={}, continuing: {}", matchId, e.getMessage());
+        }
 
         // 3. Update the fixture with the new result. V25D37-F4: the V24 engine
         // already computes possession / shots in V24DetailedMatchResult — the
@@ -1833,6 +2639,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 zones.awayCentral(),
                 zones.awayWide(),
                 zones.awayLong(),
+                zones.homeLeftWide(),
+                zones.homeRightWide(),
+                zones.homeLeftWideXg(),
+                zones.homeRightWideXg(),
+                zones.awayLeftWide(),
+                zones.awayRightWide(),
+                zones.awayLeftWideXg(),
+                zones.awayRightWideXg(),
                 round3(shapeDebug.possessionMultiplier()),
                 round3(shapeDebug.attackVolumeMultiplier()),
                 round3(shapeDebug.defensiveResistanceMultiplier()),
@@ -1893,26 +2707,108 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     private int formationPositionFitScore(SessionPlayer player, FormationPositionDTO position) {
         String playerProfile = matrixPlayerProfile(player);
         String slotProfile = matrixSlotProfile(position != null ? position.role() : null);
-        if (playerProfile.equals(slotProfile)) return 100;
-        if ("WIDE_DEF".equals(slotProfile) && "DEF".equals(playerProfile)) return 92;
-        if ("DEF".equals(slotProfile) && "WIDE_DEF".equals(playerProfile)) return 90;
-        if ("WIDE_ATT".equals(slotProfile) && "ATT".equals(playerProfile)) return 88;
-        if ("ATT".equals(slotProfile) && "WIDE_ATT".equals(playerProfile)) return 86;
-        if ("AM".equals(slotProfile) && ("MID".equals(playerProfile) || "WIDE_ATT".equals(playerProfile))) return 82;
-        if ("MID".equals(slotProfile) && ("DM".equals(playerProfile) || "AM".equals(playerProfile))) return 80;
-        if ("DM".equals(slotProfile) && ("MID".equals(playerProfile) || "DEF".equals(playerProfile))) return 78;
-        if ("WIDE_MID".equals(slotProfile) && ("MID".equals(playerProfile) || "WIDE_ATT".equals(playerProfile) || "WIDE_DEF".equals(playerProfile))) return 76;
-        if ("MID".equals(slotProfile) && "WIDE_MID".equals(playerProfile)) return 74;
-        if ("ATT".equals(slotProfile) && "AM".equals(playerProfile)) return 70;
-        if ("AM".equals(slotProfile) && "ATT".equals(playerProfile)) return 68;
-        if ("DEF".equals(slotProfile) && "DM".equals(playerProfile)) return 66;
-        if ("DM".equals(slotProfile) && "WIDE_DEF".equals(playerProfile)) return 62;
-        if ("MID".equals(slotProfile) && ("DEF".equals(playerProfile) || "ATT".equals(playerProfile))) return 52;
-        if ("DEF".equals(slotProfile) && "MID".equals(playerProfile)) return 48;
-        if ("ATT".equals(slotProfile) && "MID".equals(playerProfile)) return 48;
-        if ("GK".equals(slotProfile) || "GK".equals(playerProfile)) return 0;
-        return 35;
+        int baseScore;
+        if (playerProfile.equals(slotProfile)) baseScore = 100;
+        else if ("WIDE_DEF".equals(slotProfile) && "DEF".equals(playerProfile)) baseScore = 92;
+        else if ("DEF".equals(slotProfile) && "WIDE_DEF".equals(playerProfile)) baseScore = 90;
+        else if ("WIDE_ATT".equals(slotProfile) && "ATT".equals(playerProfile)) baseScore = 88;
+        else if ("ATT".equals(slotProfile) && "WIDE_ATT".equals(playerProfile)) baseScore = 86;
+        else if ("AM".equals(slotProfile) && ("MID".equals(playerProfile) || "WIDE_ATT".equals(playerProfile))) baseScore = 82;
+        else if ("MID".equals(slotProfile) && ("DM".equals(playerProfile) || "AM".equals(playerProfile))) baseScore = 80;
+        else if ("DM".equals(slotProfile) && ("MID".equals(playerProfile) || "DEF".equals(playerProfile))) baseScore = 78;
+        else if ("WIDE_MID".equals(slotProfile) && ("MID".equals(playerProfile) || "WIDE_ATT".equals(playerProfile) || "WIDE_DEF".equals(playerProfile))) baseScore = 76;
+        else if ("MID".equals(slotProfile) && "WIDE_MID".equals(playerProfile)) baseScore = 74;
+        else if ("ATT".equals(slotProfile) && "AM".equals(playerProfile)) baseScore = 70;
+        else if ("AM".equals(slotProfile) && "ATT".equals(playerProfile)) baseScore = 68;
+        else if ("DEF".equals(slotProfile) && "DM".equals(playerProfile)) baseScore = 66;
+        else if ("DM".equals(slotProfile) && "WIDE_DEF".equals(playerProfile)) baseScore = 62;
+        else if ("MID".equals(slotProfile) && ("DEF".equals(playerProfile) || "ATT".equals(playerProfile))) baseScore = 52;
+        else if ("DEF".equals(slotProfile) && "MID".equals(playerProfile)) baseScore = 48;
+        else if ("ATT".equals(slotProfile) && "MID".equals(playerProfile)) baseScore = 48;
+        else if ("GK".equals(slotProfile) || "GK".equals(playerProfile)) baseScore = 0;
+        else baseScore = 35;
+        return baseScore + curatedMatrixSlotBonus(player, position);
     }
+
+    private int curatedMatrixSlotBonus(SessionPlayer player, FormationPositionDTO slot) {
+        CuratedMatrixRoleProfile profile = curatedMatrixRoleProfile(player);
+        if (profile == null || slot == null || slot.role() == null) {
+            return 0;
+        }
+        String role = slot.role().toUpperCase(Locale.ROOT);
+        int bonus = 0;
+        if (profile.roles().contains(role)) {
+            bonus += 26;
+        } else if (curatedMatrixRoleFamilyMatch(profile.roles(), role)) {
+            bonus += 12;
+        }
+        String slotSide = matrixSlotSide(slot);
+        if ("LEFT".equals(slotSide) || "RIGHT".equals(slotSide)) {
+            if (profile.sides().contains(slotSide) || profile.sides().contains("BOTH")) {
+                bonus += 22;
+            } else if (profile.sides().contains(matrixOppositeSide(slotSide))) {
+                bonus -= 34;
+            }
+        } else if ("CENTER".equals(slotSide) && profile.sides().contains("CENTER")) {
+            bonus += 8;
+        }
+        return bonus;
+    }
+
+    private boolean curatedMatrixRoleFamilyMatch(Set<String> playerRoles, String slotRole) {
+        if (Set.of("LB", "LWB", "LM", "LW").contains(slotRole)) {
+            return playerRoles.stream().anyMatch(Set.of("LB", "LWB", "LM", "LW")::contains);
+        }
+        if (Set.of("RB", "RWB", "RM", "RW").contains(slotRole)) {
+            return playerRoles.stream().anyMatch(Set.of("RB", "RWB", "RM", "RW")::contains);
+        }
+        if (Set.of("CB", "CDM", "CM", "CAM", "ST", "CF").contains(slotRole)) {
+            return playerRoles.stream().anyMatch(Set.of("CB", "CDM", "CM", "CAM", "ST", "CF")::contains);
+        }
+        return false;
+    }
+
+    private String matrixSlotSide(FormationPositionDTO slot) {
+        String role = slot.role() != null ? slot.role().toUpperCase(Locale.ROOT) : "";
+        if (Set.of("LB", "LWB", "LM", "LW").contains(role)) return "LEFT";
+        if (Set.of("RB", "RWB", "RM", "RW").contains(role)) return "RIGHT";
+        if (Set.of("GK", "CB", "CDM", "CM", "ST", "CF").contains(role)) return "CENTER";
+        Double x = slot.xPercent();
+        if (x != null && x <= 42) return "LEFT";
+        if (x != null && x >= 58) return "RIGHT";
+        return "CENTER";
+    }
+
+    private String matrixOppositeSide(String side) {
+        return "LEFT".equals(side) ? "RIGHT" : "LEFT";
+    }
+
+    private CuratedMatrixRoleProfile curatedMatrixRoleProfile(SessionPlayer player) {
+        if (player == null || player.getName() == null) {
+            return null;
+        }
+        return switch (normalizeMatrixPlayerName(player.getName())) {
+            case "dani carvajal" -> new CuratedMatrixRoleProfile(Set.of("RB", "RWB"), Set.of("RIGHT"));
+            case "david alaba" -> new CuratedMatrixRoleProfile(Set.of("CB", "LB"), Set.of("LEFT", "CENTER"));
+            case "ferland mendy", "fran garcia" -> new CuratedMatrixRoleProfile(Set.of("LB", "LWB"), Set.of("LEFT"));
+            case "lucas vazquez" -> new CuratedMatrixRoleProfile(Set.of("RB", "RM", "RWB"), Set.of("RIGHT"));
+            case "vinicius junior" -> new CuratedMatrixRoleProfile(Set.of("LW", "LM"), Set.of("LEFT"));
+            case "rodrygo goes" -> new CuratedMatrixRoleProfile(Set.of("RW", "LW", "ST", "CF"), Set.of("RIGHT", "BOTH"));
+            case "brahim diaz" -> new CuratedMatrixRoleProfile(Set.of("RW", "CAM", "RM"), Set.of("RIGHT", "CENTER"));
+            case "federico valverde" -> new CuratedMatrixRoleProfile(Set.of("CM", "RM", "CDM"), Set.of("CENTER", "RIGHT"));
+            case "eduardo camavinga" -> new CuratedMatrixRoleProfile(Set.of("CM", "CDM", "LB"), Set.of("CENTER", "LEFT"));
+            default -> null;
+        };
+    }
+
+    private String normalizeMatrixPlayerName(String name) {
+        return Normalizer.normalize(name, Normalizer.Form.NFD)
+            .replaceAll("\\p{M}", "")
+            .toLowerCase(Locale.ROOT)
+            .trim();
+    }
+
+    private record CuratedMatrixRoleProfile(Set<String> roles, Set<String> sides) {}
 
     private String matrixPlayerProfile(SessionPlayer player) {
         if (player == null || player.getPosition() == null) return "MID";
@@ -2009,6 +2905,218 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         return byFormation.values().stream()
             .map(acc -> acc.toRow(seedStart, seedCount))
             .toList();
+    }
+
+    @Override
+    public Mono<List<SideMirrorSyntheticLabRow>> runSideMirrorSyntheticLab(
+            UUID userId,
+            long seedStart,
+            int seedCount) {
+        if (seedCount < 1 || seedCount > 100) {
+            return Mono.error(new IllegalArgumentException("seedCount must be between 1 and 100"));
+        }
+        return Mono.fromSupplier(() -> executeSideMirrorSyntheticLab(seedStart, seedCount));
+    }
+
+    private List<SideMirrorSyntheticLabRow> executeSideMirrorSyntheticLab(long seedStart, int seedCount) {
+        List<SideMirrorSyntheticLabRow> rows = new ArrayList<>();
+        for (FormationDTO formation : formationService.getAllFormations()) {
+            FormationSummaryAccumulator weakLeft = new FormationSummaryAccumulator(formation.name());
+            FormationSummaryAccumulator weakRight = new FormationSummaryAccumulator(formation.name());
+            for (int i = 0; i < seedCount; i++) {
+                long seed = seedStart + i;
+                weakLeft.add(executeSyntheticSideMirrorRow(formation, seed, true), true);
+                weakRight.add(executeSyntheticSideMirrorRow(formation, seed, false), true);
+            }
+            FormationMatrixSummaryRow left = weakLeft.toRow(seedStart, seedCount);
+            FormationMatrixSummaryRow right = weakRight.toRow(seedStart, seedCount);
+            rows.add(toSyntheticSideMirrorRow(formation.name(), seedStart, seedCount, left, right));
+        }
+        return rows;
+    }
+
+    private FormationMatrixRow executeSyntheticSideMirrorRow(
+            FormationDTO formation,
+            long seed,
+            boolean weakenOpponentLeft) {
+        SessionTeam home = syntheticTeam("synthetic-home", "Synthetic Probe", formation.name());
+        SessionTeam away = syntheticTeam("synthetic-away", "Synthetic Mirror", formation.name());
+        List<SessionPlayer> homeStarters = syntheticPlayers("H", false);
+        List<SessionPlayer> awayStarters = syntheticPlayers("A", false);
+        Map<String, LineupSlotDTO> homeSlots = buildFormationMatrixSlots(homeStarters, formation);
+        Map<String, LineupSlotDTO> awaySlots = buildFormationMatrixSlots(awayStarters, formation);
+        weakenSyntheticWideDefender(awayStarters, awaySlots, weakenOpponentLeft);
+
+        V24MatchContext context = new V24MatchContext(
+            "synthetic-side-mirror-" + formation.name() + "-" + (weakenOpponentLeft ? "WL" : "WR") + "-" + seed,
+            home.getSessionTeamId(),
+            away.getSessionTeamId(),
+            home,
+            away,
+            homeStarters,
+            awayStarters,
+            List.of(),
+            List.of(),
+            formation.name(),
+            formation.name(),
+            TeamStyle.BALANCED,
+            TeamStyle.BALANCED,
+            List.of(),
+            homeSlots,
+            awaySlots);
+
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        V24DetailedMatchEngine.TacticalShapeDebug shapeDebug = engine.debugTacticalShape(
+            home,
+            homeStarters,
+            List.of(),
+            TeamStyle.BALANCED,
+            formation.name(),
+            homeSlots);
+        V24DetailedMatchResult result = engine.simulate(context, new Random(seed));
+        ZoneCounts zones = countZones(result);
+        return new FormationMatrixRow(
+            formation.name(),
+            result.homeGoals(),
+            result.awayGoals(),
+            result.homeXg(),
+            result.awayXg(),
+            result.homeShots(),
+            result.awayShots(),
+            result.homePossession(),
+            result.awayPossession(),
+            zones.homeCentral(),
+            zones.homeWide(),
+            zones.homeLong(),
+            zones.awayCentral(),
+            zones.awayWide(),
+            zones.awayLong(),
+            zones.homeLeftWide(),
+            zones.homeRightWide(),
+            zones.homeLeftWideXg(),
+            zones.homeRightWideXg(),
+            zones.awayLeftWide(),
+            zones.awayRightWide(),
+            zones.awayLeftWideXg(),
+            zones.awayRightWideXg(),
+            round3(shapeDebug.possessionMultiplier()),
+            round3(shapeDebug.attackVolumeMultiplier()),
+            round3(shapeDebug.defensiveResistanceMultiplier()),
+            round3(shapeDebug.attackLeft()),
+            round3(shapeDebug.attackCenter()),
+            round3(shapeDebug.attackRight()),
+            round3(shapeDebug.defenseLeft()),
+            round3(shapeDebug.defenseCenter()),
+            round3(shapeDebug.defenseRight()));
+    }
+
+    private SideMirrorSyntheticLabRow toSyntheticSideMirrorRow(
+            String formation,
+            long seedStart,
+            int seedCount,
+            FormationMatrixSummaryRow weakLeft,
+            FormationMatrixSummaryRow weakRight) {
+        double weakLeftRightEdge = round3(weakLeft.avgRightWideXgFor() - weakLeft.avgLeftWideXgFor());
+        double weakRightLeftEdge = round3(weakRight.avgLeftWideXgFor() - weakRight.avgRightWideXgFor());
+        double mirrorGap = round3(weakLeftRightEdge - weakRightLeftEdge);
+        boolean weakLeftOk = weakLeftRightEdge >= 0.015;
+        boolean weakRightOk = weakRightLeftEdge >= 0.015;
+        String verdict = weakLeftOk && weakRightOk ? "OK" : (weakLeftOk || weakRightOk ? "Parcial" : "Revisar");
+        String read = "OK".equals(verdict)
+            ? "Laboratorio sintetico espejo responde en ambos sentidos."
+            : "Parcial".equals(verdict)
+                ? "Un lado responde mas que el otro aun sin sesgo de plantel; revisar calibracion lateral."
+                : "Sin senal lateral suficiente en laboratorio sintetico; revisar motor.";
+        return new SideMirrorSyntheticLabRow(
+            formation,
+            seedStart,
+            seedStart + seedCount - 1L,
+            seedCount,
+            weakLeft.avgLeftWideXgFor(),
+            weakLeft.avgRightWideXgFor(),
+            weakRight.avgLeftWideXgFor(),
+            weakRight.avgRightWideXgFor(),
+            weakLeft.avgLeftWideShotsFor(),
+            weakLeft.avgRightWideShotsFor(),
+            weakRight.avgLeftWideShotsFor(),
+            weakRight.avgRightWideShotsFor(),
+            weakLeftRightEdge,
+            weakRightLeftEdge,
+            mirrorGap,
+            verdict,
+            read);
+    }
+
+    private SessionTeam syntheticTeam(String id, String name, String formation) {
+        SessionTeam team = SessionTeam.custom(id, name, "LAB", BigDecimal.ZERO, formation);
+        team.setSessionTeamId(id);
+        team.setStyle(TeamStyle.BALANCED);
+        return team;
+    }
+
+    private List<SessionPlayer> syntheticPlayers(String prefix, boolean weak) {
+        List<SessionPlayer> players = new ArrayList<>();
+        players.add(syntheticPlayer(prefix + "-GK", "GK", 74, weak));
+        players.add(syntheticPlayer(prefix + "-DEF-L", "DEF", 76, weak));
+        players.add(syntheticPlayer(prefix + "-DEF-CL", "DEF", 76, weak));
+        players.add(syntheticPlayer(prefix + "-DEF-CR", "DEF", 76, weak));
+        players.add(syntheticPlayer(prefix + "-DEF-R", "DEF", 76, weak));
+        players.add(syntheticPlayer(prefix + "-MID-L", "MID", 76, weak));
+        players.add(syntheticPlayer(prefix + "-MID-C", "MID", 76, weak));
+        players.add(syntheticPlayer(prefix + "-MID-R", "MID", 76, weak));
+        players.add(syntheticPlayer(prefix + "-WING-L", "WINGER", 76, weak));
+        players.add(syntheticPlayer(prefix + "-WING-R", "WINGER", 76, weak));
+        players.add(syntheticPlayer(prefix + "-ATT", "ATT", 76, weak));
+        return players;
+    }
+
+    private SessionPlayer syntheticPlayer(String id, String position, int overall, boolean weak) {
+        SessionPlayer player = SessionPlayer.custom(
+            "Lab " + id,
+            25,
+            position,
+            overall,
+            overall,
+            overall,
+            overall,
+            overall,
+            overall,
+            BigDecimal.ZERO);
+        player.setSessionPlayerId(id);
+        if (weak) {
+            player.setDefense(42);
+            player.setMentality(45);
+            player.setStamina(55);
+        }
+        return player;
+    }
+
+    private void weakenSyntheticWideDefender(
+            List<SessionPlayer> starters,
+            Map<String, LineupSlotDTO> slots,
+            boolean leftSide) {
+        if (starters == null || starters.isEmpty() || slots == null || slots.isEmpty()) return;
+        Optional<Map.Entry<String, LineupSlotDTO>> target = slots.entrySet().stream()
+            .filter(entry -> entry.getValue() != null)
+            .filter(entry -> {
+                Double y = entry.getValue().customYPercent();
+                return y != null && y >= 55.0;
+            })
+            .min((a, b) -> {
+                double ax = Optional.ofNullable(a.getValue().customXPercent()).orElse(50.0);
+                double bx = Optional.ofNullable(b.getValue().customXPercent()).orElse(50.0);
+                return leftSide ? Double.compare(ax, bx) : Double.compare(bx, ax);
+            });
+        if (target.isEmpty()) return;
+        String playerId = target.get().getKey();
+        starters.stream()
+            .filter(player -> playerId.equals(player.getSessionPlayerId()))
+            .findFirst()
+            .ifPresent(player -> {
+                player.setDefense(42);
+                player.setMentality(45);
+                player.setStamina(55);
+            });
     }
 
     @Override
@@ -2395,6 +3503,164 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             null);
     }
 
+    @Override
+    public Mono<List<RoleSlotImpactSummaryRow>> runRoleSlotImpactSummary(
+            UUID userId,
+            String matchId,
+            String slotId,
+            List<String> naturalPositions,
+            long seedStart,
+            int seedCount,
+            String controlledTeamSide) {
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("matchId is required"));
+        }
+        if (slotId == null || slotId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("slotId is required"));
+        }
+        if (seedCount < 1 || seedCount > 100) {
+            return Mono.error(new IllegalArgumentException("seedCount must be between 1 and 100"));
+        }
+        List<String> safeNaturalPositions = naturalPositions == null || naturalPositions.isEmpty()
+            ? List.of("WINGER", "MID", "ATT", "DEF")
+            : naturalPositions.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .map(s -> s.toUpperCase(Locale.ROOT))
+                .distinct()
+                .toList();
+        if (safeNaturalPositions.isEmpty()) {
+            return Mono.error(new IllegalArgumentException("naturalPositions must contain at least one position"));
+        }
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " — call create-custom first")))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException("Career not found for userId=" + userId));
+                }
+                return Mono.fromSupplier(() -> executeRoleSlotImpactSummary(
+                    optionalCareer.get(),
+                    matchId,
+                    slotId,
+                    safeNaturalPositions,
+                    seedStart,
+                    seedCount,
+                    controlledTeamSide));
+            });
+    }
+
+    private List<RoleSlotImpactSummaryRow> executeRoleSlotImpactSummary(
+            CareerSave career,
+            String matchId,
+            String slotId,
+            List<String> naturalPositions,
+            long seedStart,
+            int seedCount,
+            String controlledTeamSide) {
+        MatchFixture fixture = career.getTournamentState().getFixtures().stream()
+            .filter(f -> f.getMatchId().equals(matchId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Match not found in current tournament: " + matchId));
+        SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
+        SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
+        if (home == null || away == null) {
+            throw new IllegalStateException("SessionTeam not found for match " + matchId);
+        }
+        String controlledTeamId = resolveControlledTeamId(career, fixture, controlledTeamSide);
+        boolean userIsHome = fixture.getHomeTeamId().equals(controlledTeamId);
+        boolean userIsAway = fixture.getAwayTeamId().equals(controlledTeamId);
+        if (!userIsHome && !userIsAway) {
+            throw new IllegalArgumentException("Role slot impact controlled team is not part of match: " + controlledTeamId);
+        }
+        TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
+        TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
+
+        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
+            career,
+            fixture,
+            home,
+            away,
+            homeStyle,
+            awayStyle,
+            seedStart);
+        Map<String, LineupSlotDTO> userSlots = userIsHome
+            ? baseContext.homeSlotsByPlayerId()
+            : baseContext.awaySlotsByPlayerId();
+        LineupSlotDTO slot = userSlots.values().stream()
+            .filter(s -> s != null && slotId.equals(s.subdivisionId()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("slotId '" + slotId + "' not found in controlled team lineup"));
+        List<SessionPlayer> starters = userIsHome ? baseContext.homeStartingPlayers() : baseContext.awayStartingPlayers();
+        SessionPlayer baselinePlayer = findPlayer(starters, slot.playerId())
+            .orElseThrow(() -> new IllegalArgumentException("slot player not found in starting XI: " + slot.playerId()));
+
+        double x = slot.customXPercent() != null ? slot.customXPercent() : canonicalXPercent(slotId).orElse(50.0);
+        double y = slot.customYPercent() != null ? slot.customYPercent() : canonicalYPercent(slotId).orElse(fallbackYPercent(baselinePlayer.getPosition()));
+        String formation = currentFormation(career, controlledTeamId, userIsHome ? home : away);
+
+        List<RoleSlotImpactSummaryRow> rows = new ArrayList<>();
+        for (String natural : naturalPositions) {
+            PositionPixelPlayerDiagnostic diagnostic =
+                positionPixelPlayerDiagnostic(roleOverrideClone(baselinePlayer, natural), slotId, x, y);
+            SwapAccumulator accumulator = new SwapAccumulator();
+            for (int i = 0; i < seedCount; i++) {
+                long seed = seedStart + i;
+                V24MatchContext seededBase = v24ContextFactory.buildWithStyles(
+                    career,
+                    fixture,
+                    home,
+                    away,
+                    homeStyle,
+                    awayStyle,
+                    seed);
+                V24MatchContext roleContext = buildRoleOverrideContext(
+                    seededBase,
+                    controlledTeamId,
+                    baselinePlayer.getSessionPlayerId(),
+                    natural);
+                V24DetailedMatchResult result =
+                    new V24DetailedMatchEngine().simulate(roleContext, new Random(seed));
+                accumulator.add(result, userIsHome);
+            }
+            SwapAverages avg = accumulator.averages();
+            rows.add(new RoleSlotImpactSummaryRow(
+                matchId,
+                formation,
+                slotId,
+                round2(x),
+                round2(y),
+                baselinePlayer.getSessionPlayerId(),
+                safeName(baselinePlayer),
+                baselinePlayer.getPosition(),
+                natural,
+                diagnostic.tacticalPosition(),
+                seedStart,
+                seedStart + seedCount - 1L,
+                seedCount,
+                diagnostic.effectiveness(),
+                diagnostic.collective(),
+                avg.goalsFor(),
+                avg.goalsAgainst(),
+                avg.goalDiff(),
+                avg.shotsFor(),
+                avg.shotsAgainst(),
+                avg.possessionFor(),
+                avg.xgFor(),
+                avg.xgAgainst(),
+                avg.xgDiff(),
+                avg.centralShotsFor(),
+                avg.wideShotsFor(),
+                avg.longShotsFor(),
+                avg.centralXgFor(),
+                avg.wideXgFor(),
+                avg.longXgFor()));
+        }
+        return rows;
+    }
+
     private PositionPixelMatrixSummaryRow executePositionPixelMatrixSummary(
             CareerSave career,
             String matchId,
@@ -2450,6 +3716,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         double targetYPercent = deltaYPercent != null
             ? clampPercent(fromY + deltaYPercent)
             : requestedTargetYPercent;
+        PositionPixelPlayerDiagnostic baselinePlayerDiagnostic =
+            positionPixelPlayerDiagnostic(player, slotId, fromX, fromY);
+        PositionPixelPlayerDiagnostic movedPlayerDiagnostic =
+            positionPixelPlayerDiagnostic(player, slotId, targetXPercent, targetYPercent);
 
         SwapAccumulator baseline = new SwapAccumulator();
         SwapAccumulator moved = new SwapAccumulator();
@@ -2536,8 +3806,44 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             round2(movedAvg.leftWideShotsAgainst() - baseAvg.leftWideShotsAgainst()),
             round2(movedAvg.rightWideShotsAgainst() - baseAvg.rightWideShotsAgainst()),
             round3(movedAvg.leftWideXgAgainst() - baseAvg.leftWideXgAgainst()),
-            round3(movedAvg.rightWideXgAgainst() - baseAvg.rightWideXgAgainst()));
+            round3(movedAvg.rightWideXgAgainst() - baseAvg.rightWideXgAgainst()),
+            baselinePlayerDiagnostic.tacticalPosition(),
+            movedPlayerDiagnostic.tacticalPosition(),
+            baselinePlayerDiagnostic.effectiveness(),
+            movedPlayerDiagnostic.effectiveness(),
+            round3(movedPlayerDiagnostic.effectiveness() - baselinePlayerDiagnostic.effectiveness()),
+            baselinePlayerDiagnostic.collective(),
+            movedPlayerDiagnostic.collective(),
+            round2(movedPlayerDiagnostic.collective() - baselinePlayerDiagnostic.collective()));
     }
+
+    private PositionPixelPlayerDiagnostic positionPixelPlayerDiagnostic(
+            SessionPlayer player,
+            String slotId,
+            double xPercent,
+            double yPercent) {
+        String natural = safePosition(player.getPosition());
+        ResolvedDiagnosticSlot slot = new ResolvedDiagnosticSlot(slotId, null, xPercent, yPercent, "pixel-test");
+        String tactical = tacticalPositionForDiagnostic(slot, natural);
+        double effectiveness = com.footballmanager.domain.model.valueobject.SubdivisionEffectivenessCalculator
+            .effectiveness(natural, xPercent, yPercent, tactical);
+        int attack = intOr(player.getAttack(), 50);
+        int defense = intOr(player.getDefense(), 50);
+        int mentality = intOr(player.getMentality(), 50);
+        double baseCollective = "GK".equals(natural)
+            ? ((defense + mentality) / 2.0)
+            : ((attack + defense + mentality) / 3.0);
+        return new PositionPixelPlayerDiagnostic(
+            tactical,
+            round3(effectiveness),
+            round2(baseCollective * effectiveness));
+    }
+
+    private record PositionPixelPlayerDiagnostic(
+        String tacticalPosition,
+        double effectiveness,
+        double collective
+    ) {}
 
     private List<ScenarioMatrixSummaryRow> executeScenarioMatrixSummary(
             CareerSave career,
@@ -2609,6 +3915,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         private final String actionType;
         private final String actionDetail;
         private final String baselineScenario;
+        private String baselineFormation;
+        private String changedFormation;
         private int count;
         private double sumUserXg;
         private double minUserXg = Double.POSITIVE_INFINITY;
@@ -2642,6 +3950,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         }
 
         private void add(ScenarioMatrixRow row, ScenarioMatrixRow baseline, boolean userIsHome) {
+            if (baselineFormation == null || baselineFormation.isBlank()) {
+                baselineFormation = baseline.formation();
+            }
+            if (changedFormation == null || changedFormation.isBlank()) {
+                changedFormation = "FORMATION".equals(row.actionType())
+                    ? row.actionDetail()
+                    : row.formation();
+            }
             double userXg = userIsHome ? row.homeXg() : row.awayXg();
             double baseUserXg = userIsHome ? baseline.homeXg() : baseline.awayXg();
             double opponentXg = userIsHome ? row.awayXg() : row.homeXg();
@@ -2741,7 +4057,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 round3(sumUserRightWideXg / count),
                 round3(sumOpponentLeftWideXg / count),
                 round3(sumOpponentRightWideXg / count),
-                baselineScenario);
+                baselineScenario,
+                baselineFormation,
+                changedFormation,
+                normalizedFormation(baselineFormation).equals(normalizedFormation(changedFormation)));
+        }
+
+        private static String normalizedFormation(String formation) {
+            return formation == null ? "" : formation.trim().toUpperCase(Locale.ROOT);
         }
 
         private static double round3(double value) {
@@ -2845,13 +4168,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             TeamStyle.BALANCED,
             45,
             ScenarioAction.opponentStyle(TeamStyle.CENTRAL_PLAY));
-        addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
-            "m45-formation-433", "Minute 45 -> formation 4-3-3", formation,
-            TeamStyle.BALANCED, 45, ScenarioAction.formation("4-3-3"));
-        addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
-            "m45-formation-4231", "Minute 45 -> formation 4-2-3-1", formation,
-            TeamStyle.BALANCED, 45, ScenarioAction.formation("4-2-3-1"));
-
         V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
             career,
             fixture,
@@ -2860,6 +4176,21 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             userIsHome ? TeamStyle.BALANCED : home.getStyle(),
             userIsHome ? away.getStyle() : TeamStyle.BALANCED,
             seed);
+        List<SessionPlayer> userStarters = userIsHome
+            ? baseContext.homeStartingPlayers()
+            : baseContext.awayStartingPlayers();
+        buildFormationScenarioAction(userStarters, "4-4-2")
+            .ifPresent(action -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
+                "m45-formation-442", "Minute 45 -> formation 4-4-2 with visual slots", formation,
+                TeamStyle.BALANCED, 45, action));
+        buildFormationScenarioAction(userStarters, "4-3-3")
+            .ifPresent(action -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
+                "m45-formation-433", "Minute 45 -> formation 4-3-3 with visual slots", formation,
+                TeamStyle.BALANCED, 45, action));
+        buildFormationScenarioAction(userStarters, "4-2-3-1")
+            .ifPresent(action -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
+                "m45-formation-4231", "Minute 45 -> formation 4-2-3-1 with visual slots", formation,
+                TeamStyle.BALANCED, 45, action));
         Optional<PositionPlan> advancedMid = chooseMidfielderPositionPlan(baseContext, userTeamId, 50.0, 40.0);
         advancedMid.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
             "m45-position-mid-up",
@@ -3112,6 +4443,20 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             scenario, description, formation, baseUserStyle, changeMinute, action));
     }
 
+    private Optional<ScenarioAction> buildFormationScenarioAction(
+            List<SessionPlayer> starters,
+            String formationName) {
+        if (starters == null || starters.size() != 11 || formationName == null || formationName.isBlank()) {
+            return Optional.empty();
+        }
+        return formationService.getAllFormations().stream()
+            .filter(formation -> formationName.equals(formation.name()))
+            .findFirst()
+            .map(formation -> ScenarioAction.formation(
+                formation.name(),
+                buildFormationMatrixSlots(starters, formation)));
+    }
+
     private ScenarioMatrixRow runScenario(
             CareerSave career,
             MatchFixture fixture,
@@ -3154,7 +4499,13 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             } else if (safeAction.type() == ScenarioActionType.NOOP_REPLAY) {
                 session.mutateContext(ctx -> ctx);
             } else if (safeAction.type() == ScenarioActionType.FORMATION) {
-                session.mutateContext(ctx -> ctx.withNewFormation(userTeamId, safeAction.changedFormation()));
+                session.mutateContext(ctx -> {
+                    V24MatchContext changed = ctx.withNewFormation(userTeamId, safeAction.changedFormation());
+                    return safeAction.formationSlotsByPlayerId() != null
+                        && !safeAction.formationSlotsByPlayerId().isEmpty()
+                            ? changed.withSlots(userTeamId, safeAction.formationSlotsByPlayerId())
+                            : changed;
+                });
                 tacticalChanges = 1;
             } else if (safeAction.type() == ScenarioActionType.POSITION && safeAction.positionPlan() != null) {
                 PositionPlan plan = safeAction.positionPlan();
@@ -3863,6 +5214,82 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             userIsHome ? awaySlots : userSlots);
     }
 
+    private V24MatchContext buildRoleOverrideContext(
+            V24MatchContext context,
+            String userTeamId,
+            String playerId,
+            String naturalPosition) {
+        boolean userIsHome = context.homeTeamId().equals(userTeamId);
+        boolean userIsAway = context.awayTeamId().equals(userTeamId);
+        if (!userIsHome && !userIsAway) {
+            throw new IllegalArgumentException("userTeamId does not belong to context: " + userTeamId);
+        }
+        List<SessionPlayer> starters = new ArrayList<>(
+            userIsHome ? context.homeStartingPlayers() : context.awayStartingPlayers());
+        boolean replaced = false;
+        for (int i = 0; i < starters.size(); i++) {
+            SessionPlayer current = starters.get(i);
+            if (current != null && playerId.equals(current.getSessionPlayerId())) {
+                starters.set(i, roleOverrideClone(current, naturalPosition));
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) {
+            throw new IllegalArgumentException("playerId '" + playerId + "' not in controlled starting XI");
+        }
+        return new V24MatchContext(
+            context.matchId(),
+            context.homeTeamId(),
+            context.awayTeamId(),
+            context.homeTeam(),
+            context.awayTeam(),
+            userIsHome ? starters : context.homeStartingPlayers(),
+            userIsHome ? context.awayStartingPlayers() : starters,
+            context.homeBenchPlayers(),
+            context.awayBenchPlayers(),
+            context.homeFormation(),
+            context.awayFormation(),
+            context.homeStyle(),
+            context.awayStyle(),
+            context.manualSubstitutions(),
+            context.homeSlotsByPlayerId(),
+            context.awaySlotsByPlayerId());
+    }
+
+    private SessionPlayer roleOverrideClone(SessionPlayer source, String naturalPosition) {
+        SessionPlayer clone = SessionPlayer.custom(
+            source.getName(),
+            source.getAge(),
+            naturalPosition,
+            source.getAttack(),
+            source.getDefense(),
+            source.getTechnique(),
+            source.getSpeed(),
+            source.getStamina(),
+            source.getMentality(),
+            source.getMarketValue());
+        clone.setSessionPlayerId(source.getSessionPlayerId());
+        clone.setBasePlayerId(source.getBasePlayerId());
+        clone.setWorldPlayerId(source.getWorldPlayerId());
+        clone.setEnergy(source.getEnergy());
+        clone.setForm(source.getForm());
+        clone.setInjured(source.getInjured());
+        clone.setInjuryType(source.getInjuryType());
+        clone.setInjuryRemainingMatches(source.getInjuryRemainingMatches());
+        clone.setMatchesPlayedInRow(source.getMatchesPlayedInRow());
+        clone.setYellowCards(source.getYellowCards());
+        clone.setRedCards(source.getRedCards());
+        clone.setSuspended(source.getSuspended());
+        clone.setSuspensionRemainingMatches(source.getSuspensionRemainingMatches());
+        clone.setOrigin(source.getOrigin());
+        clone.setHeightCm(source.getHeightCm());
+        for (Map.Entry<PlayerSkill, Integer> entry : source.getSkillLevels().entrySet()) {
+            clone.setSkillLevel(entry.getKey(), entry.getValue());
+        }
+        return clone;
+    }
+
     private double clampPercent(double value) {
         return Math.max(0.0, Math.min(100.0, value));
     }
@@ -4081,6 +5508,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         private double centralShotsAgainst;
         private double wideShotsAgainst;
         private double longShotsAgainst;
+        private double leftWideShotsFor;
+        private double rightWideShotsFor;
+        private double leftWideShotsAgainst;
+        private double rightWideShotsAgainst;
+        private double leftWideXgFor;
+        private double rightWideXgFor;
+        private double leftWideXgAgainst;
+        private double rightWideXgAgainst;
         private double shapePossessionMultiplier;
         private double shapeAttackVolumeMultiplier;
         private double shapeDefensiveResistanceMultiplier;
@@ -4110,6 +5545,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             centralShotsAgainst += userIsHome ? row.awayCentralShots() : row.homeCentralShots();
             wideShotsAgainst += userIsHome ? row.awayWideShots() : row.homeWideShots();
             longShotsAgainst += userIsHome ? row.awayLongShots() : row.homeLongShots();
+            leftWideShotsFor += userIsHome ? row.homeLeftWideShots() : row.awayLeftWideShots();
+            rightWideShotsFor += userIsHome ? row.homeRightWideShots() : row.awayRightWideShots();
+            leftWideShotsAgainst += userIsHome ? row.awayLeftWideShots() : row.homeLeftWideShots();
+            rightWideShotsAgainst += userIsHome ? row.awayRightWideShots() : row.homeRightWideShots();
+            leftWideXgFor += userIsHome ? row.homeLeftWideXg() : row.awayLeftWideXg();
+            rightWideXgFor += userIsHome ? row.homeRightWideXg() : row.awayRightWideXg();
+            leftWideXgAgainst += userIsHome ? row.awayLeftWideXg() : row.homeLeftWideXg();
+            rightWideXgAgainst += userIsHome ? row.awayRightWideXg() : row.homeRightWideXg();
             shapePossessionMultiplier += row.shapePossessionMultiplier();
             shapeAttackVolumeMultiplier += row.shapeAttackVolumeMultiplier();
             shapeDefensiveResistanceMultiplier += row.shapeDefensiveResistanceMultiplier();
@@ -4150,6 +5593,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 round2(centralShotsAgainst / safeCount),
                 round2(wideShotsAgainst / safeCount),
                 round2(longShotsAgainst / safeCount),
+                round2(leftWideShotsFor / safeCount),
+                round2(rightWideShotsFor / safeCount),
+                round2(leftWideShotsAgainst / safeCount),
+                round2(rightWideShotsAgainst / safeCount),
+                round3(leftWideXgFor / safeCount),
+                round3(rightWideXgFor / safeCount),
+                round3(leftWideXgAgainst / safeCount),
+                round3(rightWideXgAgainst / safeCount),
                 round3(shapePossessionMultiplier / safeCount),
                 round3(shapeAttackVolumeMultiplier / safeCount),
                 round3(shapeDefensiveResistanceMultiplier / safeCount),
@@ -4347,35 +5798,40 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         ScenarioActionType type,
         TeamStyle changedStyle,
         String changedFormation,
+        Map<String, LineupSlotDTO> formationSlotsByPlayerId,
         PositionPlan positionPlan,
         SubPlan subPlan
     ) {
         static ScenarioAction none() {
-            return new ScenarioAction(ScenarioActionType.NONE, null, null, null, null);
+            return new ScenarioAction(ScenarioActionType.NONE, null, null, null, null, null);
         }
 
         static ScenarioAction noopReplay() {
-            return new ScenarioAction(ScenarioActionType.NOOP_REPLAY, null, null, null, null);
+            return new ScenarioAction(ScenarioActionType.NOOP_REPLAY, null, null, null, null, null);
         }
 
         static ScenarioAction style(TeamStyle style) {
-            return new ScenarioAction(ScenarioActionType.STYLE, style, null, null, null);
+            return new ScenarioAction(ScenarioActionType.STYLE, style, null, null, null, null);
         }
 
         static ScenarioAction opponentStyle(TeamStyle style) {
-            return new ScenarioAction(ScenarioActionType.OPPONENT_STYLE, style, null, null, null);
+            return new ScenarioAction(ScenarioActionType.OPPONENT_STYLE, style, null, null, null, null);
         }
 
         static ScenarioAction formation(String formation) {
-            return new ScenarioAction(ScenarioActionType.FORMATION, null, formation, null, null);
+            return formation(formation, null);
+        }
+
+        static ScenarioAction formation(String formation, Map<String, LineupSlotDTO> slotsByPlayerId) {
+            return new ScenarioAction(ScenarioActionType.FORMATION, null, formation, slotsByPlayerId, null, null);
         }
 
         static ScenarioAction position(PositionPlan positionPlan) {
-            return new ScenarioAction(ScenarioActionType.POSITION, null, null, positionPlan, null);
+            return new ScenarioAction(ScenarioActionType.POSITION, null, null, null, positionPlan, null);
         }
 
         static ScenarioAction substitution(SubPlan subPlan) {
-            return new ScenarioAction(ScenarioActionType.SUBSTITUTION, null, null, null, subPlan);
+            return new ScenarioAction(ScenarioActionType.SUBSTITUTION, null, null, null, null, subPlan);
         }
 
         String detail() {

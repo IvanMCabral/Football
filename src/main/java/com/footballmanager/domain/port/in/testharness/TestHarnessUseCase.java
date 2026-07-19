@@ -94,9 +94,18 @@ public interface TestHarnessUseCase {
      */
     Mono<MatchFixture> replayMatch(UUID userId, String matchId, Long seedOverride);
 
+    Mono<MatchPreviewSummary> runMatchPreviewSummary(
+        UUID userId,
+        String matchId,
+        long seedStart,
+        int seedCount,
+        String controlledTeamSide);
+
     Mono<List<FormationMatrixRow>> runFormationMatrix(UUID userId, String matchId, Long seedOverride, String controlledTeamSide);
 
     Mono<List<FormationMatrixSummaryRow>> runFormationMatrixSummary(UUID userId, String matchId, long seedStart, int seedCount, String controlledTeamSide);
+
+    Mono<List<SideMirrorSyntheticLabRow>> runSideMirrorSyntheticLab(UUID userId, long seedStart, int seedCount);
 
     Mono<List<ScenarioMatrixRow>> runScenarioMatrix(UUID userId, String matchId, Long seedOverride);
 
@@ -123,6 +132,17 @@ public interface TestHarnessUseCase {
         long seedStart,
         int seedCount,
         String controlledTeamSide);
+
+    Mono<List<RoleSlotImpactSummaryRow>> runRoleSlotImpactSummary(
+        UUID userId,
+        String matchId,
+        String slotId,
+        List<String> naturalPositions,
+        long seedStart,
+        int seedCount,
+        String controlledTeamSide);
+
+    Mono<LineupDiagnostic> lineupDiagnostic(UUID userId, String matchId, Long seedOverride);
 
     Mono<LabMutationResult> prepareOffensiveUpgradeLab(UUID userId);
 
@@ -271,6 +291,14 @@ public interface TestHarnessUseCase {
         int awayCentralShots,
         int awayWideShots,
         int awayLongShots,
+        int homeLeftWideShots,
+        int homeRightWideShots,
+        double homeLeftWideXg,
+        double homeRightWideXg,
+        int awayLeftWideShots,
+        int awayRightWideShots,
+        double awayLeftWideXg,
+        double awayRightWideXg,
         double shapePossessionMultiplier,
         double shapeAttackVolumeMultiplier,
         double shapeDefensiveResistanceMultiplier,
@@ -303,6 +331,14 @@ public interface TestHarnessUseCase {
         double avgCentralShotsAgainst,
         double avgWideShotsAgainst,
         double avgLongShotsAgainst,
+        double avgLeftWideShotsFor,
+        double avgRightWideShotsFor,
+        double avgLeftWideShotsAgainst,
+        double avgRightWideShotsAgainst,
+        double avgLeftWideXgFor,
+        double avgRightWideXgFor,
+        double avgLeftWideXgAgainst,
+        double avgRightWideXgAgainst,
         double avgShapePossessionMultiplier,
         double avgShapeAttackVolumeMultiplier,
         double avgShapeDefensiveResistanceMultiplier,
@@ -312,6 +348,26 @@ public interface TestHarnessUseCase {
         double avgShapeDefenseLeft,
         double avgShapeDefenseCenter,
         double avgShapeDefenseRight
+    ) {}
+
+    record SideMirrorSyntheticLabRow(
+        String formation,
+        long seedStart,
+        long seedEnd,
+        int seedCount,
+        double weakLeftWideXgL,
+        double weakLeftWideXgR,
+        double weakRightWideXgL,
+        double weakRightWideXgR,
+        double weakLeftWideShotsL,
+        double weakLeftWideShotsR,
+        double weakRightWideShotsL,
+        double weakRightWideShotsR,
+        double weakLeftRightEdge,
+        double weakRightLeftEdge,
+        double mirrorGap,
+        String verdict,
+        String read
     ) {}
 
     record ScenarioMatrixSummaryRow(
@@ -342,7 +398,10 @@ public interface TestHarnessUseCase {
         double avgUserRightWideXgDelta,
         double avgOpponentLeftWideXgDelta,
         double avgOpponentRightWideXgDelta,
-        String baselineScenario
+        String baselineScenario,
+        String baselineFormation,
+        String changedFormation,
+        boolean sameFormationAsBaseline
     ) {}
 
     record PlayerSwapMatrixSummaryRow(
@@ -514,7 +573,136 @@ public interface TestHarnessUseCase {
         double deltaLeftWideShotsAgainst,
         double deltaRightWideShotsAgainst,
         double deltaLeftWideXgAgainst,
-        double deltaRightWideXgAgainst
+        double deltaRightWideXgAgainst,
+        String baselineTacticalPosition,
+        String movedTacticalPosition,
+        double baselinePlayerEffectiveness,
+        double movedPlayerEffectiveness,
+        double deltaPlayerEffectiveness,
+        double baselinePlayerCollective,
+        double movedPlayerCollective,
+        double deltaPlayerCollective
+    ) {}
+
+    record RoleSlotImpactSummaryRow(
+        String matchId,
+        String formation,
+        String slotId,
+        double slotXPercent,
+        double slotYPercent,
+        String baselinePlayerId,
+        String baselinePlayerName,
+        String baselineNaturalPosition,
+        String testedNaturalPosition,
+        String tacticalPosition,
+        long seedStart,
+        long seedEnd,
+        int seedCount,
+        double playerEffectiveness,
+        double playerCollective,
+        double avgGoalsFor,
+        double avgGoalsAgainst,
+        double avgGoalDiff,
+        double avgShotsFor,
+        double avgShotsAgainst,
+        double avgPossessionFor,
+        double avgXgFor,
+        double avgXgAgainst,
+        double avgXgDiff,
+        double avgCentralShotsFor,
+        double avgWideShotsFor,
+        double avgLongShotsFor,
+        double avgCentralXgFor,
+        double avgWideXgFor,
+        double avgLongXgFor
+    ) {}
+
+    record LineupDiagnostic(
+        String matchId,
+        long seed,
+        LineupDiagnosticTeam home,
+        LineupDiagnosticTeam away
+    ) {}
+
+    record MatchPreviewSummary(
+        String matchId,
+        String controlledTeamSide,
+        long seedStart,
+        long seedEnd,
+        int seedCount,
+        String teamName,
+        String formation,
+        double avgGoalsFor,
+        double avgGoalsAgainst,
+        double avgGoalDiff,
+        double avgPossessionFor,
+        double avgShotsFor,
+        double avgShotsAgainst,
+        double avgShotDiff,
+        double avgXgFor,
+        double avgXgAgainst,
+        double avgXgDiff,
+        double avgCentralShotsFor,
+        double avgWideShotsFor,
+        double avgLongShotsFor,
+        double avgCentralShotsAgainst,
+        double avgWideShotsAgainst,
+        double avgLongShotsAgainst
+    ) {}
+
+    record LineupDiagnosticTeam(
+        String teamId,
+        String teamName,
+        String formation,
+        TeamStyle style,
+        double avgOverall,
+        double avgCollective,
+        double avgEffectiveness,
+        int starters,
+        LineupWidthDiagnostic width,
+        List<LineupDiagnosticPlayer> players
+    ) {}
+
+    record LineupWidthDiagnostic(
+        int leftCount,
+        int centerCount,
+        int rightCount,
+        int wideCount,
+        double leftAvgX,
+        double rightAvgX,
+        double widthScore,
+        double sideBalance,
+        String verdict,
+        String read
+    ) {}
+
+    record LineupDiagnosticPlayer(
+        String playerId,
+        String name,
+        String naturalPosition,
+        String tacticalPosition,
+        String slotRole,
+        String slotSide,
+        String slotId,
+        Double xPercent,
+        Double yPercent,
+        String positionSource,
+        String curatedRoles,
+        String preferredSides,
+        int roleBonus,
+        int sideBonus,
+        int assignmentScore,
+        String assignmentVerdict,
+        String assignmentRead,
+        int attack,
+        int defense,
+        int technique,
+        int speed,
+        int stamina,
+        int mentality,
+        int overall,
+        double effectiveness,
+        double collective
     ) {}
 
     record LabMutationResult(

@@ -163,22 +163,117 @@ public final class TacticalChemistryCalculator {
 
     private static Map<String, Integer> channelScores(List<Node> nodes) {
         Map<String, Integer> result = new LinkedHashMap<>();
-        result.put("LEFT", channelScore(nodes, 0, 36));
-        result.put("CENTER", channelScore(nodes, 30, 70));
-        result.put("RIGHT", channelScore(nodes, 64, 100));
+        result.put("LEFT", channelScore(nodes, "LEFT", 18.0));
+        result.put("CENTER", channelScore(nodes, "CENTER", 50.0));
+        result.put("RIGHT", channelScore(nodes, "RIGHT", 82.0));
         return result;
     }
 
-    private static int channelScore(List<Node> nodes, double minX, double maxX) {
-        long def = nodes.stream().filter(n -> "DEF".equals(n.category()) && n.x() >= minX && n.x() <= maxX).count();
-        long mid = nodes.stream().filter(n -> "MID".equals(n.category()) && n.x() >= minX && n.x() <= maxX).count();
-        long att = nodes.stream().filter(n -> "ATT".equals(n.category()) && n.x() >= minX && n.x() <= maxX).count();
-        int score = 45;
-        if (def > 0) score += 15;
-        if (mid > 0) score += 20;
-        if (att > 0) score += 15;
-        if (def > 0 && mid > 0 && att > 0) score += 5;
-        return clamp(score);
+    private static int channelScore(List<Node> nodes, String channel, double channelCenterX) {
+        double def = strongestChannelContribution(nodes, channel, channelCenterX, "DEF");
+        double mid = strongestChannelContribution(nodes, channel, channelCenterX, "MID");
+        double att = strongestChannelContribution(nodes, channel, channelCenterX, "ATT");
+        double support = supportContribution(nodes, channel, channelCenterX);
+
+        double score = 38.0;
+        score += 14.0 * def;
+        score += 18.0 * mid;
+        score += 14.0 * att;
+        score += 4.0 * Math.min(def, Math.min(mid, att));
+        score += support;
+        return clamp((int) Math.round(score));
+    }
+
+    private static double strongestChannelContribution(
+            List<Node> nodes,
+            String channel,
+            double channelCenterX,
+            String category
+    ) {
+        return nodes.stream()
+                .filter(n -> category.equals(n.category()))
+                .mapToDouble(n -> channelAffinity(n, channel, channelCenterX) * verticalIntent(n, category))
+                .max()
+                .orElse(0.0);
+    }
+
+    private static double supportContribution(List<Node> nodes, String channel, double channelCenterX) {
+        double contribution = nodes.stream()
+                .mapToDouble(n -> {
+                    double affinity = channelAffinity(n, channel, channelCenterX);
+                    if (affinity <= 0.05) {
+                        return 0.0;
+                    }
+                    double wideIntent = "CENTER".equals(channel)
+                            ? centerSupportIntent(n)
+                            : wideSupportIntent(n);
+                    return affinity * wideIntent;
+                })
+                .sum();
+        return Math.min(22.0, contribution);
+    }
+
+    private static double channelAffinity(Node node, String channel, double channelCenterX) {
+        double x = node.x();
+        if ("LEFT".equals(channel) && x > 42.0) {
+            return 0.0;
+        }
+        if ("RIGHT".equals(channel) && x < 58.0) {
+            return 0.0;
+        }
+        if ("CENTER".equals(channel) && (x < 24.0 || x > 76.0)) {
+            return 0.0;
+        }
+        double distance = Math.abs(x - channelCenterX);
+        double radius = "CENTER".equals(channel) ? 30.0 : 26.0;
+        double plateau = "CENTER".equals(channel) ? 8.0 : 10.0;
+        return clamp01(1.0 - Math.max(0.0, distance - plateau) / radius);
+    }
+
+    private static double verticalIntent(Node node, String category) {
+        double y = node.y();
+        if ("DEF".equals(category)) {
+            return clamp01(0.70 + (y - 58.0) / 62.0);
+        }
+        if ("MID".equals(category)) {
+            if (y <= 55.0) {
+                return clamp01(0.92 + (y - 35.0) / 250.0);
+            }
+            double centralBand = 1.0 - Math.abs(y - 55.0) / 42.0;
+            return clamp01(0.72 + centralBand * 0.34);
+        }
+        if ("ATT".equals(category)) {
+            return clamp01(0.72 + (50.0 - y) / 58.0);
+        }
+        return 0.8;
+    }
+
+    private static double wideSupportIntent(Node node) {
+        double y = node.y();
+        if ("DEF".equals(node.category())) {
+            return clamp01((86.0 - y) / 26.0) * 5.0;
+        }
+        if ("MID".equals(node.category())) {
+            return clamp01((74.0 - y) / 38.0) * 12.0;
+        }
+        if ("ATT".equals(node.category())) {
+            return clamp01((42.0 - y) / 26.0) * 3.0;
+        }
+        return 0.0;
+    }
+
+    private static double centerSupportIntent(Node node) {
+        double xCentrality = clamp01(1.0 - Math.abs(node.x() - 50.0) / 28.0);
+        if ("MID".equals(node.category())) {
+            return xCentrality * 4.0;
+        }
+        if ("ATT".equals(node.category())) {
+            return xCentrality * 2.0;
+        }
+        if ("DEF".equals(node.category())) {
+            return xCentrality * 2.0;
+        }
+        return 0.0;
     }
 
     private static int aggregateScore(
@@ -231,6 +326,10 @@ public final class TacticalChemistryCalculator {
 
     private static int clamp(int v) {
         return Math.max(0, Math.min(99, v));
+    }
+
+    private static double clamp01(double v) {
+        return Math.max(0.0, Math.min(1.0, v));
     }
 
     private static double round1(double v) {

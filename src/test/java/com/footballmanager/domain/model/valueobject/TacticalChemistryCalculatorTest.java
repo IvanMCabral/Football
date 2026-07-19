@@ -68,6 +68,45 @@ class TacticalChemistryCalculatorTest {
                 "Moving a midfielder far away should affect tactical chemistry");
     }
 
+    @Test
+    @DisplayName("Wide midfielder projection changes the matching channel")
+    void wideMidfielderProjectionChangesMatchingChannel() {
+        TacticalChemistry base = TacticalChemistryCalculator.calculate(canonical442(), NATURAL, COORDS);
+        List<LineupSlotDTO> moved = canonical442().stream()
+                .map(s -> "lm".equals(s.playerId())
+                        ? new LineupSlotDTO(s.playerId(), s.subdivisionId(), 10.0, 50.0)
+                        : s)
+                .toList();
+
+        TacticalChemistry changed = TacticalChemistryCalculator.calculate(moved, NATURAL, COORDS);
+
+        assertTrue(changed.channelScores().get("LEFT") > base.channelScores().get("LEFT"),
+                "Projecting the left midfielder up/wide should improve LEFT channel. base="
+                        + base.channelScores() + " changed=" + changed.channelScores());
+        assertEquals(base.channelScores().get("RIGHT"), changed.channelScores().get("RIGHT"),
+                "A left-sided move should not falsely improve RIGHT channel");
+    }
+
+    @Test
+    @DisplayName("Central midfielder moving wide shifts channel balance")
+    void centralMidfielderWideMoveShiftsChannelBalance() {
+        TacticalChemistry base = TacticalChemistryCalculator.calculate(canonical442(), NATURAL, COORDS);
+        List<LineupSlotDTO> moved = canonical442().stream()
+                .map(s -> "cm1".equals(s.playerId())
+                        ? new LineupSlotDTO(s.playerId(), s.subdivisionId(), 18.0, 61.0)
+                        : s)
+                .toList();
+
+        TacticalChemistry changed = TacticalChemistryCalculator.calculate(moved, NATURAL, COORDS);
+
+        assertTrue(changed.channelScores().get("LEFT") >= base.channelScores().get("LEFT"),
+                "Opening a CM toward the left should help or preserve LEFT channel. base="
+                        + base.channelScores() + " changed=" + changed.channelScores());
+        assertTrue(changed.channelScores().get("CENTER") < base.channelScores().get("CENTER"),
+                "Opening a CM out of the center should reduce CENTER channel. base="
+                        + base.channelScores() + " changed=" + changed.channelScores());
+    }
+
     private static List<LineupSlotDTO> canonical442() {
         return List.of(
                 new LineupSlotDTO("gk", "GK-1"),
