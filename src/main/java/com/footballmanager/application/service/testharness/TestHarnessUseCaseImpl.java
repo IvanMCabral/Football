@@ -4216,18 +4216,41 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             45,
             ScenarioAction.position(plan)));
 
+        Optional<PositionPlan> compactCenterPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "compact-center", ShapePreset.COMPACT_CENTER);
+        Optional<PositionPlan> wideOverloadPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "wide-overload", ShapePreset.WIDE_OVERLOAD);
+        Optional<PositionPlan> attackingStepPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "attacking-step", ShapePreset.ATTACKING_STEP);
+        Optional<PositionPlan> attackingHighPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "attacking-high", ShapePreset.ATTACKING_HIGH);
+        Optional<PositionPlan> highPressPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "high-press", ShapePreset.HIGH_PRESS);
+        Optional<PositionPlan> doubleStrikerPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "double-striker", ShapePreset.DOUBLE_STRIKER);
+        Optional<PositionPlan> allOutPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "all-out", ShapePreset.ALL_OUT);
+        Optional<PositionPlan> defensiveStepPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "defensive-step", ShapePreset.DEFENSIVE_STEP);
+        Optional<PositionPlan> defensiveLowPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "defensive-low", ShapePreset.DEFENSIVE_LOW);
+        Optional<PositionPlan> leftOverloadPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "left-overload", ShapePreset.LEFT_OVERLOAD);
+        Optional<PositionPlan> rightOverloadPlan =
+            buildShapePlan(baseContext, userTeamId, formation, "right-overload", ShapePreset.RIGHT_OVERLOAD);
+
         List.of(
-            buildShapePlan(baseContext, userTeamId, formation, "compact-center", ShapePreset.COMPACT_CENTER),
-            buildShapePlan(baseContext, userTeamId, formation, "wide-overload", ShapePreset.WIDE_OVERLOAD),
-            buildShapePlan(baseContext, userTeamId, formation, "attacking-step", ShapePreset.ATTACKING_STEP),
-            buildShapePlan(baseContext, userTeamId, formation, "attacking-high", ShapePreset.ATTACKING_HIGH),
-            buildShapePlan(baseContext, userTeamId, formation, "high-press", ShapePreset.HIGH_PRESS),
-            buildShapePlan(baseContext, userTeamId, formation, "double-striker", ShapePreset.DOUBLE_STRIKER),
-            buildShapePlan(baseContext, userTeamId, formation, "all-out", ShapePreset.ALL_OUT),
-            buildShapePlan(baseContext, userTeamId, formation, "defensive-step", ShapePreset.DEFENSIVE_STEP),
-            buildShapePlan(baseContext, userTeamId, formation, "defensive-low", ShapePreset.DEFENSIVE_LOW),
-            buildShapePlan(baseContext, userTeamId, formation, "left-overload", ShapePreset.LEFT_OVERLOAD),
-            buildShapePlan(baseContext, userTeamId, formation, "right-overload", ShapePreset.RIGHT_OVERLOAD)
+            compactCenterPlan,
+            wideOverloadPlan,
+            attackingStepPlan,
+            attackingHighPlan,
+            highPressPlan,
+            doubleStrikerPlan,
+            allOutPlan,
+            defensiveStepPlan,
+            defensiveLowPlan,
+            leftOverloadPlan,
+            rightOverloadPlan
         ).forEach(planOpt -> planOpt.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup,
             career,
             fixture,
@@ -4253,6 +4276,30 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             career, fixture, userTeamId, home, away, true, Set.of("DEF"));
         Optional<SubPlan> defensiveDowngradeSub = chooseScoredSubstitution(
             career, fixture, userTeamId, home, away, false, Set.of("DEF"));
+
+        impactSub.ifPresent(sub -> {
+            highPressPlan.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
+                "m45-combo-high-press-impact-sub",
+                "Minute 45 -> high press + impact substitution",
+                formation,
+                TeamStyle.BALANCED,
+                45,
+                ScenarioAction.positionAndSubstitution(plan, sub)));
+            doubleStrikerPlan.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
+                "m45-combo-double-striker-impact-sub",
+                "Minute 45 -> double striker + impact substitution",
+                formation,
+                TeamStyle.BALANCED,
+                45,
+                ScenarioAction.positionAndSubstitution(plan, sub)));
+            allOutPlan.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
+                "m45-combo-all-out-impact-sub",
+                "Minute 45 -> all out + impact substitution",
+                formation,
+                TeamStyle.BALANCED,
+                45,
+                ScenarioAction.positionAndSubstitution(plan, sub)));
+        });
         boolean hasMinute30Scenario = offensiveUpgradeSub.isPresent()
             || offensiveDowngradeSub.isPresent()
             || defensiveUpgradeSub.isPresent()
@@ -4390,6 +4437,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 || key.contains("press")
                 || key.contains("striker")
                 || key.contains("all-out")
+                || key.contains("combo")
                 || key.contains("compact")
                 || key.contains("offensive"));
             case "DEFENSE" -> key.contains("defensive")
@@ -4524,6 +4572,20 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     plan.playerOffId(),
                     plan.playerOnId(),
                     changeMinute));
+                substitutions = 1;
+            } else if (safeAction.type() == ScenarioActionType.POSITION_AND_SUBSTITUTION
+                && safeAction.positionPlan() != null
+                && safeAction.subPlan() != null) {
+                PositionPlan positionPlan = safeAction.positionPlan();
+                SubPlan subPlan = safeAction.subPlan();
+                session.mutateContext(ctx -> ctx
+                    .withSlots(userTeamId, positionPlan.slotsByPlayerId())
+                    .withManualSubstitution(
+                        userTeamId,
+                        subPlan.playerOffId(),
+                        subPlan.playerOnId(),
+                        changeMinute));
+                tacticalChanges = 1;
                 substitutions = 1;
             }
             while (!session.isFinished()) {
@@ -4835,14 +4897,27 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     on.getPosition(),
                     substitutionScore(on) - substitutionScore(off))))
             .flatMap(Optional::stream)
+            .filter(plan -> plan.scoreDelta() >= 25)
             .findFirst();
     }
 
     private Optional<SessionPlayer> bestBenchReplacement(SessionPlayer off, List<SessionPlayer> bench) {
+        Optional<SessionPlayer> exactRole = bench.stream()
+            .filter(this::isOutfieldPlayer)
+            .filter(p -> p.getSessionPlayerId() != null && !p.getSessionPlayerId().isBlank())
+            .filter(p -> Objects.equals(off.getPosition(), p.getPosition()))
+            .max(Comparator
+                .comparingInt(this::substitutionScore)
+                .thenComparingInt(p -> safeInt(p.getTechnique()))
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)));
+        if (exactRole.isPresent() && substitutionScore(exactRole.get()) > substitutionScore(off)) {
+            return exactRole;
+        }
         return bench.stream()
             .filter(this::isOutfieldPlayer)
             .filter(p -> p.getSessionPlayerId() != null && !p.getSessionPlayerId().isBlank())
-            .filter(p -> off.getPosition() != null && off.getPosition().equals(p.getPosition()))
+            .filter(p -> samePosition(off, p))
+            .filter(p -> substitutionScore(p) > substitutionScore(off))
             .max(Comparator
                 .comparingInt(this::substitutionScore)
                 .thenComparingInt(p -> safeInt(p.getTechnique()))
@@ -4888,7 +4963,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 || allowedPositions.contains(off.getPosition()))
             .flatMap(off -> bench.stream()
                 .filter(this::isOutfieldPlayer)
-                .filter(on -> samePosition(off, on))
+                .filter(on -> upgrade
+                    ? Objects.equals(off.getPosition(), on.getPosition())
+                    : samePosition(off, on))
                 .map(on -> toSubPlan(off, on)))
             .filter(plan -> upgrade ? plan.scoreDelta() > 0 : plan.scoreDelta() < 0)
             .max(upgrade
@@ -5821,7 +5898,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         OPPONENT_STYLE,
         FORMATION,
         POSITION,
-        SUBSTITUTION
+        SUBSTITUTION,
+        POSITION_AND_SUBSTITUTION
     }
 
     private enum ShapePreset {
@@ -5878,6 +5956,16 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return new ScenarioAction(ScenarioActionType.SUBSTITUTION, null, null, null, null, subPlan);
         }
 
+        static ScenarioAction positionAndSubstitution(PositionPlan positionPlan, SubPlan subPlan) {
+            return new ScenarioAction(
+                ScenarioActionType.POSITION_AND_SUBSTITUTION,
+                null,
+                null,
+                null,
+                positionPlan,
+                subPlan);
+        }
+
         String detail() {
             return switch (type) {
                 case NONE -> "Sin cambios";
@@ -5897,6 +5985,13 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                         + subPlan.onName() + " (" + subPlan.onPosition() + ")"
                         + " [" + (subPlan.scoreDelta() >= 0 ? "+" : "") + subPlan.scoreDelta() + "]"
                     : "Substitution";
+                case POSITION_AND_SUBSTITUTION -> {
+                    String shape = positionPlan != null ? positionPlan.playerName() : "shape";
+                    String sub = subPlan != null
+                        ? subPlan.offName() + " -> " + subPlan.onName()
+                        : "substitution";
+                    yield shape + " + " + sub;
+                }
             };
         }
     }

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -657,6 +658,19 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     // a few more opponent chances and elite defenders suppress
                     // a few without making matches deterministic.
                     * defenderRosterChanceVolumeMultiplier(opponentDefenderStat)
+                    // V25D99.20.3.2: live/manual substitutions must leave a
+                    // measurable tactical footprint in the same harness layer
+                    // used by formations and pixel moves. The swap already
+                    // changes the on-pitch XI, but with cached deterministic
+                    // replay a same-line player change could keep the same
+                    // random thresholds and read as 0.0 across summary rows.
+                    // Blend a small roster-delta multiplier from the scheduled
+                    // substitutions that are already active at this minute.
+                    * scheduledSubAttackVolumeMultiplier(
+                            possessor,
+                            context.manualSubstitutions(),
+                            possessor.teamId(),
+                            minute)
                     // V25D99.166: chance volume cannot be only "best attacker
                     // + lane shape". A team with a better on-pitch XI should
                     // create a bit more sustained pressure, and a side built
@@ -1446,6 +1460,63 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .average()
                 .orElse(70.0);
         return avg;
+    }
+
+    private double scheduledSubAttackVolumeMultiplier(
+            V24TeamMatchState team,
+            List<V24MatchContext.ScheduledSub> substitutions,
+            String teamId,
+            int minute) {
+        if (team == null || substitutions == null || substitutions.isEmpty() || teamId == null) {
+            return 1.0;
+        }
+        double delta = 0.0;
+        for (V24MatchContext.ScheduledSub sub : substitutions) {
+            if (sub == null
+                    || !teamId.equals(sub.teamId())
+                    || sub.effectiveMinute() > minute) {
+                continue;
+            }
+            V24PlayerMatchState off = findPlayerForSubImpact(team, sub.playerOffId());
+            V24PlayerMatchState on = findPlayerForSubImpact(team, sub.playerOnId());
+            if (off == null || on == null) {
+                continue;
+            }
+            delta += substitutionAttackFootprint(on) - substitutionAttackFootprint(off);
+        }
+        if (Math.abs(delta) < 0.001) {
+            return 1.0;
+        }
+        return clamp(1.0 + (delta / 700.0), 0.86, 1.14);
+    }
+
+    private V24PlayerMatchState findPlayerForSubImpact(V24TeamMatchState team, String playerId) {
+        if (team == null || playerId == null || playerId.isBlank()) return null;
+        for (V24PlayerMatchState p : team.startingPlayers()) {
+            if (p != null && playerId.equals(p.sessionPlayerId())) return p;
+        }
+        for (V24PlayerMatchState p : team.benchPlayers()) {
+            if (p != null && playerId.equals(p.sessionPlayerId())) return p;
+        }
+        return null;
+    }
+
+    private double substitutionAttackFootprint(V24PlayerMatchState player) {
+        if (player == null) return 0.0;
+        String pos = player.naturalPosition() != null ? player.naturalPosition().toUpperCase(Locale.ROOT) : "";
+        double roleWeight = switch (pos) {
+            case "ATT", "ST", "CF" -> 1.18;
+            case "WINGER", "LW", "RW" -> 1.12;
+            case "MID", "CM", "CAM", "AM", "LM", "RM" -> 0.96;
+            case "DEF", "CB", "LB", "RB", "LWB", "RWB" -> 0.70;
+            default -> 0.88;
+        };
+        return roleWeight * (
+                player.attack() * 2.6
+                    + player.technique() * 1.5
+                    + player.speed() * 1.1
+                    + player.mentality() * 0.8
+                    + player.stamina() * 0.4);
     }
 
     private double aggregateCollectiveStat(
