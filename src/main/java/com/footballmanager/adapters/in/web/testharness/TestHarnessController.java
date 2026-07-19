@@ -13,6 +13,7 @@ import com.footballmanager.adapters.in.web.testharness.dto.ScenarioMatrixSummary
 import com.footballmanager.adapters.in.web.testharness.dto.InjectPlayerStatsRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetFormationRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SetStyleRequest;
+import com.footballmanager.adapters.in.web.testharness.dto.SubstitutionWhatIfRequest;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
@@ -640,6 +641,28 @@ public class TestHarnessController {
                 request != null ? request.starterPlayerId() : null,
                 request != null ? request.benchPlayerId() : null,
                 request != null ? request.slotId() : null,
+                seedStart,
+                seedCount,
+                request != null ? request.controlledTeamSide() : null)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/match/{matchId}/substitution-what-if/summary")
+    public Mono<ResponseEntity<TestHarnessUseCase.SubstitutionWhatIfSummaryRow>> substitutionWhatIfSummary(
+            @PathVariable String matchId,
+            @RequestBody SubstitutionWhatIfRequest request,
+            Authentication authentication) {
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        long seedStart = (request != null && request.seedStart() != null) ? request.seedStart() : 12345L;
+        int seedCount = (request != null && request.seedCount() != null) ? request.seedCount() : 20;
+
+        return testHarnessUseCase.runSubstitutionWhatIfSummary(
+                userId,
+                matchId,
+                request != null ? request.playerOffId() : null,
+                request != null ? request.playerOnId() : null,
+                request != null ? request.minute() : null,
                 seedStart,
                 seedCount,
                 request != null ? request.controlledTeamSide() : null)

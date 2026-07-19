@@ -3248,6 +3248,210 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             null);
     }
 
+    @Override
+    public Mono<SubstitutionWhatIfSummaryRow> runSubstitutionWhatIfSummary(
+            UUID userId,
+            String matchId,
+            String playerOffId,
+            String playerOnId,
+            Integer minute,
+            long seedStart,
+            int seedCount,
+            String controlledTeamSide) {
+        if (matchId == null || matchId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("matchId is required"));
+        }
+        if (playerOffId == null || playerOffId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("playerOffId is required"));
+        }
+        if (playerOnId == null || playerOnId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("playerOnId is required"));
+        }
+        if (playerOffId.equals(playerOnId)) {
+            return Mono.error(new IllegalArgumentException("playerOffId and playerOnId must differ"));
+        }
+        int effectiveMinute = minute != null ? minute : 60;
+        if (effectiveMinute < 0 || effectiveMinute > 90) {
+            return Mono.error(new IllegalArgumentException("minute must be between 0 and 90"));
+        }
+        if (seedCount < 1 || seedCount > 100) {
+            return Mono.error(new IllegalArgumentException("seedCount must be between 1 and 100"));
+        }
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " — call create-custom first")))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                return Mono.fromSupplier(() -> executeSubstitutionWhatIfSummary(
+                    optionalCareer.get(),
+                    matchId,
+                    playerOffId,
+                    playerOnId,
+                    effectiveMinute,
+                    seedStart,
+                    seedCount,
+                    controlledTeamSide));
+            });
+    }
+
+    private SubstitutionWhatIfSummaryRow executeSubstitutionWhatIfSummary(
+            CareerSave career,
+            String matchId,
+            String playerOffId,
+            String playerOnId,
+            int minute,
+            long seedStart,
+            int seedCount,
+            String controlledTeamSide) {
+
+        MatchFixture fixture = career.getTournamentState().getFixtures().stream()
+            .filter(f -> f.getMatchId().equals(matchId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Match not found in current tournament: " + matchId));
+
+        SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
+        SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
+        if (home == null || away == null) {
+            throw new IllegalStateException("SessionTeam not found for match " + matchId);
+        }
+
+        String controlledTeamId = resolveControlledTeamId(career, fixture, controlledTeamSide);
+        boolean userIsHome = fixture.getHomeTeamId().equals(controlledTeamId);
+        boolean userIsAway = fixture.getAwayTeamId().equals(controlledTeamId);
+        if (!userIsHome && !userIsAway) {
+            throw new IllegalArgumentException(
+                "Substitution what-if controlled team is not part of match: " + controlledTeamId);
+        }
+
+        TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
+        TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
+        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
+            career,
+            fixture,
+            home,
+            away,
+            homeStyle,
+            awayStyle,
+            seedStart);
+        List<SessionPlayer> starters = userIsHome
+            ? baseContext.homeStartingPlayers()
+            : baseContext.awayStartingPlayers();
+        List<SessionPlayer> bench = userIsHome
+            ? baseContext.homeBenchPlayers()
+            : baseContext.awayBenchPlayers();
+        SessionPlayer off = findPlayer(starters, playerOffId)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "playerOffId '" + playerOffId + "' not in controlled starting XI"));
+        SessionPlayer on = findPlayer(bench, playerOnId)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "playerOnId '" + playerOnId + "' not on controlled bench"));
+
+        SwapAccumulator baseline = new SwapAccumulator();
+        SwapAccumulator substituted = new SwapAccumulator();
+        for (int i = 0; i < seedCount; i++) {
+            long seed = seedStart + i;
+            V24MatchContext seededBase = v24ContextFactory.buildWithStyles(
+                career,
+                fixture,
+                home,
+                away,
+                homeStyle,
+                awayStyle,
+                seed);
+            V24DetailedMatchResult baselineResult =
+                new V24DetailedMatchEngine().simulate(seededBase, new Random(seed));
+            V24DetailedMatchResult substitutedResult =
+                simulateWithManualSubstitution(seededBase, controlledTeamId, playerOffId, playerOnId, minute, seed);
+            baseline.add(baselineResult, userIsHome);
+            substituted.add(substitutedResult, userIsHome);
+        }
+
+        SwapAverages baseAvg = baseline.averages();
+        SwapAverages subAvg = substituted.averages();
+        String formation = currentFormation(career, controlledTeamId, userIsHome ? home : away);
+        double deltaXgFor = round3(subAvg.xgFor() - baseAvg.xgFor());
+        double deltaXgAgainst = round3(subAvg.xgAgainst() - baseAvg.xgAgainst());
+        double deltaShotsFor = round2(subAvg.shotsFor() - baseAvg.shotsFor());
+        String read = safeName(off) + " -> " + safeName(on)
+            + " min " + minute
+            + " | ΔxG " + deltaXgFor
+            + " | Δshots " + deltaShotsFor
+            + " | ΔxGA " + deltaXgAgainst;
+
+        return new SubstitutionWhatIfSummaryRow(
+            matchId,
+            formation,
+            minute,
+            seedStart,
+            seedStart + seedCount - 1L,
+            seedCount,
+            playerOffId,
+            safeName(off),
+            off.getPosition(),
+            playerOverall(off),
+            playerOnId,
+            safeName(on),
+            on.getPosition(),
+            playerOverall(on),
+            baseAvg.goalsFor(),
+            baseAvg.goalsAgainst(),
+            baseAvg.goalDiff(),
+            baseAvg.shotsFor(),
+            baseAvg.shotsAgainst(),
+            baseAvg.possessionFor(),
+            baseAvg.xgFor(),
+            baseAvg.xgAgainst(),
+            baseAvg.xgDiff(),
+            subAvg.goalsFor(),
+            subAvg.goalsAgainst(),
+            subAvg.goalDiff(),
+            subAvg.shotsFor(),
+            subAvg.shotsAgainst(),
+            subAvg.possessionFor(),
+            subAvg.xgFor(),
+            subAvg.xgAgainst(),
+            subAvg.xgDiff(),
+            round2(subAvg.goalsFor() - baseAvg.goalsFor()),
+            round2(subAvg.goalsAgainst() - baseAvg.goalsAgainst()),
+            round2(subAvg.goalDiff() - baseAvg.goalDiff()),
+            deltaShotsFor,
+            round2(subAvg.shotsAgainst() - baseAvg.shotsAgainst()),
+            round2(subAvg.possessionFor() - baseAvg.possessionFor()),
+            deltaXgFor,
+            deltaXgAgainst,
+            round3(subAvg.xgDiff() - baseAvg.xgDiff()),
+            round2(subAvg.centralShotsFor() - baseAvg.centralShotsFor()),
+            round2(subAvg.wideShotsFor() - baseAvg.wideShotsFor()),
+            round2(subAvg.longShotsFor() - baseAvg.longShotsFor()),
+            round3(subAvg.centralXgFor() - baseAvg.centralXgFor()),
+            round3(subAvg.wideXgFor() - baseAvg.wideXgFor()),
+            round3(subAvg.longXgFor() - baseAvg.longXgFor()),
+            read);
+    }
+
+    private V24DetailedMatchResult simulateWithManualSubstitution(
+            V24MatchContext context,
+            String teamId,
+            String playerOffId,
+            String playerOnId,
+            int minute,
+            long seed) {
+        V24LiveSession session = new V24LiveSession(context, seed);
+        for (int i = 0; i < minute; i++) {
+            session.tick();
+        }
+        session.mutateContext(ctx -> ctx.withManualSubstitution(teamId, playerOffId, playerOnId, minute));
+        while (!session.isFinished()) {
+            session.tick();
+        }
+        return session.finalResult();
+    }
+
     private PlayerSwapMatrixSummaryRow executePlayerSwapMatrixSummary(
             CareerSave career,
             String matchId,

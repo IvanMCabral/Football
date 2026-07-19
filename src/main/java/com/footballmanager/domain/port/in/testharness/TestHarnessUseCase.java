@@ -121,6 +121,16 @@ public interface TestHarnessUseCase {
         int seedCount,
         String controlledTeamSide);
 
+    Mono<SubstitutionWhatIfSummaryRow> runSubstitutionWhatIfSummary(
+        UUID userId,
+        String matchId,
+        String playerOffId,
+        String playerOnId,
+        Integer minute,
+        long seedStart,
+        int seedCount,
+        String controlledTeamSide);
+
     Mono<PositionPixelMatrixSummaryRow> runPositionPixelMatrixSummary(
         UUID userId,
         String matchId,
@@ -487,6 +497,57 @@ public interface TestHarnessUseCase {
         double preAutoSubDeltaXgFor,
         double preAutoSubDeltaXgAgainst,
         double preAutoSubDeltaXgDiff
+    ) {}
+
+    record SubstitutionWhatIfSummaryRow(
+        String matchId,
+        String formation,
+        int minute,
+        long seedStart,
+        long seedEnd,
+        int seedCount,
+        String playerOffId,
+        String playerOffName,
+        String playerOffPosition,
+        Integer playerOffOverall,
+        String playerOnId,
+        String playerOnName,
+        String playerOnPosition,
+        Integer playerOnOverall,
+        double baselineAvgGoalsFor,
+        double baselineAvgGoalsAgainst,
+        double baselineAvgGoalDiff,
+        double baselineAvgShotsFor,
+        double baselineAvgShotsAgainst,
+        double baselineAvgPossessionFor,
+        double baselineAvgXgFor,
+        double baselineAvgXgAgainst,
+        double baselineAvgXgDiff,
+        double substitutedAvgGoalsFor,
+        double substitutedAvgGoalsAgainst,
+        double substitutedAvgGoalDiff,
+        double substitutedAvgShotsFor,
+        double substitutedAvgShotsAgainst,
+        double substitutedAvgPossessionFor,
+        double substitutedAvgXgFor,
+        double substitutedAvgXgAgainst,
+        double substitutedAvgXgDiff,
+        double deltaGoalsFor,
+        double deltaGoalsAgainst,
+        double deltaGoalDiff,
+        double deltaShotsFor,
+        double deltaShotsAgainst,
+        double deltaPossessionFor,
+        double deltaXgFor,
+        double deltaXgAgainst,
+        double deltaXgDiff,
+        double deltaCentralShotsFor,
+        double deltaWideShotsFor,
+        double deltaLongShotsFor,
+        double deltaCentralXgFor,
+        double deltaWideXgFor,
+        double deltaLongXgFor,
+        String read
     ) {}
 
     record PositionPixelMatrixSummaryRow(
