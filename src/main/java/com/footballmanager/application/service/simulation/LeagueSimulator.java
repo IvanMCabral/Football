@@ -12,6 +12,7 @@ import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.application.service.simulation.v24.V24MatchTimeline;
+import com.footballmanager.application.service.simulation.v24.V24MatchLineupPlayerDto;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
 import com.footballmanager.application.service.simulation.v24.V24PlayerRatingsAssembler;
 import com.footballmanager.application.service.simulation.v24.V24CareerMutationPolicy;
@@ -283,7 +284,7 @@ public class LeagueSimulator {
 
             // V24D5C: persist detail if flag is enabled
             if (persistDetail && storagePort != null) {
-                persistV24Detail(career, fixture, homeTeam.getName(), awayTeam.getName(), v24Result);
+                persistV24Detail(career, fixture, homeTeam.getName(), awayTeam.getName(), v24Result, context);
             }
 
             // V24D6D6B: collect participation from starting XI
@@ -320,7 +321,8 @@ public class LeagueSimulator {
      */
     private void persistV24Detail(CareerSave career, MatchFixture fixture,
                                    String homeTeamName, String awayTeamName,
-                                   V24DetailedMatchResult v24Result) {
+                                   V24DetailedMatchResult v24Result,
+                                   V24MatchContext context) {
         try {
             String careerId = career.getData().getCareerId();
             Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
@@ -343,7 +345,11 @@ public class LeagueSimulator {
                     homeFormation,
                     awayFormation,
                     v24Result,
-                    playerRatings
+                    playerRatings,
+                    lineupSnapshot(context.homeStartingPlayers()),
+                    lineupSnapshot(context.homeBenchPlayers()),
+                    lineupSnapshot(context.awayStartingPlayers()),
+                    lineupSnapshot(context.awayBenchPlayers())
             );
 
             storagePort.save(careerId, detail);
@@ -353,6 +359,16 @@ public class LeagueSimulator {
             log.warn("[V24D5F] Failed to persist detail for fixture {}: {}, continuing round",
                     fixture.getMatchId(), e.getMessage());
         }
+    }
+
+    private List<V24MatchLineupPlayerDto> lineupSnapshot(List<SessionPlayer> players) {
+        if (players == null || players.isEmpty()) {
+            return List.of();
+        }
+        return players.stream()
+                .filter(java.util.Objects::nonNull)
+                .map(V24MatchLineupPlayerDto::fromSessionPlayer)
+                .toList();
     }
 
     /**

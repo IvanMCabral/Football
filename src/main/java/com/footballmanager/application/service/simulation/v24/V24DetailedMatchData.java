@@ -53,6 +53,42 @@ public final class V24DetailedMatchData {
     // "—" cuando es null. Riesgo BAJO (additive).
     private final String homeFormation;
     private final String awayFormation;
+    private final List<V24MatchLineupPlayerDto> homeStartingPlayers;
+    private final List<V24MatchLineupPlayerDto> homeBenchPlayers;
+    private final List<V24MatchLineupPlayerDto> awayStartingPlayers;
+    private final List<V24MatchLineupPlayerDto> awayBenchPlayers;
+
+    public V24DetailedMatchData(
+            String matchId,
+            String careerId,
+            Integer seasonNumber,
+            Integer round,
+            String homeTeamId,
+            String awayTeamId,
+            String homeTeamName,
+            String awayTeamName,
+            int homeGoals,
+            int awayGoals,
+            double homeXg,
+            double awayXg,
+            int homeShots,
+            int awayShots,
+            int homePossession,
+            int awayPossession,
+            List<V24MatchEventDto> timeline,
+            List<V24PlayerMatchRatingDto> playerRatings,
+            String summary,
+            String engineVersion,
+            int schemaVersion,
+            Instant createdAt,
+            String homeFormation,
+            String awayFormation) {
+        this(matchId, careerId, seasonNumber, round, homeTeamId, awayTeamId,
+                homeTeamName, awayTeamName, homeGoals, awayGoals, homeXg, awayXg,
+                homeShots, awayShots, homePossession, awayPossession,
+                timeline, playerRatings, summary, engineVersion, schemaVersion, createdAt,
+                homeFormation, awayFormation, List.of(), List.of(), List.of(), List.of());
+    }
 
     @JsonCreator
     public V24DetailedMatchData(
@@ -79,7 +115,11 @@ public final class V24DetailedMatchData {
             @JsonProperty("schemaVersion") int schemaVersion,
             @JsonProperty("createdAt") Instant createdAt,
             @JsonProperty("homeFormation") String homeFormation,
-            @JsonProperty("awayFormation") String awayFormation) {
+            @JsonProperty("awayFormation") String awayFormation,
+            @JsonProperty("homeStartingPlayers") List<V24MatchLineupPlayerDto> homeStartingPlayers,
+            @JsonProperty("homeBenchPlayers") List<V24MatchLineupPlayerDto> homeBenchPlayers,
+            @JsonProperty("awayStartingPlayers") List<V24MatchLineupPlayerDto> awayStartingPlayers,
+            @JsonProperty("awayBenchPlayers") List<V24MatchLineupPlayerDto> awayBenchPlayers) {
         this.matchId = matchId; // Null/no-blank validation done in fromResult() factory
         this.careerId = careerId; // Null/no-blank validation done in fromResult() factory
         this.seasonNumber = seasonNumber;
@@ -121,6 +161,14 @@ public final class V24DetailedMatchData {
         // Jackson rellena con null al deserializar JSON sin los campos.
         this.homeFormation = (homeFormation != null && !homeFormation.isBlank()) ? homeFormation : null;
         this.awayFormation = (awayFormation != null && !awayFormation.isBlank()) ? awayFormation : null;
+        this.homeStartingPlayers = immutableLineup(homeStartingPlayers);
+        this.homeBenchPlayers = immutableLineup(homeBenchPlayers);
+        this.awayStartingPlayers = immutableLineup(awayStartingPlayers);
+        this.awayBenchPlayers = immutableLineup(awayBenchPlayers);
+    }
+
+    private static List<V24MatchLineupPlayerDto> immutableLineup(List<V24MatchLineupPlayerDto> players) {
+        return players != null ? Collections.unmodifiableList(new ArrayList<>(players)) : Collections.emptyList();
     }
 
     /**
@@ -144,7 +192,8 @@ public final class V24DetailedMatchData {
         return fromResult(careerId, seasonNumber, round,
                 homeTeamName, awayTeamName,
                 null, null,
-                result, playerRatings);
+                result, playerRatings,
+                List.of(), List.of(), List.of(), List.of());
     }
 
     /**
@@ -166,6 +215,27 @@ public final class V24DetailedMatchData {
             String awayFormation,
             V24DetailedMatchResult result,
             List<V24PlayerMatchRatingDto> playerRatings) {
+        return fromResult(careerId, seasonNumber, round,
+                homeTeamName, awayTeamName,
+                homeFormation, awayFormation,
+                result, playerRatings,
+                List.of(), List.of(), List.of(), List.of());
+    }
+
+    public static V24DetailedMatchData fromResult(
+            String careerId,
+            Integer seasonNumber,
+            Integer round,
+            String homeTeamName,
+            String awayTeamName,
+            String homeFormation,
+            String awayFormation,
+            V24DetailedMatchResult result,
+            List<V24PlayerMatchRatingDto> playerRatings,
+            List<V24MatchLineupPlayerDto> homeStartingPlayers,
+            List<V24MatchLineupPlayerDto> homeBenchPlayers,
+            List<V24MatchLineupPlayerDto> awayStartingPlayers,
+            List<V24MatchLineupPlayerDto> awayBenchPlayers) {
         Objects.requireNonNull(careerId, "careerId must not be null");
         if (careerId.isBlank()) {
             throw new IllegalArgumentException("careerId must not be blank");
@@ -208,7 +278,11 @@ public final class V24DetailedMatchData {
                 1,
                 Instant.now(),
                 homeFormation,
-                awayFormation);
+                awayFormation,
+                homeStartingPlayers,
+                homeBenchPlayers,
+                awayStartingPlayers,
+                awayBenchPlayers);
     }
 
     // Getters
@@ -238,6 +312,10 @@ public final class V24DetailedMatchData {
     // change deserialize con null. La UI muestra "—".
     @JsonProperty("homeFormation") public String homeFormation() { return homeFormation; }
     @JsonProperty("awayFormation") public String awayFormation() { return awayFormation; }
+    @JsonProperty("homeStartingPlayers") public List<V24MatchLineupPlayerDto> homeStartingPlayers() { return homeStartingPlayers; }
+    @JsonProperty("homeBenchPlayers") public List<V24MatchLineupPlayerDto> homeBenchPlayers() { return homeBenchPlayers; }
+    @JsonProperty("awayStartingPlayers") public List<V24MatchLineupPlayerDto> awayStartingPlayers() { return awayStartingPlayers; }
+    @JsonProperty("awayBenchPlayers") public List<V24MatchLineupPlayerDto> awayBenchPlayers() { return awayBenchPlayers; }
 
     @Override
     public boolean equals(Object o) {
@@ -261,7 +339,11 @@ public final class V24DetailedMatchData {
                 && schemaVersion == that.schemaVersion
                 && Objects.equals(createdAt, that.createdAt)
                 && Objects.equals(homeFormation, that.homeFormation)
-                && Objects.equals(awayFormation, that.awayFormation);
+                && Objects.equals(awayFormation, that.awayFormation)
+                && Objects.equals(homeStartingPlayers, that.homeStartingPlayers)
+                && Objects.equals(homeBenchPlayers, that.homeBenchPlayers)
+                && Objects.equals(awayStartingPlayers, that.awayStartingPlayers)
+                && Objects.equals(awayBenchPlayers, that.awayBenchPlayers);
     }
 
     @Override
@@ -269,7 +351,8 @@ public final class V24DetailedMatchData {
         return Objects.hash(matchId, careerId, seasonNumber, round, homeTeamId, awayTeamId,
                 homeGoals, awayGoals, homeXg, awayXg, homeShots, awayShots,
                 homePossession, awayPossession, timeline, playerRatings, summary,
-                engineVersion, schemaVersion, createdAt, homeFormation, awayFormation);
+                engineVersion, schemaVersion, createdAt, homeFormation, awayFormation,
+                homeStartingPlayers, homeBenchPlayers, awayStartingPlayers, awayBenchPlayers);
     }
 
     @Override

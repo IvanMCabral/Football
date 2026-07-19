@@ -18,6 +18,7 @@ import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.v24.V24MatchLineupPlayerDto;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
 import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
 import com.footballmanager.domain.model.entity.CareerPhase;
@@ -2517,7 +2518,11 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 homeFormation,
                 awayFormation,
                 result,
-                List.<V24PlayerMatchRatingDto>of()
+                List.<V24PlayerMatchRatingDto>of(),
+                lineupSnapshot(context.homeStartingPlayers()),
+                lineupSnapshot(context.homeBenchPlayers()),
+                lineupSnapshot(context.awayStartingPlayers()),
+                lineupSnapshot(context.awayBenchPlayers())
             );
 
             v24StoragePort.save(careerId, newDetail);
@@ -6202,6 +6207,16 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 roundId, careerId, e.getMessage());
             return -1;
         }
+    }
+
+    private List<V24MatchLineupPlayerDto> lineupSnapshot(List<SessionPlayer> players) {
+        if (players == null || players.isEmpty()) {
+            return List.of();
+        }
+        return players.stream()
+            .filter(java.util.Objects::nonNull)
+            .map(V24MatchLineupPlayerDto::fromSessionPlayer)
+            .toList();
     }
 
     private record PlayerSwapAutoPair(
