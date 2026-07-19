@@ -4639,19 +4639,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (starters == null || starters.isEmpty()) {
             return Optional.empty();
         }
-        long visualSlotCoverage = starters.stream()
-            .filter(Objects::nonNull)
-            .map(SessionPlayer::getSessionPlayerId)
-            .filter(Objects::nonNull)
-            .filter(playerId -> {
-                LineupSlotDTO slot = baseSlots.get(playerId);
-                return slot != null && slot.subdivisionId() != null && !slot.subdivisionId().isBlank();
-            })
-            .count();
-        if (visualSlotCoverage < Math.min(10, starters.size())) {
-            return Optional.empty();
-        }
-
         Map<String, Integer> positionIndex = new HashMap<>();
         Map<String, LineupSlotDTO> moved = new LinkedHashMap<>(baseSlots);
         Map<String, double[]> formationCoords = formationService.getCoordsByFormation(formation);
