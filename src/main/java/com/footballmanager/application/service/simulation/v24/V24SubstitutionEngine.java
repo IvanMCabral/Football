@@ -27,9 +27,11 @@ public final class V24SubstitutionEngine {
     private static final Logger log = LoggerFactory.getLogger(V24SubstitutionEngine.class);
 
     private static final int DEFAULT_MAX_SUBS = 5;
+    private static final int MIN_AUTO_SUB_SPACING_MINUTES = 8;
 
     private final int maxSubstitutions;
     private final Map<String, Integer> substitutionsUsed;
+    private final Map<String, Integer> lastAutoSubMinuteByTeam;
     private final Set<String> substitutedOffPlayerIds;
     private final Set<String> substitutedOnPlayerIds;
 
@@ -43,6 +45,7 @@ public final class V24SubstitutionEngine {
         }
         this.maxSubstitutions = maxSubstitutions;
         this.substitutionsUsed = new HashMap<>();
+        this.lastAutoSubMinuteByTeam = new HashMap<>();
         this.substitutedOffPlayerIds = new HashSet<>();
         this.substitutedOnPlayerIds = new HashSet<>();
     }
@@ -68,9 +71,13 @@ public final class V24SubstitutionEngine {
             return makeSubstitution(team, injuredCandidate.get(), minute);
         }
 
+        if (!canAttemptNonInjuryAutoSub(teamId, minute)) {
+            return Optional.empty();
+        }
+
         // Priority 2: very tired players (currentStamina < 30)
         var veryTiredCandidate = findCandidate(team.startingPlayers(), p ->
-                p.onPitch() && !p.redCard() && !p.injured()
+                p.onPitch() && !p.redCard() && !p.injured() && !isGoalkeeper(p)
                         && p.currentStamina() < 30 && !isSubstitutedOff(p.sessionPlayerId()));
         if (veryTiredCandidate.isPresent()) {
             return makeSubstitution(team, veryTiredCandidate.get(), minute);
@@ -78,7 +85,7 @@ public final class V24SubstitutionEngine {
 
         // Priority 3: tired + yellow-carded players (currentStamina < 50 and yellowCards >= 1)
         var tiredYellowCandidate = findCandidate(team.startingPlayers(), p ->
-                p.onPitch() && !p.redCard() && !p.injured()
+                p.onPitch() && !p.redCard() && !p.injured() && !isGoalkeeper(p)
                         && p.currentStamina() < 50 && p.yellowCards() >= 1 && !isSubstitutedOff(p.sessionPlayerId()));
         if (tiredYellowCandidate.isPresent()) {
             return makeSubstitution(team, tiredYellowCandidate.get(), minute);
@@ -138,6 +145,7 @@ public final class V24SubstitutionEngine {
 
         // Increment counter
         substitutionsUsed.merge(teamId, 1, Integer::sum);
+        lastAutoSubMinuteByTeam.put(teamId, minute);
 
         String description = "Substitution: " + subOn.name() + " on for " + subOff.name();
 
@@ -187,6 +195,15 @@ public final class V24SubstitutionEngine {
                 .findFirst();
     }
 
+    private boolean canAttemptNonInjuryAutoSub(String teamId, int minute) {
+        Integer lastMinute = lastAutoSubMinuteByTeam.get(teamId);
+        return lastMinute == null || minute - lastMinute >= MIN_AUTO_SUB_SPACING_MINUTES;
+    }
+
+    private boolean isGoalkeeper(V24PlayerMatchState player) {
+        return player != null && "GK".equals(player.position());
+    }
+
     private V24PlayerMatchState selectBenchPlayer(List<V24PlayerMatchState> bench, String position) {
         // Filter eligible bench players
         var eligible = bench.stream()
@@ -215,8 +232,13 @@ public final class V24SubstitutionEngine {
             return compatible.get();
         }
 
-        // Final fallback: any eligible
-        return eligible.get(0);
+        // Final fallback: any eligible outfield player. Never use a backup GK as
+        // an outfield emergency auto-sub; that creates unrealistic lineups and
+        // contaminates DT what-if reads.
+        return eligible.stream()
+                .filter(p -> !"GK".equals(p.position()))
+                .findFirst()
+                .orElse(null);
     }
 
     private boolean isCompatiblePosition(String offPosition, String onPosition) {

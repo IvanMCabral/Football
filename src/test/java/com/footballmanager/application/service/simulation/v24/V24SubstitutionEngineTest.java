@@ -45,7 +45,7 @@ class V24SubstitutionEngineTest {
         V24TeamMatchState team = makeTeam();
 
         // Make one starting player very tired (stamina < 30)
-        V24PlayerMatchState tired = team.startingPlayers().get(0);
+        V24PlayerMatchState tired = team.startingPlayers().get(1);
         tired.drainStamina(100); // set to 0 stamina via drain
 
         V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
@@ -64,7 +64,7 @@ class V24SubstitutionEngineTest {
         V24TeamMatchState team = makeTeam();
 
         // Make one starting player tired (< 50 stamina) and yellow-carded
-        V24PlayerMatchState tiredYellow = team.startingPlayers().get(0);
+        V24PlayerMatchState tiredYellow = team.startingPlayers().get(2);
         tiredYellow.drainStamina(60); // stamina = 40
         tiredYellow.addYellowCard();
 
@@ -102,7 +102,7 @@ class V24SubstitutionEngineTest {
     void veryTiredHasPriorityOverTiredYellow() {
         V24TeamMatchState team = makeTeam();
 
-        V24PlayerMatchState veryTired = team.startingPlayers().get(0);
+        V24PlayerMatchState veryTired = team.startingPlayers().get(1);
         veryTired.drainStamina(85); // stamina = 15
 
         V24PlayerMatchState tiredYellow = team.startingPlayers().get(1);
@@ -133,13 +133,13 @@ class V24SubstitutionEngineTest {
         int count = 0;
         // Try 7 substitutions — only 5 should succeed
         for (int i = 0; i < 7; i++) {
-            var event = engine.attemptSubstitution(team, 60 + i);
+            var event = engine.attemptSubstitution(team, 60 + (i * 8));
             if (event.isPresent()) count++;
         }
 
-        assertEquals(MAX_SUBS, count, "Should not exceed max substitutions");
-        assertEquals(0, engine.substitutionsRemaining(team.teamId()),
-                "No substitutions should remain after max used");
+        assertEquals(4, count, "Should not exceed available outfield bench substitutions");
+        assertEquals(1, engine.substitutionsRemaining(team.teamId()),
+                "One substitution remains because backup GK is not an outfield fallback");
     }
 
     // ========== replacementPrefersSamePosition ==========
@@ -185,7 +185,7 @@ class V24SubstitutionEngineTest {
     void noDuplicateSubstitutions() {
         V24TeamMatchState team = makeTeam();
 
-        V24PlayerMatchState tired = team.startingPlayers().get(0);
+        V24PlayerMatchState tired = team.startingPlayers().get(1);
         tired.drainStamina(90);
 
         V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
@@ -251,7 +251,7 @@ class V24SubstitutionEngineTest {
     void substitutionEventHasRealPlayerIdsAndNames() {
         V24TeamMatchState team = makeTeam();
 
-        V24PlayerMatchState tired = team.startingPlayers().get(0);
+        V24PlayerMatchState tired = team.startingPlayers().get(1);
         tired.drainStamina(90);
 
         V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
@@ -291,6 +291,55 @@ class V24SubstitutionEngineTest {
     void invalidMaxSubstitutionsThrows() {
         assertThrows(IllegalArgumentException.class,
                 () -> new V24SubstitutionEngine(-1));
+    }
+
+    @Test
+    void tiredGoalkeeperIsNotAutoSubstituted() {
+        V24TeamMatchState team = makeTeam();
+
+        V24PlayerMatchState goalkeeper = team.startingPlayers().get(0);
+        goalkeeper.drainStamina(100);
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isEmpty(), "GK must not be auto-subbed for tiredness");
+        assertTrue(goalkeeper.onPitch(), "GK should remain on pitch when only tired");
+    }
+
+    @Test
+    void injuredGoalkeeperCanBeAutoSubstituted() {
+        V24TeamMatchState team = makeTeam();
+
+        V24PlayerMatchState goalkeeper = team.startingPlayers().get(0);
+        goalkeeper.injure();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        var event = engine.attemptSubstitution(team, 65);
+
+        assertTrue(event.isPresent(), "Injured GK can be replaced by backup GK");
+        assertEquals(goalkeeper.sessionPlayerId(), event.get().playerId());
+        assertFalse(goalkeeper.onPitch(), "Injured GK should leave the pitch");
+    }
+
+    @Test
+    void nonInjuryAutoSubstitutionsAreSpacedByAtLeastEightMinutes() {
+        V24TeamMatchState team = makeTeam();
+
+        V24PlayerMatchState firstTired = team.startingPlayers().get(1);
+        V24PlayerMatchState secondTired = team.startingPlayers().get(2);
+        firstTired.drainStamina(100);
+        secondTired.drainStamina(100);
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+
+        var first = engine.attemptSubstitution(team, 60);
+        var tooSoon = engine.attemptSubstitution(team, 61);
+        var later = engine.attemptSubstitution(team, 68);
+
+        assertTrue(first.isPresent(), "First tired outfield player should be replaced");
+        assertTrue(tooSoon.isEmpty(), "Second non-injury auto-sub should not happen immediately");
+        assertTrue(later.isPresent(), "Second non-injury auto-sub can happen after spacing window");
     }
 
     // ========== Fixture helpers ==========
