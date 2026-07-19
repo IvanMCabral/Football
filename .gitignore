@@ -16,6 +16,10 @@ target/
 *.err
 logs/
 
+# Local browser / visual QA artifacts
+.playwright-mcp/
+role-slot-impact-*.png
+
 # V24D6P-C1: Frontend lives in a separate sub-repo (Football-angular.git).
 # Treat front-ciber/project as a nested git repository, not as files of the
 # backend/root repo. Ignoring the whole tree prevents accidental mixed commits.
