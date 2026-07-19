@@ -3364,7 +3364,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 awayStyle,
                 seed);
             V24DetailedMatchResult baselineResult =
-                new V24DetailedMatchEngine().simulate(seededBase, new Random(seed));
+                simulateWithNoopReplay(seededBase, minute, seed);
             V24DetailedMatchResult substitutedResult =
                 simulateWithManualSubstitution(seededBase, controlledTeamId, playerOffId, playerOnId, minute, seed);
             baseline.add(baselineResult, userIsHome);
@@ -3446,6 +3446,21 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             session.tick();
         }
         session.mutateContext(ctx -> ctx.withManualSubstitution(teamId, playerOffId, playerOnId, minute));
+        while (!session.isFinished()) {
+            session.tick();
+        }
+        return session.finalResult();
+    }
+
+    private V24DetailedMatchResult simulateWithNoopReplay(
+            V24MatchContext context,
+            int minute,
+            long seed) {
+        V24LiveSession session = new V24LiveSession(context, seed);
+        for (int i = 0; i < minute; i++) {
+            session.tick();
+        }
+        session.mutateContext(ctx -> ctx);
         while (!session.isFinished()) {
             session.tick();
         }
