@@ -180,6 +180,36 @@ class V24ScheduledSubstitutionEngineTest {
             + "Got " + subAt1 + " SUBSTITUTION events at minute 1.");
     }
 
+    @Test
+    @DisplayName("V25D99.20.3.2: strong live sub changes chance volume across deterministic replay seeds")
+    void strongLiveSub_changesChanceVolumeAcrossSeeds() {
+        V24MatchContext baselineCtx = buildContext();
+        V24MatchContext treatmentCtx = baselineCtx.withManualSubstitution(
+            "home", "home-starter-10", "home-bench-4", 30);
+
+        double baselineXg = 0.0;
+        double treatmentXg = 0.0;
+        int baselineShots = 0;
+        int treatmentShots = 0;
+        for (long seed = 12345L; seed < 12365L; seed++) {
+            V24DetailedMatchResult baseline = new V24DetailedMatchEngine().simulate(baselineCtx, seed);
+            V24DetailedMatchResult treatment = new V24DetailedMatchEngine().simulate(treatmentCtx, seed);
+            baselineXg += baseline.homeXg();
+            treatmentXg += treatment.homeXg();
+            baselineShots += baseline.homeShots();
+            treatmentShots += treatment.homeShots();
+        }
+
+        assertTrue(
+            Math.abs(treatmentXg - baselineXg) >= 0.01
+                || treatmentShots != baselineShots,
+            "V25D99.20.3.2: a strong live substitution must not be invisible in harness-like deterministic replay. "
+                + "baselineXg=" + baselineXg
+                + ", treatmentXg=" + treatmentXg
+                + ", baselineShots=" + baselineShots
+                + ", treatmentShots=" + treatmentShots);
+    }
+
     // ========== Fixture helpers ==========
 
     /**
