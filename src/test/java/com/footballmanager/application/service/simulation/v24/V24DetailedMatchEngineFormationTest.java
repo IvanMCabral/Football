@@ -1330,6 +1330,71 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
+     * V25D99.20.3.22: live scheduled substitutions must change the tactical
+     * attacking footprint only when their minute arrives. Same match/seed
+     * before minute 60 should be neutral; from minute 60 onward, an upgrade
+     * should raise attack volume and a downgrade should lower it.
+     */
+    @Test
+    void scheduledSubstitutionChangesAttackVolumeOnlyAfterEffectiveMinute() throws Exception {
+        List<SessionPlayer> starting = new ArrayList<>();
+        starting.add(makePlayer("gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            starting.add(makePlayer("def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 4; i++) {
+            starting.add(makePlayer("mid" + i, "MID", 76, 60, 82));
+        }
+        starting.add(makePlayer("att0", "ATT", 72, 50, 72));
+        starting.add(makePlayer("att1", "ATT", 85, 50, 82));
+
+        List<SessionPlayer> benchWithUpgrade = List.of(makePlayer("bench-att0", "ATT", 94, 50, 88));
+        List<SessionPlayer> benchWithDowngrade = List.of(makePlayer("bench-att0", "ATT", 58, 50, 62));
+        String playerOffId = starting.stream()
+                .filter(p -> "att0".equals(p.getName()))
+                .findFirst()
+                .orElseThrow()
+                .getSessionPlayerId();
+        String upgradePlayerOnId = benchWithUpgrade.getFirst().getSessionPlayerId();
+        String downgradePlayerOnId = benchWithDowngrade.getFirst().getSessionPlayerId();
+
+        SessionTeam team = makeTeam(HOME_UUID, "Home FC", "4-4-2");
+        V24TeamMatchState upgradeState = V24TeamMatchState.create(
+                team, starting, benchWithUpgrade, TeamStyle.BALANCED, Map.of());
+        V24TeamMatchState downgradeState = V24TeamMatchState.create(
+                team, starting, benchWithDowngrade, TeamStyle.BALANCED, Map.of());
+
+        List<V24MatchContext.ScheduledSub> upgradeSubstitution = List.of(
+                new V24MatchContext.ScheduledSub(
+                        HOME_UUID, playerOffId, upgradePlayerOnId, 60));
+        List<V24MatchContext.ScheduledSub> downgradeSubstitution = List.of(
+                new V24MatchContext.ScheduledSub(
+                        HOME_UUID, playerOffId, downgradePlayerOnId, 60));
+
+        double upgradeBeforeMinute = invokeScheduledSubAttackVolumeMultiplier(
+                upgradeState, upgradeSubstitution, HOME_UUID, 59);
+        double upgradeAtMinute = invokeScheduledSubAttackVolumeMultiplier(
+                upgradeState, upgradeSubstitution, HOME_UUID, 60);
+        double downgradeBeforeMinute = invokeScheduledSubAttackVolumeMultiplier(
+                downgradeState, downgradeSubstitution, HOME_UUID, 59);
+        double downgradeAtMinute = invokeScheduledSubAttackVolumeMultiplier(
+                downgradeState, downgradeSubstitution, HOME_UUID, 60);
+
+        assertTrue(Math.abs(upgradeBeforeMinute - 1.0) < 0.0001,
+                "Before the effective minute, the scheduled upgrade must be neutral. before="
+                        + upgradeBeforeMinute);
+        assertTrue(upgradeAtMinute > 1.0,
+                "From the effective minute, bringing on a stronger attacker must raise attack volume. atMinute="
+                        + upgradeAtMinute);
+        assertTrue(Math.abs(downgradeBeforeMinute - 1.0) < 0.0001,
+                "Before the effective minute, the scheduled downgrade must be neutral. before="
+                        + downgradeBeforeMinute);
+        assertTrue(downgradeAtMinute < 1.0,
+                "From the effective minute, bringing on a weaker attacker must lower attack volume. atMinute="
+                        + downgradeAtMinute);
+    }
+
+    /**
      * V25D99.26: the tactical shape must not treat an out-of-role player as a
      * perfect midfielder just because his custom coordinates sit in the middle
      * third. The editor/harness can visually place any player in a MID slot,
@@ -1655,6 +1720,23 @@ class V24DetailedMatchEngineFormationTest {
                 "aggregateAttackerStat", List.class, String.class, Map.class);
         method.setAccessible(true);
         return (double) method.invoke(engine, players, formation, slotsByPlayerId);
+    }
+
+    private double invokeScheduledSubAttackVolumeMultiplier(
+            V24TeamMatchState team,
+            List<V24MatchContext.ScheduledSub> substitutions,
+            String teamId,
+            int minute)
+            throws Exception {
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
+                "scheduledSubAttackVolumeMultiplier",
+                V24TeamMatchState.class,
+                List.class,
+                String.class,
+                int.class);
+        method.setAccessible(true);
+        return (double) method.invoke(engine, team, substitutions, teamId, minute);
     }
 
     /**
