@@ -1282,6 +1282,54 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
+     * V25D99.20.3.21: changing the player in the same visual slot must affect
+     * the match engine. The formation editor can keep the exact same
+     * coordinates while the DT swaps a stronger player for a weaker one, or
+     * forces a defender into an attacking role; the partido must price both.
+     */
+    @Test
+    void sameVisualAttackingSlotPlayerSwapChangesEngineAttackInput() throws Exception {
+        List<SessionPlayer> strongNaturalLineup = new ArrayList<>();
+        strongNaturalLineup.add(makePlayer("gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            strongNaturalLineup.add(makePlayer("def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 4; i++) {
+            strongNaturalLineup.add(makePlayer("mid" + i, "MID", 76, 60, 82));
+        }
+        strongNaturalLineup.add(makePlayer("att0", "ATT", 92, 50, 84));
+        strongNaturalLineup.add(makePlayer("att1", "ATT", 85, 50, 82));
+
+        List<SessionPlayer> weakNaturalLineup = new ArrayList<>(strongNaturalLineup);
+        weakNaturalLineup.set(9, makePlayer("att0", "ATT", 62, 50, 68));
+
+        List<V24PlayerMatchState> forcedDefenderStates = toMatchStates(strongNaturalLineup);
+        V24PlayerMatchState defenderInAttackingSlot = V24PlayerMatchState.fromSessionPlayer(
+                makePlayer("att0", "DEF", 92, 82, 64), "teamId");
+        defenderInAttackingSlot.setPosition("ATT");
+        forcedDefenderStates.set(9, defenderInAttackingSlot);
+
+        Map<String, LineupSlotDTO> sameVisualAttackingSlot = Map.of(
+                "att0", new LineupSlotDTO("att0", "A0", 40.0, 18.0));
+
+        double strongNaturalAttack = invokeAggregateAttackerStat(
+                toMatchStates(strongNaturalLineup), "4-4-2", sameVisualAttackingSlot);
+        double weakNaturalAttack = invokeAggregateAttackerStat(
+                toMatchStates(weakNaturalLineup), "4-4-2", sameVisualAttackingSlot);
+        double forcedDefenderAttack = invokeAggregateAttackerStat(
+                forcedDefenderStates, "4-4-2", sameVisualAttackingSlot);
+
+        assertTrue(weakNaturalAttack < strongNaturalAttack,
+                "Replacing a strong ATT with a weaker ATT in the exact same visual attacking slot "
+                        + "must lower engine attack input. strong=" + strongNaturalAttack
+                        + ", weak=" + weakNaturalAttack);
+        assertTrue(forcedDefenderAttack < strongNaturalAttack,
+                "Putting a DEF-natural player into the exact same visual attacking slot and ATT role "
+                        + "must lower engine attack input despite similar raw attack. strong="
+                        + strongNaturalAttack + ", forcedDefender=" + forcedDefenderAttack);
+    }
+
+    /**
      * V25D99.26: the tactical shape must not treat an out-of-role player as a
      * perfect midfielder just because his custom coordinates sit in the middle
      * third. The editor/harness can visually place any player in a MID slot,
