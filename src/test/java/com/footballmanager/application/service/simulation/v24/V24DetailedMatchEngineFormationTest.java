@@ -1232,6 +1232,56 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
+     * V25D99.20.3.20: manual pixel movement must be smooth. A coach nudging a
+     * player a single percent/pixel inward should create a tiny channel signal,
+     * not a discontinuous jump like changing to a whole new formation.
+     */
+    @Test
+    void onePixelHorizontalMoveChangesChannelSmoothly() throws Exception {
+        List<SessionPlayer> starting = new ArrayList<>();
+        starting.add(makePlayer("gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            starting.add(makePlayer("def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 3; i++) {
+            starting.add(makePlayer("mid" + i, "MID", 76, 60, 82));
+        }
+        starting.add(makePlayer("lw0", "ATT", 86, 50, 82));
+        starting.add(makePlayer("st0", "ATT", 88, 50, 82));
+        starting.add(makePlayer("rw0", "ATT", 86, 50, 82));
+
+        String leftAttackerId = starting.stream()
+                .filter(p -> "lw0".equals(p.getName()))
+                .findFirst()
+                .orElseThrow()
+                .getSessionPlayerId();
+
+        Map<String, LineupSlotDTO> x30Slots = explicitWideShapeSlots(starting);
+        x30Slots.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 30.0, 18.0));
+
+        Map<String, LineupSlotDTO> x31Slots = explicitWideShapeSlots(starting);
+        x31Slots.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 31.0, 18.0));
+
+        double attackLeft30 = invokeShapeMetric(starting, x30Slots, "attackLeft");
+        double attackLeft31 = invokeShapeMetric(starting, x31Slots, "attackLeft");
+        double attackCenter30 = invokeShapeMetric(starting, x30Slots, "attackCenter");
+        double attackCenter31 = invokeShapeMetric(starting, x31Slots, "attackCenter");
+
+        assertTrue(attackLeft31 < attackLeft30,
+                "Moving a left attacker 1px inward must slightly reduce left-channel attack. "
+                        + "x30=" + attackLeft30 + ", x31=" + attackLeft31);
+        assertTrue(attackCenter31 > attackCenter30,
+                "Moving a left attacker 1px inward must slightly increase central attack. "
+                        + "x30=" + attackCenter30 + ", x31=" + attackCenter31);
+        assertTrue(Math.abs(attackLeft31 - attackLeft30) < 0.02,
+                "A 1px horizontal nudge must not create a cliff in attackLeft. "
+                        + "x30=" + attackLeft30 + ", x31=" + attackLeft31);
+        assertTrue(Math.abs(attackCenter31 - attackCenter30) < 0.02,
+                "A 1px horizontal nudge must not create a cliff in attackCenter. "
+                        + "x30=" + attackCenter30 + ", x31=" + attackCenter31);
+    }
+
+    /**
      * V25D99.26: the tactical shape must not treat an out-of-role player as a
      * perfect midfielder just because his custom coordinates sit in the middle
      * third. The editor/harness can visually place any player in a MID slot,
