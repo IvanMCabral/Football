@@ -606,6 +606,62 @@ class V24DetailedMatchEngineFormationTest {
         return engine.simulate(ctx, seed);
     }
 
+    private V24DetailedMatchResult runMatchWithOptionalHomeSub(long seed, String subScenario) {
+        List<SessionPlayer> homeStart = new ArrayList<>();
+        homeStart.add(makePlayer("home_sub_gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            homeStart.add(makePlayer("home_sub_def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 4; i++) {
+            homeStart.add(makePlayer("home_sub_mid" + i, "MID", 76, 60, 82));
+        }
+        homeStart.add(makePlayer("home_sub_att0", "ATT", 68, 50, 70));
+        homeStart.add(makePlayer("home_sub_att1", "ATT", 84, 50, 82));
+
+        List<SessionPlayer> awayStart = new ArrayList<>();
+        awayStart.add(makePlayer("away_sub_gk0", "GK", 30, 80, 50));
+        for (int i = 0; i < 4; i++) {
+            awayStart.add(makePlayer("away_sub_def" + i, "DEF", 50, 70, 50));
+        }
+        for (int i = 0; i < 4; i++) {
+            awayStart.add(makePlayer("away_sub_mid" + i, "MID", 76, 60, 82));
+        }
+        awayStart.add(makePlayer("away_sub_att0", "ATT", 82, 50, 80));
+        awayStart.add(makePlayer("away_sub_att1", "ATT", 82, 50, 80));
+
+        List<SessionPlayer> homeBench = new ArrayList<>();
+        SessionPlayer upgradeAttacker = makePlayer("home_sub_bench_att0", "ATT", 98, 50, 90);
+        homeBench.add(upgradeAttacker);
+
+        List<V24MatchContext.ScheduledSub> manualSubs = new ArrayList<>();
+        if ("upgrade-attacker".equals(subScenario)) {
+            String playerOffId = homeStart.stream()
+                    .filter(p -> "home_sub_att0".equals(p.getName()))
+                    .findFirst()
+                    .orElseThrow()
+                    .getSessionPlayerId();
+            manualSubs.add(new V24MatchContext.ScheduledSub(
+                    HOME_UUID, playerOffId, upgradeAttacker.getSessionPlayerId(), 60));
+        }
+
+        SessionTeam homeTeam = makeTeam(HOME_UUID, "Home FC", "4-4-2");
+        SessionTeam awayTeam = makeTeam(AWAY_UUID, "Away FC", "4-4-2");
+        V24MatchContext ctx = new V24MatchContext(
+                "match-sub-smoke-" + seed + "-" + (subScenario != null ? subScenario : "baseline"),
+                HOME_UUID,
+                AWAY_UUID,
+                homeTeam, awayTeam,
+                homeStart, awayStart,
+                homeBench, List.of(),
+                "4-4-2", "4-4-2",
+                TeamStyle.BALANCED, TeamStyle.BALANCED,
+                manualSubs
+        );
+
+        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        return engine.simulate(ctx, seed);
+    }
+
     // ========== Fixture helpers ==========
 
     private List<SessionPlayer> makeMixedLineup(String prefix, int gk, int def, int mid, int wing, int att) {
@@ -1392,6 +1448,49 @@ class V24DetailedMatchEngineFormationTest {
         assertTrue(downgradeAtMinute < 1.0,
                 "From the effective minute, bringing on a weaker attacker must lower attack volume. atMinute="
                         + downgradeAtMinute);
+    }
+
+    /**
+     * V25D99.20.3.23: full-match smoke for manager substitutions. With the
+     * same match setup and seeds, adding a meaningful minute-60 attacking
+     * substitution must alter at least one output metric across a small sample.
+     */
+    @Test
+    void fullMatchScheduledSubstitutionAltersOutcomeAcrossSeeds() {
+        int seedWithDelta = -1;
+        double baselineXg = 0.0;
+        double upgradeXg = 0.0;
+        int baselineShots = 0;
+        int upgradeShots = 0;
+        int baselineGoals = 0;
+        int upgradeGoals = 0;
+
+        for (long seed = 1L; seed <= 25L; seed++) {
+            V24DetailedMatchResult baseline = runMatchWithOptionalHomeSub(seed, null);
+            V24DetailedMatchResult upgrade = runMatchWithOptionalHomeSub(seed, "upgrade-attacker");
+
+            baselineXg = baseline.homeXg();
+            upgradeXg = upgrade.homeXg();
+            baselineShots = baseline.homeShots();
+            upgradeShots = upgrade.homeShots();
+            baselineGoals = baseline.homeGoals();
+            upgradeGoals = upgrade.homeGoals();
+
+            boolean anyDelta = Math.abs(upgradeXg - baselineXg) >= 0.0005
+                    || upgradeShots != baselineShots
+                    || upgradeGoals != baselineGoals;
+            if (anyDelta) {
+                seedWithDelta = (int) seed;
+                break;
+            }
+        }
+
+        assertTrue(seedWithDelta > 0,
+                "A meaningful minute-60 attacking substitution produced identical home goals/shots/xG "
+                        + "across seeds 1-25. The full-match path may be ignoring scheduled substitutions. "
+                        + "Last measured: baselineGoals=" + baselineGoals + ", upgradeGoals=" + upgradeGoals
+                        + ", baselineShots=" + baselineShots + ", upgradeShots=" + upgradeShots
+                        + ", baselineXg=" + baselineXg + ", upgradeXg=" + upgradeXg);
     }
 
     /**
