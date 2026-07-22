@@ -5,7 +5,10 @@ import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -15,15 +18,12 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * CareerDebugController - Endpoints de debug y diagnóstico.
+ * Development-only career diagnostics.
+ *
  * Base path: /api/v1/career/debug
  *
- * Responsabilidad: Endpoints temporales para debug y diagnóstico.
- * SOLO disponible en perfil "dev".
- *
- * Endpoints:
- * - GET /api/v1/career/debug        → Debug de conectividad
- * - GET /api/v1/career/debug/fixtures → Debug de fixtures con resultados
+ * These endpoints are intentionally limited to the "dev" profile. They help
+ * verify career connectivity and inspect generated fixtures while developing.
  */
 @RestController
 @RequestMapping("/api/v1/career/debug")
@@ -40,8 +40,7 @@ public class CareerDebugController {
     }
 
     /**
-     * GET /api/v1/career/debug
-     * Endpoint de debug para probar conectividad
+     * Health probe for the career diagnostics controller.
      */
     @GetMapping("")
     public Mono<Map<String, Object>> debugEndpoint() {
@@ -53,8 +52,7 @@ public class CareerDebugController {
     }
 
     /**
-     * GET /api/v1/career/debug/fixtures
-     * Endpoint temporal para debuggear fixtures - muestra todos con resultados
+     * Lists career fixtures with their current result data for local diagnosis.
      */
     @GetMapping("/fixtures")
     public Mono<Map<String, Object>> debugFixtures(Authentication authentication) {
@@ -88,6 +86,6 @@ public class CareerDebugController {
 
                     return Mono.just(debug);
                 })
-                .switchIfEmpty(Mono.just(Map.of("error", "Career no encontrado")));
+                .switchIfEmpty(Mono.just(Map.of("error", "Career not found")));
     }
 }
