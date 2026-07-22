@@ -104,10 +104,10 @@ public class CareerPlayerManager {
      * Obtiene el squad de un equipo como objetos SessionPlayer
      */
     public List<SessionPlayer> getTeamSquad(List<String> playerIds) {
-        log.debug("[SQUAD-DUP] CareerPlayerManager.getTeamSquad - looking up {} playerIds", playerIds != null ? playerIds.size() : "null");
+        log.trace("[SQUAD-DUP] CareerPlayerManager.getTeamSquad - looking up {} playerIds", playerIds != null ? playerIds.size() : "null");
         List<SessionPlayer> squad = new ArrayList<>();
         if (playerIds == null) {
-            log.debug("[SQUAD-DUP]   playerIds is null, returning empty squad");
+            log.trace("[SQUAD-DUP]   playerIds is null, returning empty squad");
             return squad;
         }
         for (String playerId : playerIds) {
@@ -116,7 +116,7 @@ public class CareerPlayerManager {
                 squad.add(player);
             }
         }
-        log.debug("[SQUAD-DUP]   Found {} players in sessionPlayers map", squad.size());
+        log.trace("[SQUAD-DUP]   Found {} players in sessionPlayers map", squad.size());
         return squad;
     }
 

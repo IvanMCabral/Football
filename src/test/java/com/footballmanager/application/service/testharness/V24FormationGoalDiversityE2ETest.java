@@ -1,6 +1,8 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.service.career.CareerSessionService;
+import com.footballmanager.application.service.simulation.v24.BaselineState;
+import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
@@ -94,6 +96,7 @@ class V24FormationGoalDiversityE2ETest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    @Mock private BaselineStateStoragePort baselineStoragePort;
     // V25D25: MatchEngineRegistry mock required by the TestHarnessUseCaseImpl
     // constructor extended in V24D24.4-HOTFIX (commit ab94a19). Default @Mock
     // returns false from hasEngine, which is fine for the replay tests below
@@ -108,7 +111,9 @@ class V24FormationGoalDiversityE2ETest {
         v24ContextFactory = new V24MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, null, matchEngineRegistry);
+            v24ContextFactory, v24StoragePort, baselineStoragePort, matchEngineRegistry);
+        when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
+            .thenReturn(Mono.empty());
     }
 
     // ========== Test 1 — formation-diversity acceptance criterion ==========

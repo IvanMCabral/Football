@@ -160,7 +160,8 @@ public final class V24FormationParser {
                 int totalMid = mid + am; // 4+1=5
                 return new V24Formation(formation, def, totalMid, 0, 0, fwd);
             }
-            // V25D54-C15 P1: 4-2-2-2 (narrow diamond): 4 DEF + 4 MID (2 CDM + 2 wide) + 2 ST
+            // V25D54-C15 P1 / V25D99.58: 4-2-2-2 (narrow box):
+            // 4 DEF + 4 MID (2 CDM + 2 CAM/inside mids) + 2 ST.
             if ("4-2-2-2".equals(formation)) {
                 int totalMid = mid + am; // 2+2=4
                 return new V24Formation(formation, def, totalMid, 0, 0, fwd);

@@ -210,7 +210,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             }
         }
 
-        log.info("[V24D20-TESTHARNESS] resetInjuries userId={} squadSize={} cleared={}",
+        log.trace("[V24D20-TESTHARNESS] resetInjuries userId={} squadSize={} cleared={}",
             career.getUserId(), squad.size(), cleared);
 
         // V24D20-SANDBOX-V2-MVP BUG #1: invalidate cache after save
@@ -268,7 +268,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         // BUG_FORMATION_PERSIST_IGNORED root cause in sprint 1.7.
         career.getTeamStarting11Formation().put(userSessionTeamId, formation);
 
-        log.info("[V24D20-TESTHARNESS] setFormation userId={} team={} formation={}",
+        log.trace("[V24D20-TESTHARNESS] setFormation userId={} team={} formation={}",
             career.getUserId(), userSessionTeamId, formation);
 
         // V24D20-SANDBOX-V2-MVP BUG #1: invalidate cache after save
@@ -1848,7 +1848,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         }
         long seed = (seedOverride != null) ? seedOverride : System.currentTimeMillis();
 
-        log.info("[V24D20-SANDBOX-V2-MVP] replayMatch userId={}, matchId={}, seed={}",
+        log.trace("[V24D20-SANDBOX-V2-MVP] replayMatch userId={}, matchId={}, seed={}",
             userId, matchId, seed);
 
         return careerRepository.findById(userId.toString())
@@ -2607,7 +2607,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     return Mono.empty();
                 })
                 .block();
-            log.info("[V25D99.277] replayMatch: persisted baseline for Match Compare "
+            log.trace("[V25D99.277] replayMatch: persisted baseline for Match Compare "
                 + "matchId={}, careerId={}, seed={}", matchId, careerId, seed);
         } catch (Exception e) {
             log.warn("[V25D99.277] replayMatch: failed to prepare Match Compare baseline "
@@ -2693,7 +2693,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             );
 
             v24StoragePort.save(careerId, newDetail);
-            log.info("[V24D21-SANDBOX-V2-MVP] replayMatch: persisted new V24 detail "
+            log.trace("[V24D21-SANDBOX-V2-MVP] replayMatch: persisted new V24 detail "
                 + "for matchId={}, careerId={}, homeGoals={}, awayGoals={}",
                 matchId, careerId, result.homeGoals(), result.awayGoals());
         } catch (Exception e) {
@@ -2702,7 +2702,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 matchId, e.getMessage());
         }
 
-        log.info("[V24D20-SANDBOX-V2-MVP] replayMatch complete: matchId={}, "
+        log.trace("[V24D20-SANDBOX-V2-MVP] replayMatch complete: matchId={}, "
             + "newResult=({}-{}), seed={}",
             matchId, result.homeGoals(), result.awayGoals(), seed);
 

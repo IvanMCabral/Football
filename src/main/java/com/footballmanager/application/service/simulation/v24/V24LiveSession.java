@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -203,13 +204,12 @@ public final class V24LiveSession {
         this.cachedResult = result;
         this.homeGoals = result.homeGoals();
         this.awayGoals = result.awayGoals();
-        // Replace engineTimeline with the new simulation's timeline.
-        // (manualEvents are kept separately — see recordManualSubstitution.)
-        this.engineTimeline.clear();
-        this.engineTimeline.addAll(result.timeline().events());
-
         ticksRun++;
         currentMinute = Math.min(ticksRun, 90);
+        // Merge instead of replacing: in live mode, events already shown to the
+        // user must not disappear on the next bounded replay. Manager actions
+        // that intentionally recalculate the match still use replayFromMinute().
+        mergeVisibleEngineTimeline(result.timeline().events(), currentMinute);
 
         // Determine if match is finished (after 90 ticks)
         if (currentMinute >= 90) {
@@ -217,6 +217,37 @@ public final class V24LiveSession {
         }
 
         return buildSnapshot();
+    }
+
+    private void mergeVisibleEngineTimeline(List<V24MatchEvent> newEvents, int upToMinute) {
+        Map<String, V24MatchEvent> merged = new LinkedHashMap<>();
+        for (V24MatchEvent event : this.engineTimeline) {
+            if (event.minute() <= upToMinute) {
+                merged.put(eventKey(event), event);
+            }
+        }
+        for (V24MatchEvent event : newEvents) {
+            if (event.minute() <= upToMinute) {
+                merged.putIfAbsent(eventKey(event), event);
+            }
+        }
+        this.engineTimeline.clear();
+        this.engineTimeline.addAll(merged.values());
+        this.engineTimeline.sort(Comparator.comparingInt(V24MatchEvent::minute));
+    }
+
+    private String eventKey(V24MatchEvent event) {
+        return event.minute()
+            + "|" + event.type()
+            + "|" + nullSafe(event.teamId())
+            + "|" + nullSafe(event.playerId())
+            + "|" + nullSafe(event.relatedPlayerId())
+            + "|" + event.description()
+            + "|" + event.xg();
+    }
+
+    private String nullSafe(String value) {
+        return value == null ? "" : value;
     }
 
     /**
@@ -686,7 +717,7 @@ public final class V24LiveSession {
         // at. manualEvents is preserved across replays (engineTimeline is
         // replaced, manualEvents is not).
         this.manualEvents.add(event);
-        log.info("[LIVE-MATCH-F2-F2] Manual substitution recorded + applied: teamId={} off={} on={} minute={}",
+        log.trace("[LIVE-MATCH-F2-F2] Manual substitution recorded + applied: teamId={} off={} on={} minute={}",
             teamId, playerOffId, playerOnId, minute);
     }
 
@@ -724,7 +755,7 @@ public final class V24LiveSession {
                 "Expected TACTICAL_CHANGE event, got " + event.type());
         }
         this.manualEvents.add(event);
-        log.info("[LIVE-MATCH-F2-F5] Tactical change recorded: minute={} teamId={} description='{}'",
+        log.trace("[LIVE-MATCH-F2-F5] Tactical change recorded: minute={} teamId={} description='{}'",
             event.minute(), event.teamId(), event.description());
     }
 
@@ -761,7 +792,7 @@ public final class V24LiveSession {
         // Truncate the cache at the start of fromMinute.
         int index = cacheIndex.indexForMinute(fromMinute);
         cachedRandom.invalidateFromIndex(index);
-        log.debug("[LIVE-MATCH-F2-F1] replayFromMinute({}) invalidated cache index {}, replaying engine",
+        log.trace("[LIVE-MATCH-F2-F1] replayFromMinute({}) invalidated cache index {}, replaying engine",
             fromMinute, index);
 
         // Re-run the engine with the (possibly mutated) effective context.
@@ -774,7 +805,7 @@ public final class V24LiveSession {
         // recordManualSubstitution and remain visible regardless of replays.)
         this.engineTimeline.clear();
         this.engineTimeline.addAll(result.timeline().events());
-        log.info("[LIVE-MATCH-F2-F1] replay complete: homeGoals={} awayGoals={} events={}",
+        log.trace("[LIVE-MATCH-F2-F1] replay complete: homeGoals={} awayGoals={} events={}",
             homeGoals, awayGoals, engineTimeline.size() + manualEvents.size());
     }
 
@@ -808,7 +839,7 @@ public final class V24LiveSession {
             throw new IllegalArgumentException("mutator must not return null");
         }
         this.effectiveContext = next;
-        log.debug("[LIVE-MATCH-F2-F1] mutateContext applied, triggering replay from currentMinute={}",
+        log.trace("[LIVE-MATCH-F2-F1] mutateContext applied, triggering replay from currentMinute={}",
             currentMinute);
         // Replay from the current minute — past draws are preserved,
         // future draws will use the mutated context.

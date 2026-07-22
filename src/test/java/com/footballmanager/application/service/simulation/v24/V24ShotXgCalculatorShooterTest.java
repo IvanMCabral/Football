@@ -72,7 +72,11 @@ class V24ShotXgCalculatorShooterTest {
         double xg = xgAt(calc, V24ShotLocation.LONG_RANGE, 90);
 
         double expected = baseline * (1.0 + 90.0 / 250.0);  // 1.36
-        assertEquals(expected, xg, 0.001,
+        // V25D99.45: calculator clamps/rounds final xG to 3 decimals. On
+        // low-base long shots the intended SHOOTER multiplier can land within
+        // ~0.001 of the rounded value, so keep the guard focused on the bonus
+        // being applied rather than exact pre-rounding arithmetic.
+        assertEquals(expected, xg, 0.002,
                 "SHOOTER=90 en LONG_RANGE debe dar baseline × 1.36 (+36%)");
     }
 

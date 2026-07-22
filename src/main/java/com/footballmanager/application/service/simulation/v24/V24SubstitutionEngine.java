@@ -123,7 +123,7 @@ public final class V24SubstitutionEngine {
         // F5, the engine used a cached formation that did not reflect the
         // manager's mid-match tactical choice.
         if (!formationHasSlotForPosition(team.formation(), subOff.position())) {
-            log.debug("[LIVE-MATCH-F2-LIVE F5] V24SubstitutionEngine.attemptSubstitution: "
+            log.trace("[LIVE-MATCH-F2-LIVE F5] V24SubstitutionEngine.attemptSubstitution: "
                 + "current formation '{}' has no slot for position '{}' on team {} — skipping",
                 team.formation(), subOff.position(), teamId);
             return Optional.empty();

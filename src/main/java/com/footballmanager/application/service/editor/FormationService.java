@@ -353,8 +353,9 @@ public class FormationService {
                 pos(2, "CB", CELL_CENTER_COL1_MID,   78.0, 6.0, "S23-2"),
                 pos(3, "CB", CELL_CENTER_COL2_LEFT,  76.0, 7.0, "S24-1"),
                 // CDM anchor (row 6) — deeper than plain 3-5-2 so this shape
-                // behaves as a real screen instead of a cloned middle CM.
-                pos(4, "CDM", CELL_CENTER_COL1_MID, 72.0, 8.0, "S17-2"),
+                // behaves as a real screen instead of a cloned middle CM, but
+                // far enough from the middle CB to avoid visual overlap.
+                pos(4, "CDM", CELL_CENTER_COL1_MID, 68.0, 7.0, "S17-2"),
                 // CM line (row 5) — a bit ahead of the pivot, but not as flat
                 // as the generic 3-5-2 central trio.
                 pos(5, "CM", CELL_CENTER_COL1_LEFT,  59.0, 7.0, "S17-1"),

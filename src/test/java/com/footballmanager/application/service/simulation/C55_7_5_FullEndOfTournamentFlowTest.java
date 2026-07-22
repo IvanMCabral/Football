@@ -163,8 +163,17 @@ class C55_7_5_FullEndOfTournamentFlowTest {
         }
         assertNotNull(userFixtureId, "User team must have at least one fixture in the career");
 
+        var userFixture = state.getFixtures().stream()
+                .filter(f -> f.getMatchId().equals(userFixtureId))
+                .findFirst()
+                .orElseThrow();
+        boolean userIsHome = userTeamId.equals(userFixture.getHomeTeamId());
+        int homeGoals = userIsHome ? 2 : 1;
+        int awayGoals = userIsHome ? 1 : 2;
+        state.setCurrentRound(userFixture.getRound());
+
         orchestrator.processMatchDayResults(USER_ID_STR, List.of(
-                new MatchResultProcessor.MatchResultInfo(userFixtureId, 2, 1)
+                new MatchResultProcessor.MatchResultInfo(userFixtureId, homeGoals, awayGoals)
         )).block(Duration.ofSeconds(5));
 
         // C55.7.5 #28 CORE ASSERTION: the user's team must have non-zero
@@ -181,10 +190,6 @@ class C55_7_5_FullEndOfTournamentFlowTest {
 
         // The opponent in the user's match: stats should reflect the loss.
         // Find the opponent by looking at the fixture.
-        var userFixture = state.getFixtures().stream()
-                .filter(f -> f.getMatchId().equals(userFixtureId))
-                .findFirst()
-                .orElseThrow();
         String opponentId = userTeamId.equals(userFixture.getHomeTeamId())
                 ? userFixture.getAwayTeamId()
                 : userFixture.getHomeTeamId();
@@ -219,6 +224,7 @@ class C55_7_5_FullEndOfTournamentFlowTest {
         boolean userIsHome = userTeamId.equals(userFixture.getHomeTeamId());
         int homeGoals = userIsHome ? 3 : 0;
         int awayGoals = userIsHome ? 0 : 3;
+        state.setCurrentRound(userFixture.getRound());
 
         orchestrator.processMatchDayResults(USER_ID_STR, List.of(
                 new MatchResultProcessor.MatchResultInfo(userFixture.getMatchId(), homeGoals, awayGoals)

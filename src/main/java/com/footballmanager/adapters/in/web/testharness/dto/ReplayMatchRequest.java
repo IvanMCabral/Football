@@ -1,7 +1,7 @@
 package com.footballmanager.adapters.in.web.testharness.dto;
 
 /**
- * V24D20-SANDBOX-V2-MVP ÔÇö request body for
+ * V24D20-SANDBOX-V2-MVP - request body for
  * {@code POST /api/v1/test-harness/career/match/{matchId}/replay}.
  *
  * <p>Body is optional (Spring's {@code required=false}). If {@code seed}

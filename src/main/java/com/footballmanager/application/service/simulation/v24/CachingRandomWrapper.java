@@ -188,15 +188,34 @@ public class CachingRandomWrapper extends Random {
     }
 
     /**
-     * Delegate {@code nextInt(int bound)} to the inner Random, persist the
-     * draw (for debugging), and return the value.
+     * Return the next cached {@code nextInt(bound)} draw when replaying, or
+     * consume and cache a fresh value when the replay prefix is exhausted.
      *
-     * <p>Bound validation is left to {@link Random#nextInt(int)}.
+     * <p>V25D99.45: live minute ticks must replay the complete random stream,
+     * not only doubles. Player selection uses {@code nextInt(bound)}; if ints
+     * are not replayed, the bounded simulation can rebuild a slightly different
+     * prefix on the next tick and the visible timeline may regress (for example
+     * max event minute 61 → 60). Cache the bound too so a future draw-order
+     * change fails loudly instead of silently replaying the wrong value.
      */
     @Override
     public synchronized int nextInt(int bound) {
+        if (bound <= 0) {
+            throw new IllegalArgumentException("bound must be positive");
+        }
+        if (consumedIntIndex < intCache.size()) {
+            int[] cached = intCache.get(consumedIntIndex);
+            if (cached[0] != bound) {
+                throw new IllegalStateException(
+                    "Cached nextInt bound mismatch at index " + consumedIntIndex
+                        + ": cached bound=" + cached[0] + ", requested bound=" + bound);
+            }
+            consumedIntIndex++;
+            return cached[1];
+        }
         int v = inner.nextInt(bound);
         intCache.add(new int[]{bound, v});
+        consumedIntIndex++;
         return v;
     }
 

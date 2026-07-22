@@ -126,12 +126,13 @@ class V24DetailedMatchEngineSpeedsterTest {
     void chanceProb_speedsterComposesWithDribbler() throws Exception {
         // SPEEDSTER (effectiveSpeed bonus) y DRIBBLER (multiplicador) ambos
         // aplican en COUNTER. Compounding multiplicativo.
-        // DRIBBLER=50 → multiplier 1.167. SPEEDSTER=92 → multiplier 1.30 (int div).
-        // Combined: 1.167 * 1.30 = 1.517.
+        // V25D99.25 softened DRIBBLER volume so it complements xG/duels
+        // instead of dominating attempts. DRIBBLER=50 → multiplier 1.083.
+        // SPEEDSTER=92 → multiplier 1.30 (int div). Combined: 1.083 * 1.30.
         double baseline = invokeChanceProb6(TeamStyle.COUNTER, 30, 70, 70, 0, 0);
         double withBoth = invokeChanceProb6(TeamStyle.COUNTER, 30, 70, 70, 50, 92);
 
-        double expectedMult = (1.0 + 50.0 / 300.0) * (1.0 + (92 / 3) * 0.01);
+        double expectedMult = (1.0 + 50.0 / 600.0) * (1.0 + (92 / 3) * 0.01);
         assertEquals(baseline * expectedMult, withBoth, 0.0001,
                 "SPEEDSTER=92 + DRIBBLER=50 en COUNTER deben compound");
     }

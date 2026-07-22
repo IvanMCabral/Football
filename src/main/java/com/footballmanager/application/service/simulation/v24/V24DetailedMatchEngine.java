@@ -356,7 +356,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double awayAvgOverall = computeTeamAvgOverall(context.awayStartingPlayers());
         double overallDiffRatio = computeOverallDiffRatio(homeAvgOverall, awayAvgOverall);
         this.matchIntensity = computeMatchIntensity(overallDiffRatio);
-        log.debug("[V25D67-C27] matchIntensity={} (homeOvr={}, awayOvr={}, diffRatio={})",
+        log.trace("[V25D67-C27] matchIntensity={} (homeOvr={}, awayOvr={}, diffRatio={})",
             matchIntensity, homeAvgOverall, awayAvgOverall, overallDiffRatio);
 
         // Player selectors — share the same Random source in replay path,
@@ -448,7 +448,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                             null,
                             0.0,
                             "Substitution: " + sub.playerOnId() + " on for " + sub.playerOffId()));
-                    log.info("[LIVE-MATCH-F2-F2.5] Re-applied scheduled sub at minute {} (subsequent tick): teamId={} off={} on={}",
+                    log.trace("[LIVE-MATCH-F2-F2.5] Re-applied scheduled sub at minute {} (subsequent tick): teamId={} off={} on={}",
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
                     continue;
                 }
@@ -465,7 +465,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     // the first successful substitution.
                     applyScheduledSubManually(target, sub);
                     appliedScheduledSubs.add(subKey);
-                    log.debug("[LIVE-MATCH-F2-F2.5] Applied scheduled sub at minute {}: teamId={} off={} on={}",
+                    log.trace("[LIVE-MATCH-F2-F2.5] Applied scheduled sub at minute {}: teamId={} off={} on={}",
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
                 } catch (IllegalStateException e) {
                     // First application failed (e.g. F2 auto-sub already
@@ -636,12 +636,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             double possessorCollectiveStat = aggregateCollectiveStat(possessor.startingPlayers(), possessorSlots);
             double opponentCollectiveStat = aggregateCollectiveStat(opponent.startingPlayers(), opponentSlots);
             double chanceProbability = chanceProbability(possessor.style(), minute, teamAttackInfluence, keySpeed, keyDribbler, keySpeedster)
-                    // V25D99.80: the V24 minute loop was producing too many
-                    // low-value shot attempts (professional-feel issue in the
-                    // visual harness). Keep all tactical/player multipliers
-                    // active, but apply a global tempo governor so formation
-                    // changes read as cleaner chance quality/territory changes
-                    // instead of 40+ noisy shots every match.
+                    // V25D99.80/V25D99.45: keep a named tempo hook for future
+                    // calibration, but the green-path smoke showed that a hard
+                    // global cut made balanced matches sterile. Professional
+                    // feel now comes from tactical/player layers, not from
+                    // muting every minute equally.
                     * professionalShotTempoMultiplier()
                     * Math.sqrt((1.0 + matchIntensity) / 2.0)
                     // V25D99.21: shape affects shot/chance volume. Attacking
@@ -992,7 +991,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 // so finalizeResult can detect divergence between addGoal
                 // calls and GOAL events in the timeline.
                 int n = goalAdditions.incrementAndGet();
-                log.debug("[V24-XG-COUNTER] addGoal called; counter={}, minute={}, xg={}",
+                log.trace("[V24-XG-COUNTER] addGoal called; counter={}, minute={}, xg={}",
                     n, minute, xg);
                 // V24D6O-fix: count goal as a shot on target so homeShots/awayShots
                 // (used in the Stats summary) is consistent with the Shot Map total.
@@ -2351,7 +2350,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     private double professionalShotTempoMultiplier() {
-        return 0.66;
+        return 1.00;
     }
 
     private double homeFieldChanceVolumeMultiplier(boolean homeHasPossession) {
@@ -2547,7 +2546,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // and sqrt(0.5) ≈ 0.707 at intensity=0. The curve is empirically
         // calibrated to land intermedios in [1.5, 4.0] band and parejos
         // in C28 target [1.0, 1.5].
-        final double PAREJOS_INTENSITY = 0.40;       // V25D67-C27 (unchanged)
+        final double PAREJOS_INTENSITY = 0.60;       // V25D99.45: avoid sterile 0-0-heavy balanced matches.
         final double DESIGUALES_INTENSITY = 1.00;
         final double DIFF_PAREJOS_THRESHOLD = 0.05;  // V25D67-C27 (unchanged)
         final double DIFF_DESIGUALES_THRESHOLD = 0.30;

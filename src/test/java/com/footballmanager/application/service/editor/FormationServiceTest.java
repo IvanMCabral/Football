@@ -425,8 +425,9 @@ class FormationServiceTest {
             "5-4-1", List.of("GK", "LWB", "CB", "CB", "CB", "RWB", "LM", "CM", "CM", "RM", "ST"),
             // P1.3: 3-4-1-2 (Christmas tree) — 3 CB + LWB + 2 CM + RWB + CAM + 2 ST
             "3-4-1-2", List.of("GK", "CB", "CB", "CB", "LWB", "CM", "CM", "RWB", "CAM", "ST", "ST"),
-            // P1.4: 4-2-2-2 — 4 DEF + 2 CDM + LM + RM + 2 ST
-            "4-2-2-2", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CDM", "LM", "RM", "ST", "ST"),
+            // P1.4 / V25D99.58: 4-2-2-2 — 4 DEF + 2 CDM + 2 CAM interiores + 2 ST.
+            // Es una caja estrecha, no un 4-4-2 clonado con LM/RM.
+            "4-2-2-2", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CDM", "CAM", "CAM", "ST", "ST"),
             // P2: 4-1-2-3 (variant con CDM pivot) — 4 DEF + CDM + 2 CM + LW + ST + RW
             "4-1-2-3", List.of("GK", "LB", "CB", "CB", "RB", "CDM", "CM", "CM", "LW", "ST", "RW")
         );
