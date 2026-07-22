@@ -13,6 +13,7 @@ import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.Formation;
@@ -144,6 +145,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // selected (not the one inferred from DEF/MID/ATT counts
                 // of the lineup, which stays as the previous formation).
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
+                syncSessionTeamFormation(career, userTeamId, formation.getCode());
 
                 return careerSessionService.saveCareer(career)
                     .thenReturn(buildLineupDTO(lineup, formation, warnings, slotMap));
@@ -209,6 +211,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 // getCurrentLineup returns the actual formation the user
                 // selected (same rationale as autoSelectLineup above).
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
+                syncSessionTeamFormation(career, userTeamId, formation.getCode());
 
                 // MVP1-lineup-cancha-1.6: persist subdivision map using
                 // HELPER-BASED match (back is source-of-truth for slot
@@ -268,6 +271,13 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         return slot != null
             && ((slot.customXPercent() != null && Double.isFinite(slot.customXPercent()))
                 || (slot.customYPercent() != null && Double.isFinite(slot.customYPercent())));
+    }
+
+    private void syncSessionTeamFormation(CareerSave career, String teamId, String formationCode) {
+        SessionTeam team = career.getSessionTeam(teamId);
+        if (team != null) {
+            team.setFormation(formationCode);
+        }
     }
 
     @Override

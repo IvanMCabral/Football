@@ -105,6 +105,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
         team.setMorale(70);
         team.setReputation(60);
         team.setOrigin(SessionTeam.SessionTeamOrigin.CLONED);
+        teamManager.addSessionTeam(team);
 
         career.setUserSessionTeamId(TEAM_ID);
         career.setTeamStarting11(new HashMap<>());
@@ -848,6 +849,9 @@ class LineupCommandUseCaseImplAutoSelectTest {
             "MVP1-lineup-cancha-1.6 F1: teamStarting11Formation debe estar poblado para el team");
         assertEquals("4-3-3", persistedFormation,
             "MVP1-lineup-cancha-1.6 F1: formation code persistido = 4-3-3 (no inferido de DEF/MID/ATT counts)");
+
+        assertEquals("4-3-3", saved.getSessionTeam(TEAM_ID).getFormation(),
+            "SessionTeam.formation debe quedar sincronizada para que live/modal/fallbacks no vuelvan a 4-4-2");
 
         // Verificar que también persiste el subdivision map (HELPER-BASED).
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
