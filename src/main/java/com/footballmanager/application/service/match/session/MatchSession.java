@@ -174,6 +174,24 @@ public class MatchSession {
         return currentState;
     }
 
+    /**
+     * Refresh the exposed match state from the V24 live engine without
+     * advancing the match clock.
+     *
+     * <p>This keeps the UI/API snapshot aligned with manager actions applied
+     * while the round is paused (for example queued injury substitution
+     * modals). Without this, the next API read can still show the pre-action
+     * lineup until the following tick.
+     */
+    public synchronized MatchStateSnapshot refreshV24Snapshot() {
+        if (v24LiveSession == null) {
+            return currentState;
+        }
+        this.currentState = adaptV24Snapshot(v24LiveSession.snapshot());
+        emitState();
+        return currentState;
+    }
+
     public void pause() {
         this.currentState = currentState.withStatus(MatchStatus.PAUSED);
         emitState();
@@ -240,8 +258,8 @@ public class MatchSession {
      * can drive it with controlled inputs. Not part of the public API.
      */
     MatchStateSnapshot adaptV24Snapshot(V24LiveSnapshot snap) {
-        UUID homeTeamId = snap.homeTeamId() != null ? UUID.fromString(snap.homeTeamId()) : null;
-        UUID awayTeamId = snap.awayTeamId() != null ? UUID.fromString(snap.awayTeamId()) : null;
+        UUID homeTeamId = parseSnapshotTeamId(snap.homeTeamId(), currentState != null ? currentState.homeTeamId() : null);
+        UUID awayTeamId = parseSnapshotTeamId(snap.awayTeamId(), currentState != null ? currentState.awayTeamId() : null);
 
         List<MatchEvent> adaptedEvents = new ArrayList<>();
         for (V24MatchEvent e : snap.allEvents()) {
@@ -302,8 +320,21 @@ public class MatchSession {
                 // V25D79
                 homePlayerRatings,
                 awayPlayerRatings,
-                substitutionsRemaining
+                substitutionsRemaining,
+                snap.homeSlots(),
+                snap.awaySlots()
         );
+    }
+
+    private UUID parseSnapshotTeamId(String rawTeamId, UUID fallbackTeamId) {
+        if (rawTeamId == null || rawTeamId.isBlank()) {
+            return fallbackTeamId;
+        }
+        try {
+            return UUID.fromString(rawTeamId);
+        } catch (IllegalArgumentException ignored) {
+            return fallbackTeamId;
+        }
     }
 
     /**
@@ -353,8 +384,13 @@ public class MatchSession {
                 e.playerName(),
                 e.teamId(),
                 e.description(),
-                // LIVE-MATCH-F3-UI-LIVE BE2: propagate relatedPlayerName for
-                // SUBSTITUTION events. The factory no-ops it for non-SUB events.
+                null,
+                e.relatedPlayerId(),
+                e.relatedPlayerName(),
+                // LIVE-MATCH-F3-UI-LIVE BE2: expose the ON-player name as the
+                // legacy playerOnName field too. Before V25, a 7-arg overload
+                // accidentally stored this value as matchId, making reloads
+                // lose substitution identity.
                 e.relatedPlayerName()
         );
     }

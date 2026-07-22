@@ -91,6 +91,65 @@ class V24LiveSessionTest {
     }
 
     @Test
+    @DisplayName("recordManualSubstitution updates live snapshot slots after the effective minute")
+    void recordManualSubstitution_updatesSnapshotSlotsAfterEffectiveMinute() {
+        int minute = session.currentMinute();
+        V24MatchEvent event = new V24MatchEvent(
+            minute,
+            V24MatchEventType.SUBSTITUTION,
+            homeTeamId,
+            "team-home-starter-1",
+            "Home Starter 1",
+            "team-home-bench-1",
+            "Home Bench 1",
+            0.0,
+            "Substitution: Home Bench 1 on for Home Starter 1"
+        );
+
+        session.recordManualSubstitution(event);
+        V24LiveSnapshot snapshot = session.tick();
+
+        assertTrue(snapshot.homeSlots().stream()
+                .anyMatch(slot -> "team-home-bench-1".equals(slot.playerId())),
+            "The live snapshot must show the player who came on");
+        assertFalse(snapshot.homeSlots().stream()
+                .anyMatch(slot -> "team-home-starter-1".equals(slot.playerId())),
+            "The live snapshot must not keep showing the substituted player");
+    }
+
+    @Test
+    @DisplayName("recordManualSubstitution updates snapshot immediately without waiting for next tick")
+    void recordManualSubstitution_updatesSnapshotImmediatelyWithoutTick() {
+        int minute = session.currentMinute();
+        V24MatchEvent event = new V24MatchEvent(
+            minute,
+            V24MatchEventType.SUBSTITUTION,
+            homeTeamId,
+            "team-home-starter-2",
+            "Home Starter 2",
+            "team-home-bench-2",
+            "Home Bench 2",
+            0.0,
+            "Substitution: Home Bench 2 on for Home Starter 2"
+        );
+
+        session.recordManualSubstitution(event);
+        V24LiveSnapshot snapshot = session.snapshot();
+
+        assertTrue(snapshot.homeSlots().stream()
+                .anyMatch(slot -> "team-home-bench-2".equals(slot.playerId())),
+            "Reload-safe snapshot must show the player who came on before the next tick");
+        assertFalse(snapshot.homeSlots().stream()
+                .anyMatch(slot -> "team-home-starter-2".equals(slot.playerId())),
+            "Reload-safe snapshot must not keep the player who left before the next tick");
+        assertTrue(snapshot.allEvents().stream()
+                .anyMatch(e -> e.type() == V24MatchEventType.SUBSTITUTION
+                        && "team-home-starter-2".equals(e.playerId())
+                        && "team-home-bench-2".equals(e.relatedPlayerId())),
+            "Reload-safe snapshot must include the manual substitution event immediately");
+    }
+
+    @Test
     @DisplayName("F2: recordManualSubstitution alters homeGoals/awayGoals (D1=B invariant REMOVED)")
     void recordManualSubstitution_altersResult() {
         // Baseline: same seed/context, NO substitutions, run to completion.

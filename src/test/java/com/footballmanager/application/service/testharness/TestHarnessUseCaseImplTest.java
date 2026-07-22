@@ -142,6 +142,65 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
+    @DisplayName("side mirror synthetic lab reads 5-4-1 low lateral signal as conservative partial, not motor failure")
+    void sideMirrorSyntheticLab_readsFiveFourOneLowBlockAsConservativePartial() throws Exception {
+        Method method = TestHarnessUseCaseImpl.class.getDeclaredMethod(
+            "toSyntheticSideMirrorRow",
+            String.class,
+            long.class,
+            int.class,
+            TestHarnessUseCase.FormationMatrixSummaryRow.class,
+            TestHarnessUseCase.FormationMatrixSummaryRow.class);
+        method.setAccessible(true);
+
+        TestHarnessUseCase.FormationMatrixSummaryRow weakLeft = summaryRow(
+            "5-4-1",
+            0.020,
+            0.028,
+            0.65,
+            0.72);
+        TestHarnessUseCase.FormationMatrixSummaryRow weakRight = summaryRow(
+            "5-4-1",
+            0.027,
+            0.020,
+            0.70,
+            0.62);
+
+        TestHarnessUseCase.SideMirrorSyntheticLabRow row =
+            (TestHarnessUseCase.SideMirrorSyntheticLabRow) method.invoke(useCase, "5-4-1", 12345L, 20, weakLeft, weakRight);
+
+        assertThat(row.verdict()).isEqualTo("Parcial");
+        assertThat(row.read()).contains("5-4-1 bloque bajo");
+        assertThat(row.read()).doesNotContain("revisar motor");
+    }
+
+    @Test
+    @DisplayName("side mirror synthetic lab explains 3-5-2 partial as wingback/seed review")
+    void sideMirrorSyntheticLab_explainsThreeFiveTwoPartial() throws Exception {
+        TestHarnessUseCase.SideMirrorSyntheticLabRow row = invokeSyntheticSideMirrorRow(
+            "3-5-2",
+            summaryRow("3-5-2", 0.020, 0.060, 0.35, 1.20),
+            summaryRow("3-5-2", 0.040, 0.040, 0.75, 0.80));
+
+        assertThat(row.verdict()).isEqualTo("Parcial");
+        assertThat(row.read()).contains("3-5-2");
+        assertThat(row.read()).contains("carrileros/seeds");
+    }
+
+    @Test
+    @DisplayName("side mirror synthetic lab explains 4-2-2-2 partial as no-natural-wingback asymmetry")
+    void sideMirrorSyntheticLab_explainsFourTwoTwoTwoPartial() throws Exception {
+        TestHarnessUseCase.SideMirrorSyntheticLabRow row = invokeSyntheticSideMirrorRow(
+            "4-2-2-2",
+            summaryRow("4-2-2-2", 0.130, 0.140, 1.50, 2.20),
+            summaryRow("4-2-2-2", 0.160, 0.060, 2.55, 0.75));
+
+        assertThat(row.verdict()).isEqualTo("Parcial");
+        assertThat(row.read()).contains("4-2-2-2");
+        assertThat(row.read()).contains("sin carrileros naturales");
+    }
+
+    @Test
     @DisplayName("V25D99.291: XI efectivo explica fallback de carrilero cuando LWB/RWB no tiene perfil natural")
     void lineupDiagnosticRead_explainsWingbackFallback() throws Exception {
         SessionPlayer player = new SessionPlayer();
@@ -870,6 +929,73 @@ class TestHarnessUseCaseImplTest {
         p.setSuspended(false);
         p.setSuspensionRemainingMatches(0);
         return p;
+    }
+
+    private TestHarnessUseCase.FormationMatrixSummaryRow summaryRow(
+            String formation,
+            double leftWideXgFor,
+            double rightWideXgFor,
+            double leftWideShotsFor,
+            double rightWideShotsFor) {
+        return new TestHarnessUseCase.FormationMatrixSummaryRow(
+            formation,
+            12345L,
+            12364L,
+            20,
+            0.0,
+            0.0,
+            0.0,
+            50.0,
+            leftWideShotsFor + rightWideShotsFor,
+            0.0,
+            leftWideShotsFor + rightWideShotsFor,
+            leftWideXgFor + rightWideXgFor,
+            0.0,
+            leftWideXgFor + rightWideXgFor,
+            0.0,
+            leftWideShotsFor + rightWideShotsFor,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            leftWideShotsFor,
+            rightWideShotsFor,
+            0.0,
+            0.0,
+            leftWideXgFor,
+            rightWideXgFor,
+            0.0,
+            0.0,
+            0.95,
+            0.90,
+            1.08,
+            0.95,
+            0.85,
+            0.95,
+            1.08,
+            1.15,
+            1.08);
+    }
+
+    private TestHarnessUseCase.SideMirrorSyntheticLabRow invokeSyntheticSideMirrorRow(
+            String formation,
+            TestHarnessUseCase.FormationMatrixSummaryRow weakLeft,
+            TestHarnessUseCase.FormationMatrixSummaryRow weakRight) throws Exception {
+        Method method = TestHarnessUseCaseImpl.class.getDeclaredMethod(
+            "toSyntheticSideMirrorRow",
+            String.class,
+            long.class,
+            int.class,
+            TestHarnessUseCase.FormationMatrixSummaryRow.class,
+            TestHarnessUseCase.FormationMatrixSummaryRow.class);
+        method.setAccessible(true);
+        return (TestHarnessUseCase.SideMirrorSyntheticLabRow) method.invoke(
+            useCase,
+            formation,
+            12345L,
+            20,
+            weakLeft,
+            weakRight);
     }
 
     /**

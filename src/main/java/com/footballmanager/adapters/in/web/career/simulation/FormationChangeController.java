@@ -70,10 +70,10 @@ public class FormationChangeController {
                 .body(FormationChangeResultDTO.error("players must not be empty")));
         }
 
-        log.info("[LIVE-MATCH-F2-F5] Formation change request received: matchId={} userId={} slots={}",
-            matchUuid, userId, request.players().size());
+        log.info("[LIVE-MATCH-F2-F5] Formation change request received: matchId={} userId={} slots={} code={}",
+            matchUuid, userId, request.players().size(), request.formationCode());
 
-        return tacticalChangeService.changeFormation(userId, matchUuid, request.players())
+        return tacticalChangeService.changeFormation(userId, matchUuid, request.players(), request.formationCode())
             .map(result -> ResponseEntity.ok(result))
             .onErrorResume(IllegalArgumentException.class, e ->
                 Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)

@@ -3,6 +3,7 @@ package com.footballmanager.application.service.match;
 import com.footballmanager.adapters.in.web.career.simulation.dto.FormationChangeResultDTO;
 import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
 import com.footballmanager.adapters.in.web.career.simulation.dto.StyleChangeResultDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
@@ -20,7 +21,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -116,7 +120,7 @@ public class TacticalChangeService {
         liveSession.mutateContext(ctx -> ctx.withNewStyle(homeTeamId, newStyle));
 
         // 3. Record the tactical-change event in the timeline (visible to F3 UI).
-        int minute = liveSession.currentMinute();
+        int minute = Math.max(1, liveSession.currentMinute());
         V24MatchEvent event = new V24MatchEvent(
             minute,
             V24MatchEventType.TACTICAL_CHANGE,
@@ -163,12 +167,24 @@ public class TacticalChangeService {
      * @return Mono emitting the result DTO; Mono.error on validation failure
      */
     public Mono<FormationChangeResultDTO> changeFormation(UUID userId, UUID matchId, List<FormationSlotDTO> newFormation) {
-        return Mono.fromCallable(() -> changeFormationInternal(userId, matchId, newFormation))
+        return changeFormation(userId, matchId, newFormation, null);
+    }
+
+    public Mono<FormationChangeResultDTO> changeFormation(
+            UUID userId,
+            UUID matchId,
+            List<FormationSlotDTO> newFormation,
+            String requestedFormationCode) {
+        return Mono.fromCallable(() -> changeFormationInternal(userId, matchId, newFormation, requestedFormationCode))
             .doOnError(e -> log.warn("[LIVE-MATCH-F2-F5] Formation change failed for matchId={} userId={}: {}",
                 matchId, userId, e.getMessage()));
     }
 
-    private FormationChangeResultDTO changeFormationInternal(UUID userId, UUID matchId, List<FormationSlotDTO> newFormation) {
+    private FormationChangeResultDTO changeFormationInternal(
+            UUID userId,
+            UUID matchId,
+            List<FormationSlotDTO> newFormation,
+            String requestedFormationCode) {
         // 1. Slot-level validation.
         validateFormation(newFormation);
 
@@ -188,57 +204,142 @@ public class TacticalChangeService {
         }
 
         V24MatchContext context = liveSession.context();
-        String homeTeamId = context.homeTeamId();
+        String managerTeamId = resolveFormationTeamId(context, newFormation);
 
-        // 3. Roster validation: every playerId must be in homeStartingPlayers or homeBenchPlayers.
-        Set<String> rosterIds = new HashSet<>();
-        for (SessionPlayer p : context.homeStartingPlayers()) rosterIds.add(p.getSessionPlayerId());
-        for (SessionPlayer p : context.homeBenchPlayers()) rosterIds.add(p.getSessionPlayerId());
+        // 3. Roster validation: every playerId must be in the manager team's live roster.
+        Set<String> rosterIds = rosterIdsForTeam(context, managerTeamId);
         for (FormationSlotDTO slot : newFormation) {
             if (!rosterIds.contains(slot.playerId())) {
                 throw new IllegalArgumentException(
-                    "playerId '" + slot.playerId() + "' is not in the home team's roster");
+                    "playerId '" + slot.playerId() + "' is not in the manager team's roster");
             }
         }
 
-        // 4. Derive a formation code from the slot positions (X-Y-Z format).
-        String newCode = deriveFormationCode(newFormation);
+        // 4. Use the manager-selected formation code when present. Counting
+        // slot roles is only a fallback: modern shapes like 4-3-3 carry
+        // WINGER roles, and deriving from DEF/MID/ATT can mislabel them.
+        String sanitizedCode = sanitizeFormationCode(requestedFormationCode);
+        final String newCode = sanitizedCode != null
+            ? sanitizedCode
+            : deriveFormationCode(newFormation);
 
         // 5. Mutate the SessionTeam.formation — the engine reads this on the next replay.
-        SessionTeam homeTeam = context.homeTeam();
-        String previousCode = homeTeam.getFormation();
-        homeTeam.setFormation(newCode);
+        SessionTeam managerTeam = context.homeTeamId().equals(managerTeamId)
+            ? context.homeTeam()
+            : context.awayTeam();
+        String previousCode = managerTeam.getFormation();
+        managerTeam.setFormation(newCode);
 
         // 6. Mutate each affected SessionPlayer.position — engine reads this on the next rebuild.
         for (FormationSlotDTO slot : newFormation) {
             // Find the player in either starting or bench and mutate.
-            SessionPlayer p = findPlayer(context, slot.playerId());
+            SessionPlayer p = findPlayer(context, managerTeamId, slot.playerId());
             if (p != null && !slot.position().equals(p.getPosition())) {
                 p.setPosition(slot.position());
             }
         }
 
         // 7. Drive mutateContext — F1 replays from currentMinute automatically.
-        liveSession.mutateContext(ctx -> ctx.withNewFormation(homeTeamId, newCode));
+        Map<String, LineupSlotDTO> liveSlots = buildLiveSlots(newFormation);
+        liveSession.mutateContext(ctx -> {
+            V24MatchContext changed = ctx.withNewFormation(managerTeamId, newCode);
+            return liveSlots.isEmpty() ? changed : changed.withSlots(managerTeamId, liveSlots);
+        });
 
         // 8. Record the tactical-change event.
-        int minute = liveSession.currentMinute();
+        int minute = Math.max(1, liveSession.currentMinute());
         V24MatchEvent event = new V24MatchEvent(
             minute,
             V24MatchEventType.TACTICAL_CHANGE,
-            homeTeamId,
+            managerTeamId,
             null,
             null,
             null, null,
             0.0,
-            "Formation changed from " + previousCode + " to " + newCode
+            buildFormationChangeDescription(previousCode, newCode, newFormation, context, managerTeamId)
         );
         liveSession.recordTacticalChange(event);
 
         log.info("[LIVE-MATCH-F2-F5] Formation changed: matchId={} teamId={} from={} to={} minute={}",
-            matchId, homeTeamId, previousCode, newCode, minute);
+            matchId, managerTeamId, previousCode, newCode, minute);
 
         return FormationChangeResultDTO.ok(minute, new ArrayList<>(newFormation));
+    }
+
+    /**
+     * V25D99.20.3.37: carry live free-positioning into the replay context.
+     *
+     * <p>The pre-match lineup editor already sends customX/customY through
+     * LineupSlotDTO. The live Partido modal uses the same tactical language:
+     * when a slot arrives with custom coordinates, the V24 replay gets a
+     * slotsByPlayerId map so width/center/vertical movement affects the
+     * engine instead of being cosmetic UI-only movement.</p>
+     */
+    private Map<String, LineupSlotDTO> buildLiveSlots(List<FormationSlotDTO> formation) {
+        Map<String, LineupSlotDTO> slots = new LinkedHashMap<>();
+        if (formation == null) {
+            return slots;
+        }
+        for (int i = 0; i < formation.size(); i++) {
+            FormationSlotDTO slot = formation.get(i);
+            if (slot == null || slot.playerId() == null || slot.playerId().isBlank()) {
+                continue;
+            }
+            Double x = finiteOrNull(slot.customXPercent());
+            Double y = finiteOrNull(slot.customYPercent());
+            if (x == null && y == null) {
+                continue;
+            }
+            String subdivisionId = "GK".equalsIgnoreCase(slot.position())
+                ? "GK-1"
+                : "LIVE-" + (slot.slotIndex() != null ? slot.slotIndex() : i);
+            slots.put(slot.playerId(), new LineupSlotDTO(slot.playerId(), subdivisionId, x, y));
+        }
+        return slots;
+    }
+
+    private Double finiteOrNull(Double value) {
+        return value != null && Double.isFinite(value) ? value : null;
+    }
+
+    private String buildFormationChangeDescription(
+            String previousCode,
+            String newCode,
+            List<FormationSlotDTO> formation,
+            V24MatchContext context,
+            String managerTeamId) {
+        StringBuilder description = new StringBuilder("Formation changed from ")
+            .append(previousCode)
+            .append(" to ")
+            .append(newCode);
+
+        List<String> moved = new ArrayList<>();
+        if (formation != null) {
+            for (FormationSlotDTO slot : formation) {
+                if (slot == null || slot.playerId() == null) {
+                    continue;
+                }
+                Double x = finiteOrNull(slot.customXPercent());
+                Double y = finiteOrNull(slot.customYPercent());
+                if (x == null && y == null) {
+                    continue;
+                }
+                SessionPlayer player = findPlayer(context, managerTeamId, slot.playerId());
+                String name = player != null ? player.getName() : slot.playerId();
+                moved.add(String.format(Locale.US, "%s %.1f/%.1f",
+                    name,
+                    x != null ? x : -1.0,
+                    y != null ? y : -1.0));
+            }
+        }
+        if (!moved.isEmpty()) {
+            description.append(" | pixels: ");
+            description.append(String.join(", ", moved.stream().limit(4).toList()));
+            if (moved.size() > 4) {
+                description.append(" +").append(moved.size() - 4).append(" more");
+            }
+        }
+        return description.toString();
     }
 
     // ========== Validation helpers ==========
@@ -313,11 +414,57 @@ public class TacticalChangeService {
         return def + "-" + mid + "-" + fwd;
     }
 
-    private SessionPlayer findPlayer(V24MatchContext context, String playerId) {
-        for (SessionPlayer p : context.homeStartingPlayers()) {
+    private String sanitizeFormationCode(String requestedFormationCode) {
+        if (requestedFormationCode == null || requestedFormationCode.isBlank()) {
+            return null;
+        }
+        String code = requestedFormationCode.trim();
+        if (!code.matches("\\d(?:-(?:\\d|[A-Z]{2,4})){1,4}")) {
+            throw new IllegalArgumentException("formationCode has invalid format: " + requestedFormationCode);
+        }
+        return code;
+    }
+
+    private String resolveFormationTeamId(V24MatchContext context, List<FormationSlotDTO> formation) {
+        Set<String> requestedIds = new HashSet<>();
+        for (FormationSlotDTO slot : formation) {
+            requestedIds.add(slot.playerId());
+        }
+        Set<String> homeRoster = rosterIdsForTeam(context, context.homeTeamId());
+        if (homeRoster.containsAll(requestedIds)) {
+            return context.homeTeamId();
+        }
+        Set<String> awayRoster = rosterIdsForTeam(context, context.awayTeamId());
+        if (awayRoster.containsAll(requestedIds)) {
+            return context.awayTeamId();
+        }
+        throw new IllegalArgumentException("formation players do not belong to a single live team roster");
+    }
+
+    private Set<String> rosterIdsForTeam(V24MatchContext context, String teamId) {
+        Set<String> rosterIds = new HashSet<>();
+        List<SessionPlayer> starters = context.homeTeamId().equals(teamId)
+            ? context.homeStartingPlayers()
+            : context.awayStartingPlayers();
+        List<SessionPlayer> bench = context.homeTeamId().equals(teamId)
+            ? context.homeBenchPlayers()
+            : context.awayBenchPlayers();
+        for (SessionPlayer p : starters) rosterIds.add(p.getSessionPlayerId());
+        for (SessionPlayer p : bench) rosterIds.add(p.getSessionPlayerId());
+        return rosterIds;
+    }
+
+    private SessionPlayer findPlayer(V24MatchContext context, String teamId, String playerId) {
+        List<SessionPlayer> starters = context.homeTeamId().equals(teamId)
+            ? context.homeStartingPlayers()
+            : context.awayStartingPlayers();
+        List<SessionPlayer> bench = context.homeTeamId().equals(teamId)
+            ? context.homeBenchPlayers()
+            : context.awayBenchPlayers();
+        for (SessionPlayer p : starters) {
             if (playerId.equals(p.getSessionPlayerId())) return p;
         }
-        for (SessionPlayer p : context.homeBenchPlayers()) {
+        for (SessionPlayer p : bench) {
             if (playerId.equals(p.getSessionPlayerId())) return p;
         }
         return null;

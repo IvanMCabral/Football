@@ -8,6 +8,7 @@ import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import org.junit.jupiter.api.BeforeEach;
@@ -212,6 +213,135 @@ class TacticalChangeServiceTest {
 
         verify(liveSession, atLeastOnce()).mutateContext(any());
         verify(liveSession, atLeastOnce()).recordTacticalChange(any());
+    }
+
+    @Test
+    @DisplayName("changeFormation uses requested formationCode instead of deriving from role counts")
+    void changeFormation_requestedFormationCodeWinsOverDerivedCode() {
+        List<FormationSlotDTO> formation = new ArrayList<>();
+        formation.add(new FormationSlotDTO("home-starter-0", "GK"));
+        formation.add(new FormationSlotDTO("home-starter-1", "DEF"));
+        formation.add(new FormationSlotDTO("home-starter-2", "DEF"));
+        formation.add(new FormationSlotDTO("home-starter-3", "DEF"));
+        formation.add(new FormationSlotDTO("home-starter-4", "DEF"));
+        formation.add(new FormationSlotDTO("home-starter-5", "MID"));
+        formation.add(new FormationSlotDTO("home-starter-6", "MID"));
+        formation.add(new FormationSlotDTO("home-starter-7", "MID"));
+        formation.add(new FormationSlotDTO("home-starter-8", "WINGER"));
+        formation.add(new FormationSlotDTO("home-starter-9", "ATT"));
+        formation.add(new FormationSlotDTO("home-starter-10", "WINGER"));
+
+        org.mockito.Mockito.doAnswer(inv -> {
+            @SuppressWarnings("unchecked")
+            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
+            V24MatchContext result = op.apply(context);
+            assertEquals("4-3-3", result.homeFormation(),
+                "manager-selected code must win over role-count derivation");
+            return null;
+        }).when(liveSession).mutateContext(any());
+
+        StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-3-3"))
+            .assertNext(result -> assertTrue(result.success()))
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("changeFormation carries live custom pixel coordinates into V24 context slots")
+    void changeFormation_customCoordinatesUpdateContextSlots() {
+        List<FormationSlotDTO> formation = new ArrayList<>();
+        formation.add(new FormationSlotDTO("home-starter-0", "GK", 0, null, null));
+        formation.add(new FormationSlotDTO("home-starter-1", "DEF", 1, null, null));
+        formation.add(new FormationSlotDTO("home-starter-2", "DEF", 2, null, null));
+        formation.add(new FormationSlotDTO("home-starter-3", "DEF", 3, null, null));
+        formation.add(new FormationSlotDTO("home-starter-4", "DEF", 4, null, null));
+        formation.add(new FormationSlotDTO("home-starter-5", "MID", 5, null, null));
+        formation.add(new FormationSlotDTO("home-starter-6", "MID", 6, 47.25, 58.75));
+        formation.add(new FormationSlotDTO("home-starter-7", "MID", 7, null, null));
+        formation.add(new FormationSlotDTO("home-starter-8", "MID", 8, null, null));
+        formation.add(new FormationSlotDTO("home-starter-9", "ATT", 9, null, null));
+        formation.add(new FormationSlotDTO("home-starter-10", "ATT", 10, null, null));
+
+        org.mockito.Mockito.doAnswer(inv -> {
+            @SuppressWarnings("unchecked")
+            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
+            V24MatchContext result = op.apply(context);
+            assertTrue(result.homeSlotsByPlayerId().containsKey("home-starter-6"),
+                "custom live slot must be written into the home slot map");
+            assertEquals(47.25, result.homeSlotsByPlayerId().get("home-starter-6").customXPercent());
+            assertEquals(58.75, result.homeSlotsByPlayerId().get("home-starter-6").customYPercent());
+            return null;
+        }).when(liveSession).mutateContext(any());
+
+        StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-4-2"))
+            .assertNext(result -> assertTrue(result.success()))
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("changeFormation records custom pixels in the tactical-change event")
+    void changeFormation_customCoordinatesAreVisibleInTimelineEvent() {
+        List<FormationSlotDTO> formation = new ArrayList<>();
+        formation.add(new FormationSlotDTO("home-starter-0", "GK", 0, null, null));
+        formation.add(new FormationSlotDTO("home-starter-1", "DEF", 1, null, null));
+        formation.add(new FormationSlotDTO("home-starter-2", "DEF", 2, null, null));
+        formation.add(new FormationSlotDTO("home-starter-3", "DEF", 3, null, null));
+        formation.add(new FormationSlotDTO("home-starter-4", "DEF", 4, null, null));
+        formation.add(new FormationSlotDTO("home-starter-5", "MID", 5, null, null));
+        formation.add(new FormationSlotDTO("home-starter-6", "MID", 6, 47.25, 58.75));
+        formation.add(new FormationSlotDTO("home-starter-7", "MID", 7, null, null));
+        formation.add(new FormationSlotDTO("home-starter-8", "MID", 8, null, null));
+        formation.add(new FormationSlotDTO("home-starter-9", "ATT", 9, null, null));
+        formation.add(new FormationSlotDTO("home-starter-10", "ATT", 10, null, null));
+
+        org.mockito.Mockito.doNothing().when(liveSession).mutateContext(any());
+
+        StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-4-2"))
+            .assertNext(result -> assertTrue(result.success()))
+            .verifyComplete();
+
+        ArgumentCaptor<V24MatchEvent> eventCaptor = ArgumentCaptor.forClass(V24MatchEvent.class);
+        verify(liveSession, atLeastOnce()).recordTacticalChange(eventCaptor.capture());
+        String description = eventCaptor.getValue().description();
+        assertTrue(description.contains("Formation changed from 4-3-3 to 4-4-2"));
+        assertTrue(description.contains("pixels:"));
+        assertTrue(description.contains("47.3/58.8"));
+    }
+
+    @Test
+    @DisplayName("changeFormation supports away manager roster and writes custom pixels into away slots")
+    void changeFormation_awayManagerRosterAndPixels() {
+        List<FormationSlotDTO> formation = new ArrayList<>();
+        formation.add(new FormationSlotDTO("away-starter-0", "GK", 0, null, null));
+        formation.add(new FormationSlotDTO("away-starter-1", "DEF", 1, null, null));
+        formation.add(new FormationSlotDTO("away-starter-2", "DEF", 2, null, null));
+        formation.add(new FormationSlotDTO("away-starter-3", "DEF", 3, null, null));
+        formation.add(new FormationSlotDTO("away-starter-4", "DEF", 4, null, null));
+        formation.add(new FormationSlotDTO("away-starter-5", "MID", 5, null, null));
+        formation.add(new FormationSlotDTO("away-starter-6", "MID", 6, 52.5, 41.25));
+        formation.add(new FormationSlotDTO("away-starter-7", "MID", 7, null, null));
+        formation.add(new FormationSlotDTO("away-starter-8", "MID", 8, null, null));
+        formation.add(new FormationSlotDTO("away-starter-9", "ATT", 9, null, null));
+        formation.add(new FormationSlotDTO("away-starter-10", "ATT", 10, null, null));
+
+        org.mockito.Mockito.doAnswer(inv -> {
+            @SuppressWarnings("unchecked")
+            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
+            V24MatchContext result = op.apply(context);
+            assertEquals("4-4-2", result.awayFormation(),
+                "away manager formation change must mutate awayFormation");
+            assertTrue(result.awaySlotsByPlayerId().containsKey("away-starter-6"),
+                "custom live slot must be written into the away slot map");
+            assertEquals(52.5, result.awaySlotsByPlayerId().get("away-starter-6").customXPercent());
+            assertEquals(41.25, result.awaySlotsByPlayerId().get("away-starter-6").customYPercent());
+            return null;
+        }).when(liveSession).mutateContext(any());
+
+        StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-4-2"))
+            .assertNext(result -> {
+                assertTrue(result.success());
+                assertEquals(30, result.minuteApplied());
+            })
+            .verifyComplete();
     }
 
     // ========== Fixture helpers ==========

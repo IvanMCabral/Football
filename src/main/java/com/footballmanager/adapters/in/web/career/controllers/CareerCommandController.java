@@ -242,6 +242,15 @@ public class CareerCommandController {
             body.put("alreadyPaused", wasPaused);
             body.put("alreadyFinished", wasFinished);
             body.put("userId", userId.toString());
+            // V25D99.20.3.45: return the paused live snapshots too.
+            // The harness/live DT modal needs the exact match state after the
+            // round is frozen (minute, score, possession, events, remaining
+            // substitutions). Previously this endpoint returned only flags,
+            // forcing the frontend to call the single-match state endpoint,
+            // which is not available for round-engine matches and returned
+            // 404. Keeping the flags preserves existing consumers while the
+            // matches payload gives modals a real source of truth.
+            body.put("matches", engine.getMatchStates());
             return ResponseEntity.ok(body);
         });
     }
@@ -298,6 +307,7 @@ public class CareerCommandController {
             body.put("wasPaused", wasPaused);
             body.put("alreadyFinished", wasFinished);
             body.put("userId", userId.toString());
+            body.put("matches", engine.getMatchStates());
             return ResponseEntity.ok(body);
         });
     }

@@ -1,10 +1,15 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
+import com.footballmanager.domain.model.entity.SessionPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
@@ -215,6 +220,17 @@ public final class V24LiveSession {
     }
 
     /**
+     * Return the current live snapshot without advancing the clock.
+     *
+     * <p>Used after manual manager actions (for example substitutions while
+     * the round is paused by a modal) so API/SSE consumers immediately read
+     * the same lineup that the engine already mutated internally.
+     */
+    public synchronized V24LiveSnapshot snapshot() {
+        return buildSnapshot();
+    }
+
+    /**
      * Check if the match has finished (90 ticks have run).
      */
     public boolean isFinished() {
@@ -252,19 +268,21 @@ public final class V24LiveSession {
      *
      * <p>Note: SHOT is kept (the spec says "SHOT_ON_TARGET (incluye
      * saves y goals)" — we keep SHOT separately so the UI can still
-     * distinguish a shot off target from a chance created). SAVE is
-     * kept because it represents a visible event (the goalkeeper stopped
-     * a shot on target).
+     * distinguish a shot off target from a chance created). The current
+     * engine represents non-goal attempts as MISS or BLOCK; MISS stays
+     * hidden as noise, while BLOCK is kept because a blocked shot is useful
+     * tactical feedback (pressure, central congestion, defensive line).
+     * SAVE is kept because it represents a visible event (the goalkeeper
+     * stopped a shot on target).
      */
-    public static final int NOISE_EVENT_THRESHOLD_MIN = 6;
+    public static final int NOISE_EVENT_THRESHOLD_MIN = 5;
 
     private static final java.util.Set<V24MatchEventType> NOISE_EVENTS = java.util.Set.of(
         V24MatchEventType.CHANCE_CREATED,
         V24MatchEventType.OFFSIDE,
         V24MatchEventType.CORNER,
         V24MatchEventType.FOUL,
-        V24MatchEventType.MISS,
-        V24MatchEventType.BLOCK
+        V24MatchEventType.MISS
     );
 
     /**
@@ -365,8 +383,166 @@ public final class V24LiveSession {
                 effectiveContext.homeStyle() != null ? effectiveContext.homeStyle().name() : null,
                 effectiveContext.awayStyle() != null ? effectiveContext.awayStyle().name() : null,
                 effectiveContext.homeFormation(),
-                effectiveContext.awayFormation()
+                effectiveContext.awayFormation(),
+                buildLiveSlotsForSnapshot(
+                        startersForSnapshot(true),
+                        slotsForSnapshot(true)),
+                buildLiveSlotsForSnapshot(
+                        startersForSnapshot(false),
+                        slotsForSnapshot(false))
         );
+    }
+
+    private List<SessionPlayer> startersForSnapshot(boolean home) {
+        String teamId = home ? effectiveContext.homeTeamId() : effectiveContext.awayTeamId();
+        List<SessionPlayer> starters = new ArrayList<>(
+                home ? effectiveContext.homeStartingPlayers() : effectiveContext.awayStartingPlayers());
+        List<SessionPlayer> bench = home ? effectiveContext.homeBenchPlayers() : effectiveContext.awayBenchPlayers();
+
+        for (V24MatchContext.ScheduledSub sub : scheduledSubsForSnapshot()) {
+            if (!teamId.equals(sub.teamId()) || sub.effectiveMinute() > currentMinute) {
+                continue;
+            }
+            SessionPlayer playerOn = findPlayerById(playersForSnapshotLookup(home), sub.playerOnId());
+            if (playerOn == null) {
+                continue;
+            }
+            for (int i = 0; i < starters.size(); i++) {
+                SessionPlayer player = starters.get(i);
+                if (player != null && sub.playerOffId().equals(player.getSessionPlayerId())) {
+                    starters.set(i, playerOn);
+                    break;
+                }
+            }
+        }
+        return starters;
+    }
+
+    private Map<String, LineupSlotDTO> slotsForSnapshot(boolean home) {
+        String teamId = home ? effectiveContext.homeTeamId() : effectiveContext.awayTeamId();
+        Map<String, LineupSlotDTO> base = home
+                ? effectiveContext.homeSlotsByPlayerId()
+                : effectiveContext.awaySlotsByPlayerId();
+        Map<String, LineupSlotDTO> slots = new LinkedHashMap<>();
+        if (base != null) {
+            slots.putAll(base);
+        }
+
+        for (V24MatchContext.ScheduledSub sub : scheduledSubsForSnapshot()) {
+            if (!teamId.equals(sub.teamId()) || sub.effectiveMinute() > currentMinute) {
+                continue;
+            }
+            LineupSlotDTO offSlot = slots.remove(sub.playerOffId());
+            if (offSlot != null) {
+                slots.put(sub.playerOnId(), offSlot);
+            }
+        }
+        return slots;
+    }
+
+    private List<V24MatchContext.ScheduledSub> scheduledSubsForSnapshot() {
+        List<V24MatchContext.ScheduledSub> subs =
+                new ArrayList<>(effectiveContext.manualSubstitutions());
+        for (V24MatchEvent event : manualEvents) {
+            if (event.type() != V24MatchEventType.SUBSTITUTION
+                    || event.teamId() == null
+                    || event.playerId() == null
+                    || event.relatedPlayerId() == null) {
+                continue;
+            }
+            boolean alreadyPresent = false;
+            for (V24MatchContext.ScheduledSub sub : subs) {
+                if (event.teamId().equals(sub.teamId())
+                        && event.playerId().equals(sub.playerOffId())
+                        && event.relatedPlayerId().equals(sub.playerOnId())
+                        && event.minute() == sub.effectiveMinute()) {
+                    alreadyPresent = true;
+                    break;
+                }
+            }
+            if (!alreadyPresent) {
+                subs.add(new V24MatchContext.ScheduledSub(
+                        event.teamId(),
+                        event.playerId(),
+                        event.relatedPlayerId(),
+                        event.minute()
+                ));
+            }
+        }
+        return subs;
+    }
+
+    private List<SessionPlayer> playersForSnapshotLookup(boolean home) {
+        List<SessionPlayer> players = new ArrayList<>();
+        List<SessionPlayer> starters = home
+                ? effectiveContext.homeStartingPlayers()
+                : effectiveContext.awayStartingPlayers();
+        List<SessionPlayer> bench = home
+                ? effectiveContext.homeBenchPlayers()
+                : effectiveContext.awayBenchPlayers();
+        if (starters != null) {
+            players.addAll(starters);
+        }
+        if (bench != null) {
+            players.addAll(bench);
+        }
+        return players;
+    }
+
+    private SessionPlayer findPlayerById(List<SessionPlayer> players, String sessionPlayerId) {
+        if (sessionPlayerId == null || players == null) {
+            return null;
+        }
+        for (SessionPlayer player : players) {
+            if (player != null && sessionPlayerId.equals(player.getSessionPlayerId())) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    private List<FormationSlotDTO> buildLiveSlotsForSnapshot(
+            List<SessionPlayer> starters,
+            Map<String, LineupSlotDTO> slotsByPlayerId) {
+        if (starters == null || starters.isEmpty()) {
+            return List.of();
+        }
+        List<FormationSlotDTO> slots = new ArrayList<>();
+        for (int i = 0; i < starters.size(); i++) {
+            SessionPlayer player = starters.get(i);
+            if (player == null || player.getSessionPlayerId() == null) {
+                continue;
+            }
+            LineupSlotDTO liveSlot = slotsByPlayerId != null
+                    ? slotsByPlayerId.get(player.getSessionPlayerId())
+                    : null;
+            slots.add(new FormationSlotDTO(
+                    player.getSessionPlayerId(),
+                    player.getPosition(),
+                    resolveLiveSlotIndex(liveSlot, i),
+                    liveSlot != null ? liveSlot.customXPercent() : null,
+                    liveSlot != null ? liveSlot.customYPercent() : null
+            ));
+        }
+        return slots;
+    }
+
+    private Integer resolveLiveSlotIndex(LineupSlotDTO slot, int fallbackIndex) {
+        if (slot == null || slot.subdivisionId() == null) {
+            return fallbackIndex;
+        }
+        String id = slot.subdivisionId();
+        if (id.startsWith("LIVE-")) {
+            try {
+                return Integer.parseInt(id.substring("LIVE-".length()));
+            } catch (NumberFormatException ignored) {
+                return fallbackIndex;
+            }
+        }
+        if ("GK-1".equalsIgnoreCase(id)) {
+            return 0;
+        }
+        return fallbackIndex;
     }
 
     /**

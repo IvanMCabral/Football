@@ -162,6 +162,10 @@ public interface TestHarnessUseCase {
 
     Mono<LabMutationResult> restoreDefensiveDowngradeLab(UUID userId);
 
+    Mono<LabMutationResult> prepareObjectiveContrastLab(UUID userId);
+
+    Mono<LabMutationResult> restoreObjectiveContrastLab(UUID userId);
+
     Mono<LabMutationResult> prepareWeakWideDefendersLab(UUID userId);
 
     Mono<LabMutationResult> restoreWeakWideDefendersLab(UUID userId);

@@ -7,6 +7,7 @@ import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
 import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.entity.MatchEvent;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -150,6 +151,23 @@ public class MatchSessionV25D79Test {
         // (8) V25D79 substitutionsRemaining: 5 - 2 SUBSTITUTION events = 3.
         assertEquals(3, out.substitutionsRemaining(),
                 "5 sub quota minus 2 SUBSTITUTION events = 3 remaining");
+
+        MatchEvent firstSub = out.events().stream()
+                .filter(event -> event.getEventType() == MatchEvent.EventType.SUBSTITUTION)
+                .findFirst()
+                .orElseThrow();
+        assertEquals("away-off-1", firstSub.getPlayerId(),
+                "SUBSTITUTION playerId must be the player leaving");
+        assertEquals("Away Off 1", firstSub.getPlayerName(),
+                "SUBSTITUTION playerName must be the player leaving");
+        assertEquals("away-on-1", firstSub.getRelatedPlayerId(),
+                "SUBSTITUTION relatedPlayerId must be the player entering so reloads can rebuild the XI");
+        assertEquals("Away On 1", firstSub.getRelatedPlayerName(),
+                "SUBSTITUTION relatedPlayerName must be preserved");
+        assertEquals("Away On 1", firstSub.getPlayerOnName(),
+                "SUBSTITUTION playerOnName must remain populated for the live timeline");
+        assertEquals(awayTeamUuid.toString(), firstSub.getTeamId(),
+                "SUBSTITUTION teamId must be preserved for per-team quotas and modal reconstruction");
     }
 
     @Test
@@ -240,7 +258,9 @@ public class MatchSessionV25D79Test {
                 /* playerId */ playerId,
                 /* playerName */ playerName,
                 /* relatedPlayerId */ relatedPlayerId,
-                /* relatedPlayerName */ null,
+                /* relatedPlayerName */ relatedPlayerId != null
+                        ? relatedPlayerId.replace("-on-", " On ").replace("away", "Away")
+                        : null,
                 /* xg */ xg,
                 /* description */ "test-event"
         );

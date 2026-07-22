@@ -904,7 +904,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             assistQuality = playmakerAdjustedAssistQuality(assistQuality, playmakerSkill);
         }
         double defPressure = defensivePressure(opponent, random);
-        double gkQuality = gkQuality(possessor.startingPlayers(), random); // simplified
+        // V25D99.87: xG must read the defending goalkeeper, not the team
+        // taking the shot. The old possessor.startingPlayers() call made the
+        // attack partly defend against its own GK quality, which distorted
+        // live/harness comparisons when swapping teams or keepers.
+        double gkQuality = gkQuality(opponent.startingPlayers(), random);
 
         V24ShotQuality quality = new V24ShotQuality(
                 location,
@@ -966,7 +970,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // New: onTarget base 0.30 (more realistic 30-35% on-target),
         // goal threshold xg/0.60 (60% xG = 100% goal — slightly more
         // permissive per unit xG to compensate for higher shot volume).
-        boolean onTarget = random.nextDouble() < (0.30 + (1 - xg) * 0.42);
+        boolean onTarget = random.nextDouble() < onTargetProbability(xg);
         boolean isGoal = false;
 
         if (onTarget) {
@@ -1398,6 +1402,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         if (gk.isEmpty()) return 0.5;
         // GK quality from stamina + mentality (normalized)
         return Math.round((gk.get().stamina() / 100.0 * 0.5 + gk.get().mentality() / 100.0 * 0.5) * 1000.0) / 1000.0;
+    }
+
+    static double onTargetProbability(double xg) {
+        // V25D99.87: monotonic shot-on-target model. Previously
+        // 0.30 + (1 - xg) * 0.42 inverted the football intuition: weak
+        // 0.01 xG attempts were far more likely to hit the target than
+        // clean 0.60 xG chances. Keep realistic bounds while making every
+        // xG/pixel/tactical quality improvement directionally visible.
+        double normalizedXg = clamp(xg, 0.0, 0.60) / 0.60;
+        return clamp(0.38 + normalizedXg * 0.16, 0.38, 0.54);
     }
 
     /**

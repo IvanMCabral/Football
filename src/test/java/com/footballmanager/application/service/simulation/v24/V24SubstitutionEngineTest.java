@@ -394,6 +394,33 @@ class V24SubstitutionEngineTest {
     // ========== LIVE-MATCH-F1-POC: manualSubstitute tests ==========
 
     @Test
+    void manualSubstitute_allowsOutOfRoleDtDecision() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState attackerOff = team.startingPlayers().stream()
+            .filter(p -> "ATT".equals(p.position()))
+            .findFirst()
+            .orElseThrow();
+        V24PlayerMatchState defenderOn = team.benchPlayers().stream()
+            .filter(p -> "DEF".equals(p.position()))
+            .findFirst()
+            .orElseThrow();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        V24MatchEvent event = engine.manualSubstitute(
+            team,
+            attackerOff.sessionPlayerId(),
+            defenderOn.sessionPlayerId(),
+            70);
+
+        assertEquals(V24MatchEventType.SUBSTITUTION, event.type());
+        assertEquals(attackerOff.sessionPlayerId(), event.playerId());
+        assertEquals(defenderOn.sessionPlayerId(), event.relatedPlayerId());
+        assertFalse(attackerOff.onPitch(), "Player leaving should be off pitch");
+        assertTrue(defenderOn.onPitch(), "Out-of-role DT choice should enter the pitch");
+        assertEquals(1, engine.substitutionsUsed(team.teamId()));
+    }
+
+    @Test
     void manualSubstitute_validPair_returnsEventAndMutatesState() {
         V24TeamMatchState team = makeTeam();
         V24PlayerMatchState subOff = team.startingPlayers().get(0);
@@ -417,15 +444,31 @@ class V24SubstitutionEngineTest {
     }
 
     @Test
-    void manualSubstitute_offPlayerInjured_throwsIllegalState() {
+    void manualSubstitute_offPlayerInjured_canBeSubstitutedOff() {
         V24TeamMatchState team = makeTeam();
         V24PlayerMatchState injured = team.startingPlayers().get(0);
         injured.injure();
 
         V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
-        assertThrows(IllegalStateException.class,
-            () -> engine.manualSubstitute(team, injured.sessionPlayerId(),
-                team.benchPlayers().get(0).sessionPlayerId(), 70));
+        V24MatchEvent event = engine.manualSubstitute(team, injured.sessionPlayerId(),
+                team.benchPlayers().get(0).sessionPlayerId(), 70);
+
+        assertEquals(V24MatchEventType.SUBSTITUTION, event.type());
+        assertFalse(injured.onPitch(), "Injured off-player should be allowed to leave the pitch");
+    }
+
+    @Test
+    void manualSubstitute_onPlayerInjured_throwsIllegalState() {
+        V24TeamMatchState team = makeTeam();
+        V24PlayerMatchState subOff = team.startingPlayers().get(0);
+        V24PlayerMatchState injuredBench = team.benchPlayers().get(0);
+        injuredBench.injure();
+
+        V24SubstitutionEngine engine = new V24SubstitutionEngine(MAX_SUBS);
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+            () -> engine.manualSubstitute(team, subOff.sessionPlayerId(),
+                injuredBench.sessionPlayerId(), 70));
+        assertTrue(ex.getMessage().contains("cannot come on"));
     }
 
     @Test

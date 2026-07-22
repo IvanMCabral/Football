@@ -17,8 +17,10 @@ import java.util.Objects;
  * timeline without resolving sessionPlayerId to a name. The existing
  * {@code playerName} field carries the OFF player (consistent with
  * {@code V24MatchEvent.playerName()}); {@code playerOnName} carries the ON
- * player (from {@code V24MatchEvent.relatedPlayerName()}). For non-SUBSTITUTION
- * events {@code playerOnName} is {@code null}.
+ * player (from {@code V24MatchEvent.relatedPlayerName()}). The matching
+ * {@code relatedPlayerId} is also preserved so the UI can reconstruct live
+ * lineups after a page reload without relying on player-name matching.
+ * For non-SUBSTITUTION events {@code playerOnName} is {@code null}.
  */
 public class MatchEvent {
 
@@ -31,6 +33,9 @@ public class MatchEvent {
     private final String teamId;
     // V24D6M10: Optional matchId for deterministic player selection
     private final String matchId;
+    // V25: Optional secondary player id (SUBSTITUTION on-player, assist provider, etc.)
+    private final String relatedPlayerId;
+    private final String relatedPlayerName;
     // LIVE-MATCH-F3-UI-LIVE BE2: optional ON-player name for SUBSTITUTION events
     private final String playerOnName;
 
@@ -91,13 +96,31 @@ public class MatchEvent {
      */
     private MatchEvent(EventType eventType, int minute, String playerName, String description,
                       String playerId, String teamId, String matchId, String playerOnName) {
+        this(eventType, minute, playerName, description, playerId, teamId, matchId,
+                null, null, playerOnName);
+    }
+
+    /**
+     * Full constructor including secondary-player attribution from V24 events.
+     */
+    private MatchEvent(EventType eventType, int minute, String playerName, String description,
+                      String playerId, String teamId, String matchId,
+                      String relatedPlayerId, String relatedPlayerName, String playerOnName) {
         this.eventType = Objects.requireNonNull(eventType, "Event type cannot be null");
         this.playerName = (playerName != null && !playerName.isBlank()) ? playerName : "Unknown";
         this.description = (description != null) ? description : "";
         this.playerId = playerId;
         this.teamId = teamId;
         this.matchId = matchId;
-        this.playerOnName = (playerOnName != null && !playerOnName.isBlank()) ? playerOnName : null;
+        this.relatedPlayerId = (relatedPlayerId != null && !relatedPlayerId.isBlank()) ? relatedPlayerId : null;
+        this.relatedPlayerName = (relatedPlayerName != null && !relatedPlayerName.isBlank()) ? relatedPlayerName : null;
+        String resolvedPlayerOnName = playerOnName;
+        if ((resolvedPlayerOnName == null || resolvedPlayerOnName.isBlank())
+                && eventType == EventType.SUBSTITUTION) {
+            resolvedPlayerOnName = relatedPlayerName;
+        }
+        this.playerOnName = (resolvedPlayerOnName != null && !resolvedPlayerOnName.isBlank())
+                ? resolvedPlayerOnName : null;
 
         validateMinute(minute);
         this.minute = minute;
@@ -161,6 +184,21 @@ public class MatchEvent {
         return new MatchEvent(eventType, minute, playerName, description, playerId, teamId, matchId, playerOnName);
     }
 
+    /**
+     * Factory preserving both primary and secondary V24 player attribution.
+     *
+     * <p>For SUBSTITUTION events, {@code playerId/playerName} is the player
+     * leaving the pitch and {@code relatedPlayerId/relatedPlayerName} is the
+     * player entering. Keeping the ID is critical for reload-safe live modal
+     * reconstruction.
+     */
+    public static MatchEvent of(EventType eventType, int minute, String playerId, String playerName,
+                               String teamId, String description, String matchId,
+                               String relatedPlayerId, String relatedPlayerName, String playerOnName) {
+        return new MatchEvent(eventType, minute, playerName, description, playerId, teamId, matchId,
+                relatedPlayerId, relatedPlayerName, playerOnName);
+    }
+
     private void validateMinute(int minute) {
         if (minute < 0 || minute > 120) {
             throw new IllegalArgumentException("Match minute must be between 0 and 120");
@@ -205,6 +243,23 @@ public class MatchEvent {
     }
 
     /**
+     * Secondary player's sessionPlayerId, if available.
+     *
+     * <p>For SUBSTITUTION this is the player entering the match. For goals or
+     * shots it may represent the assist/key-pass player.
+     */
+    public String getRelatedPlayerId() {
+        return relatedPlayerId;
+    }
+
+    /**
+     * Secondary player's display name, if available.
+     */
+    public String getRelatedPlayerName() {
+        return relatedPlayerName;
+    }
+
+    /**
      * LIVE-MATCH-F3-UI-LIVE BE2: ON player name for SUBSTITUTION events.
      * Returns {@code null} for non-SUBSTITUTION events or when the
      * V24MatchEvent did not carry a {@code relatedPlayerName}.
@@ -225,12 +280,15 @@ public class MatchEvent {
                 Objects.equals(playerId, that.playerId) &&
                 Objects.equals(teamId, that.teamId) &&
                 Objects.equals(matchId, that.matchId) &&
+                Objects.equals(relatedPlayerId, that.relatedPlayerId) &&
+                Objects.equals(relatedPlayerName, that.relatedPlayerName) &&
                 Objects.equals(playerOnName, that.playerOnName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventType, minute, playerName, description, playerId, teamId, matchId, playerOnName);
+        return Objects.hash(eventType, minute, playerName, description, playerId, teamId, matchId,
+                relatedPlayerId, relatedPlayerName, playerOnName);
     }
 
     @Override

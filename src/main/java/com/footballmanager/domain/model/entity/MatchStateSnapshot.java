@@ -1,5 +1,6 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
@@ -66,7 +67,10 @@ public record MatchStateSnapshot(
     // V25D79 — added 3 fields (mod statistics + substitutions)
     List<V24PlayerMatchRatingDto> homePlayerRatings,
     List<V24PlayerMatchRatingDto> awayPlayerRatings,
-    int substitutionsRemaining
+    int substitutionsRemaining,
+    // V25D99.21 — live tactical slots used by Partido DT modal
+    List<FormationSlotDTO> homeSlots,
+    List<FormationSlotDTO> awaySlots
 ) implements Serializable {
 
     /**
@@ -99,7 +103,9 @@ public record MatchStateSnapshot(
             "4-4-2",
             List.of(),
             List.of(),
-            5
+            5,
+            List.of(),
+            List.of()
         );
     }
 
@@ -130,13 +136,46 @@ public record MatchStateSnapshot(
             matchId, homeTeamId, awayTeamId, currentMinute, status, score,
             events, careerId, userId,
             50, 50, "BALANCED", "BALANCED", "4-4-2", "4-4-2",
-            List.of(), List.of(), 5
+            List.of(), List.of(), 5, List.of(), List.of()
         );
     }
 
     /**
      * Builder para construcción más legible.
      */
+    /**
+     * Compatibility constructor for the pre-V25D99.21 canonical shape.
+     * Live tactical slots default to empty lists for legacy callers/tests.
+     */
+    public MatchStateSnapshot(
+            UUID matchId,
+            UUID homeTeamId,
+            UUID awayTeamId,
+            int currentMinute,
+            MatchStatus status,
+            Score score,
+            List<MatchEvent> events,
+            String careerId,
+            String userId,
+            int homePossession,
+            int awayPossession,
+            String homeStyle,
+            String awayStyle,
+            String homeFormation,
+            String awayFormation,
+            List<V24PlayerMatchRatingDto> homePlayerRatings,
+            List<V24PlayerMatchRatingDto> awayPlayerRatings,
+            int substitutionsRemaining) {
+        this(
+            matchId, homeTeamId, awayTeamId, currentMinute, status, score,
+            events, careerId, userId,
+            homePossession, awayPossession, homeStyle, awayStyle,
+            homeFormation, awayFormation,
+            homePlayerRatings, awayPlayerRatings, substitutionsRemaining,
+            List.of(), List.of()
+        );
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -149,7 +188,8 @@ public record MatchStateSnapshot(
             currentMinute, status, score, newEvents, careerId, userId,
             homePossession, awayPossession, homeStyle, awayStyle,
             homeFormation, awayFormation,
-            homePlayerRatings, awayPlayerRatings, substitutionsRemaining
+            homePlayerRatings, awayPlayerRatings, substitutionsRemaining,
+            homeSlots, awaySlots
         );
     }
 
@@ -159,7 +199,8 @@ public record MatchStateSnapshot(
             minute, status, score, events, careerId, userId,
             homePossession, awayPossession, homeStyle, awayStyle,
             homeFormation, awayFormation,
-            homePlayerRatings, awayPlayerRatings, substitutionsRemaining
+            homePlayerRatings, awayPlayerRatings, substitutionsRemaining,
+            homeSlots, awaySlots
         );
     }
 
@@ -169,7 +210,8 @@ public record MatchStateSnapshot(
             currentMinute, newStatus, score, events, careerId, userId,
             homePossession, awayPossession, homeStyle, awayStyle,
             homeFormation, awayFormation,
-            homePlayerRatings, awayPlayerRatings, substitutionsRemaining
+            homePlayerRatings, awayPlayerRatings, substitutionsRemaining,
+            homeSlots, awaySlots
         );
     }
 
@@ -179,7 +221,8 @@ public record MatchStateSnapshot(
             currentMinute, status, newScore, events, careerId, userId,
             homePossession, awayPossession, homeStyle, awayStyle,
             homeFormation, awayFormation,
-            homePlayerRatings, awayPlayerRatings, substitutionsRemaining
+            homePlayerRatings, awayPlayerRatings, substitutionsRemaining,
+            homeSlots, awaySlots
         );
     }
 
@@ -189,7 +232,8 @@ public record MatchStateSnapshot(
             currentMinute, status, score, newEvents, careerId, userId,
             homePossession, awayPossession, homeStyle, awayStyle,
             homeFormation, awayFormation,
-            homePlayerRatings, awayPlayerRatings, substitutionsRemaining
+            homePlayerRatings, awayPlayerRatings, substitutionsRemaining,
+            homeSlots, awaySlots
         );
     }
 
@@ -208,7 +252,8 @@ public record MatchStateSnapshot(
             currentMinute, status, score, events, careerId, userId,
             homePossession, awayPossession, homeStyle, awayStyle,
             homeFormation, awayFormation,
-            homeRatings, awayRatings, subsRemaining
+            homeRatings, awayRatings, subsRemaining,
+            homeSlots, awaySlots
         );
     }
 
@@ -233,6 +278,8 @@ public record MatchStateSnapshot(
         private List<V24PlayerMatchRatingDto> homePlayerRatings = List.of();
         private List<V24PlayerMatchRatingDto> awayPlayerRatings = List.of();
         private int substitutionsRemaining = 5;
+        private List<FormationSlotDTO> homeSlots = List.of();
+        private List<FormationSlotDTO> awaySlots = List.of();
 
         public Builder matchId(UUID matchId) { this.matchId = matchId; return this; }
         public Builder homeTeamId(UUID homeTeamId) { this.homeTeamId = homeTeamId; return this; }
@@ -252,6 +299,8 @@ public record MatchStateSnapshot(
         public Builder homePlayerRatings(List<V24PlayerMatchRatingDto> homePlayerRatings) { this.homePlayerRatings = homePlayerRatings; return this; }
         public Builder awayPlayerRatings(List<V24PlayerMatchRatingDto> awayPlayerRatings) { this.awayPlayerRatings = awayPlayerRatings; return this; }
         public Builder substitutionsRemaining(int substitutionsRemaining) { this.substitutionsRemaining = substitutionsRemaining; return this; }
+        public Builder homeSlots(List<FormationSlotDTO> homeSlots) { this.homeSlots = homeSlots; return this; }
+        public Builder awaySlots(List<FormationSlotDTO> awaySlots) { this.awaySlots = awaySlots; return this; }
 
         public MatchStateSnapshot build() {
             return new MatchStateSnapshot(
@@ -259,7 +308,8 @@ public record MatchStateSnapshot(
                 currentMinute, status, score, events, careerId, userId,
                 homePossession, awayPossession, homeStyle, awayStyle,
                 homeFormation, awayFormation,
-                homePlayerRatings, awayPlayerRatings, substitutionsRemaining
+                homePlayerRatings, awayPlayerRatings, substitutionsRemaining,
+                homeSlots, awaySlots
             );
         }
     }

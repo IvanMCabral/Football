@@ -14,5 +14,12 @@ package com.footballmanager.adapters.in.web.career.simulation.dto;
  */
 public record FormationSlotDTO(
     String playerId,
-    String position
-) {}
+    String position,
+    Integer slotIndex,
+    Double customXPercent,
+    Double customYPercent
+) {
+    public FormationSlotDTO(String playerId, String position) {
+        this(playerId, position, null, null, null);
+    }
+}

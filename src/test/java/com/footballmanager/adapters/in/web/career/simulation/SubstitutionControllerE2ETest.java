@@ -395,6 +395,37 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             .jsonPath("$.error").doesNotExist();
     }
 
+    @Test
+    @DisplayName("F2.5 E2E: POST at minute 0 is scheduled for kickoff and accepted")
+    void substitute_minuteZeroBeforeKickoff_isAccepted() {
+        String homeTeamId = "home-f2-5-kickoff";
+        String awayTeamId = "away-f2-5-kickoff";
+        UUID userId = UUID.randomUUID();
+        UUID matchId = UUID.randomUUID();
+        UUID homeTeamUuid = UUID.randomUUID();
+        UUID awayTeamUuid = UUID.randomUUID();
+
+        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        V24LiveSession liveSession = new V24LiveSession(context, 9999L);
+
+        matchSessionRegistry.getOrCreateSessionWithV24(
+            userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
+
+        String body = """
+            {"playerOffId":"home-f2-5-kickoff-starter-0","playerOnId":"home-f2-5-kickoff-bench-0","minute":0}
+            """;
+
+        webTestClient.mutateWith(mockUser(userId.toString()))
+            .post().uri("/api/v1/match-engine/matches/{id}/substitutions", matchId.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.success").isEqualTo(true)
+            .jsonPath("$.error").doesNotExist();
+    }
+
     // ========== Fixture helpers (FLAG 1 happy path) ==========
 
     private V24MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {

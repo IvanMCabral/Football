@@ -157,7 +157,10 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
         // We perform this check BEFORE the FLAG 1 try/catch so it
         // propagates out of this method without being swallowed.
         int currentMinute = liveSession.currentMinute();
-        int minute = requestedMinute != null ? requestedMinute : currentMinute;
+        int requestedOrCurrentMinute = requestedMinute != null ? requestedMinute : currentMinute;
+        int minute = currentMinute <= 0 && requestedOrCurrentMinute <= 0
+                ? 1
+                : requestedOrCurrentMinute;
         if (minute < currentMinute) {
             log.info("[LIVE-MATCH-F2-F2.5] Rejecting substitution for past minute: matchId={} requestedMinute={} currentMinute={}",
                 matchId, minute, currentMinute);
@@ -202,6 +205,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // (preserving the F2 replay contract) AND appends the event to
             // manualEvents, which is preserved across replays.
             liveSession.recordManualSubstitution(event);
+            session.refreshV24Snapshot();
 
             // F6 Sprint 2: append this sub to the BaselineState so the
             // compare endpoint can replay the match with the same sub

@@ -337,18 +337,17 @@ public final class V24SubstitutionEngine {
             .orElseThrow(() -> new IllegalStateException(
                 "Player " + playerOffId + " not found in starting lineup of team " + teamId));
 
-        // Validate subOff state
-        if (!subOff.onPitch()) {
-            throw new IllegalStateException(
-                "Player " + playerOffId + " is not on the pitch");
-        }
+        // Validate subOff state.
+        // An injured player is represented as off-pitch by V24PlayerMatchState.injure().
+        // For manual/live intervention that player must still be allowed to leave the
+        // starting XI; otherwise the DT cannot fix an injury event from the modal.
         if (subOff.redCard()) {
             throw new IllegalStateException(
                 "Player " + playerOffId + " is red-carded and cannot be substituted");
         }
-        if (subOff.injured()) {
+        if (!subOff.onPitch() && !subOff.injured()) {
             throw new IllegalStateException(
-                "Player " + playerOffId + " is injured and cannot be substituted");
+                "Player " + playerOffId + " is not on the pitch");
         }
         if (isSubstitutedOff(playerOffId)) {
             throw new IllegalStateException(
@@ -371,19 +370,21 @@ public final class V24SubstitutionEngine {
             throw new IllegalStateException(
                 "Player " + playerOnId + " is red-carded and cannot come on");
         }
+        if (subOn.injured()) {
+            throw new IllegalStateException(
+                "Player " + playerOnId + " is injured and cannot come on");
+        }
         if (isSubstitutedOn(playerOnId)) {
             throw new IllegalStateException(
                 "Player " + playerOnId + " has already been substituted on");
         }
 
-        // Position compatibility check
-        if (!subOff.position().equals(subOn.position())
-                && !isCompatiblePosition(subOff.position(), subOn.position())) {
-            throw new IllegalStateException(
-                "Player " + playerOnId + " (position " + subOn.position()
-                + ") cannot substitute for " + playerOffId
-                + " (position " + subOff.position() + ")");
-        }
+        // Manual/DT substitutions are intentional tactical decisions. Do not
+        // block out-of-role swaps here: the tactical slot, chemistry, role fit
+        // and match engine must express the cost/benefit instead of hiding the
+        // decision behind a hard validation error. Auto-sub selection still uses
+        // isCompatiblePosition() above so fatigue/injury automation remains
+        // conservative.
 
         // Mark both players
         substitutedOffPlayerIds.add(subOff.sessionPlayerId());

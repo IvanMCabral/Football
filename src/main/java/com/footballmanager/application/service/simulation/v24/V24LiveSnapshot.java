@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +37,8 @@ public final class V24LiveSnapshot {
     private final String awayStyle;
     private final String homeFormation;
     private final String awayFormation;
+    private final List<FormationSlotDTO> homeSlots;
+    private final List<FormationSlotDTO> awaySlots;
 
     public V24LiveSnapshot(
             String matchId,
@@ -49,7 +53,8 @@ public final class V24LiveSnapshot {
             int awayPossession) {
         this(matchId, minute, homeGoals, awayGoals, homeTeamId, awayTeamId,
              finished, allEvents, homePossession, awayPossession,
-             "BALANCED", "BALANCED", "4-4-2", "4-4-2");
+             "BALANCED", "BALANCED", "4-4-2", "4-4-2",
+             List.of(), List.of());
     }
 
     /**
@@ -80,6 +85,29 @@ public final class V24LiveSnapshot {
             String awayStyle,
             String homeFormation,
             String awayFormation) {
+        this(matchId, minute, homeGoals, awayGoals, homeTeamId, awayTeamId,
+             finished, allEvents, homePossession, awayPossession,
+             homeStyle, awayStyle, homeFormation, awayFormation,
+             List.of(), List.of());
+    }
+
+    public V24LiveSnapshot(
+            String matchId,
+            int minute,
+            int homeGoals,
+            int awayGoals,
+            String homeTeamId,
+            String awayTeamId,
+            boolean finished,
+            List<V24MatchEvent> allEvents,
+            int homePossession,
+            int awayPossession,
+            String homeStyle,
+            String awayStyle,
+            String homeFormation,
+            String awayFormation,
+            List<FormationSlotDTO> homeSlots,
+            List<FormationSlotDTO> awaySlots) {
         this.matchId = matchId;
         this.minute = minute;
         this.homeGoals = homeGoals;
@@ -94,6 +122,8 @@ public final class V24LiveSnapshot {
         this.awayStyle = (awayStyle != null && !awayStyle.isBlank()) ? awayStyle : "BALANCED";
         this.homeFormation = (homeFormation != null && !homeFormation.isBlank()) ? homeFormation : "4-4-2";
         this.awayFormation = (awayFormation != null && !awayFormation.isBlank()) ? awayFormation : "4-4-2";
+        this.homeSlots = homeSlots != null ? List.copyOf(homeSlots) : List.of();
+        this.awaySlots = awaySlots != null ? List.copyOf(awaySlots) : List.of();
     }
 
     public String matchId() { return matchId; }
@@ -110,4 +140,6 @@ public final class V24LiveSnapshot {
     public String awayStyle() { return awayStyle; }
     public String homeFormation() { return homeFormation; }
     public String awayFormation() { return awayFormation; }
+    public List<FormationSlotDTO> homeSlots() { return homeSlots; }
+    public List<FormationSlotDTO> awaySlots() { return awaySlots; }
 }

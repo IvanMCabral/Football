@@ -342,6 +342,22 @@ public class TestHarnessController {
             .map(ResponseEntity::ok);
     }
 
+    @PostMapping("/labs/objective-contrast/prepare")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareObjectiveContrastLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.prepareObjectiveContrastLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/labs/objective-contrast/restore")
+    public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreObjectiveContrastLab(
+            Authentication authentication) {
+        UUID userId = controllerHelper.getUserId(authentication);
+        return testHarnessUseCase.restoreObjectiveContrastLab(userId)
+            .map(ResponseEntity::ok);
+    }
+
     @PostMapping("/labs/weak-wide-defenders/prepare")
     public Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakWideDefendersLab(
             Authentication authentication) {

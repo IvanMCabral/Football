@@ -611,6 +611,173 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     }
 
     @Override
+    public Mono<LabMutationResult> prepareObjectiveContrastLab(UUID userId) {
+        return mutateObjectiveContrastLab(
+            userId,
+            "prepare-objective-contrast-lab",
+            "Prepared objective contrast lab: one attacking upside swap and one protective swap shaped for DT objective comparison",
+            true);
+    }
+
+    @Override
+    public Mono<LabMutationResult> restoreObjectiveContrastLab(UUID userId) {
+        return mutateObjectiveContrastLab(
+            userId,
+            "restore-objective-contrast-lab",
+            "Restored objective contrast lab players to exact snapshot",
+            false);
+    }
+
+    private Mono<LabMutationResult> mutateObjectiveContrastLab(
+            UUID userId,
+            String labKey,
+            String message,
+            boolean prepare) {
+
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId)))
+            .flatMap(optionalCareer -> {
+                if (optionalCareer.isEmpty()) {
+                    return Mono.error(new IllegalStateException(
+                        "Career not found for userId=" + userId));
+                }
+                CareerSave career = optionalCareer.get();
+                String userTeamId = career.getUserSessionTeamId();
+                List<SessionPlayer> userSquad = career.getTeamSquad(userTeamId);
+                ObjectiveContrastLabPairs pairs = chooseObjectiveContrastLabPairs(career, userTeamId, userSquad)
+                    .orElse(null);
+                if (pairs == null) {
+                    return Mono.error(new IllegalStateException(
+                        "Objective contrast lab requires offensive and defensive starter/bench pairs in the user squad"));
+                }
+
+                List<SessionPlayer> affected = List.of(
+                    pairs.offensiveStarter(),
+                    pairs.offensiveBench(),
+                    pairs.defensiveStarter(),
+                    pairs.defensiveBench());
+
+                if (prepare) {
+                    rememberLabSnapshot(userId, "objective-contrast", career, userTeamId, affected);
+                } else {
+                    Optional<LabMutationResult> restored = restoreLabSnapshot(
+                        userId, "objective-contrast", career, userTeamId, message);
+                    if (restored.isPresent()) {
+                        return persistLabMutation(career, restored.get());
+                    }
+                }
+
+                // Offensive pair: starter is safe/limited, bench is explosive but less protective.
+                applyLabStats(pairs.offensiveStarter(), 62, 70, 66, 68, 82, 78);
+                applyLabStats(pairs.offensiveBench(), 98, 42, 94, 96, 78, 64);
+
+                // Defensive pair: starter is more progressive but vulnerable, bench is conservative/protective.
+                applyLabStats(pairs.defensiveStarter(), 72, 58, 78, 78, 82, 68);
+                applyLabStats(pairs.defensiveBench(), 38, 98, 58, 74, 88, 96);
+
+                Map<String, Object> details = new LinkedHashMap<>();
+                details.put("userTeamId", userTeamId);
+                details.put("offensiveStarter", labPlayerDetails(pairs.offensiveStarter()));
+                details.put("offensiveBench", labPlayerDetails(pairs.offensiveBench()));
+                details.put("defensiveStarter", labPlayerDetails(pairs.defensiveStarter()));
+                details.put("defensiveBench", labPlayerDetails(pairs.defensiveBench()));
+                details.put("expectedAttackChange", safeName(pairs.offensiveStarter()) + " -> " + safeName(pairs.offensiveBench()));
+                details.put("expectedProtectChange", safeName(pairs.defensiveStarter()) + " -> " + safeName(pairs.defensiveBench()));
+                details.put("expectedHarnessRead", "Necesito gol should prefer attacking upside; Cuidar resultado should surface protective option if engine signal supports it.");
+
+                log.info("[V25D99.38-TESTHARNESS] {} userId={} team={} attackPair={}->{} protectPair={}->{}",
+                    labKey,
+                    userId,
+                    userTeamId,
+                    pairs.offensiveStarter().getSessionPlayerId(),
+                    pairs.offensiveBench().getSessionPlayerId(),
+                    pairs.defensiveStarter().getSessionPlayerId(),
+                    pairs.defensiveBench().getSessionPlayerId());
+
+                return persistLabMutation(career, new LabMutationResult(labKey, message, details));
+            });
+    }
+
+    private Optional<ObjectiveContrastLabPairs> chooseObjectiveContrastLabPairs(
+            CareerSave career,
+            String userTeamId,
+            List<SessionPlayer> userSquad) {
+        if (career == null || userTeamId == null || userSquad == null || userSquad.isEmpty()) {
+            return Optional.empty();
+        }
+        Set<String> startingIds = Set.copyOf(
+            career.getTeamStarting11().getOrDefault(userTeamId, List.of()));
+        if (startingIds.isEmpty()) {
+            return Optional.empty();
+        }
+        List<SessionPlayer> starters = userSquad.stream()
+            .filter(this::isOutfieldPlayer)
+            .filter(p -> startingIds.contains(p.getSessionPlayerId()))
+            .toList();
+        List<SessionPlayer> bench = userSquad.stream()
+            .filter(this::isOutfieldPlayer)
+            .filter(p -> !startingIds.contains(p.getSessionPlayerId()))
+            .filter(p -> !Boolean.TRUE.equals(p.getInjured()) && !Boolean.TRUE.equals(p.getSuspended()))
+            .toList();
+
+        SessionPlayer offensiveStarter = starters.stream()
+            .filter(p -> "ATT".equals(p.getPosition()) || "WINGER".equals(p.getPosition()))
+            .sorted(Comparator
+                .comparingInt((SessionPlayer p) -> "ATT".equals(p.getPosition()) ? 0 : 1)
+                .thenComparingInt((SessionPlayer p) -> -substitutionScore(p))
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+            .findFirst()
+            .orElse(null);
+        SessionPlayer offensiveBench = bench.stream()
+            .filter(p -> offensiveStarter != null && offensiveStarter.getPosition() != null
+                && offensiveStarter.getPosition().equals(p.getPosition()))
+            .sorted(Comparator
+                .comparingInt((SessionPlayer p) -> substitutionScore(p))
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+            .findFirst()
+            .orElseGet(() -> bench.stream()
+                .filter(p -> "ATT".equals(p.getPosition()) || "WINGER".equals(p.getPosition()))
+                .sorted(Comparator
+                    .comparingInt((SessionPlayer p) -> substitutionScore(p))
+                    .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+                .findFirst()
+                .orElse(null));
+
+        SessionPlayer defensiveStarter = starters.stream()
+            .filter(p -> "DEF".equals(p.getPosition()))
+            .sorted(Comparator
+                .comparingInt((SessionPlayer p) -> p.getDefense())
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+            .findFirst()
+            .orElse(null);
+        SessionPlayer defensiveBench = bench.stream()
+            .filter(p -> "DEF".equals(p.getPosition()))
+            .filter(p -> defensiveStarter == null || !p.getSessionPlayerId().equals(defensiveStarter.getSessionPlayerId()))
+            .sorted(Comparator
+                .comparingInt((SessionPlayer p) -> substitutionScore(p))
+                .thenComparing(SessionPlayer::getName, Comparator.nullsLast(String::compareTo)))
+            .findFirst()
+            .orElse(null);
+
+        if (offensiveStarter == null || offensiveBench == null || defensiveStarter == null || defensiveBench == null) {
+            return Optional.empty();
+        }
+        if (Set.of(
+            offensiveStarter.getSessionPlayerId(),
+            offensiveBench.getSessionPlayerId(),
+            defensiveStarter.getSessionPlayerId(),
+            defensiveBench.getSessionPlayerId()).size() < 4) {
+            return Optional.empty();
+        }
+        return Optional.of(new ObjectiveContrastLabPairs(
+            offensiveStarter,
+            offensiveBench,
+            defensiveStarter,
+            defensiveBench));
+    }
+
+    @Override
     public Mono<LabMutationResult> prepareDefensiveDowngradeLab(UUID userId) {
         return mutateDefensiveDowngradeLab(
             userId,
@@ -3026,11 +3193,23 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         double mirrorGap = round3(weakLeftRightEdge - weakRightLeftEdge);
         boolean weakLeftOk = weakLeftRightEdge >= 0.015;
         boolean weakRightOk = weakRightLeftEdge >= 0.015;
-        String verdict = weakLeftOk && weakRightOk ? "OK" : (weakLeftOk || weakRightOk ? "Parcial" : "Revisar");
+        boolean conservativeLowBlock = "5-4-1".equals(formation)
+            && Math.abs(mirrorGap) <= 0.025
+            && !weakLeftOk
+            && !weakRightOk;
+        String verdict = weakLeftOk && weakRightOk
+            ? "OK"
+            : (weakLeftOk || weakRightOk || conservativeLowBlock ? "Parcial" : "Revisar");
         String read = "OK".equals(verdict)
             ? "Laboratorio sintetico espejo responde en ambos sentidos."
             : "Parcial".equals(verdict)
-                ? "Un lado responde mas que el otro aun sin sesgo de plantel; revisar calibracion lateral."
+                ? (conservativeLowBlock
+                    ? "5-4-1 bloque bajo: baja senal lateral ofensiva esperable; validar con low block lab antes de tocar motor."
+                    : "3-5-2".equals(formation)
+                        ? "3-5-2: un carril responde y el otro queda plano; validar carrileros/seeds antes de tocar motor."
+                        : "4-2-2-2".equals(formation)
+                            ? "4-2-2-2: sin carrileros naturales; la amplitud depende de mediapuntas/delanteros y puede responder asimetrica."
+                    : "Un lado responde mas que el otro aun sin sesgo de plantel; revisar calibracion lateral.")
                 : "Sin senal lateral suficiente en laboratorio sintetico; revisar motor.";
         return new SideMirrorSyntheticLabRow(
             formation,
@@ -6241,6 +6420,13 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     private record LabPair(
         SessionPlayer starter,
         SessionPlayer bench
+    ) {}
+
+    private record ObjectiveContrastLabPairs(
+        SessionPlayer offensiveStarter,
+        SessionPlayer offensiveBench,
+        SessionPlayer defensiveStarter,
+        SessionPlayer defensiveBench
     ) {}
 
     // ========== resetRound (V24D24.3-HOTFIX) ==========

@@ -15,5 +15,6 @@ import java.util.List;
  * players between slots without first resolving a formation code.
  */
 public record FormationChangeRequestDTO(
-    List<FormationSlotDTO> players
+    List<FormationSlotDTO> players,
+    String formationCode
 ) {}
