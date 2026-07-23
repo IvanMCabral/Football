@@ -32,5 +32,7 @@ if ([string]::IsNullOrWhiteSpace($Test)) {
     mvn test
 } else {
     Write-Host "[run-game-controller-tests] Running mvn test -Dtest=$Test..."
-    mvn test -Dtest=$Test
+    mvn test "-Dtest=$Test"
 }
+
+exit $LASTEXITCODE
