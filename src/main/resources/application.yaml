@@ -55,13 +55,7 @@ server:
   error:
     include-message: always
     include-binding-errors: always
-  # V25D99.20.3-BACK BUG-3: force UTF-8 on every response so the Angular
-  # front doesn't have to guess. Without `force: true`, Spring Boot
-  # only adds ;charset=UTF-8 when the response actually contains
-  # non-ASCII bytes — the front then defaults to Latin-1 and
-  # displays the canonical Mojibake pairs (`âœ•` for ✓, `â€"` for —,
-  # `Ã—` for ×). `force: true` makes every response declare UTF-8
-  # explicitly, eliminating the dual-encoding ambiguity.
+  # Force UTF-8 on every response so the frontend never has to guess encoding.
   servlet:
     encoding:
       charset: UTF-8
@@ -98,13 +92,13 @@ app:
   description: Turn-based football team management and match simulation system
   simulation:
     league:
-      use-v23-engine: false   # Phase 10C3: set to true to enable V23 league engine path
-      use-v24-detailed-engine: true   # V24D5B: set to true to enable V24 detailed engine path
+      use-v23-engine: false
+      use-v24-detailed-engine: true
     v24:
-      mutate-career-state: false   # V24D6B3: master gate for career mutation (injury/fatigue/discipline/form)
-      persist-injuries: false     # V24D6B3: apply INJURY events from V24 timeline to SessionPlayer
-      persist-fatigue: false      # V24D6B3: apply energy drain to SessionPlayer (not yet implemented)
-      persist-discipline: false   # V24D6B3: apply yellow/red card accumulation (not yet implemented)
-      persist-form: false         # V24D6B3: apply form updates (not yet implemented)
-      persist-detail: true   # V24D5C: set to true to persist V24DetailedMatchData to Redis after simulation
-      expose-detail-api: true  # V24D4C: expose GET /api/careers/{careerId}/matches/{matchId}/detail
+      mutate-career-state: false
+      persist-injuries: false
+      persist-fatigue: false
+      persist-discipline: false
+      persist-form: false
+      persist-detail: true
+      expose-detail-api: true

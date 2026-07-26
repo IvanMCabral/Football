@@ -16,10 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Implementación de UseCase para regeneración completa de fixtures.
- *
- * Regenera todos los fixtures de la carrera, reseteando
- * tournamentState y standings.
+ * Rebuilds every fixture for a career and resets the tournament state.
  */
 @Service
 @RequiredArgsConstructor
@@ -27,14 +24,6 @@ public class RegenerateFixturesUseCaseImpl implements RegenerateFixturesUseCase 
 
     private final CareerRepository careerRepository;
     private final FixtureGenerator fixtureGenerator;
-    // V25D37-F2: invalidate the in-memory CareerSessionService cache after
-    // persisting the regenerated career. Without this, the next
-    // getCareerFromCache(userId) returns the stale in-memory CareerSave with
-    // the OLD fixtures, and the frontend keeps seeing pre-regenerate data
-    // until the CareerSessionService ConcurrentHashMap is cleared by some
-    // other path (V24D20-SANDBOX-V2-MVP BUG #1 was the original report on
-    // the same class of bug for replaceFixtures / resetInjuries /
-    // setFormation — this use-case was missed in that round).
     private final CareerSessionService careerSessionService;
 
     @Override
@@ -85,10 +74,6 @@ public class RegenerateFixturesUseCaseImpl implements RegenerateFixturesUseCase 
         // Resetear standings
         career.getTournamentState().initializeStandings(career.getAllSessionTeams());
 
-        // V25D37-F2: persist FIRST, then invalidate cache — same order as
-        // TestHarnessUseCaseImpl.executeReplaceFixtures (V24D20-SANDBOX-V2-MVP
-        // BUG #1). If we invalidate first and the save fails, we lose both
-        // the new state AND the cached copy.
         return careerRepository.save(career)
                 .then(Mono.fromRunnable(() ->
                         careerSessionService.invalidateCache(career.getUserId())));

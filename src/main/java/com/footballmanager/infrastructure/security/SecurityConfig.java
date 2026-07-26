@@ -22,18 +22,8 @@ import reactor.core.publisher.Mono;
 
 @Configuration
 @EnableWebFluxSecurity
-// V25D78-C48 note: we use MANUAL role check inside AdminWorldController instead of
-// @PreAuthorize("hasRole('ADMIN')"). Reason: @PreAuthorize requires spring-aop +
-// aspectjweaver on the classpath, which the project does not have (pom.xml has no
-// spring-boot-starter-aop). Adding that dependency is scope inflation for C48
-// (security-only sprint); manual check inside the controller is the lighter-weight
-// alternative that achieves the same role-gating without the AOP dependency chain.
-// If a future sprint adds AOP, this comment can be removed and @PreAuthorize
-// re-introduced for cleaner declarative style.
 @RequiredArgsConstructor
 public class SecurityConfig {
-    // V24D14-JSON401: ObjectMapper injected via Lombok @RequiredArgsConstructor
-    // to serialize the centralized ErrorResponseBody record.
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
 
@@ -65,33 +55,15 @@ public class SecurityConfig {
             .httpBasic(basic -> basic.disable())
             .formLogin(form -> form.disable())
             .addFilterAt((exchange, chain) -> {
-                String path = exchange.getRequest().getPath().toString();
-                String method = exchange.getRequest().getMethod().name();
-                String origin = exchange.getRequest().getHeaders().getOrigin();
                 return chain.filter(exchange);
             }, SecurityWebFiltersOrder.FIRST)
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((exchange, ex) -> {
-                    String path = exchange.getRequest().getPath().toString();
-                    String method = exchange.getRequest().getMethod().name();
                     addCorsHeaders(exchange);
                     exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-                    // V24D12.1.1: add WWW-Authenticate: Bearer header (RFC 7235)
                     exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
-                    // V24D12.1: write a consistent JSON body for 401, matching the
-                    // GlobalExceptionHandler.handleUnauthorized() contract. Without
-                    // this, the Spring default entry point returns 401 with body
-                    // empty (just WWW-Authenticate: Bearer), which is inconsistent
-                    // with the JSON that the controller helper path produces. We
-                    // re-use the same body shape and code value so the client can
-                    // parse 401s uniformly regardless of where the rejection
-                    // originated (security filter vs UnauthorizedException handler).
                     exchange.getResponse().getHeaders().setContentType(
                         org.springframework.http.MediaType.APPLICATION_JSON);
-                    // V24D14-JSON401: serialize via ObjectMapper instead of hardcoded
-                    // string. ErrorResponseBody record is shared with
-                    // GlobalExceptionHandler.handleUnauthorized() so the two 401
-                    // paths produce byte-equivalent JSON.
                     ErrorResponseBody body = ErrorResponseBody.unauthorized(
                         "Unauthorized: no user id in authentication");
                     String json;
@@ -109,8 +81,6 @@ public class SecurityConfig {
                     ).then();
                 })
                 .accessDeniedHandler((exchange, ex) -> {
-                    String path = exchange.getRequest().getPath().toString();
-                    String method = exchange.getRequest().getMethod().name();
                     addCorsHeaders(exchange);
                     exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.FORBIDDEN);
                     return exchange.getResponse().setComplete();
@@ -123,66 +93,15 @@ public class SecurityConfig {
                 .pathMatchers("/actuator/health").permitAll()
                 .pathMatchers("/api/v1/players", "/api/v1/players/**").authenticated()
                 .pathMatchers("/api/v1/matches", "/api/v1/matches/**").authenticated()
-                // V24D12-C.2: /api/v1/teams and /api/v1/fixtures are dead
-                // paths (no controller backs them in the codebase). We keep
-                // them as permitAll() intentionally: Spring Security WebFlux
-                // cannot distinguish "public path with no resource" (404)
-                // from "protected path with no auth" (401) without an
-                // explicit permitAll() entry. If we removed these, the
-                // security filter would cut with 401 BEFORE the routing
-                // ran, and clients would get 401 instead of the
-                // contractually correct 404 "path does not exist".
-                // Trade-off accepted: 2 historical permitAll() entries as
-                // implicit documentation of dead paths. See
-                // V24D12-C.2 prompt for full analysis of the
-                // 3 alternative options we considered and rejected.
+                // Legacy public paths intentionally return router-level 404s instead of auth 401s.
                 .pathMatchers("/api/v1/teams", "/api/v1/teams/**").permitAll()
                 .pathMatchers("/api/v1/career", "/api/v1/career/**").authenticated()
-// V25D78-C48: /api/v1/world/** changed from permitAll to authenticated.
-                // Investigation showed that the original permitAll was based on the
-                // design intent "the world is global reference data" (V24D12-C-3 comment
-                // in SecurityConfig), but the actual implementation persists a PER-USER
-                // WorldSnapshot in Redis at key world:{userId}. With permitAll, anonymous
-                // attackers could DELETE /world/snapshot?userId=ANY_USER (data loss) or
-                // POST /world/create-random-player with body userId=ANY_USER (data
-                // corruption). Now requires authenticated user — see C47 for the
-                // authenticated-impersonation fix (JWT.userId == param.userId).
-                //
-                // Note: setup flow (register → career-setup → seed) still works because
-                // F0 investigation confirmed (a) no backend service auto-calls
-                // /world/seed-la-liga during register/login, (b) frontend authInterceptor
-                // adds Bearer token to all /world/* calls (the world is always read
-                // post-login, never pre-login in practice). Admin pre-user setup, if
-                // needed in the future, goes through /api/v1/admin/world/seed-la-liga
-                // (role=ADMIN required).
                 .pathMatchers("/api/v1/world", "/api/v1/world/**").authenticated()
-                // V25D78-C48: /api/v1/admin/world/** requires role=ADMIN. Method-level
-                // @PreAuthorize("hasRole('ADMIN')") on AdminWorldController enforces the
-                // role check after the JWT filter populates authentication. Anonymous and
-                // non-ADMIN users get 403 via @PreAuthorize denial.
+                // Admin world operations require an authenticated request; controller logic checks roles.
                 .pathMatchers("/api/v1/admin/world", "/api/v1/admin/world/**").authenticated()
-                // V24D12-C-3: /api/v1/leagues stays permitAll intentionally.
-                // LeagueController (non-reactive) is an empty legacy class
-                // with no endpoints (only a constructor). LeagueControllerReactive
-                // (the actual traffic, 10 endpoints) enforces auth in-code via
-                // ControllerHelper.getUserId() (post-V24D12-B-1), so unauthenticated
-                // calls return 401 at the controller level. The 401 contract
-                // (V24D12.1 + V24D12.1.1 + V24D12.1.2) is preserved for any path
-                // that reaches a controller. The permitAll() is a no-op defense
-                // layer for the empty legacy class, kept to match the explicit
-                // pattern from V24D12.1.1.
+                // League endpoints perform their own user checks where needed.
                 .pathMatchers("/api/v1/leagues", "/api/v1/leagues/**").permitAll()
-                // V24D12-C-3: /api/v1/match-engine stays permitAll intentionally.
-                // MatchController (non-reactive, pause/resume/stop) uses userId=null
-                // for internal/admin match control. MatchEngineController.streamRoundState
-                // is a public SSE broadcast (real-time round state for any client
-                // watching the match) and does not require auth. MatchEngineController
-                // (pauseMatch/resumeMatch/stopMatch) and RoundController.startRound
-                // enforce auth in-code via ControllerHelper.getUserId() (post-V24D12-B-1),
-                // so unauthenticated calls return 401 at the controller level. The
-                // 401 contract is preserved for protected paths. The SSE public
-                // broadcast is the design intent: clients should be able to watch
-                // a live match without authenticating first.
+                // Match-engine streaming remains public; mutating handlers validate users in-code.
                 .pathMatchers("/api/v1/match-engine", "/api/v1/match-engine/**").permitAll()
                 .pathMatchers("/api/v1/fixtures", "/api/v1/fixtures/**").permitAll()
                 .pathMatchers("/api/v1/games", "/api/v1/games/**").authenticated()

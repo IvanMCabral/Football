@@ -41,24 +41,18 @@ public class PlayerEntity {
     private Instant createdAt;
     private Instant updatedAt;
 
-    // V25D32-F2: height + skills metadata (source of truth: Player directo).
-    // Columnas NULLABLE para backward-compat con players pre-V25D32.
-    // Engine en V25D33 usara defaults si son null/empty.
+    // Height and skill metadata are nullable for backward compatibility.
     private Integer heightCm;
 
     /**
-     * V25D32-F2: skills serializados como JSON string (no JSONB — hypersistence-utils
-     * no esta en pom). Engine deserializa on-read via {@link #deserializeSkillLevels(String)}.
-     * Formato esperado: {@code {"SHOOTER":88,"DRIBBLER":75,...}} (Map<PlayerSkill, Integer>).
+     * Skill levels serialized as JSON text.
      */
     private String skillLevelsJson;
 
-    // ========== JSON codec (V25D32-F2) ==========
+    // JSON codec.
     //
     // ObjectMapper estatico: thread-safe post-configuration, y la conversion es
     // trivial (Map<PlayerSkill, Integer> ↔ JSON object). Trade-off documentado:
-    // si V25D33 migra a JSONB columna, este codec se reemplaza por una annotation
-    // @JdbcTypeCode(SqlTypes.JSON) o @Convert(converter=...).
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final TypeReference<Map<PlayerSkill, Integer>> SKILL_MAP_TYPE =
             new TypeReference<Map<PlayerSkill, Integer>>() {};
@@ -94,7 +88,7 @@ public class PlayerEntity {
         }
     }
 
-    // ========== Mapping helpers (V25D32-F2 updated) ==========
+    // Mapping helpers.
 
     public static PlayerEntity fromDomain(Player player) {
         PlayerAttributes attrs = player.getAttributes();
@@ -114,8 +108,8 @@ public class PlayerEntity {
             player.isInjured(),
             player.getCreatedAt(),
             player.getUpdatedAt(),
-            player.getHeightCm(),                            // V25D32-F2
-            serializeSkillLevels(player.getSkillLevels())    // V25D32-F2
+            player.getHeightCm(),
+            serializeSkillLevels(player.getSkillLevels())
         );
     }
 
@@ -137,8 +131,8 @@ public class PlayerEntity {
             player.isInjured(),
             player.getCreatedAt(),
             player.getUpdatedAt(),
-            player.getHeightCm(),                            // V25D32-F2
-            serializeSkillLevels(player.getSkillLevels())    // V25D32-F2
+            player.getHeightCm(),
+            serializeSkillLevels(player.getSkillLevels())
         );
     }
 
@@ -151,9 +145,7 @@ public class PlayerEntity {
             ? Player.InjuryState.INJURED_SERIOUS
             : Player.InjuryState.HEALTHY;
 
-        // V25D32-F2: leer height + skills del entity y reconstruir Player completo.
-        // Backward-compat: si heightCm/skillLevelsJson son null, se mantienen null/empty
-        // (engine en V25D33 aplica defaults).
+        // Null height and empty skill maps are valid for legacy records.
         Map<PlayerSkill, Integer> skills = deserializeSkillLevels(skillLevelsJson);
 
         return Player.reconstruct(
@@ -163,8 +155,8 @@ public class PlayerEntity {
             Player.Position.valueOf(position),
             attributes,
             marketValue,
-            heightCm,                     // V25D32-F2 (Integer, nullable)
-            skills,                       // V25D32-F2 (Map, never null per codec)
+            heightCm,
+            skills,
             energy,
             injuryState,
             injured,
@@ -174,7 +166,7 @@ public class PlayerEntity {
     }
 
     /**
-     * V25D32-F2: read-only view of the deserialized skill levels.
+     * Read-only view of the deserialized skill levels.
      * Lazy: parses JSON on first call. Returns empty map if skillLevelsJson is null.
      */
     public Map<PlayerSkill, Integer> getSkillLevels() {

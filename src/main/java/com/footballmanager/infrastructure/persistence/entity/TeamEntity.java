@@ -29,12 +29,7 @@ public class TeamEntity {
     private BigDecimal budget;
     private String formation;
     /**
-     * V25D78-C55.2: división (tier) del equipo dentro de su liga.
-     * Persistido como String (VARCHAR(20) en Postgres) — Division enum
-     * usa {@link Division#persistValue()} para serializar y
-     * {@link Division#fromPersistValue(String)} para deserializar.
-     * Default = "PRIMERA" si la fila es pre-V25D78 (no-nullable column
-     * with DEFAULT 'PRIMERA' en la migration).
+     * Division tier inside the team's league.
      */
     private String division;
     private Instant createdAt;

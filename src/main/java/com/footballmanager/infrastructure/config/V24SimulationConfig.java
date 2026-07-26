@@ -5,10 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * V24D4C: Feature flag configuration for V24 detailed match detail API.
- *
- * <p>Only controls whether the detail endpoint is exposed.
- * Does not enable simulation or persistence — those are separate phases.
+ * Feature flags for detailed match persistence and API exposure.
  */
 @Configuration
 public class V24SimulationConfig {

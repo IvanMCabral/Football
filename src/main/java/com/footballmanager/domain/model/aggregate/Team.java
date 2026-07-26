@@ -46,8 +46,7 @@ public class Team {
     }
 
     /**
-     * V25D78-C55.2: factory con división explícita. Usar cuando el caller
-     * sabe en qué tier va el equipo (e.g., seed inicial, post-promotion).
+     * Factory for callers that already know the team's division tier.
      */
     public static Team create(TeamId id, UserId managerId, String name, String country,
                              BigDecimal budget, Formation formation, Division division) {
@@ -56,8 +55,7 @@ public class Team {
     }
 
     /**
-     * Backward-compat overload (default Division.PRIMERA). Usado por código
-     * legacy que no asigna división explícitamente — 10 tests + 1 main.
+     * Backward-compatible overload for legacy callers without a division tier.
      */
     public static Team create(TeamId id, UserId managerId, String name, String country,
                              BigDecimal budget, Formation formation) {
@@ -65,8 +63,7 @@ public class Team {
     }
 
     /**
-     * V25D78-C55.2: factory con división explícita. Usar cuando el caller
-     * sabe en qué tier va el equipo (e.g., post-promotion season status).
+     * Reconstructs a team when the persisted division tier is known.
      */
     public static Team reconstruct(TeamId id, UserId managerId, String name, String country,
                                   BigDecimal budget, Formation formation, Division division,
@@ -77,9 +74,7 @@ public class Team {
     }
 
     /**
-     * Backward-compat overload (default Division.PRIMERA). Usado por
-     * TeamEntity.toDomain() cuando la columna `division` aún no existe
-     * en la fila (pre-V25D78 o data legacy sin division).
+     * Backward-compatible reconstruction for legacy records without division data.
      */
     public static Team reconstruct(TeamId id, UserId managerId, String name, String country,
                                   BigDecimal budget, Formation formation, Set<PlayerId> squadPlayerIds,
@@ -166,10 +161,7 @@ public class Team {
     }
 
     /**
-     * V25D78-C55.2: división (tier) del equipo dentro de su liga.
-     * Immutable — se setea en construcción y solo cambia vía promotion/
-     * relegation logic (que crea un nuevo Team aggregate, no muta el
-     * existente).
+     * Division tier inside the team's league.
      */
     public Division getDivision() {
         return division;

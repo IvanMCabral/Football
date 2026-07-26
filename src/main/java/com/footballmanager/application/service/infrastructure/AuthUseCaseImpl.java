@@ -14,10 +14,10 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * Implementación de UseCase para autenticación.
+ * Authentication use case implementation.
  *
- * Login NO inicializa WorldView ni escribe en Redis.
- * Los datos se cargan on-demand cuando se necesitan.
+ * Login does not initialize the world view or write to Redis; data is loaded
+ * on demand when the application needs it.
  */
 @Service
 @RequiredArgsConstructor
@@ -86,8 +86,6 @@ public class AuthUseCaseImpl implements AuthUseCase {
                 info.id = user.getId().getValue().toString();
                 info.email = user.getEmail();
                 info.username = user.getUsername();
-                // V25D78-C55.7.7.1 BUG_L1: emit displayName as a 1:1 alias of username so the
-                // frontend welcome banner can prefer displayName (friendlier) over email.
                 info.displayName = user.getUsername();
                 info.teamId = user.getTeamId() != null ? user.getTeamId().toString() : null;
                 info.teamName = null;

@@ -12,15 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Servicio compartido para gestión de fixtures en Career.
- *
- * Responsabilidad: Generar fixtures por división, inicializar standings,
- * y configurar TournamentState.
- *
- * Usado por:
- * - StartCareerUseCaseImpl (inicio de carrera)
- * - ContinueSeasonUseCaseImpl (nueva temporada)
- * - MigrateFixturesUseCaseImpl (regeneración de fixtures)
+ * Shared service for career fixtures and standings initialization.
  */
 @Service
 @RequiredArgsConstructor
@@ -76,30 +68,9 @@ public class CareerFixtureService {
     /**
      * Genera fixtures para una división específica.
      *
-     * <p>V25D36-F3: defensa en profundidad contra el bug "X vs X" en el
-     * fixture (donde el mismo teamId aparece como home y away del mismo
-     * partido). Tres guards:
-     * <ol>
-     *   <li>Deduplicar {@code division.getTeamIds()} preservando orden — si el
-     *       upstream inyecta duplicados (e.g. un WorldTeam doble-creado por
-     *       LaLigaSeed o un re-seed mal idempotentado), el round-robin NO
-     *       debería emparejar al equipo consigo mismo.</li>
-     *   <li>Skipear MatchSlots donde home == away (en caso de que la dedup
-     *       falle o el upstream haya mutado la lista entre la lectura y el
-     *       uso). Log WARN con contexto.</li>
-     *   <li>Loggear un warning si el conteo de fixtures generados difiere
-     *       del esperado por round-robin matemático (n-1 por pierna con
-     *       n par, n por pierna con n impar).</li>
-     * </ol>
-     *
-     * <p>La causa raíz exacta del bug original (Real Madrid vs Real Madrid)
-     * no se pudo reproducir sin levantar el stack — el guard previene la
-     * clase del bug independientemente del origen.
+     * Deduplicates team ids before generating a round-robin fixture.
      */
     public List<MatchFixture> generateFixturesForDivision(Division division, CareerSave career) {
-        // V25D36-F3 #1: deduplicar preservando orden (LinkedHashSet).
-        // Si upstream inyecta duplicados, el round-robin podría emparejar
-        // un equipo consigo mismo (ver generateIda en FixtureGenerator).
         java.util.Set<String> seen = new java.util.LinkedHashSet<>();
         int duplicatesSkipped = 0;
         for (String teamId : division.getTeamIds()) {
@@ -113,7 +84,7 @@ public class CareerFixtureService {
         }
         List<String> divisionTeamIds = new ArrayList<>(seen);
         if (duplicatesSkipped > 0) {
-            log.warn("[CAREER-FIXTURE] V25D36-F3: deduplicated {} teamId entries (null/blank/duplicate) for division {}",
+            log.warn("[CAREER-FIXTURE] Deduplicated {} teamId entries (null/blank/duplicate) for division {}",
                 duplicatesSkipped, division.getDivisionId());
         }
 
@@ -136,12 +107,9 @@ public class CareerFixtureService {
             for (FixtureGenerator.FixtureSlot slot : round.matches()) {
                 String homeId = slot.home().getValue().toString();
                 String awayId = slot.away().getValue().toString();
-                // V25D36-F3 #2: assert home != away. Si la dedup falló (e.g.
-                // n=1 post-filter), skip + warn. Nunca debería pasar post-dedup
-                // pero es defense-in-depth.
                 if (homeId.equals(awayId)) {
                     selfPairingsSkipped++;
-                    log.warn("[CAREER-FIXTURE] V25D36-F3: skipped self-pairing fixture homeId=awayId={} round={} division={}",
+                    log.warn("[CAREER-FIXTURE] Skipped self-pairing fixture homeId=awayId={} round={} division={}",
                         homeId, round.roundNumber(), division.getDivisionId());
                     continue;
                 }
@@ -154,13 +122,12 @@ public class CareerFixtureService {
             }
         }
 
-        // V25D36-F3 #3: sanity check de count vs round-robin matemático.
         int n = teamIds.size();
         int expectedMatchesPerLeg = n / 2; // matches per round
         int expectedRoundsPerLeg = (n % 2 == 0) ? (n - 1) : n;
         int expectedTotalMatches = expectedMatchesPerLeg * expectedRoundsPerLeg * 2; // ida + vuelta
         if (fixtures.size() != expectedTotalMatches) {
-            log.warn("[CAREER-FIXTURE] V25D36-F3: division {} generated {} fixtures, expected {} (n={}, selfPairingsSkipped={})",
+            log.warn("[CAREER-FIXTURE] Division {} generated {} fixtures, expected {} (n={}, selfPairingsSkipped={})",
                 division.getDivisionId(), fixtures.size(), expectedTotalMatches, n, selfPairingsSkipped);
         }
 

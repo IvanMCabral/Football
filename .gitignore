@@ -20,18 +20,14 @@ logs/
 .playwright-mcp/
 role-slot-impact-*.png
 
-# V24D6P-C1: Frontend lives in a separate sub-repo (Football-angular.git).
-# Treat front-ciber/project as a nested git repository, not as files of the
-# backend/root repo. Ignoring the whole tree prevents accidental mixed commits.
+# Frontend lives in a separate sub-repo. Ignore it here to prevent mixed commits.
 front-ciber/project/
 
-# V24D12-D-2: .env files contain real credentials (DB, Redis, JWT).
-# Never track them in git. Use .env.example as template.
+# Local env files can contain credentials. Use .env.example as the template.
 .env
 .env.local
 .env.*.local
 
-# V24D12-D-6: application-local.yml contains real rotated credentials.
-# Keep secrets out of git even for local dev profiles.
+# Local application profiles can contain credentials.
 src/main/resources/application-local.yml
 src/main/resources/application-local.properties

@@ -47,21 +47,7 @@ public class RoundEngine {
         this.roundId = roundId;
         this.matchEngines = new ConcurrentHashMap<>();
         this.statusCalculator = statusCalculator;
-        // V25D87.1-BACK-F1: switch from multicast().onBackpressureBuffer() to
-        // replay().latest() — same pattern as CareerNotificationService, which
-        // is the proven-working SSE sink in this codebase.
-        //
-        // multicast().onBackpressureBuffer() drops emits when the producer
-        // outpaces the consumer's downstream (the SSE writer pauses during
-        // JSON serialization of RoundState). The first emit reaches the
-        // client, the rest are silently dropped by tryEmitNext() returning
-        // FAIL_OVERFLOW.
-        //
-        // replay().latest() caches the most-recent value (so late
-        // subscribers get the current state) and emits every subsequent
-        // value to all currently-subscribed consumers. For SSE, the latest
-        // semantic is correct: the UI wants the most-current snapshot
-        // (overwrites stale intermediate values).
+        // Keep the latest round state available for SSE clients.
         this.stateSink = Sinks.many().replay().latest();
     }
 
@@ -112,12 +98,6 @@ public class RoundEngine {
             return;
         }
 
-        // V25D87.1-BACK-F2: catch per-match exceptions. Otherwise a single
-        // V24 simulation throw on one match propagates out of executeTick()
-        // and ScheduledExecutorService.scheduleAtFixedRate kills the entire
-        // round scheduler (Java contract: any task exception suppresses all
-        // subsequent executions). Symptom was the runtime smoke seeing
-        // exactly 1 SSE event (the synchronous initial emit) then nothing.
         for (MatchEngine engine : matchEngines.values()) {
             if (!engine.isFinished() && !engine.isPaused()) {
                 int currentMinute = engine.getCurrentState().currentMinute();
@@ -206,14 +186,7 @@ public class RoundEngine {
     }
 
     /**
-     * C55.14 OBS-1: convenience accessor that returns the current
-     * {@link MatchStateSnapshot} for a single match registered in this
-     * round. Returns {@code null} when the {@code matchId} is not
-     * registered (caller is expected to translate null into a 404).
-     *
-     * <p>The returned snapshot carries the full V25D79 contract
-     * (player ratings + substitutions remaining), populated on every
-     * tick by {@code MatchSession.adaptV24Snapshot()}.
+     * Returns the current snapshot for a match registered in this round.
      */
     public MatchStateSnapshot getCurrentMatchSnapshot(UUID matchId) {
         MatchEngine engine = matchEngines.get(matchId);

@@ -10,21 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Phase 10C3: External configuration for V23 league engine flag.
- *
- * <p>Creates the LeagueSimulator bean with the useV23LeagueEngine property
- * read from application configuration. Default is false — existing
- * DefaultMatchSimulator path is used unless explicitly enabled.
- *
- * <p>V24D5C: Also configures persistDetail flag and V24DetailedMatchStoragePort
- * for optional V24 detail persistence when app.simulation.v24.persist-detail=true.
- *
- * <p>V24D6B3: Configures career mutation flags for optional V24 injury/fatigue/
- * discipline/form persistence to CareerSave SessionPlayer state.
- * All mutation flags default to false. mutate-career-state is the master gate.
- *
- * <p>LeagueSimulator is NOT annotated @Service — it is created exclusively
- * through this config to allow property injection.
+ * Wires simulation feature flags into the league simulator.
  */
 @Configuration("applicationSimulationConfig")
 public class SimulationConfig {
