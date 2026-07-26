@@ -6,7 +6,6 @@ import java.util.Optional;
 import reactor.core.publisher.Mono;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Storage port interface for
  * {@link BaselineState} snapshots captured at V24 match start.
  *
  * <p>Implementations are responsible for:
@@ -18,11 +17,9 @@ import reactor.core.publisher.Mono;
  *       {@link #delete(String, String)}).</li>
  * </ul>
  *
- * <p>This is a separate port from {@code V24DetailedMatchStoragePort} on
  * purpose: the keys, TTLs, and lifecycles are different. Sharing the port
  * would couple the two concerns.
  *
- * <p><b>V24D15-CLEANUP (BUG_COMPARE_404):</b> Write methods now return
  * {@link Mono} so the adapter can apply reactive retry + read-after-write
  * without spawning a blocking executor. The previous {@code void} signature
  * swallowed timeouts silently via {@code CompletableFuture.get(5s)}, causing
@@ -57,7 +54,6 @@ public interface BaselineStateStoragePort {
 /**
      * Retrieve the baseline state for a match.
      *
-     * <p>V24D15-CLEANUP (BUG_COMPARE_404 — true root cause): this method
      * is called from Reactor non-blocking threads (parallel-N). The
      * previous {@code Optional<BaselineState>} return type FORCED the
      * adapter to use {@code .blockOptional(...)} which threw
@@ -83,7 +79,6 @@ public interface BaselineStateStoragePort {
     /**
      * Delete the baseline state for a single match. Called from
      * {@code RoundController.handleMatchFinished} after the
-     * {@code V24DetailedMatchData} for the match has been persisted.
      *
      * <p>Implementations should be a no-op if the key does not exist
      * (Redis {@code DEL} is naturally idempotent).

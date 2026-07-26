@@ -12,23 +12,18 @@ import java.util.Objects;
  * Mutable per-player match state, copied from SessionPlayer at match start.
  * SessionPlayer itself is NOT mutated.
  *
- * <p>V25D32-F4: agregados {@code heightCm} y {@code skillLevels} como plumbing
- * para que V25D33 pueda consumirlos en el engine. V25D32 NO usa estos fields —
  * se copian del SessionPlayer para que esten disponibles cuando el engine
- * (V25D33-V25D34) los lea via {@code V24ShotXgCalculator} overload 9-args.
  */
 public class V24PlayerMatchState {
 
     private final String sessionPlayerId;
     private String teamId;
     private final String name;
-    // LIVE-MATCH-F2-LIVE F5 (B2): 'position' is NO LONGER final. A tactical
     // formation change can move a player to a different slot; the
     // TacticalChangeService drives the position reassignment through this
     // setter (validation: NOT NULL — compatibility with the new formation
     // is the service's responsibility, not the player's).
     //
-    // V25D47 (Sprint C11a): the existing 'position' field is now the
     // TACTICAL position (current slot category, e.g. "MID" if a CB
     // got moved to a MID slot). The new 'naturalPosition' field holds the
     // player's original position (immutable, set at fromSessionPlayer
@@ -51,8 +46,6 @@ public class V24PlayerMatchState {
     private boolean injured;
     private boolean onPitch;
 
-    // V25D32-F4: height + skill metadata. Copiados del SessionPlayer (sparse map,
-    // unmodifiable view). Engine en V25D33 leera esto via el overload 9-args de
     // V24ShotXgCalculator.calculateXg(...). Por ahora el engine NO los usa.
     private final Integer heightCm;
     private final Map<PlayerSkill, Integer> skillLevels;
@@ -68,7 +61,6 @@ public class V24PlayerMatchState {
         this.teamId = teamId;
         this.name = name;
         this.position = position;
-        // V25D47 (Sprint C11a): naturalPosition = the player's original slot.
         // If null/blank, fall back to the tactical position so effectiveness()
         // returns 1.0 (perfect match) — the player is treated as being at
         // home. This is the same backward-compat shape as legacy lineups.
@@ -100,7 +92,6 @@ public class V24PlayerMatchState {
         Objects.requireNonNull(teamId, "teamId must not be null");
         String name = (player.getName() == null || player.getName().isBlank())
                 ? "Unknown Player" : player.getName();
-        // V25D47 (Sprint C11a): naturalPosition == position at construction
         // (no tactical change has happened yet). When the TacticalChangeService
         // reassigns a player mid-match, it calls setPosition() and the
         // effectiveness calc kicks in.
@@ -122,8 +113,8 @@ public class V24PlayerMatchState {
                 0, false,
                 player.getInjured() != null && player.getInjured(),
                 true,  // onPitch initially
-                player.getHeightCm(),         // V25D32-F4
-                player.getSkillLevels()       // V25D32-F4 (already unmodifiable)
+                player.getHeightCm(),
+                player.getSkillLevels()
         );
     }
 
@@ -138,7 +129,6 @@ public class V24PlayerMatchState {
     public String position() { return position; }
 
     /**
-     * V25D47 (Sprint C11a): the player's original / natural category
      * (e.g., {@code "DEF"} for a CB). Immutable — set at construction
      * from {@link SessionPlayer#getPosition()} and never changes. Compare
      * with {@link #position()} (current tactical slot, mutable) to compute
@@ -159,12 +149,10 @@ public class V24PlayerMatchState {
     public boolean injured() { return injured; }
     public boolean onPitch() { return onPitch; }
 
-    // V25D32-F4: height + skill accessors (read-only).
     public Integer heightCm() { return heightCm; }
     public Map<PlayerSkill, Integer> skillLevels() { return skillLevels; }
 
     /**
-     * V25D33-F2: convenience accessor for a single skill level. Mirrors
      * {@link SessionPlayer#getSkillLevel(PlayerSkill)} for the same null-safe
      * semantics — returns 0 when the skill is absent, the map is null, or the
      * skill is not present in the sparse map. Used by the engine to read
@@ -180,10 +168,7 @@ public class V24PlayerMatchState {
     // Setters (for match simulation mutability)
     public void setTeamId(String teamId) { this.teamId = teamId; }
 
-    // ========== LIVE-MATCH-F2-LIVE F5 (B2): tactical position reassignment ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B2): replace the player's on-pitch position slot.
      * Validates non-null. The setter does NOT validate compatibility with the
      * current formation — that is the caller's responsibility
      * (TacticalChangeService picks a slot that fits the new formation).

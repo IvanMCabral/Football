@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * V25D78-C48: Admin-only world setup endpoint.
  *
  * <p>Provides an alternative path to seed LaLiga for any user, gated by
  * {@code ROLE_ADMIN}. This is the escape hatch for ops/setup flows that need
@@ -59,7 +58,6 @@ public class AdminWorldController {
     private final LaLigaSeedService laLigaSeedService;
 
     /**
-     * V25D78-C48: manual admin-role check. Returns true if the Authentication has
      * the ROLE_ADMIN authority. Used by AdminWorldController.adminSeedLaLiga to
      * gate the endpoint without requiring @PreAuthorize (which needs AOP).
      */
@@ -79,7 +77,6 @@ public class AdminWorldController {
     public Mono<ResponseEntity<Map<String, Object>>> adminSeedLaLiga(
             @RequestParam UUID userId,
             Authentication authentication) {
-        // V25D78-C48: manual role check (see class-level javadoc for why manual vs @PreAuthorize).
         if (!isAdmin(authentication)) {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("code", "ADMIN_REQUIRED");

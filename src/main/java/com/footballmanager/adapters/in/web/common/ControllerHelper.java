@@ -42,7 +42,6 @@ public class ControllerHelper {
     }
 
     /**
-     * V25D78-C50: Impersonation sweep — valida que el {@code userId} del JWT
      * coincide con el {@code userId} recibido en el query param o body.
      *
      * <p>Si el JWT userId NO coincide con {@code paramUserId}, lanza

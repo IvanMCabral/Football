@@ -1,7 +1,6 @@
 package com.footballmanager.application.service.simulation.v24.stats;
 
 /**
- * V24D6M7: Warning codes for the player season stats API.
  *
  * <p>Each code identifies a specific condition that the client should be
  * aware of. Warnings are informational — they do not change HTTP status.

@@ -3,7 +3,6 @@ package com.footballmanager.application.service.simulation.v24;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 
 /**
- * V24A2: Isolated adapter from V24DetailedMatchResult to MatchFixture.MatchResultData.
  *
  * <p>Maps only the 6 aggregate fields (goals, possession, shots).
  * Discards timeline, xG, and summary — those remain internal to V24.

@@ -12,7 +12,6 @@ import java.util.List;
  * <p>This applier is isolated and has no dependencies on Redis, Spring, or IO.
  * It reads player ratings computed from the match result and mutates SessionPlayer.form.
  *
- * <p>Form update rules (V24D6E MVP):
  * <ul>
  *   <li>Discrete step: >=8.0 → +3, >=7.0 → +2, >=6.5 → +1, >=5.5 → 0, >=5.0 → -1, less than 5.0 → -2</li>
  *   <li>Clamp: form never below 1 or above 99</li>
@@ -32,7 +31,6 @@ public final class V24FormMutationApplier {
      * Apply form updates from V24 player match ratings to CareerSave SessionPlayers.
      *
      * @param career the CareerSave to mutate; if null, returns 0
-     * @param result the V24DetailedMatchResult providing starting XI and match context; if null, returns 0
      * @param policy the mutation policy; if null, returns 0
      * @return the number of players whose form was updated
      */

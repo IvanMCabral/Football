@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * V25D41 (Sprint C6): shared team-chemistry calculator for the on-pitch
  * lineup (typically the starting 11 of a SessionTeam).
  *
  * <p>Aggregates individual {@link SessionPlayer#calculateOverall()} values
@@ -17,7 +16,6 @@ import java.util.Objects;
  * chemistry score in {@code [0, 99]}, returned inside a {@link ChemistryDetail}
  * record alongside the per-position-group breakdown needed by the UI.
  *
- * <h2>Formula (Opción C — mixto, refined; unchanged in V25D43)</h2>
  *
  * <p>Each component has a clear mathematical purpose:
  *
@@ -64,14 +62,12 @@ import java.util.Objects;
  *
  * <h3>Coverage bonus threshold</h3>
  * <p>A skill "counts" as covered when at least one player in the lineup has
- * that skill at level &ge; 80. The threshold of 80 matches the V25D39
  * convention (skills &ge; 80 are considered "elite" — the engine treats
  * them as the meaningful tier above the noise floor). Coverage bonus is
  * bounded at 3.0 (10 skills * 0.3), so even a perfect-coverage lineup
  * gains only 3 points — small enough not to dominate the base, large
  * enough to be observable.
  *
- * <h2>V25D43 (Sprint C8) — Opción B signature change</h2>
  * <p>The public {@code calculate(List<SessionPlayer>)} method now returns a
  * {@link ChemistryDetail} record instead of a bare {@code int}. The score
  * is accessible via {@code detail.score()}. This is a breaking change for
@@ -84,7 +80,6 @@ import java.util.Objects;
  * <h2>Backward compatibility</h2>
  * <p>If the list is null, empty, or contains only null players → returns a
  * detail with score=0, all groups empty, all maxSkillByType=0, and
- * coveragePercentage=0. If all players lack skill data (legacy V25D31
  * seed lineups) → score is the AVG of overalls only, with no skill or
  * coverage bonuses, and an empty breakdown.
  */
@@ -102,7 +97,6 @@ public final class TeamChemistryCalculator {
 
     /**
      * Calculates the team chemistry detail (score + per-position-group
-     * breakdown) for a list of on-pitch players. Replaces the V25D41
      * {@code int}-returning {@code calculate} — score is now in
      * {@code detail.score()}.
      *

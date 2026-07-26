@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Per-bucket event-count diff
  * between the baseline and the live match.
  *
  * <p>A "bucket" is a 5-minute window. There are 18 buckets covering

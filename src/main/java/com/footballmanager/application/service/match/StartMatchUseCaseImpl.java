@@ -16,9 +16,7 @@ import java.util.function.Consumer;
 /**
  * Implementación de StartMatchUseCase.
  *
- * <p>V24D6M11: Provides both legacy path (execute) and V24 path (executeV24).
  * The V24 path is used when V24LiveSession is active and should use
- * MatchFinishedResult callback to carry V24DetailedMatchResult for persistence.
  */
 @Service
 @RequiredArgsConstructor
@@ -41,7 +39,6 @@ public class StartMatchUseCaseImpl implements StartMatchUseCase {
     }
 
     /**
-     * V24D6M11: V24 path with MatchFinishedResult callback.
      * Used when V24LiveSession is active for the match.
      */
     public Flux<MatchStateSnapshot> executeV24(UUID userId, UUID matchId,

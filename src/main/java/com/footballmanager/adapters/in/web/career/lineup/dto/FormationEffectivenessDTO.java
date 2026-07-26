@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * V25D47 (Sprint C11a): response DTO for the tactical formation effectiveness.
  * Sits alongside {@link ChemistryBreakdownDTO} (C8) on {@link LineupDTO}.
  *
  * <p>Wire shape:
@@ -28,7 +27,6 @@ import java.util.Map;
  *   }
  * </pre>
  *
- * <p><b>V25D52 (Sprint C13b):</b> {@code perPlayerEffectiveness} keys are
  * {@code subdivisionId} (e.g. {@code "GK-1"}, {@code "S22-1"}), not
  * {@code playerId}. This matches the frontend's contract — see
  * {@code front-ciber/.../shared/models/lineup/formation-effectiveness.dto.ts}.
@@ -37,7 +35,6 @@ import java.util.Map;
  * always returned {@code undefined} and the CSS class / badge never
  * applied. C13b aligns the wire contract on subdivisionId.
  *
- * <p><b>V25D99.15-BACK:</b> three new fields
  * ({@code attackRating}, {@code midfieldRating}, {@code defenseRating})
  * expose the same modifiers the V24 simulation engine uses during a real
  * match (V24ShotXgCalculator.formationOffensiveModifier +
@@ -55,7 +52,6 @@ import java.util.Map;
  *
  * <p><b>Nullable on {@link LineupDTO}:</b> this DTO is added as
  * {@code formationEffectiveness?} (optional) so lineups persisted
- * before V25D47 (which lack the field) still deserialize without 422
  * errors. The frontend treats null as "no tactical info available" and
  * hides the section.
  */
@@ -63,11 +59,8 @@ public record FormationEffectivenessDTO(
     String inferredFormation,
     Map<String, Double> perPlayerEffectiveness,
     double teamAverage,
-    /** V25D99.15-BACK: attack modifier × 100. Higher = more dangerous. */
     Double attackRating,
-    /** V25D99.15-BACK: midfield modifier × 100 (technique-weighted). */
     Double midfieldRating,
-    /** V25D99.15-BACK: defense modifier × 100. Higher = more protection. */
     Double defenseRating
 ) {
 

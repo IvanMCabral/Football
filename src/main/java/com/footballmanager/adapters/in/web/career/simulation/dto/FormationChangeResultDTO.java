@@ -3,7 +3,6 @@ package com.footballmanager.adapters.in.web.career.simulation.dto;
 import java.util.List;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B4): response body for
  * {@code POST /api/v1/match-engine/matches/{matchId}/formation}.
  *
  * <p>Mirrors {@link StyleChangeResultDTO}: {@code success} duplicates the

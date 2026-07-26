@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * V24D5A: Factory that builds V24MatchContext from existing career/session data.
  *
  * <p>Provides a safe bridge between CareerSave/MatchFixture/SessionTeam data
  * and V24MatchContext. Fully isolated — no production simulation wiring.
@@ -66,7 +65,6 @@ public final class V24MatchContextFactory {
             SessionTeam homeTeam,
             SessionTeam awayTeam,
             long seed) {
-        // V25D28: when caller does not pass explicit styles (replay path from
         // test-harness), fall back to the styles persisted on the SessionTeam.
         // This lets the test-harness set-style endpoint (POST /test-harness/career/set-style)
         // actually drive the engine's style-aware chanceProbability, possessionBase,
@@ -114,7 +112,6 @@ public final class V24MatchContextFactory {
         String homeTeamId = resolveTeamId(fixture.getHomeTeamId(), homeTeam);
         String awayTeamId = resolveTeamId(fixture.getAwayTeamId(), awayTeam);
 
-        // V24D14-LIVE-FIX-1.7: prefer the persisted formation from CareerSave (set by
         // LineupCommandUseCaseImpl.autoSelectLineup / manualSelectLineupWithSlots, sprint 1.6).
         // Fall back to SessionTeam.getFormation() for backward compat with saves from sprint 1.5
         // or earlier that pre-date the teamStarting11Formation map.
@@ -192,7 +189,6 @@ public final class V24MatchContextFactory {
     }
 
     private void validateStarterCount(List<SessionPlayer> starters, String teamLabel) {
-        // V24D6U2: accept short-handed lineups in [MIN, 11]
         int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (starters.size() < min || starters.size() > 11) {
             throw new IllegalArgumentException(
@@ -215,7 +211,6 @@ public final class V24MatchContextFactory {
     // ========== Resolution helpers ==========
 
     /**
-     * V24D6M11: Always use team.getSessionTeamId() — the career-internal ID.
      * The fixture's teamId may not match career storage format.
      */
     private String resolveTeamId(String fixtureTeamId, SessionTeam team) {
@@ -233,7 +228,6 @@ public final class V24MatchContextFactory {
         List<SessionPlayer> resolved = resolveFromStarting11OrNull(career, teamId, teamLabel);
         if (resolved != null) return resolved;
 
-        // V24D6M11: Fallback — derive from squad
         resolved = deriveStartingXIfromSquad(career, teamId, formation, teamLabel);
         int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (resolved.size() >= min) return resolved;
@@ -249,7 +243,6 @@ public final class V24MatchContextFactory {
      * Returns null if not found or too few entries — signals fallback.
      * Throws if entries exist but contain null/blank/unknown playerId.
      *
-     * <p>LIVE-MATCH-F5.2 BUG-003 defensive fix: if the teamStarting11 has
      * at least one stale player ID (player not found in CareerSave.playerManager
      * anymore), we treat the teamStarting11 as untrustworthy and return null
      * so the caller falls back to {@link #deriveStartingXIfromSquad}. This
@@ -275,7 +268,6 @@ public final class V24MatchContextFactory {
                     teamLabel + " starting XI has " + ids.size()
                     + " entries — maximum is 11 for teamId: " + teamId);
         }
-        // V24D6U2: short-handed entries flow through (used to fall back to squad
         // derivation, but that masks user intent; the user explicitly submitted
         // a short-handed XI and the engine should honour it).
         int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
@@ -297,7 +289,6 @@ public final class V24MatchContextFactory {
             }
             SessionPlayer p = career.getSessionPlayer(pid);
             if (p == null) {
-                // BUG-003 defensive fix: stale reference — the player was
                 // removed from the playerManager between rounds. Count it
                 // and continue; if ALL entries are stale we fall back to
                 // the squad (via returning null), otherwise we accept the
@@ -314,7 +305,6 @@ public final class V24MatchContextFactory {
                 + "Resolved {}/{} — falling back to squad derivation to ensure "
                 + "a complete 11-player starting XI.",
                 teamId, staleCount, resolved.size(), ids.size());
-            // BUG-003 fix: ANY stale reference means the teamStarting11
             // is partially invalid; fall back to deriveStartingXIfromSquad
             // to ensure a complete 11-player starting XI. Partial lineups
             // (e.g. 10 valid + 1 stale) would short the team by 1 player,
@@ -331,7 +321,6 @@ public final class V24MatchContextFactory {
     }
 
     /**
-     * V24D6M11: Derive starting XI from squad (CareerTeamManager.teamSquads).
      * Handles fresh careers where LineupController has not been used yet.
      */
     private List<SessionPlayer> deriveStartingXIfromSquad(
@@ -368,7 +357,6 @@ public final class V24MatchContextFactory {
     }
 
     /**
-     * V25D99.20.6: CPU teams often do not have a persisted starting XI. The old
      * fallback used the first 11 squad entries, so a big club could start two
      * keepers or miss its best attackers depending only on JSON/import order.
      * Build a role-aware XI from the team's formation instead: GK slot gets a
@@ -504,7 +492,6 @@ public final class V24MatchContextFactory {
     }
 
     /**
-     * V25D99.20.4: carries the manager's persisted slot/free-positioning
      * decisions into the V24 match context, keyed by playerId for O(1) lookup
      * when building mutable {@link V24PlayerMatchState} copies.
      */
@@ -537,7 +524,6 @@ public final class V24MatchContextFactory {
     }
 
     /**
-     * V25D99.58: persisted subdivision slots identify the tactical cell
      * (e.g. S17-2), but the same subdivision can have different professional
      * coordinates depending on formation. The match engine consumes only the
      * slot DTO, so canonical non-manual slots must carry the selected

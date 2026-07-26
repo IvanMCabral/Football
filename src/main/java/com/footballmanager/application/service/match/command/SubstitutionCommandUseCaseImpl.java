@@ -30,7 +30,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * LIVE-MATCH-F2-LIVE F2: implementation of {@link SubstitutionCommandUseCase}.
  *
  * <p>F2 wire: manual substitutions now affect the match result via
  * {@link V24LiveSession#mutateContext} + {@link V24LiveSession#replayFromMinute}
@@ -91,14 +90,14 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                 userId, matchId, teamId, playerOffId, playerOnId, requestedMinute))
             .doOnSuccess(result -> {
                 if (result.success()) {
-                    log.debug("[LIVE-MATCH-F2-F2] Substitution persisted, {} subs remaining, minute={}",
+                    log.debug("Substitution persisted, {} subs remaining, minute={}",
                         result.substitutionsRemaining(), result.minuteApplied());
                 } else {
-                    log.warn("[LIVE-MATCH-F2-F2] Substitution validation failed for matchId={}: {}",
+                    log.warn("Substitution validation failed for matchId={}: {}",
                         matchId, result.error());
                 }
             })
-            .doOnError(e -> log.error("[LIVE-MATCH-F2-F2] Unexpected error during substitution for matchId={}",
+            .doOnError(e -> log.error("Unexpected error during substitution for matchId={}",
                 matchId, e));
     }
 
@@ -106,7 +105,6 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
      * Synchronous core logic. Translates business-rule exceptions into
      * {@link SubstitutionResult#failure(String)} per FLAG 1 fix.
      *
-     * <p><b>LIVE-MATCH-F2-F2.5 protocol validation:</b> if the requested
      * {@code requestedMinute} is BEFORE the live session's
      * {@code currentMinute()}, the manager is trying to "change the past"
      * — the engine only applies subs at {@code effectiveMinute ==
@@ -145,7 +143,6 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                 "V24LiveSession has no context for matchId=" + matchId);
         }
 
-        // 2. LIVE-MATCH-F2-F2.5: protocol validation. Cannot schedule a
         // sub for a minute that is already in the past — the engine only
         // applies subs with effectiveMinute == currentMinute at the start
         // of the minute loop, so a sub with effectiveMinute < currentMinute
@@ -162,7 +159,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                 ? 1
                 : requestedOrCurrentMinute;
         if (minute < currentMinute) {
-            log.info("[LIVE-MATCH-F2-F2.5] Rejecting substitution for past minute: matchId={} requestedMinute={} currentMinute={}",
+            log.info("Rejecting substitution for past minute: matchId={} requestedMinute={} currentMinute={}",
                 matchId, minute, currentMinute);
             throw new MinuteInPastException(
                 "minute (" + minute + ") must be >= currentMinute ("
@@ -192,7 +189,6 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // (5 subs / team), but its mutations to the local V24TeamMatchState
             // are LOST when the method returns.
             //
-            // LIVE-MATCH-F5.2 BUG-011: pass the event with REAL player names
             // (playerOff.name() / playerOn.name() populated by
             // V24SubstitutionEngine.manualSubstitute) to
             // V24LiveSession.recordManualSubstitution() so the SSE stream
@@ -207,19 +203,16 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             liveSession.recordManualSubstitution(event);
             session.refreshV24Snapshot();
 
-            // F6 Sprint 2: append this sub to the BaselineState so the
             // compare endpoint can replay the match with the same sub
             // sequence. We do this AFTER liveSession.recordManualSubstitution
             // so the live state is updated first.
             //
-            // V24D15-CLEANUP (BUG_COMPARE_404): baselineStoragePort.save
             // now returns Mono<Void>. We subscribe on a bounded-elastic
             // scheduler and surface failures as a warn log so the live
             // sub flow is never blocked by Redis hiccups.
             String careerId = session.getCurrentState() != null
                     ? session.getCurrentState().careerId() : null;
             if (careerId != null && !careerId.isBlank()) {
-                // V24D15-CLEANUP (BUG_COMPARE_404): findByMatchId now returns
                 // Mono<Optional<...>> (the sync version silently aborted under
                 // Reactor parallel scheduling). Use blockOptional on a
                 // bounded-elastic scheduler so the block() runs off the
@@ -259,7 +252,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             }
 
             int remaining = engine.substitutionsRemaining(resolvedTeamId);
-            log.info("[LIVE-MATCH-F2-F2] Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",
+            log.info("Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",
                 matchId, resolvedTeamId, playerOffId, playerOnId, minute, remaining);
 
             return SubstitutionResult.ok(minute, remaining);
@@ -272,19 +265,17 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2: cleanup hook called when the match finishes. Frees the
      * per-match substitution engine to avoid memory leaks.
      * Wired from the match-finished lifecycle (deferred to Phase 2 integration).
      */
     public void onMatchFinished(UUID matchId) {
         V24SubstitutionEngine removed = enginesByMatchId.remove(matchId);
         if (removed != null) {
-            log.debug("[LIVE-MATCH-F2-F2] Cleaned up substitution engine for matchId={}", matchId);
+            log.debug("Cleaned up substitution engine for matchId={}", matchId);
         }
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2: resolve the teamId by searching the context's
      * starting lineups and bench for the playerOffId.
      * Returns the teamId or throws IllegalArgumentException if not found.
      */
@@ -323,7 +314,6 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2: build a {@link V24TeamMatchState} from the context
      * by mapping the SessionPlayer lists to V24PlayerMatchState.
      *
      * <p>We use the {@link V24TeamMatchState#create} factory which internally

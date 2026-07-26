@@ -3,7 +3,6 @@ package com.footballmanager.application.service.simulation.v24;
 import java.util.Objects;
 
 /**
- * V24D1: Formation parser for V24 detailed match engine.
  *
  * <p>Parses common formation strings into structured role counts.
  * Used for formation-aware tactical role weighting in player selection.
@@ -106,7 +105,6 @@ public final class V24FormationParser {
                 // 5-3-2: 5 defenders, 3 midfielders, 2 forwards (no wingers)
                 return new V24Formation(formation, def, mid, 0, 0, totalForwards);
             }
-            // V25D54-C15 P1: 5-4-1 (5 defenders, 4 midfielders, 1 forward — solo ST)
             if ("5-4-1".equals(formation)) {
                 return new V24Formation(formation, def, mid, 0, 0, totalForwards);
             }
@@ -120,7 +118,6 @@ public final class V24FormationParser {
     // "4-2-3-1", "3-4-1-2", "4-2-2-2", "4-1-2-3", "3-5-2-CDM" →
     // four parts: defenders, midfielders, attackingMidfielders, forwards
     //
-    // <p>V25D54-C15: added explicit cases for 3-4-1-2 (Christmas tree),
     // 4-2-2-2 (narrow diamond), 4-1-2-3 (4-3-3 con CDM pivot) y
     // 3-5-2-CDM (3-5-2 con CDM explícito). Para "4-1-2-3", los dos
     // numeros centrales son la linea media (1 CDM + 2 CM) y el "3" final
@@ -134,7 +131,6 @@ public final class V24FormationParser {
     private static V24Formation parseThreeDashes(String formation) {
         String[] parts = formation.split("-");
         if (parts.length != 4) return null;
-        // V25D54-C15 P1: 3-5-2-CDM contiene letras — verificamos ANTES
         // de parsear ints. Engine treats it as 3-5-2-like structure
         // (3 DEF + 5 MID + 2 ST, sin wingers).
         if ("3-5-2-CDM".equals(formation)) {
@@ -155,18 +151,15 @@ public final class V24FormationParser {
                 int totalMid = mid + am; // 1+4=5
                 return new V24Formation(formation, def, totalMid, 0, 0, fwd);
             }
-            // V25D54-C15 P1: 3-4-1-2 (Christmas tree): 3 DEF + 5 MID (4+1 CAM) + 2 ST
             if ("3-4-1-2".equals(formation)) {
                 int totalMid = mid + am; // 4+1=5
                 return new V24Formation(formation, def, totalMid, 0, 0, fwd);
             }
-            // V25D54-C15 P1 / V25D99.58: 4-2-2-2 (narrow box):
             // 4 DEF + 4 MID (2 CDM + 2 CAM/inside mids) + 2 ST.
             if ("4-2-2-2".equals(formation)) {
                 int totalMid = mid + am; // 2+2=4
                 return new V24Formation(formation, def, totalMid, 0, 0, fwd);
             }
-            // V25D99.20.8-BACK: 4-1-2-3 is the professional label for the
             // old 4-3-3-with-CDM-pivot variant. The final "3" is a front
             // three (LW/ST/RW), not three central forwards.
             if ("4-1-2-3".equals(formation)) {

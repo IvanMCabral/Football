@@ -96,7 +96,6 @@ public class MatchCommandHandler {
      * Procesa cambio de mentalidad.
      */
     private MatchStateSnapshot handleChangeMentality(MatchCommand command, MatchStateSnapshot state) {
-        // TODO: Implementar cuando se defina la estructura de mentalidad
         return state;
     }
 
@@ -161,7 +160,6 @@ public class MatchCommandHandler {
 
     @Deprecated
     private void handleChangeMentalityLegacy(MatchCommand command, MatchState state) {
-        // TODO: Implementar
     }
 
     @Deprecated

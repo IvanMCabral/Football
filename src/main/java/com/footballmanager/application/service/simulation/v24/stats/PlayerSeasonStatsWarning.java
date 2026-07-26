@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
- * V24D6M7: Warning object in player season stats response.
  *
  * <p>Carries a machine-readable code, human-readable message,
  * and optional field reference.

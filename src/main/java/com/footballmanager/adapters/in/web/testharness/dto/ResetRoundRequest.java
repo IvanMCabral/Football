@@ -1,7 +1,6 @@
 package com.footballmanager.adapters.in.web.testharness.dto;
 
 /**
- * V24D24.3-HOTFIX: Body for {@code POST /api/v1/test-harness/career/reset-round}.
  *
  * <p>The frontend hydrates {@code roundId} from
  * {@code /api/v1/career/fixtures/round-with-bye} (the same value carried

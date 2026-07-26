@@ -4,7 +4,6 @@ import java.util.Objects;
 
 /**
  * Immutable shot coordinate with pitch position and derived goal metrics.
- * V24D3A: shot coordinate value object — descriptive metadata only.
  *
  * <p>Coordinate system:
  * <ul>

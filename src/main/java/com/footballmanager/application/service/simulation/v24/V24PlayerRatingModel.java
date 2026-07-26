@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * V24D3B: Pure helper for computing per-player ratings from a match timeline.
  *
  * <p>Ratings are deterministic from the timeline alone — no randomness, no mutable state,
  * no external dependencies. The same timeline always produces the same ratings.

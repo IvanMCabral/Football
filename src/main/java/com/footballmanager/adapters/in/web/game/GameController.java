@@ -33,9 +33,7 @@ public class GameController {
     private final GameService gameService;
     private final StartRoundUseCase startRoundUseCase;
     // C55.14 OBS-1: GameController.matches now returns MatchStateSnapshot
-    // (V25D79 contract). Resolve via RoundEngineRegistry instead of the
     // legacy GetMatchStateQueryUseCase + MatchRuntimeRepository (Redis)
-    // path that exposed RuntimeMatch without the V25D79 fields.
     private final RoundEngineRegistry roundEngineRegistry;
     private final AdvanceMatchUseCase advanceMatchUseCase;
     private final FinalizeMatchUseCase finalizeMatchUseCase;
@@ -54,7 +52,6 @@ public class GameController {
         }
         UUID leagueId = UUID.fromString(request.leagueId());
 
-        // V24D7+2.1: defensive guard — teamId is required by domain (GameService uses it
         // to start the Career). Reject null/blank/invalid-UUID with 400 instead of NPE→500.
         if (request.teamId() == null || request.teamId().isBlank()) {
             return Mono.just(ResponseEntity.badRequest().build());
@@ -121,7 +118,6 @@ public class GameController {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
         UUID userId = UUID.fromString(userIdStr);
-        // V24D12-B.2: collectList() + isEmpty check on the Flux content
         // (not the Mono wrapper) is what makes the 404 fire. The previous
         // B-2 .defaultIfEmpty() was applied to Mono.just(RE) which never
         // emits empty, so the operator never triggered. The Flux<Game>
@@ -164,10 +160,8 @@ public class GameController {
         if (userId == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        // V24D12-B.2: same fix as getAllGames - collectList() + isEmpty
         // check. Returns 404 with empty body (the explicit notFound().build())
         // both when the tournament doesn't exist and when it exists but has
-        // no standings. This matches the contract that REVISOR's smoke expects.
         return tournamentQueryUseCase.getStandings(userId)
             .collectList()
             .map(list -> list.isEmpty()
@@ -206,7 +200,6 @@ public class GameController {
 
     /**
      * C55.14 OBS-1: GET /api/v1/games/match/{matchId} now returns a
-     * {@link MatchStateSnapshot} (the V25D79 contract) instead of the
      * legacy {@code RuntimeMatch} DTO which lacked
      * {@code homePlayerRatings}, {@code awayPlayerRatings}, and
      * {@code substitutionsRemaining}.
@@ -216,7 +209,6 @@ public class GameController {
      * registry is the global source of truth for live matches), then
      * return {@code RoundEngine.getCurrentMatchSnapshot(matchId)} —
      * which delegates to {@code MatchEngine.getCurrentState()} that
-     * already computes the 3 V25D79 fields on every SSE tick.
      *
      * <p>Status codes:
      * <ul>
@@ -225,7 +217,6 @@ public class GameController {
      *   <li>404 — no active round owns this matchId (match finished
      *       and the registry was unregistered, or the round has been
      *       stopped, or the match was never started)</li>
-     *   <li>200 — snapshot with V25D79 fields populated</li>
      * </ul>
      *
      * <p>Note: scoping is intentionally global (same posture as the

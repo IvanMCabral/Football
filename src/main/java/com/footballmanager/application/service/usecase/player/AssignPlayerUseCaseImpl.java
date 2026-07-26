@@ -39,7 +39,6 @@ public class AssignPlayerUseCaseImpl implements AssignPlayerUseCase {
                         return teamRepository.findById(userId, UUID.fromString(worldTeamId))
                                 .flatMap(realTeam -> {
                                     // Crear WorldTeam desde el equipo real
-                                    // V25D78-C55.6: propagate division tier from
                                     // Team aggregate (Postgres) through to WorldTeam.
                                     WorldTeam newTeam = WorldTeam.fromRealTeam(
                                             realTeam.getId().getValue(),

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D6M7: Response DTO for player season stats query.
  *
  * <p>Contains a list of per-player season stat records plus optional
  * computed summaries, an incomplete flag for partial data, metadata

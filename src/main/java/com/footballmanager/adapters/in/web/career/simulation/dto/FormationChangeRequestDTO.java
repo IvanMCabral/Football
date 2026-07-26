@@ -3,7 +3,6 @@ package com.footballmanager.adapters.in.web.career.simulation.dto;
 import java.util.List;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B4): request body for
  * {@code POST /api/v1/match-engine/matches/{matchId}/formation}.
  *
  * <p>The client sends the full formation (10-11 slots). The service validates

@@ -1,7 +1,6 @@
 package com.footballmanager.application.service.world;
 
 /**
- * V25D78-C55.1: Registry of the 10 leagues supported by {@link WorldSeedService}.
  *
  * <p>Each league has a slug (used in URL endpoints like {@code /world/seed-{slug}}),
  * a display name (used in the UI dropdown), and the classpath resource path

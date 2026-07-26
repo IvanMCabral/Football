@@ -20,7 +20,6 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * LIVE-MATCH-F2-LIVE F2: controller for manual substitutions during a live match.
  *
  * <p>F2 wire: manual substitutions now affect the match result. The use case
  * drives the substitution through {@code V24LiveSession.mutateContext(...)} +
@@ -89,7 +88,7 @@ public class SubstitutionController {
                 .body(SubstitutionResultDTO.error("playerOnId must not be blank")));
         }
 
-        log.info("[LIVE-MATCH-F2-F2] Substitution request received: matchId={} userId={} off={} on={}",
+        log.info("Substitution request received: matchId={} userId={} off={} on={}",
             matchUuid, userId, request.playerOffId(), request.playerOnId());
 
         // FLAG 1 UX fix: use case returns Mono<SubstitutionResult>; we forward the
@@ -109,7 +108,6 @@ public class SubstitutionController {
                 result.substitutionsRemaining(),
                 result.error())))
             .onErrorResume(e -> {
-                // V24D13-2 (F4.4): protocol-level exceptions (IllegalStateException
                 // for "no active match session" / missing V24LiveSession / missing
                 // context, IllegalArgumentException — and its subclass
                 // MinuteInPastException — for "minute in past") must propagate to
@@ -122,7 +120,7 @@ public class SubstitutionController {
                         || e instanceof IllegalArgumentException) {
                     return Mono.error(e);
                 }
-                log.error("[LIVE-MATCH-F2-F2] Unexpected error during substitution for matchId={}",
+                log.error("Unexpected error during substitution for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(SubstitutionResultDTO.error("Internal error: " + e.getMessage())));

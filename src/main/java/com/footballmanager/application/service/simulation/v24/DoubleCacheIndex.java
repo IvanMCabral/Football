@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * LIVE-MATCH-F2-LIVE Fase 1 — Task B2.
  *
  * <p>Maps each match minute (1-90) to the index in {@link CachingRandomWrapper}'s
  * double cache where that minute's draws begin. Used by

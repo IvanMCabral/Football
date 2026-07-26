@@ -3,7 +3,6 @@ package com.footballmanager.domain.model.valueobject;
 import java.util.Map;
 
 /**
- * V25D99.16-BACK: subdivision-aware effectiveness that applies a small
  * distance penalty when the assigned subdivision slot is geometrically
  * far from where a player of that natural position should ideally be.
  *
@@ -13,7 +12,6 @@ import java.util.Map;
  * S22-2 vs S22-3 — both LB-side vs RB-side) yield identical effectiveness
  * because the calculator only knows the zone. Within a 4-DEF line moving
  * a CB one subdivision sideways produced no rating change in
- * {@link TeamRatingsCalculator} pre-V25D99.16.
  *
  * <p>Ivan: "juntar m&aacute;s los mediocampistas centrales no hace nada".
  * The fix is geometry-aware effectiveness: each natural position has an
@@ -56,7 +54,6 @@ public final class SubdivisionEffectivenessCalculator {
 
     /**
      * Ideal centroid coords for each natural position. Sourced manually
-     * from the {@code FormationService} cell-center layout (V25D94) so
      * the computed penalty matches where players are actually placed.
      *
      * <p>Entry keys:
@@ -153,8 +150,6 @@ public final class SubdivisionEffectivenessCalculator {
             return baseEff;
         }
 
-        // V25D99.16-BACK: backward compat — null / NaN coords → return
-        // baseEff unchanged. Pre-V25D99.16 callers that don't have xPct
         // /yPct resolution wired up still produce the same numbers.
         if (Double.isNaN(slotXPercent) || Double.isNaN(slotYPercent)) {
             return baseEff;
@@ -176,7 +171,6 @@ public final class SubdivisionEffectivenessCalculator {
     }
 
     /**
-     * V25D99.298: the visual editor distinguishes a real RW/LW responsibility
      * from a generic ATT-zone responsibility. A broad MID can help high up the
      * pitch, but should not behave like a natural winger when placed on the
      * touchline. This multiplier keeps the shared preview/match-engine math

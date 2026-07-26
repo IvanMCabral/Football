@@ -82,7 +82,6 @@ public class CareerViewController {
      * GET /api/v1/career/fixtures/all[?round=N]
      * Obtiene los fixtures de la división del usuario.
      *
-     * <p>V25D78-C55.7.7 BUG-M4: previously this endpoint ignored the {@code round}
      * query param and always returned all 240 matches across 10 rounds. Now it
      * honors {@code ?round=N} (1-based) and returns a single-round slice with
      * the same response shape (teamNames / config / teams stay complete so the
@@ -156,7 +155,6 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/fixtures/round-with-bye
-     * Obtiene TODOS los fixtures con info de BYE por fecha (para dashboard/modal)
      */
     @GetMapping("/fixtures/round-with-bye")
     public Mono<FixtureQueryDtos.AllRoundsWithBye> getAllFixturesWithBye(Authentication auth) {

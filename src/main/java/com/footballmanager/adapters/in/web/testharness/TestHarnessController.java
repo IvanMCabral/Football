@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * V24D20-TESTHARNESS — REST controller exposing the smoke-test harness.
  *
  * <p>Base path: {@code /api/v1/test-harness/career}.
  *
@@ -43,7 +42,6 @@ import java.util.UUID;
  *
  * <p><b>Auth:</b> same JWT path as {@code CareerCommandController} —
  * {@code controllerHelper.getUserId(authentication)}. The harness is for
- * internal smoke use only (REVISOR + local exploration), so the
  * profile-gate is the primary access control.
  *
  * <p><b>Endpoints:</b>
@@ -54,10 +52,8 @@ import java.util.UUID;
  *   <li>{@code POST /set-formation} — change user formation</li>
  *   <li>{@code GET /snapshot} — dump current state for pre/post diff</li>
  *   <li>{@code POST /match/{matchId}/replay} — re-simulate a single match
- *       with a new (caller-provided or auto) seed. V24D20-SANDBOX-V2-MVP.</li>
  *   <li>{@code POST /reset-round} — reset every fixture of a round back
  *       to PENDING, evict cached MatchSessions, clear V24 details.
- *       V24D24.3-HOTFIX. Makes {@code "Simulate round"} idempotent.</li>
  * </ol>
  */
 @RestController
@@ -85,21 +81,17 @@ public class TestHarnessController {
             @RequestBody CreateCustomCareerRequest request,
             Authentication authentication) {
 
-        // V25D38-F2: pre-validate the request body before touching UUID.fromString
-        // (BUG_NPE_AUDIT — surfaced by the V25D37-F3 follow-up audit).
         //
         // Before this fix, an empty body ({}), null leagueId/teamId, or malformed
         // UUID strings propagated to StartCareerUseCaseImpl.start() which calls
         // UUID.fromString(null) → NPE → 500 Internal Server Error with the
         // confusing message "Cannot invoke \"String.length()\" because \"name\" is null"
-        // (same pattern as BUG_MATCH_DETAIL_NPE_ON_BAD_BODY fixed in V25D37-F3).
         // The audit found this controller was the only sibling left with the bug;
         // setFormation / setStyle / injectPlayerStats / resetRound return 422
         // (mapped by GlobalExceptionHandler from IllegalArgumentException) because
         // the underlying UseCases already null-check their fields.
         //
         // Now we return 400 Bad Request with a structured error Map per the
-        // V25D37-F3 pattern.
         if (request == null) {
             return Mono.just(ResponseEntity.badRequest().body(
                 Map.of("error", "request body must not be null")));
@@ -239,13 +231,11 @@ public class TestHarnessController {
     }
 
     /**
-     * V25D28: POST /api/v1/test-harness/career/set-style
      * Changes the user team's tactical style (BALANCED, ATTACKING, DEFENSIVE,
      * COUNTER, POSSESSION). Persists to {@code SessionTeam.style}. The V24
      * engine reads this in {@code V24MatchContextFactory.build()} when no
      * explicit style is passed (test-harness replay path).
      *
-     * <p>Side-quest of V25D27 REVISOR smoke: enables empirical validation of
      * Axis 3 (style effect) without having to use the live-match
      * {@code /match-engine/matches/{id}/style} endpoint.
      */
@@ -267,24 +257,18 @@ public class TestHarnessController {
     }
 
     /**
-     * V25D29 + V25D35: POST /api/v1/test-harness/career/inject-player-stats
      * Mutates one SessionPlayer's stats in the persisted career. Null fields
-     * are left unchanged. Bounds-checked to {@code [0, 99]} (V25D25 engine convention).
      *
-     * <p><b>V25D35 extension:</b> the request body can also include
      * {@code heightCm} (Integer, [160, 210]) and {@code skillLevels}
      * (sparse {@code Map<PlayerSkill, Integer>}, each entry [0, 99]) to
-     * mutate the V25D31 physical + skill metadata. Both fields are nullable;
      * absent/null = leave current value unchanged. See
      * {@link InjectPlayerStatsRequest} for the full spec.
      *
      * <p>Engine reads updated stats on next replay via {@code aggregateAttackerStat}
-     * (top-7 attackers by attack stat, V25D99.18) and {@code aggregateDefenderStat}
      * (DEF + GK avg of defense+mentality). Those feed
      * {@code formationOffensiveModifier} and {@code formationDefensiveModifier}
      * respectively. Mutating stats changes the formation effect magnitude.
      *
-     * <p>Side-quest of V25D27 REVISOR smoke: enables empirical validation of
      * Axis 2 (player stats amplify formation effect).
      */
     @PostMapping("/inject-player-stats")
@@ -496,7 +480,6 @@ public class TestHarnessController {
 
     /**
      * GET /api/v1/test-harness/career/snapshot
-     * Returns the current career state — REVISOR uses this to verify
      * pre/post smoke diffs. Includes computed squad health summary.
      */
     @GetMapping("/snapshot")
@@ -511,7 +494,6 @@ public class TestHarnessController {
     }
 
     /**
-     * V24D20-SANDBOX-V2-MVP F5: POST /api/v1/test-harness/career/match/{matchId}/replay
      * Re-simulates a single match with a new seed. The matchId must
      * exist in the current tournament fixtures; the fixture is reset
      * to PENDING, re-simulated via the V24 engine, and the new result
@@ -731,7 +713,6 @@ public class TestHarnessController {
     }
 
     /**
-     * V24D24.3-HOTFIX: POST /api/v1/test-harness/career/reset-round
      * Resets every fixture of a round back to PENDING, evicts the
      * cached {@code MatchSession} for each match from
      * {@code MatchEngineRegistry}, and clears the V24 detail entries
@@ -757,7 +738,7 @@ public class TestHarnessController {
 
         UUID userId = controllerHelper.getUserId(authentication);
 
-        log.info("[V24D24.3-HOTFIX] reset-round userId={} roundId={}",
+        log.info("reset-round userId={} roundId={}",
             userId, request.roundId());
 
         return testHarnessUseCase.resetRound(userId, request.roundId())

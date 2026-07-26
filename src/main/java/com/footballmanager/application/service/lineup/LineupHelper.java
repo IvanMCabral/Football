@@ -12,11 +12,9 @@ import java.util.List;
  * Helper compartido para operaciones de lineup.
  * Extraído para evitar duplicación entre UseCases.
  *
- * <p>V24D6U2: Added short-handed variants that return warnings instead
  * of throwing on position deficit. The strict methods remain for
  * legacy callers and tests.
  *
- * <p>V25D78-C43 P0 (auto-select role match fix): the position-category
  * helpers ({@code isDefender} / {@code isMidfielder} / {@code isAttacker})
  * now accept BOTH the specific role codes (CB, LB, RB, CDM, CM, etc.)
  * AND the category codes (DEF, MID, ATT). Pre-fix, only specific role
@@ -151,10 +149,7 @@ public class LineupHelper {
         }
     }
 
-    // ========== V24D6U2: Short-handed variants ==========
-
     /**
-     * V24D6U2: Validates a short-handed lineup. Throws on out-of-bounds size
      * or duplicate IDs. Does NOT throw on missing goalkeeper (returns
      * warning instead) or position deficit (no warnings, the lineup is
      * already accepted as best-effort).
@@ -180,7 +175,6 @@ public class LineupHelper {
     }
 
     /**
-     * V24D6U2: Returns a warning if the lineup has no goalkeeper.
      * Returns empty otherwise. Does not throw.
      */
     public List<LineupWarningDTO> detectShortHandedWarnings(List<SessionPlayer> players) {

@@ -4,10 +4,8 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * V24D3A: Deterministic shot coordinate generator.
  *
  * <p>Generates V24ShotCoordinate from V24ShotLocation using a passed Random for determinism.
- * All ranges match the V24D3 plan specification.
  */
 public final class V24ShotCoordinateGenerator {
 

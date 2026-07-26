@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * V25D78-C55.2 phase 3: Promotion/Relegation logic for multi-division leagues.
  *
  * <p>At end of season:
  * <ul>

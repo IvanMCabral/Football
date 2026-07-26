@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B5): controller for manager-initiated style changes
  * during a live match.
  *
  * <p>Endpoint: {@code POST /api/v1/match-engine/matches/{matchId}/style}
@@ -70,7 +69,7 @@ public class StyleChangeController {
                 .body(StyleChangeResultDTO.error("newStyle must not be null")));
         }
 
-        log.info("[LIVE-MATCH-F2-F5] Style change request received: matchId={} userId={} newStyle={}",
+        log.info("Style change request received: matchId={} userId={} newStyle={}",
             matchUuid, userId, request.newStyle());
 
         return tacticalChangeService.changeStyle(userId, matchUuid, request.newStyle())
@@ -82,7 +81,7 @@ public class StyleChangeController {
                 Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(StyleChangeResultDTO.error(e.getMessage()))))
             .onErrorResume(e -> {
-                log.error("[LIVE-MATCH-F2-F5] Unexpected error during style change for matchId={}",
+                log.error("Unexpected error during style change for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(StyleChangeResultDTO.error("Internal error: " + e.getMessage())));

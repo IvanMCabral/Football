@@ -36,19 +36,15 @@ public class CareerSave {
      * o ausente para un team, se infiere on-the-fly del role del jugador
      * (backward compat con lineups viejos).
      *
-     * <p><b>V25D99.20.2-BACK:</b> storage type changed from
      * {@code Map<String, Map<String, String>>} (subdivisionId → playerId,
      * which lost the front's free-positioning customX/customY) to a
      * raw-typed Object map that holds {@link LineupSlotDTO} values.
-     * Legacy String values (pre-V25D99.20.2 saves) are wrapped to
      * {@code new LineupSlotDTO(playerId, null, null, null)} on read by
      * the typed getter {@link #getTeamStarting11SubdivisionSlots()}. The
      * legacy {@code Map<String, String>} setter
      * {@link #setTeamStarting11Subdivision(Map)} is preserved for backward
-     * compat with pre-V25D99.20.2 callers.
      *
      * <p>Field declared as {@code Map<String, Map<String, Object>>} so
-     * Jackson can deserialize both pre-V25D99.20.2 saves (inner values
      * are plain strings) and post-fix saves (inner values are
      * LineupSlotDTO records) into the same field. Conversion to
      * LineupSlotDTO happens lazily in the typed getter / on write.
@@ -78,7 +74,6 @@ public class CareerSave {
         this.teamStarting11.putAll(starting11);
     }
     public void setTeamStarting11Subdivision(Map<String, Map<String, String>> slots) {
-        // V25D99.20.2-BACK: backward-compat setter. Accepts the legacy
         // (subdivisionId -> playerId) String shape and stores each String
         // value as a raw Object in the new typed-raw field. The typed
         // getter getTeamStarting11SubdivisionSlots() converts these on
@@ -100,7 +95,6 @@ public class CareerSave {
     }
 
     /**
-     * V25D99.20.2-BACK: setter for the new slot-aware shape. Used by
      * {@code LineupCommandUseCaseImpl} write paths so the front's free-
      * positioning {@code customXPercent} / {@code customYPercent} values
      * are persisted (pre-fix, the String-only setter dropped them).
@@ -126,7 +120,6 @@ public class CareerSave {
     }
 
     /**
-     * V25D99.20.3.1-BACK BUG-2 gap fix: clear-and-put on the raw field
      * directly for a single teamId. This bypasses the
      * typed-raw-conversion round-trip (which the unit test mocks but
      * the runtime JSON serialization+deserialization does not).
@@ -170,7 +163,6 @@ public class CareerSave {
     public Map<String, List<String>> getTeamStarting11() { return teamStarting11; }
 
     /**
-     * V25D99.20.2-BACK: legacy getter returning the {@code Map<String, String>}
      * shape (subdivisionId → playerId). Wraps any LineupSlotDTO values back to
      * their {@code playerId} for callers that haven't migrated. Persists raw
      * String values as-is.
@@ -205,11 +197,9 @@ public class CareerSave {
     }
 
     /**
-     * V25D99.20.2-BACK: typed accessor for the inner slot map. Returns
      * {@code subdivisionId → LineupSlotDTO} with the front's
      * {@code customXPercent / customYPercent} preserved.
      *
-     * <p>Legacy String values (pre-V25D99.20.2 saves persisted as plain
      * {@code subdivisionId → playerId}) are wrapped to
      * {@code new LineupSlotDTO(playerId, null, null, null)} so downstream
      * consumers can rely on the LineupSlotDTO shape uniformly.
@@ -230,8 +220,6 @@ public class CareerSave {
                 if (v instanceof LineupSlotDTO slot) {
                     inner.put(ie.getKey(), slot);
                 } else if (v instanceof String playerId) {
-                    // V25D99.20.2-BACK backward compat: legacy String values
-                    // from pre-V25D99.20.2 saves. subdivisionId is the
                     // OUTER key, so the wrapped LineupSlotDTO has
                     // subdivisionId=null (the consumer can recover it
                     // from the outer key or the LineupDTO's slots list).
@@ -330,7 +318,6 @@ public class CareerSave {
         playerManager.removePlayer(sessionPlayerId);
         playerManager.removePlayerFromAllStarting11(teamStarting11, sessionPlayerId);
         // MVP1-lineup-cancha-1: también limpiar de subdivision map (si estaba).
-        // V25D99.20.2-BACK: inner values may be LineupSlotDTO (post-fix) or
         // String (legacy). Iterate the raw field and unwrap per value.
         for (Map<String, Object> slots : teamStarting11Subdivision.values()) {
             if (slots == null) continue;

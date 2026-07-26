@@ -11,7 +11,6 @@ import java.util.Set;
  * based on V24 match participation.
  *
  * <p>This applier is isolated and has no dependencies on Redis, Spring, or IO.
- * It only reads from V24DetailedMatchResult and mutates SessionPlayer.energy field.
  *
  * <p>Energy drain rules:
  * <ul>
@@ -43,7 +42,6 @@ public class V24FatigueMutationApplier {
      * Apply post-match energy drain to CareerSave SessionPlayers.
      *
      * @param career the CareerSave to mutate; if null, returns 0
-     * @param result the V24DetailedMatchResult containing timeline events; if null, returns 0
      * @param policy the mutation policy; if null, returns 0
      * @return the number of players whose energy was reduced
      */

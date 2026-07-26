@@ -46,12 +46,10 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
     private final CareerRepository careerRepository;
     private final LineupHelper lineupHelper;
-    // V25D99.16-BACK: resolved per-subdivision xPct/yPct so the team
     // ratings use the new distance-aware effectiveness. Injected via
     // @RequiredArgsConstructor.
     private final FormationService formationService;
 
-    // V25D99.20.1: nullable injection so /current uses the in-memory cache
     // layer (ConcurrentHashMap in CareerSessionService) when Spring has
     // wired the dependency. Tests construct this class with the 3-arg
     // constructor (no Spring context), so the field stays null and the
@@ -91,23 +89,18 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         List<String> lineupIds = career.getTeamStarting11().get(userTeamId);
 
         if (lineupIds == null || lineupIds.isEmpty()) {
-            // V25D41 (Sprint C6): empty lineup → chemistry = 0 (no lineup, no chemistry).
-            // V25D43 (Sprint C8): empty breakdown (4 groups, all empty) for shape stability.
-            // V25D47 (Sprint C11a): empty formation effectiveness (default formation,
             // empty per-player map, teamAverage=1.0).
             return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0,
                     ChemistryBreakdownDTO.empty(),
                     FormationEffectivenessDTO.empty());
         }
 
-        // V25D65-C25 P0: el lineup vacío no genera warnings (no hay jugadores para
         // evaluar short-handed / no-GK / off-position). Matchea el comportamiento
         // pre-C25 donde warnings=List.of() en este path.
 
         List<SessionPlayer> lineup = lineupIds.stream()
             .map(id -> career.getSessionPlayers().get(id))
             .filter(Objects::nonNull)
-            // V25D75-C40 C1: filter suspended players from the returned
             // lineup. The persisted state may include players that became
             // suspended mid-match (red card) AFTER the lineup was set —
             // we don't auto-cleanup the persisted state (other code paths
@@ -124,7 +117,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         // inferFormation para saves viejos que no tienen teamStarting11Formation.
         String formationCode = readPersistedFormation(career, userTeamId, lineup);
 
-        // V25D99.16-BACK: lookup per-subdivision coords from the
         // FormationService cache so /current responses include the new
         // subdivision-aware team ratings (manual-select persistence
         // already wired through CommandUseCaseImpl; this is the read
@@ -150,12 +142,9 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
         List<LineupSlotDTO> slots = buildSlotsFromSubdivisionMap(career, userTeamId, lineup);
 
-        // V25D41 (Sprint C6): compute team chemistry from the actual SessionPlayer
         // objects (we have the lineup List<SessionPlayer> here, not just the DTOs).
-        // V25D43 (Sprint C8): calculate() now returns ChemistryDetail (score + breakdown).
         ChemistryDetail chemistryDetail = TeamChemistryCalculator.calculate(lineup);
 
-        // V25D47 (Sprint C11a): formation effectiveness — inferred formation label
         // + per-player effectiveness multipliers (natural position vs slot category).
         // For empty/malformed slots → defaults to "4-4-2" + empty map + 1.0 team avg
         // (backward compat with lineups persisted before subdivisionId mapping).
@@ -169,7 +158,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                 slots,
                 naturalByPlayer,
                 coordsBySubdivision);
-        // V25D99.15-BACK: per-player attribute DTOs for the engine
         // rating computation. Without them, ratings default to the
         // formation baseline (4-4-2 = 100/100/100).
         List<FormationEffectiveness.PlayerAttrDTO> attrsByPlayer = new ArrayList<>();
@@ -183,7 +171,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                         p.getMentality()));
             }
         }
-        // V25D55 (Sprint C16): forward the persisted formation so the
         // inferredFormation field reflects the manager's selection (e.g.,
         // "3-5-2-CDM") instead of collapsing to the slot-count triple.
         String persistedFormationCode = career.getTeamStarting11Formation() == null
@@ -198,7 +185,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                         persistedFormationCode,
                         coordsBySubdivision);
 
-        // V25D65-C25 P0: compute warnings from persisted state (slots + lineup).
         // Pre-C25 bug: warnings=List.of() here caused the banner to disappear
         // on reload (only POST /manual-select and /auto-select returned warnings).
         // Now warnings persist with the lineup (recomputed each /current call).
@@ -207,7 +193,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
 
         return new LineupDTO(formationCode, playerDTOs, true, warnings, slots,
                 chemistryDetail.score(),
-                // V25D99.19-BACK (BUG-1 fix): pass slots + naturalByPlayer so
                 // the ChemistryBreakdownDTO can pad empty PositionGroups with
                 // slot-category fallback entries (e.g. lineup with legacy/zero
                 // skill data where the skill-weight grouping yields empty
@@ -225,7 +210,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
     }
 
     /**
-     * V25D65-C25 P0: compute warnings for a persisted lineup from its slots
      * + players + effectiveness data. Mirrors what the command path
      * ({@code LineupCommandUseCaseImpl}) computes during armar, but for the
      * read path ({@code GET /career/lineup/current}) which previously
@@ -262,10 +246,8 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         // Off-position fill (only if effectiveness data is available — empty
         // slots map → no off-position data → no warning).
         //
-        // V25D99.16-BACK: threshold relaxed from `< 1.0` to `< 0.85`.
         // Reason: SubdivisionEffectivenessCalculator now factors in
         // distance-from-ideal so a CB placed at the LB/RB wing DEF slot
-        // drops to ~0.85 effectiveness (was 1.0 pre-V25D99.16 — pure
         // zone table). That drop is meaningful for the panel ratings
         // (so fine-grained drag-and-drop is visible) but a CB playing
         // LB is still a coherent defensive assignment, NOT an
@@ -307,7 +289,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             CareerSave career,
             String userTeamId,
             List<SessionPlayer> currentLineup) {
-        // V25D99.20.2-BACK: use the typed slot getter so we preserve
         // customXPercent / customYPercent on the LineupSlotDTOs. The
         // legacy String-only getter would discard these overrides and the
         // FormationEffectiveness calculator downstream would silently

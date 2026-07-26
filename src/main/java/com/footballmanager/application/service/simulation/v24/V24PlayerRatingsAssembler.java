@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D5F: Assembles per-player ratings for V24DetailedMatchData persistence.
  *
  * <p>Derives V24PlayerMatchRatingDto list from CareerSave starting XI + match timeline.
  * Pure function — no mutable state, no Random, no external I/O.

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
- * V24D4A: DTO for V24ShotCoordinate in storage/API layers.
  * Immutable snapshot — not tied to internal V24ShotCoordinate.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,

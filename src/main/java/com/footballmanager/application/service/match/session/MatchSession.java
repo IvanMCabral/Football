@@ -33,7 +33,6 @@ import java.util.function.Consumer;
  *
  * <p>Thread-safe: usa estado inmutable (MatchStateSnapshot) volatile.
  *
- * <p>V24D6M11: When v24LiveSession is non-null, uses V24DetailedMatchEngine
  * via V24LiveSession.tick() for tick-by-tick SSE simulation. The legacy
  * path (v24LiveSession == null) uses MatchTickHandler.
  */
@@ -48,7 +47,6 @@ public class MatchSession {
     private final V24LiveSession v24LiveSession;
 
     /**
-     * LIVE-MATCH-F1-POC: public accessor for the V24LiveSession.
      * Returns null if this session is on the legacy (non-V24) path.
      * Callers that need V24-specific behavior (manual substitutions, etc.)
      * must null-check.
@@ -71,7 +69,6 @@ public class MatchSession {
     /**
      * Full constructor with optional V24LiveSession.
      *
-     * @param v24LiveSession null for legacy path; non-null to use V24DetailedMatchEngine
      */
     public MatchSession(UUID userId, UUID matchId, MatchState state,
                         MatchTickHandler tickHandler, V24LiveSession v24LiveSession) {
@@ -79,7 +76,6 @@ public class MatchSession {
         this.currentState = convertToSnapshot(matchId, state);
         this.tickHandler = tickHandler;
         this.commandQueue = new ConcurrentLinkedQueue<>();
-        // V25D87.1-BACK-F1: align with CareerNotificationService's
         // replay().latest() pattern — see RoundEngine.stateSink for the
         // full rationale. MatchSession feeds the per-match SSE stream
         // consumed by startMatchUseCase / live components.
@@ -92,7 +88,6 @@ public class MatchSession {
                 state.getScore().home(),
                 state.getScore().away()
         );
-        // LIVE-MATCH-F3-UI-LIVE BE1: legacy path (no V24LiveSession) — defaults
         // for the new possession/style/formation fields. The 9-arg constructor
         // applies safe defaults (50/50, BALANCED, 4-4-2).
         return new MatchStateSnapshot(
@@ -111,10 +106,6 @@ public class MatchSession {
     public Flux<MatchStateSnapshot> getStateStream() {
         return stateSink.asFlux();
     }
-
-    /**
-     * Set callback for V24 path (receives MatchFinishedResult with V24DetailedMatchResult).
-     */
     public void setOnFinishCallback(Consumer<MatchFinishedResult> callback) {
         this.onFinishCallback = callback;
     }
@@ -241,12 +232,10 @@ public class MatchSession {
      * Adapt V24LiveSnapshot to MatchStateSnapshot for SSE stream.
      * Events are converted from V24MatchEvent → domain MatchEvent.
      *
-     * <p>LIVE-MATCH-F3-UI-LIVE BE1: propagates the 6 new fields
      * (homePossession, awayPossession, homeStyle, awayStyle, homeFormation,
      * awayFormation) so the F3 UI can render the possession bar and the
      * current style/formation per team in real time.
      *
-     * <p>V25D79: computes the new {@code homePlayerRatings} /
      * {@code awayPlayerRatings} (per-player live stats via
      * {@link V24PlayerMatchStatsModel#computeRatings(java.util.Collection, V24MatchTimeline)})
      * and {@code substitutionsRemaining} (max(0, 5 - count(SUBSTITUTION events))).
@@ -254,7 +243,6 @@ public class MatchSession {
      * {@code snap.minute()}), not the cached full-match engine result, so the
      * F4 substitution modal shows stats that update minute-by-minute.
      *
-     * <p>Package-private (default visibility) so {@code MatchSessionV25D79Test}
      * can drive it with controlled inputs. Not part of the public API.
      */
     MatchStateSnapshot adaptV24Snapshot(V24LiveSnapshot snap) {
@@ -266,7 +254,6 @@ public class MatchSession {
             adaptedEvents.add(toDomainMatchEvent(e));
         }
 
-        // V25D79: per-player live stats. Build the partial timeline (events up
         // to currentMinute — snap.allEvents() is already filtered by
         // V24LiveSession.buildSnapshot()) so the ratings reflect the live
         // match, NOT the final 90-minute projection.
@@ -291,7 +278,6 @@ public class MatchSession {
             awayPlayerRatings = statsModel.computeRatings(awayStates, liveTimeline);
         }
 
-        // V25D79 (D5): substitutions remaining. The match starts at 5 subs;
         // each SUBSTITUTION event decrements the count. Floor at 0 so a buggy
         // engine (e.g. emitting SUBSTITUTION events for tactical changes) does
         // not produce a negative counter.
@@ -310,14 +296,12 @@ public class MatchSession {
                 adaptedEvents,
                 currentState.careerId(),
                 currentState.userId(),
-                // LIVE-MATCH-F3-UI-LIVE BE1
                 snap.homePossession(),
                 snap.awayPossession(),
                 snap.homeStyle(),
                 snap.awayStyle(),
                 snap.homeFormation(),
                 snap.awayFormation(),
-                // V25D79
                 homePlayerRatings,
                 awayPlayerRatings,
                 substitutionsRemaining,
@@ -338,7 +322,6 @@ public class MatchSession {
     }
 
     /**
-     * V25D79 helper: build a list of {@link V24PlayerMatchState} for the home
      * or away team from the {@code V24MatchContext}'s starting + bench lists
      * (both {@link SessionPlayer}). Returns an empty list when the team has no
      * players (defensive — never crashes SSE).
@@ -370,7 +353,6 @@ public class MatchSession {
      * Convert a V24MatchEvent to domain MatchEvent, preserving player attribution.
      * Used for SSE stream — no information loss since V24MatchEvent has all needed fields.
      *
-     * <p>LIVE-MATCH-F3-UI-LIVE BE2: for SUBSTITUTION events, the
      * {@code relatedPlayerName} from V24MatchEvent is propagated to the domain
      * {@code playerOnName} so the F3 UI can render "Salió X, entró Y" in the
      * timeline without resolving IDs.
@@ -387,7 +369,6 @@ public class MatchSession {
                 null,
                 e.relatedPlayerId(),
                 e.relatedPlayerName(),
-                // LIVE-MATCH-F3-UI-LIVE BE2: expose the ON-player name as the
                 // legacy playerOnName field too. Before V25, a 7-arg overload
                 // accidentally stored this value as matchId, making reloads
                 // lose substitution identity.
@@ -418,7 +399,6 @@ public class MatchSession {
             case CORNER -> MatchEvent.EventType.CORNER;
             case OFFSIDE -> MatchEvent.EventType.OFFSIDE;
             case SUBSTITUTION -> MatchEvent.EventType.SUBSTITUTION;
-            // LIVE-MATCH-F2-LIVE F5: tactical change maps 1:1 (description carries the payload).
             case TACTICAL_CHANGE -> MatchEvent.EventType.TACTICAL_CHANGE;
         };
     }

@@ -5,7 +5,6 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
 import java.util.List;
 
 /**
- * V25D47 (Sprint C11a): pure utility that infers a formation label from
  * the subdivision slots assigned to a lineup.
  *
  * <p>The 5 canonical categories used by the engine are
@@ -79,7 +78,6 @@ public final class FormationInferer {
     }
 
     /**
-     * V25D55 (Sprint C16): overload that prefers the persisted formation when
      * available. The persisted formation is the canonical label the manager
      * actually selected (e.g., {@code "3-5-2-CDM"}, {@code "5-4-1"} — codes
      * beyond the 3-DIGIT shape produced by slot inference). Slot inference

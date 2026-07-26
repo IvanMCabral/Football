@@ -28,14 +28,12 @@ public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
                     int squadSize = sessionTeamId != null ? career.getTeamSquad(sessionTeamId).size() : 0;
                     int freePlayersCount = career.getPlayerManager().getFreePlayerIds().size();
 
-                    // V25D78-C55.2 phase 4 UI (c): expose user's division tier so
                     // the dashboard can render it prominent without a 2nd round-trip.
                     // CareerSave.getUserDivision() returns the entity Division; we
                     // map divisionNumber → tier name (PRIMERA/SEGUNDA/TERCERA/...)
                     // so the frontend can branch on a stable string without parsing
                     // localized display names.
                     //
-                    // V25D78-C55.9: extend to all 12 sub-divisions per league (C55.6
                     // distribution: 60 teams / teamsPerDivision=5 → 12 divisions).
                     // The previous switch only handled 1-3 and returned null for
                     // divisionNumber 4-12, leaving the field null for the bottom 75%
@@ -69,7 +67,6 @@ public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
                         };
                     }
 
-                    // V25D78-C55.9 (A9 fix): expose the human-readable team name so
                     // the dashboard / squad / any consumer can show it without a
                     // 2nd round-trip to /career/continue or a WorldTeam lookup.
                     // Lazy computed from the in-memory sessionTeam the user chose at
@@ -88,7 +85,6 @@ public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
                         }
                     }
 
-                    // V25D78-C55.2 phase 4 UI (d2): auto-trigger promotions dialog.
                     // PromotionRelegationService.calculatePromotionsAndRelegations() (called
                     // inside MatchSimulationOrchestrator.finishTournament) populates
                     // seasonManager.promotions when a season ends. We surface that as a

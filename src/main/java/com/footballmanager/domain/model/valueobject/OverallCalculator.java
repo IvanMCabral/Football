@@ -3,8 +3,6 @@ package com.footballmanager.domain.model.valueobject;
 import java.util.Map;
 
 /**
- * V25D40 (Sprint C5): shared overall calculator for both {@code Player} and
- * {@code SessionPlayer} (V25D39 added the height + skills awareness to
  * {@code Player.getOverall()} but {@code SessionPlayer.calculateOverall()} —
  * the one actually consumed by the UI via {@code SessionPlayerDTO.overall} —
  * was left out of scope, so the change was invisible to users).
@@ -37,8 +35,6 @@ import java.util.Map;
  *
  * <h2>Backward compatibility</h2>
  * If {@code heightCm == null} AND {@code skillLevels} is null or empty,
- * returns the pre-V25D39 / pre-V25D40 base formula unchanged. This is the
- * contract that all existing tests, smoke flows, and the V25D39 base
  * (before C5) relied on.
  *
  * <h2>Skill weights table (sum ~0.65 per row → max bonus ≈ 6.4)</h2>
@@ -61,7 +57,6 @@ import java.util.Map;
  *   <tr><td>ATT</td><td>h &lt; 175 → -2</td><td>175 ≤ h &lt; 190</td><td>h ≥ 190 → +2</td></tr>
  * </table>
  *
- * <p>Note on WINGER boundary: closed at h ≤ 170 (not h &lt; 170). The V25D39
  * test {@code winger_skills99_height170} explicitly tests the boundary
  * penalty and asserts {@code base + 4} net — h=170 must trigger -1.
  *
@@ -174,7 +169,6 @@ public final class OverallCalculator {
             return 0;
         }
         if ("WINGER".equals(position)) {
-            // Closed boundary at 170: matches V25D39 winger_skills99_height170 test expectation.
             if (h >= 185) return 1;
             if (h <= 170) return -1;
             return 0;
@@ -238,7 +232,6 @@ public final class OverallCalculator {
      * the utility class owns the position vocabulary that the engine layer
      * also uses via {@code SessionPlayer.position}.
      *
-     * <p>Mapping (preserves the V25D39 Player.getOverall() internal grouping):
      * <ul>
      *   <li>{@code GK} → "GK"</li>
      *   <li>{@code LB/CB/RB/LWB/RWB} → "DEF"</li>
@@ -249,7 +242,6 @@ public final class OverallCalculator {
      *
      * @return category string, or {@code null} for any unknown future enum value
      *         (caller should treat null as "default" — same behavior as the
-     *         pre-V25D39 Player.getOverall() default branch)
      */
     public static String mapPlayerPositionToCategory(
             com.footballmanager.domain.model.entity.Player.Position position) {

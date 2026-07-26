@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.Random;
 
 /**
- * V24D2: Assist and key-pass model for V24 detailed match engine.
  *
  * <p>Computes assist probability from shooter, candidate, formation, and style.
  * Provides deterministic assist credit decision based on weighted probability.

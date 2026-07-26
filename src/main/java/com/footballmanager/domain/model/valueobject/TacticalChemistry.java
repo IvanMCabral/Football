@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V25D99.20.13-BACK: spatial/link chemistry for the squad screen.
  *
  * <p>The classic {@link TeamChemistryCalculator} answers "how talented and
  * skill-covered is this XI?". This record answers the more football-specific

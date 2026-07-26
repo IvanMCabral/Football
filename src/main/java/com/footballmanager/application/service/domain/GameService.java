@@ -22,7 +22,6 @@ import java.util.UUID;
  * - Crear Games
  * - Inicializar Careers en Redis asociadas al Game
  *
- * <p><b>V24D15-CLEANUP (BUG_GAME_DASHBOARD_404):</b> when a Career is
  * created via {@code POST /api/v1/career/start}, the UI later navigates to
  * {@code /games/{careerId}/...} expecting a Game entity with the same id
  * as the career. Without an associated Game entity,
@@ -70,7 +69,6 @@ public class GameService {
     }
 
     /**
-     * V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): persist a Game entity that
      * shares its primary key with the supplied Career. Invoked from
      * {@code CareerCommandController.startCareer} so the UI's existing
      * {@code /games/{careerId}} navigation resolves to a real Game entity
@@ -124,10 +122,10 @@ public class GameService {
 
         return gameRepository.save(userUuid, game)
                 .doOnSuccess(saved -> log.info(
-                        "[V24D15-CLEANUP] Game entity persisted for careerId={}, userId={}, name='{}'",
+                        "Game entity persisted for careerId={}, userId={}, name='{}'",
                         careerId, userUuid, name))
                 .doOnError(err -> log.warn(
-                        "[V24D15-CLEANUP] Failed to persist Game entity for careerId={}: {}",
+                        "Failed to persist Game entity for careerId={}: {}",
                         careerId, err.getMessage()))
                 // Best-effort: log + swallow on failure. Career start must
                 // not be blocked by a Redis hiccup here. The UI will see

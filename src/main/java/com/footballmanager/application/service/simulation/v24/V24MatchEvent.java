@@ -5,7 +5,6 @@ import java.util.Objects;
 /**
  * Immutable single event in the V24 match timeline.
  * playerId and playerName are real values from SessionPlayer.
- * shotCoordinate is nullable — only SHOT/GOAL events carry coordinates (V24D3C).
  */
 public final class V24MatchEvent {
 
@@ -64,7 +63,6 @@ public final class V24MatchEvent {
 
     /**
      * Returns a new V24MatchEvent with the given shotCoordinate attached.
-     * Used by V24DetailedMatchEngine to attach coordinates to SHOT/GOAL events.
      */
     public V24MatchEvent withShotCoordinate(V24ShotCoordinate coord) {
         return new V24MatchEvent(

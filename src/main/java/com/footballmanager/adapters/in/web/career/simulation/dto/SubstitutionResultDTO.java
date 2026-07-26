@@ -1,7 +1,6 @@
 package com.footballmanager.adapters.in.web.career.simulation.dto;
 
 /**
- * LIVE-MATCH-F1-POC: response body for POST /api/v1/match-engine/matches/{matchId}/substitutions.
  *
  * <p>Returned alongside a 200 OK status. The {@code success} field mirrors
  * the HTTP status (the use case throws on failure and the controller maps to

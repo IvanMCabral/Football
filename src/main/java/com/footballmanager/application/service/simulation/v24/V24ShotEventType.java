@@ -1,7 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
 /**
- * V25D33-F1: Shot origin taxonomy for xG modifier gating.
  *
  * <p>Some PlayerSkills only apply in specific shot contexts:
  * <ul>
@@ -10,7 +9,6 @@ package com.footballmanager.application.service.simulation.v24;
  *       head, not striking with the foot). The V24 engine currently models
  *       {@link V24MatchEventType#CORNER} as a separate timeline event, but
  *       it does NOT trigger a follow-up shot — the corner roll happens
- *       AFTER the per-minute chance roll (see V24DetailedMatchEngine line
  *       412, after the shot attempt at line 337). Crosses are not modeled
  *       at all in V24 (no CROSS event type).</li>
  *   <li>{@link #OPEN_PLAY} — any other shot. Default for shots whose

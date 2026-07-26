@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
- * V24D4A: DTO for per-player match rating and stat bundle.
  * Immutable snapshot — not tied to V24PlayerMatchState.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,

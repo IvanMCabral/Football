@@ -45,8 +45,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Controller for round operations (start round).
  * Uses non-blocking reactive patterns.
  *
- * <p>V24D6M11: When simulation.use-v24-detailed-engine=true, matches use
- * V24DetailedMatchEngine via V24LiveSession for real player attribution
  * and per-minute SSE tick-by-tick simulation.
  */
 @Slf4j
@@ -62,18 +60,14 @@ public class RoundController {
     private final CareerSessionService careerSessionService;
     private final V24MatchContextFactory v24ContextFactory;
     private final LeagueSimulator leagueSimulator;
-    // V25D75-C40 B3: persists finished live matches to MatchRepository so
     // GET /api/v1/matches returns them (was always []). Best-effort fire-and-forget.
     private final MatchRepository matchRepository;
-    // F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): stores the pre-subs
     // BaselineState at match start, deletes it on match finish.
     private final BaselineStateStoragePort baselineStoragePort;
-    // V24D12-B: use ControllerHelper for userId extraction; replaces the
     // copy-paste getUserIdFromAuth helper that accepted an optional
     // requestUserId from the body and threw IAE on auth failure.
     private final ControllerHelper controllerHelper;
 
-    /** V24D6M11: When true, matches use V24DetailedMatchEngine via V24LiveSession. */
     @Value("${simulation.use-v24-detailed-engine:true}")
     private boolean useV24DetailedEngine;
 
@@ -84,7 +78,6 @@ public class RoundController {
      */
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
-        // V24D15-CLEANUP (BUG 5 — RoundController E2E): auth check must run
         // FIRST so the 401 case beats body validation. Before this fix, an
         // unauthenticated request with `matches:[]` returned 422
         // LINEUP_VALIDATION_ERROR (matches empty) instead of 401
@@ -92,7 +85,6 @@ public class RoundController {
         // `startRound_unauthenticated_returns401` failed because of this.
         UUID userId = controllerHelper.getUserId(authentication);
 
-        // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-004: validate the body BEFORE
         // touching UUID.fromString. Without this guard, an empty / wrong-field
         // body (e.g. {gameId, round} from a misbehaving client) makes
         // `UUID.fromString(null)` throw a raw NPE
@@ -100,7 +92,6 @@ public class RoundController {
         // surfaces as HTTP 500. We map the missing/invalid roundId to a
         // 422 LINEUP_VALIDATION_ERROR with a clear message instead.
         //
-        // V24D15-CLEANUP (BUG 5): removed the `matches.isEmpty()` guard.
         // The empty-matches case is a legitimate "advance round with no
         // matches scheduled yet" request — the UI uses it as a heartbeat
         // / readiness probe — and startMatches handles the empty list
@@ -118,7 +109,6 @@ public class RoundController {
         return startMatches(roundId, userId, request)
             .map(initialState -> ResponseEntity.ok(initialState))
             .onErrorResume(e -> {
-                // V24D13-2 (FIX-001): protocol-level exceptions (IllegalStateException
                 // from missing career/session, IllegalArgumentException from invalid
                 // roundId UUID, MinuteInPastException from F2.5) must propagate to
                 // GlobalExceptionHandler so the frontend gets the right 4xx semantic
@@ -143,7 +133,6 @@ public class RoundController {
         final List<MatchResultProcessor.MatchResultInfo> matchResults =
                 Collections.synchronizedList(new ArrayList<>());
 
-        // V24D13-2 (FIX-001): the previous implementation called
         // {@code careerSessionService.getCareerFromCache(userId).block()} here,
         // which throws {@code IllegalStateException("block() not supported in
         // thread parallel-N")} on Reactor parallel threads. The exception is
@@ -158,11 +147,9 @@ public class RoundController {
             .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
             .doOnNext(career -> {
                 log.info("[ROUND-CONTROLLER] CareerSave loaded for V24 context construction");
-                // [V24D6M11-TRACE] Log careerId for E2E tracing
                 String traceCareerId = career.getData().getCareerId();
-                log.info("[V24D6M11-TRACE] RoundController careerId={}, roundId={}", traceCareerId, roundId);
+                log.info("RoundController careerId={}, roundId={}", traceCareerId, roundId);
 
-                // V24D6R2: Initialize per-round tracking for lifecycle decrement
                 int currentRound = career.getTournamentState().getCurrentRound();
                 int currentSeason = career.getSeasonManager().getCurrentSeason();
                 LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
@@ -176,7 +163,6 @@ public class RoundController {
 
                     log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
 
-                    // V24D6M11: Build V24LiveSession if useV24DetailedEngine is enabled
                     V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
 
                     if (v24LiveSession != null) {
@@ -246,7 +232,6 @@ public class RoundController {
     }
 
     /**
-     * V24D6M11: Build V24LiveSession from CareerSave if useV24DetailedEngine is enabled.
      * Returns null if V24 is disabled (falls back to legacy path).
      */
     private V24LiveSession buildV24LiveSession(CareerSave career, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
@@ -283,12 +268,10 @@ public class RoundController {
             V24LiveSession session = new V24LiveSession(context, seed);
             log.info("[ROUND-CONTROLLER] V24LiveSession created for match {} with seed {}", matchId, seed);
 
-            // F6 Sprint 2: capture the baseline state BEFORE any sub is
             // applied. The SubstitutionCommandUseCaseImpl hook will append
             // subs to this state as the manager makes changes. Cleaned up
             // in handleMatchFinished.
             //
-            // V24D15-CLEANUP (BUG_COMPARE_404): storage port now returns
             // Mono<Void>. We subscribe on a bounded-elastic scheduler and
             // log a warn on failure — baseline persistence MUST NOT block
             // the live match start (the compare endpoint will simply 404
@@ -315,7 +298,6 @@ public class RoundController {
     }
 
     /**
-     * V24D6M11: Handle match finish from V24 path.
      * Uses v24Result.timeline().events() for persistence when V24LiveSession was active.
      * Also persists V24 detail data to Redis via LeagueSimulator.
      */
@@ -329,7 +311,6 @@ public class RoundController {
                                      LiveRoundMutationTracking tracking) {
         List<com.footballmanager.domain.model.entity.MatchEvent> events;
         if (result.v24Result() != null) {
-            // V24 path: use timeline from V24DetailedMatchResult — convert V24MatchEvent to MatchEvent
             events = new java.util.ArrayList<>();
             for (var v24Event : result.v24Result().timeline().events()) {
                 events.add(com.footballmanager.domain.model.entity.MatchEvent.of(
@@ -343,10 +324,7 @@ public class RoundController {
             }
             log.info("[ROUND-CONTROLLER] V24 match finished, {} timeline events for persistence", events.size());
 
-            // V24D6R2: Persist V24 detail to Redis via LeagueSimulator with live tracking
-            // V24D20-SANDBOX-V2-MVP BUG #3: trace the careerId + matchId that
             // are about to be persisted so a future 404 on GET /detail can
-            // be diffed against the query trace in V24DetailedMatchRedisAdapter.
             log.info("[V24-DETAIL-CALLSITE-PERSIST] careerId={}, matchId={}, "
                     + "homeGoals={}, awayGoals={}, homeTeamId={}, awayTeamId={}",
                 career.getData().getCareerId(),
@@ -365,18 +343,15 @@ public class RoundController {
                     tracking
             );
 
-            // V24D15-CLEANUP (BUG_COMPARE_404 — ROOT CAUSE FIX): the previous
             // code deleted the BaselineState here as "cleanup". That
             // broke the /compare endpoint: the manager goes to match
             // detail → click "Comparar" AFTER the match has finished,
             // but by then the baseline was already gone and the
             // endpoint returned 404.
 //
-// The F6 Sprint 2 design (BaselineStateStoragePort TTL 7d) explicitly
 // expects the baseline to outlive the match — that way the manager
 // can compare "what would have happened" vs "what happened with my
 // subs" up to 7 days later. Deleting it here contradicted that
-// contract and was the actual root cause of BUG_COMPARE_404 (Phase 1
 // refactor of the save() didn't matter because the save worked; the
 // delete-after-match was wiping the baseline before the UI could
 // request the comparison).
@@ -400,7 +375,6 @@ public class RoundController {
                 events
         ));
 
-        // V25D75-C40 B3 + V25D76-C41: persist the finished match to
         // MatchRepository so GET /api/v1/matches returns it. Pass the
         // controller's userId (derived from JWT) explicitly — relying on
         // snap.userId()/career.getUserId() caused the C41 regression where
@@ -416,7 +390,6 @@ public class RoundController {
             log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
             roundEngine.emitCompletedState();
 
-            // V24D6R2: Apply end-of-round lifecycle decrements BEFORE orchestrator saves
             if (tracking != null) {
                 leagueSimulator.applyEndOfRoundLiveLifecycle(
                         career,
@@ -432,13 +405,11 @@ public class RoundController {
     }
 
     /**
-     * V24D6R2: Capture pre-round state for suspended/injured players.
      * Mirrors {@code LeagueSimulator.capturePreRoundSuspendedPlayerIds} and
      * {@code capturePreRoundInjuredPlayerIds} but lives in the controller
      * since tracking is a per-round artifact created at startMatches.
      */
         /**
-     * V25D75-C40 B3: persist a finished match to {@link MatchRepository} so
      * {@code GET /api/v1/matches} surfaces it. The live engine path never
      * called {@code matchRepository.save} — the legacy
      * {@code MatchFinishService.finishMatch} expects a pre-existing Match
@@ -488,7 +459,6 @@ public class RoundController {
                 round
             );
             match.simulate(matchResult);
-            // V25D75-C40 B3 + V25D76-C41 fix: use the controller's auth userId
             // (derived from JWT) as the authoritative user namespace for
             // MatchRepository. NEVER fall back to UUID.randomUUID() — that
             // persisted under a junk key in C40 and /api/v1/matches could
@@ -533,7 +503,6 @@ public class RoundController {
     }
 
     /**
-     * V24D6R2: Capture pre-round state for suspended/injured players.
      * Mirrors {@code LeagueSimulator.capturePreRoundSuspendedPlayerIds} and
      * {@code capturePreRoundInjuredPlayerIds} but lives in the controller
      * since tracking is a per-round artifact created at startMatches.
@@ -555,7 +524,7 @@ public class RoundController {
                 }
             }
         }
-        log.info("[V24D6R2-LIVE-LIFECYCLE] Pre-round snapshot: suspended={}, injured={}, round={}, season={}",
+        log.info("Pre-round snapshot: suspended={}, injured={}, round={}, season={}",
                 tracking.preRoundSuspendedPlayerIds.size(),
                 tracking.preRoundInjuredPlayerIds.size(),
                 tracking.roundNumber,
@@ -567,7 +536,6 @@ public class RoundController {
     }
 
     /**
-     * V24D6M11: Convert V24MatchEventType to domain MatchEvent.EventType.
      * Every V24MatchEventType maps explicitly — no lossy fallbacks.
      */
     private com.footballmanager.domain.model.entity.MatchEvent.EventType toDomainEventType(
@@ -590,7 +558,6 @@ public class RoundController {
             case CORNER -> com.footballmanager.domain.model.entity.MatchEvent.EventType.CORNER;
             case OFFSIDE -> com.footballmanager.domain.model.entity.MatchEvent.EventType.OFFSIDE;
             case SUBSTITUTION -> com.footballmanager.domain.model.entity.MatchEvent.EventType.SUBSTITUTION;
-            // LIVE-MATCH-F2-LIVE F5: tactical change maps 1:1.
             case TACTICAL_CHANGE -> com.footballmanager.domain.model.entity.MatchEvent.EventType.TACTICAL_CHANGE;
         };
     }

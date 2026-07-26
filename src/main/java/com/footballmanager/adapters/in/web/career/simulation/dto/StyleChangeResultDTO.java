@@ -3,7 +3,6 @@ package com.footballmanager.adapters.in.web.career.simulation.dto;
 import com.footballmanager.application.service.domain.TeamStyle;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B4): response body for
  * {@code POST /api/v1/match-engine/matches/{matchId}/style}.
  *
  * <p>Mirrors the F1 {@code SubstitutionResultDTO} contract: {@code success}

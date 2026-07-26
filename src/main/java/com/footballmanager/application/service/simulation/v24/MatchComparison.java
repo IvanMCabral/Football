@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Top-level response DTO for the
  * {@code GET /api/v1/careers/{careerId}/matches/{matchId}/compare}
  * endpoint.
  *
@@ -15,7 +14,6 @@ import java.util.Objects;
  * the manager's subs/formation/style changes), and the {@link #diff}
  * (signed deltas + bucket-based timeline diff).
  *
- * <p>Schema is deliberately similar to {@link V24DetailedMatchData} so
  * the front can render either view with the same components.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,

@@ -2,13 +2,6 @@ package com.footballmanager.application.service.simulation.v24;
 
 import java.util.List;
 import java.util.Optional;
-
-/**
- * V24D4A: Storage port interface for detailed match data.
- *
- * <p>No implementation in this phase. V24D4B would provide a Redis adapter.
- * V24D4A is interface-only — no wiring, no Spring, no dependency injection.
- */
 public interface V24DetailedMatchStoragePort {
 
     /**
@@ -39,7 +32,6 @@ public interface V24DetailedMatchStoragePort {
      * career-scoped index key to avoid KEYS overhead.
      *
      * @param careerId  the career whose match details to retrieve
-     * @return list of all V24DetailedMatchData for the career (never null)
      * @throws IllegalArgumentException if careerId is null
      */
     List<V24DetailedMatchData> findByCareerId(String careerId);
@@ -54,7 +46,6 @@ public interface V24DetailedMatchStoragePort {
     void deleteByCareerId(String careerId);
 
     /**
-     * V24D20-SANDBOX-V2-MVP: Delete a single match detail by (careerId, matchId).
      * Used by the test-harness replay endpoint to clear the stale V24
      * detail so the next GET /detail returns the new result, not the old.
      *

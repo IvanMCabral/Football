@@ -45,7 +45,6 @@ public class LineupController {
     private final LineupCommandUseCase lineupCommandUseCase;
     private final LineupQueryUseCase lineupQueryUseCase;
     private final CareerSessionService careerSessionService;
-    // V25D99.16-BACK: resolve per-subdivision xPct/yPct so the preview-
     // ratings endpoint applies the new distance-aware effectiveness.
     private final FormationService formationService;
     private final ControllerHelper controllerHelper;
@@ -135,7 +134,6 @@ public class LineupController {
     }
 
     /**
-     * V25D45 (Sprint C10): Preview de chemistry para un lineup hipotético
      * (sin guardar).
      * <p>POST /api/v1/career/lineup/preview-chemistry
      * <p>Body: {@code { "playerIds": ["id1", ..., "id11"] }}
@@ -199,7 +197,6 @@ public class LineupController {
                             "missing", missing)));
                 }
 
-                // Compute ChemistryDetail (V25D41/C6 — same TeamChemistryCalculator).
                 // lineup.size() == 11 garantizado (11 ids válidos, request validó size 11).
                 ChemistryDetail detail = TeamChemistryCalculator.calculate(lineup);
                 if (request.slots() == null || request.slots().isEmpty()) {
@@ -228,7 +225,6 @@ public class LineupController {
     }
 
     /**
-     * V25D99.15-BACK: real-time preview of the per-zone team ratings
      * (attack / midfield / defense) for an arbitrary lineup. The
      * frontend Team Stats panel calls this on every drag-drop (debounced
      * ~150ms) so the rating chips/bars reflect engine math without
@@ -251,7 +247,6 @@ public class LineupController {
      * matching the engine's defensive fallback.
      *
      * <p><b>Performance:</b> the calculator is O(N log N) on top-7 sort
-     * (V25D99.18: widened from top-5) over at most 11 players, so the
      * endpoint comfortably runs in
      * &lt;1ms on a hot path. No DB hits — career + squad live in Redis
      * cache.
@@ -301,7 +296,6 @@ public class LineupController {
                                         "missing", missing)));
                     }
 
-                    // V25D99.16-BACK: resolve per-subdivision coords from
                     // the FormationService cache so the rating calculator
                     // can apply the distance-from-ideal penalty. Without
                     // this, fine-grained drag-and-drop on the field

@@ -228,7 +228,6 @@ public class MatchEngineImpl implements MatchEngine {
 
         if (random.nextDouble() < 0.2) {
             int injuryMinute = 30 + random.nextInt(50);
-            // V25D81.1 BUG #1: pre-V24 legacy fallback path used to mislabel
             // injury events as SUBSTITUTION (semantically wrong). Emit a proper
             // INJURY event tagged "InJURED_V23_LEGACY" so downstream consumers
             // (UI modals, persistence) can distinguish them from real subs.

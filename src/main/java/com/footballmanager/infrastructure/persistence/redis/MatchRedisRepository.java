@@ -81,7 +81,6 @@ public class MatchRedisRepository {
     }
 
     public Flux<MatchEntity> findAllByUserId(UUID userId) {
-        // V25D76-C41: scan all match keys under the user's namespace.
         // Save uses the structured key `user:{userId}:game:{gameId}:match:{matchId}`
         // (with gameId possibly null for live matches where the engine never
         // set the GameId on the entity). The pre-C41 find pattern

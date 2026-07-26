@@ -1,7 +1,6 @@
 package com.footballmanager.adapters.in.web.common;
 
 /**
- * V25D78-C50: Excepción dedicada para impersonation / JWT-userId mismatch.
  *
  * <p>Lanzada por {@link ControllerHelper#requireSelfUserId} cuando el
  * {@code userId} del JWT NO coincide con el {@code userId} recibido en el

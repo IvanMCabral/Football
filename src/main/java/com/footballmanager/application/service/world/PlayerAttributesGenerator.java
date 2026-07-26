@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * V25D78-C55.1: Generator of the 6 base stats (attack/defense/technique/speed/
  * stamina/mentality) for synthetic player data, plus optional skill-level bonuses.
  *
  * <p><b>Why this exists:</b> the C55.1 sprint seeds 10 leagues with ~6,000 players
@@ -58,7 +57,6 @@ public final class PlayerAttributesGenerator {
     public static final int MIN_SKILL_BONUSES = 0;
     public static final int MAX_SKILL_BONUSES = 3;
 
-    /** Default seed = 20240624 (V25D32-F3 sprint date, kept for compat). */
     public static final long DEFAULT_SEED = 20240624L;
 
     private final Random random;
@@ -72,7 +70,6 @@ public final class PlayerAttributesGenerator {
     }
 
     /**
-     * V25D78-C55.1: Generates the 6 base stats for a synthetic player.
      *
      * <p>Position bias shifts the mean of the random distribution:
      * <ul>
@@ -149,14 +146,12 @@ public final class PlayerAttributesGenerator {
     }
 
     /**
-     * V25D78-C55.1: Generates random skill-level bonuses (subset of
      * {@link PlayerSkill} enum). Probability and values are random within
      * {@link #MIN_SKILL_BONUSES}–{@link #MAX_SKILL_BONUSES} and
      * {@link #MIN_SKILL_BONUS}–{@link #MAX_SKILL_BONUS}.
      *
      * <p>Skill pool is the full enum — this matches the curated LaLiga JSON
      * which uses 14 different skill codes across 400 players. Empty map is a
-     * valid result (engine V25D33 applies defaults).
      */
     public Map<PlayerSkill, Integer> generateSkillLevels() {
         PlayerSkill[] pool = PlayerSkill.values();
@@ -184,7 +179,6 @@ public final class PlayerAttributesGenerator {
     }
 
     /**
-     * V25D78-C55.1: Generates an age in [18, 38] with a triangular
      * distribution peaking at 25 (peak of football career).
      */
     public int generateAge() {
@@ -199,7 +193,6 @@ public final class PlayerAttributesGenerator {
 
     /**
      * Generates a height in [160, 210] cm with normal distribution (mean 178,
-     * stddev 7). Preserved from V25D32-F3.
      */
     public int generateHeightCm() {
         double u1 = Math.max(Double.MIN_VALUE, random.nextDouble());
@@ -211,7 +204,6 @@ public final class PlayerAttributesGenerator {
         return height;
     }
 
-    /** Test helper: returns an empty skill map (engine V25D33 applies defaults). */
     public Map<PlayerSkill, Integer> generateDefaultSkillLevels() {
         return Map.of();
     }

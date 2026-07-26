@@ -10,14 +10,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Produces a
  * {@link MatchComparison} for a finished V24 match by replaying the
  * engine with the match's initial context + applied substitutions and
  * diffing the result against the live match.
  *
  * <p>Algorithm (single pass, ~50-100ms end-to-end):
  * <ol>
- *   <li>Read {@code live} from {@link V24DetailedMatchStoragePort} (already
  *       persisted at match finish).</li>
  *   <li>Read {@code baseline} from {@link BaselineStateStoragePort} (TTL 7d,
  *       created at match start, deleted at match finish).</li>
@@ -31,9 +29,6 @@ import java.util.Optional;
  *       Same seed + same context + same sub sequence ⇒ deterministic
  *       baseline result identical to what the live engine produced (modulo
  *       the substitutions' impact on the engine's draw consumption).</li>
- *   <li>Convert the {@code V24DetailedMatchResult} to a
- *       {@code V24DetailedMatchData} via
- *       {@link V24DetailedMatchData#fromResult} with empty player ratings
  *       (we don't have ratings for the baseline, and they aren't required
  *       for the diff view).</li>
  *   <li>Compute the {@link MatchComparisonDiff} via
@@ -84,7 +79,6 @@ public class MatchComparisonService {
      *         (match hasn't finished yet, or the V24 path was disabled)
      */
     /**
-     * V24D15-CLEANUP (BUG_COMPARE_404 — TRUE ROOT CAUSE): the previous
      * implementation returned {@code MatchComparison} synchronously and
      * internally called {@code .blockOptional()} on the storage ports
      * — which threw {@code IllegalStateException("blockOptional() is
@@ -112,7 +106,6 @@ public class MatchComparisonService {
             return Mono.error(new IllegalArgumentException("matchId must not be blank"));
         }
 
-        // V24D15-CLEANUP (BUG_COMPARE_404): read detail first on a worker
         // thread, then chain baseline (now Mono). This order matches the
         // test semantics (detail empty -> live error, baseline empty ->
         // baseline error) and avoids the Mono.zip race where the error
@@ -153,8 +146,6 @@ public class MatchComparisonService {
                                 baselineResult.homeGoals(), baselineResult.awayGoals(),
                                 liveFinal.homeGoals(), liveFinal.awayGoals());
 
-                        // 5. Convert to V24DetailedMatchData (no player ratings for baseline)
-                        // V24D24-F1.2: pass formations from the replayed context
                         // (same as what was used in the live match, so the diff
                         // stays formation-consistent).
                         String homeFormation = ctxFinal.homeTeam() != null
@@ -185,7 +176,6 @@ public class MatchComparisonService {
      * Convenience: peek the baseline state without computing the
      * comparison. Returns empty Mono if the baseline is not available.
      *
-     * <p>V24D15-CLEANUP (BUG_COMPARE_404): changed return type from
      * {@code Optional<BaselineState>} to {@code Mono<Optional<BaselineState>>}
      * for the same reason as {@link #getComparison} — the sync read was
      * silently aborting under Reactor parallel scheduling.
@@ -201,7 +191,6 @@ public class MatchComparisonService {
     }
 
     /**
-     * Thrown when the {@code V24DetailedMatchData} for a match is not
      * available. Typically means the match has not finished yet or the
      * V24 path was disabled for the career.
      */

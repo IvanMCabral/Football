@@ -28,14 +28,12 @@ public final class FixtureQueryHelper {
     }
 
     /**
-     * V24D24.3-FIX: Extract the distinct set of team IDs that appear as home or away
      * across the given fixtures. Used to build a complete teamNames map that covers
      * cross-division fixtures injected via test-harness {@code replaceFixtures}.
      *
      * <p>Previously, callers passed {@code userDivision.getTeamIds()} which missed
      * any team from another division present in the round's fixtures — the fallback
      * {@link #getTeamName(Map, String)} returned the UUID, leaking raw IDs to the UI
-     * (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
      */
     public static Set<String> extractTeamIdsFromFixtures(Collection<MatchFixture> fixtures) {
         if (fixtures == null || fixtures.isEmpty()) return Set.of();
@@ -52,7 +50,6 @@ public final class FixtureQueryHelper {
     }
 
     /**
-     * V24D24.2: Deriva un roundId determinístico (UUID v3 sobre nameUUIDFromBytes)
      * a partir de (careerId, round). Esto permite que el front llame a
      * {@code POST /api/v1/match-engine/rounds/start} con el roundId que el back
      * ya conoce, sin necesidad de registrarlo antes.
@@ -68,14 +65,12 @@ public final class FixtureQueryHelper {
     }
 
     /**
-     * V25D37-F1: Build a {@link MatchInfo} when only the {@code careerId} (string)
      * is available — no {@link CareerSave} to derive formations / xG from.
      *
      * <p>Previous implementation delegated to {@code toMatchInfo(f, teamNames, (String) null)}
      * which resolved to this same overload (the {@code (String) null} cast disambiguated
      * from {@code CareerSave} but the resolved signature was still the {@code String careerId}
      * overload), producing infinite recursion and a {@link StackOverflowError} at runtime
-     * (BUG_STACKOVERFLOW_V25D24_3_F1, surfaced via
      * {@code UserDivisionFixtureQueryServiceTest.getAll_withCrossDivisionFixture_returnsRealNames}).
      *
      * <p>Fix: build the {@link MatchInfo} directly. Formation + xG fields stay {@code null}
@@ -106,7 +101,6 @@ public final class FixtureQueryHelper {
     }
 
     /**
-     * V24D24.6: MatchInfo overload that hydrates {@code homeFormation} /
      * {@code awayFormation} from {@code career.getTeamStarting11Formation()}
      * (the V24 engine's source of truth for formations — see
      * {@code TestHarnessUseCaseImpl.executeSetFormation}). Also computes
@@ -154,10 +148,8 @@ public final class FixtureQueryHelper {
     }
 
     /**
-     * V24D24.6: read a team's formation from the V24 engine's source of
      * truth ({@code career.getTeamStarting11Formation()}). Falls back to
      * {@code sessionTeam.getFormation()} if the map is empty (e.g. legacy
-     * career created before the map was introduced in V24D24). Returns
      * null if neither source has a value — the UI renders "—" for null.
      */
     private static String resolveFormation(CareerSave career, String teamId) {

@@ -4,16 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
- * V24D6M3: Per-player season aggregate stats.
  *
- * <p>Computed from V24DetailedMatchData.playerRatings across all matches
  * in a career/season. This DTO is immutable once constructed.
  *
  * <p>MVP fields only — deferred fields (minutesPlayed, shotsOnTarget, form,
  * energy) are not included per M2 audit findings.
  *
  * <p>Approximate fields are marked with "Approx" suffix and carry known
- * limitations documented in the design doc (V24D6M_PLAYER_SEASON_STATS_DESIGN.md).
  */
 public final class PlayerSeasonStatsDto {
 

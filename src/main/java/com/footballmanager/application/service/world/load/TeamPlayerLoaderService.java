@@ -43,7 +43,6 @@ public class TeamPlayerLoaderService {
                             team.getCountry(),
                             team.getBudget(),
                             team.getFormation() != null ? team.getFormation().toString() : "4-3-3",
-                            // V25D78-C55.6: propagate the division tier persisted in
                             // teams.division (Postgres) through to WorldTeam so the
                             // WorldView carries the tier info for division-aware
                             // queries (phase 4 UI: standings, dropdowns,

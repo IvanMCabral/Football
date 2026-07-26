@@ -69,7 +69,6 @@ public class MatchFixture {
     }
 
     /**
-     * V24D20-SANDBOX-V2-MVP: Reset a completed fixture back to PENDING
      * with no result. Used by the test-harness replay endpoint so the
      * fixture can be re-simulated (the {@link #complete(MatchResultData)}
      * method throws if the status is already COMPLETED).

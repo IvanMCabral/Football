@@ -6,14 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * V24D6M11: Per-tick snapshot DTO for live SSE stream.
  *
  * <p>Created by V24LiveSession.tick() and sent to the SSE stream
  * so the frontend gets minute-by-minute match state updates.
  *
  * <p>Contains only the fields the frontend needs for the live match UI.
  * For final persistence, use V24LiveSession.finalResult() which carries
- * the full V24DetailedMatchResult with complete timeline.
  */
 public final class V24LiveSnapshot {
 
@@ -27,7 +25,6 @@ public final class V24LiveSnapshot {
     private final List<V24MatchEvent> allEvents;
     private final int homePossession;
     private final int awayPossession;
-    // LIVE-MATCH-F3-UI-LIVE BE1: live style + formation per team so the F3 UI
     // can render them in real time. Values come from effectiveContext.homeStyle()
     // (TeamStyle.name() = BALANCED/ATTACKING/DEFENSIVE/COUNTER/POSSESSION) and
     // effectiveContext.homeFormation() (String like "4-4-2"). Nullable for the
@@ -58,7 +55,6 @@ public final class V24LiveSnapshot {
     }
 
     /**
-     * LIVE-MATCH-F3-UI-LIVE BE1: full constructor including live style and
      * formation per team. The new fields default to "BALANCED" / "4-4-2" via
      * the legacy constructor so existing callers (e.g. tests) keep working
      * unchanged.

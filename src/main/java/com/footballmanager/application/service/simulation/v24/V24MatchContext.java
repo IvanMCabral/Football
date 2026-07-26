@@ -16,10 +16,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Immutable input context for V24DetailedMatchEngine.
  * Built from CareerSave data externally.
  *
- * <p>LIVE-MATCH-F2-LIVE F2.5: deferred manual substitutions are tracked in
  * {@link #manualSubstitutions()}. The wire schedules a substitution by
  * appending a {@link ScheduledSub} (no immediate lineup mutation); the
  * engine applies the swap when it reaches the {@code effectiveMinute}
@@ -31,7 +29,6 @@ import java.util.Objects;
 public final class V24MatchContext {
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: a deferred manual substitution scheduled by
      * the manager through the live-match wire.
      *
      * <p>The engine applies the swap (move {@code playerOffId} to bench,
@@ -80,14 +77,12 @@ public final class V24MatchContext {
     private final Map<String, LineupSlotDTO> homeSlotsByPlayerId;
     private final Map<String, LineupSlotDTO> awaySlotsByPlayerId;
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: scheduled (deferred) manual substitutions.
      * Internal storage is mutable for the constructor to build the sorted
      * copy; the public accessor returns an unmodifiable view.
      */
     private final List<ScheduledSub> manualSubstitutions;
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: primary constructor with the full set of
      * fields. The {@code manualSubstitutions} list is defensively copied
      * and sorted by {@link #SCHEDULED_SUB_ORDER} so iteration is
      * deterministic.
@@ -114,7 +109,6 @@ public final class V24MatchContext {
     }
 
     /**
-     * V25D99.20.4: primary constructor with persisted lineup slots.
      *
      * <p>The slot maps are keyed by {@code sessionPlayerId}. They let the
      * match engine rebuild its mutable player state with the manager's exact
@@ -195,7 +189,6 @@ public final class V24MatchContext {
     }
 
     /**
-     * V24D6U2: Short-handed lineups are now permitted. The engine accepts
      * any starting-XI size in {@code [MIN, 11]} inclusive. Below MIN the
      * team cannot field a match.
      */
@@ -226,7 +219,6 @@ public final class V24MatchContext {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: defensively copy the manualSubstitutions
      * list and sort it by the deterministic order. Returns an empty
      * unmodifiable list for null/empty input. The returned list is NOT
      * publicly exposed (the accessor wraps it in another
@@ -264,7 +256,6 @@ public final class V24MatchContext {
     @JsonProperty("awaySlotsByPlayerId") public Map<String, LineupSlotDTO> awaySlotsByPlayerId() { return awaySlotsByPlayerId; }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: read-only view of the deferred manual
      * substitutions scheduled in this context. The list is sorted by
      * {@code (effectiveMinute ASC, teamId ASC, playerOffId ASC)}.
      *
@@ -276,10 +267,7 @@ public final class V24MatchContext {
         return Collections.unmodifiableList(manualSubstitutions);
     }
 
-    // ========== LIVE-MATCH-F2-LIVE F5 (B4): tactical mutation helpers ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B4): return a NEW {@link V24MatchContext} with
      * {@code teamId}'s tactical style replaced by {@code newStyle}. This
      * context is otherwise immutable (F1 design): the helper builds a fresh
      * instance rather than mutating in-place, so the replay path can compare
@@ -334,7 +322,6 @@ public final class V24MatchContext {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B4): return a NEW {@link V24MatchContext} with
      * {@code teamId}'s formation string replaced by {@code newFormation}.
      * Like {@link #withNewStyle}, this returns a fresh instance.
      *
@@ -386,7 +373,6 @@ public final class V24MatchContext {
     }
 
     /**
-     * V25D99.22.3: return a new context with updated visual/tactical slots
      * for one team. Used by the test harness and live tactical tooling to
      * replay the same match after a manager moves players on the pitch by
      * pixels, not only after changing the formation label.
@@ -423,10 +409,7 @@ public final class V24MatchContext {
                 + homeTeamId + "') or away ('" + awayTeamId + "')");
     }
 
-    // ========== LIVE-MATCH-F2-LIVE F2 (B1) / F2.5 (B1): deferred manual substitution helper ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F2 (B1) + F2.5 (B1): return a NEW
      * {@link V24MatchContext} that records {@code playerOffId} → bench and
      * {@code playerOnId} → starting for {@code teamId} as a deferred
      * (scheduled) substitution. The swap is applied by the engine when

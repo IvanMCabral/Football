@@ -36,12 +36,10 @@ public class CareerCommandController {
     private final ControllerHelper controllerHelper;
     private final CareerSessionService sessionService;
     private final SeasonAdvancementService seasonAdvancementService;
-    // LIVE-MATCH-F5.3.2 BUG-015: per-round pause/resume endpoints. The
     // registry is the single source of truth for live round engines; the
     // engine itself is `synchronized` + idempotent (RoundEngine.pauseAll
     // / resumeAll early-return if already in the requested state).
     private final RoundEngineRegistry roundEngineRegistry;
-    // V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): wire GameService so the
     // career-start flow also persists a Game entity sharing the career's
     // UUID. Without this, the dashboard's /games/{careerId} navigation
     // always 404s (Game entity never created).
@@ -88,14 +86,12 @@ public class CareerCommandController {
                         request.gameSpeed(),
                         effectiveTeamsPerDivision
                 )
-                // V25D78-C55.11 (BUG_C55.9_FINDING_01): invalidate the JVM-local
                 // careerCache right after a new CareerSave is persisted to Redis,
                 // so subsequent /status reads do NOT return the previous career
                 // (the cache would otherwise still hold the stale CareerSave from
                 // the prior /career/start call). Mirror pattern used by
                 // TestHarnessUseCaseImpl / ContinueSeasonUseCaseImpl / StartRoundUseCaseImpl.
                 .doOnNext(started -> sessionService.invalidateCache(userId))
-                // V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): after the
                 // career is initialized, also persist a Game entity that
                 // shares the career's UUID. Best-effort — if Redis fails,
                 // we log warn and return success anyway so the live match
@@ -103,7 +99,7 @@ public class CareerCommandController {
                 .flatMap(career -> gameService.createGameFromCareer(
                                 career, leagueId, difficulty, gameSpeed, effectiveTeamsPerDivision)
                         .doOnError(err -> log.warn(
-                                "[V24D15-CLEANUP] Failed to persist Game entity "
+                                "Failed to persist Game entity "
                                         + "after career start for userId={}: {}",
                                 userId, err.getMessage()))
                         .onErrorResume(err -> Mono.empty())
@@ -120,7 +116,6 @@ public class CareerCommandController {
     public Mono<Void> resetCareer(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
         return sessionService.deleteCareer(userId)
-                // V24D15-CLEANUP (BUG_GAME_DASHBOARD_404): also delete the
                 // Game entity that mirrors the career. Best-effort — we
                 // already cleared the CareerSave; deleting the Game is
                 // housekeeping so the dashboard does not show a phantom
@@ -146,7 +141,7 @@ public class CareerCommandController {
                                         .then();
                             })
                             .doOnError(err -> log.warn(
-                                    "[V24D15-CLEANUP] Failed to delete Game entity "
+                                    "Failed to delete Game entity "
                                             + "after career reset for userId={}: {}",
                                     userId, err.getMessage()))
                             .onErrorResume(err -> Mono.empty());
@@ -180,12 +175,9 @@ public class CareerCommandController {
         return seasonAdvancementService.continueToNewSeason(userId);
     }
 
-    // ========== LIVE-MATCH-F5.3.2 BUG-015: per-round pause / resume ==========
-
     /**
      * POST /api/v1/career/{careerId}/round/{roundId}/pause
      *
-     * Pauses ALL matches of the round (live BUG-015: when the manager
      * opens a substitution/formation modal, the modal wires a pause here
      * before {@code dialog.open(...)} so the {@code currentMinute} the
      * manager saw is still current when they confirm).
@@ -242,7 +234,6 @@ public class CareerCommandController {
             body.put("alreadyPaused", wasPaused);
             body.put("alreadyFinished", wasFinished);
             body.put("userId", userId.toString());
-            // V25D99.20.3.45: return the paused live snapshots too.
             // The harness/live DT modal needs the exact match state after the
             // round is frozen (minute, score, possession, events, remaining
             // substitutions). Previously this endpoint returned only flags,

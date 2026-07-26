@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * V24D6M7: Metadata block for player season stats response.
  *
  * <p>Contains pagination state, data quality indicators, and provenance
  * information. All fields are optional — missing fields indicate

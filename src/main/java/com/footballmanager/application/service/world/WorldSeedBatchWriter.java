@@ -21,7 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * V25D78-C55.4: Batch PostgreSQL persistence for seed player upserts.
  *
  * <p>Replaces the per-row INSERT loop used by {@code LaLigaSeedService} and
  * {@code WorldSeedService} (C55.3 B1 implementation), which was inserting
@@ -35,7 +34,6 @@ import java.util.stream.Collectors;
  * A league with ~900 players now requires ~10 round-trips instead of ~900.
  *
  * <p>Schema mirrors the original per-row INSERT: 16 columns including
- * height_cm (V25D32-F3) and skill_levels_json (V25D32-F3).
  *
  * <p>ON CONFLICT behaviour is preserved: the original UPDATE clause renames
  * the player and updates the hardcoded-height/top-5-skills columns only,

@@ -6,9 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
- * V24D4C: Query service for detailed match data.
  *
- * <p>Reads V24DetailedMatchData from storage via V24DetailedMatchStoragePort.
  * Does not simulate matches, does not persist data, does not call LeagueSimulator.
  *
  * <p>Feature-gated: returns empty when {@code app.simulation.v24.expose-detail-api=false}.

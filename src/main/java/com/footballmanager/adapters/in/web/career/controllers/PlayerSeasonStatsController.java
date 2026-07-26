@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V24D6M9: Controller for player season stats API.
  *
  * <p>Three endpoints:
  * <ul>
@@ -85,7 +84,7 @@ public class PlayerSeasonStatsController {
         }
 
         if (!queryService.isApiEnabled()) {
-            log.debug("[V24D6M7] Player stats API disabled, returning 404 for careerId={}, season={}", careerId, season);
+            log.debug("Player stats API disabled, returning 404 for careerId={}, season={}", careerId, season);
             return Mono.just(ResponseEntity.notFound().build());
         }
 
@@ -175,7 +174,7 @@ public class PlayerSeasonStatsController {
         }
 
         if (!queryService.isApiEnabled()) {
-            log.debug("[V24D6M7] Player stats API disabled, returning 404 for careerId={}, season={}, teamId={}",
+            log.debug("Player stats API disabled, returning 404 for careerId={}, season={}, teamId={}",
                     careerId, season, teamId);
             return Mono.just(ResponseEntity.notFound().build());
         }
@@ -239,7 +238,7 @@ public class PlayerSeasonStatsController {
         }
 
         if (!queryService.isApiEnabled()) {
-            log.debug("[V24D6M7] Player stats API disabled, returning 404 for careerId={}, season={}, playerId={}",
+            log.debug("Player stats API disabled, returning 404 for careerId={}, season={}, playerId={}",
                     careerId, season, playerId);
             return Mono.just(ResponseEntity.notFound().build());
         }

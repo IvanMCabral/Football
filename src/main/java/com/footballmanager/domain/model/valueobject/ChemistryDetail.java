@@ -4,10 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V25D43 (Sprint C8): rich chemistry detail returned by
  * {@link TeamChemistryCalculator#calculate(java.util.List)}.
  *
- * <p>Wraps the aggregated score (V25D41) plus three new observables that
  * give the UI enough information to render a per-position-group breakdown
  * of which skills are present in the lineup, at what level, and which
  * player is the "carrier" of each skill.
@@ -29,7 +27,6 @@ import java.util.Map;
  *       Useful for tooltips / hover cards.</li>
  *   <li>{@code coveragePercentage} — {@code 0..100} percentage of skills
  *       (out of 10) whose max level is &ge; 80 ("elite" threshold
- *       consistent with V25D39 + V25D41 coverage bonus).</li>
  * </ul>
  *
  * <h2>PositionGroup enum (4 values)</h2>
@@ -50,7 +47,6 @@ import java.util.Map;
  * <h2>Backward compatibility</h2>
  * <p>If the lineup is null/empty/all-null, returns a {@code ChemistryDetail}
  * with score=0, all groups empty, all maxSkillByType=0, and
- * coveragePercentage=0. The "no lineup" state is preserved as in V25D41.
  *
  * @param score chemistry score in {@code [0, 99]}
  * @param breakdown per-group list of skills present in the lineup

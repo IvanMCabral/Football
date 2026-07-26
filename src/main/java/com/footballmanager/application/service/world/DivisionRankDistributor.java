@@ -12,21 +12,16 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * V25D78-C55.6.1: applies the canonical per-league 3-tier division
  * distribution to {@link WorldTeam} instances in a {@link WorldSnapshot},
- * mirroring the V25D80 SQL migration logic in Java.
  *
- * <p>Background: V25D78-C55.6 added the {@code division} field to
  * {@link WorldTeam} so the frontend could surface division tiers (PRIMERA /
  * SEGUNDA / TERCERA). The seed services hardcoded
  * {@link Division#defaultDivision()} (=PRIMERA) for every team at create
- * time, betting that V25D80 would redistribute the distribution correctly
  * downstream. Two issues with that assumption:
  *
  * <ol>
  *   <li>{@code LaLigaSeedService} never calls {@code persistTeamsInPostgres}
  *       (legacy code path), so its 60 teams never reach Postgres at all
- *       and V25D80 has nothing to redistribute.</li>
  *   <li>Even for leagues whose teams DO reach Postgres, the
  *       {@code BuildWorldViewUseCase} read path returns the Redis
  *       {@code WorldSnapshot} verbatim — never re-queries Postgres for
@@ -34,13 +29,11 @@ import java.util.UUID;
  *       shows 60/0/0 (PRIMERA uniform).</li>
  * </ol>
  *
- * <p>This class replicates V25D80's {@code ROW_NUMBER}-based distribution
  * in Java so the snapshot stores the correct per-league division BEFORE
  * {@code saveSnapshot} persists it to Redis. For a 60-team league:
  * top-20 (alphabetical by name) = PRIMERA, mid-20 = SEGUNDA, last-20 =
  * TERCERA. Idempotent (re-running produces the same distribution).
  *
- * <p>Logic mirrors V25D80 exactly: integer division floors, so uneven
  * remainders land in TERCERA. E.g. 58 teams → 19 PRIMERA + 19 SEGUNDA +
  * 20 TERCERA.
  *
@@ -89,7 +82,6 @@ public final class DivisionRankDistributor {
     /**
      * Sort teams alphabetically by name (case-insensitive, null-safe), then
      * assign division by 1-indexed rank: rank <= total/3 → PRIMERA,
-     * rank <= (total*2)/3 → SEGUNDA, otherwise TERCERA. Mirrors V25D80
      * {@code ROW_NUMBER() OVER (PARTITION BY league_id ORDER BY name)}.
      *
      * <p>Mutates the input list in place and the contained
@@ -107,7 +99,6 @@ public final class DivisionRankDistributor {
         int oneThird = total / 3;
         int twoThirds = (total * 2) / 3;
         for (int rank = 0; rank < total; rank++) {
-            // V25D80 uses 1-indexed rn (ROW_NUMBER starts at 1); mirror that.
             int rn = rank + 1;
             Division tier;
             if (rn <= oneThird) {

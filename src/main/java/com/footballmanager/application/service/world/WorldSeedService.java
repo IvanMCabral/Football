@@ -30,15 +30,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * V25D78-C55.1: Multi-league seed service. Seeds one or more of the 10
  * "Top 10 mundial" leagues (La Liga, Premier, Bundesliga, Serie A, Ligue 1,
  * Brasileirão, Liga Profesional, MLS, Eredivisie, Championship) into the
  * user's {@link WorldSnapshot} + Postgres.
  *
  * <p><b>Architecture decision:</b> this class is a parallel to
  * {@link LaLigaSeedService}, not a refactor. LaLigaSeedService is
- * battle-tested (C44 + V25D32 + V25D36 + V25D37 unit tests, ~10 tests
- * cover its specific code paths including the V25D36-F4 per-call
  * {@link PlayerAttributesGenerator} thread-safety fix). Refactoring it
  * to be fully generic would risk regressions for marginal gain. Instead,
  * WorldSeedService delegates La Liga to the existing service and implements
@@ -136,17 +133,12 @@ public class WorldSeedService {
         UUID leagueId = ensureLeague(snapshot, seed);
         Map<String, WorldTeam> teamsByName = ensureTeams(snapshot, seed, leagueId);
         List<WorldPlayer> players = ensurePlayers(snapshot, seed, teamsByName, gen);
-        // V25D78-C55.6.1: redistribute the snapshot's per-league division
-        // tiers (20/20/20 for a 60-team league). Mirror V25D80 SQL logic in
         // Java so the Redis snapshot stores correct PRIMERA/SEGUNDA/TERCERA.
-        // Even though this path persists teams to Postgres (where V25D80
         // would redistribute), the read path returns the Redis snapshot
         // verbatim — without this step the response would still show all
         // PRIMERA. See DivisionRankDistributor for details.
         DivisionRankDistributor.applyPerLeagueRankDivision(snapshot);
         persistPlayerNamesInPostgres(userId, players, logPrefix);
-        // V25D78-C55.3 B1: also persist team rows + league_id so that
-        // V25D80 migration can distribute divisions per-league. Uses a
         // sentinel manager_id (00000000-0000-0000-0000-000000000000) for
         // synthetic teams that have no real user manager.
         persistTeamsInPostgres(new ArrayList<>(teamsByName.values()), leagueId, logPrefix);
@@ -218,8 +210,6 @@ public class WorldSeedService {
         UUID teamId = UUID.nameUUIDFromBytes(("team|" + dto.name()).getBytes());
         BigDecimal budget = BigDecimal.valueOf(dto.budgetMillions() == null ? 50L : dto.budgetMillions())
                 .multiply(BigDecimal.valueOf(1_000_000L));
-        // V25D78-C55.6: default to PRIMERA here. The canonical per-league
-        // distribution happens via V25D80 migration AFTER persistTeamsInPostgres
         // (which writes the rows with division='PRIMERA'). On subsequent loads,
         // TeamPlayerLoaderService picks up the correct division from Postgres.
         return WorldTeam.fromRealTeam(teamId, leagueId, dto.name(),
@@ -341,7 +331,6 @@ public class WorldSeedService {
 
     // ========== Postgres persistence (mirrors LaLigaSeedService for new ligas) ==========
 
-    // V25D78-C55.4: delegate the heavy per-row INSERT loop to the batched writer.
     // 9000 sequential round-trips → ~45 batched round-trips (batch size 200).
     private void persistPlayerNamesInPostgres(UUID userId, List<WorldPlayer> players,
                                               String logPrefix) {
@@ -350,11 +339,9 @@ public class WorldSeedService {
     }
 
     /**
-     * V25D78-C55.3 B1: Upsert team rows into Postgres teams table.
      *
      * <p>The seeder previously only manipulated the in-memory WorldSnapshot.
      * C55.3 B1 needs the Postgres teams table populated with league_id so
-     * V25D80 migration can redistribute division per-league.
      *
      * <p>teams.manager_id has a FK to users.id (auto-managed by Hibernate).
      * Since synthetic B1 teams have no real user manager, we ensure a

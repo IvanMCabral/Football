@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Redis adapter for
  * {@link BaselineStateStoragePort}.
  *
  * <p>Stores baseline snapshots at keys:
@@ -27,10 +26,8 @@ import java.util.concurrent.TimeoutException;
  * <p>TTL: <b>7 days</b> ({@link #BASELINE_TTL}), aligned with the longest
  * expected delay between match end and "compare" view (7d > typical
  * manager session length). After 7d the baseline expires and the compare
- * endpoint will return 404. The {@code V24DetailedMatchData} for the
  * match has no TTL by design, so 7d is the effective retention ceiling.
  *
- * <p><b>V24D15-CLEANUP (BUG_COMPARE_404):</b> Writes are now fully reactive
  * (Mono + retry + read-after-write). The previous implementation wrapped
  * the blocking Redis I/O in {@code CompletableFuture.runAsync(...).get(5s)}
  * which silently swallowed timeouts and saturated the executor under load,
@@ -63,13 +60,10 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
 
     private static final String KEY_PREFIX = "career:";
     private static final String KEY_MATCH_BASELINE = ":match-baseline:";
-    /** F6 Sprint 2: 7-day TTL, decided by Iván 2026-06-18. */
     public static final Duration BASELINE_TTL = Duration.ofDays(7);
-    /** V24D15-CLEANUP: bounded retry budget for transient Redis errors. */
     private static final int MAX_RETRIES = 3;
     private static final Duration INITIAL_BACKOFF = Duration.ofMillis(200);
     private static final Duration MAX_BACKOFF = Duration.ofSeconds(2);
-    /** V24D15-CLEANUP: hard ceiling on the reactive chain (covers slow retries). */
     private static final Duration WRITE_TIMEOUT = Duration.ofSeconds(10);
 
     private final ReactiveRedisTemplate<String, BaselineState> redisTemplate;
@@ -89,7 +83,6 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
     }
 
     /**
-     * V24D15-CLEANUP (BUG_COMPARE_404): Reactive save with retry +
      * read-after-write. Errors propagate as
      * {@link BaselinePersistenceException} so callers can decide whether
      * to fail or continue (the compare endpoint will 404 if the baseline
@@ -152,7 +145,6 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
 
     @Override
     public Mono<Optional<BaselineState>> findByMatchId(String careerId, String matchId) {
-        // V24D15-CLEANUP (BUG_COMPARE_404 — TRUE ROOT CAUSE): the previous
         // implementation used .blockOptional(Duration.ofSeconds(5)) which
         // throws IllegalStateException("blockOptional() is blocking, which
         // is not supported in thread parallel-N") on every call from a
@@ -232,7 +224,6 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
     }
 
     /**
-     * V24D15-CLEANUP (BUG_COMPARE_404): classifier for retryable Redis
      * failures. Connection issues and timeouts are worth retrying; logic
      * errors (e.g. read-after-write miss wrapped in an ISE) are NOT.
      */

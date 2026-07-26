@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Simula TODOS los partidos de la liga del usuario.
  * Incluye todas las divisiones de la carrera del usuario.
  *
  * <p>Phase 10C2: Optional V23 engine path behind useV23LeagueEngine flag.
@@ -53,8 +52,6 @@ import java.util.UUID;
  * When flag is true, MatchEngineImpl.simulateWithStrength() is used with
  * computed OVRs from TeamOverallCalculator and in-memory Team objects.
  *
- * <p>V24D5B: Optional V24 detailed engine path behind useV24DetailedEngine flag.
- * Default is false. When flag is true, V24DetailedMatchEngine.simulate() is used
  * via V24MatchContextFactory. Aggregate result is mapped to MatchResultData.
  * If context build fails, falls back to default/V23 path — round must complete.
  */
@@ -77,7 +74,6 @@ public class LeagueSimulator {
     private final V24EnergyRecoveryLifecycleApplier v24EnergyRecoveryLifecycleApplier = new V24EnergyRecoveryLifecycleApplier();
 
     /**
-     * Primary constructor — useV23LeagueEngine and useV24DetailedEngine default to false.
      * Maintains existing Spring wiring compatibility.
      */
     public LeagueSimulator(MatchSimulator matchSimulator) {
@@ -86,7 +82,6 @@ public class LeagueSimulator {
 
     /**
      * Three-argument constructor for backward compatibility with existing tests.
-     * useV24DetailedEngine defaults to false.
      */
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
                           boolean useV23LeagueEngine) {
@@ -117,9 +112,7 @@ public class LeagueSimulator {
      * @param matchSimulator      the existing domain service for DefaultMatchSimulator path
      * @param matchEngine         optional MatchEngineImpl for V23 path (can be null if flag is false)
      * @param useV23LeagueEngine  if true, V23 engine path is used; if false, DefaultMatchSimulator path
-     * @param useV24DetailedEngine if true, V24 detailed engine path is attempted
      * @param persistDetail       if true, V24 detail snapshot is saved to Redis after simulation
-     * @param storagePort         V24DetailedMatchStoragePort for persistence (can be null if persistDetail is false)
      * @param mutateCareerState  master gate for career mutation (all effects disabled if false)
      * @param persistInjuries     if true, apply INJURY events from V24 timeline to SessionPlayer
      * @param persistFatigue      if true, apply energy drain (not yet implemented)
@@ -172,10 +165,8 @@ public class LeagueSimulator {
         TournamentState tournamentState = career.getTournamentState();
         List<MatchFixture> allFixtures = tournamentState.getFixtures();
 
-        // V24D6D6B: Capture pre-round state before fixture loop
         V24RoundMutationTracking tracking = new V24RoundMutationTracking();
 
-        // V24D6I2: Capture pre-round injured players for injury recovery lifecycle
         Set<String> preRoundInjured = capturePreRoundInjuredPlayerIds(career);
 
         for (MatchFixture fixture : allFixtures) {
@@ -198,13 +189,10 @@ public class LeagueSimulator {
             }
         }
 
-        // V24D6D6B: Run suspension lifecycle after full round loop
         applyV24SuspensionLifecycle(career, round, allFixtures, tracking);
 
-        // V24D6I2: Run injury recovery lifecycle after suspension lifecycle
         applyV24InjuryRecoveryLifecycle(career, round, allFixtures, tracking, preRoundInjured);
 
-        // V24D6J5: Run energy recovery lifecycle after injury recovery
         applyV24EnergyRecoveryLifecycle(career, tracking);
     }
 
@@ -249,13 +237,10 @@ public class LeagueSimulator {
         tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
     }
 
-    // ========== V24 Detailed Engine Path (V24D5B, behind flag) ==========
-
     /**
      * Attempts V24 detailed engine simulation for a fixture.
      * If context build fails, falls back to default engine — round must complete.
      *
-     * @return V24DetailedMatchResult if V24 path succeeded, null if fell back to default
      */
     private V24DetailedMatchResult simulateWithV24Engine(CareerSave career, MatchFixture fixture,
                                         int homeOvr, int awayOvr, TournamentState tournamentState,
@@ -265,7 +250,7 @@ public class LeagueSimulator {
         SessionTeam awayTeam = career.getSessionTeam(fixture.getAwayTeamId());
 
         if (homeTeam == null || awayTeam == null) {
-            log.warn("[V24D5B] Cannot simulate fixture {} with V24: missing team data, falling back to default",
+            log.warn("Cannot simulate fixture {} with V24: missing team data, falling back to default",
                     fixture.getMatchId());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             return null;
@@ -279,32 +264,28 @@ public class LeagueSimulator {
             MatchFixture.MatchResultData resultData = V24DetailedMatchResultAdapter.toMatchResultData(v24Result);
             tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
 
-            log.debug("[V24D5B] Fixture {} simulated with V24 engine: {} - {}",
+            log.debug("Fixture {} simulated with V24 engine: {} - {}",
                     fixture.getMatchId(), resultData.homeGoals, resultData.awayGoals);
 
-            // V24D5C: persist detail if flag is enabled
             if (persistDetail && storagePort != null) {
                 persistV24Detail(career, fixture, homeTeam.getName(), awayTeam.getName(), v24Result, context);
             }
 
-            // V24D6D6B: collect participation from starting XI
             collectStartingXIParticipation(context, tracking);
 
-            // V24D6D6B: collect RED_CARD and timeline participation from result
             collectV24ResultParticipation(v24Result, tracking);
 
-            // V24D6B3: apply career mutation if enabled
             applyV24CareerMutation(career, v24Result, tracking);
 
             return v24Result;
 
         } catch (IllegalArgumentException e) {
-            log.warn("[V24D5B] V24 context build failed for fixture {}: {}, falling back to default",
+            log.warn("V24 context build failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             return null;
         } catch (Exception e) {
-            log.warn("[V24D5B] V24 simulation failed for fixture {}: {}, falling back to default",
+            log.warn("V24 simulation failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             return null;
@@ -312,10 +293,7 @@ public class LeagueSimulator {
     }
 
     /**
-     * V24D5C: Persist V24DetailedMatchData snapshot to Redis via storage port.
-     * V24D5F: Persist V24 detailed match data including per-player ratings.
      * Player ratings are derived from CareerSave starting XI + match timeline.
-     * V24D24-F1.2: also captures the home/away formations from the live
      * SessionTeam so the UI can show what formation was active at match time.
      * Best-effort: failures are logged and do not fail the match/round.
      */
@@ -328,11 +306,9 @@ public class LeagueSimulator {
             Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
             Integer round = fixture.getRound();
 
-            // V24D5F: derive per-player ratings from starting XI + timeline
             List<V24PlayerMatchRatingDto> playerRatings =
                     v24PlayerRatingsAssembler.assemblePlayerRatings(career, fixture, v24Result);
 
-            // V24D24-F1.2: capture formations from live SessionTeam
             String homeFormation = resolveFormation(career, fixture.getHomeTeamId());
             String awayFormation = resolveFormation(career, fixture.getAwayTeamId());
 
@@ -353,10 +329,10 @@ public class LeagueSimulator {
             );
 
             storagePort.save(careerId, detail);
-            log.debug("[V24D5F] Detail saved for fixture {} in career {}", fixture.getMatchId(), careerId);
+            log.debug("Detail saved for fixture {} in career {}", fixture.getMatchId(), careerId);
 
         } catch (Exception e) {
-            log.warn("[V24D5F] Failed to persist detail for fixture {}: {}, continuing round",
+            log.warn("Failed to persist detail for fixture {}: {}, continuing round",
                     fixture.getMatchId(), e.getMessage());
         }
     }
@@ -372,20 +348,17 @@ public class LeagueSimulator {
     }
 
     /**
-     * V24D6B3: Apply career mutations from V24 match result to CareerSave SessionPlayers.
      *
      * <p>Called only after successful V24 simulation. Mutation is best-effort:
      * failures are logged and do not fail the match/round.
      *
      * <p>Mutation is skipped if:
-     * - V24DetailedEngine path is not enabled
      * - mutate-career-state master flag is false
      * - all specific mutation flags (injury/fatigue/discipline/form) are false
      */
     private void applyV24CareerMutation(CareerSave career, V24DetailedMatchResult v24Result,
                                          V24RoundMutationTracking tracking) {
         try {
-            // V24D6H4: capture pre-mutation suspended IDs for snapshot comparison
             // (includes RED_CARD + yellow-threshold suspensions applied in this mutation)
             Set<String> preMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
 
@@ -393,65 +366,58 @@ public class LeagueSimulator {
                     v24MutationService.applyMutations(career, v24Result, v24MutationPolicy);
 
             if (!mutationResult.failures().isEmpty()) {
-                log.warn("[V24D6B3] Career mutation partial failures for career {}: {}",
+                log.warn("Career mutation partial failures for career {}: {}",
                         career.getData().getCareerId(), mutationResult.failures());
             }
 
             if (mutationResult.injuriesApplied() > 0) {
-                log.debug("[V24D6C3] Applied {} injury mutations for career {}",
+                log.debug("Applied {} injury mutations for career {}",
                         mutationResult.injuriesApplied(), career.getData().getCareerId());
             }
 
             if (mutationResult.fatigueApplied() > 0) {
-                log.debug("[V24D6C3] Applied {} fatigue mutations for career {}",
+                log.debug("Applied {} fatigue mutations for career {}",
                         mutationResult.fatigueApplied(), career.getData().getCareerId());
             }
 
             if (mutationResult.disciplineApplied() > 0) {
-                log.debug("[V24D6D5] Applied {} discipline mutations for career {}",
+                log.debug("Applied {} discipline mutations for career {}",
                         mutationResult.disciplineApplied(), career.getData().getCareerId());
             }
 
-            // V24D6H4: snapshot comparison — detect newly suspended players from this mutation
             // Includes both RED_CARD and yellow-threshold suspensions via snapshot diff
             if (v24MutationPolicy.isDisciplinePersistenceEnabled()) {
                 Set<String> postMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
                 postMutationSuspended.removeAll(preMutationSuspended);
                 if (!postMutationSuspended.isEmpty()) {
                     tracking.newlySuspendedPlayerIds.addAll(postMutationSuspended);
-                    log.debug("[V24D6H4] Newly suspended from mutation: {}",
+                    log.debug("Newly suspended from mutation: {}",
                             postMutationSuspended);
                 }
             }
 
-            // V24D6I2: snapshot comparison — detect newly injured players from this mutation
             if (v24MutationPolicy.isInjuryPersistenceEnabled()) {
                 Set<String> preMutationInjured = capturePreRoundInjuredPlayerIds(career);
                 Set<String> postMutationInjured = capturePreRoundInjuredPlayerIds(career);
                 postMutationInjured.removeAll(preMutationInjured);
                 if (!postMutationInjured.isEmpty()) {
                     tracking.newlyInjuredPlayerIds.addAll(postMutationInjured);
-                    log.debug("[V24D6I2] Newly injured from mutation: {}",
+                    log.debug("Newly injured from mutation: {}",
                             postMutationInjured);
                 }
             }
 
         } catch (Exception e) {
-            log.warn("[V24D6B3] Career mutation failed unexpectedly for career {}: {}, continuing round",
+            log.warn("Career mutation failed unexpectedly for career {}: {}, continuing round",
                     career.getData().getCareerId(), e.getMessage());
         }
     }
 
-    // ========== V24D6R-hotfix: Live match career mutations ==========
-
     /**
-     * V24D6R-hotfix: Apply career-state mutations (INJURY, RED_CARD, YELLOW_CARD
      * and yellow-threshold suspension) from a single live match's
-     * {@link V24DetailedMatchResult} timeline to the in-memory
      * {@link CareerSave}.
      *
      * <p>Used by the live/SSE match finish path
-     * ({@code persistV24DetailForLiveMatch}), which the UI drives via
      * {@code RoundController.handleMatchFinished}. Previously the live path
      * persisted V24 detail (for stats) but never mutated SessionPlayer, so
      * squad/lineup reads saw a stale state.
@@ -465,13 +431,11 @@ public class LeagueSimulator {
      * applied here. That requires end-of-round participation tracking
      * ({@code preMatchSuspended}, {@code newlySuspended},
      * {@code participatedPlayerIds}) which the live path does not yet collect.
-     * Deferred to V24D6R2.
      *
      * <p>Skips silently if the policy is disabled — read-only behavior
      * matches the existing batch path.
      */
     /**
-     * V24D6T2 (bug #7): package-private for unit test coverage of the
      * suspended-player exclusion. Was {@code private}.
      */
     void applyLiveMatchCareerMutations(CareerSave career, V24DetailedMatchResult v24Result,
@@ -480,12 +444,11 @@ public class LeagueSimulator {
             return;
         }
         if (!v24MutationPolicy.isCareerMutationEnabled()) {
-            log.debug("[V24D6R-LIVE-MUTATION] Skipped for match {}: mutate-career-state=false",
+            log.debug("Skipped for match {}: mutate-career-state=false",
                     v24Result.matchId());
             return;
         }
 
-        // V24D6R2: Pre-mutation snapshot for newlySuspended/newlyInjured diff
         Set<String> preSuspended = null;
         Set<String> preInjured = null;
         if (tracking != null) {
@@ -498,7 +461,7 @@ public class LeagueSimulator {
                     v24MutationService.applyMutations(career, v24Result, v24MutationPolicy);
 
             if (!mutationResult.failures().isEmpty()) {
-                log.warn("[V24D6R-LIVE-MUTATION] Partial failures for match {}: {}",
+                log.warn("Partial failures for match {}: {}",
                         v24Result.matchId(), mutationResult.failures());
             }
 
@@ -508,7 +471,7 @@ public class LeagueSimulator {
                     + mutationResult.formApplied();
 
             if (total > 0) {
-                log.info("[V24D6R-LIVE-MUTATION] careerId={}, matchId={}, injuriesApplied={}, fatigueApplied={}, disciplineApplied={}, formApplied={}, totalMutations={}",
+                log.info("careerId={}, matchId={}, injuriesApplied={}, fatigueApplied={}, disciplineApplied={}, formApplied={}, totalMutations={}",
                         career.getData().getCareerId(),
                         v24Result.matchId(),
                         mutationResult.injuriesApplied(),
@@ -517,13 +480,11 @@ public class LeagueSimulator {
                         mutationResult.formApplied(),
                         total);
             } else {
-                log.debug("[V24D6R-LIVE-MUTATION] careerId={}, matchId={}, no mutations applied (no qualifying events)",
+                log.debug("careerId={}, matchId={}, no mutations applied (no qualifying events)",
                         career.getData().getCareerId(), v24Result.matchId());
             }
 
-            // V24D6R2: Post-mutation diff — detect newly suspended/injured from this match
             if (tracking != null) {
-                // V24D6T2 (bug #7): build set of currently-suspended players so they
                 // are NOT counted as "participated" — a suspended player does not
                 // actually play even if the V24 timeline emits events for them
                 // (e.g. they appear in the starting XI). Without this filter,
@@ -563,15 +524,12 @@ public class LeagueSimulator {
                 }
             }
         } catch (Exception e) {
-            log.warn("[V24D6R-LIVE-MUTATION] Failed for match {}: {}, continuing",
+            log.warn("Failed for match {}: {}, continuing",
                     v24Result.matchId(), e.getMessage());
         }
     }
 
-    // ========== V24D6D6B: Suspension Lifecycle ==========
-
     /**
-     * V24D6D6B: Runs suspension lifecycle after the full round loop.
      * Called once per simulateLeagueRound call, only when at least one V24 fixture succeeded.
      * Best-effort: failures are logged and do not fail the round.
      */
@@ -603,17 +561,16 @@ public class LeagueSimulator {
             );
 
             if (served > 0) {
-                log.debug("[V24D6D6B] Served {} suspensions for career {} round {}",
+                log.debug("Served {} suspensions for career {} round {}",
                         served, career.getData().getCareerId(), round);
             }
         } catch (Exception e) {
-            log.warn("[V24D6D6B] Suspension lifecycle failed unexpectedly for career {} round {}: {}, continuing round",
+            log.warn("Suspension lifecycle failed unexpectedly for career {} round {}: {}, continuing round",
                     career.getData().getCareerId(), round, e.getMessage());
         }
     }
 
     /**
-     * V24D6D6B: Captures player IDs that were suspended BEFORE the round started.
      * Only includes players where suspended=true AND suspensionRemainingMatches > 0.
      */
     public Set<String> capturePreRoundSuspendedPlayerIds(CareerSave career) {
@@ -634,7 +591,6 @@ public class LeagueSimulator {
     }
 
     /**
-     * V24D6I2: Captures player IDs that were injured BEFORE the round started.
      * Only includes players where injured=true AND injuryRemainingMatches > 0.
      */
     public Set<String> capturePreRoundInjuredPlayerIds(CareerSave career) {
@@ -654,10 +610,7 @@ public class LeagueSimulator {
         return injured;
     }
 
-    // ========== V24D6I2: Injury Recovery Lifecycle ==========
-
     /**
-     * V24D6I2: Runs injury recovery lifecycle after the full round loop.
      * Called once per simulateLeagueRound call, only when at least one V24 fixture succeeded.
      * Best-effort: failures are logged and do not fail the round.
      */
@@ -686,19 +639,16 @@ public class LeagueSimulator {
             );
 
             if (recovered > 0) {
-                log.debug("[V24D6I2] Recovered {} injuries for career {} round {}",
+                log.debug("Recovered {} injuries for career {} round {}",
                         recovered, career.getData().getCareerId(), round);
             }
         } catch (Exception e) {
-            log.warn("[V24D6I2] Injury recovery lifecycle failed unexpectedly for career {} round {}: {}, continuing round",
+            log.warn("Injury recovery lifecycle failed unexpectedly for career {} round {}: {}, continuing round",
                     career.getData().getCareerId(), round, e.getMessage());
         }
     }
 
-    // ========== V24D6J5: Energy Recovery Lifecycle ==========
-
     /**
-     * V24D6J5: Runs energy recovery lifecycle after the full round loop.
      * Non-participating players recover +8 energy (capped at 100).
      * Participating players are not modified (they already drained through V24FatigueMutationApplier).
      * Called once per simulateLeagueRound call, only when at least one V24 fixture succeeded.
@@ -718,19 +668,16 @@ public class LeagueSimulator {
             );
 
             if (recovered > 0) {
-                log.debug("[V24D6J5] Recovered energy for {} players in career {}",
+                log.debug("Recovered energy for {} players in career {}",
                         recovered, career.getData().getCareerId());
             }
         } catch (Exception e) {
-            log.warn("[V24D6J5] Energy recovery lifecycle failed unexpectedly for career {}: {}, continuing round",
+            log.warn("Energy recovery lifecycle failed unexpectedly for career {}: {}, continuing round",
                     career.getData().getCareerId(), e.getMessage());
         }
     }
 
-    // ========== V24D6R2: Live-path End-of-Round Lifecycle ==========
-
     /**
-     * V24D6R2: Apply end-of-round lifecycle decrements for the live/UI/SSE path.
      *
      * <p>Runs the 3 lifecycle appliers (suspension, injury recovery, energy recovery)
      * in the same order as {@link #simulateLeagueRound} and uses the same tracking
@@ -751,7 +698,7 @@ public class LeagueSimulator {
             LiveRoundMutationTracking tracking) {
         if (career == null || tracking == null) return;
         if (!v24MutationPolicy.isCareerMutationEnabled()) {
-            log.debug("[V24D6R2-LIVE-LIFECYCLE] Skipped for careerId={} round={}: mutate-career-state=false",
+            log.debug("Skipped for careerId={} round={}: mutate-career-state=false",
                     career.getData().getCareerId(), currentRound);
             return;
         }
@@ -774,7 +721,7 @@ public class LeagueSimulator {
                         tracking.participatedPlayerIds,
                         v24MutationPolicy);
                 if (served > 0) {
-                    log.info("[V24D6R2-LIVE-LIFECYCLE] careerId={} round={} served {} suspensions",
+                    log.info("careerId={} round={} served {} suspensions",
                             career.getData().getCareerId(), currentRound, served);
                 }
             }
@@ -791,7 +738,7 @@ public class LeagueSimulator {
                         tracking.participatedPlayerIds,
                         v24MutationPolicy);
                 if (recovered > 0) {
-                    log.info("[V24D6R2-LIVE-LIFECYCLE] careerId={} round={} recovered {} injuries",
+                    log.info("careerId={} round={} recovered {} injuries",
                             career.getData().getCareerId(), currentRound, recovered);
                 }
             }
@@ -803,20 +750,18 @@ public class LeagueSimulator {
                         tracking.participatedPlayerIds,
                         v24MutationPolicy);
                 if (recoveredEnergy > 0) {
-                    log.info("[V24D6R2-LIVE-LIFECYCLE] careerId={} round={} recovered energy for {} players",
+                    log.info("careerId={} round={} recovered energy for {} players",
                             career.getData().getCareerId(), currentRound, recoveredEnergy);
                 }
             }
         } catch (Exception e) {
-            log.warn("[V24D6R2-LIVE-LIFECYCLE] Failed for careerId={} round={}: {}, continuing",
+            log.warn("Failed for careerId={} round={}: {}, continuing",
                     career.getData().getCareerId(), currentRound, e.getMessage());
         }
     }
 
     /**
-     * V24D6D6B: Collects starting XI participation from V24 context.
      * All 11 starters per team are considered to have participated
-     * (V24D6T2 bug #7: suspended starters are excluded — a suspended
      * player does not actually play, so the suspension decrement must
      * still fire end-of-round).
      */
@@ -835,7 +780,6 @@ public class LeagueSimulator {
     }
 
     /**
-     * V24D6D6B: Collects timeline participation and RED_CARD events from V24 result.
      * playerId and relatedPlayerId from all events count as participation.
      * RED_CARD events populate newlySuspendedPlayerIds.
      */
@@ -859,7 +803,6 @@ public class LeagueSimulator {
     }
 
     /**
-     * V24D6D6B: Tracks suspension lifecycle data across a single round.
      * All fields are mutated in-place during the fixture loop.
      */
     private static class V24RoundMutationTracking {
@@ -896,10 +839,7 @@ public class LeagueSimulator {
         return fixture.getMatchId().hashCode();
     }
 
-    // ========== Live Round Persistence (V24D6M12) ==========
-
     /**
-     * V24D6M12: Persist V24DetailedMatchData for a single live match.
      *
      * <p>Called from MatchSimulationOrchestrator after a live/SSE match completes
      * via the RoundController → MatchSession → onFinishCallback path.
@@ -907,8 +847,6 @@ public class LeagueSimulator {
      * internal V24 engine is not involved in live match execution.
      *
      * <p>This method bridges the gap: given CareerSave and match metadata,
-     * it builds a V24DetailedMatchData snapshot and persists it to Redis.
-     * Only active when persistDetail=true and useV24DetailedEngine=true.
      * Best-effort: failures are logged and do not fail the match result processing.
      *
      * <p>CareerId convention: uses career.getData().getCareerId() — the same careerId
@@ -928,11 +866,8 @@ public class LeagueSimulator {
      * @param awayPossession final away possession %
      */
     /**
-     * V24D6M12: Persist V24 detail to Redis.
-     * Accepts the actual V24DetailedMatchResult (with real timeline from V24LiveSession.finalResult()).
      *
      * @param career       the CareerSave
-     * @param v24Result    the V24DetailedMatchResult with timeline events (not null)
      * @param homeTeamId   home team UUID string
      * @param awayTeamId   away team UUID string
      * @param homeGoals    home team goals
@@ -994,7 +929,6 @@ public class LeagueSimulator {
             List<V24PlayerMatchRatingDto> playerRatings =
                     v24PlayerRatingsAssembler.assemblePlayerRatings(career, playerFixture, v24Result);
 
-            // V24D24-F1.2: capture formations from live SessionTeam
             String homeFormation = resolveFormation(career, homeTeamId);
             String awayFormation = resolveFormation(career, awayTeamId);
 
@@ -1011,8 +945,7 @@ public class LeagueSimulator {
             );
 
             storagePort.save(careerId, detail);
-            // [V24D6M11-TRACE] Log full persistence context
-            log.info("[V24D6M11-TRACE] persistV24Detail careerId={}, matchId={}, season={}, round={}, timeline={}, playerRatings={}, key=career:{}:match-detail:{}",
+            log.info("persistV24Detail careerId={}, matchId={}, season={}, round={}, timeline={}, playerRatings={}, key=career:{}:match-detail:{}",
                     careerId, matchId, seasonNumber, round,
                     v24Result.timeline().events().size(),
                     playerRatings.size(),
@@ -1020,7 +953,6 @@ public class LeagueSimulator {
             log.info("[V24-DETAIL-PERSIST] saved match detail careerId={}, matchId={}, season={}, round={}",
                     careerId, matchId, seasonNumber, round);
 
-            // V24D6R-hotfix: Apply career-state mutations (INJURY, RED_CARD, YELLOW_CARD)
             // from this match's timeline to the in-memory CareerSave. The orchestrator
             // calls careerSessionService.saveCareer at end of round, which persists this
             // same instance, so the next squad/lineup read will see the mutations.
@@ -1034,14 +966,12 @@ public class LeagueSimulator {
     }
 
     /**
-     * V24D6R2: Persist V24 detail to Redis with optional live-round mutation tracking.
      *
      * <p>When {@code tracking} is non-null, this method accumulates participation
      * and snapshot-diff data used by {@link #applyEndOfRoundLiveLifecycle} at
      * end of round.
      *
      * @param career       the CareerSave
-     * @param v24Result    the V24DetailedMatchResult with timeline events (not null)
      * @param homeTeamId   home team UUID string
      * @param awayTeamId   away team UUID string
      * @param homeGoals    home team goals
@@ -1105,7 +1035,6 @@ public class LeagueSimulator {
             List<V24PlayerMatchRatingDto> playerRatings =
                     v24PlayerRatingsAssembler.assemblePlayerRatings(career, playerFixture, v24Result);
 
-            // V24D24-F1.2: capture formations from live SessionTeam
             String homeFormation = resolveFormation(homeTeam);
             String awayFormation = resolveFormation(awayTeam);
 
@@ -1122,8 +1051,7 @@ public class LeagueSimulator {
             );
 
             storagePort.save(careerId, detail);
-            // [V24D6M11-TRACE] Log full persistence context
-            log.info("[V24D6M11-TRACE] persistV24Detail careerId={}, matchId={}, season={}, round={}, timeline={}, playerRatings={}, key=career:{}:match-detail:{}",
+            log.info("persistV24Detail careerId={}, matchId={}, season={}, round={}, timeline={}, playerRatings={}, key=career:{}:match-detail:{}",
                     careerId, matchId, seasonNumber, round,
                     v24Result.timeline().events().size(),
                     playerRatings.size(),
@@ -1131,7 +1059,6 @@ public class LeagueSimulator {
             log.info("[V24-DETAIL-PERSIST] saved match detail careerId={}, matchId={}, season={}, round={}",
                     careerId, matchId, seasonNumber, round);
 
-            // V24D6R2: Apply career-state mutations and accumulate tracking data
             applyLiveMatchCareerMutations(career, v24Result, tracking);
 
         } catch (Exception e) {
@@ -1153,7 +1080,6 @@ public class LeagueSimulator {
             int homeGoals,
             int awayGoals) {
         // This overload cannot provide v24Result — timeline will be empty
-        // Use the V24DetailedMatchResult overload instead where possible
         persistV24DetailForLiveMatch(
                 career,
                 null, // v24Result not available in this path
@@ -1164,10 +1090,7 @@ public class LeagueSimulator {
         );
     }
 
-    // ========== V24D24-F1.2 helpers ==========
-
     /**
-     * V24D24-F1.2: Resolve the formation string for a team by id, looking
      * up the {@link SessionTeam} in the {@link CareerSave}. Returns null if
      * the team is not present (caller's UI will show "—"). Defensive against
      * null/blank ids to keep the persistence path best-effort.
@@ -1180,7 +1103,6 @@ public class LeagueSimulator {
     }
 
     /**
-     * V24D24-F1.2: Resolve the formation from a {@link SessionTeam} directly.
      * Returns null if the team is null or the formation is null/blank.
      */
     private String resolveFormation(SessionTeam team) {

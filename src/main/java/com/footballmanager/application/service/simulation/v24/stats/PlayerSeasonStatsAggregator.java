@@ -12,9 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * V24D6M3: Pure aggregator for player season stats.
  *
- * <p>Computes per-player season aggregates from a list of V24DetailedMatchData.
  * No side effects, no external I/O, no Random — fully deterministic.
  *
  * <p>MVP scope (per M2 audit):

@@ -51,11 +51,9 @@ public class SessionPlayer {
     // Origin
     private SessionPlayerOrigin origin;
 
-    // V25D31 - Physical + skill metadata
     private Integer heightCm;
     private Map<PlayerSkill, Integer> skillLevels;
 
-    // V25D31 - Bounds for skills and height
     private static final int MIN_SKILL_LEVEL = 0;
     private static final int MAX_SKILL_LEVEL = 99;
     private static final int MIN_HEIGHT_CM = 160;
@@ -65,14 +63,11 @@ public class SessionPlayer {
 
     // ========== Factory Methods ==========
 
-    // Alias for backward compatibility (V25D33-F0-mapping: delegates to height+skills-aware overload with nulls)
     public static SessionPlayer cloneFromWorldPlayer(String worldPlayerId, String name,
             String position, Integer age, Integer overall, String currentTeamId) {
         return fromWorldPlayer(worldPlayerId, name, position, age, overall, null, null);
     }
 
-    // V25D33-F0-mapping: overload with height + skill propagation from WorldPlayer
-    // (V25D32 SENIOR flag: WorldPlayer -> SessionPlayer mapping was leaking height/skills).
     // Existing 5-arg overload delegates here with null/empty so behavior is bit-a-bit
     // preserved for callers that do not yet propagate the new fields.
     public static SessionPlayer cloneFromWorldPlayer(String worldPlayerId, String name,
@@ -87,13 +82,9 @@ public class SessionPlayer {
     }
 
     /**
-     * V25D33-F0-mapping: full factory with height + skill propagation.
      *
-     * <p>Replaces the pre-V25D33 factory that silently dropped {@code heightCm}
-     * and {@code skillLevels} from the {@link WorldPlayer}. The V25D32
      * {@code LaLigaSeedService} sets these on WorldPlayer (top-20 heights
      * hardcoded + curated skills for top-5), but the clone into SessionPlayer
-     * was losing them. With V25D33 the clone propagates both, so the engine
      * can read them via {@link V24PlayerMatchState#heightCm()} and
      * {@link V24PlayerMatchState#skillLevels()}.
      *
@@ -119,7 +110,6 @@ public class SessionPlayer {
         p.setAttributesFromOverall(overall);
         p.initDefaults();
         p.origin = SessionPlayerOrigin.CLONED;
-        // V25D33-F0-mapping: propagate physical + skill metadata via the
         // bounds-checked setters. setHeightCm accepts null; setSkillLevel is
         // per-entry so we iterate the (possibly null/empty) map defensively.
         if (heightCm != null) {
@@ -196,7 +186,6 @@ public class SessionPlayer {
         this.redCards = 0;
         this.suspended = false;
         this.suspensionRemainingMatches = 0;
-        // V25D31: skill map default empty (sparse). Height remains null until seeder/clone sets it.
         this.skillLevels = new HashMap<>();
     }
 
@@ -205,10 +194,8 @@ public class SessionPlayer {
     public Integer calculateOverall() {
         if (hasNullAttributes()) return 50;
 
-        // V25D40 (Sprint C5): delegate to the shared {@link OverallCalculator}.
         // Before this refactor, SessionPlayer and Player had duplicated switch
         // statements with the same weights, and only Player was extended to
-        // consider height + skills in V25D39 — leaving the engine path
         // (consumed by the UI via SessionPlayerDTO.overall) with stale overalls.
         // Now both paths share one source of truth for the formula.
         int raw = OverallCalculator.calculate(
@@ -248,8 +235,6 @@ public class SessionPlayer {
     public Boolean getSuspended() { return suspended != null ? suspended : false; }
     public Integer getSuspensionRemainingMatches() { return suspensionRemainingMatches != null ? suspensionRemainingMatches : 0; }
     public SessionPlayerOrigin getOrigin() { return origin; }
-
-    // ========== V25D31 - Height + Skills ==========
 
     public Integer getHeightCm() { return heightCm; }
 

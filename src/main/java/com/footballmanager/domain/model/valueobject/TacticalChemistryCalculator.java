@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V25D99.20.13-BACK: computes simple "societies" between nearby players.
  *
  * <p>MVP scope: slot category, pitch distance and channel coverage. Player
  * quality/skills are still represented by {@link TeamChemistryCalculator};

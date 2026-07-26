@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V25D43 (Sprint C8): response DTO for the chemistry breakdown carried
  * inside {@link LineupDTO}. Sits alongside the {@code chemistryScore}
- * field (added in V25D41) — the score alone doesn't tell the manager
  * <em>why</em> the chemistry is what it is, this DTO does.
  *
  * <p>Shape (Jackson-serialized as JSON):
@@ -43,7 +41,6 @@ import java.util.Map;
  * </ul>
  *
  * <p>Backward compat: this DTO is nullable on {@link LineupDTO}. A
- * backend that doesn't populate it (V25D41 / V25D42 builds) returns
  * the lineup without this field — the frontend treats it as "no
  * breakdown" (renders the existing badge but no chip row).
  */
@@ -114,12 +111,10 @@ public record ChemistryBreakdownDTO(
     }
 
     /**
-     * V25D99.19-BACK (BUG-1 fix): overload that pads the {@code positionGroups}
      * map with slot-category fallback entries when the skill-weight grouping
      * yields an empty group but the lineup has at least one assigned slot
      * in that category. Defensive against the legacy / corner-case data
      * state where a player's {@code skillLevels} map is missing entirely
-     * (V25D31 seed lineups, manual-select saves pre-V25D33, players cloned
      * via the 5-arg factory overload) — in those cases the skill-weight
      * {@code computeBreakdown()} emits an empty list per group, and Ivan
      * observed the UI rendering nothing under the
@@ -142,9 +137,7 @@ public record ChemistryBreakdownDTO(
      *       untouched — they reflect actual skill data only.</li>
      * </ol>
      *
-     * <p>Pre-V25D99.19 callers that still pass {@code null} for either
      * argument fall through to the legacy single-arg {@link #from(ChemistryDetail)}
-     * (still exported by V25D99.19) — backward compat preserved.
      *
      * @param detail          the skill-weight aggregate (already computed
      *                        via {@link com.footballmanager.domain.model.valueobject.TeamChemistryCalculator#calculate(java.util.List)}).

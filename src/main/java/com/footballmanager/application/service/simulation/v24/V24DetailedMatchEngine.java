@@ -33,18 +33,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>Fatigue, cards, and substitution mechanics</li>
  * </ul>
  *
- * <p>V25D33-V25D34 skill impacts layered on top of the engine (each skill is
  * applied at its natural pipeline point; no-op when absent or 0):
  * <ul>
- *   <li>V25D33-F1: HEADER skill on xG (V24ShotXgCalculator, gated CORNER/CROSS)</li>
- *   <li>V25D33-F2: DRIBBLER skill on chanceProbability (1v1 multiplier)</li>
- *   <li>V25D33-F3: WALL skill on xG (GK divisor, V24ShotXgCalculator)</li>
- *   <li>V25D34-F1: PLAYMAKER skill boosts assistQuality (this engine,
  *       before xG computation); AERIAL compounds HEADER in calculator;
  *       SHOOTER adds LONG_RANGE xG bonus in calculator</li>
- *   <li>V25D34-F2: MARKER + TACKLER defending skills (calculator-level, via
  *       overload 11-args with defenderSkills aggregated from opponent DEF on-pitch)</li>
- *   <li>V25D34-F3: SPEEDSTER skill amplifies keySpeed en COUNTER style
  *       (this engine, chanceProbability 6-args overload); PASSER skill boosts
  *       possession share (retention rate del poseedor)</li>
  * </ul>
@@ -54,12 +47,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
-    // LIVE-MATCH-F2-LIVE F2.5: logger for the scheduled-sub apply block in
     // the per-minute loop. The level is DEBUG so the per-match log volume
     // stays bounded (≤ 5 subs/team/match → ≤ 10 lines/match).
     private static final Logger log = LoggerFactory.getLogger(V24DetailedMatchEngine.class);
 
-    // V24D20-SANDBOX-V2-MVP BUG #4: instrumentation to detect xG/goals
     // divergence. Counts every addGoal() call. If the counter drifts
     // from the number of GOAL events in the timeline, the divergence
     // hypothesis (a: double-counted addGoal, b: non-GOAL event counted
@@ -69,7 +60,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     //
     // REMOVE: when the divergence is confirmed and fixed, drop the
     // counter and the conditional log. Tag the cleanup commit with
-    // V24D20-SANDBOX-V2-MVP-CLEANUP.
     private static final AtomicInteger goalAdditions = new AtomicInteger(0);
 
     private final V24ShotXgCalculator xgCalculator = new V24ShotXgCalculator();
@@ -78,7 +68,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     private final V24InjuryModel injuryModel = new V24InjuryModel();
     private final V24SubstitutionEngine substitutionEngine = new V24SubstitutionEngine();
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: SEPARATE engine for scheduled manual
      * substitutions. The shared {@link #substitutionEngine} is used by
      * the F2 auto-sub logic (line 273 of this file) and its 5/team cap
      * is shared with the F2.5 manual sub block — so a manager who
@@ -87,13 +76,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * F2.5 design (per the prompt's section 4 B2) requires the manual
      * sub to be applied independently of the auto-sub counter, so we
      * use a separate engine instance with its own counter. This
-     * engine is created fresh per V24DetailedMatchEngine instance
      * (i.e. per V24LiveSession), so the per-match 5/team cap still
      * applies, but it is NOT shared with the auto-sub path.
      */
     private final V24SubstitutionEngine scheduledSubEngine = new V24SubstitutionEngine();
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: tracks which scheduled subs have already
      * been applied in the current match. The engine runs once per tick
      * (F1 design — see {@link V24LiveSession#tick()}), so without this
      * tracker the F2.5 block would re-apply the same sub on every tick
@@ -106,23 +93,18 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     private final V24AssistModel assistModel = new V24AssistModel();
     private final V24ShotCoordinateGenerator coordGenerator = new V24ShotCoordinateGenerator();
 
-    // V25D67-C27: match intensity multiplier (Opción B from the C27 task prompt).
     // Set at the start of simulateWithRandom from the absolute difference
     // between the home and away starting-XI average overalls. Range [0.40, 1.00].
-    // Used in attemptShot (see V24DetailedMatchEngine.java:637 area) to scale
     // the per-shot goal probability. Parejos (diff ≤ 5%) get reduced goal
     // probability to prevent goleadas (avg target ~1.5 total per match).
     // Desiguales (diff ≥ 30%) keep full goal probability — the engine's
     // random.nextDouble() against the threshold naturally produces lucky
     // escapes (0-0, 1-0) for the weaker team without artificial topes.
     //
-    // NOTE: defaults to 1.00 to preserve bit-a-bit behavior with V25D66 in
     // tests that call attemptShot directly without going through simulate()
-    // (the unit-level isolation tests in V24DetailedMatchEngineRandomOverloadTest
     // exercise attemptShot with hand-crafted contexts).
     private double matchIntensity = 1.0;
 
-    // V25D99.165: professional-feel home field layer. Localia should nudge
     // territory and chance rhythm, not override team quality, formation,
     // player movement or channel matchups.
     private static final double HOME_POSSESSION_ADVANTAGE = 1.035;
@@ -135,7 +117,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V24D6Q: Constructor for testing — allows injecting a discipline model
      * whose shouldCommitFoul / shouldReceiveYellow can be stubbed to force
      * second-yellow scenarios deterministically.
      */
@@ -144,7 +125,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     public V24DetailedMatchResult simulate(V24MatchContext context, long seed) {
-        // LEGACY PATH (B4 of LIVE-MATCH-F2-LIVE F1 plan): preserved verbatim so
         // the 832 existing V24 tests that call this signature keep passing.
         // Internally creates 3 independent Randoms (main + 2 player selectors)
         // seeded from the same seed for backward compatibility. The replay path
@@ -157,7 +137,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F1 B4 — replay-aware overload.
      *
      * <p>Accepts a caller-provided {@link Random} (typically a
      * {@link CachingRandomWrapper}) and uses it for all three sources of
@@ -195,7 +174,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D87: incremental-bounded overload. Simulates only the minutes
      * {@code [1, maxMinute]} (inclusive, 1-indexed) and returns the
      * matching partial timeline. The replay path (F2 / mutateContext +
      * replayFromMinute) keeps using the unbounded {@link #simulate(V24MatchContext, Random)}
@@ -252,13 +230,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * loop body.
      */
     /**
-     * V25D87: thin 4-arg wrapper kept for the two existing call sites
      * ({@link #simulate(V24MatchContext, long)} and
      * {@link #simulate(V24MatchContext, Random)}) that need the full
      * 90-minute run. Delegates to the bounded variant with
      * {@code maxMinute = 90}; preserves bit-equivalent output for all
      * callers because the bounded variant with 90 is identical to the
-     * pre-V25D87 body (the early break is unreachable when
      * {@code maxMinute == 90} because the clock stops at minute 90).
      */
     private V24DetailedMatchResult simulateWithRandom(
@@ -267,8 +243,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D87: core simulation with an early-break bound. Body is logically
-     * identical to the pre-V25D87 {@code simulateWithRandom} body — the
      * only addition is the {@code if (minute > maxMinute) break;} at the
      * top of the per-minute loop. The unbounded callers (line 141 and
      * line 182) reach this method via the 4-arg wrapper above with
@@ -278,7 +252,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * upper minute directly.
      *
      * <p>This method was extracted from the original
-     * {@code simulateWithRandom} during V25D87 (F1 Option A) and is
      * logically identical to the pre-extract body — no draw-order
      * changes inside the loop body.
      */
@@ -313,20 +286,17 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double homePossBase = possessionBase(context.homeStyle());
         double awayPossBase = possessionBase(context.awayStyle());
 
-        // V25D34-F3: PASSER boosts possession share (retention rate del
         // poseedor). El MAX PASSER skill entre los on-pitch players de cada
         // equipo amplifica su possession base por (1 + skill/300). Formula:
         //   homePossAdj = homePossBase * (1 + homeMaxPasser/300)
         //   awayPossAdj = awayPossBase * (1 + awayMaxPasser/300)
         //   homeShare = homePossAdj / (homePossAdj + awayPossAdj)
-        // PASSER=0 → factor 1.0 → bit-a-bit identico a V25D33 (sin skills).
         // PASSER=85 (Valverde) → factor 1.283 → +28% retention.
         // PASSER=99 → factor 1.33 → +33% retention.
         // Modelo simple: el mejor pasador del equipo aumenta la posesion
         // compartida (no hay pass accuracy explicito en el engine).
         int homeMaxPasser = maxPasserSkill(homeState.startingPlayers());
         int awayMaxPasser = maxPasserSkill(awayState.startingPlayers());
-        // V25D99.21: possession also reads the actual tactical shape. Before this
         // layer, two formations with the same style + PASSER profile could produce
         // identical possession even when one had an extra midfielder or when the
         // manager dragged players centrally/wide. The modifier is intentionally
@@ -345,7 +315,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 * AWAY_POSSESSION_FRICTION;
         double homeShare = homePossAdj / (homePossAdj + awayPossAdj);
 
-        // V25D67-C27: compute match intensity multiplier (Opción B from the C27
         // task prompt). Scales the per-shot goal-conversion probability so that
         // parejos matches (teams within 5% overall) yield realistic ~1.5 total
         // goals per match, while desiguales (≥30% diff) keep full variability.
@@ -356,7 +325,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double awayAvgOverall = computeTeamAvgOverall(context.awayStartingPlayers());
         double overallDiffRatio = computeOverallDiffRatio(homeAvgOverall, awayAvgOverall);
         this.matchIntensity = computeMatchIntensity(overallDiffRatio);
-        log.trace("[V25D67-C27] matchIntensity={} (homeOvr={}, awayOvr={}, diffRatio={})",
+        log.trace("matchIntensity={} (homeOvr={}, awayOvr={}, diffRatio={})",
             matchIntensity, homeAvgOverall, awayAvgOverall, overallDiffRatio);
 
         // Player selectors — share the same Random source in replay path,
@@ -366,18 +335,15 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         while (clock.isRunning()) {
             int minute = clock.currentMinute();
-            // V25D87 (F1 Option A): early break when the bounded caller
             // asked for fewer than 90 minutes. Prevents the engine from
             // burning ~1ms of full-90-min simulate() work per tick when
             // the live tick driver only needs the next single minute.
             // The unbounded callers reach here with maxMinute=90 and the
             // clock already stops at minute 90, so this break is a no-op
-            // for them — bit-equivalent with the pre-V25D87 body.
             if (minute > maxMinute) {
                 break;
             }
 
-            // LIVE-MATCH-F2-F2.5: apply scheduled manual substitutions for this
             // minute. Iterates the context's deferred-swap list once per minute
             // and applies swaps whose effectiveMinute == minute. Uses
             // V24SubstitutionEngine.manualSubstitute (the same path the
@@ -390,7 +356,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // ASC) by the V24MatchContext helper, so iteration is
             // deterministic; no sort is performed here.
             //
-            // LIVE-MATCH-F2-F2.5: the engine runs once per tick (F1
             // design — see V24LiveSession.tick()), so without an
             // "already applied" tracker the F2.5 block would re-apply
             // the same sub on every tick (the homeState is fresh each
@@ -448,7 +413,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                             null,
                             0.0,
                             "Substitution: " + sub.playerOnId() + " on for " + sub.playerOffId()));
-                    log.trace("[LIVE-MATCH-F2-F2.5] Re-applied scheduled sub at minute {} (subsequent tick): teamId={} off={} on={}",
+                    log.trace("Re-applied scheduled sub at minute {} (subsequent tick): teamId={} off={} on={}",
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
                     continue;
                 }
@@ -456,7 +421,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     V24MatchEvent subEvent = scheduledSubEngine.manualSubstitute(
                             target, sub.playerOffId(), sub.playerOnId(), sub.effectiveMinute());
                     timeline.addEvent(subEvent);
-                    // V25D99.41.2: manualSubstitute toggles onPitch flags, but
                     // does not move the incoming bench player into the mutable
                     // starting list used by shooter/assist/shape selection in
                     // this full replay. Without this, the player who "entered"
@@ -465,7 +429,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     // the first successful substitution.
                     applyScheduledSubManually(target, sub);
                     appliedScheduledSubs.add(subKey);
-                    log.trace("[LIVE-MATCH-F2-F2.5] Applied scheduled sub at minute {}: teamId={} off={} on={}",
+                    log.trace("Applied scheduled sub at minute {}: teamId={} off={} on={}",
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId());
                 } catch (IllegalStateException e) {
                     // First application failed (e.g. F2 auto-sub already
@@ -473,13 +437,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     // compatibility check failed, or the sub was
                     // somehow already applied). Log and skip — the
                     // sub is best-effort.
-                    log.warn("[LIVE-MATCH-F2-F2.5] Could not apply scheduled sub at minute {} "
+                    log.warn("Could not apply scheduled sub at minute {} "
                             + "teamId={} off={} on={}: {}",
                             minute, sub.teamId(), sub.playerOffId(), sub.playerOnId(), e.getMessage());
                 }
             }
 
-            // V25D99.41: recompute the live tactical picture every minute
             // after scheduled/manual substitutions have been applied. Before
             // this, homeShape/awayShape/homeShare were computed once before
             // minute 1, so a manager sub changed shooter/defender lists but
@@ -517,17 +480,14 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             V24TeamMatchState possessor = homeHasPossession ? homeState : awayState;
             V24TeamMatchState opponent = homeHasPossession ? awayState : homeState;
             V24PlayerSelector selector = homeHasPossession ? homeSelector : awaySelector;
-            // V24D6O-fix: use real team UUIDs (not "HOME"/"AWAY" sentinels) so the
             // persisted detail timeline exposes sessionTeamId UUIDs, matching
             // the V24MatchContext and the V24 frontend model. Substitution-engine
             // counters are also keyed by the same UUID below, so the substitution
             // limit (5/team) is now enforced correctly.
             String teamRole = homeHasPossession ? context.homeTeamId() : context.awayTeamId();
-            // V24D14-LIVE-FIX-1.7: formation-aware shooter/assist selection.
             // Resolved from the match context (which is built by V24MatchContextFactory
             // preferring career.teamStarting11Formation with fallback to SessionTeam).
             String formation = homeHasPossession ? context.homeFormation() : context.awayFormation();
-            // V25D27: opponent formation (the defending team) — used by formationDefensiveModifier.
             String opponentFormation = homeHasPossession ? context.awayFormation() : context.homeFormation();
 
             // Accumulate possession
@@ -540,7 +500,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // F6 F2 contract: pick the "key attacker" on pitch for the chance-probability
             // quality modifier. Deterministic (max attack among on-pitch startingPlayers) so
             // we do NOT consume an extra random draw per minute — this preserves the
-            // CachingRandomWrapper replay sequence (F5.1 BUG-007) and the determinism
             // contract (same seed + same context = same result). The bench player swap in
             // the F2 contract test (attack=80 vs starter attack=70) raises this max from
             // 70 to 80 starting at the swap minute, giving the subbed-in team a +30%
@@ -548,12 +507,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // "substitution alters result" tests produce a measurable goal delta
             // deterministically with seed=42.
             //
-            // V25D33-F2: also extract the key attacker's DRIBBLER skill (0 if absent)
             // so chanceProbability can apply the 1v1 multiplier. Sparse map access via
             // V24PlayerMatchState.getSkillLevel — same null-safe semantics as
             // SessionPlayer.getSkillLevel.
             //
-            // V25D34-F3: also extract SPEEDSTER skill (0 if absent) so
             // chanceProbability can apply el counter-attack bonus. SPEEDSTER
             // amplifica keySpeed SOLO cuando possessor.style() == COUNTER —
             // el bonus no se "apila" si el equipo no esta jugando al
@@ -574,12 +531,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // Style modifier for chance creation probability
-            // V25D33-F2: pass keyDribbler so the 5-args overload can apply the
             // 1v1 gambeta multiplier. With skill=0 (absent or random player)
             // the multiplier is 1.0 → bit-a-bit identical to the 4-args baseline.
-            // V25D34-F3: pass keySpeedster so the 6-args overload can apply el
             // counter-attack speed bonus cuando possessor.style() == COUNTER.
-            // V25D68-C28: scale chanceProbability by sqrt((1+intensity)/2).
             // This is a SOFTER curve than full SQRT(intensity) — it is the
             // SQRT of the midpoint between 1.0 and intensity, so:
             //   - parejos (intensity=0.35 with new floor): mult = sqrt(0.675)
@@ -610,7 +564,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             Map<String, LineupSlotDTO> opponentSlots = homeHasPossession
                     ? awayEffectiveSlots
                     : homeEffectiveSlots;
-            // V25D99.23: a substitution must matter even when the swapped
             // player is not the single max-attack "key attacker". Keep the
             // historical key-player signal as the anchor, but blend in the
             // formation/slot-aware attacking aggregate so every outfield
@@ -619,14 +572,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     possessor.startingPlayers(),
                     formation,
                     possessorSlots);
-            // V25D99.34: do not protect the team attack with max(keyAttack,
             // aggregate). That made non-key substitutions almost invisible:
             // if a world-class forward stayed on the pitch, replacing a high
             // value connector/second attacker could not lower chance volume.
             // Keep the star signal as the larger anchor, but let the tactical
             // aggregate move the final input both up and down so every
             // meaningful player change can be measured by the harness.
-            // V25D99.85: the stress harness showed that extreme swaps
             // (CB into ST slot, ST into DEF slot) were still too quiet because
             // the single best attacker protected chance volume too much. Keep
             // the star-player anchor, but let the slot/effectiveness-aware
@@ -636,28 +587,24 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             double possessorCollectiveStat = aggregateCollectiveStat(possessor.startingPlayers(), possessorSlots);
             double opponentCollectiveStat = aggregateCollectiveStat(opponent.startingPlayers(), opponentSlots);
             double chanceProbability = chanceProbability(possessor.style(), minute, teamAttackInfluence, keySpeed, keyDribbler, keySpeedster)
-                    // V25D99.80/V25D99.45: keep a named tempo hook for future
                     // calibration, but the green-path smoke showed that a hard
                     // global cut made balanced matches sterile. Professional
                     // feel now comes from tactical/player layers, not from
                     // muting every minute equally.
                     * professionalShotTempoMultiplier()
                     * Math.sqrt((1.0 + matchIntensity) / 2.0)
-                    // V25D99.21: shape affects shot/chance volume. Attacking
                     // occupation and width raise chance creation; defensive
                     // occupation of the opponent lowers it. This makes the match
                     // reviewer useful for comparing 4-4-2 vs 4-3-3 vs manual
                     // player drags, instead of only changing the score layer.
                     * possessorShape.attackVolumeMultiplier()
                     * opponentShape.defensiveResistanceMultiplier()
-                    // V25D99.22.11: the defending roster must affect not only
                     // shot quality/xG (attemptShot), but also chance volume.
                     // Keep this deliberately small: shape remains the main
                     // tactical volume layer, while very weak defenders create
                     // a few more opponent chances and elite defenders suppress
                     // a few without making matches deterministic.
                     * defenderRosterChanceVolumeMultiplier(opponentDefenderStat)
-                    // V25D99.20.3.2: live/manual substitutions must leave a
                     // measurable tactical footprint in the same harness layer
                     // used by formations and pixel moves. The swap already
                     // changes the on-pitch XI, but with cached deterministic
@@ -670,7 +617,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                             context.manualSubstitutions(),
                             possessor.teamId(),
                             minute)
-                    // V25D99.166: chance volume cannot be only "best attacker
                     // + lane shape". A team with a better on-pitch XI should
                     // create a bit more sustained pressure, and a side built
                     // around one/two elite wingers should remain dangerous
@@ -678,7 +624,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     // This is intentionally bounded so tactical shape and
                     // manual pixels still stay visible in the harness.
                     * collectiveQualityChanceVolumeMultiplier(possessorCollectiveStat, opponentCollectiveStat)
-                    // V25D99.63: tactical style must matter while defending,
                     // not only while attacking. Before this, DEFENSIVE mostly
                     // surrendered possession and reduced own chances, but it
                     // did not lower opponent chance volume, so a low block felt
@@ -716,7 +661,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // V24C2: Foul / yellow card / red card using discipline model
-            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency with
             // attemptShot/chanceCreated (shooter/assist paths already formation-aware).
             var potentialFouler = selector.selectShooter(possessor.startingPlayers(), formation);
             if (potentialFouler.isPresent()) {
@@ -745,7 +689,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // V24C3: Injury event using injury model
-            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency.
             var potentialInjured = selector.selectShooter(possessor.startingPlayers(), formation);
             if (potentialInjured.isPresent()) {
                 V24PlayerMatchState p = potentialInjured.get();
@@ -766,7 +709,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // Corner (when possession is near goal but no shot)
-            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency.
             if (random.nextDouble() < 0.035) {
                 var player = selector.selectShooter(possessor.startingPlayers(), formation);
                 if (player.isPresent()) {
@@ -784,7 +726,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             }
 
             // Offside (when team is pushing forward)
-            // V24D22-FIX-FORMATION-IGNORED: pass formation for consistency.
             if (random.nextDouble() < 0.04 && possessor.style() != TeamStyle.DEFENSIVE) {
                 var player = selector.selectShooter(possessor.startingPlayers(), formation);
                 if (player.isPresent()) {
@@ -839,7 +780,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         V24PlayerMatchState shooter = shooterOpt.get();
 
-        // V25D27: compute aggregate teamAttack for the possessor and teamDefense for
         // the opponent. These amplify/dampen the formation modifier per the user
         // request that formation × stats should sum.
         double possessorAttack = aggregateAttackerStat(
@@ -850,7 +790,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 opponent.startingPlayers(),
                 opponentSlotsByPlayerId);
 
-        // V25D33-F3: locate the opponent's on-pitch GK so we can pass their
         // skill map (WALL) and height to calculateXg. Reuses the same
         // filter as the existing gkQuality() helper, but returns the
         // V24PlayerMatchState so we can read skillLevels + heightCm.
@@ -860,20 +799,17 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double rawShooterQuality = selector.shooterQuality(shooter);
         double shooterQuality = fatigueModel.applyFatigueToQuality(rawShooterQuality, shooter);
 
-        // V25D99.20.5: shot location reads the real tactical shape, not only
         // the formation label. A team overloaded through the centre gets more
         // central/box shots; a team with useful width gets more wide shots; and
         // opponent channel coverage can push attempts away from the protected
         // lane. This is the first engine layer for "play through wings/centre".
         V24ShotLocation location = selectShotLocation(
                 possessor.style(), formation, possessorShape, opponentShape, random);
-        // V25D99.22.22: coordinate is generated before xG so wide shots can
         // use left/right defensive channel pressure. LEFT_FLANK/RIGHT_FLANK
         // are internal calibration styles used by the harness; they behave
         // like WIDE_PLAY in volume but bias the y-coordinate to one side.
         V24ShotCoordinate shotCoord = generateShotCoordinate(
                 location, possessor.style(), possessorShape, opponentShape, random);
-        // V25D99.22.14: make defensive quality channel-sensitive. A weak
         // fullback/carrilero should hurt mainly wide chances; a weak CB/GK
         // should hurt central chances. The global defender stat remains the
         // fallback when slot coordinates are absent.
@@ -892,18 +828,15 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         // Build shot quality bundle
         double assistQuality = assistOpt.map(selector::assistQuality).orElse(0.3);
-        // V25D34-F1: PLAYMAKER boosts assist quality (vision de juego → mejor
         // pase). El assist provider con PLAYMAKER skill > 0 multiplica su
         // assistQuality por (1 + skill/200). El efecto se propaga al assistMult
         // del V24ShotXgCalculator (0.85 + assistQuality * 0.30). Si no hay
         // provider (assistOpt.isEmpty) o PLAYMAKER=0/absent, sin cambio —
-        // preserva bit-a-bit el resultado V25D33.
         if (assistOpt.isPresent()) {
             int playmakerSkill = assistOpt.get().getSkillLevel(PlayerSkill.PLAYMAKER);
             assistQuality = playmakerAdjustedAssistQuality(assistQuality, playmakerSkill);
         }
         double defPressure = defensivePressure(opponent, random);
-        // V25D99.87: xG must read the defending goalkeeper, not the team
         // taking the shot. The old possessor.startingPlayers() call made the
         // attack partly defend against its own GK quality, which distorted
         // live/harness comparisons when swapping teams or keepers.
@@ -918,7 +851,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 styleToModifier(possessor.style())
         );
 
-        // V25D34-F2: aggregate opponent defender skills (MARKER + TACKLER)
         // from on-pitch DEF position players. Used by the new overload 11-args
         // de calculateXg para aplicar las defending skills. Si no hay DEF
         // players on-pitch, el map viene vacio → MARKER y TACKLER no aplican
@@ -926,16 +858,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         Map<PlayerSkill, Integer> opponentDefenderSkills =
                 aggregateOpponentDefenderSkills(opponent.startingPlayers());
 
-        // V25D34-F2: call the 11-args overload of calculateXg so WALL divisor
-        // (V25D33-F3), AERIAL/SHOOTER (V25D34-F1) and MARKER/TACKLER (V25D34-F2)
         // are honored. Pass the shooter's own skill map + height (for HEADER on
         // corner/cross shots + AERIAL compounding + SHOOTER LONG_RANGE), the
         // opponent GK's skill map + height (for WALL divisor), and the
         // opponent defender aggregated skills (for MARKER + TACKLER).
         // eventSubType = OPEN_PLAY (default) — the engine doesn't yet model
-        // "shot from corner" relationships (V25D34 scope). When skill maps are
         // null or relevant skills are absent, the multipliers stay 1.0 and the
-        // result is bit-a-bit identical to the V25D32 baseline.
         double xg = xgCalculator.calculateXg(
                 quality, formation, opponentFormation,
                 possessorAttack, opponentDefense,
@@ -944,7 +872,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 opponentGk != null ? opponentGk.heightCm() : null,
                 V24ShotEventType.OPEN_PLAY,
                 opponentDefenderSkills, null);
-        // V25D99.60: the visual/manual shape must influence not only how many
         // shots are generated, but also how clean those shots are. A compact
         // low block, a well-screened centre, or protected flanks should turn
         // dangerous locations into slightly worse chances; conversely, dragging
@@ -952,7 +879,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // This keeps the formation editor meaningful at pixel level without
         // making formation labels hard-coded winners.
         xg *= defensiveShapeShotQualityMultiplier(opponentShape, location);
-        // V25D99.63: defending style also changes shot cleanliness. DEFENSIVE
         // and COUNTER should turn more shots into lower-quality attempts;
         // ATTACKING/POSSESSION can leave more space if bypassed.
         xg *= defensiveStyleShotQualityMultiplier(opponent.style(), location);
@@ -962,9 +888,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         fatigueModel.applyDrain(shooter, 8);
 
         // Resolve shot outcome (xG threshold + randomness)
-        // V24D6U4-RE: Recalibrated onTarget base and goal threshold to hit
         // Poisson λ=1.25 after raising chanceProbability (more shots).
-        // Previous (V24D6U4): onTarget base 0.18, goal threshold xg/0.40
         // produced too few goals (~9% conversion, λ≈0.45).
         // New: onTarget base 0.30 (more realistic 30-35% on-target),
         // goal threshold xg/0.60 (60% xG = 100% goal — slightly more
@@ -974,7 +898,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
         if (onTarget) {
             // Goal if xG > random threshold (higher xG = more likely to beat keeper)
-            // V25D67-C27: scale goal-conversion probability by matchIntensity, which
             // is computed once per match from the absolute difference of the home
             // and away starting-XI average overalls. For parejos matches (teams
             // within 5% overall), intensity ≈ 0.40 → ~60% reduction in goal prob
@@ -984,16 +907,14 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             // the lucky escapes (0-0, 1-0) Iván called out in the C27 brief.
             // Iván's brief explicitly forbids forcing goleadas or artificial
             // topes — we never raise intensity above 1.0.
-            isGoal = random.nextDouble() < (xg * matchIntensity / 0.60); // V25D67-C27
+            isGoal = random.nextDouble() < (xg * matchIntensity / 0.60);
             if (isGoal) {
                 possessor.addGoal();
-                // V24D20-SANDBOX-V2-MVP BUG #4: increment the addGoal counter
                 // so finalizeResult can detect divergence between addGoal
                 // calls and GOAL events in the timeline.
                 int n = goalAdditions.incrementAndGet();
                 log.trace("[V24-XG-COUNTER] addGoal called; counter={}, minute={}, xg={}",
                     n, minute, xg);
-                // V24D6O-fix: count goal as a shot on target so homeShots/awayShots
                 // (used in the Stats summary) is consistent with the Shot Map total.
                 // A goal is by definition a shot that hit the target and went in.
                 possessor.addShot(true);
@@ -1046,19 +967,16 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         }
     }
 
-    // V24D23-A: ordered array mirroring V24ShotLocation.values() — used by
     // the weighted-distribution selectShotLocation. Index 0 = SIX_YARD_BOX,
     // index 1 = PENALTY_AREA_CENTER, ..., index 4 = LONG_RANGE.
     private static final V24ShotLocation[] LOCATIONS = V24ShotLocation.values();
 
-    // V24D23-A: shared V24FormationParser instance. Per R3 in the sprint
     // doc, allocating per-minute would add GC pressure; static-final keeps
     // it bounded to one parser per engine instance (and one engine per
     // V24LiveSession).
     private static final V24FormationParser FORMATION_PARSER = new V24FormationParser();
 
     /**
-     * V24D23-A: formation-aware shot location selection. Combines the
      * {@link TeamStyle} baseline distribution with a formation-driven
      * modifier, so two teams with the same style but different formations
      * (e.g. 4-3-3 vs 4-4-2) produce measurably different shot location
@@ -1145,7 +1063,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V24D23-A: compute the 5-element weight vector for shot-location
      * selection. Index 0 = SIX_YARD_BOX, 1 = PENALTY_AREA_CENTER,
      * 2 = PENALTY_AREA_WIDE, 3 = OUTSIDE_BOX, 4 = LONG_RANGE.
      *
@@ -1155,7 +1072,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * handles normalization via its cumulative-sum loop.
      *
      * <p>Baseline (BALANCED) shares: 25% six, 27% center, 20% wide,
-     * 18% outside, 10% long. These match the pre-V24D23-A hardcoded
      * BALANCED thresholds so the regression profile (style=BALANCED,
      * formation=4-4-2) keeps producing the same overall xG distribution
      * for a 4-4-2 squad — the formation modifiers above the baseline
@@ -1166,7 +1082,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             String formation,
             V24TacticalShapeProfile possessorShape,
             V24TacticalShapeProfile opponentShape) {
-        // Baseline (BALANCED) — preserved from pre-V24D23-A for regression continuity.
         double[] w = { 0.25, 0.27, 0.20, 0.18, 0.10 };
 
         // Style shift
@@ -1187,7 +1102,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         }
         if (f.defenders() == 3) {
             if (f.hasWingers()) {
-                // V25D99.189: a 3-4-3 is not a narrow back-three attack. The
                 // previous generic back-three penalty halved wide shots even
                 // when the shape had natural wingers, so the harness kept
                 // reading almost every formation as central. Keep some central
@@ -1234,13 +1148,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
             w[0] *= clamp(1.0 + centralEdge * 0.18, 0.86, 1.18);
             w[1] *= clamp(1.0 + centralEdge * 0.22, 0.84, 1.22);
-            // V25D99.168: natural wingers must bend the shot map, but not turn
             // every flank edge into runaway xG against a better/structured XI.
             // The old +28% cap made wide superiority too decisive in formation
             // averages; this keeps lanes visible while letting collective
             // quality and defensive coverage stay in the conversation.
             w[2] *= clamp(1.0 + wideEdge * 0.22, 0.80, 1.22);
-            // V25D99.198: if one opponent flank is specifically vulnerable,
             // the attack should create a visibly wider shot profile, not just
             // a generic xG bump. Keep this as a nudge: big enough for the
             // harness side columns, capped so a single weak fullback does not
@@ -1254,7 +1166,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D99.58: the parser intentionally collapses some labels into broad
      * families (e.g. 4-4-2 and 4-2-2-2 both have 4 mids + 2 forwards). This
      * small named layer preserves tactical identity without turning formation
      * names into hard tiers: geometry still carries the main signal, while the
@@ -1305,7 +1216,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     private double flankExploitOpportunity(double attackLane, double mirroredOpponentDefenseLane) {
         double vulnerability = Math.max(0.0, 1.0 - mirroredOpponentDefenseLane);
-        // V25D99.202: choosing the side of a wide attack should read like a
         // manager targeting a weak fullback. Own occupation still matters, but
         // a clearly vulnerable mirrored defensive lane gets extra intent so
         // the engine does not keep drifting to the squad's natural strong side.
@@ -1313,11 +1223,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V24D23-A: per-style location-distribution ratios. Each entry is a
      * multiplicative shift applied to the BALANCED baseline in
      * {@link #computeLocationWeights(TeamStyle, String)}.
      *
-     * <p>These ratios were derived from the pre-V24D23-A hardcoded
      * cumulative thresholds in this method's previous switch-based
      * implementation, then rounded to 2 decimals. They preserve the
      * pre-sprint distribution for ATTACKING/POSSESSION/COUNTER/DEFENSIVE
@@ -1355,7 +1263,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D34-F1: PLAYMAKER skill impact on assist quality.
      *
      * <p>Boosts the base assistQuality (normalized 0-1 from technique) by a
      * factor of {@code 1 + skill/200}. Models "vision de juego y creacion de
@@ -1366,7 +1273,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * <p>No-op behavior:
      * <ul>
      *   <li>{@code playmakerSkill <= 0} (skill absent o level 0) → retorna
-     *       {@code base} sin cambio. Esto preserva el resultado V25D33
      *       bit-a-bit para callers que no setean PLAYMAKER.</li>
      * </ul>
      *
@@ -1404,7 +1310,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     static double onTargetProbability(double xg) {
-        // V25D99.87: monotonic shot-on-target model. Previously
         // 0.30 + (1 - xg) * 0.42 inverted the football intuition: weak
         // 0.01 xG attempts were far more likely to hit the target than
         // clean 0.60 xG chances. Keep realistic bounds while making every
@@ -1414,11 +1319,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D33-F3: locate the on-pitch GK for a team's starting 11 and return
      * their {@link V24PlayerMatchState}. Returns {@code null} when no on-pitch
      * GK is present (short-handed team) — the caller passes {@code null} to
      * {@code calculateXg(...)} which keeps the WALL divisor at 1.0 (no
-     * reduction in xG, bit-a-bit compat with the V25D32 baseline).
      *
      * <p>Filter is identical to {@link #gkQuality}: position="GK" AND
      * onPitch=true. Picks the FIRST such player in iteration order; this
@@ -1433,14 +1336,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D27: aggregate attacker stat for the possessor's starting 11, weighted
      * by formation-aware role. Returns the avg attack stat of the top-7
      * "attacking" players (forwards, attacking midfielders, wingers) where
      * "attacking" is defined by position: ATT > MID > DEF. This stat amplifies
      * the formationOffensiveModifier — elite attackers in a 4-3-3 get more
      * xG boost than weak attackers in the same formation.
      *
-     * <p>V25D99.18: widened from top-5 to top-7 so the panel reacts when
      * MIDs push into the attack zone (their eff rises via
      * SubdivisionEffectivenessCalculator but their raw attack ~70 falls
      * short of the top-5 dominated by STs ~80). With 7 slots, 2 MIDs with
@@ -1460,11 +1361,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .sorted((a, b) -> Integer.compare(b.attack(), a.attack()))
                 .limit(7)
                 .toList();
-        // V25D47 (Sprint C11a): weight each player's attack contribution by
         // PositionEffectivenessCalculator.effectiveness(naturalPosition, position).
         // A CB placed in a MID slot (effectiveness 0.8) contributes 80% of its
         // attack stat; a perfect match contributes 100%. The top-7 selection
-        // (V25D99.18) is unchanged in shape — still the N highest-attack
         // on-pitch players — but the average is now effectiveness-weighted.
         double avg = sorted.stream()
                 .mapToDouble(p -> p.attack()
@@ -1550,7 +1449,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D27: aggregate defender stat for the opponent's starting 11.
      * Returns the avg of (defense + mentality) / 2 across all DEF and GK
      * players on pitch. This stat amplifies the formationDefensiveModifier —
      * elite defenders in a 5-3-2 reduce xG conceded more than weak defenders.
@@ -1576,7 +1474,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                     .average()
                     .orElse(70.0);
         }
-        // V25D47 (Sprint C11a): weight each defender's (defense+mentality)/2
         // contribution by PositionEffectivenessCalculator.effectiveness(...).
         // Note: switched from int division /2 to double division /2.0 to
         // preserve precision before multiplying by the effectiveness
@@ -1598,7 +1495,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 })
                 .min()
                 .orElse(avg);
-        // V25D99.24: defensive substitutions were too diluted by a plain
         // back-line average. Realistically, an opponent can target the weak
         // link, especially over repeated possessions. Keep the average as the
         // main signal, but blend in the weakest defender so replacing one
@@ -1685,12 +1581,10 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     private double defenderRosterChanceVolumeMultiplier(double defenderStat) {
         // Below 70: more opponent chance volume. Above 70: less opponent
-        // chance volume. V25D99.34 slightly widens the previous curve because
         // defender substitutions were still too quiet in the multi-seed
         // scenario matrix. Shape and per-shot xG remain the main tactical
         // signal; this only ensures that a weak link in the back line is no
         // longer swallowed by the team average.
-        // V25D99.85: make defensive personnel changes slightly more visible.
         // The previous /65 curve was professional but too flat for stress
         // swaps; a CB->ST or ST->CB test often disappeared into 0.00 deltas.
         double delta = (70.0 - defenderStat) / 55.0;
@@ -1698,7 +1592,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D99.22: pixel-aware player effectiveness inside the actual match
      * engine. The preview/rating panel already uses customX/customY through
      * {@link SubdivisionEffectivenessCalculator}; the live replay path must
      * use the same continuous coordinates so a manager moving a player a few
@@ -1725,7 +1618,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D99.22.1: mirror the preview's free-positioning attacking intent
      * inside the match engine. A CM dragged 15-20% higher is no longer treated
      * only as "farther from ideal" (penalty); it also contributes a little more
      * to attack, so the partido responds in the same direction as the visual
@@ -1752,11 +1644,9 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D34-F2 helper: aggregate MARKER + TACKLER skill levels from the
      * opponent's DEF on-pitch players. Used by the V24 engine to feed
      * {@code V24ShotXgCalculator} (defending side of the duel).
      *
-     * <p>V25D35: visibility changed from {@code private} to package-private so
      * the unit test {@code AggregateOpponentDefenderSkillsTest} (same package)
      * can drive the helper directly without reflection. Reflection-on-private
      * was the previous fallback and the verifier nit called it out as fragile.
@@ -1765,7 +1655,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      *
      * <p><b>NOTE — "visible-for-testing":</b> this method is package-private
      * solely so the unit test can call it. It is NOT part of the public API of
-     * {@link V24DetailedMatchEngine}. Production callers MUST go through
      * {@link #simulate(V24MatchContext, java.util.Random)} or one of the other
      * public entry points. (We don't use Guava's {@code @VisibleForTesting}
      * because Guava is not on the project's classpath, and we don't use
@@ -1795,7 +1684,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * @return sparse map con MARKER y/o TACKLER promediados; empty si no hay
      *         DEF on-pitch o si ninguno tiene esos skills
      */
-    // visible-for-testing: package-private by V25D35 verifier nit
     Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(List<V24PlayerMatchState> opponents) {
         List<V24PlayerMatchState> defsOnPitch = opponents.stream()
                 .filter(V24PlayerMatchState::onPitch)
@@ -1824,13 +1712,11 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D34-F3: max PASSER skill entre los on-pitch players. Usado para
      * amplificar la possession share base del equipo. Retorna 0 si no hay
      * players on-pitch o si ninguno tiene PASSER.
      *
      * <p>Sparse map semantics: skill absent → 0 (treated as no skill).
      * Si todos tienen PASSER=0, retorna 0 → no boost → bit-a-bit identico
-     * a V25D33.
      *
      * @param players lista de players del equipo (full starting 11)
      * @return MAX PASSER skill (0-99) entre on-pitch players
@@ -1843,10 +1729,7 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
                 .orElse(0);
     }
 
-    // ========== V25D67-C27 — match intensity (Opción B) helpers ==========
-
     /**
-     * V25D67-C27 — average overall of a starting XI (in [0, 99]).
      *
      * <p>Used to compute the absolute difference between home and away team
      * overalls, which drives the match intensity multiplier. Falls back to 50
@@ -1854,7 +1737,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      * keeps the diff ratio at 0.0 — i.e. treated as parejos by downstream code).
      *
      * <p>Reads from {@link SessionPlayer#calculateOverall()}, which delegates to
-     * the shared {@code OverallCalculator} (introduced in V25D40). For our test
      * fixtures (all 6 stats = ovr, no height, no skills), overall ≈ ovr.
      */
     private record V24TacticalShapeProfile(
@@ -2044,7 +1926,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double possession = 1.0 + midDelta + midfieldWidthBonus + centralOverloadBonus
                 - noOutletPenalty - excessiveWidthPenalty - midfieldShortagePenalty;
 
-        // V25D99.85: slightly stronger occupation curve so moving/replacing a
         // real attacking slot is visible in the harness. This still stays
         // bounded by the final clamp and is fed by effectiveness-weighted
         // slot geometry, not by formation name alone.
@@ -2059,7 +1940,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         attackVolume += wingbackProjectionIntent * 0.035;
         attackVolume -= wingbackCoverIntent * 0.025;
 
-        // V25D99.85: defensive occupation was under-read in player-swap stress
         // tests. A defender removed from the back line, or an attacker forced
         // into it, should affect opponent chance quality/volume more clearly.
         double defDelta = (def - 4.0) * 0.125;
@@ -2075,7 +1955,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         resistance += wingbackProjectionIntent * 0.026;
         resistance -= wingbackCoverIntent * 0.034;
 
-        // V25D99.58: preserve named tactical identity after the numeric parser
         // groups similar labels. These are intentionally small nudges on top of
         // the real slot geometry: the manual editor still wins, but a 4-1-2-3
         // pivot no longer simulates as a byte-identical flat 4-3-3.
@@ -2093,7 +1972,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             attackVolume -= 0.040; // one safer midfielder, but still a real front three
             resistance -= 0.140;   // lower opponent chance quality via central screen
         } else if ("4-3-3".equals(formation)) {
-            // V25D99.329: a real 4-3-3 should not be only a label change in
             // the scenario harness. Give it a visible wide/front-three read,
             // paid for with slightly thinner defensive cover behind wingers.
             possession -= 0.010;
@@ -2108,7 +1986,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             attackVolume -= 0.020; // one CM sits instead of joining attacks
             resistance -= 0.060;   // real central shield
         } else if ("3-5-2".equals(formation)) {
-            // V25D99.171: three centre-backs plus wingbacks/carrileros should
             // not defend the flanks like a narrow back three. It is still less
             // secure than a true back five, but elite wingers should need to
             // work through a real wide screen instead of producing runaway
@@ -2122,7 +1999,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             attackVolume -= 0.040; // fewer natural high/wide outlets
             resistance -= 0.180;   // five defenders should reduce opponent quality/volume
         } else if ("5-4-1".equals(formation)) {
-            // V25D99.340: the bunker must come from the visible pitch, not only
             // from the label. A real low/compact second line protects more and
             // attacks less; if the manager pushes that line higher, the shape
             // keeps a back-five identity but loses part of the low-block shell.
@@ -2134,7 +2010,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         }
 
         possession = clamp(possession, 0.84, 1.18);
-        // V25D99.340: allow defensive/manual-low shapes to keep distinct
         // attacking outlet values instead of flattening every conservative
         // variant into the same floor. This makes pixel edits visible while the
         // upper clamp still prevents attacking explosions.
@@ -2149,7 +2024,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double defenseRightChannel = normalizeChannel(defenseRight);
 
         if ("5-4-1".equals(formation)) {
-            // V25D99.61/340: a 5-4-1 low block is not merely "less attack"; it
             // should be read as compact box protection. Keep the bonus tied to
             // real coordinates so pixel edits in the DT modal change the engine
             // contract instead of receiving a free fixed label buff.
@@ -2159,7 +2033,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             defenseRightChannel = clamp(defenseRightChannel + (0.16 * lowBlockChannelIntent), 0.35, 1.65);
             attackCenterChannel = clamp(attackCenterChannel - (0.08 * lowBlockChannelIntent), 0.35, 1.65);
         } else if ("5-3-2".equals(formation)) {
-            // V25D99.164: a true back five has two wingbacks in the defensive
             // line. The geometry is already visual and editable, but raw lane
             // normalization under-read the wide cover because the wingbacks sit
             // very wide while the three CBs carry most of the central weight.
@@ -2170,7 +2043,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             defenseLeftChannel = clamp(defenseLeftChannel + 0.24, 0.35, 1.65);
             defenseRightChannel = clamp(defenseRightChannel + 0.24, 0.35, 1.65);
         } else if ("3-5-2".equals(formation)) {
-            // V25D99.171: midfield wingbacks/carrileros count as wide defensive
             // cover, but with less box protection than a back five.
             double projectedWingbackAttack = 0.06 + Math.min(0.12, wingbackProjectionIntent * 0.045);
             attackLeftChannel = clamp(attackLeftChannel + projectedWingbackAttack, 0.35, 1.65);
@@ -2179,7 +2051,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             defenseLeftChannel = clamp(defenseLeftChannel + 0.26, 0.35, 1.65);
             defenseRightChannel = clamp(defenseRightChannel + 0.26, 0.35, 1.65);
         } else if ("3-5-2-CDM".equals(formation)) {
-            // V25D99.217: same wingback/carrilero contract as 3-5-2, plus a
             // slightly clearer central screen from the holder. The visual shape
             // has LWB/RWB, so side-mirror smokes must not treat it as a narrow
             // back three with neutral midfield cover.
@@ -2243,7 +2114,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             case "MID" -> 0.88;
             default -> 0.72;
         };
-        // V25D99.201: side targeting must read player quality, not only slot
         // geometry. A weak fullback/carrilero should make that defensive lane
         // less attractive as cover before the shot coordinate is chosen. The
         // clamp keeps a single weak link visible without letting it erase
@@ -2254,8 +2124,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     private double midfieldStructureEffectiveness(V24PlayerMatchState player, double tacticalEffectiveness) {
         if (player == null) return 1.0;
         double eff = clamp(tacticalEffectiveness, 0.0, 1.0);
-        // V25D99.27: midfield structure is a zone responsibility, not a label
-        // on the replacement player. The previous V25D99.26 pass squared only
         // players whose tactical position was already MID, so an attacker
         // swapped into a central MID coordinate could still count too much as
         // midfield occupation. Squaring the role/geometry effectiveness for
@@ -2267,7 +2135,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     private double midfieldProfileMultiplier(V24PlayerMatchState player) {
         if (player == null) return 1.0;
-        // V25D99.29: midfield is not one generic occupation number. A player
         // in the central band needs tempo/control and defensive screen. This
         // keeps a technical attacker useful, but stops him from replacing a
         // pivot/box-to-box midfielder at full structural value.
@@ -2296,7 +2163,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         if (player == null) return 1.0;
         String natural = player.naturalPosition() != null ? player.naturalPosition() : player.position();
         String tactical = player.position();
-        // V25D99.30: coordinates can move a player into the central band, but
         // the player still needs the natural habits of a midfielder to fully
         // replace a pivot/box-to-box role. Forwards keep some creative value;
         // defenders keep some screen value; neither should count as a complete
@@ -2337,7 +2203,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         double bestEdge = Math.max(leftEdge, Math.max(centerEdge, rightEdge));
         double worstEdge = Math.min(leftEdge, Math.min(centerEdge, rightEdge));
         double advantage = Math.max(0.0, bestEdge) * 0.125;
-        // V25D99.164: blocked lanes were too soft. A single open lane should
         // still matter, but if the defense covers two/three channels the attack
         // must create fewer situations, not merely lower-xG shots. This makes
         // manual compact/wide defensive shapes visible in the same way the
@@ -2359,7 +2224,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     private double collectiveQualityChanceVolumeMultiplier(double possessorCollectiveStat, double opponentCollectiveStat) {
         double edge = possessorCollectiveStat - opponentCollectiveStat;
-        // V25D99.168: chance volume should react to the whole XI, not only to
         // the best lane. A modestly stronger collective now has a clearer pull
         // across many seeds, without making favourites deterministic.
         return clamp(1.0 + (edge * 0.022), 0.89, 1.11);
@@ -2482,7 +2346,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D67-C27 — normalized absolute overall difference in [0.0, 1.0].
      *
      * <p>Computed as {@code |homeOvr - awayOvr| / max(homeOvr, awayOvr)}.
      * Returns 0.0 if both teams are non-positive (defensive guard).
@@ -2494,7 +2357,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V25D67-C27 — match intensity multiplier (Opción B from the C27 task prompt).
      *
      * <p>Maps the absolute overall difference ratio (0..1) to a goal-probability
      * multiplier in [0.40, 1.00]. The goal is to bring parejos matches
@@ -2519,14 +2381,12 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      *   <li>We never raise intensity above 1.0 — no forcing goleadas.</li>
      *   <li>We never add artificial topes — the engine's existing randomness
      *       is what produces the variance Iván wants preserved.</li>
-     *   <li>Only REDUCES goals. Existing V24D6U4-RE calibration (λ ≈ 1.25 per
      *       team for 4-4-2 BALANCED OVR=75) becomes "≤ 0.5 per team" for
      *       parejos — a deliberate retreat from the smoke-C22 observation
      *       where Real Madrid vs Barcelona ended 4-0.</li>
      * </ul>
      */
     private static double computeMatchIntensity(double diffRatio) {
-        // V25D67-C27 (UNCHANGED in C28): the floor (PAREJOS_INTENSITY=0.40)
         // and threshold (5%) are preserved as-is. The C28 fix only EXTENDS
         // matchIntensity to the chanceProbability layer (see line 420 below)
         // with a midpoint-SQRT multiplier. Why no floor tune: pre-fix
@@ -2538,17 +2398,15 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // avg total 1.50 (in C28 target [1.0, 1.5]) without breaking OVR
         // 75×75 (which drops to 0.32 per team, still in [0.3, 1.0]).
         //
-        // V25D68-C28 approach (combined but minimal): extends
-        // matchIntensity to chanceProbability (the layer that REVISOR's
         // smoke identified as the main driver of high goal counts in
         // intermedios). The midpoint-SQRT curve is the "tune" — it
         // smoothly interpolates between 1.0 (no change for desiguales)
         // and sqrt(0.5) ≈ 0.707 at intensity=0. The curve is empirically
         // calibrated to land intermedios in [1.5, 4.0] band and parejos
         // in C28 target [1.0, 1.5].
-        final double PAREJOS_INTENSITY = 0.60;       // V25D99.45: avoid sterile 0-0-heavy balanced matches.
+        final double PAREJOS_INTENSITY = 0.60;
         final double DESIGUALES_INTENSITY = 1.00;
-        final double DIFF_PAREJOS_THRESHOLD = 0.05;  // V25D67-C27 (unchanged)
+        final double DIFF_PAREJOS_THRESHOLD = 0.05;
         final double DIFF_DESIGUALES_THRESHOLD = 0.30;
         if (diffRatio <= DIFF_PAREJOS_THRESHOLD) return PAREJOS_INTENSITY;
         if (diffRatio >= DIFF_DESIGUALES_THRESHOLD) return DESIGUALES_INTENSITY;
@@ -2606,30 +2464,24 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
 
     private double chanceProbability(TeamStyle style, int minute) {
         // Backward-compat overload (no possessor): delegates to the player-quality
-        // overload with the V24D6U4-RE anchor (attack=70, speed=70) so the modifier
         // is 1.0 and the historical λ target is preserved for callers that don't
         // have a live startingPlayers list (e.g. diagnostic harnesses).
         return chanceProbability(style, minute, 70, 70, 0, 0);
     }
 
     private double chanceProbability(TeamStyle style, int minute, int possessorAttack, int possessorSpeed) {
-        // V25D33-F2: backward-compat overload delegates to the new 5-args with
-        // dribblerSkill=0. Preserves V25D32 baseline for diagnostic harnesses
         // that don't have a live keyAttacker reference.
         return chanceProbability(style, minute, possessorAttack, possessorSpeed, 0, 0);
     }
 
     private double chanceProbability(TeamStyle style, int minute, int possessorAttack,
                                      int possessorSpeed, int dribblerSkill) {
-        // V25D34-F3: backward-compat overload delegates to the new 6-args with
-        // speedsterSkill=0. Preserves V25D33 baseline for callers que no
         // necesitan SPEEDSTER.
         return chanceProbability(style, minute, possessorAttack, possessorSpeed,
                 dribblerSkill, 0);
     }
 
     /**
-     * V25D34-F3: overload 6-args que agrega {@code speedsterSkill} para aplicar
      * el SPEEDSTER bonus al keySpeed en counter-attacks. El overload 5-args
      * delega a este con speedsterSkill=0 (no-op para callers legacy).
      *
@@ -2649,10 +2501,8 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      *       chanceProb * 1.33 (+33%)</li>
      * </ul>
      *
-     * <p>V25D35 verifier nit: la mención previa de "30.67 / 16.67 / +30.7% /
      * +16.7%" era incorrecta — la division es entera (Java {@code int / int}),
      * no double. El codigo aplica truncamiento. Los unit tests en
-     * {@code V24DetailedMatchEngineSpeedsterTest} ya usaban la formula
      * correcta {@code (92 / 3) * 0.01}, por lo que el comportamiento real no
      * cambio; solo la documentacion.
      *
@@ -2667,8 +2517,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
      */
     private double chanceProbability(TeamStyle style, int minute, int possessorAttack,
                                      int possessorSpeed, int dribblerSkill, int speedsterSkill) {
-        // V24D6U4-RE: Recalibrated to hit Poisson λ=1.25 per team.
-        // Previous tuning (V24D6U4) overshot the suppression: empirical λ≈0.45
         // vs target λ≈1.25 (factor 2.77x too low). ITER 1 (base 0.25) gave
         // λ≈0.89; ITER 2 (base 0.35) targets λ≈1.24.
         double base = switch (style) {
@@ -2686,7 +2534,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // Open play tends to increase toward end of match
         double endGame = (minute > 75) ? 1.2 : 1.0;
 
-        // V25D34-F3: SPEEDSTER bonus al keySpeed en COUNTER style. Aplicado
         // ANTES del qualityMod para que el bonus se propague al multiplier.
         // Si style != COUNTER o speedsterSkill <= 0, no hay cambio.
         int effectiveSpeed = possessorSpeed;
@@ -2694,7 +2541,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             effectiveSpeed += speedsterSkill / 3;
         }
 
-        // F6 F2 contract: player-quality modifier anchored to the V24D6U4-RE
         // median (attack=70, speed=70) so a default starter gives mod=1.0 and
         // the existing λ target is preserved for unmodified lineups. A
         // higher-attack bench player (attack=80) yields mod=1.30 — enough
@@ -2707,7 +2553,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             + (possessorAttack - 70) * 0.02
             + (effectiveSpeed - 70) * 0.01;
 
-        // V25D33-F2: DRIBBLER 1v1 multiplier. Spec values:
         //   DRIBBLER=0  -> multiplier 1.000 (no change — bit-a-bit compat)
         //   DRIBBLER=50 -> multiplier 1.167 (+16.7%)
         //   DRIBBLER=95 -> multiplier 1.317 (+31.7%)
@@ -2716,7 +2561,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         // DRIBBLER=0. DRIBBLER is multiplicative on chanceProbability — i.e.
         // a key attacker with DRIBBLER=95 produces ~31.7% more shot attempts
         // than one with DRIBBLER=0, ceteris paribus.
-        // V25D99.25: softer DRIBBLER volume curve. The previous /300 curve
         // made elite dribblers add ~30% team chance volume, which was too
         // strong in player-swap harness comparisons. Keep the skill visible,
         // but let it complement xG/duel quality instead of dominating shots.
@@ -2747,7 +2591,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: manually re-apply a scheduled sub on a
      * fresh homeState (the engine runs simulate() once per tick, so on
      * subsequent ticks the homeState is rebuilt from the context and
      * the previous tick's swap is "undone" w.r.t. the homeState).
@@ -2817,7 +2660,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
             if (effective == null) {
                 effective = new HashMap<>(baseSlotsByPlayerId);
             }
-            // V25D99.41.1: a substitute inherits the exact visual/tactical
             // slot of the player he replaces. Otherwise a bench DEF with no
             // persisted lineup slot falls back to generic center-back
             // coordinates, so replacing a wide defender could accidentally
@@ -2839,7 +2681,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
         int homePoss = totalPoss > 0 ? (int) Math.round(100.0 * homePossTicks / totalPoss) : 50;
         int awayPoss = 100 - homePoss;
 
-        // V24D20-SANDBOX-V2-MVP BUG #4: divergence check between addGoal()
         // counter and the number of GOAL events actually in the timeline.
         // If they drift, the engine is double-counting addGoal OR some
         // non-GOAL event is being counted as a goal. The counter is a
@@ -2895,7 +2736,6 @@ public class V24DetailedMatchEngine implements V24DetailedMatchEngineProvider {
     }
 
     /**
-     * V24D6Q: Apply a yellow card to a player and, if this is the player's
      * second yellow of the match, also emit a RED_CARD event.
      *
      * <p>Package-private to allow deterministic unit testing without

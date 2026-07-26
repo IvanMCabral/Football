@@ -1,7 +1,6 @@
 package com.footballmanager.application.service.simulation.v24.stats;
 
 /**
- * V24D6M7: Sort fields exposed via the player season stats API.
  *
  * <p>Each field maps to a comparable property on PlayerSeasonStatsDto.
  * Unknown values are rejected with 400 Bad Request.

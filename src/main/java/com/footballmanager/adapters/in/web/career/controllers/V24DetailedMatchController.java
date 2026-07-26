@@ -16,14 +16,12 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 /**
- * V24D4C: Controller for querying V24 detailed match data.
  *
  * <p>GET /api/v1/careers/{careerId}/matches/{matchId}/detail
  *
  * <p>Feature-gated: returns 404 when {@code app.simulation.v24.expose-detail-api=false}.
  * Does NOT enable V24 simulation, persistence, or any production simulation path.
  *
- * <p>V24D6O: Path moved to /api/v1/careers to align with the rest of the
  * career namespace and the dev proxy (/api/v1 -> localhost:8080). Previously
  * the controller sat at /api/careers (no v1) which meant frontend calls
  * landed on a 404 through the proxy.
@@ -47,7 +45,6 @@ public class V24DetailedMatchController {
     /**
      * GET /api/v1/careers/{careerId}/matches/{matchId}/detail
      *
-     * Returns V24DetailedMatchData if:
      * - Feature flag expose-detail-api is true
      * - Detail exists in Redis for the given careerId + matchId
      *
@@ -72,7 +69,7 @@ public class V24DetailedMatchController {
         }
 
         if (!queryService.isApiEnabled()) {
-            log.debug("[V24D4C] Detail API disabled, returning 404 for careerId={}, matchId={}", careerId, matchId);
+            log.debug("Detail API disabled, returning 404 for careerId={}, matchId={}", careerId, matchId);
             return Mono.just(ResponseEntity.notFound().build());
         }
 
@@ -87,7 +84,6 @@ public class V24DetailedMatchController {
     }
 
     /**
-     * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE):
      * GET /api/v1/careers/{careerId}/matches/{matchId}/compare
      *
      * <p>Returns a {@link MatchComparison} with the baseline (what would
@@ -127,7 +123,6 @@ public class V24DetailedMatchController {
             return Mono.just(ResponseEntity.notFound().build());
         }
 
-        // V24D15-CLEANUP (BUG_COMPARE_404): getComparison now returns
         // Mono<MatchComparison> so it composes correctly with the Reactor
         // scheduler (the sync version was silently aborting under Reactor
         // parallel scheduling — blockOptional() threw IllegalStateException
@@ -154,7 +149,6 @@ public class V24DetailedMatchController {
     }
 
     /**
-     * V24D24: GET /api/v1/careers/{careerId}/matches/{matchId}/timeline?minute={N}
      *
      * <p>Returns a partial snapshot of the stored match data filtered up to
      * and including minute N. Used by the test-harness UI timeline scrubber.
@@ -196,7 +190,7 @@ public class V24DetailedMatchController {
         }
 
         if (!queryService.isApiEnabled()) {
-            log.debug("[V24D24] Timeline API disabled, returning 404 for careerId={}, matchId={}",
+            log.debug("Timeline API disabled, returning 404 for careerId={}, matchId={}",
                     careerId, matchId);
             return Mono.just(ResponseEntity.notFound().build());
         }

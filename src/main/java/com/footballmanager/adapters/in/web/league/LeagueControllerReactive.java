@@ -21,8 +21,6 @@ import java.util.UUID;
 public class LeagueControllerReactive {
 
     private final LeagueManagementUseCase leagueManagementUseCase;
-    // V24D12-B: use ControllerHelper for userId extraction so the 401 path
-    // matches V24D12's UnauthorizedException -> 401 contract instead of
     // leaking the inline NPE on UUID.fromString(null).
     private final ControllerHelper controllerHelper;
 

@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * V24D6U5: Controller one-shot para ejecutar el seed de La Liga 2024/25.
  *
  * <p><b>Endpoint:</b> {@code POST /api/v1/world/seed-la-liga?userId={userId}}
  * <p><b>Efecto:</b> pobla el WorldSnapshot del usuario (en Redis) con 20 equipos y ~400
@@ -23,7 +22,6 @@ import java.util.UUID;
  * <p><b>Importante:</b> este endpoint es destructivo en el sentido de que sobreescribe
  * stats de teams/players con el mismo nombre. NO dropea el snapshot del usuario.
  *
- * <p><b>V25D78-C47 (security fix):</b> si la request trae JWT (vía header
  * {@code Authorization: Bearer ...}), el {@code userId} del JWT DEBE coincidir con el
  * {@code userId} del query param. Si no coincide, retorna 403 Forbidden con
  * {@code code=IMPERSONATION_FORBIDDEN}. Esto previene que un user autenticado pueda
@@ -33,7 +31,6 @@ import java.util.UUID;
  * tiene {@code /api/v1/world/**} como {@code permitAll()} por design intent — el world
  * debe ser sembrable ANTES de que exista cualquier usuario, durante el setup flow).
  * Esa decisión de design está documentada en
- * {@code SecurityConfig.java} línea ~144 (V24D12-C-3) y queda fuera del scope de este
  * fix.
  */
 @RestController
@@ -48,7 +45,6 @@ public class LaLigaSeedController {
     public Mono<ResponseEntity<Map<String, Object>>> seedLaLiga(
             @RequestParam UUID userId,
             Authentication authentication) {
-        // V25D78-C47: si la request trae JWT, validar que su userId coincide con el
         // query param. Si no coincide, el JWT user está intentando impersonar a otro
         // user — bloqueamos con 403.
         if (authentication != null && authentication.getName() != null

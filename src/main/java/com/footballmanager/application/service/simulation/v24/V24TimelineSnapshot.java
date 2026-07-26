@@ -10,13 +10,11 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D24: Snapshot of V24 detailed match data filtered up to and including a
  * specific minute. Returned by
  * {@code GET /api/v1/careers/{careerId}/matches/{matchId}/timeline?minute=N}
  * for the test-harness UI timeline scrubber.
  *
  * <p>Aggregations are derived from the timeline events of the stored
- * {@link V24DetailedMatchData} — no re-simulation, no cache. Filter is
  * sub-ms for typical matches (50-200 events).
  *
  * <p>Aggregation rules (see {@link TimelineSnapshotBuilder}):

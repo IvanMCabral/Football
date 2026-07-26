@@ -28,9 +28,7 @@ public class UserDivisionFixtureQueryService {
 
             TournamentState tournamentState = career.getTournamentState();
             List<MatchFixture> fixtures = tournamentState.getFixturesForRound(round);
-            // V24D24.3-FIX: build teamNames from the actual fixtures of this round so
             // cross-division fixtures injected via test-harness replaceFixtures resolve
-            // to real names instead of falling back to UUIDs (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
             Set<String> teamIdsInFixtures = new HashSet<>(userDivision.getTeamIds());
             teamIdsInFixtures.addAll(FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures));
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, teamIdsInFixtures);
@@ -71,9 +69,7 @@ public class UserDivisionFixtureQueryService {
             int totalRounds = roundsWithBye * 2;
 
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
-            // V24D24.3-FIX: extend teamNames with any cross-division teams present in the
             // tournament fixtures — defensive merge so getAll() resolves names for ALL matches
-            // returned, not just user-division matches (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
             Set<String> allFixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(tournamentState.getFixtures());
             Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, allFixtureTeamIds);
             teamNames.putAll(extraNames);
@@ -93,13 +89,11 @@ public class UserDivisionFixtureQueryService {
     }
 
     /**
-     * V25D78-C55.7.7 BUG-M4: getAll with a single-round filter. Returns an
      * {@link AllFixturesResponse} shape with only the requested round in the
      * rounds array (other rounds are filtered out, but {@code teamNames},
      * {@code teams}, and {@code config} stay complete so the UI can still
      * resolve BYE team names + cross-division team names).
      *
-     * <p>Strategy decision (per F0 hallazgos + salvedad Mavis #2): instead of
      * in-memory post-filter on the full payload (which works since dataset is
      * bounded at 240 matches = 10 rounds × 24 matches for 5-team divisions),
      * we delegate to {@link #getByRound} for the matches and reconstruct the
@@ -189,8 +183,6 @@ public class UserDivisionFixtureQueryService {
 
             TournamentState tournamentState = career.getTournamentState();
             List<MatchFixture> fixtures = tournamentState.getFixturesForRound(round);
-            // V24D24.3-FIX: include cross-division teams from this round's fixtures
-            // (BUG_FIXTURES_TEAM_NAMES_UUID_V2). user-division set ⊂ fixture set,
             // so this is a superset and never shrinks the map.
             Set<String> teamIdsInFixtures = new HashSet<>(userDivision.getTeamIds());
             teamIdsInFixtures.addAll(FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures));
@@ -217,8 +209,6 @@ public class UserDivisionFixtureQueryService {
             int totalRounds = roundsWithBye * 2;
 
             Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
-            // V24D24.3-FIX: extend teamNames with cross-division teams present in any round
-            // (BUG_FIXTURES_TEAM_NAMES_UUID_V2). One career-wide map, not per-round, so a
             // single round with cross-division fixtures doesn't leak UUIDs.
             Set<String> allFixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(tournamentState.getFixtures());
             Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, allFixtureTeamIds);

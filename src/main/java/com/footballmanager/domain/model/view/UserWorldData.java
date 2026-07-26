@@ -12,7 +12,6 @@ import java.util.UUID;
 /**
  * UserWorldData - Datos custom del usuario en Redis.
  *
- * Representa TODOS los datos que el usuario ha creado o modificado:
  * - Equipos custom
  * - Jugadores custom
  * - Relaciones custom (league-team agregadas por el usuario)

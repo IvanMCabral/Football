@@ -3,7 +3,6 @@ package com.footballmanager.adapters.in.web.career.lineup.dto;
 import java.util.List;
 
 /**
- * V25D45 (Sprint C10): Request body para {@code POST /career/lineup/preview-chemistry}.
  *
  * <p>El body es minimal — solo el set hipotético de 11 playerIds que el manager
  * está editando. El back calcula el chemistry SIN persistir (read-only preview,

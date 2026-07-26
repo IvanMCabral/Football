@@ -23,7 +23,6 @@ import java.util.*;
  */
 public final class V24SubstitutionEngine {
 
-    // LIVE-MATCH-F2-LIVE F5 (B6): logger for the formation-respecting substitution check.
     private static final Logger log = LoggerFactory.getLogger(V24SubstitutionEngine.class);
 
     private static final int DEFAULT_MAX_SUBS = 5;
@@ -115,7 +114,6 @@ public final class V24SubstitutionEngine {
     private Optional<V24MatchEvent> makeSubstitution(V24TeamMatchState team, V24PlayerMatchState subOff, int minute) {
         String teamId = team.teamId();
 
-        // LIVE-MATCH-F2-LIVE F5 (B6): validate that the current formation has a
         // slot for the OFF player's position. If the manager has tactically
         // changed to a formation that no longer has a slot for the position
         // being vacated, this is a no-op (the engine has no place to put the
@@ -123,7 +121,7 @@ public final class V24SubstitutionEngine {
         // F5, the engine used a cached formation that did not reflect the
         // manager's mid-match tactical choice.
         if (!formationHasSlotForPosition(team.formation(), subOff.position())) {
-            log.trace("[LIVE-MATCH-F2-LIVE F5] V24SubstitutionEngine.attemptSubstitution: "
+            log.trace("V24SubstitutionEngine.attemptSubstitution: "
                 + "current formation '{}' has no slot for position '{}' on team {} — skipping",
                 team.formation(), subOff.position(), teamId);
             return Optional.empty();
@@ -163,7 +161,6 @@ public final class V24SubstitutionEngine {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B6): does the given formation string (e.g. "3-5-2")
      * have at least one slot for the given position (e.g. "DEF")? Reads the
      * live {@code team.formation()} on every call (NOT a cached value) so a
      * mid-match tactical change is reflected in the next substitution attempt.
@@ -276,10 +273,7 @@ public final class V24SubstitutionEngine {
         return substitutedOnPlayerIds.contains(playerId);
     }
 
-    // ========== LIVE-MATCH-F1-POC: manual substitution API ==========
-
     /**
-     * LIVE-MATCH-F1-POC: manual substitution initiated by the user from the UI.
      *
      * <p>Phase 1 POC: this method does NOT alter the match result (per D1=B).
      * The {@code V24LiveSession} caches events as the engine ticks through its
@@ -414,7 +408,6 @@ public final class V24SubstitutionEngine {
     }
 
     /**
-     * LIVE-MATCH-F1-POC: public exposure of {@code isSubstitutedOff} for tests and
      * downstream consumers that need to query the engine state without subclassing.
      */
     public boolean isSubstitutedOffPublic(String playerId) {

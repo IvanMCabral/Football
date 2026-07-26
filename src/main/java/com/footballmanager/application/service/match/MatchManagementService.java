@@ -20,7 +20,6 @@ import java.util.function.Consumer;
  * Servicio de orquestación para gestión de partidos.
  * Delega en los UseCases sin contener lógica de negocio propia.
  *
- * <p>V24D6M11: Added startMatch with V24LiveSession for V24DetailedMatchEngine path.
  */
 @Service
 @RequiredArgsConstructor
@@ -48,11 +47,6 @@ public class MatchManagementService {
         sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId);
         return startMatchUseCase.execute(userId, matchId, onFinishCallback);
     }
-
-    /**
-     * V24D6M11: Inicia la simulación de un partido con V24LiveSession.
-     * Uses executeV24 with MatchFinishedResult callback for V24DetailedMatchEngine path.
-     */
     public Flux<MatchStateSnapshot> startMatch(
             UUID userId,
             UUID matchId,

@@ -123,7 +123,6 @@ public class CreateCareerSnapshotUseCaseImpl implements CreateCareerSnapshotUseC
     }
 
     private SessionPlayer cloneWorldPlayerToSessionPlayer(WorldPlayer worldPlayer, String sessionTeamId) {
-        // V25D33-F0-mapping: propagate height + skills from WorldPlayer so the
         // engine (V24PlayerMatchState) can read them via the 9-args overload of
         // V24ShotXgCalculator. Without this, top-5 LaLiga curated skills and
         // top-20 hardcoded heights were dropped at the clone boundary.

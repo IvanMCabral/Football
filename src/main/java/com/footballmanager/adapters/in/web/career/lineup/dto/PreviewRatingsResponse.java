@@ -3,7 +3,6 @@ package com.footballmanager.adapters.in.web.career.lineup.dto;
 import java.util.Map;
 
 /**
- * V25D99.15-BACK: response body for {@code POST /career/lineup/preview-ratings}.
  *
  * <p>Lightweight response: just the three per-zone ratings, multiplied by
  * 100 for percentage readability. The frontend already has the rest of

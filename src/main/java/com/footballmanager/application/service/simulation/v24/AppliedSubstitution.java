@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Record representing a single
  * applied manual substitution in a V24 match, stored as part of the
  * {@link BaselineState} so the {@code MatchComparisonService} can replay the
  * match from minute 0 with the same sequence of subs the manager actually

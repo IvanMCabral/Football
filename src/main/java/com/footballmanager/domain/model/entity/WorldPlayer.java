@@ -15,11 +15,9 @@ import java.util.UUID;
  * NO es mutable durante el juego.
  * SessionPlayer lo envuelve con estado mutable (energy, form, injuries).
  *
- * <p>V25D32-F3: agregados {@code heightCm} y {@code skillLevels} para que el
  * LaLigaSeedService pueda persistir metadata fisica/skills a Postgres via el
  * entity layer. Los factories existentes quedan intactos (backward-compat) —
  * los nuevos campos se setean post-construccion via setters, o quedan null/empty
- * si el caller no los provee. En V25D33, el mapping WorldPlayer → SessionPlayer
  * propagara estos campos al engine.
  */
 public class WorldPlayer {
@@ -42,9 +40,7 @@ public class WorldPlayer {
     
     private WorldPlayerOrigin origin;    // REAL, CUSTOM o RANDOM
 
-    // V25D32-F3: height + skill metadata. Seteados por el seeder si el JSON los
     // provee; null/empty para players viejos (custom/random) que no tienen data
-    // hardcoded. Engine en V25D33 aplica defaults si son null/empty.
     private Integer heightCm;
     private Map<PlayerSkill, Integer> skillLevels;
 
@@ -300,8 +296,6 @@ public class WorldPlayer {
     public void setOrigin(WorldPlayerOrigin origin) {
         this.origin = origin;
     }
-
-    // ========== V25D32-F3: Height + Skills ==========
 
     public Integer getHeightCm() {
         return heightCm;

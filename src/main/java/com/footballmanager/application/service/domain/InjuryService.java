@@ -10,23 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-
 /**
- * Dead code in V25D81.1. V24 path uses {@code V24InjuryMutationApplier} directly.
- * Will be removed in V25D82 — do not introduce new callers.
  *
  * <p>Originally: handled injury logic after match simulation. Modified players
  * in memory; the caller was expected to persist the changes to Redis. This
  * class does NOT write directly to SQL. As of the V24 detailed engine, this
  * responsibility moved into {@code V24InjuryMutationApplier}, which is called
- * from {@code LeagueSimulator.persistV24DetailForLiveMatch}. The remaining
  * code is preserved (deprecated) for one release to keep the public API
- * stable; V25D82 will delete this class.
  *
- * @deprecated Since V25D81.1 — superseded by V24InjuryMutationApplier. Scheduled
- *             for removal in V25D82.
  */
-@Deprecated(since = "V25D81.1", forRemoval = true)
+@Deprecated(forRemoval = true)
 @Service
 @RequiredArgsConstructor
 public class InjuryService {

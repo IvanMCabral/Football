@@ -17,7 +17,6 @@ import java.util.UUID;
  * Controller for WorldSnapshot operations.
  * Handles only snapshot-level operations (regenerate, etc.)
  *
- * <p><b>V25D78-C48 security fix:</b> DELETE /snapshot is destructive (regenerates
  * the entire WorldSnapshot from Postgres, overwriting the current state). Without
  * auth validation, a user could DELETE another user's snapshot. Now: if JWT is
  * present, validate JWT.userId == param.userId, return 403 if mismatch.

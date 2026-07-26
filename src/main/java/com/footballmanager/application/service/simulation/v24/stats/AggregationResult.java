@@ -3,7 +3,6 @@ package com.footballmanager.application.service.simulation.v24.stats;
 import java.util.List;
 
 /**
- * V24D6M7: Result of the aggregation step, carrying both the paginated
  * player stats AND the metadata needed to build the response.
  */
 public record AggregationResult(

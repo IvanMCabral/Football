@@ -3,7 +3,6 @@ package com.footballmanager.adapters.in.web.testharness.dto;
 import com.footballmanager.application.service.domain.TeamStyle;
 
 /**
- * V25D28 — request body for {@code POST /api/v1/test-harness/career/set-style}.
  *
  * <p>Accepts one of: {@code BALANCED}, {@code ATTACKING}, {@code DEFENSIVE},
  * {@code COUNTER}, {@code POSSESSION}. Null check is done imperatively in the

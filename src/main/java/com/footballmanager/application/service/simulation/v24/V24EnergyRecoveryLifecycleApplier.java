@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * V24D6J4: Applies post-round energy recovery to non-participating players.
  *
  * <p>Rule: Players who did NOT appear in any fixture this round recover energy.
  * Participating players are not modified (they already drained through V24FatigueMutationApplier).

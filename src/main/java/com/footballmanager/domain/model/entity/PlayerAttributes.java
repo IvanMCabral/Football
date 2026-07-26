@@ -5,11 +5,9 @@ import java.util.Objects;
 /**
  * PlayerAttributes - Atributos numericos basicos de un jugador (las 6 stats originales).
  *
- * <p>V25D32: deprecados los campos duplicados {@code heightCm} y {@code skillLevels}.
  * Esos valores ahora viven directamente en {@link Player} (source of truth unico).
  * Coherente con {@code SessionPlayer} (que tampoco delega a un value object separado
  * para height/skills). La justificacion completa esta en la decision arquitectonica
- * resuelta por Mavis root (ver V25D32 sprint prompt).
  *
  * <p>Esta clase conserva unicamente las 6 stats base:
  * attack, defense, technique, speed, stamina, mentality.

@@ -7,7 +7,6 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 public interface PlayerRepository {
-    // Métodos con userId para Redis (scope de usuario) - ÚNICOS MÉTODOS DE ESCRITURA
     Mono<Player> save(UUID userId, Player player);
     Mono<Player> findById(UUID userId, UUID playerId);
     Flux<Player> findAvailablePlayersByUserId(UUID userId);

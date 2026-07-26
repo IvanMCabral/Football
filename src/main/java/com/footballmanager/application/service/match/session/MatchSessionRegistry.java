@@ -13,8 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Registro de sesiones de partido activas.
  * Thread-safe usando ConcurrentHashMap.
  *
- * <p>V24D6M11: Supports creating MatchSession with V24LiveSession for
- * V24DetailedMatchEngine path.
  */
 @Component
 public class MatchSessionRegistry {
@@ -42,15 +40,10 @@ public class MatchSessionRegistry {
             return new MatchSession(userId, matchId, initialState, tickHandler);
         }));
     }
-
-    /**
-     * V24D6M11: Obtiene o crea una sesión con V24LiveSession (V24 path).
-     */
     public MatchSession getOrCreateSessionWithV24(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, V24LiveSession v24LiveSession) {
         String key = buildKey(userId, matchId);
         return activeSessions.computeIfAbsent(key, id -> {
             MatchState initialState = new MatchState(matchId);
-            // V25D76-C41: set userId on the initial MatchState so that the
             // downstream MatchStateSnapshot carries it (used by
             // RoundController.persistFinishedMatch as a secondary fallback
             // for the userId namespace). Without this, the V24 path

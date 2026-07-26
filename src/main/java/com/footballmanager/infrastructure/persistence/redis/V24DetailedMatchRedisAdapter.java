@@ -18,12 +18,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * V24D4B: Redis adapter for V24DetailedMatchStoragePort.
  *
- * <p>Stores V24DetailedMatchData snapshots at keys:
  * {@code career:{careerId}:match-detail:{matchId}}
  *
- * <p>V24D6M12: Uses a dedicated ExecutorService with fixed daemon threads
  * to execute blocking Redis I/O outside the WebFlux Netty event loop.
  * Blocking calls are wrapped in CompletableFuture and submitted to the executor,
  * then awaited with get(timeout). This is the only approach that reliably
@@ -76,7 +73,6 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("detail.matchId must not be blank");
         }
         String key = buildKey(careerId, matchId);
-        // V24D20-SANDBOX-V2-MVP BUG #3: trace the careerId+matchId at save
         // time so we can diff against findByMatchId if A3 (3rd match) ever
         // returns 404. The hypothesis is that A3 is persisted with a
         // different careerId or matchId than what the frontend uses.
@@ -106,7 +102,6 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
             throw new IllegalArgumentException("matchId must not be blank");
         }
         String key = buildKey(careerId, matchId);
-        // V24D20-SANDBOX-V2-MVP BUG #3: trace the lookup so we can diff
         // against save and detect key mismatches that cause 404s.
         log.info("[V24-DETAIL-QUERY] findByMatchId key={}, careerId={}, matchId={}",
             key, careerId, matchId);
@@ -125,7 +120,6 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
     }
 
     /**
-     * Retrieve all V24DetailedMatchData for a career.
      *
      * <p>Uses Redis KEYS scan to find matching keys, then parallel GET for values.
      * Deserialization failures are logged per-key and skipped.
@@ -217,7 +211,6 @@ public class V24DetailedMatchRedisAdapter implements V24DetailedMatchStoragePort
     }
 
     /**
-     * V24D20-SANDBOX-V2-MVP: Delete a single match detail by (careerId, matchId).
      * Used by the test-harness replay endpoint to clear the stale V24
      * detail. Best-effort: errors are logged, not thrown.
      */

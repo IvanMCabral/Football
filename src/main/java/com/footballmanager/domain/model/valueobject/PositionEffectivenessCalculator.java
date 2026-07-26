@@ -1,7 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
 /**
- * V25D47 (Sprint C11a): pure utility that returns a {@code 0..1} effectiveness
  * multiplier based on how well a player's natural position matches the
  * category of the subdivision slot they're assigned to.
  *
@@ -34,7 +33,6 @@ package com.footballmanager.domain.model.valueobject;
  *   ATT             |  0.0    |  0.3     |  0.7     |  1.0
  * </pre>
  *
- * <h2>3-cat → 5-cat mapper (V25D51 / Sprint C13)</h2>
  * <p>{@code SessionPlayer.getPosition()} actually returns one of 15 granular
  * 3-category strings (e.g., {@code CB}, {@code LW}, {@code CM}), NOT the
  * 5-category names used in the switch below. Before this mapper existed,
@@ -55,7 +53,6 @@ package com.footballmanager.domain.model.valueobject;
  * </pre>
  *
  * <p>Already-5-cat inputs ({@code GK/DEF/MID/WINGER/ATT}) pass through
- * unchanged, preserving the V25D47 test contract.
  *
  * <h2>Backward compat</h2>
  * <p>If {@code naturalPosition} or {@code slotCategory} is null or unrecognized,
@@ -105,9 +102,7 @@ public final class PositionEffectivenessCalculator {
             return 1.0;
         }
 
-        // V25D51 (Sprint C13): collapse 3-cat position names to their
         // 5-cat equivalents before the switch. 5-cat names pass through
-        // unchanged so the V25D47 test contract is preserved.
         String fiveCatNatural = toFiveCategory(naturalPosition);
 
         return switch (fiveCatNatural) {
@@ -151,7 +146,6 @@ public final class PositionEffectivenessCalculator {
      * Maps a 3-category position string ({@code SessionPlayer.getPosition()})
      * to its 5-category equivalent used by the effectiveness switch.
      *
-     * <p>Mapping table (V25D51 / Sprint C13 spec):
      * <pre>
      *   GK               → GK
      *   CB, LB, RB,
@@ -176,7 +170,6 @@ public final class PositionEffectivenessCalculator {
             return null;
         }
         return switch (threeCatPosition) {
-            // 5-cat pass-through (preserves V25D47 contract).
             case "GK", "DEF", "MID", "WINGER", "ATT" -> threeCatPosition;
             // 3-cat → 5-cat mapping.
             case "CB", "LB", "RB", "LWB", "RWB"     -> "DEF";

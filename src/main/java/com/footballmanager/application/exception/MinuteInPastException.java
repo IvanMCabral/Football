@@ -1,7 +1,6 @@
 package com.footballmanager.application.exception;
 
 /**
- * LIVE-MATCH-F2-LIVE F2.5: protocol-level failure thrown when a manager
  * tries to schedule a manual substitution for a minute that is already in
  * the past.
  *

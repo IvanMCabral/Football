@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * V25D78-C55.2 phase 2: Division-aware fixture scheduler.
  *
  * <p>Generates the 78-matchday season schedule for a 60-team league split
  * into 3 divisions (PRIMERA / SEGUNDA / TERCERA, 20 teams each):

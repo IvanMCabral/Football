@@ -26,7 +26,6 @@ public final class FixtureQueryDtos {
             Double awayXG,
             Double totalXG,
             String roundId,
-            // V24D24.6: formation snapshot for each team (read from
             // career.teamStarting11Formation which is the V24 engine's
             // source of truth). Nullable: a team may not have a formation
             // recorded yet (e.g. brand-new career, BYE team).
@@ -123,7 +122,6 @@ public final class FixtureQueryDtos {
 
     public record AllRoundsWithBye(
             List<RoundFixturesWithBye> rounds,
-            // V24D24.6: the user's team id, hydrated from
             // career.getUserSessionTeamId(). The frontend uses this to
             // highlight the user-controllable team in the test-harness
             // Panel B (formations snapshot). Nullable: a fresh career

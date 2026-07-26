@@ -60,7 +60,6 @@ public class CareerNotificationService {
                 return Sinks.many().replay().latest();
             });
 
-        // V24D13-1: heartbeat cada 15s para mantener la conexion SSE viva.
         // Proxy/ingress cierra conexiones idle a los 30s por default
         // (nginx proxy_read_timeout 60s default pero cloud-native ingress
         // suelen usar 30s). 15s da margen: 1 heartbeat entre cada
@@ -102,7 +101,7 @@ public class CareerNotificationService {
         ROUND_COMPLETED,
         CAREER_UPDATED,
         STANDINGS_UPDATED,
-        HEARTBEAT  // V24D13-1: keepalive SSE
+        HEARTBEAT
     }
 
     public static class CareerEvent {

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Immutable snapshot of the
  * "pre-subs" state of a V24 match, captured at match start so the
  * {@code MatchComparisonService} can reconstruct a "what would have
  * happened if the manager made no substitutions" baseline by replaying the
@@ -20,14 +19,12 @@ import java.util.Objects;
  * {@code career:{careerId}:match-baseline:{matchId}} with TTL 7 days.
  *
  * <p>Why a separate DTO instead of reusing the live-match
- * {@code V24DetailedMatchData}:
  * <ul>
  *   <li>Different key namespace (match-baseline vs match-detail).</li>
  *   <li>Different TTL (7d vs no TTL).</li>
  *   <li>Different shape: BaselineState carries the initial context (pre-subs)
  *       plus the ordered list of subs, NOT a finalized result.</li>
  *   <li>Lifecycle: BaselineState is created at match start and deleted on
- *       match finish; V24DetailedMatchData is created on match finish.</li>
  * </ul>
  *
  * <p>schemaVersion: 1 — bumping requires a migration path.

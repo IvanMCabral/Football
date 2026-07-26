@@ -1,7 +1,6 @@
 package com.footballmanager.adapters.in.web.career.simulation.dto;
 
 /**
- * LIVE-MATCH-F1-POC: request body for POST /api/v1/match-engine/matches/{matchId}/substitutions.
  *
  * <p>The {@code teamId} is intentionally omitted — the service infers it by
  * searching the V24LiveSession's context for the {@code playerOffId} in

@@ -5,7 +5,6 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * LIVE-MATCH-F1-POC: port-in interface for manual substitutions during a live match.
  *
  * <p>Phase 1 POC: manual substitutions are UI-only and do NOT alter the match result
  * (per D1=B decision). The substitution is recorded in the live session's

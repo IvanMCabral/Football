@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * <p><b>V25D78-C50 (impersonation sweep):</b> los 3 endpoints POST ahora
  * validan que el {@code userId} del JWT coincide con el {@code userId}
  * del body/query param. Si NO coincide → 403 IMPERSONATION_FORBIDDEN.
  * Antes de C50, un user A autenticado podía crear/sobreescribir equipos

@@ -26,7 +26,6 @@ public class WorldLeagueCommandService {
      */
     public Mono<WorldSnapshot> addTeamToLeague(UUID userId, UUID realLeagueId, String worldTeamId) {
 
-
         return snapshotService.getSnapshot(userId)
                 .flatMap(snapshot -> {
                     // Validar que la liga existe
@@ -61,7 +60,6 @@ public class WorldLeagueCommandService {
      * Actualiza tanto el WorldSnapshot como Redis
      */
     public Mono<WorldSnapshot> removeTeamFromLeague(UUID userId, UUID realLeagueId, String worldTeamId) {
-
 
         return snapshotService.getSnapshot(userId)
                 .flatMap(snapshot -> {

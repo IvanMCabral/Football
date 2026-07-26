@@ -24,7 +24,6 @@ import java.util.UUID;
  * Endpoints principales para obtener ligas, equipos y jugadores.
  * Los equipos custom (sin liga) están disponibles en /api/v1/editor/teams
  *
- * <p><b>V25D78-C50 (impersonation sweep):</b> los 7 endpoints GET ahora
  * validan que el {@code userId} del JWT coincide con el {@code userId}
  * del query param. Si NO coincide → 403 IMPERSONATION_FORBIDDEN. Antes
  * de C50, el userId del query param se aceptaba ciegamente — un user A

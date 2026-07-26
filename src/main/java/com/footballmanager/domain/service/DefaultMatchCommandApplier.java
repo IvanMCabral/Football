@@ -52,10 +52,8 @@ public class DefaultMatchCommandApplier implements MatchCommandApplier {
     }
 
     private void applySubstitution(MatchState state, MatchCommand cmd) {
-        // TODO: Implementar lógica de sustitución cuando se definan las reglas de negocio
     }
 
     private void applyMentalityChange(MatchState state, MatchCommand cmd) {
-        // TODO: Implementar lógica de mentalidad cuando se definan las reglas de negocio
     }
 }

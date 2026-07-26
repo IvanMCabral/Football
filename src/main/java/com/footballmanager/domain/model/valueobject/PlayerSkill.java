@@ -3,7 +3,6 @@ package com.footballmanager.domain.model.valueobject;
 /**
  * PlayerSkill - Catalogo de 10 habilidades que un jugador puede tener.
  *
- * V25D31: introduccion del modelo (solo metadata). V25D33-V25D34 agregan el uso
  * por parte del V24 engine.
  *
  * Categoria:

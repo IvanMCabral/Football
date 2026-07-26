@@ -32,7 +32,6 @@ public class MatchEngineController {
 
     private final RoundEngineRegistry roundEngineRegistry;
     private final MatchManagementService matchManagementService;
-    // V24D12-B: use ControllerHelper for userId extraction; replaces the
     // copy-paste getUserIdFromAuth helper that accepted an optional
     // requestUserId and threw IAE on auth failure.
     private final ControllerHelper controllerHelper;
@@ -53,7 +52,6 @@ public class MatchEngineController {
             }
 
             log.info("[SSE-STREAM] Streaming roundId: {}", id);
-            // V25D87.1-BACK-F3: runtime smoke still dropped to 1 event after
             // the F1 sink fix + F2 scheduler survival fix. Difference from
             // passing integration tests: a slow real consumer (Spring SSE
             // writer + Jackson + Netty chunked write + proxy buffer) on a
@@ -157,15 +155,12 @@ public class MatchEngineController {
             });
     }
 
-    // ========== LIVE-MATCH-F5.3.2 BUG-015: helper matchId -> roundId ==========
-
     /**
      * GET /api/v1/match-engine/matches/{matchId}/roundId
      *
      * Resolves the roundId for a given matchId using
      * {@link RoundEngineRegistry#getRoundIdByMatchId(UUID)}.
      *
-     * <p>LIVE-MATCH-F5.3.3 BUG-015: the front-end opens the substitution
      * / formation modal from a {@code MatchState} (which carries
      * {@code matchId} but NOT {@code roundId}). To pause/resume the
      * round when the modal opens, the front-end needs to resolve

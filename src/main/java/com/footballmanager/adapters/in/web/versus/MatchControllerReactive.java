@@ -38,16 +38,12 @@ public class MatchControllerReactive {
     private final GetMatchStateQueryUseCase getMatchStateQueryUseCase;
     private final AdvanceMatchUseCase advanceMatchUseCase;
     private final ExecuteMatchCommandUseCase executeMatchCommandUseCase;
-    // V24D12-B: use ControllerHelper for userId extraction so the 401 path
-    // matches V24D12's UnauthorizedException -> 401 contract instead of
     // leaking the inline NPE on UUID.fromString(null).
     private final ControllerHelper controllerHelper;
-    // V25D78-C53 Bug #1 fix: resolve teamId -> teamName for MatchDTO so the
     // frontend doesn't show "Team vs Team" placeholders. Pre-fetched once
     // per request (the snapshot is per-user) and cached in a local Map for
     // synchronous resolution inside mapToDTO.
     private final WorldSnapshotService worldSnapshotService;
-    // V25D78-C53 Bug #3 fix: minute-by-minute endpoint. Reads V24 detail
     // from Redis via the user's active careerId (CareerSessionService) +
     // the V24 query service that already exists for /careers/{careerId}/matches/{matchId}/detail.
     private final CareerSessionService careerSessionService;
@@ -124,11 +120,9 @@ public class MatchControllerReactive {
     public Mono<ResponseEntity<Object>> createMatch(@RequestBody CreateMatchRequest request, Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
 
-        // V25D37-F3: pre-validate the request body before touching UUID.fromString.
         // Before this fix, an empty/malformed body ({} or missing homeTeamId/awayTeamId)
         // caused UUID.fromString(null) → NPE → 500 Internal Server Error with the
         // confusing message "Cannot invoke \"String.length()\" because \"name\" is null"
-        // (BUG_MATCH_DETAIL_NPE_ON_BAD_BODY — actually surfaces on the
         // {@code POST /api/v1/matches} endpoint, not a /match-detail endpoint).
         // Now we return 400 Bad Request with a clear, structured error body.
         if (request == null) {
@@ -243,7 +237,6 @@ public class MatchControllerReactive {
     }
 
     /**
-     * V25D78-C53 Bug #3 fix: GET /api/v1/matches/{matchId}/minute-by-minute
      *
      * <p>The frontend {@code MatchDetailComponent} calls this endpoint to drive
      * its 700ms-step animation of the match timeline. Pre-fix, the endpoint
@@ -253,7 +246,6 @@ public class MatchControllerReactive {
      * the frontend can render (cumulative goals + all events).
      *
      * <p>Why a single-state list: the V24 detail timeline has all events
-     * already grouped by minute in {@code V24DetailedMatchData.timeline()}.
      * Emitting one state with the final score + the full event list keeps
      * the frontend's animation logic simple (it shows the final state in
      * one tick) while solving the "Loading..." indefinitely symptom.
@@ -387,7 +379,6 @@ public class MatchControllerReactive {
             Integer round
     ) {}
 
-    /** V25D78-C53 Bug #3: response shape for {@code GET /matches/{matchId}/minute-by-minute}. */
     public record MatchMinuteState(
             int minute,
             int homeGoals,

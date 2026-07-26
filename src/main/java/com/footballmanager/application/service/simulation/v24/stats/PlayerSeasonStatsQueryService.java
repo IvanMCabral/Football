@@ -17,9 +17,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * V24D6M7: Query service for player season stats.
  *
- * <p>Reads V24DetailedMatchData from storage, delegates aggregation to
  * PlayerSeasonStatsAggregator. No mutation, no Redis writes.
  *
  * <p>Feature-gated: returns empty/incomplete when
@@ -112,10 +110,9 @@ public class PlayerSeasonStatsQueryService {
 
         log.info("[V24-STATS-QUERY] careerId={}, teamId={}, details.size={}", careerId, teamId, details.size());
 
-        // [V24D6M11-TRACE] Log actual seasonNumbers per detail before filter
         for (int i = 0; i < details.size(); i++) {
             V24DetailedMatchData d = details.get(i);
-            log.info("[V24D6M11-TRACE] detail[{}] matchId={}, seasonNumber={}, round={}, homeTeamId={}, awayTeamId={}",
+            log.info("detail[{}] matchId={}, seasonNumber={}, round={}, homeTeamId={}, awayTeamId={}",
                     i, d.matchId(), d.seasonNumber(), d.round(), d.homeTeamId(), d.awayTeamId());
         }
 

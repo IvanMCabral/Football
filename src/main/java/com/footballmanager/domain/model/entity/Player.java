@@ -50,7 +50,6 @@ public class Player {
         validateAge(age);
         validateEnergy(energy);
         this.age = age;
-        // V25D31: defer heightCm validation until after age to keep constructor order readable.
         if (heightCm != null) {
             setHeightCm(heightCm);
         }
@@ -60,10 +59,6 @@ public class Player {
                                 PlayerAttributes attributes, BigDecimal marketValue) {
         return create(id, name, age, position, attributes, marketValue, null, null);
     }
-
-    /**
-     * Factory completa con height + skills (V25D31).
-     */
     public static Player create(PlayerId id, String name, int age, Position position,
                                 PlayerAttributes attributes, BigDecimal marketValue,
                                 Integer heightCm, Map<PlayerSkill, Integer> skillLevels) {
@@ -79,10 +74,6 @@ public class Player {
         return reconstruct(id, name, age, position, attributes, marketValue,
                           null, null, energy, injuryState, injured, createdAt, updatedAt);
     }
-
-    /**
-     * Reconstruct completo con height + skills (V25D31).
-     */
     public static Player reconstruct(PlayerId id, String name, int age, Position position,
                               PlayerAttributes attributes, BigDecimal marketValue,
                               Integer heightCm, Map<PlayerSkill, Integer> skillLevels,
@@ -156,7 +147,6 @@ public class Player {
     }
 
     /**
-     * V24D8-BUG-002 Capa 3: retorna una nueva instancia de Player con el nombre actualizado,
      * preservando el resto del estado (id, age, position, attributes, height, skills, energy, injury, createdAt).
      * El Player original queda intacto (inmutabilidad). Para persistir el rename, usar
      * {@code playerRepository.save(userId, this.rename(newName))}.
@@ -182,8 +172,6 @@ public class Player {
     public boolean isInjured() { return injured; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
-
-    // ========== V25D31 - Height + Skills ==========
 
     public Integer getHeightCm() { return heightCm; }
 
@@ -229,11 +217,8 @@ public class Player {
     }
 
     public int getOverall() {
-        // V25D40 (Sprint C5): delegate to the shared {@link OverallCalculator}
-        // so the height + skills awareness added in V25D39 is computed via the
         // same formula the engine layer (SessionPlayer) now uses. Before this
         // refactor, getOverall() had its own duplicated switch/weights/height
-        // logic — a maintainability hazard. All 43 V25D39 tests must continue
         // to pass without modification (the formula and weights are bit-a-bit
         // identical; only the call site changes).
         String category = OverallCalculator.mapPlayerPositionToCategory(position);

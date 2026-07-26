@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D4A: Immutable snapshot of detailed match data for storage/API layers.
- * Not tied to internal V24DetailedMatchResult — this is a DTO/snapshot object.
  *
  * <p>Stored in Redis as JSON snapshot at key:
  * {@code career:{careerId}:match-detail:{matchId}}
@@ -48,7 +46,6 @@ public final class V24DetailedMatchData {
     private final String engineVersion;
     private final int schemaVersion;
     private final Instant createdAt;
-    // V24D24-F1.2: nullable formations — partidos viejos en Redis deserializan
     // con null (Jackson rellena con null al agregar @JsonProperty). UI muestra
     // "—" cuando es null. Riesgo BAJO (additive).
     private final String homeFormation;
@@ -157,7 +154,6 @@ public final class V24DetailedMatchData {
         this.engineVersion = (engineVersion != null) ? engineVersion : "V24";
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
-        // V24D24-F1.2: nullable — partidos viejos en Redis no tienen estos campos.
         // Jackson rellena con null al deserializar JSON sin los campos.
         this.homeFormation = (homeFormation != null && !homeFormation.isBlank()) ? homeFormation : null;
         this.awayFormation = (awayFormation != null && !awayFormation.isBlank()) ? awayFormation : null;
@@ -172,10 +168,7 @@ public final class V24DetailedMatchData {
     }
 
     /**
-     * Factory to build V24DetailedMatchData from a V24DetailedMatchResult and player ratings.
-     * shotCoordinate will be null in timeline events until V24D3C attaches coordinates to events.
      *
-     * <p>V24D24-F1.2: delegating overload for back-compat with the 31 existing
      * call sites in {@code LeagueSimulator}, {@code MatchComparisonService},
      * {@code TestHarnessUseCaseImpl} and tests. Passes {@code null, null} for
      * {@code homeFormation}/{@code awayFormation} so partidos viejos written
@@ -197,9 +190,7 @@ public final class V24DetailedMatchData {
     }
 
     /**
-     * V24D24-F1.2: Overload that accepts formation strings. Use this when
      * the formations of the home/away teams are available in the call
-     * context (e.g. {@code LeagueSimulator.persistV24Detail} reads them
      * from {@code SessionTeam.getFormation()}). Pass {@code null} when
      * formation info is not available — the detail will deserialize with
      * {@code homeFormation = awayFormation = null} and the UI renders
@@ -308,7 +299,6 @@ public final class V24DetailedMatchData {
     @JsonProperty("engineVersion") public String engineVersion() { return engineVersion; }
     @JsonProperty("schemaVersion") public int schemaVersion() { return schemaVersion; }
     @JsonProperty("createdAt") public Instant createdAt() { return createdAt; }
-    // V24D24-F1.2: nullable formations — partidos viejos written before this
     // change deserialize con null. La UI muestra "—".
     @JsonProperty("homeFormation") public String homeFormation() { return homeFormation; }
     @JsonProperty("awayFormation") public String awayFormation() { return awayFormation; }

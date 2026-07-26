@@ -1,7 +1,6 @@
 package com.footballmanager.adapters.in.web.testharness.dto;
 
 /**
- * V24D20-TESTHARNESS — request body for {@code POST /api/v1/test-harness/career/create-custom}.
  *
  * <p>Wipes the existing career (if any) and starts a fresh one with
  * caller-controlled params. Useful for Bloque A/B smoke flows that need

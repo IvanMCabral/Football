@@ -31,7 +31,6 @@ public class WorldStatusQueryService {
      * CareerSave tournament state).
      *
      * <p>C55.7.5 #30: the previous implementation hardcoded {@code 0}
-     * for matches with a TODO comment. The dashboard "WORLD STATUS"
      * card was always "0 MATCHES" regardless of career state. Now the
      * matches count is derived from the user's CareerSave — fixtures
      * with a non-null {@code result} are considered played.

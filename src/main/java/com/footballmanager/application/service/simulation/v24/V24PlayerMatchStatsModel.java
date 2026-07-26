@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D4A: Helper to derive per-player stat bundles and ratings from match timeline.
  *
  * <p>Pure helper — no mutable state, no Random, no external dependencies.
  * Deterministic: same players + same timeline = same stat DTOs.

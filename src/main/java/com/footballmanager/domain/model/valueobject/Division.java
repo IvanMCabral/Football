@@ -1,7 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
 /**
- * V25D78-C55.2: División (tier) de un equipo dentro de una liga.
  *
  * <p>Liga con 3 tiers — equivalente a Primera/Segunda/Tercera División de
  * ligas reales como LaLiga, Premier, etc. Cada liga tiene 20 equipos en

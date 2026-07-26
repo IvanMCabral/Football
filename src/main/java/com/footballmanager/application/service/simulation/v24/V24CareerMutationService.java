@@ -5,7 +5,6 @@ import com.footballmanager.domain.model.entity.CareerSave;
 /**
  * Pure orchestration service that coordinates V24 career mutations after a match result.
  *
- * <p>V24D6C2 scope: injury + fatigue mutation. Discipline added in V24D6D4.
  *
  * <p>This service is isolated — no Spring, no Redis, no IO.
  * It is not yet wired into LeagueSimulator; it exists as a standalone component.
@@ -58,7 +57,6 @@ public class V24CareerMutationService {
      * Apply career mutations from V24 match result to CareerSave.
      *
      * @param career the CareerSave to mutate; if null, returns empty result
-     * @param result the V24DetailedMatchResult; if null, returns empty result
      * @param policy the mutation policy; if null, returns empty result
      * @return mutation result with counts and any failures
      */

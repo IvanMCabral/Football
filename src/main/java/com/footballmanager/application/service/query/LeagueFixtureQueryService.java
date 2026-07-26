@@ -73,7 +73,6 @@ public class LeagueFixtureQueryService {
                 division.getDivisionId().equals(career.getUserDivision().getDivisionId());
 
         Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, divisionTeamIds);
-        // V24D24.3-FIX (defense in depth): BUG_FIXTURES_TEAM_NAMES_UUID_V2. Although
         // buildRoundInfosSimple filters fixtures to this division, build teamNames from
         // the union of divisionTeamIds AND any teamId appearing in the supplied fixtures,
         // so a future caller that passes cross-division fixtures doesn't leak UUIDs.
@@ -100,7 +99,6 @@ public class LeagueFixtureQueryService {
                 .filter(f -> divisionTeamIds.contains(f.getHomeTeamId()) && divisionTeamIds.contains(f.getAwayTeamId()))
                 .toList();
 
-        // V24D24.3-FIX (defense in depth): BUG_FIXTURES_TEAM_NAMES_UUID_V2.
         // Extend teamNames from the actual filtered fixtures so even if the division
         // filter above is loosened in the future, every team in the response resolves.
         Set<String> fixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures);

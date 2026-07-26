@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D6M10: Converter from live SSE entity.MatchEvent to V24MatchEvent.
  *
  * <p>Converts entity.MatchEvent (with playerName, no playerId) to V24MatchEvent
  * (with playerId) by resolving playerName to SessionPlayer ID using squad data.
@@ -63,14 +62,14 @@ public final class LiveMatchEventToV24Converter {
 
         TeamSide side = resolveTeamSide(liveEvent);
         if (side == null) {
-            log.warn("[V24D6M10] Could not resolve teamId for event {} at minute {}, skipping",
+            log.warn("Could not resolve teamId for event {} at minute {}, skipping",
                     liveEvent.getEventType(), liveEvent.getMinute());
             return null;
         }
 
         String playerId = resolvePlayerId(liveEvent, side);
         if (playerId == null) {
-            log.warn("[V24D6M10] Could not resolve playerId for playerName '{}' in team {}, skipping event",
+            log.warn("Could not resolve playerId for playerName '{}' in team {}, skipping event",
                     liveEvent.getPlayerName(), side.teamId);
             return null;
         }
@@ -133,7 +132,6 @@ public final class LiveMatchEventToV24Converter {
             case CORNER -> V24MatchEventType.CORNER;
             case OFFSIDE -> V24MatchEventType.OFFSIDE;
             case SUBSTITUTION -> V24MatchEventType.SUBSTITUTION;
-            // LIVE-MATCH-F2-LIVE F5: 1:1 mapping for tactical-change events.
             case TACTICAL_CHANGE -> V24MatchEventType.TACTICAL_CHANGE;
             case CARD -> {
                 String desc = liveEvent.getDescription() != null ? liveEvent.getDescription().toLowerCase() : "";
@@ -186,7 +184,7 @@ public final class LiveMatchEventToV24Converter {
             return side;
         }
         if (homePlayerId != null && awayPlayerId != null) {
-            log.warn("[V24D6M10] Player '{}' found in both squads, ambiguous", playerName);
+            log.warn("Player '{}' found in both squads, ambiguous", playerName);
             return null;
         }
 
@@ -201,7 +199,7 @@ public final class LiveMatchEventToV24Converter {
             return side;
         }
 
-        log.warn("[V24D6M10] Cannot resolve teamId for event with description '{}'", liveEvent.getDescription());
+        log.warn("Cannot resolve teamId for event with description '{}'", liveEvent.getDescription());
         return null;
     }
 
@@ -237,7 +235,7 @@ public final class LiveMatchEventToV24Converter {
 
         for (SessionPlayer p : squad) {
             if (p.getName().equalsIgnoreCase(playerName)) {
-                log.debug("[V24D6M10] Player '{}' resolved via case-insensitive match to '{}'", playerName, p.getSessionPlayerId());
+                log.debug("Player '{}' resolved via case-insensitive match to '{}'", playerName, p.getSessionPlayerId());
                 return p.getSessionPlayerId();
             }
         }
@@ -271,7 +269,7 @@ public final class LiveMatchEventToV24Converter {
     private SessionPlayer resolveGenericPlayerName(MatchEvent liveEvent, TeamSide side) {
         List<SessionPlayer> squad = career.getTeamSquad(side.teamId);
         if (squad == null || squad.isEmpty()) {
-            log.warn("[V24D6M10] Cannot resolve generic player '{}': empty squad for team {}",
+            log.warn("Cannot resolve generic player '{}': empty squad for team {}",
                     liveEvent.getPlayerName(), side.teamId);
             return null;
         }

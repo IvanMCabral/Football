@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B5): controller for manager-initiated formation changes
  * during a live match.
  *
  * <p>Endpoint: {@code POST /api/v1/match-engine/matches/{matchId}/formation}
@@ -70,7 +69,7 @@ public class FormationChangeController {
                 .body(FormationChangeResultDTO.error("players must not be empty")));
         }
 
-        log.info("[LIVE-MATCH-F2-F5] Formation change request received: matchId={} userId={} slots={} code={}",
+        log.info("Formation change request received: matchId={} userId={} slots={} code={}",
             matchUuid, userId, request.players().size(), request.formationCode());
 
         return tacticalChangeService.changeFormation(userId, matchUuid, request.players(), request.formationCode())
@@ -82,7 +81,7 @@ public class FormationChangeController {
                 Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(FormationChangeResultDTO.error(e.getMessage()))))
             .onErrorResume(e -> {
-                log.error("[LIVE-MATCH-F2-F5] Unexpected error during formation change for matchId={}",
+                log.error("Unexpected error during formation change for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(FormationChangeResultDTO.error("Internal error: " + e.getMessage())));

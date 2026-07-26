@@ -5,10 +5,8 @@ import com.footballmanager.application.service.simulation.v24.V24DetailedMatchRe
 import java.util.Objects;
 
 /**
- * V24D6M11 Phase 3B: Result DTO passed to the finish callback.
  *
  * <p>Carries both the SSE-compatible MatchStateSnapshot and, when V24LiveSession
- * is active, the V24DetailedMatchResult containing the full timeline with real
  * player attribution for persistence.
  *
  * <p>v24Result is null when the match used the legacy MatchTickHandler path.
@@ -35,7 +33,6 @@ public final class MatchFinishedResult {
     }
 
     /**
-     * The V24DetailedMatchResult with full player-attributed timeline.
      * Null when the match used the legacy MatchTickHandler path.
      */
     public V24DetailedMatchResult v24Result() {

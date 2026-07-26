@@ -1,7 +1,6 @@
 package com.footballmanager.application.service.lineup;
 
 /**
- * V24D6U2: Constants for short-handed lineup rules.
  *
  * <p>Authoritative source of truth for lineup size bounds across the
  * application service layer and (read-only) the V24 engine layer.

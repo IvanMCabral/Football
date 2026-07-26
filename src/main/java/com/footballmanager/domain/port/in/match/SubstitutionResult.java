@@ -1,7 +1,6 @@
 package com.footballmanager.domain.port.in.match;
 
 /**
- * LIVE-MATCH-F1-POC: result of a manual substitution operation, returned by
  * {@link SubstitutionCommandUseCase#executeSubstitution}.
  *
  * <p>Phase 1 POC design choice (FLAG 1 UX fix): instead of throwing exceptions

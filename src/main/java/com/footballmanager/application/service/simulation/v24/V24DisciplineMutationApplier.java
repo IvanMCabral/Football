@@ -11,7 +11,6 @@ import java.util.Set;
  * to CareerSave SessionPlayers.
  *
  * <p>This applier is isolated and has no dependencies on Redis, Spring, or IO.
- * It only reads from V24DetailedMatchResult and mutates SessionPlayer discipline fields.
  *
  * <p>Discipline rules:
  * <ul>
@@ -24,7 +23,6 @@ import java.util.Set;
  *   <li>Yellow threshold evaluated per YELLOW_CARD event; per-match cap of 1 threshold suspension per player</li>
  *   <li>RED_CARD takes precedence over yellow threshold in the same match</li>
  *   <li>Already-suspended player reaching threshold: yellowCards accumulate, no additional suspension applied</li>
- *   <li>No suspension decrement — lifecycle deferred to V24D6D6</li>
  * </ul>
  */
 public class V24DisciplineMutationApplier {
@@ -35,7 +33,6 @@ public class V24DisciplineMutationApplier {
      * Apply YELLOW_CARD / RED_CARD events from the match result to CareerSave SessionPlayers.
      *
      * @param career the CareerSave to mutate; if null, returns 0
-     * @param result the V24DetailedMatchResult containing timeline events; if null, returns 0
      * @param policy the mutation policy; if null, returns 0
      * @return the number of card events applied (each valid YELLOW_CARD or RED_CARD counts 1)
      */

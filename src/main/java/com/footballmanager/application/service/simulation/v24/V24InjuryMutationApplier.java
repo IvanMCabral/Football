@@ -7,7 +7,6 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
  * Pure helper that applies V24 INJURY events from a match result to CareerSave SessionPlayers.
  *
  * <p>This applier is isolated and has no dependencies on Redis, Spring, or IO.
- * It only reads from V24DetailedMatchResult and mutates SessionPlayer fields.
  *
  * <p>Default injury values:
  * <ul>
@@ -24,7 +23,6 @@ public class V24InjuryMutationApplier {
      * Apply V24 INJURY events from the match result to CareerSave SessionPlayers.
      *
      * @param career the CareerSave to mutate; if null, returns 0
-     * @param result the V24DetailedMatchResult containing timeline events; if null, returns 0
      * @param policy the mutation policy; if null, returns 0
      * @return the number of players newly marked as injured
      */

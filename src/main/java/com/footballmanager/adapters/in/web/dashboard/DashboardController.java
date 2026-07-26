@@ -44,7 +44,6 @@ public class DashboardController {
      * Útil cuando el snapshot en Redis tiene datos incompletos.
      *
      * <p>C55.7.5 #30: the matches count was previously hardcoded to 0 in
-     * the response (with a TODO to count from CareerSave). The fix
      * delegates the entire response (including the matches count) to
      * {@link WorldStatusQueryService} so both endpoints stay consistent.
      */

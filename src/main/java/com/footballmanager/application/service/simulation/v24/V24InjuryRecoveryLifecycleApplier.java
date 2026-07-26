@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * V24D6I2: Applies injury recovery lifecycle decrement for pre-match injured players
  * after a full round of fixtures has been processed.
  *
  * <p>An injury is recovered only when ALL of the following are true:

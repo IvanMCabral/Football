@@ -3,7 +3,6 @@ package com.footballmanager.adapters.in.web.career.lineup.dto;
 import java.util.List;
 
 /**
- * V25D99.15-BACK: request body for {@code POST /career/lineup/preview-ratings}.
  *
  * <p>Body shape:
  * <pre>

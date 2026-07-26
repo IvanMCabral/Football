@@ -1,8 +1,4 @@
 package com.footballmanager.application.service.simulation.v24;
-
-/**
- * Immutable output result of V24DetailedMatchEngine.
- */
 public final class V24DetailedMatchResult {
 
     private final String matchId;
@@ -76,10 +72,6 @@ public final class V24DetailedMatchResult {
     public int awayPossession() { return awayPossession; }
     public V24MatchTimeline timeline() { return timeline; }
     public String summary() { return summary; }
-
-    /**
-     * Builder for constructing V24DetailedMatchResult progressively during simulation.
-     */
     public static Builder builder() { return new Builder(); }
 
     public static class Builder {

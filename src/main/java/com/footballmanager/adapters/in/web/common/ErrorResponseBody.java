@@ -1,7 +1,6 @@
 package com.footballmanager.adapters.in.web.common;
 
 /**
- * V24D14-JSON401: Centralized JSON error body shape.
  *
  * <p>Used by both SecurityConfig.authenticationEntryPoint (for security
  * filter rejections) and GlobalExceptionHandler.handleUnauthorized (for
@@ -21,7 +20,6 @@ public record ErrorResponseBody(String code, String message, int status) {
 
     /**
      * Factory for HTTP 401 Unauthorized responses.
-     * The code is always "UNAUTHORIZED" (per V24D12.1 contract).
      * The status is always 401.
      */
     public static ErrorResponseBody unauthorized(String message) {

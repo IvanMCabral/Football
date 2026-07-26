@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Per-metric diff between the
  * baseline and the live match.
  *
  * <p>Scalar fields are computed as {@code live - baseline}. The
@@ -110,7 +109,6 @@ public final class MatchComparisonDiff {
         for (V24MatchEventDto e : timeline) {
             if (e == null) continue;
             if (!type.equals(e.type())) continue;
-            // V24DetailedMatchData events use minute in [1, 130] (incl. extra time).
             // We bucket by minute, with extra time falling in bucket 17
             // (minute 85-90) for simplicity — the V24 engine does not
             // emit many extra-time events in practice (matches end at 90).

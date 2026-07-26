@@ -26,7 +26,6 @@ public class SessionTeam {
     private BigDecimal budget;
     private String formation;
 
-    // V25D28: tactical style for match simulation. Persisted on the SessionTeam
     // so the V24 engine can read it via V24MatchContextFactory.build() when the
     // caller does not pass an explicit style (test-harness replay path).
     private TeamStyle style;

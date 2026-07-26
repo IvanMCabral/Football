@@ -5,7 +5,6 @@ package com.footballmanager.adapters.in.web.common;
  * Mapeada a HTTP 401 con body {code: UNAUTHORIZED, message, status: 401}
  * por GlobalExceptionHandler.
  *
- * <p>V24D12-3: Introduced to differentiate auth failures (401) from
  * validation failures (422 LINEUP_VALIDATION_ERROR) and state errors
  * (422 LINEUP_STATE_ERROR). Previously ControllerHelper.getUserId()
  * threw IllegalArgumentException which was caught by the IAE handler

@@ -5,16 +5,13 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * LIVE-MATCH-F2-LIVE Fase 1 — Task B1.
  *
  * <p>Wraps a {@link Random} and transparently caches every {@code nextDouble()}
  * and {@code nextInt(int)} draw in a list so that the calling engine
- * ({@link V24DetailedMatchEngine}) can be replayed deterministically when the
  * user mutates the match state via {@link V24LiveSession#mutateContext}.
  *
  * <p><b>Why we need this</b>: the V24 engine consumes doubles from THREE
  * independent {@code Random} instances per simulation (lines 54, 73, 74 of
- * {@code V24DetailedMatchEngine.java}). When a manager-applied substitution
  * arrives after the simulation started, we need to re-run the engine from
  * the minute of the change with the SAME random draws to preserve
  * determinism. This wrapper is the mechanism that captures those draws in
@@ -28,7 +25,6 @@ import java.util.Random;
  *
  * <p><b>Design choice — Random subclass with composition</b>: this class
  * extends {@link Random} (so it can be passed to any API that expects one,
- * including the new {@code V24DetailedMatchEngine.simulate(ctx, Random)}
  * overload) but internally delegates to a private final {@code Random}
  * instance. The surface area is intentionally narrow: only the methods the
  * engine actually calls are overridden with caching semantics; everything
@@ -56,7 +52,6 @@ public class CachingRandomWrapper extends Random {
     private final List<Double> doubleCache = new ArrayList<>(16384);
 
     /**
-     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: pointer to the next draw to be
      * returned by {@link #nextDouble()}. Initialized to 0. The wrapper
      * replays cached draws by leaving this pointer at the end of the
      * previous engine run; the caller (V24LiveSession.tick) calls
@@ -75,7 +70,6 @@ public class CachingRandomWrapper extends Random {
     private final List<int[]> intCache = new ArrayList<>(1024);
 
     /**
-     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: index of the next int-draw to be
      * returned by {@link #nextInt(int)}. Like {@link #consumedIndex} but
      * for the int stream.
      */
@@ -86,7 +80,6 @@ public class CachingRandomWrapper extends Random {
     }
 
     /**
-     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: rewind the draw pointer to 0 so
      * the next {@code engine.simulate(...)} call replays the same doubles
      * in the same order. This is what makes the live score stable across
      * ticks — the engine sees the exact same RNG stream on every call
@@ -111,7 +104,6 @@ public class CachingRandomWrapper extends Random {
      * the wrapper "forget everything from minute M onwards — we are about to
      * re-run the engine and want it to use new draws".
      *
-     * <p>V24D15-CLEANUP (BUG 6 — CachingRandomWrapper): the read pointer
      * ({@link #consumedIndex}) is reset to {@code index} (the truncation
      * point), not 0. The previous {@code consumedIndex = 0} implementation
      * caused the wrapper to REPLAY the preserved prefix instead of
@@ -147,10 +139,8 @@ public class CachingRandomWrapper extends Random {
         // direct mapping from int-draw-index to double-draw-index, so we wipe
         // the intCache conservatively. The engine uses intCache sparingly
         // (only inside V24PlayerSelector) so the loss is bounded.
-        // For LIVE-MATCH-F2-LIVE Fase 1 we wipe from the start once the double
         // cache is invalidated past the first int-draw.
         intCache.clear();
-        // V24D15-CLEANUP: reset the read pointer to the truncation point
         // so the next nextDouble() call produces a NEW draw (the cache
         // is exhausted at `index`, so consumedIndex == index → the play
         // branch in nextDouble() fires and a new value is appended at
@@ -163,7 +153,6 @@ public class CachingRandomWrapper extends Random {
     }
 
     /**
-     * LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: return the next double from the
      * cache if the cache has an unconsumed entry at {@link #consumedIndex}.
      * Otherwise consume a fresh double from the inner Random, append it to
      * the cache, and return it. The replay-vs-play decision is automatic
@@ -191,7 +180,6 @@ public class CachingRandomWrapper extends Random {
      * Return the next cached {@code nextInt(bound)} draw when replaying, or
      * consume and cache a fresh value when the replay prefix is exhausted.
      *
-     * <p>V25D99.45: live minute ticks must replay the complete random stream,
      * not only doubles. Player selection uses {@code nextInt(bound)}; if ints
      * are not replayed, the bounded simulation can rebuild a slightly different
      * prefix on the next tick and the visible timeline may regress (for example

@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * V24D24: Builds a {@link V24TimelineSnapshot} from a stored
- * {@link V24DetailedMatchData} filtered up to and including a specific minute.
  *
  * <p>Stateless, side-effect free, sub-millisecond for typical matches
  * (50-200 events). No re-simulation, no cache lookup — pure derivation
@@ -23,7 +21,6 @@ import java.util.Objects;
  *   <li>{@code homeXg} / {@code awayXg} — sum of xG for {@code SHOT},
  *       {@code SHOT_ON_TARGET} and {@code GOAL} events (the shot-attempt
  *       cluster — each event in the cluster carries the same xG, so we sum
- *       it to keep the metric consistent with how {@code V24DetailedMatchData}
  *       computes total xG).</li>
  *   <li>{@code events} — unmodifiable list of events with
  *       {@code event.minute() <= minute}, preserving stored order.</li>

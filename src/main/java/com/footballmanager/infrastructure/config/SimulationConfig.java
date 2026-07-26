@@ -10,7 +10,6 @@ import java.util.Random;
 /**
  * Configuración de componentes para el motor de simulación.
  *
- * <p>V24D20-TESTHARNESS: la semilla del {@code Random} ahora es
  * configurable vía property {@code app.simulation.random-seed}.
  * <ul>
  *   <li>{@code 0} (default) → {@code new Random()} no determinístico,

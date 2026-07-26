@@ -62,7 +62,6 @@ public class MatchFinishService {
      */
     private Mono<Void> updateStandings(UUID userId, Match match, int homeGoals, int awayGoals) {
         // Por ahora usamos seasonKey = "1" como default
-        // TODO: Obtener seasonKey desde Match o Game
         String seasonKey = "1";
 
         TeamId homeTeamId = match.getHomeTeamId();

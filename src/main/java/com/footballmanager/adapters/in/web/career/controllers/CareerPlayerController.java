@@ -73,7 +73,6 @@ public class CareerPlayerController {
     @GetMapping("/squad")
     public Mono<ResponseEntity<List<SessionPlayerDTO>>> getUserSquad(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        // V25D75-C40 A2: return 422 UNPROCESSABLE_ENTITY when no career exists
         // (was returning 200 with empty list, masking the "no career" error).
         // Front can distinguish "no career" from "career with empty squad" via status code.
         return careerSessionService.getCareerFromCache(userId)

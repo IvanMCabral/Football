@@ -10,11 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V24D20-TESTHARNESS — response body for {@code GET /api/v1/test-harness/career/snapshot}.
  *
  * <p>Built by the controller from the {@link CareerSave} returned by
  * {@code TestHarnessUseCase.snapshot}. Includes a computed
- * {@link SquadHealthSummary} that REVISOR can diff against pre-smoke
  * baselines.
  */
 public record CareerSnapshotResponse(
@@ -32,7 +30,6 @@ public record CareerSnapshotResponse(
 ) {
 
     /**
-     * Lightweight fixture view — only the fields REVISOR needs to verify
      * pre/post smoke state.
      */
     public record FixtureDebugDTO(

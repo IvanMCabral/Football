@@ -13,7 +13,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * V24D6D6A: Applies suspension lifecycle decrement for pre-match suspended players
  * after a full round of fixtures has been processed.
  *
  * <p>A suspension is served only when ALL of the following are true:
@@ -97,7 +96,6 @@ public class V24SuspensionLifecycleApplier {
             if (newSuspended.contains(playerId)) continue;
 
             // Skip if player participated this round.
-            // V24D6T2 (bug #7): a currently-suspended player cannot have actually
             // participated even if their ID appears in participatedPlayerIds
             // (e.g. they were in the starting XI but did not play because of
             // their suspension). In that case the participation tracker is

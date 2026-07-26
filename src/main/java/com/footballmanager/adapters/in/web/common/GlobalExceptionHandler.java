@@ -15,16 +15,13 @@ import java.util.Map;
  * Manejador global de excepciones.
  * Ubicado en common/ por ser transversal a todos los controllers.
  *
- * <p>V24D6U2: Extends the 422 response to include the
  * {@code LINEUP_MINIMUM_PLAYERS_NOT_MET} code, the available count and
  * the minimum required count, so the UI can render a meaningful error
  * banner.
  *
- * <p>V24D6T2: Added handlers for IllegalArgumentException and IllegalStateException
  * thrown by LineupHelper.validatePlayerFitness() and manual-select validation,
  * mapping them to 422 Unprocessable Entity instead of 400/500.
  *
- * <p>LIVE-MATCH-F2-LIVE F2.5: added a dedicated
  * {@link MinuteInPastException} handler that returns HTTP 400. The
  * handler is registered for the most specific class
  * ({@code MinuteInPastException extends IllegalArgumentException}) and
@@ -54,7 +51,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: protocol-level handler for past-minute
      * substitution requests. Returns HTTP 400 BAD_REQUEST with code
      * {@code MINUTE_IN_PAST} so the frontend can distinguish a
      * protocol failure (manager tried to change the past) from a
@@ -107,7 +103,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * V24D12-3: Auth failures (no JWT, no name in Authentication) thrown by
      * ControllerHelper.getUserId() now land here as HTTP 401 instead of
      * being caught by the IllegalArgumentException handler and incorrectly
      * mapped to 422 LINEUP_VALIDATION_ERROR. The front can now show a
@@ -117,9 +112,7 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<ErrorResponseBody>> handleUnauthorized(UnauthorizedException ex) {
         return Mono.just(
             ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                // V24D12.1.2: add WWW-Authenticate: Bearer header (RFC 7235)
                 // so this handler produces the same header set as the
-                // SecurityConfig entry point (V24D12.1.1).
                 .header("WWW-Authenticate", "Bearer")
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .body(ErrorResponseBody.unauthorized(ex.getMessage()))
@@ -127,7 +120,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * V25D78-C50: Impersonation sweep — handler for
      * {@link ImpersonationForbiddenException} thrown by
      * {@link ControllerHelper#requireSelfUserId} when the JWT userId does
      * NOT match the param/body userId.

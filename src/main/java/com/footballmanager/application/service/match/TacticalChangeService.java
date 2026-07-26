@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B3): application service for manager-initiated
  * style/formation changes during a live match.
  *
  * <p>This is the FIRST end-to-end consumer of the F1 replay path
@@ -67,7 +66,6 @@ public class TacticalChangeService {
     private final MatchSessionRegistry matchSessionRegistry;
 
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B3): change the home team's tactical style mid-match.
      *
      * <p>Flow:
      * <ol>
@@ -89,7 +87,7 @@ public class TacticalChangeService {
      */
     public Mono<StyleChangeResultDTO> changeStyle(UUID userId, UUID matchId, TeamStyle newStyle) {
         return Mono.fromCallable(() -> changeStyleInternal(userId, matchId, newStyle))
-            .doOnError(e -> log.warn("[LIVE-MATCH-F2-F5] Style change failed for matchId={} userId={}: {}",
+            .doOnError(e -> log.warn("Style change failed for matchId={} userId={}: {}",
                 matchId, userId, e.getMessage()));
     }
 
@@ -133,14 +131,13 @@ public class TacticalChangeService {
         );
         liveSession.recordTacticalChange(event);
 
-        log.info("[LIVE-MATCH-F2-F5] Style changed: matchId={} teamId={} newStyle={} minute={}",
+        log.info("Style changed: matchId={} teamId={} newStyle={} minute={}",
             matchId, homeTeamId, newStyle, minute);
 
         return StyleChangeResultDTO.ok(minute, newStyle);
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B3): change the home team's formation mid-match.
      *
      * <p>Flow:
      * <ol>
@@ -176,7 +173,7 @@ public class TacticalChangeService {
             List<FormationSlotDTO> newFormation,
             String requestedFormationCode) {
         return Mono.fromCallable(() -> changeFormationInternal(userId, matchId, newFormation, requestedFormationCode))
-            .doOnError(e -> log.warn("[LIVE-MATCH-F2-F5] Formation change failed for matchId={} userId={}: {}",
+            .doOnError(e -> log.warn("Formation change failed for matchId={} userId={}: {}",
                 matchId, userId, e.getMessage()));
     }
 
@@ -260,14 +257,13 @@ public class TacticalChangeService {
         );
         liveSession.recordTacticalChange(event);
 
-        log.info("[LIVE-MATCH-F2-F5] Formation changed: matchId={} teamId={} from={} to={} minute={}",
+        log.info("Formation changed: matchId={} teamId={} from={} to={} minute={}",
             matchId, managerTeamId, previousCode, newCode, minute);
 
         return FormationChangeResultDTO.ok(minute, new ArrayList<>(newFormation));
     }
 
     /**
-     * V25D99.20.3.37: carry live free-positioning into the replay context.
      *
      * <p>The pre-match lineup editor already sends customX/customY through
      * LineupSlotDTO. The live Partido modal uses the same tactical language:

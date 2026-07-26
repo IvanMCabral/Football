@@ -19,7 +19,6 @@ public class V24TeamMatchState {
 
     private final String teamId;
     private final String name;
-    // LIVE-MATCH-F2-LIVE F5 (B1): 'formation' and 'style' are NO LONGER final.
     // They are mutable so a manager can change formation/style mid-match.
     // Setters validate (NOT NULL for style; for formation, the new value
     // must parse via V24FormationParser into 10 outfield players).
@@ -79,7 +78,6 @@ public class V24TeamMatchState {
         Objects.requireNonNull(team, "team must not be null");
         Objects.requireNonNull(starting, "starting list must not be null");
         Objects.requireNonNull(bench, "bench list must not be null");
-        // V24D6U2: accept short-handed starting lineups in [MIN, 11]
         int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (starting.size() < min || starting.size() > 11) {
             throw new IllegalArgumentException(
@@ -176,9 +174,7 @@ public class V24TeamMatchState {
     public List<V24PlayerMatchState> benchPlayers() { return Collections.unmodifiableList(benchPlayers); }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5: package-private mutator that swaps two
      * players between the starting and bench lists of this team. Used
-     * by the F2.5 scheduled-sub apply path in V24DetailedMatchEngine
      * when re-applying a sub on a fresh homeState (the engine runs
      * simulate() once per tick, so on subsequent ticks the homeState
      * is rebuilt from the context and the previous tick's swap is
@@ -228,7 +224,6 @@ public class V24TeamMatchState {
         benchPlayers.remove(onPlayer);
         offPlayer.substituteOff();
         onPlayer.setTeamId(teamId);
-        // V25D99.41.2: the incoming player occupies the tactical role of
         // the player he replaces. His naturalPosition stays unchanged, so
         // effectiveness penalties still apply when a player is used out of
         // role, but the match engine reads him in the correct live slot.
@@ -244,10 +239,7 @@ public class V24TeamMatchState {
     public int shotsOnTarget() { return shotsOnTarget; }
     public int possessionTicks() { return possessionTicks; }
 
-    // ========== LIVE-MATCH-F2-LIVE F5 (B1): validated mutators ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B1): replace the team's tactical style.
      * Validates non-null. After mutation, the teamState is in an
      * "in-flight" state until {@link V24LiveSession#replayFromMinute(int)}
      * recomputes the engine. The setter itself does NOT trigger a replay —
@@ -265,7 +257,6 @@ public class V24TeamMatchState {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B1): replace the team's formation string.
      * Validates that the formation parses via {@link V24FormationParser}
      * into 10 outfield players. Null and blank are rejected.
      *

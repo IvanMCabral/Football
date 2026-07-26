@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * V25D99.15-BACK: pure utility that computes the per-zone team ratings
  * (attack / midfield / defense) using the SAME formulas the V24 simulation
  * engine uses during a real match.
  *
@@ -13,12 +12,9 @@ import java.util.Map;
  * <ul>
  *   <li><b>teamAttack</b> = avg of top-7 attackers'
  *       {@code attack * PositionEffectivenessCalculator.effectiveness(naturalPos, slotCategory)}
- *       (V24DetailedMatchEngine.aggregateAttackerStat, line 1078).
- *       V25D99.18: widened from top-5 to top-7 so MIDs in attack-zone
  *       slots with high eff enter the cohort.</li>
  *   <li><b>teamDefense</b> = avg of DEF + GK players'
  *       {@code ((defense + mentality) / 2.0) * effectiveness}
- *       (V24DetailedMatchEngine.aggregateDefenderStat, line 1109).</li>
  *   <li><b>formationOffensiveModifier</b> = baseMod[formation] * statsAmp(teamAttack)
  *       (V24ShotXgCalculator.formationOffensiveModifier, line 522).</li>
  *   <li><b>formationDefensiveModifier</b> = baseMod[formation] * statsAmp(teamDefense)
@@ -32,15 +28,12 @@ import java.util.Map;
  * truth: any engine re-calibration updates BOTH the live match engine
  * and the lineup preview.
  *
- * <h2>V25D99.16-BACK: subdivision-aware effectiveness</h2>
- * <p>Pre-V25D99.16, the engine used
  * {@link PositionEffectivenessCalculator#effectiveness(String, String)}
  * which collapses per-player contribution into 3-4 zone buckets. Two
  * slots in the SAME zone (e.g. CB at S22-2 vs S24-2) produced identical
  * effectiveness &mdash; fine-grained drag-and-drop on the field had no
  * effect on the team ratings.
  *
- * <p>V25D99.16 wraps the zone lookup in
  * {@link SubdivisionEffectivenessCalculator}, which also factors in the
  * Euclidean distance from the slot to the natural position's ideal
  * centroid on the field. A CB at the natural CB slot (S22-1/S23-1/S23-3
@@ -48,7 +41,6 @@ import java.util.Map;
  * (S22-2 vs S24-2 in 4-4-2) drops ~0.05-0.15 depending on layout.
  *
  * <p>Backward compat: callers that don't supply {@code slotXPercent /
- * slotYPercent} (NaN) get the pre-V25D99.16 zone-only math. The only
  * in-tree caller {@code FormationEffectiveness.computeRatings} passes
  * the coords resolved from {@code FormationService}.
  *
@@ -84,7 +76,6 @@ public final class TeamRatingsCalculator {
     /**
      * Per-formation offensive base modifier for the squad preview.
      *
-     * <p>V25D99.20.12-BACK: keep formations as strategic trade-offs, not
      * strict upgrades. 4-4-2 is the neutral reference; attack-heavy shapes
      * gain danger but must pay with lower defensive base, while defensive
      * shapes gain protection but lose attacking threat. Unknown formations
@@ -177,14 +168,12 @@ public final class TeamRatingsCalculator {
      * {@link FormationInferer#categoryFor(String)} so this class stays
      * decoupled from the subdivision-id vocabulary.
      *
-     * <p>V25D99.16-BACK: {@code slotXPercent} and {@code slotYPercent}
      * are the field coords (0-100 each, see {@code FormationService}
      * cell centers) of the assigned subdivision slot. The values feed
      * {@link SubdivisionEffectivenessCalculator} to apply a small
      * distance-from-ideal penalty for fine-grained drag tuning.
      *
      * <p>Backward compat: pass {@link Double#NaN} to BOTH fields to
-     * reproduce pre-V25D99.16 zone-only math (the calculator skips the
      * geometry penalty when coords are NaN). The only in-tree builder
      * ({@code FormationEffectiveness.computeRatings}) resolves coords
      * from the {@code FormationService} cache; legacy callers that don't
@@ -219,7 +208,6 @@ public final class TeamRatingsCalculator {
                 ? "4-4-2"
                 : formation;
 
-        // Pre-V25D99.15-BACK: formation modifiers used as-is (no
         // statsAmp when lineup is empty). Returning the base for the
         // requested formation keeps the panel readable while no lineup
         // is loaded yet (lineup.length == 0).
@@ -230,7 +218,6 @@ public final class TeamRatingsCalculator {
             return new TeamRatings(attBase * 100.0, midBase * 100.0, defBase * 100.0);
         }
 
-        // V25D99.16-BACK: each player carries optional slot coords
         // (resolved by FormationEffectiveness.computeRatings from the
         // FormationService cache). subdivisionEffectiveness() picks the
         // legacy zone-only math when coords are NaN (backward compat
@@ -242,12 +229,9 @@ public final class TeamRatingsCalculator {
         // teamAttack = avg of top-7 attackers' (attack * effectiveness).
         // Per engine: a player is an "attacker" if slotCategory == "ATT".
         // Outside ATT they still contribute to teamAttack IF their attack
-        // is among the top-N (pre-V25D47 spec); after V25D47 the engine
         // weights ALL 11 attackers (slot category ATT) by effectiveness
-        // and picks top-N. Mirroring engine V25D47 + V25D99.18 widen to
         // top-7:
         //
-        // V25D99.16-BACK: each player carries the slot's xPct / yPct
         // (resolved by FormationEffectiveness.computeRatings from the
         // FormationService cache). When both are present (non-NaN),
         // SubdivisionEffectivenessCalculator layers a distance-from-
@@ -345,14 +329,12 @@ public final class TeamRatingsCalculator {
     }
 
     /**
-     * V25D99.16-BACK: per-player effectiveness lookup that switches
      * between the legacy zone-only table and the new
      * subdivision-aware calculator based on whether the caller
      * supplied slot coords.
      *
      * <p>{@code NaN} or {@code null} coords (any) &rarr; legacy
      * {@link PositionEffectivenessCalculator#effectiveness} lookup
-     * (zone-only; pre-V25D99.16 behavior, preserves unit tests
      * that don't have formation coords wired in).
      *
      * <p>Valid coords &rarr; {@link SubdivisionEffectivenessCalculator}
@@ -374,7 +356,6 @@ public final class TeamRatingsCalculator {
     }
 
     /**
-     * V25D99.20.10-BACK: tactical free-positioning intent.
      *
      * <p>Before this, manually pushing a midfielder higher only applied the
      * distance-from-ideal penalty. That made the UI feel backwards: a manager
@@ -406,7 +387,6 @@ public final class TeamRatingsCalculator {
     private record FormationBaseBlend(double attackBase, double midfieldBase, double defenseBase) {}
 
     /**
-     * V25D99.20.11-BACK: progressive tactical-shape blending.
      *
      * <p>The selected formation remains the manager's explicit intent. However,
      * when the user manually reshapes the team far enough, the preview should

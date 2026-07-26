@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * V25D78-C55.1: Multi-league seed controller. Exposes 10 league-specific
  * endpoints + a {@code seed-all} convenience endpoint, all under
  * {@code /api/v1/world/seed-*}.
  *
@@ -36,7 +35,6 @@ public class WorldSeedController {
     private final com.footballmanager.adapters.in.web.common.ControllerHelper controllerHelper;
 
     /**
-     * V25D78-C55.1: Generic per-league seed endpoint.
      * URL pattern: {@code POST /api/v1/world/seed/{slug}?userId=X}
      * Slug: laliga, premier, bundesliga, seria-a, ligue-1, brasileirao,
      *       liga-profesional, mls, eredivisie, championship.
@@ -63,7 +61,6 @@ public class WorldSeedController {
     }
 
     /**
-     * V25D78-C55.1: Seed all 10 leagues at once. Idempotent — safe to call
      * multiple times.
      */
     @PostMapping("/seed-all")
@@ -87,7 +84,6 @@ public class WorldSeedController {
     private Map<String, Object> success(UUID userId, WorldSeedService.SeedResult r) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", "ok");
-        // V25D78-C55.1.1: fix cosmetic bug — previously this field held the
         // league name, but it should be the userId UUID (matches line 78 in
         // seedAll and the SeedResult semantics: the result is per-user).
         body.put("userId", userId.toString());

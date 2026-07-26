@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * Handles player progression after match simulation.
  * Modifica jugadores en memoria - el caller debe persistir los cambios en Redis.

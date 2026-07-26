@@ -24,7 +24,6 @@ public class WorldTeam {
     private String baseFormation;        // formación base (inmutable)
     private WorldTeamOrigin origin;      // REAL o CUSTOM
     /**
-     * V25D78-C55.6: tier (PRIMERA/SEGUNDA/TERCERA) dentro de la liga del equipo.
      * Default = {@link Division#defaultDivision()} cuando se crea un WorldTeam
      * desde data de seed JSON (que no incluye division explícita). Para custom
      * teams sin tier (CUSTOM origin) queda null. Carga desde Postgres Team
@@ -54,7 +53,6 @@ public class WorldTeam {
 
     /**
      * Crea un WorldTeam desde un equipo real de PostgreSQL, propagando el
-     * {@link Division} tier persistido en la fila {@code teams} (V25D78-C55.6
      * pre-req para C55.2 phase 4 UI: standings por división, division preview
      * dropdown, promotion/relegation).
      */
@@ -168,7 +166,6 @@ public class WorldTeam {
     }
 
     /**
-     * V25D78-C55.6: tier del equipo dentro de su liga (PRIMERA/SEGUNDA/TERCERA).
      * Null si es un equipo CUSTOM creado por el usuario sin tier.
      */
     public Division getDivision() {

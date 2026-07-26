@@ -14,22 +14,17 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * V24D6M11: Per-minute tick driver for live SSE matches.
  *
- * <p>Wraps V24DetailedMatchEngine to provide tick-by-tick simulation
  * compatible with the live SSE stream (MatchSession.advanceTick()).
  *
- * <p>Usage (LIVE-MATCH-F1-POC / pre-F1):
  * <pre>
  * V24LiveSession session = new V24LiveSession(context, seed);
  * while (!session.isFinished()) {
  *     V24LiveSnapshot snap = session.tick();
  *     // send snap via SSE
  * }
- * V24DetailedMatchResult finalResult = session.finalResult();
  * </pre>
  *
- * <p>Usage (LIVE-MATCH-F2-LIVE F1 — replay path):
  * <pre>
  * V24LiveSession session = new V24LiveSession(context, seed);
  * session.tick(); // establish the initial cache
@@ -39,7 +34,6 @@ import java.util.function.UnaryOperator;
  *
  * // Continue ticking — the snapshots reflect the substitution's effect.
  * while (!session.isFinished()) session.tick();
- * V24DetailedMatchResult result = session.finalResult(); // includes the substitution
  * </pre>
  *
  * <p>Deterministic: same context + same seed + same substitutions = identical
@@ -48,7 +42,6 @@ import java.util.function.UnaryOperator;
  * {@link CachingRandomWrapper} and invalidating from the right minute on
  * every mutation.
  *
- * <p><b>Live changes for LIVE-MATCH-F2-LIVE F1 B3</b>:
  * <ul>
  *   <li>Field renamed {@code Random random} → {@code CachingRandomWrapper
  *       cachedRandom} so the engine's replay-path overload
@@ -64,15 +57,12 @@ import java.util.function.UnaryOperator;
  *       the given minute onward and re-runs the engine.</li>
  *   <li>{@link #mutateContext(UnaryOperator)} (NEW): applies a mutation to
  *       the effective context then calls {@code replayFromMinute(currentMinute)}
- *       so subsequent ticks see the mutated state. // LIVE-MATCH-F2-F2: wire aquí
  *       — F2 will replace the legacy {@code SubstitutionCommandUseCaseImpl}
  *       body with a call to this method instead of just appending to the
  *       event cache.</li>
- *   <li>{@link #finalResult()} uses the cached {@code V24DetailedMatchResult}
  *       when available (B3 of F1).</li>
  *   <li>{@code homePossession}/{@code awayPossession} (in the snapshot)
  *       are now derived from the eventsSoFar subset in {@link #buildSnapshot()}
- *       (LIVE-MATCH-F5.2 BUG-010), so the live UI shows possession that
  *       changes minute-by-minute instead of the final 56%/44% from the
  *       first tick onward.</li>
  * </ul>
@@ -88,7 +78,6 @@ public final class V24LiveSession {
 
     /**
      * The single source of randomness for the engine's replay-path overload.
-     * All doubles consumed by {@link V24DetailedMatchEngine#simulate} are
      * intercepted and cached by this wrapper. See {@link CachingRandomWrapper}.
      */
     private final CachingRandomWrapper cachedRandom;
@@ -164,7 +153,6 @@ public final class V24LiveSession {
      *
      * <p>Calls {@code engine.simulate(effectiveContext, cachedRandom)} on
      * every tick. The {@link CachingRandomWrapper} replays the same cached
-     * doubles on every call (LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007), so the
      * engine sees the IDENTICAL draw sequence on every tick when no
      * mutation has happened — the live score is stable across ticks
      * (no flicker).
@@ -184,16 +172,12 @@ public final class V24LiveSession {
             return buildSnapshot();
         }
 
-        // LIVE-MATCH-F2-LIVE F1 B3: every tick runs the engine through the
         // caching wrapper. The wrapper captures every draw so future
         // mutateContext() calls can replay from the right minute.
-        // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: rewind the wrapper before
         // the engine call so the engine replays the SAME cached draws
-        // (the previous BUG-007 behavior was that the wrapper consumed a
         // fresh batch of doubles on every call, producing a different
         // timeline per tick and a flickering score in the F3 live UI).
         cachedRandom.rewind();
-        // V25D87 (F1 Option A): incremental-bounded simulate. The engine
         // runs only minutes [1, ticksRun+1] instead of the full 90, so
         // each live SSE tick costs ~1ms / 90 instead of ~1ms. The
         // CachingRandomWrapper replay contract is preserved because the
@@ -269,7 +253,6 @@ public final class V24LiveSession {
     }
 
     /**
-     * LIVE-MATCH-F5.2 BUG-010: home/away possession in the live snapshot is
      * now derived from the eventsSoFar subset in {@link #buildSnapshot()}
      * (see {@link #derivePossessionFromEvents}). The previous
      * {@code homePossession()}/{@code awayPossession()} private helpers
@@ -278,14 +261,12 @@ public final class V24LiveSession {
      */
 
     /**
-     * LIVE-MATCH-F5.2 BUG-009 + V24D15-CLEANUP: event types considered
      * "noise" for the user-facing live UI. The engine still emits them
      * to the internal timeline (and to the persistence path) — they are
      * ONLY filtered from the snapshot that goes out via SSE.
      *
      * <p>The implicit "importance threshold" measured by Iván in F5.1 is
      * <b>~30-50 important events per match</b>: without this filter the
-     * V24D6U4 engine produces ~50-80 events per match, of which only
      * ~30-50 are "interesting" for a manager watching live (goals, shots,
      * subs, cards, possession-relevant events). The six types below
      * constitute the filtered set — each one represents a transient
@@ -293,7 +274,6 @@ public final class V24LiveSession {
      *
      * <p>{@link #NOISE_EVENT_THRESHOLD_MIN} is the minimum number of
      * filtered types. If a future change drops the Set size below this
-     * floor, the BUG-009 contract is at risk (too many noisy events
      * reaching the SSE consumer) and the team should review the
      * filter list explicitly rather than accept a silent regression.
      *
@@ -317,7 +297,6 @@ public final class V24LiveSession {
     );
 
     /**
-     * V24D15-CLEANUP (BUG-009 spec threshold): sanity check the noise
      * filter Set size at class-load time. If a future refactor drops
      * the Set below the documented minimum, fail fast — better to
      * crash at startup than to ship a regression where 60+ events per
@@ -336,14 +315,12 @@ public final class V24LiveSession {
     /**
      * Build the current snapshot from accumulated state.
      *
-     * <p>LIVE-MATCH-F5.2 BUG-009: filter {@link #NOISE_EVENTS} from the
      * events list returned to the SSE consumer. Possession and goals are
      * STILL derived from the un-filtered {@code eventsSoFar} (the noise
      * events are part of the possession story), so the score and
      * possession remain accurate. Only the visible UI event list is
      * trimmed.
      *
-     * <p>LIVE-MATCH-F5.2 BUG-010: derive {@code homePossession} and
      * {@code awayPossession} from the {@code eventsSoFar} subset (i.e.
      * the events that occurred up to {@code currentMinute}), NOT from
      * the cached engine result. The previous behaviour returned the
@@ -379,7 +356,6 @@ public final class V24LiveSession {
             }
         }
 
-        // LIVE-MATCH-F5.2 BUG-010: derive possession from the eventsSoFar
         // subset, NOT from the cached engine result (which is the FINAL
         // value). We count team-attributed events as a proxy for possession
         // activity. The formula is the ratio of home team-attributed events
@@ -389,7 +365,6 @@ public final class V24LiveSession {
         int homePossession = derivePossessionFromEvents(eventsSoFar, true);
         int awayPossession = 100 - homePossession;
 
-        // LIVE-MATCH-F5.2 BUG-009: filter NOISE_EVENTS for the SSE payload.
         // The eventsSoFar list (used for score + possession calculation
         // above) is NOT filtered — possession needs the full picture. The
         // list that goes to the consumer (eventsForSse) is the trimmed one.
@@ -577,7 +552,6 @@ public final class V24LiveSession {
     }
 
     /**
-     * LIVE-MATCH-F5.2 BUG-010: derive the home possession percentage (0-100)
      * from the visible-events subset. The formula counts team-attributed
      * events in {@code eventsSoFar} and computes the home team's share of
      * the total. Events without a {@code teamId} are skipped (rare; e.g.
@@ -624,7 +598,6 @@ public final class V24LiveSession {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F1 B3 — bug colateral 2 fix.
      *
      * <p>Previously ALWAYS re-ran the engine (CPU waste). Now uses the
      * cached engine result from the last {@link #tick()} /
@@ -634,7 +607,6 @@ public final class V24LiveSession {
     public V24DetailedMatchResult finalResult() {
         if (cachedResult == null) {
             // No tick has happened yet — run once and cache.
-            // LIVE-MATCH-F3-UI-LIVE F5.1 BUG-007: rewind the wrapper first
             // so the engine consumes from the start of the cache. After
             // this first call, the cache is populated and the next
             // engine call (from tick() or replayFromMinute()) will replay
@@ -649,10 +621,7 @@ public final class V24LiveSession {
         return cachedResult;
     }
 
-    // ========== LIVE-MATCH-F2-LIVE F2: manual substitution injection (alters result) ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F2: record a manual substitution event from the user.
      *
      * <p>F2 wire: this method now drives the substitution through the F1
      * replay path so {@code homeGoals}/{@code awayGoals} actually change.
@@ -717,14 +686,11 @@ public final class V24LiveSession {
         // at. manualEvents is preserved across replays (engineTimeline is
         // replaced, manualEvents is not).
         this.manualEvents.add(event);
-        log.trace("[LIVE-MATCH-F2-F2] Manual substitution recorded + applied: teamId={} off={} on={} minute={}",
+        log.trace("Manual substitution recorded + applied: teamId={} off={} on={} minute={}",
             teamId, playerOffId, playerOnId, minute);
     }
 
-    // ========== LIVE-MATCH-F2-LIVE F5 (B3.2): tactical change event recording ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B3.2): record a tactical change event (style/formation)
      * initiated by the manager. Mirrors the {@link #recordManualSubstitution} contract:
      * the event is appended to the live session so the F3 UI can render it, but
      * the goals/xG are recomputed by the {@link #replayFromMinute(int)} call that
@@ -755,14 +721,11 @@ public final class V24LiveSession {
                 "Expected TACTICAL_CHANGE event, got " + event.type());
         }
         this.manualEvents.add(event);
-        log.trace("[LIVE-MATCH-F2-F5] Tactical change recorded: minute={} teamId={} description='{}'",
+        log.trace("Tactical change recorded: minute={} teamId={} description='{}'",
             event.minute(), event.teamId(), event.description());
     }
 
-    // ========== LIVE-MATCH-F2-LIVE F1 B3 — replay path (NEW API) ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F1 B3 — invalidate the double cache from the
      * start of {@code fromMinute} onward and re-run the engine. The result
      * replaces the cached result, so subsequent {@link #tick()} calls and
      * {@link #finalResult()} see the re-played match.
@@ -792,7 +755,7 @@ public final class V24LiveSession {
         // Truncate the cache at the start of fromMinute.
         int index = cacheIndex.indexForMinute(fromMinute);
         cachedRandom.invalidateFromIndex(index);
-        log.trace("[LIVE-MATCH-F2-F1] replayFromMinute({}) invalidated cache index {}, replaying engine",
+        log.trace("replayFromMinute({}) invalidated cache index {}, replaying engine",
             fromMinute, index);
 
         // Re-run the engine with the (possibly mutated) effective context.
@@ -805,16 +768,14 @@ public final class V24LiveSession {
         // recordManualSubstitution and remain visible regardless of replays.)
         this.engineTimeline.clear();
         this.engineTimeline.addAll(result.timeline().events());
-        log.trace("[LIVE-MATCH-F2-F1] replay complete: homeGoals={} awayGoals={} events={}",
+        log.trace("replay complete: homeGoals={} awayGoals={} events={}",
             homeGoals, awayGoals, engineTimeline.size() + manualEvents.size());
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F1 B3 — apply a mutation to the {@code effectiveContext}
      * and trigger a replay from the current minute so subsequent ticks reflect
      * the new state.
      *
-     * <p>// LIVE-MATCH-F2-F2: wire aquí — Phase 2 (F2 of LIVE-MATCH-F2-LIVE)
      * will replace the body of {@code SubstitutionCommandUseCaseImpl.executeSubstitution}
      * to call this method (with a UnaryOperator that applies the substitution
      * to the V24TeamMatchState) instead of just appending to
@@ -839,7 +800,7 @@ public final class V24LiveSession {
             throw new IllegalArgumentException("mutator must not return null");
         }
         this.effectiveContext = next;
-        log.trace("[LIVE-MATCH-F2-F1] mutateContext applied, triggering replay from currentMinute={}",
+        log.trace("mutateContext applied, triggering replay from currentMinute={}",
             currentMinute);
         // Replay from the current minute — past draws are preserved,
         // future draws will use the mutated context.
@@ -849,7 +810,6 @@ public final class V24LiveSession {
     }
 
     /**
-     * LIVE-MATCH-F1-POC: expose current minute for SubstitutionCommandUseCase.
      * The session's current minute is the authoritative time reference —
      * the request's {@code requestedMinute} from the API body is overridden
      * by this value to avoid drift between client clock and server tick.
@@ -859,7 +819,6 @@ public final class V24LiveSession {
     }
 
     /**
-     * LIVE-MATCH-F1-POC: expose context (read-only view) for SubstitutionCommandUseCase.
      * Consumers MUST treat the returned object as immutable; mutations are not
      * expected outside of {@link V24PlayerMatchState} per-player mutations.
      *
@@ -873,7 +832,6 @@ public final class V24LiveSession {
     }
 
     /**
-     * LIVE-MATCH-F1-POC: read-only accessor for accumulated events.
      * Returns an unmodifiable CONCATENATED view of:
      * <ul>
      *   <li>Engine events up to {@link #currentMinute()} (from the latest

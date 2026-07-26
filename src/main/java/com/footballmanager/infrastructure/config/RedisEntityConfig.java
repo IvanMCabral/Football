@@ -68,7 +68,6 @@ public class RedisEntityConfig {
     }
 
     /**
-     * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): dedicated template for
      * {@code BaselineState} snapshots. Separate from
      * {@code v24DetailedMatchDataRedisTemplate} because the key namespace
      * ({@code match-baseline:}) and TTL (7d) differ from the live-detail

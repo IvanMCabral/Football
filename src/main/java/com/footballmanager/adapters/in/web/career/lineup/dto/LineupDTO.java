@@ -7,7 +7,6 @@ import java.util.List;
 /**
  * DTO para el Starting XI completo.
  *
- * <p>V24D6U2: size is now in {@code [MIN_AVAILABLE_PLAYERS, MAX_LINEUP_PLAYERS]}.
  * An empty list is still permitted (used as the empty state when no lineup
  * has been saved yet). When the lineup is below
  * {@code TARGET_LINEUP_PLAYERS}, the response carries a non-empty
@@ -24,7 +23,6 @@ public record LineupDTO(
     List<LineupWarningDTO> warnings,
     List<LineupSlotDTO> slots,
     /**
-     * V25D41 (Sprint C6): team chemistry score in [0, 99], calculated by
      * {@code TeamChemistryCalculator} from the on-pitch players' overalls and
      * skill aggregates. {@code null} for empty lineups (the "no lineup saved"
      * state — see legacy 3-arg ctor below) — populated as 0 for non-empty
@@ -37,21 +35,17 @@ public record LineupDTO(
      */
     Integer chemistryScore,
     /**
-     * V25D43 (Sprint C8): per-position-group breakdown of the chemistry.
      * Wraps the same calculation as {@link #chemistryScore} but exposes
      * <em>which</em> skills are present in the lineup, at what level, and
      * which player is the "carrier" of each. Nullable for backward compat
-     * with V25D41/V25D42 builds that don't compute it. The frontend
      * treats {@code null} as "no breakdown to render" and shows only the
      * score badge.
      */
     ChemistryBreakdownDTO chemistryBreakdown,
     /**
-     * V25D47 (Sprint C11a): inferred formation label ({@code "4-4-2"},
      * {@code "3-5-2"}, etc.) + per-player effectiveness multipliers
      * (playerId → 0..1) computed from natural position vs subdivision slot.
      *
-     * <p>Nullable for backward compat with V25D46 and earlier builds.
      * The frontend treats {@code null} as "no tactical data" and hides
      * the section. When present, the UI surfaces the inferred formation
      * (which may differ from the formation the manager selected via
@@ -79,9 +73,7 @@ public record LineupDTO(
     }
 
     /**
-     * V25D43 (Sprint C8): compact ctor (6 args, chemistryScore but no breakdown)
      * for callers that pre-date C8 — they get a null breakdown (backward compat
-     * with the V25D42 wire format).
      */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
                      List<LineupWarningDTO> warnings, List<LineupSlotDTO> slots,
@@ -90,9 +82,7 @@ public record LineupDTO(
     }
 
     /**
-     * V25D47 (Sprint C11a): compact ctor (7 args, with chemistryBreakdown but
      * no formationEffectiveness) for callers that pre-date C11a — they get
-     * a null formationEffectiveness (backward compat with the V25D46 wire format).
      */
     public LineupDTO(String formation, List<PlayerLineupDTO> players, boolean confirmed,
                      List<LineupWarningDTO> warnings, List<LineupSlotDTO> slots,
