@@ -14,7 +14,6 @@ import java.util.random.RandomGenerator;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D3C: Tests for shotCoordinate attachment to V24MatchEvent.
  *
  * <p>Validates that:
  * <ul>

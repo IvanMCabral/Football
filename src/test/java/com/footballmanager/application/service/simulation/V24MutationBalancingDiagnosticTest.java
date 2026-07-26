@@ -38,7 +38,6 @@ import com.footballmanager.application.service.simulation.V24SeasonShapeDiagnost
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6K2: Diagnostic harness to measure actual V24 career mutation outputs
  * before any constant tuning.
  *
  * <p>This file contains TWO distinct diagnostic paths:
@@ -49,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *       Only verifies invariant bounds (energy in [0,100], form in [1,99], no negatives).
  *       Named with "_syntheticInvariant" suffix to make intent clear.</li>
  *
- *   <li><b>Real V24 Engine Diagnostic</b> — uses the actual V24DetailedMatchEngine
  *       (the same engine used in production) with deterministic seeds.
  *       Measures what the real model actually produces:
  *       injury event rate, card event rate, form movement, energy behavior.
@@ -185,13 +183,11 @@ class V24MutationBalancingDiagnosticTest {
 
     // ========================================================================
     // PATH 2A: REAL V24 ENGINE DIAGNOSTIC — FIXED XI STRESS TEST
-    // Uses actual V24DetailedMatchEngine — worst-case, no rotation
     // ========================================================================
 
     /**
      * Real V24 engine stress diagnostic — WORST-CASE no-rotation.
      *
-     * Uses V24DetailedMatchEngine with deterministic seeds.
      * REUSES the same fixed starting XI for all 50 matches.
      * This is a STRESS TEST — NOT representative of real gameplay.
      *
@@ -203,7 +199,6 @@ class V24MutationBalancingDiagnosticTest {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
-        // Use the REAL V24DetailedMatchEngine — same as production
         V24DetailedMatchEngine realEngine = new V24DetailedMatchEngine();
 
         LeagueSimulator simulator = new LeagueSimulator(
@@ -278,7 +273,6 @@ class V24MutationBalancingDiagnosticTest {
         }
 
         // Count yellow/red cards from players' discipline state
-        // (cards are tracked internally by V24DisciplineMutationApplier on SessionPlayer)
         int totalYellows = 0;
         int totalReds = 0;
         for (SessionPlayer p : getAllPlayers(career)) {
@@ -439,7 +433,6 @@ class V24MutationBalancingDiagnosticTest {
     /**
      * Real V24 engine rotation-aware diagnostic — PRIMARY BALANCING MEASUREMENT.
      *
-     * Uses V24DetailedMatchEngine with deterministic seeds.
      * Auto-selects starting XI each round using:
      * - isDiagnosticPlayerAvailable() — excludes injured/suspended players
      * - Energy-based preference — prefers higher-energy players
@@ -964,16 +957,13 @@ class V24MutationBalancingDiagnosticTest {
     }
 
     // ========================================================================
-    // PATH 3: SEASON-SHAPED DIAGNOSTIC (V24D6K6)
     // Multi-team league, 38-round season, realistic squad sizes, rotation
     // ========================================================================
 
     /**
-     * V24D6K6: Season-shaped diagnostic — primary measurement for tuning readiness.
      *
      * Simulates a reduced 8-team league with 25-player squads running 30 rounds
      * (full home-and-away round-robin = 56 possible matches per team; we run 30).
-     * Uses V24DetailedMatchEngine with all mutation flags enabled.
      *
      * This is NOT a full 20-team 38-round league — it is a reduced but season-shaped
      * sample that captures multi-team dynamics, opponent rotation, and squad depth

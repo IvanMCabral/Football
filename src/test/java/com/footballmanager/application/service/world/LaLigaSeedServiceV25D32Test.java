@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doAnswer;
 
 /**
- * V25D32-F3: LaLigaSeedService height + skills coverage.
  *
  * <p>Verifica:
  * <ul>
@@ -83,7 +82,6 @@ class LaLigaSeedServiceV25D32Test {
         org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec execSpec =
                 mock(org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec.class);
 
-        // Capturador para TODOS los binds (cualquier tipo de value)
         org.mockito.stubbing.Answer<org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec> captureAnswer = inv -> {
             Map<String, Object> entry = new HashMap<>();
             entry.put("name", inv.getArgument(0));
@@ -110,7 +108,6 @@ class LaLigaSeedServiceV25D32Test {
         // Cargar seed completo via el path real
         seedOnce();
 
-        // V25D78-C55.4: pre-C55.4, this test verified that DatabaseClient.bind
         // was called with `:heightCm` and `:skillLevelsJson` parameter names.
         // Post-C55.4, the per-row INSERT loop is gone — player persistence
         // moved to WorldSeedBatchWriter.upsertPlayersBatched(...) which
@@ -267,7 +264,6 @@ class LaLigaSeedServiceV25D32Test {
         StepVerifier.create(service.execute(userId))
                 .assertNext(result -> {
                     assertEquals("La Liga 2024/25", result.leagueName());
-                    // V25D78-C55.3 B1: 60 teams per league (was 20)
                     assertEquals(60, result.teamsCount());
                 })
                 .verifyComplete();

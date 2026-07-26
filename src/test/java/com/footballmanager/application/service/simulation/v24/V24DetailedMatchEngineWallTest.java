@@ -16,16 +16,13 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D33-F3: WALL skill impact on GK saves (xG divisor).
  *
- * <p>Spec (V25D33 prompt, F3):
  * <ul>
  *   <li>WALL divisor on xG: {@code xg /= (1.0 + skill/150.0)}. WALL=0 →
  *       divisor=1.0 (no change). WALL=99 → divisor ≈ 1/1.66 ≈ 0.602
  *       (≈40% menos xG).</li>
  *   <li>Memory lesson "modifier de proteccion/reduccion va como DIVISOR, no
  *       multiplicador" — mismo patron que {@code formationDefensiveModifier}
- *       (V25D27.1).</li>
  *   <li>WALL se aplica DESPUES del HEADER multiplier para que HEADER (shooter)
  *       y WALL (GK) compongan en cualquier combinacion.</li>
  *   <li>Absent/null WALL skill → tratado como 0 (divisor 1.0).</li>
@@ -33,9 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * <p>Engine integration:
  * <ul>
- *   <li>{@link V24DetailedMatchEngine#attemptShot} ahora pasa el GK's
  *       {@code skillLevels} y {@code heightCm} al calculator 10-args via
- *       {@link V24DetailedMatchEngine#findGkOnPitch}.</li>
  *   <li>Sin GK on pitch → {@code null} se pasa al calculator, divisor queda
  *       en 1.0 (bit-a-bit compat con short-handed cases).</li>
  * </ul>
@@ -260,7 +255,6 @@ class V24DetailedMatchEngineWallTest {
     @Test
     void fullMatch_noSkills_preservesV25D32Baseline() {
         // No-op regression check: sin skills en el dominio, el engine debe
-        // producir el mismo resultado que V25D32 (WALL divisor = 1.0).
         V24MatchContext baseline = buildContextWithWallGK("no-skills", -1);  // sentinel: sin WALL
 
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
@@ -273,10 +267,7 @@ class V24DetailedMatchEngineWallTest {
         assertTrue(result.homeXg() >= 0 && result.awayXg() >= 0);
     }
 
-    // ========== Empirical smoke (Mavis spec — Courtois WALL=99 profile) ==========
-
     /**
-     * V25D33-F3: empirical smoke simulating a Courtois-profile GK (WALL=99).
      * Runs N=20 seeds × same fixture (4-3-3 vs 4-3-3 BALANCED) comparing:
      * <ul>
      *   <li>Baseline: home GK sin WALL (skillLevels empty)</li>

@@ -18,7 +18,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D70-C31 Phase 1d — Synthetic team attrs diagnostic (replicating C30 smoke setup).
  *
  * <p><b>Why this exists:</b> V31a/V31b/V31c all used either synthetic attrs (V31a/b)
  * or real LaLiga seed attrs (V31c). None reproduced runtime C30 smoke's 9.7%
@@ -72,7 +71,6 @@ class V31dSyntheticTeamAttrsDiagnosticTest {
     private static final int N_PER_PAIRING = 25;
     private static final long SEED = 20260628L;  // C30 smoke date
 
-    // Runtime observed (post-C29, REVISOR C30 smoke report)
     private static final double RUNTIME_INTERMEDIOS_AVG = 5.45;
     private static final double RUNTIME_CONVERSION_RATE = 0.097;
     // V31c diagnostic baseline (real LaLiga roster)

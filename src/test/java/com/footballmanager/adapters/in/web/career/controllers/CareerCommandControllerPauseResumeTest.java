@@ -18,7 +18,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * LIVE-MATCH-F5.3.4: E2E HTTP coverage for the new
  * {@code POST /api/v1/career/{careerId}/round/{roundId}/pause} and
  * {@code /resume} endpoints in {@link CareerCommandController}.
  *
@@ -53,7 +52,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("CareerCommandController — F5.3 pause/resume round (BUG-015)")
+@DisplayName("CareerCommandController — F5.3 pause/resume round")
 class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -64,7 +63,6 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
 
     @org.junit.jupiter.api.BeforeEach
     void seedLaLigaBeforeEachTest() {
-        // V25D78-C55.5: ensure LaLiga snapshot is populated for SEED_USER_ID
         // before each test (AbstractIntegrationTest.@BeforeEach flushes
         // Redis + deletes world tables per-test, so we re-seed).
         seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
@@ -84,7 +82,6 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
         }
     }
 
-    // V24D7+2.1 hardcoded seed admin (copied from RoundControllerE2ETest).
     private static final String SEED_USER_ID =
         "00000000-0000-0000-0000-000000000001";
 
@@ -93,7 +90,6 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
     }
 
     private String seedTeamId(String userId) {
-        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
         // LaLiga expansion means .get(0) returns a synthetic B1 add like
         // "Vigo City 1", not Real Madrid).
         return laligaTeamId(UUID.fromString(SEED_USER_ID),
@@ -126,7 +122,6 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
      * to get the raw UUID string.
      */
     private String seedCareerAndGameId(String userId) {
-        // V25D78-C55.5: seed LaLiga for THIS userId (the auth principal in
         // the POST /games below) — the previous version relied on stale
         // state from a prior test, which broke when cleanRedis wiped Redis
         // per-test.

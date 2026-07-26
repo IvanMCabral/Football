@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D87 (F2): unit tests for the bounded {@code simulate(ctx, random,
  * maxMinute)} path introduced in F1 Option A. Verifies the contract that
  * the live SSE tick driver now relies on:
  *

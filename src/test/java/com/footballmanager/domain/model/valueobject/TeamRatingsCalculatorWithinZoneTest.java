@@ -8,10 +8,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D99.16-BACK: integration test that confirms micro-moves WITHIN a
  * zone now change the team ratings, addressing Ivan's report that
  * "juntar m&aacute;s los mediocampistas centrales no hace nada" (dragging
- * a CM one slot toward the center didn't change anything pre-V25D99.16).
  *
  * <p>Builds three synthetic lineups for 4-4-2 with the same 11 players:
  * <ol>
@@ -23,10 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
  *       unrealistic but tests the gradient at the ideal coords).</li>
  * </ol>
  *
- * <p>Pre-V25D99.16: all three produced identical ratings (same zones,
  * same PositionEffectivenessCalculator.effectiveness outputs).
  *
- * <p>Post-V25D99.16: midfieldRating varies by ~1-3 percentage points
  * because SubdivisionEffectivenessCalculator penalises distance from
  * the CM ideal centroid (50, 60). Attack / defense ratings stay
  * identical (no DEF / ATT slot moved).
@@ -75,7 +71,6 @@ class TeamRatingsCalculatorWithinZoneTest {
     @DisplayName("Midfield rating varies when CMs are spread vs. compact")
     void withinZoneMidMovement_changesMidfieldRating() {
         // Baseline: 4-4-2 with CMs at LM/LCM/RCM/RM (the classical 4-4-2 wide).
-        // Same coordinates the FormationService produces (V25D94 symmetric).
         List<TeamRatingsCalculator.PlayerAttrs> spread = List.of(
                 gkAt("gk1"),
                 defAt("d1", "LB", 16.65, 83.0),
@@ -93,7 +88,6 @@ class TeamRatingsCalculatorWithinZoneTest {
         // Compact variant: same lineup but the CMs are dragged closer
         // together (still inside the MID row, but moved 10% toward center
         // each direction). The slotCategory stays "MID" so the legacy
-        // zone-only calc returns identical eff \u2014 V25D99.16 should now
         // produce a measurable difference via the distance penalty.
         List<TeamRatingsCalculator.PlayerAttrs> compact = List.of(
                 gkAt("gk1"),
@@ -366,12 +360,10 @@ class TeamRatingsCalculatorWithinZoneTest {
                 TeamRatingsCalculator.compute(offCentreCb, FORMATION);
 
         // Both have the same players in the same zones, but the slots
-        // differ. Pre-V25D99.16 they produce IDENTICAL ratings. Post-
-        // V25D99.16 the wing placements (LB/RB) carry a small penalty
         // for a CB ideal \u2014 but to compare, we need natural positions
         // \u2014 let's just confirm the ratings differ.
         assertNotEquals(centralRatings.defenseRating(), offCentreRatings.defenseRating(),
-                "V25D99.16: DEF rating should change when CBs shift wing-ward "
+                "DEF rating should change when CBs shift wing-ward "
                         + "within the DEF zone. central=" + centralRatings.defenseRating()
                         + ", offCentre=" + offCentreRatings.defenseRating());
     }

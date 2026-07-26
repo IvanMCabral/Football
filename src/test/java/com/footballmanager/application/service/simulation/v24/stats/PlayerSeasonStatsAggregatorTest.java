@@ -10,7 +10,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6M3: Unit tests for PlayerSeasonStatsAggregator.
  * Deterministic, fast, no external I/O.
  */
 class PlayerSeasonStatsAggregatorTest {

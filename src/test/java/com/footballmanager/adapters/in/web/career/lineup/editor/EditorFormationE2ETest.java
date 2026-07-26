@@ -95,7 +95,6 @@ class EditorFormationE2ETest {
     @Test
     @DisplayName("GET /editor/formations — 200 OK con 12 formaciones")
     void getFormations_returns200_with4Elements() {
-        // V25D75-C40 A4: endpoint returns 12 formations (was 4 — set grew over sprints).
         // Asserting exact count was too strict; the next test verifies the
         // 4 named formations are still present.
         webTestClient.mutateWith(mockUser(TEST_USER_ID.toString()))

@@ -6,11 +6,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D99.16-BACK: unit tests for {@link SubdivisionEffectivenessCalculator}.
  *
  * <p>Validates the geometry-aware effectiveness falloff introduced to
  * give the lineup ratings panel subdivision-level feedback (so within-
- * zone drag-and-drop produces visible changes instead of the V25D99.15
  * frozen-snapshot bug Ivan reported: "mover un mediocampista central un
  * slot hacia el centro no cambia nada").
  *
@@ -20,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *       GK slot stays 0.0 (propagates from
  *       {@link PositionEffectivenessCalculator}).</li>
  *   <li><b>Backward compat (NaN coords)</b> &mdash; any NaN coord
- *       reverts to the zone-only lookup, matching pre-V25D99.16 math.</li>
  *   <li><b>Distance penalty</b> &mdash; within the same zone, varying
  *       xPct shifts the effectiveness by a measurable amount. Across
  *       zones, the zone-level base (0.0-1.0 lookup) still dominates.</li>
@@ -87,7 +84,6 @@ class SubdivisionEffectivenessCalculatorTest {
     @Test
     @DisplayName("CB at opposite wing slot → significantly lower than 1.0")
     void cbAtOppositeWing_lower() {
-        // CB ideal (50, 83). Slot at (94.35, 83) — V25D94 extreme right.
         // distance = ~44.35. penalty = 0.30 * 0.4435 = 0.133.
         // eff = 1.0 * (1 - 0.133) = 0.867.
         double eff = SubdivisionEffectivenessCalculator.effectiveness(
@@ -147,7 +143,7 @@ class SubdivisionEffectivenessCalculatorTest {
     }
 
     @Test
-    @DisplayName("V25D99.359: WINGER as central MID fallback is visibly penalized")
+    @DisplayName("WINGER as central MID fallback is visibly penalized")
     void wingerInCentralMidfieldFallback_getsExtraRolePenalty() {
         double wideMid = SubdivisionEffectivenessCalculator.effectiveness(
                 "WINGER", 16.65, 60.0, "MID");
@@ -165,7 +161,7 @@ class SubdivisionEffectivenessCalculatorTest {
     }
 
     @Test
-    @DisplayName("V25D99.359: ATT fallback in central MID/DEF lanes is clearly costly")
+    @DisplayName("ATT fallback in central MID/DEF lanes is clearly costly")
     void attackerInCentralFallbackLanes_getsClearPenalty() {
         double strikerAsMid = SubdivisionEffectivenessCalculator.effectiveness(
                 "ST", 50.0, 60.0, "MID");
@@ -187,7 +183,7 @@ class SubdivisionEffectivenessCalculatorTest {
     }
 
     @Test
-    @DisplayName("V25D99.298: RW/LW alto premia extremo natural y castiga MID improvisado")
+    @DisplayName("RW/LW alto premia extremo natural y castiga MID improvisado")
     void wideForwardLane_prefersNaturalWingerOverCentralMidfielder() {
         double wingerAtRw = SubdivisionEffectivenessCalculator.effectiveness(
                 "WINGER", 90.0, 18.0, "ATT");

@@ -13,7 +13,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24A3: Timeline ordering test for V24DetailedMatchEngine.
  * All events must have minute between 1 and 90, sorted ascending.
  */
 class V24TimelineOrderingTest {

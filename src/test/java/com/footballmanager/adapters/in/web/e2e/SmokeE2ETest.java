@@ -13,7 +13,6 @@ import java.util.UUID;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
- * V24D7 FASE A — Smoke E2E test.
  *
  * <p>Purpose: prove the test infrastructure works end-to-end so FASE B/C
  * (which will write the real E2E coverage) can be built on a verified base.
@@ -84,9 +83,8 @@ class SmokeE2ETest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("GET /api/v1/world/teams?userId=... returns 200 against seeded DB "
-        + "(V25D78-C48: now requires authenticated — uses real JWT)")
+        + "")
     void worldTeamsEndpoint_returns200() {
-        // V25D78-C48: /world/** changed from permitAll to authenticated. Pre-C48 this
         // worked anonymously; post-C48 we send a real JWT generated via JwtTokenProvider.
         // (mockUser configurer is incompatible with the server-bound WebTestClient used
         // by this test — the auto-bound @SpringBootTest RANDOM_PORT client connects via
@@ -105,9 +103,8 @@ class SmokeE2ETest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("GET /api/v1/world/leagues?userId=... returns 200 "
-        + "(V25D78-C48: now requires authenticated — uses real JWT)")
+        + "")
     void worldLeaguesEndpoint_returns200() {
-        // V25D78-C48: /world/** changed from permitAll to authenticated.
         String token = jwtTokenProvider.generateToken(SEED_USER_ID.toString(), "USER");
         webTestClient.get().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/leagues")

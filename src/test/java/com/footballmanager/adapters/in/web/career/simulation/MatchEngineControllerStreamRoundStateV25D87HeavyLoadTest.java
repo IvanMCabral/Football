@@ -38,9 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D87.1-RUNTIME — Heavy-load repro of the runtime regression.
  *
- * <p>V25D87.1-F1 integration test (1 mock match, 500ms cadence) passed
  * 6/6 with the {@code replay().latest()} fix. But runtime smoke with
  * 30 REAL matches (V24 simulation per match) still drops to 1 event.
  *

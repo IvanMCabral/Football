@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D6T — Lock the manual-select blocking contract at the use-case layer.
  *
  * <p>{@link LineupCommandUseCaseImpl#manualSelectLineup} delegates to
  * {@link LineupHelper#validatePlayerFitness} which already rejects

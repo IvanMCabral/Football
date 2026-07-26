@@ -17,7 +17,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D69-C29 Phase 1c: Per-player variance (LaLiga top-5 asymmetric profile).
  *
  * <p>After Phase 1 (skills uniform = reduce) and Phase 1b (style = insufficient
  * 1.43x amplification) failed to reproduce the runtime gap (6.5 vs 2.57 baseline
@@ -47,7 +46,6 @@ class V29cLaLigaTop5DiagnosticTest {
     private static final int N_SIMULATIONS = 200;
 
     /**
-     * Realistic Real Madrid top-5 profile (from LaLigaSeedService V25D32):
      * <ul>
      *   <li>index 0 = GK (Courtois): WALL=92, height=199</li>
      *   <li>indices 1-4 = DEF: 1 with MARKER=70, 3 with NO skills</li>
@@ -220,7 +218,7 @@ class V29cLaLigaTop5DiagnosticTest {
         // Runtime gap target: 6.5/2.57 = 2.53x. We accept the gap if we
         // can amplify to within 1.5x of runtime (= >=4.3).
         assertTrue(attAvg >= 2.0 * baselineNoSkills || couAvg >= 2.0 * baselineNoSkills,
-                "V25D69-C29 PHASE-1c: at least one style must amplify intermedios to >=2x of no-skills baseline (5.14). " +
+                "at least one style must amplify intermedios to >=2x of no-skills baseline (5.14). " +
                 "Got attRaw=" + attAvg + ", couRaw=" + couAvg + " (baseline=" + baselineNoSkills + ")");
     }
 

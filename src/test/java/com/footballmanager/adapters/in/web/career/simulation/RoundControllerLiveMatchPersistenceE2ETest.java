@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D76-C41: regression E2E for the C40-B3/C41 bug chain.
  *
  * <p><b>Root cause (C40-B3 + C41):</b> the live match path in
  * {@code RoundController.handleMatchFinished → persistFinishedMatch} tried to
@@ -34,7 +33,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * matches under a junk key that {@code GET /api/v1/matches}
  * ({@code matchRepository.findAll(userId)}) could never find.
  *
- * <p><b>Why this test exists (V25D51/C13 pattern):</b> the C40 unit test
  * {@code CareerSquadPopulationE2ETest} mocked the persistence layer and
  * passed, but the production wire never routed correctly. This test
  * exercises the FULL path end-to-end (no mocks for persistence) — creating
@@ -79,7 +77,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @DisplayName("V25D76-C41 — live match persistence end-to-end regression")
 class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest {
 
-    // V25D75-C40 / RoundControllerE2ETest: /api/v1/world/* only responds to this user.
     private static final String SEED_USER_ID =
         "00000000-0000-0000-0000-000000000001";
 
@@ -93,14 +90,12 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
         seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
     }
 
     @Test
-    @DisplayName("V25D76-C41: live match → /api/v1/matches returns the persisted match (no orphan key)")
+    @DisplayName("live match → /api/v1/matches returns the persisted match (no orphan key)")
     void liveMatch_finishes_persistedToMatchRepository_findableByUserId() throws Exception {
-        // V25D78-C55.5: use SEED_USER_ID throughout. The @BeforeEach seeds
         // LaLiga for SEED_USER_ID, so the career-start endpoint must query
         // snapshots for the same user (BuildWorldViewUseCase.getOrCreateSnapshot
         // keys by userId; if the snapshot is empty for the test user, the
@@ -114,7 +109,6 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
         // 3. Fetch a real La Liga teamId (Real Madrid fixed for determinism).
         //    The LALIGA_ID is a hardcoded UUID in the seed (deterministic).
         final String laligaId = "4feeb9df-4133-4655-883e-e96894907e7b";
-        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
         // expansion means .get(0) is now "Vigo City 1", a synthetic B1 add,
         // not Real Madrid). Use the helper from AbstractIntegrationTest.
         String teamId = laligaTeamId(

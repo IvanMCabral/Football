@@ -15,13 +15,11 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7 FASE B — La Liga seed integrity E2E HTTP coverage.
  *
  * <p>Verifies that the seeded La Liga data (loaded into the test DB from
  * {@code db_test_dump.sql}) is queryable through the public HTTP API and
  * that the counts match the expected shape of the post-MVP MVP.
  *
- * <p>Expected (per the V24D6U6 close + V24D7 plan):
  * <ul>
  *   <li>1 league: "La Liga"</li>
  *   <li>At least 20 teams (target was 20 La Liga clubs; the dump may carry
@@ -50,7 +48,6 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
         UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     /**
-     * V25D77-C42 A3: top-5 Real Madrid stars we expect to be present with
      * their canonical LaLiga 2024-25 names (locks in that the seed is using
      * the real-name JSON file {@code seed/laliga-2024-25.json} and not the
      * old generic {@code Player N} placeholder). If any of these gets
@@ -73,7 +70,6 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.5: seed LaLiga first so DB has teams.
         seedLaLigaForUser(UUID.fromString("00000000-0000-0000-0000-000000000001"));
     }
 
@@ -114,7 +110,6 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("WorldSnapshot has at least 20 teams (queried via /world/teams)")
     void db_hasAtLeast20Teams() {
-        // V25D78-C55.5: the legacy LaLigaSeedService writes teams to the Redis
         // WorldSnapshot, not to Postgres `teams` table. Query the public HTTP
         // /world/teams endpoint (which builds the WorldView) for the seed user.
         int count = webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
@@ -146,7 +141,6 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * V25D77-C42 A3: lock-in that the LaLiga seed carries the canonical real
      * names of the top-5 Real Madrid players (Vinicius, Bellingham, Mbappe,
      * Valverde, Courtois). Pre-C40 the JSON shipped generic placeholders and
      * the test suite silently passed because {@code db_hasAtLeast130Players}
@@ -204,7 +198,6 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * V25D77-C42 A3: HTTP-level lock-in. The {@code /world/players} endpoint
      * must surface real LaLiga names (not {@code "Player 1"}, {@code "Player 2"},
      * etc). We don't assert on the full top-5 here because some players may
      * not be included in the free-player set returned by the endpoint; we
@@ -214,7 +207,6 @@ class LaLigaSeedE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("HTTP /world/players per-team returns at least one real LaLiga star")
     void http_players_returnsAtLeastOneRealLaLigaName() {
-        // V25D78-C55.5: /world/players returns ALL 1006 players in one
         // payload which exceeds WebTestClient's default 256KB buffer limit.
         // Switch to /world/teams/{worldTeamId}/players (per-team, ~22 players
         // payload, fits in buffer) using Real Madrid's teamId (a known

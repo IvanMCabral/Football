@@ -24,7 +24,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Tests for
  * {@link MatchComparisonService}.
  *
  * <p>Verifies the service correctly:
@@ -155,7 +154,6 @@ class MatchComparisonServiceTest {
         when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
                 .thenReturn(Optional.of(sampleLive()));
 
-        // V24D15-CLEANUP (BUG_COMPARE_404): getComparison now returns
         // Mono<MatchComparison>, so the exception propagates via Mono.error
         // and we verify with reactor.test.StepVerifier (no more .block()).
         StepVerifier.create(service.getComparison(CAREER_ID, MATCH_ID))

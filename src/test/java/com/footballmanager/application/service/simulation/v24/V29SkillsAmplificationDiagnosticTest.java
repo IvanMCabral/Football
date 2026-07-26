@@ -17,11 +17,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D69-C29 — Skills amplification diagnostic.
  *
- * <p>Sprint C29 task: reproduce the diagnostic-vs-runtime gap (2.45x measured
- * post-C28 in REVISOR smoke) by running the diagnostic WITH skills ON, so the
- * diagnostic mirrors the runtime path that REVISOR observed.
  *
  * <p>Comparison baseline (skills OFF, post-C28 midpoint-SQRT):
  * <ul>
@@ -32,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *   <li>DESIGUALES (90x60, 33.3% diff): avg total = 3.545</li>
  * </ul>
  *
- * <p>Runtime observed (REVISOR smoke, post-C28, skills active):
  * <ul>
  *   <li>PAREJOS: avg 1-2 goles (matches diagnostic)</li>
  *   <li>INTERMEDIOS: avg ~6.5 goles (vs diagnostic 2.57 avg → 2.53x gap)</li>
@@ -115,7 +110,7 @@ class V29SkillsAmplificationDiagnosticTest {
     // ========== PAREJOS scenario (OVR 85 × 85) ==========
 
     @Test
-    @DisplayName("V25D69-C29 BASELINE: parejos (OVR 85×85) WITH skills ON")
+    @DisplayName("parejos (OVR 85×85) WITH skills ON")
     void measureBaseline_parejosOvr85x85_withSkills() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runScenarioWithSkills(engine, "PAREJOS (OVR 85 × 85) WITH SKILLS ON",
@@ -126,7 +121,7 @@ class V29SkillsAmplificationDiagnosticTest {
     // ========== INTERMEDIO scenarios (OVR 85 × 75/70/65) ==========
 
     @Test
-    @DisplayName("V25D69-C29 BASELINE: INTERMEDIO-A (OVR 85×75) WITH skills ON")
+    @DisplayName("INTERMEDIO-A (OVR 85×75) WITH skills ON")
     void measureBaseline_intermedioA_Ovr85x75_withSkills() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runScenarioWithSkills(engine, "INTERMEDIO-A (OVR 85 × 75) WITH SKILLS ON",
@@ -135,7 +130,7 @@ class V29SkillsAmplificationDiagnosticTest {
     }
 
     @Test
-    @DisplayName("V25D69-C29 BASELINE: INTERMEDIO-B (OVR 85×70) WITH skills ON")
+    @DisplayName("INTERMEDIO-B (OVR 85×70) WITH skills ON")
     void measureBaseline_intermedioB_Ovr85x70_withSkills() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runScenarioWithSkills(engine, "INTERMEDIO-B (OVR 85 × 70) WITH SKILLS ON",
@@ -144,7 +139,7 @@ class V29SkillsAmplificationDiagnosticTest {
     }
 
     @Test
-    @DisplayName("V25D69-C29 BASELINE: INTERMEDIO-C (OVR 85×65) WITH skills ON")
+    @DisplayName("INTERMEDIO-C (OVR 85×65) WITH skills ON")
     void measureBaseline_intermedioC_Ovr85x65_withSkills() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runScenarioWithSkills(engine, "INTERMEDIO-C (OVR 85 × 65) WITH SKILLS ON",
@@ -155,7 +150,7 @@ class V29SkillsAmplificationDiagnosticTest {
     // ========== DESIGUALES scenario (OVR 90 × 60) ==========
 
     @Test
-    @DisplayName("V25D69-C29 BASELINE: DESIGUALES (OVR 90×60) WITH skills ON")
+    @DisplayName("DESIGUALES (OVR 90×60) WITH skills ON")
     void measureBaseline_desigualesOvr90x60_withSkills() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runScenarioWithSkills(engine, "DESIGUALES (OVR 90 × 60) WITH SKILLS ON",
@@ -166,7 +161,6 @@ class V29SkillsAmplificationDiagnosticTest {
     // ========== Phase 1 confirmation assertion ==========
 
     /**
-     * V25D69-C29 — Phase 1 confirmation assertion.
      *
      * <p>The diagnostic WITH skills ON for INTERMEDIO-A must produce avg total
      * goals significantly higher than the baseline WITHOUT skills (1.93). If
@@ -179,7 +173,7 @@ class V29SkillsAmplificationDiagnosticTest {
      */
     @Test
     @Disabled("V25D69-C29 research artifact — superseded by V29d (per-position attrs fix). Kept for documentation. ENABLE to re-run research.")
-    @DisplayName("V25D69-C29 PHASE-1: intermedios with skills ON must show ≥1.5x amplification")
+    @DisplayName("intermedios with skills ON must show ≥1.5x amplification")
     void phase1_intermediosSkillsOnVsOff_amplificationConfirmed() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -220,7 +214,7 @@ class V29SkillsAmplificationDiagnosticTest {
         System.out.println("================================================================");
 
         assertTrue(amplificationRatio >= 1.5,
-                "V25D69-C29 PHASE-1: skills ON must amplify intermedios by ≥1.5x. " +
+                "skills ON must amplify intermedios by ≥1.5x. " +
                 "Got amplificationRatio=" + amplificationRatio +
                 " (avgWithSkills=" + avgWithSkillsIntermediate +
                 ", avgBaseline=" + avgBaselineIntermediate + ")");

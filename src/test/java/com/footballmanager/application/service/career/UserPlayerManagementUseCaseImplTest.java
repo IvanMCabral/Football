@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
  * <p>Verifica que getUserSquad usa {@code CareerSessionService.getCareerFromCache}
  * (en lugar del viejo {@code getCareer}) y que cuando la career no existe
  * retorna una lista vacía en lugar de un Mono.empty() (que Spring WebFlux
- * mapearía a 404). De este modo, la ruta que el smoke REVISOR detectó con
  * 422 al re-abrir el squad modal queda blindada.
  */
 @ExtendWith(MockitoExtension.class)

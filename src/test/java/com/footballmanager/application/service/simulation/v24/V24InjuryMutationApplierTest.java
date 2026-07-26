@@ -9,7 +9,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6B1: Unit tests for V24InjuryMutationApplier and V24CareerMutationPolicy.
  * Tests injury mutation behavior in isolation — no Redis, no Spring, no IO.
  */
 class V24InjuryMutationApplierTest {
@@ -299,8 +298,6 @@ class V24InjuryMutationApplierTest {
         assertEquals(career1.getSessionPlayer("p1").getInjured(),
                     career2.getSessionPlayer("p1").getInjured());
     }
-
-    // ========== V24D6F3: Edge Case Regression Tests ==========
 
     @Test
     void emptyTimeline_noMutation() {

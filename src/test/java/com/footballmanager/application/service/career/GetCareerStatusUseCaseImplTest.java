@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D78-C55.2 phase 4 UI: tests for {@link GetCareerStatusUseCaseImpl} covering the
  * two new fields exposed to the frontend so the dashboard can render the user's
  * division tier and auto-trigger the promotions dialog.
  *
@@ -73,7 +72,6 @@ class GetCareerStatusUseCaseImplTest {
     }
 
     /**
-     * V25D78-C55.9: build a CareerSave with a properly wired SessionTeam (name,
      * country, formation) so {@code career.getSessionTeam(sessionTeamId).getName()}
      * returns a real value. Pass {@code teamName=null} to skip the SessionTeam
      * wiring (legacy behaviour).
@@ -130,7 +128,6 @@ class GetCareerStatusUseCaseImplTest {
     }
 
     /**
-     * V25D78-C55.9: simulate a promotion by mutating the seasonManager so that
      * the user's teamId is now in the {@code toDivision} (and removed from the
      * {@code fromDivision}). This mimics what PromotionExecutor.execute →
      * DivisionManager.moveTeam does at end-of-season without going through the
@@ -289,11 +286,9 @@ class GetCareerStatusUseCaseImplTest {
     }
 
     // ============================================================================
-    // V25D78-C55.9 — A8 + A9 contract tests (userDivision + userTeamName)
     // ============================================================================
 
     /**
-     * V25D78-C55.9 A8: post career-start, the user's division tier must be
      * returned as a non-null string regardless of which of the 12 sub-divisions
      * (post-C55.6 distribution: 60 teams / 5-per-division) the team sits in.
      *
@@ -303,7 +298,7 @@ class GetCareerStatusUseCaseImplTest {
      * can't silently regress the 12-tier coverage.
      */
     @Test
-    @DisplayName("V25D78-C55.9 A8: userDivision populated for tier > 3 (post-start)")
+    @DisplayName("userDivision populated for tier > 3 (post-start)")
     void status_userDivision_returnsCareerUserDivision_postCareerStart() {
         Division quinta = new Division("QUINTA", 5);
         CareerSave career = makeCareerWithDivision("team-1", quinta);
@@ -320,7 +315,6 @@ class GetCareerStatusUseCaseImplTest {
     }
 
     /**
-     * V25D78-C55.9 A8 (post-promotion): after the engine moves the user's team
      * between divisions (PromotionExecutor.execute → DivisionManager.moveTeam),
      * the next {@code /career/status} call must reflect the new tier. The
      * promotion is computed lazily from {@code seasonManager.findDivisionByTeamId},
@@ -328,7 +322,7 @@ class GetCareerStatusUseCaseImplTest {
      * exercises the contract.
      */
     @Test
-    @DisplayName("V25D78-C55.9 A8: userDivision updates after promotion (SEGUNDA -> PRIMERA)")
+    @DisplayName("userDivision updates after promotion (SEGUNDA -> PRIMERA)")
     void status_userDivision_updatesPostPromotion() {
         // Career starts with the user team in SEGUNDA (rank ~6-10 / divisionNumber=2).
         Division primera = new Division("PRIMERA", 1);
@@ -356,14 +350,13 @@ class GetCareerStatusUseCaseImplTest {
     }
 
     /**
-     * V25D78-C55.9 A9: the human-readable team name (the one the user picked at
      * career-start, e.g. "Real Madrid", "Las Palmas") must be exposed in
      * {@code /career/status.userTeamName}, matching what {@code /career/continue}
      * already returns. Pre-C55.9 this field was always {@code null}, breaking the
      * API contract (per C55.7.3 gap #9 + #10).
      */
     @Test
-    @DisplayName("V25D78-C55.9 A9: userTeamName returns the real team name (post-start)")
+    @DisplayName("userTeamName returns the real team name (post-start)")
     void status_userTeamName_returnsRealTeamName_postCareerStart() {
         Division primera = new Division("PRIMERA", 1);
         CareerSave career = makeCareerWithDivision("team-real-madrid", primera, "Real Madrid");
@@ -380,7 +373,6 @@ class GetCareerStatusUseCaseImplTest {
     }
 
     /**
-     * V25D78-C55.9 (consistency): {@code /career/status.userDivision} and
      * {@code /career/status.userTeamName} must match what {@code /career/continue}
      * returns for the same career state. Per C55.7.3 gap #10, pre-fix the two
      * endpoints disagreed — /continue returned "Las Palmas" while /status returned
@@ -395,7 +387,7 @@ class GetCareerStatusUseCaseImplTest {
      * {@code CareerSave.getUserDivision()} → {@code seasonManager.findDivisionByTeamId}.
      */
     @Test
-    @DisplayName("V25D78-C55.9 consistency: /status.userDivision + /status.userTeamName match /continue")
+    @DisplayName("/status.userDivision + /status.userTeamName match /continue")
     void status_userDivisionAndTeamName_consistentBetweenEndpoints() {
         Division segunda = new Division("SEGUNDA", 2);
         CareerSave career = makeCareerWithDivision("team-1", segunda, "Las Palmas");

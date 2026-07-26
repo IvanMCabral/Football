@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D37-F3: regression test for BUG_MATCH_DETAIL_NPE_ON_BAD_BODY.
  *
  * <p>Before the fix, {@code POST /api/v1/matches} with a malformed body
  * (empty {@code {}}, missing {@code homeTeamId}, missing {@code awayTeamId},
@@ -45,7 +44,6 @@ import static org.mockito.Mockito.when;
  * and throws {@link NullPointerException}. Spring then returned
  * <b>500 Internal Server Error</b> with the leaky JVM message
  * {@code "Cannot invoke \"String.length()\" because \"name\" is null"} —
- * the BUG_MATCH_DETAIL_NPE_ON_BAD_BODY symptom.
  *
  * <p>After the fix, the controller pre-validates the body and returns
  * <b>400 Bad Request</b> with a structured error Map before touching any
@@ -59,7 +57,6 @@ import static org.mockito.Mockito.when;
  * itself (no Spring context, no WebTestClient). Pure validation tests don't
  * need a Spring slice — calling {@code createMatch} with a hand-built
  * {@link Authentication} and a request DTO exercises the exact validation
- * branches added by the V25D37-F3 fix.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MatchControllerReactive.createMatch — V25D37-F3 bad body validation (unit)")
@@ -106,7 +103,7 @@ class MatchControllerReactiveV25D37F3Test {
     }
 
     @Test
-    @DisplayName("V25D37-F3: empty body {} returns 400 (not 500 NPE)")
+    @DisplayName("empty body {} returns 400 (not 500 NPE)")
     void createMatch_emptyBody_returns400() {
         MatchControllerReactive.CreateMatchRequest request =
                 new MatchControllerReactive.CreateMatchRequest(null, null, null);
@@ -129,7 +126,7 @@ class MatchControllerReactiveV25D37F3Test {
     }
 
     @Test
-    @DisplayName("V25D37-F3: null homeTeamId/awayTeamId returns 400 (not 500 NPE)")
+    @DisplayName("null homeTeamId/awayTeamId returns 400 (not 500 NPE)")
     void createMatch_nullTeamIds_returns400() {
         MatchControllerReactive.CreateMatchRequest request =
                 new MatchControllerReactive.CreateMatchRequest(null, null, Instant.now());
@@ -142,7 +139,7 @@ class MatchControllerReactiveV25D37F3Test {
     }
 
     @Test
-    @DisplayName("V25D37-F3: only homeTeamId (awayTeamId missing) returns 400 (not 500 NPE)")
+    @DisplayName("only homeTeamId (awayTeamId missing) returns 400 (not 500 NPE)")
     void createMatch_onlyHomeTeamId_returns400() {
         MatchControllerReactive.CreateMatchRequest request =
                 new MatchControllerReactive.CreateMatchRequest(
@@ -163,7 +160,7 @@ class MatchControllerReactiveV25D37F3Test {
     }
 
     @Test
-    @DisplayName("V25D37-F3: blank homeTeamId returns 400 (not 500 NPE)")
+    @DisplayName("blank homeTeamId returns 400 (not 500 NPE)")
     void createMatch_blankHomeTeamId_returns400() {
         MatchControllerReactive.CreateMatchRequest request =
                 new MatchControllerReactive.CreateMatchRequest(
@@ -184,7 +181,7 @@ class MatchControllerReactiveV25D37F3Test {
     }
 
     @Test
-    @DisplayName("V25D37-F3: null scheduledAt returns 400 (not 500 NPE)")
+    @DisplayName("null scheduledAt returns 400 (not 500 NPE)")
     void createMatch_nullScheduledAt_returns400() {
         MatchControllerReactive.CreateMatchRequest request =
                 new MatchControllerReactive.CreateMatchRequest(
@@ -207,7 +204,7 @@ class MatchControllerReactiveV25D37F3Test {
     }
 
     @Test
-    @DisplayName("V25D37-F3: malformed UUID homeTeamId returns 400 (not 500)")
+    @DisplayName("malformed UUID homeTeamId returns 400 (not 500)")
     void createMatch_malformedUuidHomeTeamId_returns400() {
         MatchControllerReactive.CreateMatchRequest request =
                 new MatchControllerReactive.CreateMatchRequest(
@@ -230,7 +227,7 @@ class MatchControllerReactiveV25D37F3Test {
     }
 
     @Test
-    @DisplayName("V25D37-F3: happy path with valid UUIDs and scheduledAt returns 201 (sanity)")
+    @DisplayName("happy path with valid UUIDs and scheduledAt returns 201 (sanity)")
     void createMatch_happyPath_returns201() {
         // Sanity: the validation guards don't break the happy path. We need
         // matchRepository.save to return Mono.empty() and build a valid

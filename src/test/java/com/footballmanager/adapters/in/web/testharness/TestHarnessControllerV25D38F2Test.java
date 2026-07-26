@@ -29,8 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D38-F2: regression test for BUG_NPE_AUDIT (audit of POST controllers
- * that take a body, follow-up to V25D37-F3).
  *
  * <p>Before the fix, {@code POST /api/v1/test-harness/career/create-custom}
  * with a malformed body (empty {@code {}}, missing {@code leagueId}, missing
@@ -41,7 +39,6 @@ import static org.mockito.Mockito.when;
  * leaky JVM message
  * {@code "Cannot invoke \"String.length()\" because \"name\" is null"}.
  *
- * <p>This was the only sibling left with the bug after V25D37-F3 fixed
  * {@code POST /api/v1/matches}. The audit found
  * {@code setFormation / setStyle / injectPlayerStats / resetRound} return
  * 422 (mapped by {@code GlobalExceptionHandler} from IllegalArgumentException)
@@ -49,11 +46,9 @@ import static org.mockito.Mockito.when;
  *
  * <p>After the fix, the controller pre-validates the body and returns
  * <b>400 Bad Request</b> with a structured error Map before touching any
- * repository / use case (same pattern as V25D37-F3).
  *
  * <p>This test is a pure JUnit + Mockito unit test on the controller method
  * itself (no Spring context, no WebTestClient) — mirrors the
- * {@code MatchControllerReactiveV25D37F3Test} style.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TestHarnessController.createCustom — V25D38-F2 bad body validation (unit)")
@@ -96,7 +91,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: empty body (all null) returns 400 (not 500 NPE)")
+    @DisplayName("empty body (all null) returns 400 (not 500 NPE)")
     void createCustom_emptyBody_returns400() {
         StepVerifier.create(controller.createCustom(req(null, null, null, null, null), auth))
                 .assertNext(resp -> assertBadRequestWithErrorContaining(resp, "leagueId"))
@@ -109,7 +104,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: null teamId returns 400 (not 500 NPE)")
+    @DisplayName("null teamId returns 400 (not 500 NPE)")
     void createCustom_nullTeamId_returns400() {
         StepVerifier.create(controller.createCustom(
                 req("00000000-0000-0000-0000-000000000001", null, "NORMAL", "NORMAL", 5), auth))
@@ -122,7 +117,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: blank difficulty returns 400 (not 500 NPE)")
+    @DisplayName("blank difficulty returns 400 (not 500 NPE)")
     void createCustom_blankDifficulty_returns400() {
         StepVerifier.create(controller.createCustom(
                 req("00000000-0000-0000-0000-000000000001",
@@ -137,7 +132,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: blank gameSpeed returns 400 (not 500 NPE)")
+    @DisplayName("blank gameSpeed returns 400 (not 500 NPE)")
     void createCustom_blankGameSpeed_returns400() {
         StepVerifier.create(controller.createCustom(
                 req("00000000-0000-0000-0000-000000000001",
@@ -152,7 +147,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: malformed UUID leagueId returns 400 (not 422 IAE / not 500 NPE)")
+    @DisplayName("malformed UUID leagueId returns 400 (not 422 IAE / not 500 NPE)")
     void createCustom_malformedLeagueId_returns400() {
         StepVerifier.create(controller.createCustom(
                 req("not-a-uuid",
@@ -167,7 +162,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: malformed UUID teamId returns 400 (not 422 IAE / not 500 NPE)")
+    @DisplayName("malformed UUID teamId returns 400 (not 422 IAE / not 500 NPE)")
     void createCustom_malformedTeamId_returns400() {
         StepVerifier.create(controller.createCustom(
                 req("00000000-0000-0000-0000-000000000001",
@@ -182,7 +177,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: teamsPerDivision=1 returns 400 (underflow guard)")
+    @DisplayName("teamsPerDivision=1 returns 400 (underflow guard)")
     void createCustom_teamsPerDivisionTooSmall_returns400() {
         StepVerifier.create(controller.createCustom(
                 req("00000000-0000-0000-0000-000000000001",
@@ -197,7 +192,7 @@ class TestHarnessControllerV25D38F2Test {
     }
 
     @Test
-    @DisplayName("V25D38-F2: happy path with valid UUIDs and difficulty passes validation (UseCase invoked)")
+    @DisplayName("happy path with valid UUIDs and difficulty passes validation (UseCase invoked)")
     void createCustom_happyPath_passesValidation() {
         // Sanity: the validation guards don't block the happy path. We verify
         // that the validation chain at the top of the method lets a valid

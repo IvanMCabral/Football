@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE Fase 1 — Task B2 unit tests for {@link DoubleCacheIndex}.
  *
  * <p>The index is the bridge between minute-level reasoning (in
  * {@code V24LiveSession}) and draw-level cache manipulation (in

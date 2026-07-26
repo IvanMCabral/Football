@@ -27,9 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
- * V24D5C: Detail persistence tests for V24 simulation path.
  *
- * <p>Tests that V24DetailedMatchStoragePort.save(...) is called only when
  * persistDetail=true and V24 simulation succeeds.
  * Tests that save failure does not fail the round.
  */
@@ -44,7 +42,6 @@ class V24LeagueDetailPersistenceTest {
     void persistDetailFalseDoesNotSaveDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=true, persistDetail=false
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, false, fakeStorage);
 
         CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
@@ -64,7 +61,6 @@ class V24LeagueDetailPersistenceTest {
     void persistDetailTrueSavesDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=true, persistDetail=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, fakeStorage);
 
         CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
@@ -166,7 +162,6 @@ class V24LeagueDetailPersistenceTest {
     void persistDetailTrueWithoutV24FlagDoesNotSaveDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=false, persistDetail=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false, true, fakeStorage);
 
         CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
@@ -186,7 +181,6 @@ class V24LeagueDetailPersistenceTest {
     void exposeDetailApiFlagDoesNotTriggerPersistence() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=true, persistDetail=false
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, false, fakeStorage);
 
         CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);

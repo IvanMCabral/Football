@@ -19,7 +19,6 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * V25D78-C55.2 phase 5: Back-end integration tests for multi-division season flow.
  *
  * <p>Verifies end-to-end:
  * <ol>
@@ -36,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MultiDivisionSeasonFlowIntegrationTest {
 
     @Test
-    @DisplayName("V25D78-C55.2 P5 #1: full multi-division season cycle (build → schedule → simulate → promote/relegate)")
+    @DisplayName("full multi-division season cycle (build → schedule → simulate → promote/relegate)")
     void full_season_cycle() {
         // Phase 1+2 setup: build 60 teams and DivisionScheduler.
         List<Team> teams = buildSixtyTeams();
@@ -86,7 +85,7 @@ class MultiDivisionSeasonFlowIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P5 #2: schedule generator produces no team conflicts across 78 matchdays")
+    @DisplayName("schedule generator produces no team conflicts across 78 matchdays")
     void schedule_no_team_conflicts() {
         List<Team> teams = buildSixtyTeams();
         DivisionScheduler scheduler = new DivisionScheduler(
@@ -118,7 +117,7 @@ class MultiDivisionSeasonFlowIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P5 #3: promotion/relegation balance — after movements, division sizes preserved")
+    @DisplayName("promotion/relegation balance — after movements, division sizes preserved")
     void promo_reg_preserves_division_sizes() {
         List<Team> teams = buildSixtyTeams();
         Map<TeamId, PromotionRelegationService.Standing> standings =
@@ -150,7 +149,7 @@ class MultiDivisionSeasonFlowIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P5 #4: standings ordering uses points → GD → GS tiebreaker chain")
+    @DisplayName("standings ordering uses points → GD → GS tiebreaker chain")
     void standings_ordering_tiebreaker_chain() {
         // Create 4 teams with same points (50) but different GD/GS.
         TeamId t1 = TeamId.fromString("00000000-0000-0000-0000-00000000aaaa");

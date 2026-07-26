@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * V25D78-C55.2 phase 3 unit tests for {@link PromotionRelegationService}.
  *
  * <p>Verifies:
  * <ul>
@@ -44,7 +43,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #1: top 3 of SEGUNDA ascend to PRIMERA")
+    @DisplayName("top 3 of SEGUNDA ascend to PRIMERA")
     void top_3_of_segunda_ascend_to_primera() {
         Map<Division, List<PromotionRelegationService.Standing>> standings =
                 buildStandings(/*primeraPts*/randomPts(), /*segundaPts*/100,
@@ -65,7 +64,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #2: bottom 3 of PRIMERA descend to SEGUNDA")
+    @DisplayName("bottom 3 of PRIMERA descend to SEGUNDA")
     void bottom_3_of_primera_descend_to_segunda() {
         Map<Division, List<PromotionRelegationService.Standing>> standings =
                 buildStandings(/*primeraPts*/50, /*segundaPts*/randomPts(),
@@ -87,7 +86,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #3: top 3 of TERCERA ascend to SEGUNDA")
+    @DisplayName("top 3 of TERCERA ascend to SEGUNDA")
     void top_3_of_tercera_ascend_to_segunda() {
         Map<Division, List<PromotionRelegationService.Standing>> standings =
                 buildStandings(/*primeraPts*/randomPts(), /*segundaPts*/randomPts(),
@@ -108,7 +107,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #4: bottom 3 of SEGUNDA descend to TERCERA")
+    @DisplayName("bottom 3 of SEGUNDA descend to TERCERA")
     void bottom_3_of_segunda_descend_to_tercera() {
         Map<Division, List<PromotionRelegationService.Standing>> standings =
                 buildStandings(/*primeraPts*/randomPts(), /*segundaPts*/50,
@@ -130,7 +129,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #5: total movements is exactly 12 (3+3 × 2 directions)")
+    @DisplayName("total movements is exactly 12 (3+3 × 2 directions)")
     void total_movements_is_12() {
         Map<Division, List<PromotionRelegationService.Standing>> standings =
                 buildStandings(50, 50, 50);
@@ -139,7 +138,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #6: tiebreaker by goal difference (same points)")
+    @DisplayName("tiebreaker by goal difference (same points)")
     void tiebreaker_by_goal_difference() {
         // Two teams with same points but different GD. Higher GD should rank higher.
         TeamId teamA = TeamId.fromString("00000000-0000-0000-0000-000000000001");
@@ -188,7 +187,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #7: validation rejects division with != 20 standings")
+    @DisplayName("validation rejects division with != 20 standings")
     void validation_rejects_wrong_count() {
         Map<Division, List<PromotionRelegationService.Standing>> standings = new EnumMap<>(Division.class);
         standings.put(Division.PRIMERA, buildDivStandings(Division.PRIMERA, 50));
@@ -200,7 +199,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #8: applyMovements returns teams with updated divisions")
+    @DisplayName("applyMovements returns teams with updated divisions")
     void apply_movements_returns_updated_teams() {
         Map<Division, List<PromotionRelegationService.Standing>> standings =
                 buildStandings(50, 50, 50);
@@ -233,7 +232,7 @@ class PromotionRelegationServiceTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 P3 #9: deterministic output (same inputs = same movements)")
+    @DisplayName("deterministic output (same inputs = same movements)")
     void deterministic_output() {
         Map<Division, List<PromotionRelegationService.Standing>> standings =
                 buildStandings(50, 50, 50);

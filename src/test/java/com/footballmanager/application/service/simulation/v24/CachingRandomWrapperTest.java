@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE Fase 1 — Task B1 unit tests for {@link CachingRandomWrapper}.
  *
  * <p>The wrapper must:
  * <ol>

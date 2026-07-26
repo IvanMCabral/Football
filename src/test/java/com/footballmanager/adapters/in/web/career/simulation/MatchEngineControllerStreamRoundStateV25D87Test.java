@@ -32,7 +32,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D87.1 — Integration regression test for the SSE wire-up bug.
  *
  * <p>Pre-fix symptom (per task file):
  * <ul>

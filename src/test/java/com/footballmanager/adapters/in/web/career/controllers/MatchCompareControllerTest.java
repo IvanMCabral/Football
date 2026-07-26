@@ -25,8 +25,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Unit tests for the
- * {@code /compare} endpoint of {@link V24DetailedMatchController}.
  *
  * <p>Tests the controller's response shape and error handling without
  * spinning up the full Spring context.
@@ -52,7 +50,6 @@ class MatchCompareControllerTest {
     @Test
     void getCompare_featureEnabled_returns200WithComparison() {
         when(queryService.isApiEnabled()).thenReturn(true);
-        // V24D15-CLEANUP (BUG_COMPARE_404): getComparison now returns Mono.
         when(comparisonService.getComparison(CAREER_ID, MATCH_ID))
                 .thenReturn(reactor.core.publisher.Mono.just(sampleComparison()));
 
@@ -83,7 +80,6 @@ class MatchCompareControllerTest {
     @Test
     void getCompare_baselineNotFound_returns404() {
         when(queryService.isApiEnabled()).thenReturn(true);
-        // V24D15-CLEANUP (BUG_COMPARE_404): getComparison now returns Mono,
         // so the exception propagates via Mono.error (not thenThrow).
         when(comparisonService.getComparison(CAREER_ID, MATCH_ID))
                 .thenReturn(reactor.core.publisher.Mono.error(new BaselineNotFoundException(CAREER_ID, MATCH_ID)));

@@ -120,7 +120,6 @@ class FieldSubdivisionServiceTest {
         }
     }
 
-    // ========== V25D53-C14 (Sprint C14 — Field Map Audit) ==========
     //
     // Tests geométricos de la grilla que documentan el estado actual.
     // El gap (slots vacíos, filas sin uso) está descrito en docs/field-map.md
@@ -128,7 +127,7 @@ class FieldSubdivisionServiceTest {
     // para detectar regresiones en la geometría del field.
 
     @Test
-    @DisplayName("V25D53-C14: los 81 slots normales no se solapan entre sí (grilla 9×9 adyacente)")
+    @DisplayName("los 81 slots normales no se solapan entre sí (grilla 9×9 adyacente)")
     void gridSlotsDoNotOverlap() {
         // Excluimos GK (slot grande separado que overlapea con sector 26 por diseño).
         List<FieldSubdivisionDTO> normals = service.getAllSubdivisions().stream()
@@ -158,7 +157,7 @@ class FieldSubdivisionServiceTest {
     }
 
     @Test
-    @DisplayName("V25D53-C14: los 81 slots normales cubren el field completo (grilla contigua sin gaps)")
+    @DisplayName("los 81 slots normales cubren el field completo (grilla contigua sin gaps)")
     void gridSlotsCoverFieldWithoutGaps() {
         // Construimos el set de celdas (col, row) que ocupa cada slot normal.
         // Esperamos 81 celdas distintas en una grilla 9×9 (col 0-8, row 0-8).
@@ -179,7 +178,7 @@ class FieldSubdivisionServiceTest {
     }
 
     @Test
-    @DisplayName("V25D53-C14: cada slot normal tiene width=height=11.11 (cuadrados uniformes)")
+    @DisplayName("cada slot normal tiene width=height=11.11 (cuadrados uniformes)")
     void gridSlotsAreUniformSquares() {
         for (FieldSubdivisionDTO sub : service.getAllSubdivisions()) {
             if (sub.isGoalkeeper()) continue;
@@ -191,7 +190,7 @@ class FieldSubdivisionServiceTest {
     }
 
     @Test
-    @DisplayName("V25D53-C14: zone ATTACK corresponde a row 0-1, MIDFIELD a row 2-5, DEFENSE a row 6-8")
+    @DisplayName("zone ATTACK corresponde a row 0-1, MIDFIELD a row 2-5, DEFENSE a row 6-8")
     void gridZonesCorrespondToRowRanges() {
         for (FieldSubdivisionDTO sub : service.getAllSubdivisions()) {
             if (sub.isGoalkeeper()) continue;

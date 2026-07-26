@@ -16,9 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D70-C31 Phase 1 (F0.1) — Skills amplification gap diagnostic (post-helper-fix).
  *
- * <p><b>Sprint C31 context:</b> C30 smoke FAIL — intermedios runtime avg 5.45 vs
  * target [3.0, 4.5]. Helper fix (C29) brought intermedios down from 6.5 → 5.45
  * (-16%) but did NOT close the gap. This test re-validates the skills
  * amplification hypothesis using the FIXED helper (per-position attrs scaled by
@@ -63,7 +61,6 @@ class V31aSkillsAmplificationGapDiagnosticTest {
     private static final int N_SIMULATIONS = 200;
 
     /**
-     * Runtime observed in C30 smoke (post-C29 helper fix, REVISOR report).
      * Used as denominator for the runtime-vs-diagnostic gap ratio.
      */
     private static final double RUNTIME_INTERMEDIOS_AVG_POST_C29 = 5.45;
@@ -152,7 +149,6 @@ class V31aSkillsAmplificationGapDiagnosticTest {
     // ========== Phase 1 (F0.1) confirmation assertion ==========
 
     /**
-     * V25D70-C31 Phase 1 confirmation: computes intermedios diagnostic avg
      * (A/B/C × BALANCED × N=200) and compares to runtime post-C29 = 5.45.
      * <p>Pass condition: gap = runtime/diagnostic &gt;= 1.5x (i.e. diagnostic
      * intermedios avg &lt;= 3.63). If this fails, skills amplification is NOT
@@ -215,7 +211,7 @@ class V31aSkillsAmplificationGapDiagnosticTest {
         System.out.println("================================================================");
 
         assertTrue(gapRuntimeVsDiagnostic >= 1.5,
-                "V25D70-C31 PHASE-1: gap runtime/diagnostic must be >= 1.5x. " +
+                "gap runtime/diagnostic must be >= 1.5x. " +
                 "Got gap=" + gapRuntimeVsDiagnostic +
                 " (runtime=" + RUNTIME_INTERMEDIOS_AVG_POST_C29 +
                 ", diagnostic=" + intermedioAvg + "). " +

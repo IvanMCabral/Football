@@ -25,7 +25,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B7): E2E HTTP coverage for {@link StyleChangeController}.
  *
  * <p>Coverage:
  * <ul>
@@ -48,7 +47,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("StyleChangeController — E2E HTTP coverage (LIVE-MATCH-F2-F5)")
+@DisplayName("StyleChangeController — E2E HTTP coverage")
 class StyleChangeControllerE2ETest extends AbstractIntegrationTest {
 
     @Autowired

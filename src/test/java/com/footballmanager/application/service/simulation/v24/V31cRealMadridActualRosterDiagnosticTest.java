@@ -20,7 +20,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D70-C31 Phase 1c — Real Madrid ACTUAL roster diagnostic (5 escenarios OVR-controlled).
  *
  * <p><b>Why this exists:</b> V31a/V31b used synthetic per-position attrs scaled by
  * team_ovr/85. V31c (v1) used Real Madrid actual roster but opponents were too close
@@ -65,7 +64,6 @@ class V31cRealMadridActualRosterDiagnosticTest {
 
     private static final int N_PER_SCENARIO = 30;
 
-    // Runtime observed (post-C29, REVISOR C30 smoke report)
     private static final double RUNTIME_INTERMEDIOS_AVG = 5.45;
     private static final double RUNTIME_CONVERSION_RATE = 0.097;
     // V31b diagnostic baseline (synthetic attrs + skills ON)

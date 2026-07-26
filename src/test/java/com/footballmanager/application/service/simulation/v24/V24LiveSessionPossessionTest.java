@@ -16,12 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F5.2 BUG-010 regression test.
  *
  * <p>The previous F1 B3 implementation returned the FINAL possession value
  * (from {@code cachedResult.homePossession()}) at every tick, so the live
  * UI showed 56% / 44% (the final value) at minute 2 already. The user
- * reported this as "posesión estática" (BUG-010).
  *
  * <p>The F5.2 fix derives possession from the eventsSoFar subset (i.e.
  * the events that have occurred up to currentMinute). The formula
@@ -35,8 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *   <li>At minute 1 (one tick), possession is computed from the visible
  *       event subset — it is NOT necessarily the final possession value.</li>
  *   <li>The score is monotonically non-decreasing between ticks at
- *       different minutes (BUG-007 regression check, kept here so the
- *       BUG-010 fix doesn't accidentally regress BUG-007).</li>
  *   <li>At minute 90, the score derived from the visible subset equals
  *       the cached engine result's final score.</li>
  * </ol>
@@ -74,14 +70,12 @@ class V24LiveSessionPossessionTest {
 
         // Second session: tick ONLY to minute 1. The home possession at
         // minute 1 is the "early" possession, derived from the events
-        // that happened in the first minute. With V24D6U4 tuning, the
         // first minute typically has 0-2 events (often 0, so the
         // defensive 50/50 default applies).
         V24LiveSession runB = new V24LiveSession(ctx, 42L);
         V24LiveSnapshot at1 = runB.tick();
         int minute1HomePossession = at1.homePossession();
 
-        // The BUG-010 fix is: the minute-1 possession must NOT be the
         // final value. The original code returned the FINAL value at
         // every tick (because it read from cachedResult.homePossession()).
         // The new code returns 50/50 when no events exist, or a value
@@ -117,7 +111,7 @@ class V24LiveSessionPossessionTest {
     }
 
     @Test
-    @DisplayName("BUG-010: score is monotonically non-decreasing between ticks (BUG-007 regression)")
+    @DisplayName("BUG-010: score is monotonically non-decreasing between ticks")
     void tick_scoreMonotonic_nonDecreasing() {
         V24MatchContext ctx = buildContext();
         V24LiveSession session = new V24LiveSession(ctx, 42L);

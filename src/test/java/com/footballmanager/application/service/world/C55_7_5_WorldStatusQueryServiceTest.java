@@ -28,9 +28,7 @@ import static org.mockito.Mockito.when;
  * C55.7.5 — Tests for {@link WorldStatusQueryService#getWorldStatus(UUID)}
  * (MEDIUM bug #30 from C55.7.4).
  *
- * <p>REVISOR C55.7.4 smoke: the dashboard "WORLD STATUS" card always
  * shows "0 MATCHES", regardless of career state. The previous
- * implementation hardcoded {@code 0} in the response with a TODO
  * comment ("matches - requeriria contar de CareerSave o PostgreSQL").
  *
  * <p>The correct contract: read the user's CareerSave from the
@@ -114,7 +112,6 @@ class C55_7_5_WorldStatusQueryServiceTest {
     @Test
     @DisplayName("C55.7.5 #30: WorldStatus returns matches>0 for a career with played matches")
     void worldStatus_postSeason_matchesNonZero() {
-        // C55.7.5 #30: REVISOR observed "0 MATCHES" even at post-T1 finished
         // (~40+ matches played). The previous hardcoded 0 left the counter
         // frozen. This test pins the corrected contract: the matches count
         // must reflect fixtures with non-null result.

@@ -10,7 +10,6 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24C2: Tests for V24DisciplineModel.
  * Validates foul probability modulation, yellow card probability,
  * second-yellow-red-card enforcement, and deterministic behavior.
  */

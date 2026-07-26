@@ -17,13 +17,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D69-C29 Phase 1b: TeamStyle effect diagnostic.
  *
  * <p>After Phase 1 REJECTED skills-amplify hypothesis (skills REDUCED goals to
  * 0.31x of baseline), investigate whether TeamStyle (BALANCED vs ATTACKING vs
  * COUNTER) is the missing factor that explains the diagnostic-vs-runtime gap.
  *
- * <p>Hypothesis: top teams in REVISOR's smoke user probably use ATTACKING
  * (base chanceProb 0.42 vs BALANCED 0.35 = +20% shots). COUNTER adds
  * SPEEDSTER bonus (+33% chanceProb when speedster skill > 0). Combined with
  * offensive skills (DRIBBLER +30%, PASSER +28% possession share), the
@@ -197,7 +195,7 @@ class V29bStyleEffectDiagnosticTest {
         double attAmp = attAvg / balAvg;
         double couAmp = couAvg / balAvg;
         assertTrue(attAmp >= 1.5 || couAmp >= 1.5,
-                "V25D69-C29 PHASE-1b: at least one style must amplify intermedios by >=1.5x. " +
+                "at least one style must amplify intermedios by >=1.5x. " +
                 "Got attAmp=" + attAmp + ", couAmp=" + couAmp +
                 " (attRaw=" + attAvg + ", couRaw=" + couAvg + ", balRaw=" + balAvg + ")");
     }

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D4A: Tests for V24PlayerMatchStatsModel.
  * Validates stat bundle derivation from timeline and rating integration.
  */
 class V24PlayerMatchStatsModelTest {

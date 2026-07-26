@@ -24,10 +24,6 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-/**
- * V24D6D7A: Tests for LineupCommandUseCaseImpl auto-select suspension filtering.
- */
 @ExtendWith(MockitoExtension.class)
 class LineupCommandUseCaseImplAutoSelectTest {
 
@@ -375,7 +371,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     // ========== MVP1-lineup-cancha-1.6: HELPER-BASED match (F2) + formation persistence (F1) ==========
 
     @Test
-    @DisplayName("V25D99.20.8-BACK: autoSelect 4-4-2 usa WINGER para banda antes que forzar un ATT como MID")
+    @DisplayName("autoSelect 4-4-2 usa WINGER para banda antes que forzar un ATT como MID")
     void autoSelect_4_4_2_prefersWingerForWideMidfield() {
         List<SessionPlayer> squad442WithWinger = List.of(
             makePlayer("gk-wing", "GK Wing", "GK", 80, 80, false, false, 0),
@@ -417,7 +413,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.8-BACK: autoSelect 4-3-3 reserva WINGER para LW/RW, no para CM")
+    @DisplayName("autoSelect 4-3-3 reserva WINGER para LW/RW, no para CM")
     void autoSelect_4_3_3_prefersWingersForFrontThree() {
         List<SessionPlayer> squad433WithWingers = List.of(
             makePlayer("gk-433wing", "GK 433 Wing", "GK", 80, 80, false, false, 0),
@@ -460,7 +456,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     }
 
     @Test
-    @DisplayName("V25D99.162-BACK: autoSelect reserva WINGER para front-three y usa fallback cercano en CM")
+    @DisplayName("autoSelect reserva WINGER para front-three y usa fallback cercano en CM")
     void autoSelect_midfieldFallback_prefersTacticalFitOverRawOvr() {
         List<SessionPlayer> squadThinMidfield = List.of(
             makePlayer("gk-midfit", "GK MidFit", "GK", 80, 80, false, false, 0),
@@ -511,7 +507,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.9-BACK: autoSelect distingue carrileros de linea media y extremos mediapunta")
+    @DisplayName("autoSelect distingue carrileros de linea media y extremos mediapunta")
     void autoSelect_respectsFormationLineCountsForWingRoles() {
         List<SessionPlayer> squadWithWingRoles = List.of(
             makePlayer("gk-line", "GK Line", "GK", 80, 80, false, false, 0),
@@ -599,7 +595,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     }
 
     @Test
-    @DisplayName("V25D99.288-BACK: autoSelect respeta lado natural LB/RB para carrileros LWB/RWB")
+    @DisplayName("autoSelect respeta lado natural LB/RB para carrileros LWB/RWB")
     void autoSelect_3_5_2_keepsFullbacksOnNaturalSideForWingbacks() {
         List<SessionPlayer> squadWithSideSpecificFullbacks = List.of(
             makePlayer("gk-side", "GK Side", "GK", 80, 80, false, false, 0),
@@ -635,7 +631,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
     }
 
     @Test
-    @DisplayName("V25D99.289-BACK: autoSelect 4-2-3-1 no deja WINGER sanos en banco con MID improvisado en RW")
+    @DisplayName("autoSelect 4-2-3-1 no deja WINGER sanos en banco con MID improvisado en RW")
     void autoSelect_4_2_3_1_realWideProfilesBeatCentralMidAtRw() {
         List<SessionPlayer> lasPalmasLikeSquad = List.of(
             makePlayer("gk-lp", "Aaron Escandell", "GK", 76, 80, false, false, 0),
@@ -808,7 +804,6 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * MVP1-lineup-cancha-1.6 (Test 6, F1): autoSelectLineup persiste el código de
      * formación en career.getTeamStarting11Formation().get(teamId).
      *
-     * <p>Este campo se introdujo para resolver BUG_FORMATION_NOT_PERSISTED:
      * getCurrentLineup recomputaba la formación contando DEF/MID/ATT de la lineup
      * persistida, devolviendo el código viejo aunque el usuario hubiera cambiado
      * la formación.
@@ -859,10 +854,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
         assertEquals(11, teamSlots.size());
     }
 
-    // ========== V25D59-C19 P0: Auto-Seleccionar must complete 11 slots or throw ==========
-
     /**
-     * V25D59-C19 P0 (Test 1): squad completo (1 GK + 4 DEF + 4 MID + 2 ATT, all
      * 11 healthy) → autoSelect produce exactamente 11 slots. Pin del happy path
      * para el contrato "auto-select siempre produce 11 (o tira)".
      *
@@ -871,7 +863,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * garantizar 11 antes de persistir.
      */
     @Test
-    @DisplayName("V25D59-C19 P0: autoSelect 4-4-2 con squad completo → 11 slots, sin warnings")
+    @DisplayName("autoSelect 4-4-2 con squad completo → 11 slots, sin warnings")
     void autoSelect_4_4_2_fullSquad_returnsElevenSlots() {
         List<SessionPlayer> squad442Full = List.of(
             makePlayer("gk-c19", "GK C19",  "GK", 80, 80, false, false, 0),
@@ -895,10 +887,10 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .assertNext(dto -> {
                 assertNotNull(dto);
                 assertEquals(11, dto.players().size(),
-                    "V25D59-C19 P0: auto-select 4-4-2 con squad completo → 11 slots");
+                    "auto-select 4-4-2 con squad completo → 11 slots");
                 // Sin warnings: GK + 4 DEF + 4 MID + 2 ATT todos perfect-match.
                 assertTrue(dto.warnings() == null || dto.warnings().isEmpty(),
-                    "V25D59-C19 P0: full squad 4-4-2 no debe emitir off-position warnings");
+                    "full squad 4-4-2 no debe emitir off-position warnings");
             })
             .verifyComplete();
 
@@ -910,11 +902,10 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots);
         assertEquals(11, teamSlots.size(),
-            "V25D59-C19 P0: subdivision map debe tener 11 entries para 4-4-2 full squad");
+            "subdivision map debe tener 11 entries para 4-4-2 full squad");
     }
 
     /**
-     * V25D59-C19 P0 (Test 2): squad con exactamente 4+ DEF-capable → autoSelect
      * llena la fila DEF con 4 defensores naturales (sin off-position).
      *
      * <p>Pin del comportamiento "DEF row llenada primero, preferentemente con
@@ -922,7 +913,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * off-position cuando hay 4 CB/LB/RB disponibles, este test falla.
      */
     @Test
-    @DisplayName("V25D59-C19 P0: autoSelect 4-4-2 con 4+ DEF-capable → DEF row llena natural (no off-position)")
+    @DisplayName("autoSelect 4-4-2 con 4+ DEF-capable → DEF row llena natural (no off-position)")
     void autoSelect_4_4_2_fillsDefRow_natural() {
         // 4+ DEF-capable: 4 CB + 1 LB (extra) + 4 MID + 2 ATT = 11 healthy.
         List<SessionPlayer> squad442DefRich = List.of(
@@ -949,13 +940,12 @@ class LineupCommandUseCaseImplAutoSelectTest {
                 assertEquals(11, dto.players().size());
                 // Sin warnings: todos los DEF slots cubiertos con DEF-capable.
                 assertTrue(dto.warnings() == null || dto.warnings().isEmpty(),
-                    "V25D59-C19 P0: 4+ DEF-capable no debe disparar LINEUP_OFF_POSITION_FILL(DEF)");
+                    "4+ DEF-capable no debe disparar LINEUP_OFF_POSITION_FILL(DEF)");
             })
             .verifyComplete();
     }
 
     /**
-     * V25D59-C19 P0 (Test 3): squad SIN jugadores DEF-capable (solo GK + MID + ATT)
      * → autoSelect igual produce 11 slots, pero la fila DEF se llena con jugadores
      * MID off-position + warning {@code LINEUP_OFF_POSITION_FILL(DEF, 4)}.
      *
@@ -964,7 +954,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * con penalty en vez de fallar silencioso.
      */
     @Test
-    @DisplayName("V25D59-C19 P0: autoSelect 4-4-2 sin DEF-capable → off-position fill + warning")
+    @DisplayName("autoSelect 4-4-2 sin DEF-capable → off-position fill + warning")
     void autoSelect_4_4_2_offPositionWhenNoDef() {
         // Squad sin DEF-capable: 1 GK + 0 DEF + 8 MID + 2 ATT = 11 healthy.
         // No defenders, solo centrocampistas y delanteros.
@@ -990,19 +980,18 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .assertNext(dto -> {
                 assertNotNull(dto);
                 assertEquals(11, dto.players().size(),
-                    "V25D59-C19 P0: even sin DEF-capable, auto-select debe producir 11");
+                    "even sin DEF-capable, auto-select debe producir 11");
                 assertNotNull(dto.warnings());
                 assertTrue(dto.warnings().stream()
                     .anyMatch(w -> "LINEUP_OFF_POSITION_FILL".equals(w.code())
                         && w.message() != null && w.message().contains("DEF")),
-                    "V25D59-C19 P0: debe emitir LINEUP_OFF_POSITION_FILL para DEF cuando no hay DEF-capable, got: "
+                    "debe emitir LINEUP_OFF_POSITION_FILL para DEF cuando no hay DEF-capable, got: "
                         + dto.warnings());
             })
             .verifyComplete();
     }
 
     /**
-     * V25D59-C19 P0 (Test 4): squad con menos de 11 jugadores healthy
      * → autoSelect tira NotEnoughPlayersException (no retorna success silencioso).
      *
      * <p>Pin del throw path para el squad-short case. Antes de este fix, auto-select
@@ -1010,7 +999,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * bug del C18b. Ahora: excepción controlada, controller mapea a 422.
      */
     @Test
-    @DisplayName("V25D59-C19 P0: autoSelect con squad < 11 available → NotEnoughPlayersException")
+    @DisplayName("autoSelect con squad < 11 available → NotEnoughPlayersException")
     void autoSelect_shortSquad_returnsError() {
         // Squad of 10: 1 GK + 4 DEF + 4 MID + 1 ATT = 10 healthy. Falta 1 ATT.
         List<SessionPlayer> squadShort = List.of(
@@ -1032,22 +1021,19 @@ class LineupCommandUseCaseImplAutoSelectTest {
         StepVerifier.create(useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2"))
             .expectErrorSatisfies(err -> {
                 assertTrue(err instanceof NotEnoughPlayersException,
-                    "V25D59-C19 P0: expected NotEnoughPlayersException for short squad, got "
+                    "expected NotEnoughPlayersException for short squad, got "
                         + err.getClass().getSimpleName());
                 assertTrue(err.getMessage().contains("11"),
-                    "V25D59-C19 P0: message should mention required 11, got: " + err.getMessage());
+                    "message should mention required 11, got: " + err.getMessage());
                 assertTrue(err.getMessage().contains("10"),
-                    "V25D59-C19 P0: message should mention available 10, got: " + err.getMessage());
+                    "message should mention available 10, got: " + err.getMessage());
             })
             .verify();
 
         verify(careerSessionService, never()).saveCareer(any());
     }
 
-    // ========== V25D60-C20 P0: Auto-select slot map must cover ALL formation positions ==========
-
     /**
-     * V25D60-C20 P0 (Test 1): squad con solo GK + MID + ATT natural (sin DEF-capable)
      * → autoSelect produce 11 slots y la subdivision map tiene 11 entries con los
      * 4 slots DEF llenados off-position (penalty en effectiveness, no failure).
      *
@@ -1061,7 +1047,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * PositionEffectivenessCalculator) y la subdivision map completa los 11.
      */
     @Test
-    @DisplayName("V25D60-C20 P0: autoSelect 4-4-2 con squad sin DEF natural → 11 slots en subdivision map (off-position fallback)")
+    @DisplayName("autoSelect 4-4-2 con squad sin DEF natural → 11 slots en subdivision map (off-position fallback)")
     void autoSelect_defLessSquad_persists11Slots() {
         // 1 GK + 0 DEF + 8 MID + 2 ATT = 11 healthy. Sin DEF-capable.
         // La fillRow va a meter warnings LINEUP_OFF_POSITION_FILL(DEF, 4) y los
@@ -1089,13 +1075,13 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .assertNext(dto -> {
                 assertNotNull(dto);
                 assertEquals(11, dto.players().size(),
-                    "V25D60-C20 P0: auto-select 4-4-2 sin DEF natural → 11 slots");
+                    "auto-select 4-4-2 sin DEF natural → 11 slots");
                 // Sin DEF-capable en el squad → warning LINEUP_OFF_POSITION_FILL(DEF, 4).
                 assertNotNull(dto.warnings());
                 assertTrue(dto.warnings().stream()
                     .anyMatch(w -> "LINEUP_OFF_POSITION_FILL".equals(w.code())
                         && w.message() != null && w.message().contains("DEF")),
-                    "V25D60-C20 P0: debe emitir LINEUP_OFF_POSITION_FILL para DEF cuando no hay DEF-capable, got: "
+                    "debe emitir LINEUP_OFF_POSITION_FILL para DEF cuando no hay DEF-capable, got: "
                         + dto.warnings());
             })
             .verifyComplete();
@@ -1108,11 +1094,10 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> teamSlots = saved.getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots);
         assertEquals(11, teamSlots.size(),
-            "V25D60-C20 P0: subdivision map debe tener 11 entries incluso sin DEF natural (off-position fallback)");
+            "subdivision map debe tener 11 entries incluso sin DEF natural (off-position fallback)");
     }
 
     /**
-     * V25D60-C20 P0 (Test 2): para todas las formations válidas, slotMap.size()
      * debe ser exactamente igual al número de posiciones de la formación.
      *
      * <p>Pin de la propiedad de cobertura: buildAutoSelectSlotMap debe
@@ -1124,7 +1109,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * sin DEF — el caso del bug del verifier C19.
      */
     @Test
-    @DisplayName("V25D60-C20 P0: slotMap.size() === formation.positions().length para todas las formations")
+    @DisplayName("slotMap.size() === formation.positions().length para todas las formations")
     void autoSelect_slotMapMatchesFormationSize() {
         // Caso A: 4-3-3 con squad completo (todos natural) → slotMap.size() == 11.
         List<SessionPlayer> squad433 = List.of(
@@ -1154,7 +1139,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> teamSlots433 = captor433.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots433);
         assertEquals(11, teamSlots433.size(),
-            "V25D60-C20 P0: 4-3-3 con squad completo → 11 entries");
+            "4-3-3 con squad completo → 11 entries");
 
         // Caso B: 4-4-2 con squad sin DEF natural (regression del bug del verifier C19).
         List<SessionPlayer> squad442NoDef = List.of(
@@ -1186,11 +1171,10 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> teamSlots442 = captor442.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots442);
         assertEquals(11, teamSlots442.size(),
-            "V25D60-C20 P0: 4-4-2 sin DEF natural → 11 entries (off-position fallback llena DEF slots)");
+            "4-4-2 sin DEF natural → 11 entries (off-position fallback llena DEF slots)");
     }
 
     /**
-     * V25D60-C20 P0 (Test 3): con lineup.size() == 11 y formación con 11
      * positions, el defensive throw {@code IllegalStateException} del final
      * de buildAutoSelectSlotMap es inalcanzable en producción — el off-position
      * fallback garantiza slotMap.size() == 11.
@@ -1209,7 +1193,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
      * si pasa, el throw es inalcanzable para squads de 11.
      */
     @Test
-    @DisplayName("V25D60-C20 P0: squad sin match natural para ningún slot → slotMap.size() == 11 vía fallback (defensive throw inalcanzable)")
+    @DisplayName("squad sin match natural para ningún slot → slotMap.size() == 11 vía fallback (defensive throw inalcanzable)")
     void autoSelect_throwsIfSlotMapIncomplete_worstCaseStillFillsViaFallback() {
         // Squad: 1 GK + 10 ST. Cero DEF/MID-capable. El helper-based match
         // para los 4 slots DEF y 4 slots MID no encuentra nada → fallback
@@ -1238,7 +1222,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
             .assertNext(dto -> {
                 assertNotNull(dto);
                 assertEquals(11, dto.players().size(),
-                    "V25D60-C20 P0: squad con solo GK+ST debe completar 11 slots");
+                    "squad con solo GK+ST debe completar 11 slots");
                 // Múltiples warnings: LINEUP_NO_GOALKEEPER no (hay GK), pero
                 // LINEUP_OFF_POSITION_FILL(DEF, 4) + LINEUP_OFF_POSITION_FILL(MID, 4)
                 // + LINEUP_OFF_POSITION_FILL(ATT, ?). Verificar que al menos
@@ -1248,7 +1232,7 @@ class LineupCommandUseCaseImplAutoSelectTest {
                     .filter(w -> "LINEUP_OFF_POSITION_FILL".equals(w.code()))
                     .count();
                 assertTrue(offPosFillCount >= 2,
-                    "V25D60-C20 P0: debe haber al menos 2 warnings LINEUP_OFF_POSITION_FILL (DEF + MID), got: "
+                    "debe haber al menos 2 warnings LINEUP_OFF_POSITION_FILL (DEF + MID), got: "
                         + dto.warnings());
             })
             .verifyComplete();
@@ -1258,11 +1242,11 @@ class LineupCommandUseCaseImplAutoSelectTest {
         Map<String, String> teamSlots = captor.getValue().getTeamStarting11Subdivision().get(TEAM_ID);
         assertNotNull(teamSlots);
         assertEquals(11, teamSlots.size(),
-            "V25D60-C20 P0: subdivision map debe tener 11 entries incluso en el worst-case (no DEF ni MID natural)");
+            "subdivision map debe tener 11 entries incluso en el worst-case (no DEF ni MID natural)");
     }
 
     @Test
-    @DisplayName("V25D99.111: autoSelect 3-4-1-2 reserva delanteros y pone CAM natural en CAM")
+    @DisplayName("autoSelect 3-4-1-2 reserva delanteros y pone CAM natural en CAM")
     void autoSelect_3_4_1_2_reservesStrikersAndUsesNaturalCam() {
         List<SessionPlayer> squad3412 = List.of(
             makePlayer("gk-3412", "GK 3412", "GK", 80, 80, false, false, 0),
@@ -1292,12 +1276,12 @@ class LineupCommandUseCaseImplAutoSelectTest {
 
         assertNotNull(teamSlots);
         assertEquals("cam-3412", teamSlots.get("S11-2"),
-            "V25D99.111: si la formacion pide CAM y hay CAM natural, no debe robar CF para ese slot");
+            "si la formacion pide CAM y hay CAM natural, no debe robar CF para ese slot");
         assertTrue(List.of("cf-3412", "st-3412").contains(teamSlots.get("S05-1")),
-            "V25D99.111: primer ST debe quedar cubierto por CF/ST natural");
+            "primer ST debe quedar cubierto por CF/ST natural");
         assertTrue(List.of("cf-3412", "st-3412").contains(teamSlots.get("S05-3")),
-            "V25D99.111: segundo ST debe quedar cubierto por CF/ST natural");
+            "segundo ST debe quedar cubierto por CF/ST natural");
         assertNotEquals(teamSlots.get("S05-1"), teamSlots.get("S05-3"),
-            "V25D99.111: los dos ST no deben duplicar jugador");
+            "los dos ST no deben duplicar jugador");
     }
 }

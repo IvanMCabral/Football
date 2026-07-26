@@ -18,7 +18,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D43 (Sprint C8): unit tests for {@link ChemistryBreakdownDTO}.
  *
  * <p>Coverage:
  * <ul>
@@ -168,8 +167,6 @@ class ChemistryBreakdownDTOTest {
         }
     }
 
-    // ========== V25D99.19-BACK (BUG-1 fix): from(detail, slots, naturalByPlayer) overload ==========
-
     @Nested
     @DisplayName("from(detail, slots, naturalByPlayer): BUG-1 slot-category fallback")
     class FromWithSlotsFallback {
@@ -201,7 +198,6 @@ class ChemistryBreakdownDTOTest {
         @Test
         @DisplayName("Lineup with no skill data + slots in MID category only → MID group gets synthetic '-SLOT' entry, others stay empty")
         void lineupWithMidSlotsAndNoSkills() {
-            // Player with NO skillLevels populated (legacy / V25D31 seed) at a MID slot.
             SessionPlayer p = SessionPlayer.custom("Test", 25, "MID",
                     80, 80, 80, 80, 80, 80, BigDecimal.valueOf(1_000_000));
             // NO setSkillLevel calls — skillLevels map is empty.

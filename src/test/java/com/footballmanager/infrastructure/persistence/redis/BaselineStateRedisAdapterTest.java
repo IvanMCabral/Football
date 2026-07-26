@@ -30,10 +30,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Tests for
  * {@link BaselineStateRedisAdapter}.
  *
- * <p>V24D15-CLEANUP (BUG_COMPARE_404): migrated to the reactive Mono
  * contract. Verifies:
  * <ul>
  *   <li>Key shape and 7-day TTL are unchanged.</li>
@@ -90,7 +88,6 @@ class BaselineStateRedisAdapterTest {
 
         StepVerifier.create(adapter.save("career-abc", sampleState))
                 .verifyComplete();
-        // V24D15-CLEANUP (BUG_COMPARE_404): findByMatchId now returns Mono;
         // block with a bounded-elastic subscribe so the test doesn't run
         // on a Reactor parallel thread.
         Optional<BaselineState> found = adapter.findByMatchId("career-abc", "match-001")
@@ -126,7 +123,6 @@ class BaselineStateRedisAdapterTest {
         when(reactiveValueOps.get(anyString())).thenReturn(Mono.empty());
         lenient().when(redisTemplate.opsForValue()).thenReturn(reactiveValueOps);
 
-        // V24D15-CLEANUP (BUG_COMPARE_404): findByMatchId now returns Mono;
         // block with a bounded-elastic subscribe so the test doesn't run
         // on a Reactor parallel thread.
         Optional<BaselineState> found = adapter.findByMatchId("career-abc", "nonexistent")
@@ -189,9 +185,7 @@ class BaselineStateRedisAdapterTest {
     }
 
     /**
-     * V24D15-CLEANUP (BUG_COMPARE_404): verify the retry-then-fail
      * contract. A persistent {@link RedisConnectionFailureException}
-     * (the same error class that caused the original BUG_COMPARE_404)
      * must surface as {@link BaselinePersistenceException} after retries
      * are exhausted — never silently swallowed.
      *
@@ -221,7 +215,6 @@ class BaselineStateRedisAdapterTest {
     }
 
     /**
-     * V24D15-CLEANUP (BUG_COMPARE_404): read-after-write miss (SET
      * returned true but GET returned null) must NOT be silently swallowed
      * — surface as {@link BaselinePersistenceException}.
      */

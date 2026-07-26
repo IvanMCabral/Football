@@ -17,8 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * LIVE-MATCH-F2-LIVE F1 — Task B4 unit tests for
- * {@link V24DetailedMatchEngine#simulate(V24MatchContext, Random)} overload.
  *
  * <p>These tests validate the replay-path overload introduced in B4:
  * <ol>
@@ -115,7 +113,6 @@ class V24DetailedMatchEngineRandomOverloadTest {
         V24DetailedMatchResult a = engine.simulate(ctx, wrapper);
 
         // Re-run from scratch by resetting the wrapper's seed + clearing its cache.
-        // (In LIVE-MATCH-F2-LIVE F2, V24LiveSession.replayFromMinute will use
         // invalidateFromIndex + a fresh simulate() — that path is tested in B3.)
         wrapper.setSeed(seed);
         V24DetailedMatchResult b = engine.simulate(ctx, wrapper);

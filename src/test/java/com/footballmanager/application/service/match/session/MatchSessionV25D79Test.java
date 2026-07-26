@@ -24,7 +24,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D79: integration test for {@link MatchSession#adaptV24Snapshot(V24LiveSnapshot)}.
  *
  * <p>Drives the SSE-payload adapter with a controlled {@link V24LiveSnapshot}
  * to validate that:
@@ -130,7 +129,6 @@ public class MatchSessionV25D79Test {
         assertEquals("career-v25d79", out.careerId());
         assertEquals("user-v25d79", out.userId());
 
-        // (7) V25D79 playerRatings: one rating entry per player in the team
         // (starting only here). 7 home + 7 away.
         assertNotNull(out.homePlayerRatings(),
                 "homePlayerRatings must be a real list, not null");
@@ -148,7 +146,6 @@ public class MatchSessionV25D79Test {
         assertTrue(homeStriker.rating() > 6.0,
                 "home striker rating should reflect the GOAL bonus (base 6.0 + GOAL_BONUS 0.8)");
 
-        // (8) V25D79 substitutionsRemaining: 5 - 2 SUBSTITUTION events = 3.
         assertEquals(3, out.substitutionsRemaining(),
                 "5 sub quota minus 2 SUBSTITUTION events = 3 remaining");
 

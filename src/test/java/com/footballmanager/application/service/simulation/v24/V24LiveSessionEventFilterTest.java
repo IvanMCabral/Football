@@ -18,10 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * LIVE-MATCH-F5.2 BUG-009 regression test.
  *
  * <p>Without the NOISE_EVENTS filter, the V24 engine produces ~50-80
- * events per 90-minute match (measured in F5.1 with V24D6U4 tuning).
  * The F5.2 spec requires ~30-50 "important" events visible in the live
  * SSE stream — enough to keep the user informed without flooding the UI.
  *
@@ -36,12 +34,9 @@ import static org.junit.jupiter.api.Assertions.fail;
  *   <li>The 3 seeds used produce consistent counts (within the 20-55 range).</li>
  * </ol>
  *
- * <p>V25D68-C28: lower bound reduced from 25 to 20 because the C28 fix
  * extends matchIntensity to chanceProbability (midpoint-SQRT multiplier
- * at line 420 of V24DetailedMatchEngine). For parejos matches
  * (intensity=0.40), chanceProb drops to sqrt(0.7)=0.837, reducing shot
  * volume by ~16% and therefore SHOT_ON_TARGET/MISS/BLOCK event count.
- * V25D99.87 keeps BLOCK visible again because blocked shots are useful
  * tactical feedback for the manager after the monotonic shot-on-target fix.
  * Upper bound (55) is unchanged — far from saturation.
  */
@@ -91,7 +86,7 @@ class V24LiveSessionEventFilterTest {
     }
 
     @Test
-    @DisplayName("V24D15-CLEANUP: NOISE_EVENT_THRESHOLD_MIN constant is honoured (Set size >= 5)")
+    @DisplayName("NOISE_EVENT_THRESHOLD_MIN constant is honoured (Set size >= 5)")
     void noiseEventThresholdMin_constantIsHonoured() throws Exception {
         // Read the constant via reflection so the test breaks if the field is
         // ever renamed. We don't want to couple to the field name in the

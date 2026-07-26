@@ -8,7 +8,6 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D3A: Tests for V24ShotCoordinate and V24ShotCoordinateGenerator.
  * Validates coordinate bounds, derived values, determinism, and validity.
  */
 class V24ShotCoordinateTest {

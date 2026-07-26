@@ -15,9 +15,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D34-F3: PASSER skill impact on possession share (retention rate boost).
  *
- * <p>Spec (V25D34 prompt, F3):
  * <ul>
  *   <li>PASSER skill del mejor pasador on-pitch amplifica la possession
  *       share base del equipo. Formula:
@@ -29,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *   </li>
  *   <li>Calibration:
  *     <ul>
- *       <li>PASSER=0 → factor 1.0 (no change, bit-a-bit V25D33)</li>
  *       <li>PASSER=85 (Valverde) → factor 1.283 (+28% retention)</li>
  *       <li>PASSER=99 → factor 1.33 (+33% retention)</li>
  *     </ul>
@@ -37,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *   <li>Gating: PASSER aplica en cualquier style (no hay gating — es
  *       "precision de pase general", no atado a un esquema tactico).</li>
  *   <li>Absent/null PASSER skill → tratado como 0 (max retorna 0, factor 1.0).</li>
- *   <li>No-op regression: PASSER=0 → bit-a-bit identico a V25D33.</li>
  * </ul>
  */
 class V24DetailedMatchEnginePasserTest {
@@ -141,7 +137,6 @@ class V24DetailedMatchEnginePasserTest {
     @Test
     void fullMatch_noPasserSkill_preservesV25D33Baseline() {
         // Regression: sin PASSER en el dominio, el engine debe producir
-        // el MISMO resultado que V25D33 (bit-a-bit para possession share,
         // homeGoals/awayGoals, etc.).
         V24MatchContext baseline = buildContextWithPasser("no-passer", -1);
 

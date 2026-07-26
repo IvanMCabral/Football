@@ -165,7 +165,6 @@ class V24MatchContextFactoryTest {
 
     @Test
     void derivesStartingXiFromSquadWhenMissingHome() {
-        // V24D6M11: When CareerSave has no starting XI, factory derives from squad.
         // Squad must have ≥11 players for this to succeed.
         CareerSave career = makeCareerWithNoStarting11("career-5", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
@@ -219,7 +218,6 @@ class V24MatchContextFactoryTest {
 
     @Test
     void derivesStartingXiFromSquadWhenMissingAway() {
-        // V24D6M11: Away starting XI missing — should derive from squad.
         CareerSave career = makeCareerWithNoAwayStarting11("career-6", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
         MatchFixture fixture = makeFixture("match-6", "home-t1", "away-t2", 1);
@@ -233,7 +231,6 @@ class V24MatchContextFactoryTest {
 
     @Test
     void derivesFromSquadWhenStartingXiLessThanEleven() {
-        // V24D6U2: <11 starting XI is now passed through (short-handed), not
         // supplemented from squad. The squad fallback only triggers when the
         // teamStarting11 entry is empty/absent.
         CareerSave career = makeCareerWithStartingXi("career-7", "home-t1", "away-t2",
@@ -245,13 +242,11 @@ class V24MatchContextFactoryTest {
 
         V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
         assertEquals(10, ctx.homeStartingPlayers().size(),
-            "V24D6U2: short-handed starting XI flows through unchanged");
+            "short-handed starting XI flows through unchanged");
     }
 
     @Test
     void derivesFromSquadWhenStartingXiIsEmpty() {
-        // V24D6U2: when the user has not set a starting XI, the factory falls
-        // back to derive the first 11 from the squad. This is the pre-V24D6U2
         // behavior preserved for fresh careers that haven't picked a lineup yet.
         CareerSave career = makeCareerWithNoStarting11("career-7b", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
@@ -284,7 +279,6 @@ class V24MatchContextFactoryTest {
         // Unknown playerId in explicit starting XI is still rejected.
         CareerSave career = makeCareer("career-9", "home-t1", "away-t2",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70));
-        // LIVE-MATCH-F5.2 BUG-003 fix: inject a bad player ID into home
         // starting XI. The new behavior treats this as a stale reference
         // (the player was removed from the playerManager between rounds)
         // and falls back to deriveStartingXIfromSquad. The factory should
@@ -295,7 +289,6 @@ class V24MatchContextFactoryTest {
         SessionTeam homeTeam = makeTeam("home-t1", "Home FC", "4-3-3");
         SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
 
-        // F5.2 BUG-003: should NOT throw IAE. Falls back to squad.
         V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 0L);
         // Assert the home XI was derived from the squad (first 11 of 15 players).
         // The exact IDs depend on the makePlayers helper, but the SIZE

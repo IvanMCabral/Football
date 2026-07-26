@@ -9,7 +9,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D31: SessionPlayer - height + skills metadata tests.
  * Cubre: bounds-check de skill levels [0,99], bounds-check de height [160,210],
  * getters/setters, sparse map behavior, Jackson round-trip.
  */

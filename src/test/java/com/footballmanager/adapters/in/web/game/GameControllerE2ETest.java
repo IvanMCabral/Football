@@ -16,24 +16,20 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7+2.1 — E2E HTTP coverage for {@link GameController}.
  *
  * <p>Strategy: real {@code @SpringBootTest} against the isolated test DB + Redis DB 15.
  * Covers the basic CRUD lifecycle: create, get, list, delete, plus auth + 404 paths.
  *
  * <p>Critical regression: Test 2 (getGameById_existingGame_returns200) guards the
- * V24D12.2 deserialization fix ({@code @NoArgsConstructor} + {@code @Setter} on
  * {@code GameEntity}). If those annotations are removed, the GET returns 404 silently.
  *
  * <p>Scope (7 tests):
  * <ul>
  *   <li>POST /api/v1/games 201 + body (id, userId)</li>
- *   <li>GET /api/v1/games/{id} 200 (V24D12.2 regression)</li>
  *   <li>GET /api/v1/games list 200 + array (>= 2)</li>
  *   <li>GET /api/v1/games/{nonexistent} 404</li>
  *   <li>DELETE /api/v1/games/{id} 204</li>
  *   <li>GET /api/v1/games/{id} after DELETE 404 (idempotency)</li>
- *   <li>POST /api/v1/games without auth 401 (SecurityConfig V24D12-1)</li>
  * </ul>
  */
 @SpringBootTest(
@@ -55,7 +51,6 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.4: re-seed LaLiga per test so seedLeagueId() and seedTeamId()
         // (which query /world/leagues and /world/leagues/{id}/teams) find data
         // instead of getting NPE on empty response. The legacy implementation
         // relied on test order leaving data behind, which broke after the
@@ -69,7 +64,6 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
             .expectStatus().isOk();
     }
 
-    // V24D7+2.1: /api/v1/world/teams and /api/v1/world/leagues are global endpoints
     // that require the seeded admin user (per WorldQueryControllerE2ETest SEED_USER_ID).
     // Random userIds trigger 500. So we hardcode the seed user here.
     private static final String SEED_USER_ID =
@@ -108,7 +102,6 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
      * Note: WorldTeam JSON field is "worldTeamId" (not "id") per the entity definition.
      */
     private String seedTeamId(String userId) {
-        // V25D78-C55.5: lookup "Real Madrid" by name (not "first team")
         // because C55.3 B1 extended LaLiga to 60 teams and the alphabetically
         // first team is now a synthetic B1 add ("Vigo City 1").
         UUID laligaId = UUID.fromString("4feeb9df-4133-4655-883e-e96894907e7b");
@@ -128,7 +121,6 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("POST /api/v1/games — 201 with body containing gameId and userId")
     void createGame_validRequest_returns201() {
-        // V25D78-C55.5: use SEED_USER_ID (not uniqueUserId) so the controller
         // finds the LaLiga WorldSnapshot that @BeforeEach seeded. The previous
         // uniqueUserId() pattern assumed the seed left state for any user,
         // which broke when cleanRedis wipes Redis per-test.
@@ -303,8 +295,6 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
             .exchange()
             .expectStatus().isUnauthorized();
     }
-
-    // ========== V24D7+2.1: defensive guard regression ==========
 
     @Test
     @DisplayName("POST /api/v1/games without teamId — 400 (controller defensive guard)")

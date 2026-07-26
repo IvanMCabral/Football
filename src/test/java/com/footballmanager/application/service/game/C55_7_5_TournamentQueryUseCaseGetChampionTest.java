@@ -33,7 +33,6 @@ import static org.mockito.Mockito.when;
  * C55.7.5 — Tests for {@link TournamentQueryUseCaseImpl#getChampion(String)}
  * (HIGH bug #29 from C55.7.4).
  *
- * <p>REVISOR C55.7.4 smoke: "¡Torneo Finalizado!" page shows
  * "Error al cargar el campeón" subtitle. Root cause:
  * {@code getChampion} returned {@code Mono.empty()} when the top team's
  * points were 0, which happened when bug #28 left standings with zero

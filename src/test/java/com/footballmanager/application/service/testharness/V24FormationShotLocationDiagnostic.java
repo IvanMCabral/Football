@@ -30,7 +30,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D23-A diagnostic — prints observed xG/shots per formation across
  * multiple seeds to gather evidence before deciding on re-tuning.
  *
  * <p>Run with: {@code mvn test -Dtest=V24FormationShotLocationDiagnostic}.
@@ -51,7 +50,6 @@ class V24FormationShotLocationDiagnostic {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
-    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
     // resetRound() use case. Default `@Mock` is fine for the diagnostic.
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 

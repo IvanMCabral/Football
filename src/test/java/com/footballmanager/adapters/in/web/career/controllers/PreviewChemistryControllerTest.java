@@ -36,7 +36,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D45 (Sprint C10): unit tests for {@link LineupController#previewChemistry}.
  *
  * <p>Strategy: pure unit test (no Spring context) — instantiate the controller
  * directly with mocked collaborators. Avoids the {@code @WebFluxTest}
@@ -82,7 +81,6 @@ class PreviewChemistryControllerTest {
         lineupCommandUseCase = mock(LineupCommandUseCase.class);
         lineupQueryUseCase = mock(LineupQueryUseCase.class);
         controllerHelper = mock(ControllerHelper.class);
-        // V25D99.16-BACK: FormationService now injected for the
         // /preview-ratings endpoint to resolve per-subdivision coords.
         // /preview-chemistry tests don't hit that path; pass a real
         // instance so the constructor accepts the new arg.
@@ -129,7 +127,7 @@ class PreviewChemistryControllerTest {
     // ---------- tests ----------
 
     @Test
-    @DisplayName("V25D45: happy path — 11 valid playerIds → 200 with ChemistryDetail")
+    @DisplayName("happy path — 11 valid playerIds → 200 with ChemistryDetail")
     void previewChemistry_happyPath() {
         CareerSave career = careerWithNPlayers(11);
         List<String> ids = realPlayerIdsFrom(career);
@@ -150,7 +148,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: 10 playerIds → record ctor throws IllegalArgumentException (→ 400)")
+    @DisplayName("10 playerIds → record ctor throws IllegalArgumentException (→ 400)")
     void previewChemistry_tenPlayerIds_throwsIllegalArgument() {
         List<String> tenIds = List.of("p0","p1","p2","p3","p4","p5","p6","p7","p8","p9");
         org.junit.jupiter.api.Assertions.assertThrows(
@@ -160,7 +158,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: 12 playerIds → record ctor throws IllegalArgumentException (→ 400)")
+    @DisplayName("12 playerIds → record ctor throws IllegalArgumentException (→ 400)")
     void previewChemistry_twelvePlayerIds_throwsIllegalArgument() {
         List<String> twelveIds = List.of("p0","p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11");
         org.junit.jupiter.api.Assertions.assertThrows(
@@ -170,7 +168,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: null playerIds → record ctor throws IllegalArgumentException")
+    @DisplayName("null playerIds → record ctor throws IllegalArgumentException")
     void previewChemistry_nullPlayerIds_throwsIllegalArgument() {
         org.junit.jupiter.api.Assertions.assertThrows(
             IllegalArgumentException.class,
@@ -179,7 +177,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: empty career (no players) → 404")
+    @DisplayName("empty career (no players) → 404")
     void previewChemistry_emptyCareer_returns404() {
         CareerSave emptyCareer = new CareerSave();
         when(careerSessionService.getCareerFromCache(TEST_USER_ID)).thenReturn(Mono.just(emptyCareer));
@@ -200,7 +198,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: missing playerIds (all 11 unknown) → 404 with missing list of size 11")
+    @DisplayName("missing playerIds (all 11 unknown) → 404 with missing list of size 11")
     void previewChemistry_allMissing_returns404WithFullList() {
         CareerSave career = careerWithNPlayers(11);  // career has 11 players, but request uses different ids
         when(careerSessionService.getCareerFromCache(TEST_USER_ID)).thenReturn(Mono.just(career));
@@ -224,7 +222,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: partial match (5 real + 6 unknown) → 404 with missing list of size 6")
+    @DisplayName("partial match (5 real + 6 unknown) → 404 with missing list of size 6")
     void previewChemistry_partialMatch_returns404WithSubset() {
         CareerSave career = careerWithNPlayers(5);  // only 5 players exist
         List<String> realIds = realPlayerIdsFrom(career);
@@ -250,7 +248,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: existing GET /current still works (backward compat smoke test)")
+    @DisplayName("existing GET /current still works (backward compat smoke test)")
     void previewChemistry_doesNotBreakCurrentEndpoint() {
         // The /current endpoint uses lineupQueryUseCase.getCurrentLineup.
         // Stub it to return an empty lineup. The fact that the call returns
@@ -269,7 +267,7 @@ class PreviewChemistryControllerTest {
     }
 
     @Test
-    @DisplayName("V25D45: chemistry calculation is correct (sanity check: 11 elite + skills → 90-95)")
+    @DisplayName("chemistry calculation is correct (sanity check: 11 elite + skills → 90-95)")
     void previewChemistry_chemistryCalculation() {
         // Cross-check: the preview endpoint delegates to TeamChemistryCalculator.
         // The result must match what we'd get calling the calculator directly.

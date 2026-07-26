@@ -8,7 +8,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * V24D6M12: Verify PlayerSeasonStatsResponse and DTOs serialize to JSON via Jackson.
  * This is the root cause fix for the 500 "No Encoder" error in WebFlux.
  */
 class PlayerSeasonStatsSerializationTest {

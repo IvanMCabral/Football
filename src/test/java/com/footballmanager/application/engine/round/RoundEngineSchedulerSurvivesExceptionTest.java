@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D87.1-RUNTIME — Regression test for the scheduler-killed-by-exception
  * scenario.
  *
  * <p>Production runtime has 30 matches × V24 simulation per tick. If any

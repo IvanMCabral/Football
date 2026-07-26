@@ -30,12 +30,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6R — Career-state availability lifecycle integration tests.
  *
  * <p>Covers end-to-end multi-round behaviour for suspension, injury, and the
  * manual-select blocking of suspended/injured players. No Mockito, no random
  * seed — fully deterministic. Uses an engine that returns different
- * {@link V24DetailedMatchResult} per matchId so multi-round scenarios can be
  * exercised in a single test.
  *
  * <p>Located in package {@code com.footballmanager.application.service.simulation}
@@ -371,7 +369,6 @@ class V24CareerMutationAvailabilityLifecycleIntegrationTest {
 
     // ========== Fakes ==========
 
-    /** Engine that returns different V24DetailedMatchResult per matchId. */
     private static class MultiMatchEngine implements V24DetailedMatchEngineProvider {
         private final Map<String, V24DetailedMatchResult> byMatchId = new HashMap<>();
 

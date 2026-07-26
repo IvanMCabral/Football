@@ -10,11 +10,9 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D32-F4: V24PlayerMatchState — height + skills plumbing tests.
  *
  * <p>Verifica que los nuevos fields se copian correctamente del SessionPlayer
  * al V24PlayerMatchState, y que el engine NO los usa todavia (no impact en
- * V25D32). El engine impact viene en V25D33-V25D34.
  */
 class V24PlayerMatchStateSkillsTest {
 
@@ -49,8 +47,6 @@ class V24PlayerMatchStateSkillsTest {
 
     @Test
     void fromSessionPlayer_nullHeightAndEmptySkills_yieldsNullAndEmpty() {
-        // Caso normal: player random del seed sin height/skills (V25D32).
-        // V24D32 engine NO los usa — el state los carga como null/empty.
         SessionPlayer player = new SessionPlayer();
         player.setSessionPlayerId("sp-test-2");
         player.setName("Random Player");
@@ -74,7 +70,6 @@ class V24PlayerMatchStateSkillsTest {
 
     @Test
     void fromSessionPlayer_sparseMapOnlyContainsNonZeroSkills() {
-        // V25D31: skill con level 0 se omite del sparse map. Verificamos que
         // el state tambien omite esos skills (no quedan con level 0 explicito).
         SessionPlayer player = new SessionPlayer();
         player.setSessionPlayerId("sp-test-3");

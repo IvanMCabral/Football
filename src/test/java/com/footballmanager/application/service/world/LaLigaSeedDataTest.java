@@ -4,10 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * V24D6U5: Tests de deserialización del JSON embebido.
- */
 class LaLigaSeedDataTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -66,9 +62,8 @@ class LaLigaSeedDataTest {
 
         assertNotNull(data);
         assertEquals("La Liga 2024/25", data.league().name());
-        // V25D78-C55.3 B1: LaLiga extended to 60 teams (was 20) to provide
         // real roster depth for multi-tier scheduling + auto-select flows.
-        assertEquals(60, data.teams().size(), "LaLiga tiene 60 equipos (V25D78-C55.3 B1)");
+        assertEquals(60, data.teams().size(), "LaLiga tiene 60 equipos");
         assertTrue(data.players().size() >= 900 && data.players().size() <= 1100,
                 "LaLiga seed debe tener 900-1100 jugadores, fue " + data.players().size());
     }
@@ -82,7 +77,6 @@ class LaLigaSeedDataTest {
         }
 
         for (LaLigaSeedData.PlayerDto p : data.players()) {
-            // V25D78-C55.3 B1: extended LaLiga uses both 5-cat codes (GK/DEF/MID/WINGER/ATT)
             // and specific role codes (CB/LB/RB/CDM/CM/CAM/CF/ST) for synthetic teams.
             // The legacy LaLigaSeedService.mapPosition() translates 5-cat to specific
             // role codes, so both forms are valid in the JSON.

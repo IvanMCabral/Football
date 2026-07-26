@@ -9,10 +9,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * V24D4A: Tests for V24DetailedMatchData snapshot/DTO.
- */
 class V24DetailedMatchDataTest {
 
     @Test
@@ -234,11 +230,8 @@ class V24DetailedMatchDataTest {
         assertEquals(0, detail.playerRatings().size());
     }
 
-    // ============== V24D24-F1.2: formation fields ==============
-
     @Test
     void fromResultConFormationNull_delegatingOverload_devuelveFormationNull() {
-        // V24D24-F1.2: the back-compat overload (no formation params) must
         // still work for the 31 existing call sites, and formation must be null.
         var result = V24DetailedMatchResult.builder()
                 .matchId("match-FN")
@@ -255,7 +248,6 @@ class V24DetailedMatchDataTest {
 
     @Test
     void fromResultConFormationNew_overload_propagatesFormations() {
-        // V24D24-F1.2: the new overload that accepts formation strings must
         // propagate them to the constructed DTO.
         var result = V24DetailedMatchResult.builder()
                 .matchId("match-FP")
@@ -274,7 +266,6 @@ class V24DetailedMatchDataTest {
 
     @Test
     void constructorTreatsBlankFormationAsNull() {
-        // V24D24-F1.2: a blank string in the formation field is normalized
         // to null so the UI renders "—" instead of an empty cell.
         var detail = new V24DetailedMatchData(
                 "m", "c", 1, 1, "h", "a", "H", "A",
@@ -315,7 +306,6 @@ class V24DetailedMatchDataTest {
 
     @Test
     void jacksonDeserialization_handlesNullFormation() throws Exception {
-        // V24D24-F1.2: JSON from partidos viejos (Redis pre-F1.2) has no
         // homeFormation/awayFormation fields. Jackson must deserialize with
         // null and the UI must show "—".
         ObjectMapper mapper = new ObjectMapper()
@@ -356,7 +346,6 @@ class V24DetailedMatchDataTest {
 
     @Test
     void jacksonRoundtrip_preservesFormation() throws Exception {
-        // V24D24-F1.2: new detail with formations must roundtrip through Jackson
         // without losing the values.
         ObjectMapper mapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())

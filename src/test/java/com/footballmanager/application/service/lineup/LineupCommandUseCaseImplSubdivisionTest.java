@@ -166,7 +166,6 @@ class LineupCommandUseCaseImplSubdivisionTest {
      * luego aplica overrides del front para slots con subdivisionId no-null.
      *
      * <p>Los slots enviados deben usar subdivision IDs que coincidan con la
-     * formation canónica actual (V25D94, simétrica):
      * (S22-2, S23-1, S23-3, S24-2, S16-2, S17-1, S17-3, S18-2, S05-1, S05-3, GK-1)
      * para que el resultado sea exactamente 11 entries.
      */
@@ -212,7 +211,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
     }
 
     @Test
-    @DisplayName("V25D99.293: manualSelectWithSlots respeta swaps de jugador aunque no haya coordenadas custom")
+    @DisplayName("manualSelectWithSlots respeta swaps de jugador aunque no haya coordenadas custom")
     void manualSelectWithSlots_persistsExplicitPlayerSlotSwapWithoutCustomCoordinates() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
@@ -347,7 +346,6 @@ class LineupCommandUseCaseImplSubdivisionTest {
     }
 
     /**
-     * MVP1-lineup-cancha-1.6: si TODOS los slots del front son inválidos (blank),
      * el back igual escribe el HELPER-BASED base (11 entries). El entry viejo
      * pre-existente es sobrescrito por las nuevas entries HELPER-BASED.
      */
@@ -674,10 +672,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             "MVP1-lineup-cancha-1.6 F1: formación persistida junto con overrides");
     }
 
-    // ========== V25D52 (Sprint C13b): POST response bug ==========
-
     /**
-     * V25D52 (Sprint C13b): the POST /manual-select response's
      * {@code formationEffectiveness.perPlayerEffectiveness} must be keyed
      * by subdivisionId (NOT playerId) and must carry real effectiveness
      * multipliers (NOT all 1.0).
@@ -706,7 +701,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
      * penalty value at a subdivisionId key, proving both axes of the fix.
      */
     @Test
-    @DisplayName("V25D52-C13b: manualSelect response carries perPlayerEffectiveness keyed by subdivisionId with real multipliers")
+    @DisplayName("manualSelect response carries perPlayerEffectiveness keyed by subdivisionId with real multipliers")
     void v25d52_manualSelectResponse_keysAreSubdivisionId_andValuesAreRealMultipliers() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
@@ -723,44 +718,43 @@ class LineupCommandUseCaseImplSubdivisionTest {
                 UUID.fromString(USER_ID), "4-4-2", fullLineup442(), slots))
             .assertNext(dto -> {
                 assertNotNull(dto.formationEffectiveness(),
-                    "V25D52: POST response must carry formationEffectiveness");
+                    "POST response must carry formationEffectiveness");
                 Map<String, Double> eff = dto.formationEffectiveness().perPlayerEffectiveness();
-                assertNotNull(eff, "V25D52: perPlayerEffectiveness must not be null");
+                assertNotNull(eff, "perPlayerEffectiveness must not be null");
                 assertEquals(11, eff.size(),
-                    "V25D52: 11 entries (one per subdivisionId in the lineup)");
+                    "11 entries (one per subdivisionId in the lineup)");
 
                 // Axis 1: keys must be subdivisionIds (NOT playerIds).
-                assertTrue(eff.containsKey("GK-1"),     "V25D52: GK-1 (subdivisionId) must be a key");
-                assertTrue(eff.containsKey("S22-2"),    "V25D52: S22-2 (subdivisionId) must be a key");
-                assertTrue(eff.containsKey("S05-1"),    "V25D52: S05-1 (subdivisionId) must be a key");
-                assertFalse(eff.containsKey("gk-1"),    "V25D52: gk-1 (playerId) must NOT be a key");
-                assertFalse(eff.containsKey("def-1"),   "V25D52: def-1 (playerId) must NOT be a key");
-                assertFalse(eff.containsKey("att-1"),   "V25D52: att-1 (playerId) must NOT be a key");
+                assertTrue(eff.containsKey("GK-1"),     "GK-1 (subdivisionId) must be a key");
+                assertTrue(eff.containsKey("S22-2"),    "S22-2 (subdivisionId) must be a key");
+                assertTrue(eff.containsKey("S05-1"),    "S05-1 (subdivisionId) must be a key");
+                assertFalse(eff.containsKey("gk-1"),    "gk-1 (playerId) must NOT be a key");
+                assertFalse(eff.containsKey("def-1"),   "def-1 (playerId) must NOT be a key");
+                assertFalse(eff.containsKey("att-1"),   "att-1 (playerId) must NOT be a key");
 
                 // Axis 2: real multipliers must be present (NOT all 1.0).
                 // The ST-in-MID penalty MUST apply at S18-2 (where the ST now lives).
                 assertTrue(eff.get("S18-2") < 0.7 && eff.get("S18-2") > 0.5,
-                    "V25D52/V25D99.20: ST in MID slot should be clearly penalized at S18-2");
+                    "ST in MID slot should be clearly penalized at S18-2");
                 // Perfect-match players should still be 1.0.
                 assertTrue(eff.get("GK-1") >= 0.95,
-                    "V25D52/V25D99.20: GK player at GK-1 slot should stay effectively perfect");
+                    "GK player at GK-1 slot should stay effectively perfect");
 
                 // teamAverage should reflect the penalty (less than 1.0).
                 assertTrue(dto.formationEffectiveness().teamAverage() < 1.0,
-                    "V25D52: teamAverage < 1.0 because at least one off-position player");
+                    "teamAverage < 1.0 because at least one off-position player");
             })
             .verifyComplete();
     }
 
     /**
-     * V25D52 (Sprint C13b): the legacy {@link LineupCommandUseCaseImpl#manualSelectLineup}
      * overload (no slots) also returns a properly-computed
      * {@code formationEffectiveness} — the same code path through
      * {@code buildLineupDTO} feeds both the with-slots and the legacy
      * overload.
      */
     @Test
-    @DisplayName("V25D52-C13b: manualSelect legacy overload returns perPlayerEffectiveness keyed by subdivisionId")
+    @DisplayName("manualSelect legacy overload returns perPlayerEffectiveness keyed by subdivisionId")
     void v25d52_manualSelectLegacyResponse_keysAreSubdivisionId() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
@@ -770,16 +764,16 @@ class LineupCommandUseCaseImplSubdivisionTest {
                 UUID.fromString(USER_ID), "4-4-2", fullLineup442()))
             .assertNext(dto -> {
                 assertNotNull(dto.formationEffectiveness(),
-                    "V25D52: legacy overload response must carry formationEffectiveness");
+                    "legacy overload response must carry formationEffectiveness");
                 Map<String, Double> eff = dto.formationEffectiveness().perPlayerEffectiveness();
                 assertNotNull(eff);
-                assertEquals(11, eff.size(), "V25D52: 11 entries");
+                assertEquals(11, eff.size(), "11 entries");
 
                 // Keys MUST be subdivisionIds.
-                assertTrue(eff.containsKey("GK-1"),  "V25D52: GK-1 must be a key");
-                assertTrue(eff.containsKey("S22-2"), "V25D52: S22-2 must be a key");
-                assertFalse(eff.containsKey("gk-1"), "V25D52: gk-1 must NOT be a key");
-                assertFalse(eff.containsKey("def-1"), "V25D52: def-1 must NOT be a key");
+                assertTrue(eff.containsKey("GK-1"),  "GK-1 must be a key");
+                assertTrue(eff.containsKey("S22-2"), "S22-2 must be a key");
+                assertFalse(eff.containsKey("gk-1"), "gk-1 must NOT be a key");
+                assertFalse(eff.containsKey("def-1"), "def-1 must NOT be a key");
 
                 // HELPER-BASED put each player at their natural position (CB in DEF,
                 // CM in MID, etc.), so all-natural lineup → all 1.0 multipliers,
@@ -787,20 +781,19 @@ class LineupCommandUseCaseImplSubdivisionTest {
                 for (Map.Entry<String, Double> e : eff.entrySet()) {
                     if ("GK-1".equals(e.getKey())) {
                         assertTrue(e.getValue() >= 0.95,
-                            "V25D52/V25D99.20: GK remains effectively perfect at " + e.getKey());
+                            "GK remains effectively perfect at " + e.getKey());
                     } else {
                         assertTrue(e.getValue() >= 0.85 && e.getValue() <= 1.0,
-                            "V25D52/V25D99.20: natural tactical-family slot should stay strong at " + e.getKey());
+                            "natural tactical-family slot should stay strong at " + e.getKey());
                     }
                 }
                 assertTrue(dto.formationEffectiveness().teamAverage() >= 0.9,
-                    "V25D52/V25D99.20: all-natural lineup should keep a high teamAverage");
+                    "all-natural lineup should keep a high teamAverage");
             })
             .verifyComplete();
     }
 
     // ============================================================
-    // V25D99.20.2-BACK pinning tests: customXPercent / customYPercent
     // from the front's drag survive the manual-select round-trip.
     //
     // Pre-fix: LineupCommandUseCaseImpl stored subdivisionId → playerId
@@ -814,11 +807,10 @@ class LineupCommandUseCaseImplSubdivisionTest {
     // Post-fix: subdivisionId → LineupSlotDTO(playerId, subdivisionId,
     // customXPercent, customYPercent) is persisted. Re-read via
     // getTeamStarting11SubdivisionSlots() returns the exact customX/Y
-    // values. This is the regression net for V25D99.20.2.
     // ============================================================
 
     @Test
-    @DisplayName("V25D99.20.2-BACK: manualSelectWithSlots persiste customXPercent y customYPercent del front")
+    @DisplayName("manualSelectWithSlots persiste customXPercent y customYPercent del front")
     void manualSelectWithSlots_persistsCustomXY() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
@@ -849,43 +841,40 @@ class LineupCommandUseCaseImplSubdivisionTest {
         verify(careerSessionService).saveCareer(captor.capture());
         CareerSave saved = captor.getValue();
 
-        // V25D99.20.2-BACK: use the typed slot getter to read the persisted
         // customX/Y. The legacy String-only getter would have masked the
         // bug by returning only the playerId.
         Map<String, LineupSlotDTO> teamSlots = saved.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
-        assertNotNull(teamSlots, "V25D99.20.2-BACK: teamStarting11SubdivisionSlots map should be populated");
+        assertNotNull(teamSlots, "teamStarting11SubdivisionSlots map should be populated");
         // NOTE: don't assert on the EXACT count — the pre-existing
         // C20/C61 dual-map bug (manualSelectWithSlots_persistsSubdivisionMap
-        // asserts 11 but gets 18) is out of scope for V25D99.20.2.
         // Just verify S17-1 carries the customX/Y round-trip.
 
         LineupSlotDTO mid2Slot = teamSlots.get("S17-1");
-        assertNotNull(mid2Slot, "V25D99.20.2-BACK: S17-1 must be a key (front sent it)");
+        assertNotNull(mid2Slot, "S17-1 must be a key (front sent it)");
         assertEquals("mid-2", mid2Slot.playerId(),
-            "V25D99.20.2-BACK: S17-1 -> mid-2 (playerId round-trip)");
+            "S17-1 -> mid-2 (playerId round-trip)");
         assertEquals("S17-1", mid2Slot.subdivisionId(),
-            "V25D99.20.2-BACK: subdivisionId round-trip");
+            "subdivisionId round-trip");
         assertEquals(25.0, mid2Slot.customXPercent(),
-            "V25D99.20.2-BACK: customXPercent=25.0 must survive the round-trip");
+            "customXPercent=25.0 must survive the round-trip");
         assertEquals(65.0, mid2Slot.customYPercent(),
-            "V25D99.20.2-BACK: customYPercent=65.0 must survive the round-trip");
+            "customYPercent=65.0 must survive the round-trip");
 
         // Sanity: a slot WITHOUT customX/Y keeps them null (canonical coords).
         LineupSlotDTO gkSlot = teamSlots.get("GK-1");
-        assertNotNull(gkSlot, "V25D99.20.2-BACK: GK-1 must be a key");
+        assertNotNull(gkSlot, "GK-1 must be a key");
         assertNull(gkSlot.customXPercent(),
-            "V25D99.20.2-BACK: GK-1 customXPercent stays null (front didn't set it)");
+            "GK-1 customXPercent stays null (front didn't set it)");
         assertNull(gkSlot.customYPercent(),
-            "V25D99.20.2-BACK: GK-1 customYPercent stays null (front didn't set it)");
+            "GK-1 customYPercent stays null (front didn't set it)");
     }
 
     /**
-     * V25D99.20.2-BACK: the DTO response itself must echo the customX/Y
      * values so the front gets back the same values it sent (round-trip
      * integrity check across save + buildLineupDTO).
      */
     @Test
-    @DisplayName("V25D99.20.2-BACK: LineupDTO response surface customX/Y en slots")
+    @DisplayName("LineupDTO response surface customX/Y en slots")
     void manualSelectWithSlots_customXY_roundTripInResponse() {
         CareerSave career = makeCareer(makeFullSquad442());
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
@@ -914,13 +903,12 @@ class LineupCommandUseCaseImplSubdivisionTest {
                                 && Double.valueOf(42.0).equals(s.customXPercent())
                                 && Double.valueOf(88.0).equals(s.customYPercent()));
                 assertTrue(foundCustomXY,
-                    "V25D99.20.2-BACK: DTO response must surface customX=42, customY=88 on S17-1");
+                    "DTO response must surface customX=42, customY=88 on S17-1");
             })
             .verifyComplete();
     }
 
     /**
-     * V25D99.20.2-BACK: backward compat — a pre-fix save persisted the
      * inner map as {@code Map<String, String>} (subdivisionId -> playerId).
      * The new typed getter must wrap these legacy String values into
      * LineupSlotDTO(playerId, null, null, null) so downstream consumers
@@ -928,11 +916,10 @@ class LineupCommandUseCaseImplSubdivisionTest {
      * uniform LineupSlotDTO shape.
      */
     @Test
-    @DisplayName("V25D99.20.2-BACK: legacy String values wrap to LineupSlotDTO on typed getter")
+    @DisplayName("legacy String values wrap to LineupSlotDTO on typed getter")
     void legacyStringValues_wrapToLineupSlotDTO() {
         CareerSave career = makeCareer(makeFullSquad442());
 
-        // Simulate a pre-V25D99.20.2 save: write legacy String values
         // directly via the backward-compat setter.
         Map<String, Map<String, String>> legacy = new HashMap<>();
         legacy.put(TEAM_ID, new HashMap<>(Map.of(
@@ -947,14 +934,14 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // recovered from the OUTER key (inner subdivisionId is null in
         // the legacy wrap).
         Map<String, LineupSlotDTO> typed = career.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
-        assertNotNull(typed, "V25D99.20.2-BACK: legacy values must produce a typed map");
-        assertEquals(3, typed.size(), "V25D99.20.2-BACK: 3 entries from legacy map");
+        assertNotNull(typed, "legacy values must produce a typed map");
+        assertEquals(3, typed.size(), "3 entries from legacy map");
 
         LineupSlotDTO gkSlot = typed.get("GK-1");
-        assertNotNull(gkSlot, "V25D99.20.2-BACK: GK-1 wrapped");
+        assertNotNull(gkSlot, "GK-1 wrapped");
         assertEquals("gk-1", gkSlot.playerId());
         assertNull(gkSlot.subdivisionId(),
-            "V25D99.20.2-BACK: legacy wrap has null inner subdivisionId (consumer falls back to outer key)");
+            "legacy wrap has null inner subdivisionId (consumer falls back to outer key)");
         assertNull(gkSlot.customXPercent());
         assertNull(gkSlot.customYPercent());
 
@@ -962,11 +949,10 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // pre-fix callers like the test helpers in AutoSelectTest).
         Map<String, String> legacyBack = career.getTeamStarting11Subdivision().get(TEAM_ID);
         assertEquals("gk-1", legacyBack.get("GK-1"),
-            "V25D99.20.2-BACK: legacy getter returns playerId for backward compat");
+            "legacy getter returns playerId for backward compat");
     }
 
     // ============================================================
-    // V25D99.20.3-BACK BUG-2 pinning test: autoSelectLineup must clear
     // stale slots from a previous formation. After a cycle
     //   4-4-2 → 4-3-3 → 4-4-2
     // the persisted teamStarting11Subdivision must have exactly 11
@@ -975,15 +961,13 @@ class LineupCommandUseCaseImplSubdivisionTest {
     // role that 4-3-3 has but 4-4-2 doesn't), producing 14 entries
     // total and breaking /career/lineup/current's slot map.
     //
-    // V25D99.20.2's setTeamStarting11SubdivisionSlots REPLACES the
     // raw field (this.teamStarting11Subdivision = raw), so the bug
-    // is already fixed. V25D99.20.3-BACK adds an explicit
     // existingTeamSlots.clear() before the put as belt-and-suspenders.
     // This test is the regression net.
     // ============================================================
 
     @Test
-    @DisplayName("V25D99.20.3-BACK BUG-2: autoSelectLineup cycle 4-4-2 -> 4-3-3 -> 4-4-2 leaves 11 slots, not 14")
+    @DisplayName("autoSelectLineup cycle 4-4-2 -> 4-3-3 -> 4-4-2 leaves 11 slots, not 14")
     void autoSelectLineup_clearsStaleSlots_acrossFormationCycles() {
         // Capture the saved career after each auto-select.
         ArgumentCaptor<CareerSave> captor = ArgumentCaptor.forClass(CareerSave.class);
@@ -998,9 +982,9 @@ class LineupCommandUseCaseImplSubdivisionTest {
         verify(careerSessionService, atLeastOnce()).saveCareer(captor.capture());
         CareerSave after442 = captor.getValue();
         Map<String, LineupSlotDTO> slots442 = after442.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
-        assertNotNull(slots442, "V25D99.20.3-BACK: 4-4-2 must populate the slot map");
+        assertNotNull(slots442, "4-4-2 must populate the slot map");
         assertEquals(11, slots442.size(),
-            "V25D99.20.3-BACK: 4-4-2 has 11 canonical slots");
+            "4-4-2 has 11 canonical slots");
 
         // 2) auto-select 4-3-3 on the same career
         // Reset the careerSessionService mocks so the next call returns
@@ -1022,13 +1006,12 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Now the LAST auto-select (4-4-2 again) should leave exactly 11
         // slots for the team, NOT 14 (11 + 3 stale from 4-3-3's ATT row).
         Map<String, LineupSlotDTO> slotsFinal = after433.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
-        assertNotNull(slotsFinal, "V25D99.20.3-BACK: final 4-4-2 must have slots");
+        assertNotNull(slotsFinal, "final 4-4-2 must have slots");
         assertEquals(11, slotsFinal.size(),
-            "V25D99.20.3-BACK BUG-2: cycle 4-4-2 -> 4-3-3 -> 4-4-2 must leave exactly 11 slots, no 4-3-3 stale entries");
+            "cycle 4-4-2 -> 4-3-3 -> 4-4-2 must leave exactly 11 slots, no 4-3-3 stale entries");
     }
 
     // ============================================================
-    // V25D99.20.3.1-BACK BUG-2 gap: integration test that simulates
     // the JSON round-trip. The unit test above (using a fresh
     // CareerSave object) PASSED, but the runtime FAILED because
     // between autoSelectLineup and the next read, CareerSave is
@@ -1039,7 +1022,6 @@ class LineupCommandUseCaseImplSubdivisionTest {
     // getter (which drove the runtime check) skips them via
     // `instanceof String` — the runtime saw slots=14 instead of 11.
     //
-    // V25D99.20.3.1 fix: operate directly on the raw field via the
     // dedicated replaceTeamStarting11SubdivisionRaw helper. This
     // test pins BOTH the in-memory shape AND the post-roundtrip
     // shape via Jackson, so future refactors that switch back to a
@@ -1047,9 +1029,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
     // ============================================================
 
     @Test
-    @DisplayName("V25D99.20.3.1-BACK BUG-2: JSON round-trip — cycle 4-4-2 -> 4-3-3 -> 4-4-2 leaves 11 slots, not 14")
+    @DisplayName("JSON round-trip — cycle 4-4-2 -> 4-3-3 -> 4-4-2 leaves 11 slots, not 14")
     void autoSelectLineup_clearsStaleSlots_afterJsonRoundTrip() throws Exception {
-        // V25D99.20.3.1: integrate with the application's ObjectMapper
         // (which has jackson-datatype-jsr310 registered for java.time.Instant
         // and friends) so the round-trip is faithful to runtime. Also
         // configure FAIL_ON_UNKNOWN_PROPERTIES=false because CareerSave's
@@ -1075,13 +1056,13 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave after442 = cap1.getValue();
         assertEquals(11,
             after442.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
-            "V25D99.20.3.1: 4-4-2 must populate 11 slots");
+            "4-4-2 must populate 11 slots");
         // Round-trip: serialize + deserialize the CareerSave.
         String json442 = mapper.writeValueAsString(after442);
         CareerSave reloaded442 = mapper.readValue(json442, CareerSave.class);
         assertEquals(11,
             reloaded442.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
-            "V25D99.20.3.1: 4-4-2 must SURVIVE JSON round-trip with 11 slots");
+            "4-4-2 must SURVIVE JSON round-trip with 11 slots");
 
         // 2) auto-select 4-3-3 on the reloaded 4-4-2 career
         reset(careerSessionService);
@@ -1095,12 +1076,12 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave after433 = cap2.getValue();
         assertEquals(11,
             after433.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
-            "V25D99.20.3.1: 4-3-3 must populate 11 slots");
+            "4-3-3 must populate 11 slots");
         String json433 = mapper.writeValueAsString(after433);
         CareerSave reloaded433 = mapper.readValue(json433, CareerSave.class);
         assertEquals(11,
             reloaded433.getTeamStarting11SubdivisionSlots().get(TEAM_ID).size(),
-            "V25D99.20.3.1: 4-3-3 must SURVIVE JSON round-trip with 11 slots");
+            "4-3-3 must SURVIVE JSON round-trip with 11 slots");
 
         // 3) auto-select 4-4-2 again on the reloaded 4-3-3 career.
         // The runtime gap: this final step used to leave 14 slots
@@ -1117,8 +1098,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         CareerSave afterFinal = cap3.getValue();
 
         Map<String, LineupSlotDTO> slotsFinal = afterFinal.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
-        assertNotNull(slotsFinal, "V25D99.20.3.1: final 4-4-2 must have slots");
+        assertNotNull(slotsFinal, "final 4-4-2 must have slots");
         assertEquals(11, slotsFinal.size(),
-            "V25D99.20.3.1 BUG-2: cycle 4-4-2 -> 4-3-3 -> 4-4-2 with JSON round-trip must leave exactly 11 slots, no 4-3-3 stale entries");
+            "cycle 4-4-2 -> 4-3-3 -> 4-4-2 with JSON round-trip must leave exactly 11 slots, no 4-3-3 stale entries");
     }
 }

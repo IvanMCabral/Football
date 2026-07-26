@@ -20,7 +20,6 @@ class V24DetailedMatchResultAdapterTest {
 
     @Test
     void mapsAggregateFieldsOnly() {
-        // Build a real V24DetailedMatchResult via engine
         V24MatchContext ctx = buildContext("match-adapter-1", 75, 75);
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         V24DetailedMatchResult detailed = engine.simulate(ctx, 123L);

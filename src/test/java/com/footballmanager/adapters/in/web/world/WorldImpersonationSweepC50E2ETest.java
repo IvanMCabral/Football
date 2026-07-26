@@ -15,8 +15,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C50 — Impersonation sweep E2E coverage for 15 /api/v1/world/**
- * endpoints that REVISOR C47 audit flagged with the
  * {@code JWT.userId == param.userId} vulnerability pattern.
  *
  * <p><b>Scope (15 endpoints):</b>

@@ -14,7 +14,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE F1 — metrics test (F1 plan section 7).
  *
  * <p>Sanity-check the three DoD metrics:
  * <ul>

@@ -9,9 +9,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D34-F1: AERIAL skill impact on HEADER multiplier (compounding).
  *
- * <p>Spec (V25D34 prompt, F1):
  * <ul>
  *   <li>AERIAL multiplica el HEADER multiplier cuando shooter height
  *       &ge; 185 cm. Formula: {@code headerMult *= (1 + aerialSkill/300)}.</li>
@@ -31,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *     </ul>
  *   </li>
  *   <li>No-op regression: AERIAL absent o height &lt; 185 → headerMult sin
- *       cambio, bit-a-bit identico a V25D33.</li>
  * </ul>
  */
 class V24ShotXgCalculatorAerialTest {
@@ -41,7 +38,6 @@ class V24ShotXgCalculatorAerialTest {
     );
 
     private static double baselineXgWithHeader(V24ShotXgCalculator calc) {
-        // Baseline = solo HEADER (sin AERIAL), sobre el baseline del V25D33.
         Map<PlayerSkill, Integer> onlyHeader = new HashMap<>();
         onlyHeader.put(PlayerSkill.HEADER, 80);
         return calc.calculateXg(BASELINE_QUALITY, "4-3-3", "4-4-2",
@@ -254,7 +250,6 @@ class V24ShotXgCalculatorAerialTest {
     @Test
     void absentAerialSkill_height190_preservesV25D33Baseline() {
         // Edge case: skills map no contiene AERIAL key. No debe tirar NPE,
-        // debe preservar el resultado HEADER-only del V25D33.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
         double baseline = baselineXgWithHeader(calc);
 
@@ -273,7 +268,6 @@ class V24ShotXgCalculatorAerialTest {
 
     @Test
     void overload9ArgsWithAerial_heightTall_preservesV25D32Baseline() {
-        // V25D32 plumbing test: pasar AERIAL por el 9-args overload debe
         // dar el MISMO resultado que el 5-args — porque el 9-args delega al
         // 10-args con OPEN_PLAY default (AERAL gated off en OPEN_PLAY).
         V24ShotXgCalculator calc = new V24ShotXgCalculator();

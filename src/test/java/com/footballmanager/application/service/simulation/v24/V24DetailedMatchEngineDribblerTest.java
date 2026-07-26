@@ -15,9 +15,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D33-F2: DRIBBLER skill impact on chanceProbability (1v1 gambeta).
  *
- * <p>Spec (V25D33 prompt, F2):
  * <ul>
  *   <li>Multiplicador: {@code 1.0 + (skill / 300.0)} aplicado a
  *       {@code chanceProbability} del engine (per-minute chance de crear un
@@ -145,7 +143,6 @@ class V24DetailedMatchEngineDribblerTest {
     @Test
     void fullMatch_noDribblerSkill_preservesV25D32Baseline() {
         // Regression check: sin skills en el dominio, el engine debe producir
-        // el MISMO resultado que V25D32 (bit-a-bit para los homeGoals/awayGoals
         // /shots/xG). Esta es la garantia de "no-op regression check" del prompt.
         V24MatchContext baseline = buildContextWithDribbler("no-dribbler", -1);  // sentinel: sin DRIBBLER
 

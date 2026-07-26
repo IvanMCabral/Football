@@ -28,19 +28,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D37-F4: regression test for BUG_REPLAY_POSSESSION_ZERO.
  *
  * <p>Bug: {@link TestHarnessUseCaseImpl#executeReplayMatch} ran the real V24
- * engine ({@code V24DetailedMatchEngine.simulate(...)}) which computes
  * possession, shots, and goals per match — but then built the
  * {@link MatchFixture.MatchResultData} with hardcoded {@code 0, 0, 0, 0} for
  * possession + shots. The replayed fixture thus returned
  * {@code {homePossession: 0, awayPossession: 0, homeShots: 0, awayShots: 0}}
  * regardless of what the engine actually simulated
- * (BUG_REPLAY_POSSESSION_ZERO).
  *
- * <p>Root cause: an unfinished stub from V24D20-SANDBOX-V2-MVP that never
- * got wired up to forward {@code V24DetailedMatchResult.homePossession()} /
  * {@code .awayPossession()} / {@code .homeShots()} / {@code .awayShots()} to
  * the fixture's {@code MatchResultData}. Goal values WERE forwarded (only
  * the four possession/shot fields were stubbed with zero).
@@ -50,11 +45,10 @@ import static org.mockito.Mockito.when;
  * <p>Strategy: full use-case test (no Spring context), mirroring
  * {@link TestHarnessReplayPersistsDetailE2ETest} — wire a real
  * {@link CareerSave} with 11-man squads, run the real
- * {@code V24DetailedMatchEngine} end-to-end, then verify the fixture's
  * {@code MatchResultData} reflects the engine's possession / shots.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TestHarnessUseCaseImpl — replayMatch forwards V24 possession + shots (BUG_REPLAY_POSSESSION_ZERO)")
+@DisplayName("TestHarnessUseCaseImpl — replayMatch forwards V24 possession + shots")
 class TestHarnessReplayPossessionV25D37F4Test {
 
     private static final UUID USER_ID =
@@ -95,7 +89,6 @@ class TestHarnessReplayPossessionV25D37F4Test {
         wireSquad(career, "user-team-id", userPlayers);
         wireSquad(career, "rival-1", rivalPlayers);
 
-        // Seed the tournament with one COMPLETED fixture (the V24D24.3-HOTFIX
         // resetRound contract requires a fixture in COMPLETED state for
         // resetRound — replayMatch doesn't, but starting from COMPLETED
         // matches the production scenario: "replay a finished match").
@@ -105,10 +98,8 @@ class TestHarnessReplayPossessionV25D37F4Test {
         career.getTournamentState().setFixtures(List.of(completed));
     }
 
-    // ========== BUG_REPLAY_POSSESSION_ZERO regression guard ==========
-
     @Test
-    @DisplayName("V25D37-F4: replayMatch forwards V24 engine possession + shots (NOT zeros)")
+    @DisplayName("replayMatch forwards V24 engine possession + shots (NOT zeros)")
     void replayMatch_forwardsV24PossessionAndShots() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -128,7 +119,6 @@ class TestHarnessReplayPossessionV25D37F4Test {
         MatchFixture.MatchResultData result = replayed.getResult();
         assertThat(result).as("MatchResultData must be populated after replay").isNotNull();
 
-        // V25D37-F4: the four key fields MUST come from the V24 engine, NOT zero.
         // BALANCED vs BALANCED teams at OVR=70 produce a roughly 50/50 split, so
         // possession ticks should be roughly balanced (the engine returns the
         // integer percentage). Assert both fields are in [0, 100] and sum to 100.
@@ -166,7 +156,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
     }
 
     @Test
-    @DisplayName("V25D37-F4: replayMatch possession overrides any previous value (no carry-over from seed)")
+    @DisplayName("replayMatch possession overrides any previous value (no carry-over from seed)")
     void replayMatch_possessionIsNotCarriedOverFromSeed() {
         // Pre-condition: the seed fixture has possession 50/50 (set in setUp).
         // After replay with seed=99 (different seed -> different result), the

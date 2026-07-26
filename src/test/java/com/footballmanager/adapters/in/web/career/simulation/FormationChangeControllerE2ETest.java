@@ -25,7 +25,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B7): E2E HTTP coverage for {@link FormationChangeController}.
  *
  * <p>Coverage:
  * <ul>
@@ -47,7 +46,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("FormationChangeController — E2E HTTP coverage (LIVE-MATCH-F2-F5)")
+@DisplayName("FormationChangeController — E2E HTTP coverage")
 class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
 
     @Autowired
@@ -183,7 +182,6 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         // 4-4-2 formation using the 11 home starters
-        // V24D13-2 (F4.3): buildHappyPathContext() generates player IDs as
         // "{homeTeamId}{0..10}" (e.g. "home0", "home1" ...) via
         // makePlayers(prefix, count) where prefix = homeTeamId. The body
         // must use the same prefix to match what the controller sees in
@@ -269,9 +267,7 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
     }
 
     // ============================================================
-    // V25D99.20.3.1-BACK BUG-3 pinning test: the formation-change
     // endpoint must declare Content-Type: application/json;charset=UTF-8
-    // (defense-in-depth for mojibake). Pre-V25D99.20.3.1, the
     // FormationChangeController class-level @RequestMapping had no
     // `produces` attribute, so the Content-Type was the bare
     // `application/json`. Combined with the global encoding config
@@ -283,7 +279,7 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
     // ============================================================
 
     @Test
-    @DisplayName("V25D99.20.3.1-BACK BUG-3: POST /match-engine/matches/{id}/formation returns Content-Type application/json;charset=UTF-8")
+    @DisplayName("POST /match-engine/matches/{id}/formation returns Content-Type application/json;charset=UTF-8")
     void changeFormation_responseDeclaresUtf8Charset() {
         String userId = UUID.randomUUID().toString();
         String matchId = UUID.randomUUID().toString();
@@ -300,7 +296,7 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
             .expectHeader().value("Content-Type", ct -> {
                 org.junit.jupiter.api.Assertions.assertTrue(
                     ct.toLowerCase().contains("charset=utf-8"),
-                    "V25D99.20.3.1-BACK BUG-3: Content-Type must include charset=UTF-8, got: " + ct);
+                    "Content-Type must include charset=UTF-8, got: " + ct);
             });
     }
 }

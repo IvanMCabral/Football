@@ -16,9 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE F2.5 (T3.3): engine-level test for deferred manual
  * substitutions. Verifies that the
- * {@link V24DetailedMatchEngine#simulate(V24MatchContext, long)} method
  * applies scheduled subs at the right minute inside the
  * {@code simulateWithRandom} loop.
  *
@@ -37,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       time vs 30 minutes of pitch time).</li>
  * </ol>
  *
- * <p>V24D6U4 tuning note (re-validated 2026-06-17 by Mavis root analysis):
  * the goal output is too sparse to test reliably (chanceProbability=0.10,
  * ~5 shots/team/match, ~7% conversion => λ≈0.36 goals/team, P(0 goals)=70%
  * per team, P(0-0)=49% per match). With seed=42 and BALANCED×BALANCED, MOST
@@ -123,7 +120,6 @@ class V24ScheduledSubstitutionEngineTest {
         // design (baseline vs treatment differ in sub presence).
         //
         // We deliberately do NOT assert on homeGoals/awayGoals: with the
-        // current V24D6U4 tuning, the goal output is too sparse to be a
         // reliable test signal (see class javadoc for the full analysis).
         // Recalibrating the model to its stated λ=1.25 target is a
         // separate epic (NEXT.md ticket).
@@ -181,7 +177,7 @@ class V24ScheduledSubstitutionEngineTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.3.2: strong live sub changes chance volume across deterministic replay seeds")
+    @DisplayName("strong live sub changes chance volume across deterministic replay seeds")
     void strongLiveSub_changesChanceVolumeAcrossSeeds() {
         V24MatchContext baselineCtx = buildContext();
         V24MatchContext treatmentCtx = baselineCtx.withManualSubstitution(
@@ -203,7 +199,7 @@ class V24ScheduledSubstitutionEngineTest {
         assertTrue(
             Math.abs(treatmentXg - baselineXg) >= 0.01
                 || treatmentShots != baselineShots,
-            "V25D99.20.3.2: a strong live substitution must not be invisible in harness-like deterministic replay. "
+            "a strong live substitution must not be invisible in harness-like deterministic replay. "
                 + "baselineXg=" + baselineXg
                 + ", treatmentXg=" + treatmentXg
                 + ", baselineShots=" + baselineShots
@@ -217,7 +213,6 @@ class V24ScheduledSubstitutionEngineTest {
      * match the given minute and onPlayerId. The F2.5 contract is "the
      * engine emits the SUBSTITUTION event at the effectiveMinute" —
      * counting these events directly verifies that contract without
-     * depending on goal output (see the V24D6U4 tuning note in the
      * class javadoc).
      *
      * <p>The minute filter is critical: the engine also has a F2
@@ -303,8 +298,4 @@ class V24ScheduledSubstitutionEngineTest {
         return players;
     }
 }
-
-
-
-
 

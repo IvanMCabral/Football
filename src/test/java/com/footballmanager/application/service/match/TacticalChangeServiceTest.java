@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B7): unit tests for {@link TacticalChangeService}.
  *
  * <p>Per the F5 spec section 5: {@code changeStyle_invokesMutateContext}
  * (B3) — verifies the service calls {@code V24LiveSession.mutateContext}

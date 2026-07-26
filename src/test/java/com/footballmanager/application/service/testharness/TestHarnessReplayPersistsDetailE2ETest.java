@@ -34,12 +34,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D21-SANDBOX-V2-MVP-F7: Regression guard for BUG_REPLAY_NO_PERSIST.
  *
  * <p>Bug: {@link TestHarnessUseCaseImpl#executeReplayMatch} updated the
  * {@link MatchFixture} result but NEVER called
- * {@link V24DetailedMatchStoragePort#save} for the new
- * {@link V24DetailedMatchData}. {@code GET /api/v1/careers/{careerId}/matches/{matchId}/detail}
  * therefore returned 404 after a replay (only the old detail existed; the
  * best-effort {@code deleteByMatchId} wiped even that, leaving the API
  * with nothing to return).
@@ -52,15 +49,13 @@ import static org.mockito.Mockito.when;
  * {@link CareerSave} with 11-man squads for both teams (the V24 engine
  * requires MIN_AVAILABLE_PLAYERS=7 in the starting list), call
  * {@code useCase.replayMatch(...)} which runs the real
- * {@code V24DetailedMatchEngine} end-to-end, then verify the storage
- * port was called with a non-null {@link V24DetailedMatchData} for the
  * replayed matchId.
  *
  * <p>The assertion is RED before the fix (no {@code save(...)} call
  * site exists in {@code executeReplayMatch}) and GREEN after.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TestHarnessUseCaseImpl — replayMatch persists V24 detail (BUG_REPLAY_NO_PERSIST)")
+@DisplayName("TestHarnessUseCaseImpl — replayMatch persists V24 detail")
 class TestHarnessReplayPersistsDetailE2ETest {
 
     private static final UUID USER_ID =
@@ -70,7 +65,6 @@ class TestHarnessReplayPersistsDetailE2ETest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
-    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
     // resetRound() use case. Default `@Mock` is fine.
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
@@ -114,10 +108,8 @@ class TestHarnessReplayPersistsDetailE2ETest {
         career.getTournamentState().setFixtures(List.of(completed));
     }
 
-    // ========== BUG_REPLAY_NO_PERSIST regression guard ==========
-
     @Test
-    @DisplayName("replayMatch: persists new V24DetailedMatchData to storage port (BUG_REPLAY_NO_PERSIST)")
+    @DisplayName("replayMatch: persists new V24DetailedMatchData to storage port")
     void replayMatch_persistsV24DetailToStoragePort() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -129,7 +121,6 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .expectNextCount(1)
             .verifyComplete();
 
-        // Capture the saved V24DetailedMatchData so we can verify shape too.
         ArgumentCaptor<String> careerIdCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<V24DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(V24DetailedMatchData.class);

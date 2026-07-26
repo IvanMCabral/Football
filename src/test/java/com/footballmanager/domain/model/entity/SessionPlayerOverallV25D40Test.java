@@ -11,7 +11,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D40 (Sprint C5): integration tests for {@link SessionPlayer#calculateOverall()}
  * after the refactor to delegate to the shared {@link com.footballmanager.domain.model.valueobject.OverallCalculator}.
  *
  * <p>Strategy: focused tests on the SessionPlayer-specific contract

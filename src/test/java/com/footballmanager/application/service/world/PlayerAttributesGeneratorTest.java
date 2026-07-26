@@ -8,7 +8,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D32-F3: PlayerAttributesGenerator tests.
  *
  * <p>Verifica el generador deterministico de heights + skill defaults.
  * Reproducibilidad: mismo seed → mismo resultado.

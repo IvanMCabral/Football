@@ -391,8 +391,6 @@ class V24SubstitutionEngineTest {
         };
     }
 
-    // ========== LIVE-MATCH-F1-POC: manualSubstitute tests ==========
-
     @Test
     void manualSubstitute_allowsOutOfRoleDtDecision() {
         V24TeamMatchState team = makeTeam();
@@ -544,10 +542,7 @@ class V24SubstitutionEngineTest {
         assertTrue(engine.isSubstitutedOffPublic(starterId));
     }
 
-    // ========== LIVE-MATCH-F2-LIVE F5 (B7): formation-respecting substitution ==========
-
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B7): the B6 bug colateral fix. When the
      * formation has been tactically changed mid-match to a layout that
      * does NOT have a slot for the OFF player's position, the engine
      * must skip the substitution (not produce a SUBSTITUTION event that
@@ -584,7 +579,6 @@ class V24SubstitutionEngineTest {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F5 (B7): positive path. After tactically changing
      * to a formation that DOES have a slot for the OFF player's position,
      * the substitution proceeds normally.
      */

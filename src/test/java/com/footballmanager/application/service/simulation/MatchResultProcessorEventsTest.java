@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * V24D6T — Lock the event-forwarding contract of MatchResultProcessor.
  *
  * <p>The processor used to pass {@code List.of()} to
  * {@code TournamentState.processMatchResult} regardless of whether the
@@ -62,11 +61,9 @@ class MatchResultProcessorEventsTest {
 
     @Test
     void process_processesScoreWithoutThrowingOnEvents() {
-        // V24D6T: events carry through MatchResultInfo but the current
         // TournamentState.processMatchResult expects a different MatchEvent type
         // and ignores the list. The processor defends by passing an empty list
         // (no NPE, no refactor) while the events are persisted separately via
-        // LeagueSimulator.persistV24DetailForLiveMatch. This test pins the
         // observable behavior: score is recorded, fixture is completed.
         List<MatchEvent> events = List.of(
             MatchEvent.of(MatchEvent.EventType.GOAL, 12, "p-1", "Scorer", HOME_TEAM, "12' goal"),

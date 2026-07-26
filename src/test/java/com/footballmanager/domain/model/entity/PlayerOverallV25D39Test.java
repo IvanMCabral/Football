@@ -14,10 +14,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D39 (Sprint C4): regression + new-behavior tests for {@link Player#getOverall()}.
  *
  * <p>The method was extended to incorporate {@code heightCm} and the 10
- * {@link PlayerSkill} values introduced in V25D31-V25D35. The chosen design
  * is <b>Opción A (aditiva acotada)</b>:
  *
  * <pre>
@@ -29,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * <p>Backward compatibility contract: if {@code heightCm == null} AND
  * {@code skillLevels} is null or empty, {@code getOverall()} must return the
- * exact same value as the pre-V25D39 formula.
  *
  * <p>Test strategy: pure JUnit, no Spring context, no Redis, no mocks.
  * Construction goes through {@link Player#create} which is the production
@@ -666,11 +663,9 @@ class PlayerOverallV25D39Test {
         @Test
         @DisplayName("Formula vieja reproduce exacto para input sin skills/height")
         void oldFormulaExactRegression() {
-            // For every position, with bare player, the formula must match the pre-V25D39 value exactly.
             // Tested across 5 positions with elite stats.
             int[] stats = elite();
 
-            // Reference values computed from the pre-V25D39 switch (mathematically locked in).
             // GK: 80*0.40 + 80*0.20 + 80*0.20 + 80*0.10 + 80*0.05 + 80*0.05 = 32 + 16 + 16 + 8 + 4 + 4 = 80
             assertEquals(80, barePlayer(Player.Position.GK, stats).getOverall());
             // CB: 80*0.35 + 80*0.15 + 80*0.15 + 80*0.15 + 80*0.10 + 80*0.10 = 28 + 12 + 12 + 12 + 8 + 8 = 80

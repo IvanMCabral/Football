@@ -27,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D20-TESTHARNESS — E2E HTTP coverage for {@link TestHarnessController}.
  *
  * <p>Pattern mirrors {@code LineupControllerE2ETest}: {@code @SpringBootTest}
  * with the isolated test profile (DB {@code football_manager_test}, Redis DB 15,
@@ -36,11 +35,9 @@ import static org.mockito.Mockito.when;
  * profile-gated controller registration are exercised end-to-end.
  *
  * <p>The full integration flow (createCustom + replace-fixtures + simulate
- * 4 rounds + verify results differ) is what REVISOR runs as a smoke
  * (see Phase 8 runbook doc); unit tests cover the use case logic and
  * these tests cover HTTP wiring / auth / response shape.
  *
- * <p>Critical for regression guard: the BUG_FORMATION_PERSIST_IGNORED
  * (sprint 1.7) is asserted end-to-end at the use-case level in
  * {@code TestHarnessUseCaseImplTest.setFormation_persistsInBothSessionTeamAndFormationMap}.
  * This E2E verifies the controller hands the request through.
@@ -210,10 +207,8 @@ class TestHarnessControllerE2ETest {
                 anyString(), anyString(), anyInt()))
             .thenReturn(Mono.just(career));
 
-        // V25D38-F2: use valid UUIDs for leagueId/teamId (production path
         // requires UUIDs — StartCareerUseCaseImpl.start() calls
         // UUID.fromString(worldLeagueId) which throws IllegalArgumentException
-        // on malformed strings; the V25D38-F2 fix now pre-validates this in
         // the controller so the client gets a clean 400 instead of a 500 NPE
         // on null or 422 IAE on malformed strings).
         String body = """
@@ -251,7 +246,6 @@ class TestHarnessControllerE2ETest {
                 anyString(), anyString(), eq(5)))
             .thenReturn(Mono.just(career));
 
-        // V25D38-F2: use valid UUIDs (see createCustom_happyPath comment).
         String body = """
             {
               "leagueId":"4feeb9df-4133-4655-883e-e96894907e7b",

@@ -10,7 +10,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D24.2: Unit coverage for {@link FixtureQueryHelper#deriveRoundId(String, int)}.
  *
  * <p>The front test-harness UI needs a deterministic {@code roundId} per
  * {@code (careerId, round)} pair to POST against
@@ -80,8 +79,6 @@ class FixtureQueryHelperTest {
         assertNull(FixtureQueryHelper.deriveRoundId(null, 1),
                 "Null careerId must yield null — ad-hoc helper callers pass null careerId");
     }
-
-    // ========== V24D24.3-FIX: extractTeamIdsFromFixtures ==========
 
     @Test
     @DisplayName("extractTeamIdsFromFixtures — collects home+away from all fixtures, deduplicates")

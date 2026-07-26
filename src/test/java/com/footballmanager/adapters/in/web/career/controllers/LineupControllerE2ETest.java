@@ -35,9 +35,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D7 FASE B — E2E HTTP coverage for {@link LineupController}.
  *
- * <p>Replaces the {@code @Disabled} placeholder from V24D6T.
  *
  * <p>Strategy: {@code @SpringBootTest} with the isolated test profile
  * (DB {@code football_manager_test}, Redis DB 15, Flyway off, RANDOM_PORT)
@@ -498,7 +496,6 @@ class LineupControllerE2ETest {
     }
 
     // ============================================================
-    // V25D99.20.3-BACK BUG-3 pinning test: every response from the
     // modal endpoints (lineup current, auto-select, manual-select,
     // preview-ratings, preview-chemistry) must declare
     // `Content-Type: application/json;charset=UTF-8`. Pre-fix, the
@@ -508,7 +505,7 @@ class LineupControllerE2ETest {
     // ============================================================
 
     @Test
-    @DisplayName("V25D99.20.3-BACK BUG-3: GET /career/lineup/current returns Content-Type application/json;charset=UTF-8")
+    @DisplayName("GET /career/lineup/current returns Content-Type application/json;charset=UTF-8")
     void getCurrent_responseDeclaresUtf8Charset() {
         LineupDTO emptyLineup = new LineupDTO(
             "4-4-2", new ArrayList<>(), false, List.of(), List.of());
@@ -522,7 +519,6 @@ class LineupControllerE2ETest {
             .exchange()
             .expectStatus().isOk()
             .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-            // V25D99.20.3-BACK: the charset must be UTF-8 (charset=UTF-8
             // must appear in the Content-Type header, with `force: true`
             // in server.servlet.encoding). This is the regression net
             // for the `âœ•` / `â€"` / `Ã—` mojibake that appeared in
@@ -530,12 +526,12 @@ class LineupControllerE2ETest {
             .expectHeader().value("Content-Type", ct -> {
                 org.junit.jupiter.api.Assertions.assertTrue(
                     ct.toLowerCase().contains("charset=utf-8"),
-                    "V25D99.20.3-BACK BUG-3: Content-Type must include charset=UTF-8, got: " + ct);
+                    "Content-Type must include charset=UTF-8, got: " + ct);
             });
     }
 
     @Test
-    @DisplayName("V25D99.20.3-BACK BUG-3: POST /career/lineup/auto-select returns Content-Type application/json;charset=UTF-8")
+    @DisplayName("POST /career/lineup/auto-select returns Content-Type application/json;charset=UTF-8")
     void autoSelect_responseDeclaresUtf8Charset() {
         stubCareerInPhase(CareerPhase.PRE_MATCH);
         when(lineupCommandUseCase.autoSelectLineup(eq(TEST_USER_ID), eq("4-4-2")))
@@ -552,7 +548,7 @@ class LineupControllerE2ETest {
             .expectHeader().value("Content-Type", ct -> {
                 org.junit.jupiter.api.Assertions.assertTrue(
                     ct.toLowerCase().contains("charset=utf-8"),
-                    "V25D99.20.3-BACK BUG-3: auto-select Content-Type must include charset=UTF-8, got: " + ct);
+                    "auto-select Content-Type must include charset=UTF-8, got: " + ct);
             });
     }
 }

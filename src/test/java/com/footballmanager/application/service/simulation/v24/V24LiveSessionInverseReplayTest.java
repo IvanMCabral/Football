@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE F1 — Task B6: the inverse of the POC F1 test
  * {@code recordManualSubstitution_doesNotAlterResult}.
  *
  * <p>This test uses the NEW replay-path API ({@link V24LiveSession#replayFromMinute}
@@ -27,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * test, which still validates D1=B for the legacy method (per F1 plan
  * section 5: "dejar el test del POC F1 con su aserción actual").
  *
- * <p>Phase 2 (F2 of the LIVE-MATCH-F2-LIVE ticket) will wire
  * {@code SubstitutionCommandUseCaseImpl.executeSubstitution} to call
  * {@code mutateContext(...)} instead of just appending to the event cache,
  * which will turn the 4 F0 RED tests GREEN too.

@@ -9,7 +9,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6D3: Unit tests for V24DisciplineMutationApplier.
  * Tests discipline mutation behavior in isolation — no Redis, no Spring, no IO.
  */
 class V24DisciplineMutationApplierTest {
@@ -284,8 +283,6 @@ class V24DisciplineMutationApplierTest {
         assertTrue(p.getSuspended()); // still suspended
         assertEquals(1, p.getSuspensionRemainingMatches()); // reset to 1 per MVP rule
     }
-
-    // ========== V24D6H2 Yellow-card threshold tests ==========
 
     // 1. belowThreshold_noSuspension
     @Test

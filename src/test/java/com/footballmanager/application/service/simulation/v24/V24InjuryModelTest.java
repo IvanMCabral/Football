@@ -14,15 +14,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * Validates base injury probability, stamina modifiers, high-intensity modifier,
  * style modifiers, clamping, and deterministic behavior.
  *
- * <p>V25D81.1 BUG #6 tuning: BASE raised to 0.005 (was 0.003) and MAX raised
- * to 0.05 (was 0.02). The V25D81.1 task spec mentioned 0.008 literally but that
  * value broke {@code SubstitutionControllerE2ETest} (seed-12345L ended 0-0 in
  * both baseline and treatment). 0.005 keeps the UX-visible 1.67x bump without
  * flipping existing tests.
  *
  * <p>New tests below assert both values directly and the new clamping range.
  * User-team bias (BUG #6 option-a) is intentionally OUT OF SCOPE — deferred
- * to V25D82+ if Iván requests it.
  */
 class V24InjuryModelTest {
 
@@ -37,11 +34,8 @@ class V24InjuryModelTest {
         assertTrue(base > 0, "base should be > 0, got " + base);
     }
 
-    // ========== V25D81.1 BUG #6 tuning tests ==========
-
     @Test
     void baseInjuryProbabilityEqualsTunedValue_V25D81_1() {
-        // V25D81.1: BASE raised from 0.003 to 0.005 (1.67x more probable)
         // — see class Javadoc for the rationale on 0.005 vs literal 0.008.
         double base = model.baseInjuryProbability();
         assertEquals(0.005, base, 0.0000001,
@@ -50,7 +44,6 @@ class V24InjuryModelTest {
 
     @Test
     void probabilityAlwaysWithinClampRange_V25D81_1() {
-        // V25D81.1: clamp range is [0.0005, 0.05] for any combination of modifiers.
         // Sweep across low/medium/high stamina, normal/high-intensity, all styles.
         int[] staminas = { 5, 25, 45, 70, 100 };
         TeamStyle[] styles = {
@@ -88,7 +81,6 @@ class V24InjuryModelTest {
 
     @Test
     void maxClampAllowsUpTo0_05_V25D81_1() {
-        // V25D81.1: document the new ceiling. BASE=0.008 + exhausted + hi + ATTACKING
         // = 0.008 + 0.008 + 0.002 + 0.001 = 0.019, well under 0.05. Verify ceiling
         // is at least as high as 0.05 (proves the constant was raised).
         V24PlayerMatchState exhausted = makePlayer("max-clamp", 70, 5);
@@ -158,7 +150,6 @@ class V24InjuryModelTest {
     void injuryProbabilityIsClamped() {
         V24PlayerMatchState player = makePlayer("clamp-injury", 70, 100);
 
-        // V25D81.1 BUG #6: clamping range is [0.0005, 0.05] (was [0.0005, 0.02]).
         // Min clamp test: POSSESSION style, no high-intensity, high stamina → should be near min
         double probMin = model.adjustedInjuryProbability(player, TeamStyle.POSSESSION, false);
         assertTrue(probMin >= 0.0005 && probMin <= 0.05,

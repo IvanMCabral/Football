@@ -23,7 +23,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * V24D4B: Tests for V24DetailedMatchRedisAdapter.
  *
  * <p>Tests adapter behavior with mocked ReactiveRedisTemplate.
  * Uses ReactiveValueOperations for reactive Redis operations.
@@ -294,18 +293,15 @@ class V24DetailedMatchRedisAdapterTest {
     }
 
     /**
-     * V24D6M12: End-to-end round-trip test — save and read a V24DetailedMatchData
      * with all fields populated (non-empty timeline, playerRatings, shotCoordinate, createdAt).
      *
      * This test validates that the Jackson2JsonRedisSerializer can serialize
-     * and deserialize V24DetailedMatchData without losing any fields.
      * Without proper annotation introspector (@JsonCreator on constructor params),
      * deserialization produces null-filled objects (all fields null) even when
      * serialization succeeds.
      */
     @Test
     void threeMatchesInSameCareer_allFindable() {
-        // V24D20-SANDBOX-V2-MVP BUG #3 regression guard: 3 distinct matches
         // in the same career must ALL be findable. The original A3-404
         // smoke failure was: A1 + A2 worked, A3 returned 404. This test
         // exercises the exact data shape (3 different matchIds, same

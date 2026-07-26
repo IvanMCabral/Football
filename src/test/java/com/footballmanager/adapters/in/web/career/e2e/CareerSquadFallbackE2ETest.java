@@ -24,9 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D15-CLEANUP (BUG-003 reproducer E2E): regression test for the
  * squad-fallback path that was fixed by commit 7213083
- * (F5.2 BUG-003 — fall back to squad when teamStarting11 has stale
  * player IDs).
  *
  * <p>The fix protects the user from per-round orchestrator mutations
@@ -53,7 +51,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * <p>Scope (2 tests):
  * <ul>
  *   <li>Happy path: career + valid lineup → next-round → 200</li>
- *   <li>BUG-003 reproducer: same flow but with a stale teamStarting11
  *       entry → next-round STILL returns 200 (fallback fired)</li>
  * </ul>
  */
@@ -90,7 +87,6 @@ class CareerSquadFallbackE2ETest extends AbstractIntegrationTest {
             .serverCommands()
             .flushDb()
             .block();
-        // V25D78-C55.5: seed LaLiga per-test so seedTeamId() finds data.
         seedLaLigaForUser(SEED_USER_ID);
     }
 
@@ -214,7 +210,6 @@ class CareerSquadFallbackE2ETest extends AbstractIntegrationTest {
             .block();
 
         // POST next-round — should NOT be 422 LINEUP_VALIDATION_ERROR.
-        // The BUG-003 fix detects the stale entry and falls back to
         // deriving the XI from the squad.
         byte[] respBytes = webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
             .post().uri("/api/v1/career/{careerId}/next-round", careerId)

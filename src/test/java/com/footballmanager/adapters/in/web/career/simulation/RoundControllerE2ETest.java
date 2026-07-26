@@ -16,17 +16,14 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7+2.2 — E2E HTTP coverage for {@link com.footballmanager.adapters.in.web.career.simulation.RoundController}.
  *
  * <p>Strategy: real {@code @SpringBootTest} against the isolated test DB + Redis DB 15.
  * Creates a career via POST /api/v1/games, then exercises POST /api/v1/match-engine/rounds/start.
  *
  * <p>Helpers {@code seedTeamId} and {@code seedLeagueId} are copy-paste from
- * GameControllerE2ETest (V24D7+2.1, commit 9454092) and use the same field names:
  * {@code worldTeamId} (NOT {@code id}) for WorldTeam and {@code realLeagueId} (NOT {@code id})
  * for WorldLeague.
  *
- * <p><b>FIXED (V24D13-2):</b> {@code RoundController.startMatches} used to call
  * {@code careerSessionService.getCareerFromCache(userId).block()} on a reactor
  * thread, which throws {@code IllegalStateException("block() not supported in
  * thread parallel-N")}. The GlobalExceptionHandler mapped that to HTTP 422
@@ -69,16 +66,13 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanRedis() {
-        // V24D7+2.2: clear career cache between tests. RoundController reads
         // CareerSave from Redis via careerSessionService.getCareerFromCache(userId).
         // Without flushDb, a previous test's career could leak into the next one.
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
         seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
     }
 
-    // V24D7+2.1 hardcoded seed admin (copied from GameControllerE2ETest line 63-64).
     // /api/v1/world/* endpoints only respond to this user; random UUIDs return 500.
     private static final String SEED_USER_ID =
         "00000000-0000-0000-0000-000000000001";
@@ -92,7 +86,6 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
      * Copy-paste literal of GameControllerE2ETest.seedTeamId. Uses field "worldTeamId".
      */
     private String seedTeamId(String userId) {
-        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
         // LaLiga expansion means .get(0) returns a synthetic B1 add like
         // "Vigo City 1", not Real Madrid).
         return laligaTeamId(UUID.fromString(SEED_USER_ID),
@@ -135,13 +128,11 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * V24D7+2.2 NEW helper. Creates a game (and thus a career in Redis) for the given userId.
      * Body matches GameControllerE2ETest.validCreateBody: teamId and leagueId are required
      * (controller returns 400 otherwise), and teamsPerDivision=2 is the safest minimum that
      * passes CreateCareerSnapshotUseCaseImpl validation (>= 2 && <= leagueTeams.size()).
      */
     private void seedCareerAndGame(String userId) {
-        // V25D78-C55.5: seed LaLiga for the random userId that the test
         // authenticates as (auth principal in POST /games below).
         seedLaLigaForUser(UUID.fromString(userId));
         String teamId = seedTeamId(userId);
@@ -161,7 +152,6 @@ class RoundControllerE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * V24D7+2.2 NEW helper. Fetches the first fixture match for round=1 of the user's career.
      * Returns {@code String[3]} = [matchId, homeTeamId, awayTeamId].
      * Field names verified in FixtureQueryDtos.MatchInfo: all are plain String/Integer/Double,
      * NOT value object wrappers.

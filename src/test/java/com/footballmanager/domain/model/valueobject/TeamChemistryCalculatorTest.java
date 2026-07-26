@@ -16,7 +16,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D41 (Sprint C6): unit tests for {@link TeamChemistryCalculator}.
  *
  * <p>Coverage strategy:
  * <ul>
@@ -30,13 +29,12 @@ import static org.junit.jupiter.api.Assertions.*;
  *   <li>Math invariants (2 tests): team skill weights sum to 0.65</li>
  * </ul>
  *
- * <p>V25D43 (Sprint C8): {@code calculate()} signature changed from
  * {@code int} to {@code ChemistryDetail} (Opción B). Existing tests
  * updated via {@link #scoreOf(List)} helper. New {@link Breakdown} nested
  * class adds 10 tests for the per-position-group breakdown, the
  * {@code maxSkillByType} map, and the {@code coveragePercentage} field.
  */
-@DisplayName("TeamChemistryCalculator — V25D41 team chemistry aggregate (V25D43 returns ChemistryDetail)")
+@DisplayName("TeamChemistryCalculator — V25D41 team chemistry aggregate")
 class TeamChemistryCalculatorTest {
 
     // ========== Test helpers ==========
@@ -640,10 +638,8 @@ class TeamChemistryCalculatorTest {
         }
     }
 
-    // ========== V25D43 (Sprint C8) — ChemistryDetail breakdown ==========
-
     @Nested
-    @DisplayName("V25D43 ChemistryDetail: per-position-group breakdown + maxSkillByType + coveragePercentage")
+    @DisplayName("per-position-group breakdown + maxSkillByType + coveragePercentage")
     class Breakdown {
 
         // --- groupsForSkill mapping ---

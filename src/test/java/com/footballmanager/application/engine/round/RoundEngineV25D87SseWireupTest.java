@@ -23,7 +23,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D87.1 — F0 read-only diagnostic for the SSE wire-up regression.
  *
  * <p>Reproduces the exact bug observed in production:
  * <ul>

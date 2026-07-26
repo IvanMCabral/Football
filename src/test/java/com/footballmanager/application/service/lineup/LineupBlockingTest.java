@@ -8,10 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * V24D6D7A: Tests for lineup blocking of suspended players.
- */
 class LineupBlockingTest {
 
     private SessionPlayer makePlayer(String id, String name, String position, int energy, boolean injured, boolean suspended, int suspensionRemainingMatches) {

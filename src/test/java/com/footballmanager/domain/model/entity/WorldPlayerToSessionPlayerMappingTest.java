@@ -9,13 +9,9 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D33-F0-mapping: WorldPlayer → SessionPlayer height + skill propagation.
  *
- * <p>V25D32 SENIOR flagged that the WorldPlayer → SessionPlayer mapping was
  * silently dropping {@code heightCm} and {@code skillLevels}. The
- * {@link LaLigaSeedService} (V25D32-F3) was setting these on WorldPlayer
  * (top-20 heights hardcoded + curated skills for top-5) but the clone
- * factories in {@link SessionPlayer} were throwing them away. V25D33 closes
  * the gap with new overloads that propagate both, and the existing 5/6-arg
  * overloads delegate to the new ones with {@code null}/{@code empty} so the
  * backward-compat contract is preserved bit-a-bit.
@@ -59,7 +55,6 @@ class WorldPlayerToSessionPlayerMappingTest {
 
     @Test
     void cloneWithoutHeightOrSkills_yieldsNullHeightAndEmptySkills() {
-        // 386 LaLiga random players (V25D32-F3 generator) tienen height random
         // pero NO skills (sparse vacio). El SessionPlayer clonado debe
         // reflejar eso: height puede ser null o int, skillLevels={}.
         SessionPlayer sp = SessionPlayer.cloneFromWorldPlayer(

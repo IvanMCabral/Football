@@ -49,14 +49,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D20-TESTHARNESS — Unit tests for {@link TestHarnessUseCaseImpl}.
  *
  * <p>Strategy: Mockito-only (no Spring context). Verifies the
  * state-mutation contract on {@link CareerSave} and the delegation
  * to {@link CareerRepository} / {@link CareerSessionService}.
  *
  * <p>The {@code setFormation} test is the critical regression guard for
- * the sprint 1.7 bug (BUG_FORMATION_PERSIST_IGNORED) — it asserts that
  * the formation is persisted to BOTH {@code SessionTeam.formation} AND
  * {@code teamStarting11Formation} map (the V24 engine reads from the
  * latter).
@@ -71,14 +69,12 @@ class TestHarnessUseCaseImplTest {
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
     @Mock private BaselineStateStoragePort baselineStoragePort;
-    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
     // resetRound() use case (the previous 4-arg constructor was extended
     // with this dependency). Mockito's default `@Mock` is good enough
     // because the only method the resetRound path calls on the registry
     // is `hasEngine` (returns false) — the unit tests below never trigger
     // the engine-eviction branch.
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
-    // V24D20-SANDBOX-V2-MVP F5: use the REAL V24MatchContextFactory so
     // build() produces a context with valid homeTeam/awayTeam. A mocked
     // factory would return a context with null teams, which causes
     // V24TeamMatchState.create to throw NPE("team must not be null").
@@ -201,7 +197,7 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("V25D99.291: XI efectivo explica fallback de carrilero cuando LWB/RWB no tiene perfil natural")
+    @DisplayName("XI efectivo explica fallback de carrilero cuando LWB/RWB no tiene perfil natural")
     void lineupDiagnosticRead_explainsWingbackFallback() throws Exception {
         SessionPlayer player = new SessionPlayer();
         player.setName("Murcia Athletic CDM #5407");
@@ -215,7 +211,7 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("V25D99.292: XI efectivo explica fallback defensivo cuando un perfil ofensivo cae en CB")
+    @DisplayName("XI efectivo explica fallback defensivo cuando un perfil ofensivo cae en CB")
     void lineupDiagnosticRead_explainsDefensiveFallback() throws Exception {
         SessionPlayer player = new SessionPlayer();
         player.setName("Murcia Athletic CAM #6808");
@@ -229,7 +225,7 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("V25D99.292: XI efectivo explica fallback ofensivo cuando un mediocentro cae en ST")
+    @DisplayName("XI efectivo explica fallback ofensivo cuando un mediocentro cae en ST")
     void lineupDiagnosticRead_explainsAttackingFallback() throws Exception {
         SessionPlayer player = new SessionPlayer();
         player.setName("Murcia Athletic CM #4651");
@@ -529,17 +525,15 @@ class TestHarnessUseCaseImplTest {
             .as(StepVerifier::create)
             .verifyComplete();
 
-        // V24D24.1: empty list = no-op, NO tocar repo ni cache
         verify(careerRepository, never()).findById(anyString());
         verify(careerRepository, never()).save(any());
         verifyNoInteractions(careerSessionService);
     }
 
-    // V24D24.1 — null guard regression. The empty-list path is now a
     // no-op, but null must still be rejected (it is a genuine client
     // error and should produce a 400, not a silent skip).
     @Test
-    @DisplayName("replaceFixtures: null list returns Mono.error (V24D24.1 null guard)")
+    @DisplayName("replaceFixtures: null list returns Mono.error")
     void replaceFixtures_nullList_returnsError() {
         useCase.replaceFixtures(USER_ID, null)
             .as(StepVerifier::create)
@@ -562,7 +556,7 @@ class TestHarnessUseCaseImplTest {
     //
     // Test: 4 fixtures across 4 rounds → totalRounds must be 4.
     @Test
-    @DisplayName("replaceFixtures: totalRounds == fixtures.size() (BUG #2 regression guard)")
+    @DisplayName("replaceFixtures: totalRounds == fixtures.size()")
     void replaceFixtures_totalRoundsEqualsFixtureCount() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -581,7 +575,7 @@ class TestHarnessUseCaseImplTest {
             .verifyComplete();
 
         assertThat(career.getTournamentState().getTotalRounds())
-            .as("totalRounds MUST equal max(round) after replaceFixtures (BUG #2)")
+            .as("totalRounds MUST equal max(round) after replaceFixtures")
             .isEqualTo(4);
         assertThat(career.getTournamentState().getFixtures()).hasSize(4);
     }
@@ -711,7 +705,6 @@ class TestHarnessUseCaseImplTest {
             new CustomFixture("home", "away", 0, null));
     }
 
-    // ========== cache invalidation (V24D20-SANDBOX-V2-MVP BUG #1) ==========
     //
     // Root cause: TestHarnessUseCaseImpl.executeSetFormation / executeReplaceFixtures /
     // executeResetInjuries write to Redis via careerRepository.save(career) but
@@ -724,7 +717,7 @@ class TestHarnessUseCaseImplTest {
     // Regression guard: these tests fail (red) BEFORE the fix is applied.
 
     @Test
-    @DisplayName("setFormation: invalidates CareerSessionService cache after save (BUG #1)")
+    @DisplayName("setFormation: invalidates CareerSessionService cache after save")
     void setFormation_invalidatesCache() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -739,7 +732,7 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("replaceFixtures: invalidates CareerSessionService cache after save (BUG #1)")
+    @DisplayName("replaceFixtures: invalidates CareerSessionService cache after save")
     void replaceFixtures_invalidatesCache() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -759,7 +752,7 @@ class TestHarnessUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("resetInjuries: invalidates CareerSessionService cache after save (BUG #1)")
+    @DisplayName("resetInjuries: invalidates CareerSessionService cache after save")
     void resetInjuries_invalidatesCache() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -775,7 +768,7 @@ class TestHarnessUseCaseImplTest {
 
     @Test
     @DisplayName("createCustom: invalidates cache (deleteCareer does it internally, "
-        + "plus resetInjuries after fix) (BUG #1)")
+        + "plus resetInjuries after fix)")
     void createCustom_invalidatesCache() {
         when(careerSessionService.deleteCareer(USER_ID))
             .thenReturn(Mono.empty());
@@ -798,8 +791,6 @@ class TestHarnessUseCaseImplTest {
         // contract "createCustom leaves the cache invalidated" is held.
         verify(careerSessionService, atLeastOnce()).invalidateCache(USER_ID);
     }
-
-    // ========== replayMatch (V24D20-SANDBOX-V2-MVP F5) ==========
 
     @Test
     @DisplayName("replayMatch: null matchId returns Mono.error")
@@ -828,7 +819,7 @@ class TestHarnessUseCaseImplTest {
 
     @Test
     @DisplayName("replayMatch: with seed override, fixture is reset, re-simulated, "
-        + "result updated, saved + cache invalidated (BUG #1 follow-through)")
+        + "result updated, saved + cache invalidated")
     void replayMatch_withSeedOverride_resetsAndResimulates() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -837,7 +828,6 @@ class TestHarnessUseCaseImplTest {
 
         // v24ContextFactory is the REAL factory (not mocked) — see setUp().
         // It builds a valid V24MatchContext from the career + fixture + teams,
-        // which lets V24DetailedMatchEngine.simulate() run end-to-end.
 
         // UseCase doesn't see the result of the simulation directly (the
         // engine runs internally). The match we control: the fixture's

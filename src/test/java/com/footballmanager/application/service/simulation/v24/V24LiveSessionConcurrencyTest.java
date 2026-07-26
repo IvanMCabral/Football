@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE F1 — Task B5 thread-safety test for {@link V24LiveSession}.
  *
  * <p>The RoundEngine scheduler ticks every 500ms; the
  * {@code SubstitutionController} receives POSTs from the WebFlux thread pool

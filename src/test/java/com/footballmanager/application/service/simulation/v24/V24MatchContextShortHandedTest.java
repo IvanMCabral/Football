@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V24D6U2: Engine-level tests for short-handed lineups.
  *
  * <p>Validates that V24MatchContext, V24MatchContextFactory, and
  * V24TeamMatchState accept lineups in {@code [MIN_AVAILABLE_PLAYERS, 11]}
@@ -99,8 +98,6 @@ class V24MatchContextShortHandedTest {
                 "Factory should pass through short-handed starting XI size " + homeCount);
         assertEquals(11, ctx.awayStartingPlayers().size());
     }
-
-    // ========== T5: V24DetailedMatchEngine simulates short-handed without crash ==========
 
     @Test
     void v24Engine_shortHanded_doesNotCrash() {

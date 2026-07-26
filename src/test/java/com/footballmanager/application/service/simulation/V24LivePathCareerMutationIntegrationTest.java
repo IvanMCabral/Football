@@ -24,16 +24,13 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6R-hotfix: Live-path career mutation coverage.
  *
- * <p>Before the V24D6R-hotfix, {@code LeagueSimulator.persistV24DetailForLiveMatch}
  * only saved V24 detail for stats and never mutated SessionPlayer. The smoke
  * test on the live UI/SSE flow exposed the gap: a player who got INJURY in a
  * match was still selectable in the next round's lineup because
  * {@code SessionPlayer.injured} remained {@code false}.
  *
  * <p>These tests exercise the live path directly via
- * {@code persistV24DetailForLiveMatch(career, v24Result, ...)} with active
  * mutation flags and verify the in-memory {@code CareerSave} is mutated. The
  * orchestrator's existing {@code careerSessionService.saveCareer} at end of
  * round persists the same instance, so subsequent squad/lineup reads see the
@@ -262,7 +259,6 @@ class V24LivePathCareerMutationIntegrationTest {
     /**
      * Creates a minimal career with the given healthy player in the HOME
      * starting XI. Includes a 1-fixture tournament state so the round lookup
-     * in persistV24DetailForLiveMatch succeeds.
      */
     private static CareerSave makeCareerWithHealthyPlayer(
             String homeTeamId, String awayTeamId,

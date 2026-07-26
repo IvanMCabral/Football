@@ -15,9 +15,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D34-F1: PLAYMAKER skill impact on assistQuality (engine-level).
  *
- * <p>Spec (V25D34 prompt, F1):
  * <ul>
  *   <li>PLAYMAKER skill del assist provider multiplica {@code assistQuality}
  *       por {@code (1 + skill/200)}. Se aplica DESPUES de calcular la
@@ -144,7 +142,6 @@ class V24DetailedMatchEnginePlaymakerTest {
     @Test
     void fullMatch_noPlaymakerSkill_preservesV25D33Baseline() {
         // Regression: sin PLAYMAKER en el dominio, el engine debe producir
-        // el MISMO resultado que V25D33 (bit-a-bit para los homeGoals/awayGoals
         // /shots/xG). Esta es la garantia de "no-op regression check" del prompt.
         V24MatchContext baseline = buildContextWithPlaymaker("no-playmaker", -1);  // sentinel: sin PLAYMAKER
 

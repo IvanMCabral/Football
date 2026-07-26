@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C55.3 B1 — Multi-league seed verification: each league has exactly
  * 60 teams after seed (extended from previous 16-27 via synthetic teams).
  *
  * <p>Verifies:
@@ -36,7 +35,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *
  * <p>Per-league division distribution (20 PRIMERA + 20 SEGUNDA + 20 TERCERA)
  * is verified in {@link com.footballmanager.application.service.season.MultiDivisionSeasonFlowIntegrationTest}
- * since it requires the V25D79 + V25D80 migrations to run (only in main profile).
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -70,7 +68,6 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
     void cleanRedisAndPostgres() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.3 B1: ensure league_id column exists (Flyway is disabled in test).
         databaseClient.sql("ALTER TABLE teams ADD COLUMN IF NOT EXISTS league_id UUID")
             .fetch().rowsUpdated().onErrorResume(e -> Mono.just(0L)).block();
         // Drop tables that may or may not exist (some legacy schemas don't have them).
@@ -110,7 +107,7 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.3 B1 #1: POST /world/seed/laliga returns 60 teams (was 20)")
+    @DisplayName("POST /world/seed/laliga returns 60 teams (was 20)")
     void seedLaLiga_b1_60teams() {
         webTestClient.mutateWith(mockUser(USER_ID.toString()))
             .post().uri(uriBuilder -> uriBuilder
@@ -125,7 +122,7 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.3 B1 #2: POST /world/seed/premier returns 60 teams (was 20)")
+    @DisplayName("POST /world/seed/premier returns 60 teams (was 20)")
     void seedPremier_b1_60teams() {
         webTestClient.mutateWith(mockUser(USER_ID.toString()))
             .post().uri(uriBuilder -> uriBuilder
@@ -140,9 +137,8 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.3 B1 #3: each of 10 leagues returns 60 teams after per-league seed")
+    @DisplayName("each of 10 leagues returns 60 teams after per-league seed")
     void seedAll_b1_600teams_total() {
-        // V25D78-C55.3 B1: each league must have 60 teams after seeding.
         // NOTE: We test per-league instead of seed-all because the latter
         // takes >5s in HTTP response (Spring WebClient default timeout) due
         // to ~9000 sequential player inserts. The per-league path is fast
@@ -162,7 +158,7 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.3 B1 #4: Postgres teams table has 600 rows after seeding all leagues")
+    @DisplayName("Postgres teams table has 600 rows after seeding all leagues")
     void postgres_teams_table_populated() {
         // Per-league seed for each league.
         for (String slug : ALL_LEAGUE_SLUGS) {
@@ -205,7 +201,6 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
             teamsPerLeague.put((UUID) arr[0], (Long) arr[1]);
         }
 
-        // V25D78-C55.3 B1: each league using WorldSeedService gets exactly 60 teams
         // with non-null league_id (verified by the totalCount query above).
         // NOTE: LaLiga uses the legacy LaLigaSeedService which does NOT populate
         // the Postgres teams table (only the in-memory WorldSnapshot). So we
@@ -220,7 +215,7 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.3 B1 #5: re-seeding doesn't add duplicates (idempotent)")
+    @DisplayName("re-seeding doesn't add duplicates (idempotent)")
     void seed_all_idempotent_b1() {
         // Per-league first seed.
         for (String slug : ALL_LEAGUE_SLUGS) {

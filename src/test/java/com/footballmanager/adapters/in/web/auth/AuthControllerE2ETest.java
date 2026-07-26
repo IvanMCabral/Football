@@ -16,7 +16,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7 FASE B — E2E HTTP coverage for {@link AuthController}.
  *
  * <p>Strategy: real {@code @SpringBootTest} against the isolated test DB.
  * Tests the actual {@code AuthUseCase} implementation, not a mock.
@@ -171,7 +170,6 @@ class AuthControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("GET /me — 200 with mocked user (filter chain permitAll on this path)")
     void me_authenticated_returns200() {
-        // V25D78-C55.4: pre-existing failure — the test used a hardcoded
         // UUID (00000000-0000-0000-0000-000000000001) and assumed that
         // user existed in the test DB. After C55.3 B1 dropped the legacy
         // seeded test fixtures (the football_manager_test dump only has

@@ -16,13 +16,10 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7+2.3 — E2E HTTP coverage for {@link PlayerSeasonStatsController}.
  *
  * <p>Strategy: real {@code @SpringBootTest} against the isolated test DB + Redis DB 15.
  * Three read-only GET endpoints under {@code /api/v1/careers}. No career-in-Redis required
- * (the controller queries V24DetailedMatchStoragePort by careerId directly).
  *
- * <p><b>Error shape contract (differs from V24D7+2.2):</b>
  * <ul>
  *   <li><b>400 from controller validation</b> (in-code, NOT GlobalExceptionHandler):
  *       {@code {"error": "..."}} — assert {@code $.error}, NOT {@code $.code}.</li>
@@ -63,8 +60,6 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanRedis() {
-        // V24D7+2.3: clear Redis between tests. The controller doesn't require
-        // a career in cache (queries V24DetailedMatchStoragePort by careerId directly),
         // but flushDb keeps the test environment deterministic.
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();

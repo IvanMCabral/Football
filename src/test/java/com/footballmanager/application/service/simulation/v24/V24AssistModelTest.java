@@ -12,7 +12,6 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D2: Tests for V24AssistModel.
  * Validates assist provider selection, probability computation,
  * exclusion rules, and deterministic behavior.
  */
@@ -267,7 +266,6 @@ class V24AssistModelTest {
         // Verify same candidate list with different seeds can give different results
         // mid1 weight=3.2, mid2 weight=2.0 in 4-3-3; with different seed patterns both should appear
         // We test variability by checking the selection changes when we use the same Random
-        // instance sequentially (which is how V24DetailedMatchEngine uses it - same Random across ticks)
         int count1 = 0, count2 = 0;
         Random sharedRandom = new Random(42);
         for (int seed = 1; seed <= 100; seed++) {

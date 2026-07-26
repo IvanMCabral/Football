@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6Q: Regression test for second-yellow → red card in same match.
  *
  * <p>Bug reproduced by smoke: a player with 2 yellows in the same match did NOT
  * have a RED_CARD event in the timeline, and playerRatings.redCards was 0.
@@ -18,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * AFTER addYellowCard() — so redCard() was always true and the guard never fired.
  *
  * <p>Fix: the engine now calls the package-private helper
- * {@link V24DetailedMatchEngine#applyYellowCardAndMaybeSecondYellowRed} which
  * captures the pre-yellow red state BEFORE addYellowCard() and uses it in the
  * guard.
  *

@@ -14,10 +14,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D67-C27 — Goal balance diagnostic + post-fix assertions.
- * V25D68-C28 — extended with intermedios scenarios (10%, 18%, 25% diff).
  *
- * <p>Extends the V24D6U4-RE diagnostic (see
  * {@link V24ModelTuningDiagnosticTest}) by running FIVE scenarios that
  * reflect the C27 + C28 tasks:
  *
@@ -44,14 +41,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *   <li>DESIGUALES avg total = 3.545 goals/match — top team dominated (93.5% wins)</li>
  * </ul>
  *
- * <p>Post-C27 (V25D67-C27 introduced the matchIntensity multiplier — see
- * {@link V24DetailedMatchEngine#computeMatchIntensity(double)}):
  * <ul>
  *   <li>PAREJOS avg total ≈ 1.795 goals/match (target hit, in [1.0, 2.0])</li>
  *   <li>PAREJOS P(total≥4) ≈ 8.5% (target hit, ≤ 25%)</li>
  *   <li>DESIGUALES avg total ≈ 3.545 goals/match (unchanged — intensity = 1.0
  *       for diff≥30% so the engine's natural randomness is preserved)</li>
- *   <li><b>INTERMEDIOS (REVISOR runtime, OVRs uncontrolled, 5-30% diff):
  *       avg ≈ 6.0 goals/match — intensity multiplier insufficient.</b></li>
  * </ul>
  *
@@ -78,7 +72,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
     // ========== PAREJOS scenario (Real Madrid vs Barcelona class) ==========
 
     @Test
-    @DisplayName("V25D67-C27 BASELINE: parejos (OVR 85×85, 4-3-3×4-3-3)")
+    @DisplayName("parejos (OVR 85×85, 4-3-3×4-3-3)")
     void measureBaseline_parejosOvr85x85_433() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -128,15 +122,11 @@ class V27GoalBalanceBaselineDiagnosticTest {
         );
     }
 
-    // ========== V25D68-C28 — INTERMEDIO scenarios (added for C28) ==========
-
     /**
-     * V25D68-C28 — INTERMEDIO-A (OVR 85 × OVR 75, 11.76% diff). Pre-C28
-     * baseline shows this scenario averages ~6 goals total per match (REVISOR
      * runtime data, 12 matches). Post-C28 target: avg [2.5, 4.0].
      */
     @Test
-    @DisplayName("V25D68-C28 BASELINE: intermedio-A (OVR 85×75, 4-3-3×4-3-3, 11.76% diff)")
+    @DisplayName("intermedio-A (OVR 85×75, 4-3-3×4-3-3, 11.76% diff)")
     void measureBaseline_intermedioA_Ovr85x75_433() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runIntermediateScenario(engine, "INTERMEDIO-A (OVR 85 × 75, 11.76% diff)",
@@ -144,11 +134,10 @@ class V27GoalBalanceBaselineDiagnosticTest {
     }
 
     /**
-     * V25D68-C28 — INTERMEDIO-B (OVR 85 × OVR 70, 17.65% diff). Pre-C28 baseline
      * ~6 avg. Post-C28 target: avg [2.5, 4.0].
      */
     @Test
-    @DisplayName("V25D68-C28 BASELINE: intermedio-B (OVR 85×70, 4-3-3×4-3-3, 17.65% diff)")
+    @DisplayName("intermedio-B (OVR 85×70, 4-3-3×4-3-3, 17.65% diff)")
     void measureBaseline_intermedioB_Ovr85x70_433() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runIntermediateScenario(engine, "INTERMEDIO-B (OVR 85 × 70, 17.65% diff)",
@@ -156,13 +145,12 @@ class V27GoalBalanceBaselineDiagnosticTest {
     }
 
     /**
-     * V25D68-C28 — INTERMEDIO-C (OVR 85 × OVR 65, 23.53% diff, near
      * desiguales threshold). Pre-C28 baseline ~6 avg. Post-C28 target: avg
      * [2.5, 4.0]. This is the hardest case — close to desiguales but
      * intensity should still be partial (interp at 23.53% = 0.766).
      */
     @Test
-    @DisplayName("V25D68-C28 BASELINE: intermedio-C (OVR 85×65, 4-3-3×4-3-3, 23.53% diff)")
+    @DisplayName("intermedio-C (OVR 85×65, 4-3-3×4-3-3, 23.53% diff)")
     void measureBaseline_intermedioC_Ovr85x65_433() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         runIntermediateScenario(engine, "INTERMEDIO-C (OVR 85 × 65, 23.53% diff)",
@@ -170,7 +158,6 @@ class V27GoalBalanceBaselineDiagnosticTest {
     }
 
     /**
-     * V25D68-C28 — shared helper for the three intermedios scenarios. Mirrors
      * the structure of {@link #measureBaseline_parejosOvr85x85_433()} but with
      * arbitrary OVRs and formation pairs.
      */
@@ -222,7 +209,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
         double avgAwayXg = totalAwayXg / N_SIMULATIONS;
 
         printHistogram(
-                title + " — current state (V25D68-C28 pre-fix measurement)",
+                title + " — current state",
                 N_SIMULATIONS, homeGoalsHist, awayGoalsHist, matchResultHist,
                 homeLambda, awayLambda, avgLambda,
                 avgHomeShots, avgAwayShots, avgHomeXg, avgAwayXg,
@@ -243,7 +230,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
     // ========== DESIGUALES scenario (top vs bottom) ==========
 
     @Test
-    @DisplayName("V25D67-C27 BASELINE: desiguales (OVR 90×60, 4-3-3×5-3-2)")
+    @DisplayName("desiguales (OVR 90×60, 4-3-3×5-3-2)")
     void measureBaseline_desigualesOvr90x60_433v532() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -307,10 +294,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
         System.out.println("------------------------------------------------------------");
     }
 
-    // ========== V25D67-C27 — post-fix assertions ==========
-
     /**
-     * V25D67-C27 — parejos avg total goals must be ~1.5 per Iván's brief.
      *
      * <p>Pre-fix baseline: avg total = 4.405 (3x the target).
      * Post-fix target: avg total in [1.0, 2.0]. Wide enough to absorb
@@ -318,7 +302,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
      * multiplier isn't doing its job.
      */
     @Test
-    @DisplayName("V25D67-C27 POST-FIX: parejos avg total goals in [1.0, 2.0]")
+    @DisplayName("parejos avg total goals in [1.0, 2.0]")
     void parejosAvgTotalGoals_inTargetBand() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -332,11 +316,10 @@ class V27GoalBalanceBaselineDiagnosticTest {
         double avgTotal = (double) totalGoals / N_SIMULATIONS;
 
         assertTrue(avgTotal >= 1.0 && avgTotal <= 2.0,
-                "V25D67-C27: parejos avg total goals must be in [1.0, 2.0]. Got: " + avgTotal);
+                "parejos avg total goals must be in [1.0, 2.0]. Got: " + avgTotal);
     }
 
     /**
-     * V25D67-C27 — parejos P(total≥4) must drop dramatically post-fix.
      *
      * <p>Pre-fix baseline: P(total≥4) = 61.5% (parejos matches often end as
      * goleadas — the C22 smoke observation was 4-0 for Real Madrid vs
@@ -344,7 +327,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
      * the exception, not the norm.
      */
     @Test
-    @DisplayName("V25D67-C27 POST-FIX: parejos P(total>=4) <= 25%")
+    @DisplayName("parejos P(total>=4) <= 25%")
     void parejosP4plus_inTargetBand() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -359,19 +342,17 @@ class V27GoalBalanceBaselineDiagnosticTest {
 
         double p4plus = (double) highScoring / N_SIMULATIONS;
         assertTrue(p4plus <= 0.25,
-                "V25D67-C27: parejos P(total>=4) must be <= 25%. Got: "
+                "parejos P(total>=4) must be <= 25%. Got: "
                         + (p4plus * 100) + "% (baseline was 61.5%)");
     }
 
     /**
-     * V25D67-C27 — desiguales matches should still be top-favored but with
      * the engine's natural variability preserved (lucky escapes, occasional
      * goleadas).
      *
      * <p>Pre-fix baseline: avg total = 3.55, top wins 93.5%, draw 5.5%,
      * bottom wins 1%. Post-fix target: avg total in [1.5, 4.5] (loose — Iván
      * said "variable (0-5+)" with "mode low (1-2)"). Top wins > 60%.
-     * V25D99.45 widens the upper edge from 4.5 to 4.6 to avoid a false
      * negative on N=200 sampling noise (observed 4.51) while still guarding
      * against returning to the old wild-goals profile.
      *
@@ -379,7 +360,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
      * verifies the desiguales path was NOT over-corrected.
      */
     @Test
-    @DisplayName("V25D67-C27 POST-FIX: desiguales avg total in [1.5, 4.5], top wins > 60%")
+    @DisplayName("desiguales avg total in [1.5, 4.5], top wins > 60%")
     void desigualesAvgTotalGoals_remainsRealistic() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -396,18 +377,14 @@ class V27GoalBalanceBaselineDiagnosticTest {
         double topWinRate = (double) topWins / N_SIMULATIONS;
 
         assertTrue(avgTotal >= 1.5 && avgTotal <= 4.6,
-                "V25D67-C27: desiguales avg total must be in [1.5, 4.6]. Got: " + avgTotal);
+                "desiguales avg total must be in [1.5, 4.6]. Got: " + avgTotal);
         assertTrue(topWinRate >= 0.60,
-                "V25D67-C27: desiguales top-team win rate must be >= 60%. Got: "
+                "desiguales top-team win rate must be >= 60%. Got: "
                         + (topWinRate * 100) + "% (baseline was 93.5%)");
     }
 
-    // ========== V25D68-C28 — NEW intermedios post-fix assertions ==========
-
     /**
-     * V25D68-C28 — intermedios must drop from pre-fix baseline (avg ~2.4-3.5)
      * to a lower band post-fix (avg ~1.4-3.1). The exact target band [2.5, 4.0]
-     * from the C28 brief is based on runtime observations (REVISOR saw
      * intermedios avg 6.0 in runtime due to skill amplification), not on
      * the diagnostic. In the diagnostic, the pre-fix intermedios are
      * already in [2.4, 3.5] (some BELOW the C28 target lower band 2.5),
@@ -420,7 +397,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
      * by 20-30%, bringing runtime to ~4.0-4.5.
      */
     @Test
-    @DisplayName("V25D68-C28 POST-FIX: intermedios A (OVR 85×75) avg total in [1.5, 4.0]")
+    @DisplayName("intermedios A (OVR 85×75) avg total in [1.5, 4.0]")
     void intermedioA_avgTotalGoals_inReducedBand() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -433,18 +410,17 @@ class V27GoalBalanceBaselineDiagnosticTest {
 
         double avgTotal = (double) totalGoals / N_SIMULATIONS;
 
-        // V25D68-C28: target band widened from [2.5, 4.0] to [1.5, 4.0]
         // because diagnostic pre-fix INTERMEDIO-A is already 2.375 (below
         // 2.5); any reduction drops it further. Runtime target band is
         // [2.5, 4.0] but that requires a 2x runtime baseline (skill
         // amplification) which is not captured in this deterministic
         // diagnostic.
         assertTrue(avgTotal >= 1.5 && avgTotal <= 4.0,
-                "V25D68-C28: INTERMEDIO-A avg total goals must be in [1.5, 4.0]. Got: " + avgTotal);
+                "INTERMEDIO-A avg total goals must be in [1.5, 4.0]. Got: " + avgTotal);
     }
 
     @Test
-    @DisplayName("V25D68-C28 POST-FIX: intermedios B (OVR 85×70) avg total in [1.5, 4.0]")
+    @DisplayName("intermedios B (OVR 85×70) avg total in [1.5, 4.0]")
     void intermedioB_avgTotalGoals_inReducedBand() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -458,11 +434,11 @@ class V27GoalBalanceBaselineDiagnosticTest {
         double avgTotal = (double) totalGoals / N_SIMULATIONS;
 
         assertTrue(avgTotal >= 1.5 && avgTotal <= 4.0,
-                "V25D68-C28: INTERMEDIO-B avg total goals must be in [1.5, 4.0]. Got: " + avgTotal);
+                "INTERMEDIO-B avg total goals must be in [1.5, 4.0]. Got: " + avgTotal);
     }
 
     @Test
-    @DisplayName("V25D68-C28 POST-FIX: intermedios C (OVR 85×65) avg total in [1.5, 4.0]")
+    @DisplayName("intermedios C (OVR 85×65) avg total in [1.5, 4.0]")
     void intermedioC_avgTotalGoals_inReducedBand() {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
 
@@ -476,7 +452,7 @@ class V27GoalBalanceBaselineDiagnosticTest {
         double avgTotal = (double) totalGoals / N_SIMULATIONS;
 
         assertTrue(avgTotal >= 1.5 && avgTotal <= 4.0,
-                "V25D68-C28: INTERMEDIO-C avg total goals must be in [1.5, 4.0]. Got: " + avgTotal);
+                "INTERMEDIO-C avg total goals must be in [1.5, 4.0]. Got: " + avgTotal);
     }
 
     // ========== Fixture helpers ==========
@@ -500,7 +476,6 @@ class V27GoalBalanceBaselineDiagnosticTest {
     }
 
     private List<SessionPlayer> makePlayers(String prefix, int count, int ovr) {
-        // V25D69-C29 FIX: use per-position attributes (NOT uniform OVR) so the
         // engine's key-attacker selection (strict >) picks the ATT (with attack
         // 90) instead of the first player (GK with uniform attack=ovr).
         // Without this fix, the GK is the "key attacker" and chanceProb never
@@ -534,7 +509,6 @@ class V27GoalBalanceBaselineDiagnosticTest {
     }
 
     /**
-     * V25D69-C29 FIX helper: per-position attribute profile. Mirrors V29d's
      * helper so V27 baseline uses the same realistic attribute distribution.
      * Order: attack, defense, technique, speed, stamina, mentality.
      */
@@ -549,7 +523,6 @@ class V27GoalBalanceBaselineDiagnosticTest {
     }
 
     /**
-     * V25D69-C29 FIX helper: lineup index → position. Layout matches 4-3-3:
      * index 0 = GK, indices 1-4 = DEF, indices 5-8 = MID, indices 9-10 = ATT.
      */
     private String positionForIndex(int index) {

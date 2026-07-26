@@ -9,9 +9,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D34-F2: MARKER skill impact on xG (1v1 marcaje reduction).
  *
- * <p>Spec (V25D34 prompt, F2):
  * <ul>
  *   <li>MARKER multiplica el xG por {@code (1 - skill/300)}. Modelo "avg
  *       defender skill" — el engine agrega MARKER entre los DEF on-pitch del
@@ -35,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *   </li>
  *   <li>No-op regression: overload 10-args delega al 11-args con
  *       {@code Map.of()} (sin defender skills) → MARKER no aplica, bit-a-bit
- *       identico a V25D33.</li>
  * </ul>
  */
 class V24ShotXgCalculatorMarkerTest {
@@ -247,8 +244,6 @@ class V24ShotXgCalculatorMarkerTest {
 
     @Test
     void overload10ArgsWithEmptyDefenderSkills_preservesV25D32Baseline() {
-        // V25D33 plumbing test: overload 10-args con shooterSkills vacios +
-        // WALL absent → bit-a-bit identico al 5-args (V25D32 baseline).
         // MARKER no aparece porque el 10-args delega al 11-args con Map.of().
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
 

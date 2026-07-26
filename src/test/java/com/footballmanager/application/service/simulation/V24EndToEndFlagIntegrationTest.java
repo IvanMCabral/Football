@@ -23,7 +23,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D5D: End-to-end flag integration tests for LeagueSimulator.
  *
  * <p>Validates all feature flag combinations across:
  * - use-v24-detailed-engine (V24 simulation path)
@@ -86,7 +85,6 @@ class V24EndToEndFlagIntegrationTest {
     void v24EnabledPersistDisabledProducesAggregateOnly() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=true, persistDetail=false
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, false, fakeStorage);
 
         CareerSave career = makeCareer(HOME2, AWAY2, HOME2, AWAY2, 11, 11);
@@ -110,13 +108,11 @@ class V24EndToEndFlagIntegrationTest {
 
     /**
      * V24 path + persistence enabled: storagePort.save(...) called once per successful V24 match.
-     * Validates V24DetailedMatchData.fromResult(...) path exercised.
      */
     @Test
     void v24EnabledPersistEnabledSavesDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=true, persistDetail=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, fakeStorage);
 
         CareerSave career = makeCareer(HOME3, AWAY3, HOME3, AWAY3, 11, 11);
@@ -140,13 +136,11 @@ class V24EndToEndFlagIntegrationTest {
 
     /**
      * persist-detail alone does nothing when V24 engine is not enabled.
-     * Flags are independent: persistDetail requires useV24DetailedEngine to trigger V24 path.
      */
     @Test
     void v24DisabledPersistEnabledDoesNotPersist() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=false, persistDetail=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false, true, fakeStorage);
 
         CareerSave career = makeCareer(HOME4, AWAY4, HOME4, AWAY4, 11, 11);
@@ -172,7 +166,6 @@ class V24EndToEndFlagIntegrationTest {
     void exposeDetailApiEnabledDoesNotTriggerSimulationOrPersistence() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=false, persistDetail=false, exposeDetailApi=true (passed to LeagueSimulator but unused in service)
         // LeagueSimulator does not consume exposeDetailApi at simulation level
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false, false, fakeStorage);
 
@@ -200,7 +193,6 @@ class V24EndToEndFlagIntegrationTest {
     void allFlagsTrueCompletesRoundAndPersistsDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=true, persistDetail=true
         // exposeDetailApi is read-side only (controlled at controller layer, not LeagueSimulator)
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, fakeStorage);
 
@@ -229,7 +221,6 @@ class V24EndToEndFlagIntegrationTest {
     void v24ContextFailureFallsBackAndDoesNotPersist() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=true, persistDetail=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, fakeStorage);
 
         // Career with no starting XI — context build will throw
@@ -271,7 +262,6 @@ class V24EndToEndFlagIntegrationTest {
     void detailSaveFailureDoesNotFailRound() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         ThrowingStoragePort throwingStorage = new ThrowingStoragePort();
-        // useV24DetailedEngine=true, persistDetail=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, throwingStorage);
 
         CareerSave career = makeCareer(HOME2, AWAY2, HOME2, AWAY2, 11, 11);
@@ -288,7 +278,6 @@ class V24EndToEndFlagIntegrationTest {
     // ========== Test 9: v24 takes precedence over v23 when both enabled ==========
 
     /**
-     * When both useV24DetailedEngine=true and useV23Engine=true, V24 path wins.
      * Flag precedence: V24 > V23 > default.
      * V23 engine path is not used.
      */
@@ -297,7 +286,6 @@ class V24EndToEndFlagIntegrationTest {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         MatchEngineImpl realEngine = new MatchEngineImpl();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV23Engine=true, useV24DetailedEngine=true, persistDetail=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, realEngine, true, true, true, fakeStorage);
 
         CareerSave career = makeCareer(HOME3, AWAY3, HOME3, AWAY3, 11, 11);
@@ -324,7 +312,6 @@ class V24EndToEndFlagIntegrationTest {
     void defaultFlagsRemainSafe() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // Single-arg constructor: useV24DetailedEngine=false, persistDetail=false
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false, false, fakeStorage);
 
         CareerSave career = makeCareer(HOME4, AWAY4, HOME4, AWAY4, 11, 11);
@@ -342,7 +329,6 @@ class V24EndToEndFlagIntegrationTest {
     // ========== Test 11: matchResultData schema still six fields ==========
 
     /**
-     * MatchFixture.MatchResultData schema is unchanged by V24D5 flags.
      * V24 path writes aggregate (goals, possession, shots) only.
      * No timeline, xG, or detail fields added to fixture result.
      */

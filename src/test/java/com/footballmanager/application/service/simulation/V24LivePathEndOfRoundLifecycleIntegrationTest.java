@@ -31,7 +31,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6R2 — Live-path end-of-round lifecycle decrement integration tests.
  *
  * <p>Exercises {@code LeagueSimulator.applyEndOfRoundLiveLifecycle} directly with
  * an in-memory {@link CareerSave} and a pre-populated {@link LiveRoundMutationTracking}.
@@ -176,7 +175,6 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
 
     @Test
     void participatedInjuredPlayer_doesNotRecover() {
-        // V24D6T2: this test now isolates the injury-decrement contract from the
         // suspension-decrement contract (the latter changed — see
         // preExistingSuspendedInParticipatedPlayerIds_decrementFires). A player
         // who is in preRoundInjuredPlayerIds but is also in participatedPlayerIds
@@ -300,8 +298,6 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
                 "In-place mutation must be visible via the same CareerSave reference");
     }
 
-    // ========== T-V24D6T2 (bug #7): suspended player in participatedPlayerIds still decrements ==========
-    // V24D6T2 fix: applyLiveMatchCareerMutations excludes currently-suspended
     // players from participatedPlayerIds accumulation. This test validates the
     // decrement fires for a pre-suspended player even when the participation
     // tracking would otherwise include them.
@@ -328,17 +324,14 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
         simulator.applyEndOfRoundLiveLifecycle(career, 1,
                 career.getTournamentState().getFixtures(), tracking);
 
-        // V24D6T2: even though participatedPlayerIds contains p1 (from V24
         // timeline events), the decrement still fires because suspended
         // players are excluded from participatedPlayerIds accumulation.
         assertFalse(p.getSuspended(),
-                "V24D6T2: suspended player in participatedPlayerIds must still decrement");
+                "suspended player in participatedPlayerIds must still decrement");
         assertEquals(0, p.getSuspensionRemainingMatches(),
-                "V24D6T2: remaining must be 0 even when in participatedPlayerIds");
+                "remaining must be 0 even when in participatedPlayerIds");
     }
 
-    // ========== T-V24D6T2 (bug #7): applyLiveMatchCareerMutations excludes suspended from participated ==========
-    // V24D6T2: directly exercises applyLiveMatchCareerMutations (now package-private
     // for testability) and asserts a suspended player appearing in the V24 timeline
     // does NOT end up in tracking.participatedPlayerIds. End-to-end decrement
     // behavior is covered by preExistingSuspendedInParticipatedPlayerIds_decrementFires
@@ -373,7 +366,7 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
             .homeGoals(2).awayGoals(0).homeXg(1.0).awayXg(0.0)
             .homeShots(5).awayShots(2).homePossession(60).awayPossession(40)
             .timeline(timeline)
-            .summary("V24D6T2: suspended in XI")
+            .summary("suspended in XI")
             .build();
 
         LeagueSimulator simulator = newSimulator(true, false, false, true, false);
@@ -381,14 +374,13 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
         // Call the package-private method directly.
         simulator.applyLiveMatchCareerMutations(career, v24Result, tracking);
 
-        // V24D6T2 assertion: suspended player must NOT be in participatedPlayerIds
         // (even though they appear in the V24 timeline as a goal scorer).
         assertFalse(tracking.participatedPlayerIds.contains(suspId),
-            "V24D6T2: suspended player must be excluded from participatedPlayerIds "
+            "suspended player must be excluded from participatedPlayerIds "
             + "(they are not actually on the pitch even if they appear in the XI)");
         // Healthy player SHOULD be in participatedPlayerIds.
         assertTrue(tracking.participatedPlayerIds.contains(healthyId),
-            "V24D6T2: healthy player who appears in timeline must be in participatedPlayerIds");
+            "healthy player who appears in timeline must be in participatedPlayerIds");
     }
 
     // ========== Helpers ==========
@@ -426,7 +418,6 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
                                                  boolean persistFatigue,
                                                  boolean persistDiscipline,
                                                  boolean persistForm) {
-        // V24 path engine and storage are required by persistV24DetailForLiveMatch,
         // but applyEndOfRoundLiveLifecycle does not call into them. Using fakes.
         return new LeagueSimulator(
                 new FakeMatchSimulator(),

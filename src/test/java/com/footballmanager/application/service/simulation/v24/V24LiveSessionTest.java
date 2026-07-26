@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE F2: unit tests for {@link V24LiveSession}.
  *
  * <p>The previous D1=B invariant (manual substitutions are UI-only and do
  * NOT alter the match result) was removed in F2. The replacement test
@@ -184,7 +183,6 @@ class V24LiveSessionTest {
 
         // F2 ASSERTION (inverse of the old D1=B contract): at least one of
         // homeGoals/awayGoals DIFFERS from the baseline OR the
-        // shot/xG cumulative totals differ (V25D67-C27 — the engine now
         // applies a matchIntensity multiplier to parejos scenarios, which
         // suppresses goals so both baseline and treatment runs may end 0-0
         // even when the swap affected the draw consumption). The F2 fixture
@@ -282,7 +280,6 @@ class V24LiveSessionTest {
     @Test
     @DisplayName("currentMinute and context accessors return the expected values")
     void accessors_returnExpectedValues() {
-        // V25D87 (F1 Option A): bounded simulate now processes only the
         // new minute each tick, so a single tick can land on a minute
         // where the engine loop emits zero engine events (no shot, no
         // foul, no corner). Tick 10 more times before the
@@ -392,7 +389,6 @@ class V24LiveSessionTest {
      * is a more sensitive measure of "the sub affected which player was
      * on the pitch" than homeGoals/awayGoals (see the rationale in
      * {@code earlyVsLateSubstitution_producesDifferentOutcomes} for why
-     * we cannot rely on goals with the current V24D6U4 tuning).
      */
     private long countEventsByActor(V24DetailedMatchResult result, String playerId) {
         return result.timeline().events().stream()
@@ -426,7 +422,6 @@ class V24LiveSessionTest {
             .orElse(-1);
     }
 
-    // ========== LIVE-MATCH-F2-LIVE — Fase 0 contract tests (now GREEN in F2) ==========
     //
     // These 4 tests document the contract that the engine refactor (Fase 1)
     // + the F2 wire MUST satisfy. They were RED in F0 because the engine
@@ -479,7 +474,6 @@ class V24LiveSessionTest {
         V24DetailedMatchResult subResult = subSession.finalResult();
 
         // ASSERT: at least one of homeGoals/awayGoals must differ OR shots/xG
-        // cumulatives must differ (V25D67-C27 — parejos matches often end
         // 0-0 post-C27 due to the matchIntensity multiplier, so a pure
         // goal-difference assertion is no longer reliable for the OVR=70
         // fixture). Comparing shots/xG is still a strong signal that the
@@ -587,7 +581,6 @@ class V24LiveSessionTest {
         // (1 minute of influence). The 88-minute delta is observable
         // in the SUBSTITUTION event's minute.
         //
-        // V24D6U4 tuning note (re-validated 2026-06-17 by Mavis root
         // analysis): the goal output is too sparse to test reliably
         // (chanceProbability=0.10, ~5 shots/team/match, ~7% conversion
         // => λ≈0.36 goals/team, P(0 goals)=70% per team, P(0-0)=49%
@@ -598,7 +591,6 @@ class V24LiveSessionTest {
         // event's minute matching the effectiveMinute), NOT "the sub
         // alters homeGoals" (that's the F2 contract, verified by
         // {@code recordManualSubstitution_altersResult_differentFromBaseline}).
-        // Recalibrating the V24D6U4 model to its stated λ=1.25 target
         // is a separate epic (NEXT.md ticket).
         //
         // F2.5 note: ATT→WINGER (position-compatible, higher-attack bench).
@@ -700,8 +692,6 @@ class V24LiveSessionTest {
             "Substitution: " + playerOnName + " on for " + playerOffName
         );
     }
-
-    // ========== LIVE-MATCH-F3-UI-LIVE BE1 — style/formation in snapshot ==========
 
     @Test
     @DisplayName("BE1: tick() snapshot exposes the effective style and formation per team")

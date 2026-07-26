@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * LIVE-MATCH-F2-LIVE F5 (B7): unit tests for the F5 mutators on
  * {@link V24PlayerMatchState}. Per the F5 spec section 5:
  * <ul>
  *   <li>{@code setPosition_null_throws} (B2)</li>

@@ -34,16 +34,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D22-FIX-FORMATION-IGNORED — E2E coverage gap closure.
  *
  * <p><b>Background (sprint investigation summary):</b>
  * <ul>
- *   <li>Sprint 1.7 wire-up of formation in shooter/assist/chanceCreated paths
- *       was complete (3 call sites in {@code V24DetailedMatchEngine.simulate}).</li>
  *   <li>4 OTHER call sites (foul, injury, corner, offside) were MISSING the
  *       {@code formation} arg — a cosmetic inconsistency, but no test had ever
  *       covered the {@code setFormation → replaceFixtures → replay → assert
- *       formation affected} flow end-to-end. The smoke REVISOR "IDÉNTICO al
  *       byte" symptom was an E2E coverage gap, not a code bug.</li>
  *   <li>B0 (this sprint): pass {@code formation} to the 4 missing call sites.</li>
  *   <li>B1 (this sprint): this E2E test that closes the coverage gap with the
@@ -55,9 +51,6 @@ import static org.mockito.Mockito.when;
  * Wire a real {@link CareerSave} with 11-man squads for both teams, drive the
  * full {@code setFormation + replay} flow through the real
  * {@link TestHarnessUseCaseImpl} → real {@link V24MatchContextFactory} →
- * real {@code V24DetailedMatchEngine.simulate}, and capture the persisted
- * {@link V24DetailedMatchData} via the mocked
- * {@link V24DetailedMatchStoragePort}.
  *
  * <p><b>Squad composition matters:</b> the formation-driven variation is
  * SUBTLE (~5% shooter shift per the investigation) and can be INDETECTABLE
@@ -92,7 +85,6 @@ class V24FormationIgnoredE2ETest {
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
-    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
     // resetRound() use case. Default `@Mock` returns false from
     // hasEngine, which is what these replay tests want (no live engine
     // to evict).
@@ -114,7 +106,6 @@ class V24FormationIgnoredE2ETest {
     // ========== Test 1 — formation change produces different result with same seed ==========
 
     /**
-     * V24D22-FIX-FORMATION-IGNORED — primary E2E assertion.
      *
      * <p>Iteration A: setFormation("4-3-3") + replay(seed=42) → resultA.
      * Iteration B: setFormation("4-4-2") + replay(seed=42) → resultB.
@@ -129,7 +120,6 @@ class V24FormationIgnoredE2ETest {
      *
      * <p>If this test fails, it indicates an ADDITIONAL bug beyond the B0
      * cosmetic fix — the V24 engine has other formation-ignoring paths the
-     * sprint 1.7 + V24D22 wire-ups missed. Per the sprint scope doc, that
      * requires escalating to MANAGER for a Fase 4 investigation.
      */
     @Test
@@ -156,7 +146,6 @@ class V24FormationIgnoredE2ETest {
     // ========== Test 2 — same formation + same seed produces identical result ==========
 
     /**
-     * V24D22-FIX-FORMATION-IGNORED — regression guard for BUG #1
      * (CareerSessionService cache invalidation after save). Without invalidation,
      * the second replay would read the stale in-memory CareerSave and either
      * crash or produce a different result.
@@ -174,7 +163,7 @@ class V24FormationIgnoredE2ETest {
      */
     @Test
     @DisplayName("setFormation(\"4-3-3\") + replay(seed=42) twice produces identical result "
-        + "(BUG #1 cache invalidation regression guard)")
+        + "")
     void setFormation_thenReplayWithSameSeed_secondTimeProducesIdenticalResult() {
         // First iteration
         V24DetailedMatchData resultA = replayWithFormation("4-3-3", SEED);
@@ -213,7 +202,6 @@ class V24FormationIgnoredE2ETest {
     // ========== Test 3 — formation variation surfaces within 25 seeds ==========
 
     /**
-     * V24D22-FIX-FORMATION-IGNORED — coverage for the subtle-variation case.
      *
      * <p>The investigation flagged that formation-driven variation is SUBTLE
      * (~5% shooter shift) and may be INDETECTABLE for a single seed when the
@@ -222,9 +210,7 @@ class V24FormationIgnoredE2ETest {
      * (xG or goals).
      *
      * <p>This mirrors the existing
-     * {@code V24DetailedMatchEngineFormationTest.changingFormationProducesDifferentOutcomeAcrossSeeds}
      * pattern but at the E2E flow level (through TestHarnessUseCaseImpl +
-     * V24MatchContextFactory + V24DetailedMatchEngine).
      */
     @Test
     @DisplayName("changingFormationProducesDifferentOutcomeAcrossSeeds: scan seeds 1..25, "
@@ -271,7 +257,6 @@ class V24FormationIgnoredE2ETest {
      * Builds a fresh CareerSave with the given formation on the user team,
      * drives the full setFormation + replayMatch flow through the real
      * {@link TestHarnessUseCaseImpl}, and captures the persisted
-     * {@link V24DetailedMatchData} via the mocked storage port.
      *
      * <p>Returns the captured detail (homeXg, awayXg, homeGoals, awayGoals,
      * homeShots, awayShots) so the test can assert on the actual V24 engine
@@ -289,7 +274,6 @@ class V24FormationIgnoredE2ETest {
 
         // setFormation persists to BOTH SessionTeam.formation AND
         // teamStarting11Formation map (the latter is what the V24 engine
-        // reads). Without BUG_FORMATION_PERSIST_IGNORED (sprint 1.7) this
         // is a no-op from the engine's perspective.
         useCase.setFormation(USER_ID, formation).block();
 

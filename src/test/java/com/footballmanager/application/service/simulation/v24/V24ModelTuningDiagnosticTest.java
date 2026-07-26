@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V24D6U4-RE: Diagnostic test for the V24 model's goal distribution.
  *
  * <p>Runs N simulations with seeds 1..N using a balanced context
  * (BALANCED × BALANCED, same overall rating for both teams) and reports:
@@ -25,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *   <li>Average shots and xG per team</li>
  * </ul>
  *
- * <p>Target distribution (per V24D6U4 ticket):
  * <ul>
  *   <li>λ ≈ 1.25 (mean goals per team)</li>
  *   <li>P(0) ≈ 29%, P(1) ≈ 36%, P(2) ≈ 22%, P(3+) ≈ 13%</li>
@@ -35,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>This test is BOTH a baseline measurement tool AND a regression
  * guardrail: assertions are wide (λ ∈ [0.9, 1.6] and P(0) ∈ [0.20, 0.40])
  * to avoid breaking when small params change, but tight enough to catch
- * the over-suppression that motivated V24D6U4-RE in the first place
  * (λ=0.36 / P(0)=70%).
  *
  * <p>Usage:
@@ -97,12 +94,8 @@ class V24ModelTuningDiagnosticTest {
                 homeLambda, awayLambda, avgLambda,
                 avgHomeShots, avgAwayShots, avgHomeXg, avgAwayXg);
 
-        // V25D67-C27 — recalibrated target band.
         //
-        // The V24D6U4-RE ticket targeted λ ∈ [0.9, 1.6] (target 1.25) for the
-        // balanced BALANCED × BALANCED scenario. The V25D67-C27 sprint
         // (match goal balance) introduced the matchIntensity multiplier in
-        // V24DetailedMatchEngine: when both teams have the same overall
         // (parejos, diff ratio ≤ 5%), intensity ≈ 0.40 → ~60% reduction in
         // per-shot goal-conversion probability. The realistic λ target for
         // this scenario is now ≈ 0.5 per team (~1.0 total), not 1.25.
@@ -118,7 +111,7 @@ class V24ModelTuningDiagnosticTest {
         // The new band [30%, 55%] absorbs this.
 
         assertTrue(avgLambda >= 0.3 && avgLambda <= 1.0,
-                "V25D67-C27: λ avg (parejos) must be in [0.3, 1.0] (target 0.5-0.9 depending on OVR). "
+                "λ avg (parejos) must be in [0.3, 1.0] (target 0.5-0.9 depending on OVR). "
                         + "Got: " + avgLambda
                         + " (home=" + homeLambda + ", away=" + awayLambda + ")");
 
@@ -129,7 +122,7 @@ class V24ModelTuningDiagnosticTest {
         double avgPZero = (homePZero + awayPZero) / 2.0;
 
         assertTrue(avgPZero >= 0.30 && avgPZero <= 0.75,
-                "V25D67-C27: P(0 goals/team) (parejos) must be in [30%, 75%]. "
+                "P(0 goals/team) (parejos) must be in [30%, 75%]. "
                         + "Got: " + avgPZero + " (home=" + homePZero + ", away=" + awayPZero + ")");
     }
 
@@ -245,8 +238,6 @@ class V24ModelTuningDiagnosticTest {
         System.out.println("============================================================");
     }
 
-    // ========== Fixture helpers (mirroring V24DetailedMatchEngineDeterminismTest) ==========
-
     private V24MatchContext buildContext(String matchId, int homeOvr, int awayOvr) {
         List<SessionPlayer> homeStart = makePlayers("home", 11, homeOvr);
         List<SessionPlayer> awayStart = makePlayers("away", 11, awayOvr);
@@ -259,7 +250,6 @@ class V24ModelTuningDiagnosticTest {
                 homeTeam, awayTeam,
                 homeStart, awayStart,
                 List.of(), List.of(),
-                // V25D27: formation default changed from 4-3-3 to 4-4-2 because
                 // 4-3-3 with statsAmp (OVR=75 → 1.125) pushes λ=1.67 above the
                 // 1.6 gate. 4-4-2 (mod=1.0, statsAmp=1.125 = 1.125) gives λ≈1.25
                 // which is the original tuning target.

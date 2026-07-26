@@ -9,9 +9,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D34-F2: TACKLER skill impact on xG (open-play tackles reduction).
  *
- * <p>Spec (V25D34 prompt, F2):
  * <ul>
  *   <li>TACKLER multiplica el xG por {@code (1 - skill/250)}. Modelo "avg
  *       defender skill" — el engine agrega TACKLER entre los DEF on-pitch
@@ -31,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *   <li>Absent/null TACKLER skill → multiplier = 1.0 (no change).</li>
  *   <li>No-op regression: overload 10-args delega al 11-args con
  *       {@code Map.of()} (sin defender skills) → TACKLER no aplica, bit-a-bit
- *       identico a V25D33.</li>
  * </ul>
  */
 class V24ShotXgCalculatorTacklerTest {
@@ -228,8 +225,6 @@ class V24ShotXgCalculatorTacklerTest {
 
     @Test
     void overload10Args_preservesV25D32Baseline() {
-        // V25D33 plumbing test: overload 10-args (sin defending skills)
-        // debe preservar baseline V25D32 — TACKLER no aparece.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
 
         double xg5 = calc.calculateXg(BASELINE_QUALITY, "4-3-3", "4-4-2", 70.0, 70.0);

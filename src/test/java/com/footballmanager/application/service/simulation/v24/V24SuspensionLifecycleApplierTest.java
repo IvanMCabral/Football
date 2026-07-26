@@ -11,7 +11,6 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6D6A: Unit tests for V24SuspensionLifecycleApplier.
  * Tests suspension lifecycle decrement in isolation — no Spring, no IO.
  */
 class V24SuspensionLifecycleApplierTest {
@@ -298,7 +297,6 @@ class V24SuspensionLifecycleApplierTest {
 
     @Test
     void participatedSuspendedPlayer_decrementedV24D6T2() {
-        // V24D6T2 (bug #7): a currently-suspended player cannot have actually
         // participated in the round even if their ID appears in participatedPlayerIds
         // (e.g. they were in the starting XI but did not play because of their
         // suspension). The suspension decrement MUST still fire in that case
@@ -319,7 +317,7 @@ class V24SuspensionLifecycleApplierTest {
                 set("p1"),  // tracker says participated, but p1 is suspended
                 pol);
 
-        assertEquals(1, result, "V24D6T2: suspended player in participatedPlayerIds still decrements");
+        assertEquals(1, result, "suspended player in participatedPlayerIds still decrements");
         assertFalse(p.getSuspended());
         assertEquals(0, p.getSuspensionRemainingMatches());
     }
@@ -418,7 +416,6 @@ class V24SuspensionLifecycleApplierTest {
 
     @Test
     void multiplePlayers_mixedEligibility_countsOnlyChanged() {
-        // V24D6T2 (bug #7): a currently-suspended player in participatedPlayerIds
         // is no longer treated as "actually played" — the tracker artifact must
         // not block the suspension decrement. So both p1 (eligible) and p2
         // (suspended + in participatedPlayerIds) decrement, while p3 (newly
@@ -445,7 +442,6 @@ class V24SuspensionLifecycleApplierTest {
         sp1.setSuspended(true);
         sp1.setSuspensionRemainingMatches(2);
 
-        // p2: suspended + in participatedPlayerIds (V24D6T2: tracker artifact,
         // decrement still fires)
         SessionPlayer sp2 = career.getSessionPlayer("p2");
         sp2.setSuspended(true);
@@ -476,12 +472,10 @@ class V24SuspensionLifecycleApplierTest {
                 set("p2"),  // participated (V24D6T2: artifact for suspended player)
                 pol);
 
-        // V24D6T2: p1 (eligible) AND p2 (suspended+participated-tracker) decrement = 2 total
         assertEquals(2, result);
         assertEquals(1, sp1.getSuspensionRemainingMatches());  // 2 → 1
         assertTrue(sp1.getSuspended());
 
-        // p2: V24D6T2 — tracker says participated but p2 is suspended → decrement fires
         assertFalse(sp2.getSuspended());
         assertEquals(0, sp2.getSuspensionRemainingMatches());
 

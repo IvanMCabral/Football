@@ -14,7 +14,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7 FASE C — E2E HTTP coverage for {@code CareerViewController}.
  *
  * <p>Strategy: real {@code @SpringBootTest} against the isolated test DB +
  * Redis DB 15. Exercises the read-only career endpoints. For users without

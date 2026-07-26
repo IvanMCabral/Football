@@ -19,7 +19,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * LIVE-MATCH-F5.3.4: E2E HTTP coverage for the new
  * {@code GET /api/v1/match-engine/matches/{matchId}/roundId} helper endpoint
  * in {@link MatchEngineController}.
  *
@@ -30,7 +29,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * minutes, so this endpoint is hit once per round.
  *
  * <p>Note: {@code /api/v1/match-engine/**} is {@code permitAll} in
- * {@code SecurityConfig} (V24D12-C-3), so the helper itself doesn't enforce
  * auth — the upstream controllers that consume the same path
  * ({@code streamRoundState}, {@code pauseMatch}, etc.) enforce auth
  * in-code where needed. The roundId is also not user-scoped (it's just a
@@ -54,7 +52,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("MatchEngineController — F5.3 roundId lookup helper (BUG-015)")
+@DisplayName("MatchEngineController — F5.3 roundId lookup helper")
 class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -72,7 +70,6 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void seedLaLiga() {
-        // V25D78-C55.5: seed LaLiga for SEED_USER_ID so seedTeamId/seedCareer
         // helpers find data. AbstractIntegrationTest.@BeforeEach already
         // cleaned Redis (flushDb + DELETE world tables).
         seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
@@ -116,7 +113,6 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
     }
 
     private String seedCareerAndGameId(String userId) {
-        // V25D78-C55.5: seed LaLiga for the random userId used by the test
         // (the auth principal in POST /games below is userId, so the
         // controller's BuildWorldView queries that user — which has no data
         // unless we seed it).

@@ -9,7 +9,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D24: Unit tests for {@link TimelineSnapshotBuilder}.
  *
  * <p>Covers the filter (event.minute &lt;= minute), the team attribution
  * (event.teamId equals detail.homeTeamId), and the four counter/aggregator

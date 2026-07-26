@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C55.6.1 — Regression test for the per-league division
  * distribution in {@code WorldTeam}. The C55.6 fix added the
  * {@code division} field but did not enforce the canonical 20/20/20
  * split per league; the FE smoke confirmed 60/0/0 (all PRIMERA) for
@@ -27,10 +26,8 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * <p>Root cause: both {@code LaLigaSeedService} and {@code WorldSeedService}
  * hardcoded {@link com.footballmanager.domain.model.valueobject.Division#defaultDivision()}
  * (=PRIMERA) at team create time. The C55.6 design deferred redistribution
- * to the V25D80 SQL migration, but the {@code BuildWorldViewUseCase} read
  * path returns the Redis {@code WorldSnapshot} verbatim — never queries
  * Postgres for division. Plus {@code LaLigaSeedService} never even calls
- * {@code persistTeamsInPostgres}, so V25D80 has no rows to redistribute.
  *
  * <p>This test exercises end-to-end:
  * <ol>
@@ -42,7 +39,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *       assert the per-league distribution is exactly 20/20/20.</li>
  * </ol>
  *
- * <p>Distribution logic: V25D80 SQL ranks teams by name within each league
  * (alphabetical), assigns top N/3 = PRIMERA, mid N/3 = SEGUNDA, last N/3 =
  * TERCERA. Java equivalent lives in {@code DivisionRankDistributor}.
  */
@@ -65,7 +61,6 @@ class WorldTeamDivisionDistributionE2ETest extends AbstractIntegrationTest {
         UUID.fromString("00000000-0000-0000-0000-00000000c561");
 
     /**
-     * V25D78-C55.5: setup common to both tests — clean Redis + Postgres world
      * tables (handled by {@link AbstractIntegrationTest#cleanRedis()}) and
      * seed LaLiga (LALIGA_ID = 4feeb9df-... is the hardcoded constant from
      * C55.4).
@@ -97,7 +92,7 @@ class WorldTeamDivisionDistributionE2ETest extends AbstractIntegrationTest {
         assertThat(teams).as("response must be a non-empty array").isNotNull();
         assertThat(teams.isArray()).as("response must be a JSON array").isTrue();
         assertThat(teams.size())
-            .as("LaLiga seed produces 60 teams (V25D78-C55.3 B1 contract)")
+            .as("LaLiga seed produces 60 teams")
             .isEqualTo(60);
 
         Map<String, Integer> distribution = countByDivision(teams);
@@ -152,7 +147,7 @@ class WorldTeamDivisionDistributionE2ETest extends AbstractIntegrationTest {
         assertThat(premierTeams.isArray()).as("Premier response must be a JSON array")
             .isTrue();
         assertThat(premierTeams.size())
-            .as("Premier seed produces 60 teams (V25D78-C55.1 contract)")
+            .as("Premier seed produces 60 teams")
             .isEqualTo(60);
 
         Map<String, Integer> distribution = countByDivision(premierTeams);

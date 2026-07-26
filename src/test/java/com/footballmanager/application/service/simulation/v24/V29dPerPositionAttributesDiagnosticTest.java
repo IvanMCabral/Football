@@ -17,7 +17,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D69-C29 Phase 1d: Per-position attributes fix (CRITICAL bug from Phase 1/1b/1c).
  *
  * <p>Phases 1, 1b, 1c all used uniform OVR for all 11 players (attack=ovr=85
  * for every player). The engine's key attacker selection uses STRICT inequality
@@ -226,7 +225,7 @@ class V29dPerPositionAttributesDiagnosticTest {
         // to >=2x of the no-skills baseline (5.14). This is the gap target
         // that runtime achieves (~6.5 / 2.57 = 2.5x).
         assertTrue(attAvg >= 2.0 * baselineNoSkills || couAvg >= 2.0 * baselineNoSkills,
-                "V25D69-C29 PHASE-1d: at least one style must amplify intermedios to >=2x of no-skills baseline (5.14). " +
+                "at least one style must amplify intermedios to >=2x of no-skills baseline (5.14). " +
                 "Got attRaw=" + attAvg + ", couRaw=" + couAvg + " (baseline=" + baselineNoSkills + ")");
     }
 

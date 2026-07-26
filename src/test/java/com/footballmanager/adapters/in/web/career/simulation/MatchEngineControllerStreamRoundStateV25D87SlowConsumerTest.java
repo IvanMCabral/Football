@@ -34,7 +34,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D87.1-TRANSPORT — Slow-consumer regression test for the SSE wire-up.
  *
  * <p>After F1+F2 ship, runtime smoke STILL drops to 1 event even though the
  * engine scheduler is alive (F2 fix works) and emits are happening

@@ -29,9 +29,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6R T1: End-to-end coverage for the second-yellow → red card discipline path.
  *
- * <p>Companion to {@link com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngineSecondYellowTest},
  * which proves the V24 engine emits the RED_CARD event when a player receives a
  * second yellow in the same match. This test proves the discipline mutation
  * applier correctly consumes those engine events and mutates SessionPlayer with
@@ -55,7 +53,6 @@ class V24SecondYellowDisciplineLifecycleIntegrationTest {
 
     /**
      * V24 engine emits [YELLOW_CARD, YELLOW_CARD, RED_CARD] for the same player
-     * in the same match (this is the V24D6Q fix in {@code V24DetailedMatchEngine}).
      * The discipline applier must consume those events and produce:
      * - yellowCards = 2 (two YELLOW_CARD events)
      * - redCards = 1 (one RED_CARD event)

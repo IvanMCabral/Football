@@ -8,14 +8,11 @@ import java.lang.reflect.Method;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D32: PlayerAttributes deprecation regression test.
  *
- * <p>Verifica que la deprecation de V25D31-F1 (heightCm + skillLevels duplicados
  * en PlayerAttributes) esta completa. Source of truth unico: {@link Player}.
  *
  * <p>Este test es deliberadamente reflectivo porque la deprecation es de SHAPE:
  * los campos/metodos no deben existir. Si alguien los re-introduce por copy-paste
- * de V25D31, este test lo flaggea.
  */
 class PlayerAttributesDeprecationTest {
 
@@ -100,7 +97,6 @@ class PlayerAttributesDeprecationTest {
 
     @Test
     void noHeightOrSkillBoundsConstants() {
-        // Bounds constants from V25D31 (MIN_HEIGHT_CM, MAX_HEIGHT_CM, MIN_SKILL_LEVEL,
         // MAX_SKILL_LEVEL) were only used by the deprecated setters — they must be gone.
         String[] forbiddenConstants = {
             "MIN_HEIGHT_CM", "MAX_HEIGHT_CM", "MIN_SKILL_LEVEL", "MAX_SKILL_LEVEL"

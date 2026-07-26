@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D25: Formation-specific xG modifier unit tests
- * (BUG_FORMATION_GOAL_NOOP fix — Option (a) formation-specific xG modifier).
  *
  * <p>Validates the {@code formationXgModifier} pipeline added to
  * {@link V24ShotXgCalculator#calculateXg(V24ShotQuality, String)}:
@@ -172,7 +170,6 @@ class V24ShotXgCalculatorFormationModifierTest {
     // ========== Test 7 — 3-4-3 is non-trivially different from baseline ==========
 
     /**
-     * V25D25.2 update: previously parameterized over all 5 locations with
      * threshold {@code > 0.001}, but the hasWingers modifier tightening
      * (0.10 → 0.07) makes the 3-4-3 vs 4-4-2 absolute difference at low-xG
      * locations (LONG_RANGE baseXg=0.02, OUTSIDE_BOX baseXg=0.04,

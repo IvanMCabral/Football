@@ -16,7 +16,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D70-C31 Phase 1e — Form validation diagnostic.
  *
  * <p><b>Why this exists:</b> V31d showed synthetic attrs alone produce 3.9% conversion
  * (NOT runtime 9.7%). But V31d's discovery was the shooterQuality formula in

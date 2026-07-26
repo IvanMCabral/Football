@@ -35,7 +35,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D6U2 — Short-handed lineup tests at the use-case layer.
  *
  * <p>Covers auto-select, manual-select, and confirmLineup with lineups
  * in [MIN, MAX] plus the failure cases (<MIN, >MAX, duplicates,
@@ -232,12 +231,9 @@ class LineupShortHandedTest {
         verify(careerSessionService).saveCareer(any());
     }
 
-    // ========== V25D59-C19 P0 T2: auto-select 10 available -> THROWS ==========
-
     @Test
     void autoSelect_10Available_throwsNotEnoughPlayers() {
         // Squad of 15, only 10 healthy available, 5 injured.
-        // V25D59-C19 P0: auto-select no longer produces 10-player lineups.
         // It throws NotEnoughPlayersException → controller maps to 422.
         List<SessionPlayer> squad = makeSquadWithAvailableCount(10, 15);
         CareerSave career = makeCareer(squad);
@@ -257,12 +253,9 @@ class LineupShortHandedTest {
         verify(careerSessionService, never()).saveCareer(any());
     }
 
-    // ========== V25D59-C19 P0 T3: auto-select 7 available -> THROWS ==========
-
     @Test
     void autoSelect_7Available_throwsNotEnoughPlayers() {
         // Squad of 15, only 7 healthy available, 8 injured.
-        // V25D59-C19 P0: same contract — auto-select requires 11.
         List<SessionPlayer> squad = makeSquadWithAvailableCount(7, 15);
         CareerSave career = makeCareer(squad);
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
@@ -294,7 +287,6 @@ class LineupShortHandedTest {
             .expectErrorSatisfies(err -> {
                 assertTrue(err instanceof NotEnoughPlayersException,
                     "Expected NotEnoughPlayersException, got " + err.getClass().getSimpleName());
-                // V25D59-C19 P0: threshold is 11 (TARGET_LINEUP_PLAYERS), not 7.
                 assertTrue(err.getMessage().contains("11"),
                     "Message should mention required 11, got: " + err.getMessage());
             })
@@ -303,11 +295,8 @@ class LineupShortHandedTest {
         verify(careerSessionService, never()).saveCareer(any());
     }
 
-    // ========== V25D59-C19 P0 T5: auto-select excludes injured/suspended AND throws on 9 ==========
-
     @Test
     void autoSelect_9Available_throwsNotEnoughPlayers_filtersInjuredSuspended() {
-        // V25D59-C19 P0: filtering (exclude injured/suspended) is unchanged, but
         // the auto-select contract is now "11 or throw". This test pins BOTH:
         // the filter happens (10 healthy - 1 suspended = 9 available) AND the
         // throw fires (9 < 11).
@@ -327,11 +316,8 @@ class LineupShortHandedTest {
         verify(careerSessionService, never()).saveCareer(any());
     }
 
-    // ========== V25D59-C19 P0 T6 (renamed): no GK fallback on a full squad ==========
-
     @Test
     void autoSelect_noGoalkeeper_fullSquad_returnsWarningAndElevenPlayers() {
-        // V25D59-C19 P0: full 11-player squad with NO natural GK in the position
         // column → algorithm picks the best-OVR outfielder as off-position GK
         // fallback and still returns an 11-player lineup. LINEUP_NO_GOALKEEPER
         // warning surfaces the tactical hit.
@@ -361,7 +347,7 @@ class LineupShortHandedTest {
             .assertNext(dto -> {
                 assertNotNull(dto);
                 assertEquals(11, dto.players().size(),
-                    "V25D59-C19 P0: auto-select must return 11 even without a natural GK");
+                    "auto-select must return 11 even without a natural GK");
                 assertNotNull(dto.warnings());
                 assertTrue(dto.warnings().stream()
                     .anyMatch(w -> LineupWarningDTO.CODE_NO_GOALKEEPER.equals(w.code())),
@@ -395,10 +381,8 @@ class LineupShortHandedTest {
         verify(careerSessionService).saveCareer(any());
     }
 
-    // ========== T-V24D6T2: manual-select 10 jugadores -> V24D6U2 short-handed path (no longer 400) ==========
     // Bug #3 (re-smoke): manual-select 10 jugadores retornaba 400 "Failed to read HTTP message"
     // porque LineupHelper tiraba IllegalArgumentException("Must select exactly 11 players")
-    // y el WebFlux decoder serializaba mal. V24D6U2 + bc85e2e fix liberan el rango 7-11,
     // y el GlobalExceptionHandler ahora mapea cualquier excepcion de dominio a 422.
 
     @Test
@@ -413,13 +397,12 @@ class LineupShortHandedTest {
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
-        // V24D6T2 expectation: success (not 400). Pre-V24D6U2 this would have
         // thrown IllegalArgumentException("Must select exactly 11 players") and
         // the WebFlux decoder serialized it as 400 "Failed to read HTTP message".
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
                 assertEquals(10, dto.players().size(),
-                    "10 players should be accepted (V24D6U2 short-handed flow)");
+                    "10 players should be accepted");
                 assertNotNull(dto.warnings());
                 assertTrue(dto.warnings().stream()
                     .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code())),
@@ -430,7 +413,6 @@ class LineupShortHandedTest {
         verify(careerSessionService).saveCareer(any());
     }
 
-    // ========== T-V24D6T2: manual-select with injured player -> 422 (no longer 500) ==========
     // Bug #4 (re-smoke): manual-select con lesionado retornaba 500 porque
     // LineupHelper.validatePlayerFitness tiraba IllegalArgumentException sin
     // handler. El GlobalExceptionHandler ahora lo mapea a 422 con code.
@@ -543,7 +525,6 @@ class LineupShortHandedTest {
             .verifyComplete();
     }
 
-    // ========== V25D61-C20.1 P0: short-handed manual-select slot map invariants ==========
     //
     // C20 P0 introduced an off-position fallback inside buildAutoSelectSlotMap that ran
     // unconditionally. The fallback over-fills slotMap when selectedPlayers.size() <
@@ -579,11 +560,11 @@ class LineupShortHandedTest {
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
                 assertEquals(7, dto.players().size(),
-                    "V25D61-C20.1: short-handed manual-select must accept 7 players");
+                    "short-handed manual-select must accept 7 players");
                 assertNotNull(dto.slots(),
-                    "V25D61-C20.1: slots list must not be null");
+                    "slots list must not be null");
                 assertEquals(7, dto.slots().size(),
-                    "V25D61-C20.1: slot count must equal helper-matched count (7), not "
+                    "slot count must equal helper-matched count (7), not "
                     + "formation.positions.size() (11) — the regression over-filled to 8");
             })
             .verifyComplete();
@@ -615,11 +596,11 @@ class LineupShortHandedTest {
                     .toList();
                 long distinct = playerIdsInSlots.stream().distinct().count();
                 assertEquals(playerIdsInSlots.size(), distinct,
-                    "V25D61-C20.1: no playerId may appear twice in persisted slots "
+                    "no playerId may appear twice in persisted slots "
                     + "(regression: 'Lewandowski aparece at BOTH S05-2 AND S16-2'). "
                     + "Got playerIds=" + playerIdsInSlots);
                 assertTrue(playerIdsInSlots.size() <= lineupIds.size(),
-                    "V25D61-C20.1: slot count must not exceed lineup size ("
+                    "slot count must not exceed lineup size ("
                     + lineupIds.size() + "), got " + playerIdsInSlots.size());
             })
             .verifyComplete();
@@ -657,7 +638,7 @@ class LineupShortHandedTest {
                 List<String> expectedUnfilled = List.of("S05-2", "S05-3", "S17-2", "S18-3");
                 for (String unfilled : expectedUnfilled) {
                     assertFalse(filledSubdivisions.contains(unfilled),
-                        "V25D61-C20.1: subdivision " + unfilled
+                        "subdivision " + unfilled
                         + " must have NO entry for short-handed 7-player lineup "
                         + "(no attacker / extra midfielder to fill it). Got subdivisions="
                         + filledSubdivisions);
@@ -687,9 +668,9 @@ class LineupShortHandedTest {
                 assertEquals(11, dto.players().size(),
                     "Full squad auto-select must still return 11 players");
                 assertNotNull(dto.slots(),
-                    "V25D61-C20.1: slots list must not be null");
+                    "slots list must not be null");
                 assertEquals(11, dto.slots().size(),
-                    "V25D61-C20.1: auto-select full squad must persist 11 slots "
+                    "auto-select full squad must persist 11 slots "
                     + "(C20 P0 fallback contract preserved for auto-select path)");
                 // No duplicates either
                 long distinct = dto.slots().stream()
@@ -697,7 +678,7 @@ class LineupShortHandedTest {
                     .distinct()
                     .count();
                 assertEquals(11L, distinct,
-                    "V25D61-C20.1: 11 slots must have 11 distinct playerIds "
+                    "11 slots must have 11 distinct playerIds "
                     + "(off-position fallback assigned unused players, but each exactly once)");
             })
             .verifyComplete();

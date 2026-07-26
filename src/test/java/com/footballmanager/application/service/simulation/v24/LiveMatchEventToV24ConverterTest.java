@@ -17,7 +17,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6M10: Tests for LiveMatchEventToV24Converter.
  *
  * <p>Tests conversion of live SSE entity.MatchEvent to V24MatchEvent
  * with player attribution via squad lookup.
@@ -324,7 +323,6 @@ class LiveMatchEventToV24ConverterTest {
         assertEquals(HOME, v24Event.teamId());
         assertNotNull(v24Event.playerId());
         assertFalse(v24Event.playerId().isBlank());
-        // V24D6M10: playerName should be the REAL squad name, not "Jugador local"
         assertFalse("Jugador local".equals(v24Event.playerName()),
                 "playerName should be real, not generic 'Jugador local': " + v24Event.playerName());
         assertEquals(0.0, v24Event.xg()); // MVP: no invented xG
@@ -355,7 +353,6 @@ class LiveMatchEventToV24ConverterTest {
         assertEquals(AWAY, v24Event.teamId());
         assertNotNull(v24Event.playerId());
         assertFalse(v24Event.playerId().isBlank());
-        // V24D6M10: playerName should be the REAL squad name, not "Jugador visitante"
         assertFalse("Jugador visitante".equals(v24Event.playerName()),
                 "playerName should be real, not generic 'Jugador visitante': " + v24Event.playerName());
     }

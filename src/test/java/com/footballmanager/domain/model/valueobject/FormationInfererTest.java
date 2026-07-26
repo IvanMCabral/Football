@@ -11,7 +11,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D47 (Sprint C11a): unit tests for {@link FormationInferer}.
  *
  * <p>Coverage:
  * <ul>
@@ -136,8 +135,6 @@ class FormationInfererTest {
         // Total after filter = 0, no GK → default
         assertEquals("4-4-2", FormationInferer.infer(garbage));
     }
-
-    // ========== V25D55 (Sprint C16): persisted-formation overload ==========
 
     @Test
     @DisplayName("infer(slots, persisted): persisted 3-5-2-CDM wins over slots")

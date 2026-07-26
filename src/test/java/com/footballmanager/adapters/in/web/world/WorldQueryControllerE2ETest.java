@@ -15,7 +15,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7 FASE B — E2E HTTP coverage for {@link WorldQueryController}.
  *
  * <p>Strategy: real {@code @SpringBootTest} against the seeded test DB.
  * No mocks — exercises the full stack (controller → use case → repo → R2DBC).

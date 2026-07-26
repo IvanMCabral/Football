@@ -9,10 +9,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D33-F1: HEADER skill impact on xG (corners + crosses) — unit test on
  * {@link V24ShotXgCalculator#calculateXg} overload 10-args.
  *
- * <p>Spec (V25D33 prompt, F1):
  * <ul>
  *   <li>HEADER multiplier = {@code 1.0 + (skill / 200.0)}</li>
  *   <li>HEADER=0 → ×1.0 (no change)</li>
@@ -26,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>Regression checks:
  * <ul>
  *   <li>9-args overload (with skills passed) + OPEN_PLAY implicit default
- *       → identical result to legacy 5-args (V25D32 plumbing preserved).</li>
  *   <li>10-args with OPEN_PLAY + non-zero HEADER → identical to 5-args baseline
  *       (HEADER gating works).</li>
  * </ul>
@@ -154,7 +151,6 @@ class V24ShotXgCalculatorHeaderTest {
     @Test
     void header80_onOpenPlay_xgEqualsBaseline() {
         // Regression: HEADER NO debe aplicar en OPEN_PLAY. Esta es la garantia
-        // de backward compat con V25D32 — todos los shots de V25D32 son
         // implicitamente OPEN_PLAY y deben quedar identicos.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
         double baseline = baselineXg(calc);
@@ -184,11 +180,8 @@ class V24ShotXgCalculatorHeaderTest {
                 "HEADER=99 en OPEN_PLAY debe dar baseline (sin multiplier)");
     }
 
-    // ========== Regression: 9-args y 5-args preservan resultado V25D32 ==========
-
     @Test
     void overload9ArgsWithHeaderSkillAndOpenPlay_preservesV25D32Baseline() {
-        // V25D32 plumbing test: pasar HEADER=99 por el 9-args overload debe
         // dar el MISMO resultado que el 5-args (sin skills) — porque el
         // 9-args delega al 10-args con OPEN_PLAY default (HEADER gated off).
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
@@ -204,8 +197,6 @@ class V24ShotXgCalculatorHeaderTest {
 
     @Test
     void overload9ArgsWithCornerAndNoHeader_preservesV25D32Baseline() {
-        // V25D33-F1: si pasamos eventSubType=CORNER pero sin HEADER skill,
-        // el multiplier = 1.0 → mismo resultado que V25D32. Esto confirma
         // que el branch CORNER esta bien gateado (no afecta si no hay skill).
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
 
@@ -264,7 +255,6 @@ class V24ShotXgCalculatorHeaderTest {
     @Test
     void multipleSkillsOnlyHeaderAppliesOnCorner() {
         // SHOOTER/DRIBBLER/SPEEDSTER presentes pero no implementados en F1
-        // (F2/F3/V25D34). Solo HEADER debe afectar en CORNER — los otros
         // skills deben ser ignorados por ahora.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
         double baseline = baselineXg(calc);

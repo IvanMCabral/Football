@@ -17,7 +17,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D70-C31 Phase 1b — Per-shot layer diagnostic (possession + shot location + xG).
  *
  * <p><b>Why this exists:</b> V31a Phase 1 showed that diagnostic intermedios avg
  * with skills ON is <b>2.153</b> while runtime (C30 smoke) is <b>5.45</b> — a 2.531x gap.
@@ -39,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *   <li><b>Conversion rate</b> (goals per shot) — does runtime convert more
  *       efficiently than the diagnostic xG would predict?</li>
  *   <li><b>LONG_RANGE rate</b> (% of shots that are LONG_RANGE) — isolates the
- *       V25D34-F1 SHOOTER bonus impact (+36% xG on LONG_RANGE).</li>
  * </ol>
  *
  * <p><b>Setup:</b> identical to V31a — per-position attrs scaled by team_ovr/85, plus
@@ -140,12 +138,10 @@ class V31bPerShotLayerDiagnosticTest {
     // ========== Phase 1b summary: layer attribution ==========
 
     /**
-     * V25D70-C31 Phase 1b summary: aggregates per-layer metrics across intermedios
      * scenarios (A/B/C × N=200) and identifies the layer with the largest deviation
      * from the runtime-implied level. The goal is to pinpoint the layer that
      * amplifies runtime vs diagnostic.
      *
-     * <p>Runtime-implied levels (from REVISOR C30 smoke report):
      * <ul>
      *   <li>Intermedios total avg: 5.45 goals/match</li>
      *   <li>Desiguales total avg: ~10.1 goals/match</li>
@@ -190,7 +186,6 @@ class V31bPerShotLayerDiagnosticTest {
         avg.attributeGapToLayers(des, 5.45, 2.153);
 
         // Sanity: V31b diagnostic intermedios avg should be in a realistic range
-        // [0.5, 6.0] for intermedios (skills ON, per-pos attrs). V25D70-C31
         // Phase 2 changed formationOffensiveModifier / formationDefensiveModifier
         // statsAmp coefficient (0.025 → 0.012) and added a ratio cap (max 2.0),
         // so the exact V31a reference 2.153 is no longer the post-fix baseline.

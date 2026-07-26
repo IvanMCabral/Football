@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D6R T4: Manual lineup selection rejects suspended / injured players.
  *
  * <p>The helper-level rejection is already covered by
  * {@code LineupBlockingTest} (10 tests against

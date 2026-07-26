@@ -9,7 +9,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6B2: Unit tests for V24CareerMutationService and V24CareerMutationResult.
  * Tests mutation orchestration in isolation — no Spring, no Redis, no IO.
  */
 class V24CareerMutationServiceTest {
@@ -323,8 +322,6 @@ class V24CareerMutationServiceTest {
         assertNotNull(res);
     }
 
-    // ========== Fatigue orchestration tests (V24D6C2) ==========
-
     @Test
     void fatigueFlagTrue_appliesFatigueAndReportsFatigueAppliedCount() {
         CareerSave career = careerWithPlayer("p1");
@@ -587,8 +584,6 @@ class V24CareerMutationServiceTest {
         assertEquals(88, career.getSessionPlayer("p1").getEnergy());
     }
 
-    // ========== V24D6F1: Policy + Orchestration Regression Tests ==========
-
     @Test
     void masterFalse_plusInjuryAndFatigueBothTrue_appliesNothing() {
         CareerSave career = careerWithPlayer("p1");
@@ -714,8 +709,6 @@ class V24CareerMutationServiceTest {
         messages.add("Extra error");
         assertEquals(2, r.failures().size(), "Failures list must be defensive copy");
     }
-
-    // ========== V24D6D4 Discipline orchestration tests ==========
 
     @Test
     void persistDisciplineEnabled_callsDisciplineApplier() {
@@ -863,8 +856,6 @@ class V24CareerMutationServiceTest {
         assertEquals(0, r.formApplied());
         assertTrue(r.failures().isEmpty());
     }
-
-    // ========== V24D6H3 Yellow-threshold regression tests ==========
 
     /**
      * 1. thresholdContributesToDisciplineAppliedCount_orDocumentedCountSemantics
@@ -1056,8 +1047,6 @@ class V24CareerMutationServiceTest {
         assertFalse(r.partialFailure()); // no mutation succeeded
     }
 
-    // ========== V24D6E3 Form orchestration tests ==========
-
     @Test
     void persistFormEnabled_callsFormApplier() {
         // p1 in starting XI with a goal -> rating 6.8 -> delta +1 -> form 51
@@ -1113,7 +1102,6 @@ class V24CareerMutationServiceTest {
     }
 
     /**
-     * DEFERRED (V24D6E3): formFailure_doesNotEraseInjuryFatigueDisciplineSuccess
      *
      * V24FormMutationApplier is final — cannot be stubbed via anonymous subclass.
      * Real applier always succeeds with valid inputs (no failure path to trigger).

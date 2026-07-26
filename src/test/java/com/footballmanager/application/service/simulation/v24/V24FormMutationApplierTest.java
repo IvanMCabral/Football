@@ -9,7 +9,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6E2: Unit tests for V24FormMutationApplier.
  * Tests form mutation behavior in isolation — no Redis, no Spring, no IO.
  *
  * The applier delegates to V24PlayerRatingsAssembler which computes ratings

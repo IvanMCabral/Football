@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D5F: Tests for V24PlayerRatingsAssembler and playerRatings persistence.
  *
  * <p>Coverage:
  * 1.  assemblePlayerRatings produces non-empty list when starting XI exists

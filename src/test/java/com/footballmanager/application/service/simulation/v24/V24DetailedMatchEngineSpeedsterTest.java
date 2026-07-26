@@ -9,9 +9,7 @@ import java.lang.reflect.Method;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D34-F3: SPEEDSTER skill impact on chanceProbability (counter-attack bonus).
  *
- * <p>Spec (V25D34 prompt, F3):
  * <ul>
  *   <li>SPEEDSTER amplifica keySpeed SOLO cuando {@code style == COUNTER}.
  *       Formula: {@code effectiveSpeed = possessorSpeed + speedsterSkill / 3}.
@@ -126,7 +124,6 @@ class V24DetailedMatchEngineSpeedsterTest {
     void chanceProb_speedsterComposesWithDribbler() throws Exception {
         // SPEEDSTER (effectiveSpeed bonus) y DRIBBLER (multiplicador) ambos
         // aplican en COUNTER. Compounding multiplicativo.
-        // V25D99.25 softened DRIBBLER volume so it complements xG/duels
         // instead of dominating attempts. DRIBBLER=50 → multiplier 1.083.
         // SPEEDSTER=92 → multiplier 1.30 (int div). Combined: 1.083 * 1.30.
         double baseline = invokeChanceProb6(TeamStyle.COUNTER, 30, 70, 70, 0, 0);
@@ -214,7 +211,6 @@ class V24DetailedMatchEngineSpeedsterTest {
     @Test
     void fullMatch_noSpeedsterSkill_preservesV25D33Baseline() {
         // Regression: sin SPEEDSTER en el dominio, el engine debe producir
-        // el MISMO resultado que V25D33 (bit-a-bit para los homeGoals/awayGoals
         // /shots/xG con COUNTER style).
         V24MatchContext baseline = buildContextWithSpeedster("no-speedster", TeamStyle.COUNTER, -1);
 
@@ -233,7 +229,6 @@ class V24DetailedMatchEngineSpeedsterTest {
 
     /**
      * Reflection para invocar el overload 5-args de chanceProbability (legacy
-     * V25D33-F2). Usado para verificar que el overload 6-args con
      * speedsterSkill=0 produce el mismo resultado.
      */
     private double invokeChanceProb5(TeamStyle style, int minute, int attack,
@@ -244,10 +239,6 @@ class V24DetailedMatchEngineSpeedsterTest {
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         return (double) m.invoke(engine, style, minute, attack, speed, dribbler);
     }
-
-    /**
-     * Reflection para invocar el overload 6-args de chanceProbability (V25D34-F3).
-     */
     private double invokeChanceProb6(TeamStyle style, int minute, int attack,
                                      int speed, int dribbler, int speedster) throws Exception {
         Method m = V24DetailedMatchEngine.class.getDeclaredMethod(

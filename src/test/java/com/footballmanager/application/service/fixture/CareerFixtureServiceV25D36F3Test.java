@@ -24,7 +24,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D36-F3: tests para los guards defensivos en CareerFixtureService.
  *
  * <p>El bug original reportado: "Real Madrid vs Real Madrid" en el fixture del
  * career, con el mismo teamId apareciendo como home y away. Sin poder
@@ -61,7 +60,7 @@ class CareerFixtureServiceV25D36F3Test {
     }
 
     @Test
-    @DisplayName("V25D36-F3: deduplica teamIds duplicados antes de generar fixture")
+    @DisplayName("deduplica teamIds duplicados antes de generar fixture")
     void deduplicatesDuplicateTeamIds() {
         // GIVEN: division con teamId "A" duplicado
         Division division = new Division("Division 1", 1);
@@ -98,7 +97,7 @@ class CareerFixtureServiceV25D36F3Test {
         // THEN 1: el generator recibió exactamente 3 teamIds (dedup exitoso)
         List<TeamId> passedToGenerator = captor.getValue();
         assertEquals(3, passedToGenerator.size(),
-            "V25D36-F3 dedup: el generator debe recibir 3 teamIds unicos, got=" + passedToGenerator.size());
+            "el generator debe recibir 3 teamIds unicos, got=" + passedToGenerator.size());
 
         // THEN 2: los 3 teamIds únicos son exactamente teamA, teamB, teamC
         java.util.Set<String> uniqueIdsPassed = new java.util.HashSet<>();
@@ -107,7 +106,7 @@ class CareerFixtureServiceV25D36F3Test {
         }
         java.util.Set<String> expectedUnique = new java.util.HashSet<>(Arrays.asList(teamA, teamB, teamC));
         assertEquals(expectedUnique, uniqueIdsPassed,
-            "V25D36-F3 dedup: el generator debe recibir exactamente {A, B, C}");
+            "el generator debe recibir exactamente {A, B, C}");
 
         // THEN 3: el fixture generado tiene home != away y ambos vienen del set dedup
         assertEquals(1, fixtures.size());
@@ -120,7 +119,7 @@ class CareerFixtureServiceV25D36F3Test {
     }
 
     @Test
-    @DisplayName("V25D36-F3: skip null y blank teamIds sin romper")
+    @DisplayName("skip null y blank teamIds sin romper")
     void skipsNullAndBlankTeamIds() {
         Division division = new Division("Division 1", 1);
         String teamA = UUID.randomUUID().toString();
@@ -164,7 +163,7 @@ class CareerFixtureServiceV25D36F3Test {
         }
         java.util.Set<String> expected = new java.util.HashSet<>(Arrays.asList(teamA, teamB));
         assertEquals(expected, uniqueIdsPassed,
-            "V25D36-F3: solo A y B deberían llegar al generator");
+            "solo A y B deberían llegar al generator");
 
         // El fixture generado tiene home y away del set dedup, distintos entre sí
         assertEquals(1, fixtures.size());
@@ -175,7 +174,7 @@ class CareerFixtureServiceV25D36F3Test {
     }
 
     @Test
-    @DisplayName("V25D36-F3: skipea MatchSlot con home==away (defense in depth)")
+    @DisplayName("skipea MatchSlot con home==away (defense in depth)")
     void skipsSelfPairingSlot() {
         Division division = new Division("Division 1", 1);
         String teamA = UUID.randomUUID().toString();
@@ -206,7 +205,7 @@ class CareerFixtureServiceV25D36F3Test {
     }
 
     @Test
-    @DisplayName("V25D36-F3: caso normal 4 teams genera 6 fixtures (3 ida + 3 vuelta), sin self-pair")
+    @DisplayName("caso normal 4 teams genera 6 fixtures (3 ida + 3 vuelta), sin self-pair")
     void normalCaseNoSelfPair() {
         Division division = new Division("Division 1", 1);
         List<String> teamIds = List.of(

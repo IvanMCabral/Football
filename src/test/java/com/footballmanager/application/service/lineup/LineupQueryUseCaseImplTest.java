@@ -38,7 +38,6 @@ import static org.mockito.Mockito.when;
  *
  * <p>Antes del sprint 1.6, {@code buildLineupDTO} computaba formation con
  * {@code lineupHelper.inferFormation(lineup)} (cuenta DEF/MID/ATT de la lineup
- * persistida). Esto causaba BUG_FORMATION_NOT_PERSISTED cuando el usuario
  * cambiaba formación sin reasignar jugadores.
  *
  * <p>F3 introdujo {@code teamStarting11Formation} en {@link CareerSave} y un método
@@ -60,7 +59,6 @@ class LineupQueryUseCaseImplTest {
     @BeforeEach
     void setUp() {
         lineupHelper = new LineupHelper();
-        // V25D99.16-BACK: FormationService provides per-subdivision xPct
         // /yPct. Tests don't care about coords, but the constructor now
         // requires it (real coord lookup happens via the service's
         // FormationDTO cache). Null would NPE; pass a real instance
@@ -197,7 +195,7 @@ class LineupQueryUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("V25D99.298: getCurrentLineup filtra slots stale/duplicados y devuelve maximo 11")
+    @DisplayName("getCurrentLineup filtra slots stale/duplicados y devuelve maximo 11")
     void getCurrentLineup_filtersStaleAndDuplicatedPersistedSlots() {
         List<SessionPlayer> squad442 = List.of(
             makeHealthy("gk-clean", "GK Clean", "GK"),
@@ -299,7 +297,6 @@ class LineupQueryUseCaseImplTest {
     }
 
     /**
-     * V25D65-C25 P0 (Test 3): si el lineup persistido tiene menos de 11 players
      * (manual-select short-handed mode, 7-10 players), getCurrentLineup debe
      * retornar un warning LINEUP_SHORT_HANDED en el response.
      *
@@ -307,7 +304,7 @@ class LineupQueryUseCaseImplTest {
      * "Lineup short-handed" desaparecía al recargar /squad.
      */
     @Test
-    @DisplayName("V25D65-C25 P0: getCurrentLineup retorna LINEUP_SHORT_HANDED si lineup tiene < 11 players")
+    @DisplayName("getCurrentLineup retorna LINEUP_SHORT_HANDED si lineup tiene < 11 players")
     void getCurrentLineup_returnsShortHandedWarning_whenLineupLessThan11() {
         // Squad 4-4-2 reducido a 8 players (short-handed manual mode)
         List<SessionPlayer> squadSh = new ArrayList<>(List.of(
@@ -334,38 +331,36 @@ class LineupQueryUseCaseImplTest {
         StepVerifier.create(useCase.getCurrentLineup(UUID.fromString(USER_ID)))
             .assertNext(dto -> {
                 assertNotNull(dto);
-                assertNotNull(dto.warnings(), "V25D65-C25: warnings no debe ser null en el response");
+                assertNotNull(dto.warnings(), "warnings no debe ser null en el response");
                 assertEquals(8, dto.players().size(), "lineup persistido tiene 8 players");
                 // Verificar que LINEUP_SHORT_HANDED está presente
                 boolean hasShortHanded = dto.warnings().stream()
                     .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()));
                 assertTrue(hasShortHanded,
-                    "V25D65-C25: lineup con 8 players debe emitir LINEUP_SHORT_HANDED warning, "
+                    "lineup con 8 players debe emitir LINEUP_SHORT_HANDED warning, "
                         + "warnings=" + dto.warnings());
                 // Verificar available=8 en el warning
                 LineupWarningDTO shortHanded = dto.warnings().stream()
                     .filter(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()))
                     .findFirst().orElseThrow();
                 assertEquals(8, shortHanded.available(),
-                    "V25D65-C25: LINEUP_SHORT_HANDED.available debe reflejar el count del lineup");
+                    "LINEUP_SHORT_HANDED.available debe reflejar el count del lineup");
             })
             .verifyComplete();
     }
 
     /**
-     * V25D77-C42 C1 regression test: si el lineup persistido contiene un player
      * suspendido (red card o suspensionRemainingMatches &gt; 0), {@code getCurrentLineup}
      * debe excluirlo del response. La persistencia interna puede mantenerlo
      * (otros paths dependen), pero la API no debe surfacearlo como parte del
      * "current starting XI".
      *
      * <p>Pre-C40 el filtro no existía — un player suspendido por roja aparecía
-     * en la lineup y el front lo mostraba como titular. V25D75-C40 C1 introdujo
      * el filtro en {@link LineupQueryUseCaseImpl} líneas 74-85. Este test es la
      * red de seguridad contra regresiones futuras.
      */
     @Test
-    @DisplayName("V25D77-C42 C1: getCurrentLineup filtra players suspendidos del response")
+    @DisplayName("getCurrentLineup filtra players suspendidos del response")
     void getCurrentLineup_filtersOutSuspendedPlayers() {
         // Squad 4-4-2 full strength, marcamos 1 player como suspended.
         List<SessionPlayer> squadSus = List.of(
@@ -404,29 +399,28 @@ class LineupQueryUseCaseImplTest {
                 assertNotNull(dto);
                 // El player suspendido debe estar excluido del response
                 assertEquals(10, dto.players().size(),
-                    "V25D77-C42 C1: lineup de 11 con 1 suspendido debe devolver 10 players");
+                    "lineup de 11 con 1 suspendido debe devolver 10 players");
                 boolean suspendedInResponse = dto.players().stream()
                     .anyMatch(p -> "mid3-sus".equals(p.playerId()));
                 assertTrue(!suspendedInResponse,
-                    "V25D77-C42 C1: el player con suspended=true NO debe aparecer en el response");
+                    "el player con suspended=true NO debe aparecer en el response");
                 // Players sanos sí deben estar
                 boolean mid1InResponse = dto.players().stream()
                     .anyMatch(p -> "mid1-sus".equals(p.playerId()));
                 assertTrue(mid1InResponse,
-                    "V25D77-C42 C1: players sanos deben seguir en el response");
+                    "players sanos deben seguir en el response");
             })
             .verifyComplete();
     }
 
     /**
-     * V25D77-C42 C1 regression test (variante): un player con
      * {@code suspensionRemainingMatches > 0} pero {@code suspended=false} (caso
      * edge: estado inconsistente entre flags) también debe filtrarse. El código
      * en {@link LineupQueryUseCaseImpl} línea 83-84 aplica ambos filtros
      * independientemente — el segundo filtro es la red de seguridad.
      */
     @Test
-    @DisplayName("V25D77-C42 C1: getCurrentLineup filtra players con suspensionRemainingMatches > 0 aunque suspended=false")
+    @DisplayName("getCurrentLineup filtra players con suspensionRemainingMatches > 0 aunque suspended=false")
     void getCurrentLineup_filtersOutPlayersWithRemainingSuspension() {
         List<SessionPlayer> squadRem = List.of(
             makeHealthy("gk-rem", "GK Rem", "GK"),
@@ -465,17 +459,16 @@ class LineupQueryUseCaseImplTest {
             .assertNext(dto -> {
                 assertNotNull(dto);
                 assertEquals(10, dto.players().size(),
-                    "V25D77-C42 C1: lineup con 1 player con suspensionRemainingMatches>0 debe devolver 10 players");
+                    "lineup con 1 player con suspensionRemainingMatches>0 debe devolver 10 players");
                 boolean remainingInResponse = dto.players().stream()
                     .anyMatch(p -> "att1-rem".equals(p.playerId()));
                 assertTrue(!remainingInResponse,
-                    "V25D77-C42 C1: player con suspensionRemainingMatches>0 NO debe aparecer en el response");
+                    "player con suspensionRemainingMatches>0 NO debe aparecer en el response");
             })
             .verifyComplete();
     }
 
     /**
-     * V25D65-C25 P0 (Test 4): si el lineup persistido tiene un GK en la lineup
      * pero la squad NO tiene GK natural (caso edge), getCurrentLineup debe
      * omitir LINEUP_NO_GOALKEEPER cuando sí hay un player con position="GK"
      * en la lineup.
@@ -485,7 +478,7 @@ class LineupQueryUseCaseImplTest {
      * de NO GK está cubierto en LineupCommandUseCaseImplTest.)
      */
     @Test
-    @DisplayName("V25D65-C25 P0: getCurrentLineup no emite LINEUP_NO_GOALKEEPER si lineup tiene GK")
+    @DisplayName("getCurrentLineup no emite LINEUP_NO_GOALKEEPER si lineup tiene GK")
     void getCurrentLineup_omitsNoGoalkeeper_whenLineupHasGK() {
         // Squad completa 4-4-2 (11 players, full strength)
         List<SessionPlayer> squadFull = List.of(
@@ -522,10 +515,10 @@ class LineupQueryUseCaseImplTest {
                 boolean hasShortHanded = dto.warnings().stream()
                     .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()));
                 assertTrue(!hasNoGK,
-                    "V25D65-C25: lineup con GK no debe emitir LINEUP_NO_GOALKEEPER, "
+                    "lineup con GK no debe emitir LINEUP_NO_GOALKEEPER, "
                         + "warnings=" + dto.warnings());
                 assertTrue(!hasShortHanded,
-                    "V25D65-C25: lineup full-strength (11 players) no debe emitir LINEUP_SHORT_HANDED, "
+                    "lineup full-strength (11 players) no debe emitir LINEUP_SHORT_HANDED, "
                         + "warnings=" + dto.warnings());
             })
             .verifyComplete();

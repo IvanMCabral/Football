@@ -13,10 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * V24D6D7A: Tests for SessionPlayerDTO and SessionEntityMapper discipline field exposure.
- */
 class SessionPlayerDTODisciplineFieldsTest {
 
     private SessionPlayer makePlayer(boolean suspended, int suspensionRemainingMatches, int yellowCards, int redCards) {

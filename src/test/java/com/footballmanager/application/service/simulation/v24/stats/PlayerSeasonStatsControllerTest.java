@@ -15,7 +15,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D6M7: Unit tests for PlayerSeasonStatsController.
  *
  * Uses reactive return types (Mono<ResponseEntity<Object>>) matching
  * the controller's actual signatures. Tests are deterministic and fast,

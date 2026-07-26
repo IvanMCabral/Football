@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D24.2: E2E HTTP coverage for the {@code roundId} field that was added to
  * {@code FixtureQueryDtos.MatchInfo} (the inner fixture DTO returned by
  * {@code GET /api/v1/career/fixtures/round-with-bye}).
  *
@@ -62,7 +61,6 @@ class CareerViewControllerRoundIdInByeResponseTest extends AbstractIntegrationTe
 
     @BeforeEach
     void seedLaLigaPerTest() {
-        // V25D78-C55.5: this class had no @BeforeEach, so it relied on
         // test-order leakage to find LaLiga teams in Redis. With C55.4
         // flushDb per test, that broke. Seed LaLiga explicitly.
         seedLaLigaForUser(UUID.fromString(SEED_USER_ID));
@@ -81,7 +79,6 @@ class CareerViewControllerRoundIdInByeResponseTest extends AbstractIntegrationTe
     }
 
     private String seedTeamId() {
-        // V25D78-C55.5: filter for "Real Madrid" by name (C55.3 B1's 60-team
         // expansion means the alphabetically-first team is now a synthetic
         // B1 add like "Vigo City 1", not Real Madrid).
         java.util.List<java.util.Map<String, Object>> teams = webTestClient.mutateWith(mockUser(SEED_USER_ID))
@@ -123,7 +120,6 @@ class CareerViewControllerRoundIdInByeResponseTest extends AbstractIntegrationTe
      * {@code /api/v1/career/**} calls can resolve it.
      */
     private String seedCareer(String userId) {
-        // V25D78-C55.5: seed LaLiga for the random userId used by the test
         // (the auth principal in POST /games below is userId, so the
         // controller's BuildWorldView queries that user).
         seedLaLigaForUser(UUID.fromString(userId));

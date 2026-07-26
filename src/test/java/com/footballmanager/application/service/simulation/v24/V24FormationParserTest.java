@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D1: Tests for V24FormationParser.
  * Validates parsing of formation strings, role counts,
  * outfield player totals, boolean helpers, and fallback behavior.
  */
@@ -183,15 +182,11 @@ class V24FormationParserTest {
         assertEquals(10, parser.parse("3-4-3").outfieldPlayers());
         assertEquals(10, parser.parse("5-4-1").outfieldPlayers());
         assertEquals(10, parser.parse("5-3-2").outfieldPlayers());
-        // V25D54-C15 P1: 4 formations nuevas también suman 10 outfield.
         assertEquals(10, parser.parse("3-5-2-CDM").outfieldPlayers());
         assertEquals(10, parser.parse("3-4-1-2").outfieldPlayers());
         assertEquals(10, parser.parse("4-2-2-2").outfieldPlayers());
-        // V25D54-C15 P2: variante 4-1-2-3 también suma 10 outfield.
         assertEquals(10, parser.parse("4-1-2-3").outfieldPlayers());
     }
-
-    // ========== V25D54-C15 P1: parsing de formations nuevas ==========
 
     @Test
     void parses_3_5_2_CDM() {
@@ -237,8 +232,6 @@ class V24FormationParserTest {
         assertTrue(f.isBackFour());
         assertTrue(f.hasTwoStrikers());
     }
-
-    // ========== V25D54-C15 P2: variante 4-1-2-3 con pivote CDM ==========
 
     @Test
     void parses_4_1_2_3_with_pivot() {

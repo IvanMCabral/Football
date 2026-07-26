@@ -35,7 +35,6 @@ import static org.mockito.Mockito.when;
 
 /**
  * C55.14 OBS-1 — unit tests for the {@link GameController#getMatchState}
- * rewrite that aligns the response shape with the V25D79
  * {@link MatchStateSnapshot} contract.
  *
  * <p>Before C55.14, {@code GET /api/v1/games/match/{matchId}} returned the
@@ -56,18 +55,15 @@ import static org.mockito.Mockito.when;
  *
  * <p>Scope (2 tests):
  * <ul>
- *   <li>{@code getGameState_returnsMatchStateSnapshotWithV25D79Fields} —
  *       happy path with non-empty player rating lists and a non-default
- *       {@code substitutionsRemaining}. Pin that the 3 V25D79 fields are
  *       present on the response body and the status is 200.</li>
  *   <li>{@code getGameState_returnsSubstitutionsRemaining_afterSubstitution}
  *       — pin that {@code substitutionsRemaining == 4} on a snapshot whose
- *       V25D79 path computed one substitution event, i.e. the field
  *       survives end-to-end through the new resolution path.</li>
  * </ul>
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("GameController.getMatchState — C55.14 OBS-1 MatchStateSnapshot (V25D79 contract)")
+@DisplayName("GameController.getMatchState — C55.14 OBS-1 MatchStateSnapshot")
 class GameControllerV25D79Test {
 
     @Mock
@@ -121,7 +117,6 @@ class GameControllerV25D79Test {
     @DisplayName("C55.14 OBS-1: happy path returns 200 with MatchStateSnapshot carrying V25D79 fields")
     void getGameState_returnsMatchStateSnapshotWithV25D79Fields() {
         // Hand-built snapshot with non-empty ratings + substitutionsRemaining=3
-        // (a snapshot whose V25D79 path computed 2 SUBSTITUTION events).
         UUID homeId = UUID.randomUUID();
         UUID awayId = UUID.randomUUID();
         List<V24PlayerMatchRatingDto> homeRatings = List.of(
@@ -138,9 +133,7 @@ class GameControllerV25D79Test {
             matchId, homeId, awayId,
             60, MatchStatus.RUNNING, new Score(1, 0),
             List.of(), "career-c55-14", "user-c55-14",
-            // LIVE-MATCH-F3-UI-LIVE BE1 6-arg tail
             55, 45, "BALANCED", "BALANCED", "4-4-2", "4-4-2",
-            // V25D79 3-arg tail
             homeRatings, awayRatings,
             3 // 2 subs used -> 3 remaining
         );
@@ -188,9 +181,7 @@ class GameControllerV25D79Test {
             matchId, homeId, awayId,
             45, MatchStatus.RUNNING, new Score(0, 0),
             List.of(), "career-c55-14", "user-c55-14",
-            // LIVE-MATCH-F3-UI-LIVE BE1 6-arg tail
             50, 50, "BALANCED", "BALANCED", "4-4-2", "4-4-2",
-            // V25D79 3-arg tail — 1 substitution made → 4 remaining
             List.of(), List.of(),
             4
         );

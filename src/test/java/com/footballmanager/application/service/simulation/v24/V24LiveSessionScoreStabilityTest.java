@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F3-UI-LIVE F5.1 — BUG-007 regression test.
  *
  * <p>The previous F1 B3 design re-ran {@code engine.simulate(...)} on every
  * tick. That made the {@link CachingRandomWrapper} consume a fresh batch of
@@ -123,13 +122,11 @@ class V24LiveSessionScoreStabilityTest {
 
         // The score at minute 1 in runA must be one of the final-score
         // milestones (it can be 0 or more, but never NEGATIVE). We don't
-        // assert a specific value because the V24D6U4 tuning produces
         // sparse goals (lambda ≈ 0.36 per team), so most minute-1 ticks
         // see 0-0.
         assertTrue(homeAtMinute1A >= 0);
         assertTrue(awayAtMinute1A >= 0);
         // And the final score must be &gt;= the score at minute 1
-        // (monotonic non-decreasing — that's the BUG-007 fix).
         assertTrue(finalA.homeGoals() >= homeAtMinute1A,
             "BUG-007 violated: final homeGoals (" + finalA.homeGoals()
             + ") < homeGoals at minute 1 (" + homeAtMinute1A + "). "
@@ -209,7 +206,6 @@ class V24LiveSessionScoreStabilityTest {
         // The score at minute 30+ must be &gt;= the score at minute 30
         // (monotonic). The engine should not have produced a "lower" score
         // in the post-mutation ticks.
-        // Note: with the V24D6U4 tuning, 0-0 is the most common score at
         // most minutes, so the typical expectation is 0-0 = 0-0.
         // What we ASSERT: if the score is the same at minute 30 and
         // minute 50, the engine did NOT re-run between those ticks.

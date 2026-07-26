@@ -19,7 +19,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C53 — E2E coverage for 2 minor UX bugs in {@link MatchControllerReactive}.
  *
  * <p><b>Scope (2 tests, 1 per fix):</b>
  * <ul>
@@ -72,7 +71,7 @@ class MatchControllerReactiveC53E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C53 Bug #1: GET /matches returns homeTeamName + awayTeamName "
+    @DisplayName("GET /matches returns homeTeamName + awayTeamName "
         + "resolved from WorldSnapshot (no more 'Team vs Team' placeholders)")
     void getMatches_teamNames_resolvedFromSnapshot() {
         // Step 1: seed LaLiga so the user's WorldSnapshot has known teams (Real Madrid, etc.).
@@ -151,7 +150,7 @@ class MatchControllerReactiveC53E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C53 Bug #3: GET /matches/{matchId}/minute-by-minute endpoint exists "
+    @DisplayName("GET /matches/{matchId}/minute-by-minute endpoint exists "
         + "and returns 404 (no career / no V24 detail) instead of 404 for missing handler")
     void getMinuteByMinute_noCareer_returns404_notHandlerNotFound() {
         // Pre-C53: this endpoint did not exist → Spring's no-handler path returned

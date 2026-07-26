@@ -22,13 +22,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D24.3-FIX: Coverage for {@link UserDivisionFixtureQueryService} cross-division team name resolution.
  *
  * <p>Before the fix, {@code FixtureQueryHelper.buildTeamNamesMap} only received
  * {@code userDivision.getTeamIds()}. When {@code replaceFixtures} (test-harness)
  * injected fixtures from another division, those {@code homeTeamId}/{@code awayTeamId}
  * were missing from the map and the fallback returned the raw UUID, leaking it to
- * Panel C (BUG_FIXTURES_TEAM_NAMES_UUID_V2).
  *
  * <p>The contract verified here:
  * <ul>
@@ -282,8 +280,6 @@ class UserDivisionFixtureQueryServiceTest {
         assertEquals(DIV_B_TEAM_2_NAME, response.teamNames().get(DIV_B_TEAM_2),
                 "getAll() teamNames map must include cross-division teams for ALL rounds");
     }
-
-    // ========== getAllByRound (V25D78-C55.7.7 BUG-M4) ==========
 
     @Test
     @DisplayName("getAllByRound — returns only the requested round, but teamNames/teams/config stay complete")

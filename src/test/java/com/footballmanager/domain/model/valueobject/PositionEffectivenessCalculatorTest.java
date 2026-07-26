@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * V25D47 (Sprint C11a): unit tests for {@link PositionEffectivenessCalculator}.
  *
  * <p>Coverage:
  * <ul>
@@ -193,8 +192,6 @@ class PositionEffectivenessCalculatorTest {
         assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("DEF", "FUTURE_CAT"));
     }
 
-    // ========== V25D51 (Sprint C13): 3-cat → 5-cat mapper ==========
-
     @Test
     @DisplayName("mapper: GK passes through to GK")
     void mapper_gk() {
@@ -254,19 +251,15 @@ class PositionEffectivenessCalculatorTest {
         assertEquals(null, PositionEffectivenessCalculator.toFiveCategory(null));
     }
 
-    // ========== V25D51 (Sprint C13): integration — 3-cat inputs through effectiveness() ==========
-
     @Test
     @DisplayName("C13 integration: LW (3-cat) in MID slot → 0.95 (carrilero flexibility)")
     void c13_lwInMid() {
-        // V25D51 task spec evidence line 1: Rodrygo (LW) en S15-1 (MID) → 0.95.
         assertEquals(0.95, PositionEffectivenessCalculator.effectiveness("LW", "MID"));
     }
 
     @Test
     @DisplayName("C13 integration: CM (3-cat) in DEF slot → 0.85 (CDM-like)")
     void c13_cmInDef() {
-        // V25D51 task spec evidence line 2: Carvajal/Vazquez/Rudiger (CM) en
         // S22-1/S22-2/S23-2 (DEF) → 0.85.
         assertEquals(0.85, PositionEffectivenessCalculator.effectiveness("CM", "DEF"));
     }
@@ -342,12 +335,9 @@ class PositionEffectivenessCalculatorTest {
         assertEquals(1.0, PositionEffectivenessCalculator.effectiveness("CDM", "MID"));
     }
 
-    // ========== V25D51 (Sprint C13): backward compat — 5-cat inputs unchanged ==========
-
     @Test
     @DisplayName("C13 backward compat: WINGER (5-cat) in MID slot → 0.95 (unchanged)")
     void c13_backcompatWingerMid() {
-        // 5-cat passthrough still works (V25D47 contract preserved).
         assertEquals(0.95, PositionEffectivenessCalculator.effectiveness("WINGER", "MID"));
     }
 

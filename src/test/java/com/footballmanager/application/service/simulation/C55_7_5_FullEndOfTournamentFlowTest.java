@@ -45,7 +45,6 @@ import static org.mockito.Mockito.when;
  * code path) with {@link MatchSimulationOrchestrator#processMatchDayResults}
  * (production round-end code path).
  *
- * <p>C55.7.5 #28 source: REVISOR C55.7.4 reported "Tabla Final con stats en
  * cero" — all 5 SEGUNDA teams showed PJ=0 / G=0 / PTS=0 in the "Torneo
  * Finalizado" page after playing R1-R10.
  *

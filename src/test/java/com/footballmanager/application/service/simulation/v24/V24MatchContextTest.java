@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F2-LIVE F2 (B1) + F2.5 (B1): unit tests for
  * {@link V24MatchContext}.
  *
  * <p>Focus: the {@link V24MatchContext#withManualSubstitution} helper.

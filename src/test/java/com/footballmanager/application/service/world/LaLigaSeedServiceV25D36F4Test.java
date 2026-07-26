@@ -20,7 +20,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D36-F4: tests para la refactorización thread-safety del
  * PlayerAttributesGenerator (per-call instantiation).
  *
  * <p>Verifica:
@@ -81,7 +80,7 @@ class LaLigaSeedServiceV25D36F4Test {
     }
 
     @Test
-    @DisplayName("V25D36-F4: smoke - execute() corre sin errores con mocks (regression)")
+    @DisplayName("smoke - execute() corre sin errores con mocks (regression)")
     void executeRunsWithoutErrors() {
         UUID userId = UUID.randomUUID();
         WorldSnapshot emptySnapshot = new WorldSnapshot();
@@ -93,14 +92,13 @@ class LaLigaSeedServiceV25D36F4Test {
 
         assertNotNull(result, "execute() debe retornar un SeedResult");
         assertEquals("La Liga 2024/25", result.leagueName());
-        // V25D78-C55.3 B1: 60 teams per league (was 20)
-        assertEquals(60, result.teamsCount(), "Debe haber 60 equipos La Liga (V25D78-C55.3 B1)");
+        assertEquals(60, result.teamsCount(), "Debe haber 60 equipos La Liga");
         assertTrue(result.playersCount() >= 900,
             "Debe haber ~1000 jugadores, got=" + result.playersCount());
     }
 
     @Test
-    @DisplayName("V25D36-F4: reproducibilidad - dos calls consecutivas generan mismos heights")
+    @DisplayName("reproducibilidad - dos calls consecutivas generan mismos heights")
     void reproducibilityAcrossCalls() {
         UUID userId = UUID.randomUUID();
         WorldSnapshot snapshot1 = new WorldSnapshot();
@@ -154,14 +152,14 @@ class LaLigaSeedServiceV25D36F4Test {
         }
 
         assertEquals(0, mismatches,
-            "V25D36-F4 reproducibilidad rota: " + mismatches + " heights difieren entre calls. "
+            "" + mismatches + " heights difieren entre calls. "
             + "Esto indica que el Random del generator se está compartiendo entre calls.");
         assertTrue(matches >= 900,
-            "V25D36-F4: deben coincidir >= 900 heights (todos los no-top-20), got=" + matches);
+            "deben coincidir >= 900 heights (todos los no-top-20), got=" + matches);
     }
 
     @Test
-    @DisplayName("V25D36-F4: PlayerAttributesGenerator per-call isolation - cada call usa instancia nueva")
+    @DisplayName("PlayerAttributesGenerator per-call isolation - cada call usa instancia nueva")
     void perCallIsolation() {
         // Dos instancias independientes del generator con el mismo seed
         // deben producir la misma secuencia de heights (validación de la
@@ -172,7 +170,7 @@ class LaLigaSeedServiceV25D36F4Test {
         for (int i = 0; i < 50; i++) {
             int h1 = gen1.generateHeightCm();
             int h2 = gen2.generateHeightCm();
-            assertEquals(h1, h2, "V25D36-F4: dos generators con mismo seed deben dar misma secuencia (i=" + i + ")");
+            assertEquals(h1, h2, "dos generators con mismo seed deben dar misma secuencia (i=" + i + ")");
         }
     }
 }

@@ -30,16 +30,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D35: extended tests for {@link TestHarnessUseCaseImpl#injectPlayerStats}
  * covering the new {@code heightCm} and {@code skillLevels} fields.
  *
  * <p><b>Strategy:</b> Mockito-only (no Spring context), same as the
- * V25D29 {@code TestHarnessUseCaseImplTest}. Verifies state-mutation
  * contract on {@link CareerSave} and delegation to
  * {@link CareerRepository} / {@link CareerSessionService}.
  *
  * <p><b>Backward-compat regression guard:</b> the "legacy 6-stats only"
- * test asserts bit-a-bit compatibility with V25D29 — callers that pass
  * {@code heightCm=null} and {@code skillLevels=null} keep working without
  * any change in behavior (only the 6 stats change; everything else
  * including pre-existing height + skills stays untouched).
@@ -80,14 +77,12 @@ class InjectPlayerStatsExtendedTest {
         player.setName("Extended Player");
         player.setAge(25);
         player.setPosition("ATT");
-        // 6 stats at V25D29 baseline (70 OVR) so we can verify they DO change
         player.setAttack(70);
         player.setDefense(70);
         player.setTechnique(70);
         player.setSpeed(70);
         player.setStamina(70);
         player.setMentality(70);
-        // V25D31 physical + skill baseline (set so we can verify the new
         // fields leave them untouched when caller passes null)
         player.setHeightCm(180);
         player.setSkillLevel(PlayerSkill.SPEEDSTER, 50);
@@ -111,8 +106,6 @@ class InjectPlayerStatsExtendedTest {
         }
     }
 
-    // ========== 1. Backward-compat: caller V25D29 (no height, no skills) ==========
-
     @Test
     @DisplayName("legacy 6-stats only: updates 6 stats + leaves height + skills intact (backward-compat)")
     void injectLegacy6StatsOnly_preservesHeightAndSkills() {
@@ -121,7 +114,6 @@ class InjectPlayerStatsExtendedTest {
         when(careerRepository.save(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
-        // Pre-condition sanity: player has V25D31 baseline values
         assertThat(player.getHeightCm()).isEqualTo(180);
         assertThat(player.getSkillLevel(PlayerSkill.SPEEDSTER)).isEqualTo(50);
         assertThat(player.getSkillLevel(PlayerSkill.PASSER)).isEqualTo(60);
@@ -141,7 +133,6 @@ class InjectPlayerStatsExtendedTest {
         assertThat(player.getStamina()).isEqualTo(80);
         assertThat(player.getMentality()).isEqualTo(75);
 
-        // V25D31 physical + skills: UNCHANGED (backward-compat regression guard)
         assertThat(player.getHeightCm()).isEqualTo(180);
         assertThat(player.getSkillLevel(PlayerSkill.SPEEDSTER)).isEqualTo(50);
         assertThat(player.getSkillLevel(PlayerSkill.PASSER)).isEqualTo(60);
@@ -431,10 +422,8 @@ class InjectPlayerStatsExtendedTest {
         assertThat(player.getStamina()).isEqualTo(80);
         assertThat(player.getMentality()).isEqualTo(80);
 
-        // V25D31 physical
         assertThat(player.getHeightCm()).isEqualTo(195);
 
-        // V25D31 skills (SPEEDSTER + PASSER overwritten with new values)
         assertThat(player.getSkillLevel(PlayerSkill.SPEEDSTER)).isEqualTo(99);
         assertThat(player.getSkillLevel(PlayerSkill.PASSER)).isEqualTo(95);
 

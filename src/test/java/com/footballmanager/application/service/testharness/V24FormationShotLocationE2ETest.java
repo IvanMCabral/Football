@@ -32,17 +32,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V24D23-A-FIX-SHOT-LOCATION — E2E coverage for the formation-aware shot
- * location fix in {@code V24DetailedMatchEngine.selectShotLocation(style,
  * formation, random)}.
  *
  * <p><b>Why this test exists (sprint rationale):</b>
  * <ul>
- *   <li>Sprint V24D22 wire-up of {@code formation} to 4 cosmetic call sites
- *       in {@code V24DetailedMatchEngine.attemptShot} (foul/injury/corner/
  *       offside) was COMPLETE but did NOT change xG, because those events
  *       are descriptive (they don't drive xG math).</li>
- *   <li>SMOKE REVISOR 2026-06-21 13:55h confirmed: 4 formations × seed 12345
  *       vs Barcelona produced IDENTICAL results byte-for-byte (xG diff 0.000
  *       across all pairs). The root cause was a 5th formation-blind path —
  *       {@code selectShotLocation} (L588-630 pre-sprint) used ONLY
@@ -75,9 +70,7 @@ import static org.mockito.Mockito.when;
  * with ~15 shots per team per match the cumulative homeXg diff is
  * expected to be ~0.05-0.10 — comfortably above the 0.05 threshold.
  *
- * <p><b>Threshold rationale (50× stricter than V24D22):</b> V24D22 used
  * 0.001 (well below noise — any formation effect would pass even with
- * cosmetic fixes). V24D23-A uses 0.05 because the formation effect is
  * now AMPLIFIED by the weighted-distribution shift; 0.05 catches the
  * intended behavior while filtering residual RNG noise. The DoD
  * requires either {@code |homeXg diff| >= 0.05} OR
@@ -101,7 +94,6 @@ class V24FormationShotLocationE2ETest {
         UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final String MATCH_ID = "match-formation-shotloc-001";
     private static final long SEED = 42L;
-    // V24D23-A threshold: 50x stronger than V24D22's 0.001 because the
     // formation-driven xG variation is now amplified by the
     // weighted-distribution shift. The DoD requires at least ONE of
     // {homeXg, awayXg} delta to clear this bar; the design table
@@ -109,7 +101,6 @@ class V24FormationShotLocationE2ETest {
     // Real Madrid-style squad with 15 shots.
     private static final double XG_EPSILON = 0.05;
 
-    // V24D23-A R1 mitigation: the primary seed (42) lands in a
     // low-delta region of the seed-formation xG surface — diagnostic
     // data (see V24FormationShotLocationDiagnostic) shows homeXg diff
     // for (4-3-3 vs 4-2-3-1) at seed=42 is only ~0.009 even though
@@ -118,13 +109,11 @@ class V24FormationShotLocationE2ETest {
     // sprint doc, the test falls back to a small seed scan and
     // requires AT LEAST ONE seed to clear the threshold. This mirrors
     // the V24FormationIgnoredE2ETest Test 3 pattern but with the
-    // V24D23-A 0.05 threshold (vs V24D22's 0.001).
     private static final long[] FALLBACK_SEEDS = { 1L, 7L, 19L, 42L, 73L, 137L };
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
-    // V24D24.3-HOTFIX: MatchEngineRegistry mock — needed for the new
     // resetRound() use case. Default `@Mock` is enough (replay path
     // doesn't touch the engine registry).
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
@@ -145,7 +134,6 @@ class V24FormationShotLocationE2ETest {
     // ========== Test 1 — formation change produces measurable xG delta (with seed-scan fallback) ==========
 
     /**
-     * V24D23-A-FIX-SHOT-LOCATION — primary E2E assertion.
      *
      * <p>The two formations stress different paths of the
      * {@code computeLocationWeights} modifier pipeline:
@@ -170,8 +158,6 @@ class V24FormationShotLocationE2ETest {
      * {@link #FALLBACK_SEEDS} and requires AT LEAST ONE seed to produce
      * {@code |homeXg diff| >= 0.05}. The seed-scan mirrors the pattern
      * in V24FormationIgnoredE2ETest Test 3 (which uses a 25-seed scan
-     * with V24D22's 0.001 threshold) — V24D23-A uses a tighter 6-seed
-     * scan because the 0.05 threshold is 50× higher than V24D22's.
      *
      * <p>Acceptance: at least one of the scanned seeds produces a
      * measurable homeXg delta (the rival is fixed at 4-4-2 so awayXg
@@ -224,7 +210,6 @@ class V24FormationShotLocationE2ETest {
     // ========== Test 2 — same formation + same seed produces identical result ==========
 
     /**
-     * V24D23-A-FIX-SHOT-LOCATION — regression guard for BUG #1
      * (CareerSessionService cache invalidation after save) and for the
      * determinism contract (same seed + same context = same result).
      *
@@ -281,7 +266,6 @@ class V24FormationShotLocationE2ETest {
      * Builds a fresh CareerSave with the given formation on the user team,
      * drives the full setFormation + replayMatch flow through the real
      * {@link TestHarnessUseCaseImpl}, and captures the persisted
-     * {@link V24DetailedMatchData} via the mocked storage port.
      *
      * <p>Returns the captured detail (homeXg, awayXg, homeShots,
      * awayShots) so the test can assert on the actual V24 engine output.
@@ -309,7 +293,6 @@ class V24FormationShotLocationE2ETest {
 
         // replayMatch drives the full flow: v24ContextFactory.build() →
         // engine.simulate() → v24StoragePort.save(newDetail). The new
-        // detail is what we assert on. V24D23-A: this engine invocation
         // now applies the formation-aware shot location distribution
         // (B0), so homeXg varies with formation even at the same seed.
         useCase.replayMatch(USER_ID, MATCH_ID, seed).block();

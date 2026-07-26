@@ -12,13 +12,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D79: unit tests for {@link MatchStateSnapshot}.
  *
  * <p>Validates the new 18-arg canonical constructor shape and the
  * 9-arg backward-compatibility constructor:
  * <ul>
- *   <li>{@code legacyBackCompat9Arg_defaultsV25D79FieldsToSafeValues} — the
- *       9-arg constructor (pre-V25D79 shape) defaults
  *       {@code homePlayerRatings}, {@code awayPlayerRatings} to empty lists
  *       and {@code substitutionsRemaining} to 5 (full quota).</li>
  *   <li>{@code canonical18Arg_preservesAllFields} — the new 18-arg shape
@@ -59,7 +56,6 @@ public class MatchStateSnapshotTest {
         assertEquals("4-4-2", snap.homeFormation());
         assertEquals("4-4-2", snap.awayFormation());
 
-        // V25D79 defaults — empty player-rating lists and full sub quota.
         assertNotNull(snap.homePlayerRatings());
         assertNotNull(snap.awayPlayerRatings());
         assertTrue(snap.homePlayerRatings().isEmpty(),
@@ -77,7 +73,6 @@ public class MatchStateSnapshotTest {
         UUID awayId = UUID.randomUUID();
         Score score = new Score(2, 1);
         List<MatchEvent> events = new ArrayList<>();
-        // V25D79: two synthetic per-player rating DTOs (one home, one away).
         List<V24PlayerMatchRatingDto> homeRatings = List.of(
             new V24PlayerMatchRatingDto(
                 "p-home-1", "Home Player 1", homeId.toString(), "GK",
@@ -93,9 +88,7 @@ public class MatchStateSnapshotTest {
             matchId, homeId, awayId,
             60, MatchStatus.RUNNING, score, events,
             "career-7", "user-7",
-            // LIVE-MATCH-F3-UI-LIVE BE1 6-arg tail
             55, 45, "ATTACKING", "DEFENSIVE", "4-3-3", "4-5-1",
-            // V25D79 3-arg tail
             homeRatings, awayRatings,
             3 // 2 subs already used → 3 remaining
         );
@@ -114,7 +107,6 @@ public class MatchStateSnapshotTest {
         assertEquals("4-3-3", snap.homeFormation());
         assertEquals("4-5-1", snap.awayFormation());
 
-        // V25D79 fields preserved verbatim.
         assertSame(homeRatings, snap.homePlayerRatings(),
             "homePlayerRatings must be the exact list passed in");
         assertSame(awayRatings, snap.awayPlayerRatings(),

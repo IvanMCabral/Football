@@ -14,7 +14,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Round-trip JSON test for
  * {@link V24MatchContext}.
  *
  * <p>Verifies that the {@code @JsonCreator} annotation on the 14-arg

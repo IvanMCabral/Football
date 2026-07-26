@@ -36,15 +36,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D25: 5-formations goal-diversity E2E probe (BUG_FORMATION_GOAL_NOOP acceptance test).
  *
- * <p><b>Sprint rationale:</b> V24D23-A added formation-aware shot location distribution
  * but the resulting ΔxG (~0.05-0.13 per team per match) sat 1σ below the per-match
- * Bernoulli goal noise (stddev ~1.28 over 15 shots). REVISOR's smoke-v24d245
  * confirmed: 5 formations × same squad → byte-for-byte identical scores (5-1,
  * 2-5, 2-1, 3-0) — formation was a no-op for goals.
  *
- * <p>V25D25 step 1 (commit 1c33671) wired a per-formation xG modifier into
  * {@code V24ShotXgCalculator.calculateXg(quality, formation)}. The modifier
  * is multiplicative on top of the existing shot-location / shooter / assist /
  * defense / gk / style chain (4-3-3 = 1.10, 4-2-3-1 = 1.12, 3-5-2 = 0.88,
@@ -53,14 +49,12 @@ import static org.mockito.Mockito.when;
  * <p><b>This test verifies the acceptance criterion</b>: with the same squad
  * and 5 different formations applied, at least 2 of 4 seeded matches produce
  * distinct scores. The probe runs the same setFormation → replayMatch flow
- * that REVISOR used to confirm the bug — but on the post-fix code, the
  * scores should now vary.
  *
  * <p><b>Why E2E (not unit):</b> the unit test
  * {@code V24ShotXgCalculatorFormationModifierTest} proves the modifier is
  * applied at the per-shot level, but the acceptance criterion is whether
  * the integrated engine pipeline produces distinct integer goal counts.
- * The Bernoulli goal sampling at line 526-531 of V24DetailedMatchEngine
  * means a per-shot xG delta of ~30% must propagate to integer-score
  * variation across multiple shots (~15 per team per match). E2E is the
  * only level that catches this propagation end-to-end.
@@ -68,7 +62,6 @@ import static org.mockito.Mockito.when;
  * <p><b>Squad reuse:</b> Real Madrid-style squad (1 GK + 4 DEF + 3 MID +
  * 2 WINGER + 1 ATT, 1 super-striker ATT=90) — same as
  * {@code V24FormationShotLocationE2ETest.careerWithFreshSquad} for
- * comparability with the V24D23-A reference measurements.
  *
  * <p><b>Profile gating:</b> same as the reference tests — Mockito-only,
  * no Spring context, no HTTP/auth/profile overhead.
@@ -90,15 +83,12 @@ class V24FormationGoalDiversityE2ETest {
         "5-3-2"     // ultra-defensive back-five (modifier=0.78)
     };
 
-    /** 4 seeds per formation — matches the V24D23-A seed-scan fallback pattern. */
     private static final long[] SEEDS = { 1L, 7L, 19L, 73L };
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
     @Mock private V24DetailedMatchStoragePort v24StoragePort;
     @Mock private BaselineStateStoragePort baselineStoragePort;
-    // V25D25: MatchEngineRegistry mock required by the TestHarnessUseCaseImpl
-    // constructor extended in V24D24.4-HOTFIX (commit ab94a19). Default @Mock
     // returns false from hasEngine, which is fine for the replay tests below
     // (none of them exercise the reset-round path).
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
@@ -119,7 +109,6 @@ class V24FormationGoalDiversityE2ETest {
     // ========== Test 1 — formation-diversity acceptance criterion ==========
 
     /**
-     * V25D25 acceptance test: 5 formations × 4 seeds on the same squad.
      *
      * <p>For each seed, the 5 formations should produce a non-trivial
      * spread of integer goal counts (because the formation modifier shifts
@@ -210,9 +199,7 @@ class V24FormationGoalDiversityE2ETest {
     /**
      * Determinism regression guard: same formation + same seed must produce
      * byte-identical V24 detail on consecutive replays. This is the
-     * existing V24 determinism contract (V24D23-A Test 2 in
      * {@code V24FormationShotLocationE2ETest}) carried forward into
-     * V25D25 — the new formation modifier must not consume extra random
      * numbers or mutate shared state.
      */
     @Test

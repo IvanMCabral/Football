@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F5.2 BUG-011 regression test.
  *
  * <p>When a manager triggers a substitution via the F2 substitution
  * command, the resulting {@link V24MatchEvent} carries REAL player names
@@ -71,7 +70,6 @@ class V24MatchEventPlayerNameMappingTest {
         // The SUBSTITUTION event is a manual event, NOT a noise event,
         // so it should appear in the visible SSE payload. The engine ALSO
         // emits a SUBSTITUTION event when applying the manual sub (with
-        // playerName=null → "Unknown" — see V24DetailedMatchEngine line 238
         // and V24MatchEvent constructor line 54). So we expect to see TWO
         // SUBSTITUTION events in the snapshot: the engine-emitted one
         // (with "Unknown") AND the manualEvents one (with "Vinícius Jr.").

@@ -8,7 +8,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D3B: Tests for V24PlayerRatingModel.
  * Validates rating computation, bonuses, penalties, clamping, determinism.
  */
 class V24PlayerRatingModelTest {

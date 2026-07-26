@@ -26,7 +26,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6B3: Integration tests for V24 career mutation wiring in LeagueSimulator.
  *
  * <p>Tests mutation behavior across different flag combinations and V24 path states.
  * All mutation flags default to false — mutation never occurs without explicit enablement.
@@ -147,7 +146,6 @@ class V24CareerMutationIntegrationTest {
     void V24DisabledWithMutationFlags_noMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=false, mutation flags true
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, true, false, false, false);
@@ -337,7 +335,6 @@ class V24CareerMutationIntegrationTest {
         simulator.simulateLeagueRound(career, 1);
 
         // With persistFatigue=true and master on, energy IS reduced (88) because
-        // V24DetailedMatchEngine produces non-substitution events
         assertEquals(88, p.getEnergy(), "Energy should be reduced when persistFatigue=true");
     }
 
@@ -391,7 +388,6 @@ class V24CareerMutationIntegrationTest {
     void V24Disabled_withFatigueFlags_noMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=false, mutation flags true
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, false, true, false, false);
@@ -430,8 +426,6 @@ class V24CareerMutationIntegrationTest {
         assertEquals(100, p.getEnergy(), "No energy change when mutation flags are false");
     }
 
-    // ========== V24D6F2: LeagueSimulator Wiring / Best-Effort Integration Tests ==========
-
     /**
      * Test 1: master=false + injury+fatique both true → no mutation at wiring level.
      * Regression: LeagueSimulator.applyV24CareerMutation checks isCareerMutationEnabled() first.
@@ -461,7 +455,6 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test 3: persistDetail storage throws → round completes.
-     * Regression: persistV24Detail is best-effort; storage failure does not fail the round.
      * This is covered by existing test 18 design, but we add explicit storage-failure test here.
      */
     @Test
@@ -506,8 +499,6 @@ class V24CareerMutationIntegrationTest {
 
         assertEquals(originalForm, p.getForm(), "Form should not change in V24D6C3");
     }
-
-    // ========== V24D6D5: Discipline mutation wiring tests ==========
 
     @Test
     void persistDisciplineEnabled_appliesDisciplineMutation() {
@@ -612,7 +603,6 @@ class V24CareerMutationIntegrationTest {
     void v24DisabledWithDisciplineFlags_noMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useV24DetailedEngine=false, discipline flags true
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, false, false, true, false);
@@ -651,11 +641,8 @@ class V24CareerMutationIntegrationTest {
                 "Fixture result must exist after round with all flags enabled");
     }
 
-    // ========== V24D6D6B: Suspension lifecycle integration tests ==========
-
     /**
      * Deterministic V24 engine for lifecycle testing.
-     * Returns a controlled V24DetailedMatchResult with explicit timeline events.
      * No randomness — tests control every event.
      */
     private static class DeterministicV24Engine implements V24DetailedMatchEngineProvider {
@@ -743,8 +730,6 @@ class V24CareerMutationIntegrationTest {
     }
 
     /**
-     * Test 3: pre-existing suspended player participated → DOES decrement. V24D6T2 (bug #7) — participation tracking now excludes suspended players (a suspended player is not actually on the pitch).
-     * V24D6T2: participation tracking excludes suspended players; the suspension decrement fires end-of-round.
      * Expect: suspended=true, remaining=1 (unchanged).
      */
     @Test
@@ -774,12 +759,11 @@ class V24CareerMutationIntegrationTest {
         simulator.simulateLeagueRound(career, 1);
 
         SessionPlayer p = career.getSessionPlayer("suspended_p1");
-        // V24D6T2 bug #7 fix: suspended player in XI is now excluded from
         // participatedPlayerIds, so the suspension decrement fires.
         assertEquals(0, p.getSuspensionRemainingMatches(),
-            "V24D6T2: suspended player must decrement end-of-round (even if in XI)");
+            "suspended player must decrement end-of-round (even if in XI)");
         assertFalse(p.getSuspended(),
-            "V24D6T2: suspended=true with remaining=0 should clear the suspension");
+            "suspended=true with remaining=0 should clear the suspension");
     }
 
     /**
@@ -933,7 +917,6 @@ class V24CareerMutationIntegrationTest {
     }
 
     /**
-     * Test 8: useV24DetailedEngine=false → no lifecycle change.
      * V24 disabled, falls back to default engine.
      * Expect: suspended state unchanged.
      */
@@ -942,7 +925,6 @@ class V24CareerMutationIntegrationTest {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
-        // useV24DetailedEngine=false, so provider is never called — pass null
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, false, false, true, false,
@@ -958,8 +940,6 @@ class V24CareerMutationIntegrationTest {
         assertTrue(p.getSuspended(), "No lifecycle when V24 is disabled");
         assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not change");
     }
-
-    // ========== V24D6H4: Yellow-threshold suspension lifecycle integration tests ==========
 
     /**
      * Test 1: thresholdSuspendedPlayer_notDecrementedSameRound
@@ -1111,14 +1091,12 @@ class V24CareerMutationIntegrationTest {
     /**
      * Test 5b: v24Disabled_noThresholdEffect
      *
-     * useV24DetailedEngine=false → V24 path not used → no discipline mutation.
      */
     @Test
     void v24Disabled_noThresholdEffect() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
-        // useV24DetailedEngine=false, but persistDiscipline=true
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, false, false, true, false,
@@ -1134,8 +1112,6 @@ class V24CareerMutationIntegrationTest {
         assertEquals(4, p.getYellowCards(), "Yellow cards should not change in V23 path");
         assertFalse(p.getSuspended(), "Player should not be suspended in V23 path");
     }
-
-    // ========== V24D6E4: Form mutation integration tests ==========
 
     /**
      * Test 1: persistFormEnabled_appliesFormMutation
@@ -1270,7 +1246,6 @@ class V24CareerMutationIntegrationTest {
     /**
      * Test 4: v24DisabledWithFormFlags_noMutation
      *
-     * V24 disabled (useV24DetailedEngine=false), all mutation flags true including persistForm.
      * Expected: V23 path used, no form mutation.
      */
     @Test
@@ -1278,7 +1253,6 @@ class V24CareerMutationIntegrationTest {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
-        // useV24DetailedEngine=false; persistForm=true
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, false, false, false, true,
@@ -1351,8 +1325,6 @@ class V24CareerMutationIntegrationTest {
         assertTrue(career.getTournamentState().getFixtures().get(0).getResult() != null,
                 "Fixture result must exist");
     }
-
-    // ========== V24D6I3: Injury Recovery Lifecycle Integration Tests ==========
 
     /**
      * Test 1: pre-existing injured player — remaining=2, team has fixture, did not participate → decrements to 1.
@@ -1596,16 +1568,11 @@ class V24CareerMutationIntegrationTest {
         assertTrue(p.getInjured(), "Player should remain injured (master flag false)");
         assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should not change");
     }
-
-    /**
-     * Test 8: useV24DetailedEngine=false → no recovery.
-     */
     @Test
     void injuryRecovery_v24Disabled_noOp() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
-        // useV24DetailedEngine=false, injuries=true
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, true, false, false, false,
@@ -1621,8 +1588,6 @@ class V24CareerMutationIntegrationTest {
         assertTrue(p.getInjured(), "Player should remain injured (V24 path not used)");
         assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should not change");
     }
-
-    // ========== V24D6J5: Energy Recovery Lifecycle Integration Tests ==========
 
     /**
      * Test A: non-participating player recovers +8 energy.
@@ -1845,7 +1810,6 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test G: V24 disabled → no energy recovery.
-     * useV24DetailedEngine=false, mutateCareerState=true, persistFatigue=true.
      * V24 path not used → tracking.v24RoundProcessed=false → no recovery.
      * Expected: energy stays 70.
      */
@@ -1903,8 +1867,6 @@ class V24CareerMutationIntegrationTest {
         assertEquals(68, p.getEnergy(), "Injured non-participating player should recover +8");
         assertTrue(p.getInjured(), "Injury status should be unchanged");
     }
-
-    // ========== V24D6I3: Factory helper for injury recovery tests ==========
 
     /**
      * Creates career with a player in starting XI who has initial form set.
@@ -2056,8 +2018,6 @@ class V24CareerMutationIntegrationTest {
         save.setTournamentState(new TournamentState());
         return save;
     }
-
-    // ========== V24D6J5: Energy Recovery factory helpers ==========
 
     /**
      * Creates career with a player in HOME1 squad who is NOT in starting XI (non-participating).
@@ -2418,8 +2378,6 @@ class V24CareerMutationIntegrationTest {
         return ts;
     }
 
-    // ========== V24D6D6B: Suspension lifecycle helpers ==========
-
     /**
      * Creates career with a suspended player who is NOT in the starting XI.
      */
@@ -2535,8 +2493,6 @@ class V24CareerMutationIntegrationTest {
                 11, 11, playerId, remainingMatches, suspended);
     }
 
-    // ========== V24D6I2: Injury Recovery Lifecycle factory helpers ==========
-
     /**
      * Creates career with an injured player, optionally in the starting XI.
      * Player is pre-injured (injured=true, injuryRemainingMatches>0) before the round.
@@ -2614,8 +2570,6 @@ class V24CareerMutationIntegrationTest {
         save.setTournamentState(new TournamentState());
         return save;
     }
-
-    // ========== V24D6H4: Yellow-card threshold factory helpers ==========
 
     /**
      * Creates career with a player who starts with yellowCards=n (to test threshold behavior).
@@ -2815,11 +2769,6 @@ class V24CareerMutationIntegrationTest {
         public void deleteByCareerId(String careerId) {
         }
     }
-
-    /**
-     * V24D6F2: Fake storage port that throws on save.
-     * Used to verify persistV24Detail is best-effort.
-     */
     private static class ThrowingStoragePort implements V24DetailedMatchStoragePort {
         @Override
         public void save(String careerId, V24DetailedMatchData detail) {

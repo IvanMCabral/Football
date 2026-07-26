@@ -9,9 +9,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D34-F1: SHOOTER skill impact on xG (long-range bonus).
  *
- * <p>Spec (V25D34 prompt, F1):
  * <ul>
  *   <li>SHOOTER multiplica el xG SOLO en {@link V24ShotLocation#LONG_RANGE}
  *       shots. Formula: {@code shooterLongRangeMult = 1 + skill/250}.</li>
@@ -31,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *     </ul>
  *   </li>
  *   <li>No-op regression: SHOOTER absent o location != LONG_RANGE → xG
- *       sin cambio, bit-a-bit identico a V25D33.</li>
  * </ul>
  */
 class V24ShotXgCalculatorShooterTest {
@@ -72,7 +69,6 @@ class V24ShotXgCalculatorShooterTest {
         double xg = xgAt(calc, V24ShotLocation.LONG_RANGE, 90);
 
         double expected = baseline * (1.0 + 90.0 / 250.0);  // 1.36
-        // V25D99.45: calculator clamps/rounds final xG to 3 decimals. On
         // low-base long shots the intended SHOOTER multiplier can land within
         // ~0.001 of the rounded value, so keep the guard focused on the bonus
         // being applied rather than exact pre-rounding arithmetic.
@@ -227,12 +223,9 @@ class V24ShotXgCalculatorShooterTest {
         assertTrue(xg >= 0.01, "xG siempre >= 0.01 (clamp floor)");
     }
 
-    // ========== Regression: 9-args preserva V25D32 cuando SHOOTER no aplica ==========
-
     @Test
     void overload9ArgsWithShooter_outsideLongRange_preservesV25D32Baseline() {
         // SHOOTER=99 + PENALTY_AREA_CENTER → SHOOTER gated off → bit-a-bit
-        // identico al 5-args (V25D32 baseline).
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
 
         V24ShotQuality q = new V24ShotQuality(V24ShotLocation.PENALTY_AREA_CENTER, 0.7, 0.7, 0.3, 0.7, 1.0);

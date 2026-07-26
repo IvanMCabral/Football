@@ -32,7 +32,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * V25D37-F2: regression test for BUG_FIXTURES_CACHE_STALE.
  *
  * <p>Before the fix, {@code RegenerateFixturesUseCaseImpl.executeRegenerate} mutated
  * the in-memory {@code CareerSave.fixtures} and persisted it via
@@ -41,7 +40,6 @@ import static org.mockito.Mockito.*;
  * {@code GET /api/v1/career/fixtures} call hit {@code getCareerFromCache(userId)}
  * and returned the STALE pre-regenerate {@code CareerSave} with the OLD fixtures.
  *
- * <p>This bug is structurally identical to V24D20-SANDBOX-V2-MVP BUG #1 (the
  * original report from {@code TestHarnessUseCaseImpl.executeReplaceFixtures}),
  * but the {@code regenerateFixtures} use-case was missed in that round.
  *
@@ -72,7 +70,7 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
     private MatchSessionRegistry matchSessionRegistry;
 
     @Test
-    @DisplayName("V25D37-F2: regenerate invalidates CareerSessionService cache after save")
+    @DisplayName("regenerate invalidates CareerSessionService cache after save")
     void regenerateInvalidatesCareerSessionCache() {
         // Stub the repo FIRST so any subsequent call (including the
         // saveCareer() pre-population below) goes through a defined Mono,
@@ -124,18 +122,15 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
         verify(careerRepository, atLeast(1)).save(any(CareerSave.class));
 
         // THEN 2: cache is EMPTY after regenerate — the stale entry was evicted.
-        //         Without the V25D37-F2 fix the cache would still hold the
-        //         pre-regenerate CareerSave (the BUG_FIXTURES_CACHE_STALE symptom).
         assertEquals(0, realCareerSessionService.getCacheSize(),
-                "V25D37-F2: CareerSessionService cache must be empty after regenerate, "
+                "CareerSessionService cache must be empty after regenerate, "
               + "otherwise GET /fixtures would return the stale pre-regenerate CareerSave");
     }
 
     @Test
-    @DisplayName("V25D37-F2: regenerate persists BEFORE invalidating cache (fail-safe ordering)")
+    @DisplayName("regenerate persists BEFORE invalidating cache (fail-safe ordering)")
     void regenerateSavesBeforeInvalidating() {
         // Verifies the save → invalidate ordering documented in
-        // V24D20-SANDBOX-V2-MVP BUG #1: if save fails, the cache must not be
         // invalidated (otherwise we lose both the new state AND the cached copy).
 
         // Stub save to fail so we can assert the cache is NOT invalidated.
@@ -186,7 +181,7 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
         // Cache must STILL contain the pre-existing entry — invalidate must
         // not run when save fails.
         assertEquals(1, realCareerSessionService.getCacheSize(),
-                "V25D37-F2: if save fails, cache must NOT be invalidated "
+                "if save fails, cache must NOT be invalidated "
               + "(save-before-invalidate ordering)");
     }
 

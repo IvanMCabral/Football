@@ -16,12 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C55.6 — Regression test for the {@code division} field exposure on
  * {@code WorldTeam} domain entity via {@code GET /api/v1/world/teams}.
  *
- * <p>Background: Bug MEDIUM found by REVISOR smoke C55.5 (runtime report
  * {@code reporte-C55.5-runtime-smoke.md} lines 168-181, 349-359). The
- * {@code teams.division} Postgres column was populated by V25D80 migration
  * (20 PRIMERA + 20 SEGUNDA + 20 TERCERA per league), but the
  * {@link com.footballmanager.domain.model.entity.WorldTeam} domain entity
  * had no {@code division} field — so the division tier was invisible to
@@ -38,7 +35,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *       {PRIMERA, SEGUNDA, TERCERA}.</li>
  * </ol>
  *
- * <p>The distribution 20/20/20 is enforced by V25D80 migration in dev
  * (Flyway enabled), but Flyway is disabled in tests, so this test only
  * verifies the field is present and well-formed — distribution is
  * exercised by C55.2 phase-4 tests once that UI lands.
@@ -63,7 +59,6 @@ class WorldTeamDivisionFieldE2ETest extends AbstractIntegrationTest {
 
     @BeforeEach
     void seedLaLiga() {
-        // V25D78-C55.5: ensure per-test isolation (AbstractIntegrationTest.@BeforeEach
         // already cleans Redis + Postgres world tables). Seed creates fresh
         // WorldTeam instances with division = Division.defaultDivision()
         // (PRIMERA, set by C55.6 createTeamFromDto).
@@ -94,7 +89,7 @@ class WorldTeamDivisionFieldE2ETest extends AbstractIntegrationTest {
         for (JsonNode team : teams) {
             JsonNode divisionNode = team.get("division");
             assertThat(divisionNode).as(
-                "team %s must expose `division` field (BUG_WORLDTEAM_NO_DIVISION_FIELD)",
+                "team %s must expose `division` field",
                 team.get("name").asText())
                 .isNotNull();
             assertThat(divisionNode.isNull())
@@ -144,7 +139,7 @@ class WorldTeamDivisionFieldE2ETest extends AbstractIntegrationTest {
         for (JsonNode team : teams) {
             String div = team.get("division").asText();
             assertThat(div).as(
-                "team %s in LaLiga must have non-empty division (BUG_WORLDTEAM_NO_DIVISION_FIELD)",
+                "team %s in LaLiga must have non-empty division",
                 team.get("name").asText())
                 .isIn("PRIMERA", "SEGUNDA", "TERCERA");
         }

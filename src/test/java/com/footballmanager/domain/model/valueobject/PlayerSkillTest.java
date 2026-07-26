@@ -8,10 +8,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * V25D31: PlayerSkill enum - 10 habilidades con metadata.
- */
 class PlayerSkillTest {
 
     @Test

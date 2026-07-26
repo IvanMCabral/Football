@@ -12,7 +12,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D47 (Sprint C11a): unit tests for {@link FormationEffectiveness}.
  *
  * <p>Coverage:
  * <ul>
@@ -85,7 +84,6 @@ class FormationEffectivenessTest {
 
         FormationEffectiveness fe = FormationEffectiveness.from(slots, natural);
         assertEquals("4-4-2", fe.inferredFormation());
-        // V25D52 (Sprint C13b): keyed by subdivisionId, not playerId.
         // p6 in S18-1 (MID slot) → 0.8. All others at natural position → 1.0.
         // teamAverage = (10*1.0 + 0.8) / 11 = 10.8/11 ≈ 0.9818
         assertEquals(0.8, fe.perPlayerEffectiveness().get("S18-1"));
@@ -109,7 +107,6 @@ class FormationEffectivenessTest {
         natural.put("p9", "WINGER");
 
         FormationEffectiveness fe = FormationEffectiveness.from(slots, natural);
-        // V25D52 (Sprint C13b): keyed by subdivisionId, not playerId.
         assertEquals(0.95, fe.perPlayerEffectiveness().get("S09-1"),
                 "WINGER in MID → 0.95 (carrilero flexibility)");
     }
@@ -168,7 +165,7 @@ class FormationEffectivenessTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.9: generic positions are not penalized at canonical formation slots")
+    @DisplayName("generic positions are not penalized at canonical formation slots")
     void genericPositionsAtCanonicalSlots_noGeometryPenalty() {
         List<LineupSlotDTO> slots = List.of(
                 slot("gk", "GK-1"),
@@ -219,7 +216,7 @@ class FormationEffectivenessTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.9: generic manual drag is proportional to distance from canonical slot")
+    @DisplayName("generic manual drag is proportional to distance from canonical slot")
     void genericManualDrag_penalizesByDeltaFromCanonicalSlot() {
         Map<String, String> natural = Map.of("mid", "MID");
         Map<String, double[]> coords = Map.of("S16-2", new double[]{16.65, 61.0});
@@ -246,7 +243,7 @@ class FormationEffectivenessTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.9: extreme role misuse still carries a strong penalty")
+    @DisplayName("extreme role misuse still carries a strong penalty")
     void extremeRoleMisuse_stillStrongPenalty() {
         List<LineupSlotDTO> slots = List.of(slot("att", "S22-2"));
         Map<String, String> natural = Map.of("att", "ATT");
@@ -260,7 +257,7 @@ class FormationEffectivenessTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.9: back-three wingbacks are evaluated as DEF, not MID")
+    @DisplayName("back-three wingbacks are evaluated as DEF, not MID")
     void backThreeWingbacks_areDefensiveSlots() {
         List<LineupSlotDTO> slots = List.of(
                 slot("lwb", "S15-1"),
@@ -284,7 +281,7 @@ class FormationEffectivenessTest {
     }
 
     @Test
-    @DisplayName("V25D99.20.9: 4-2-3-1 LW/RW advanced slots are evaluated as ATT, not MID")
+    @DisplayName("4-2-3-1 LW/RW advanced slots are evaluated as ATT, not MID")
     void fourTwoThreeOneWideAttackers_areAttackingSlots() {
         List<LineupSlotDTO> slots = List.of(
                 slot("lw", "S10-2"),
@@ -307,10 +304,8 @@ class FormationEffectivenessTest {
         assertEquals(1.0, fe.teamAverage(), 0.0001);
     }
 
-    // ========== V25D52 (Sprint C13b): contract — keys are subdivisionId ==========
-
     @Test
-    @DisplayName("V25D52: perPlayerEffectiveness keys are subdivisionId, not playerId")
+    @DisplayName("perPlayerEffectiveness keys are subdivisionId, not playerId")
     void v25d52_keyedBySubdivisionId() {
         // Frontend contract: fe.perPlayerEffectiveness?.[subdivisionId]
         // (see front-ciber/.../formation-effectiveness.dto.ts).

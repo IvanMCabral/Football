@@ -16,7 +16,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * V24D14-LIVE-FIX-1.7: verifies the formation read path in
  * {@link V24MatchContextFactory#build} prefers the persisted formation
  * stored in {@link CareerSave#getTeamStarting11Formation()} over the
  * legacy {@code SessionTeam.getFormation()} fallback. Without this fix

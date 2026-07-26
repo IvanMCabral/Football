@@ -15,7 +15,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D32-F2: PlayerEntity persistence — height + skills columns.
  *
  * <p>Tests del mapping domain → entity → domain. Sin Spring/DB: unit test puro sobre
  * {@link PlayerEntity#fromDomain(Player)}, {@link PlayerEntity#fromDomainForInsert(Player)}
@@ -24,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>El round-trip con datos reales se hace via Postgres en runtime; aca cubrimos:
  * <ul>
  *   <li>Round-trip con height + skills</li>
- *   <li>Backward-compat: pre-V25D32 rows (height=null, skillLevelsJson=null) → domain con null/empty</li>
  *   <li>Malformed JSON lanza IllegalStateException (fail-loud, no silent swallow)</li>
  *   <li>Sparse map: skill con level 0 se omite (getSkillLevel retorna 0)</li>
  * </ul>
@@ -94,8 +92,6 @@ class PlayerEntityPersistenceTest {
 
     @Test
     void toDomain_backwardCompat_nullColumns_yieldNullHeightEmptySkills() {
-        // V25D32-F2: pre-V25D32 rows en Postgres tienen height=null y skillLevelsJson=null.
-        // El engine en V25D33 usara defaults si height es null o skills es empty.
         PlayerEntity legacy = new PlayerEntity(
             UUID.randomUUID(), "Legacy Player", 30, "CM",
             70, 70, 70, 70, 70, 70,

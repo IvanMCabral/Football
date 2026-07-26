@@ -9,7 +9,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6D2: Tests for SessionPlayer discipline/suspension fields.
  * Fields added: yellowCards, redCards, suspended, suspensionRemainingMatches.
  */
 class SessionPlayerDisciplineFieldsTest {

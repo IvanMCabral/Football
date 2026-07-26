@@ -40,7 +40,6 @@ import static org.mockito.Mockito.when;
 /**
  * C55.7.5 — Tests for end-of-tournament standings aggregation (HIGH bug #28).
  *
- * <p>REVISOR C55.7.4 smoke: after playing a full season (R1-R10 with
  * teamsPerDivision=5), the "Tabla Final" page showed ALL teams with
  * PJ=0, G=0, E=0, P=0, GF=0, GC=0, DG=0, PTS=0. Mid-season standings
  * (R3) were correct.
@@ -191,7 +190,6 @@ class C55_7_5_EndOfTournamentAggregationTest {
     @Test
     @DisplayName("C55.7.5 #28: divisionFinalStandings populated with sorted standings at end-of-tournament")
     void divisionFinalStandings_populatedAtEndOfTournament() {
-        // C55.7.5 #28: REVISOR observed "Tabla Final con stats en cero" — the
         // frontend table reads from divisionFinalStandings via the PromotionCalculator
         // or via getStandings endpoint. After finishTournament, this Map MUST
         // contain the cumulative standings (not 0/0/0).

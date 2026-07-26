@@ -25,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D78-C55.7.7.1 BUG_L1: validates that {@link AuthUseCaseImpl#getUserInfo(String)}
  * now emits {@code displayName} populated as a 1:1 alias of the user's username, so
  * the frontend {@code displayName → email → username} chain (already implemented in
  * C55.7.7 commit 62ade5b) actually resolves to a friendly name instead of falling

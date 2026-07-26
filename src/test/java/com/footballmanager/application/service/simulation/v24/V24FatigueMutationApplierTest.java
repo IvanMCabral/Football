@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6C1: Unit tests for V24FatigueMutationApplier.
  * Tests fatigue/energy mutation behavior in isolation — no Redis, no Spring, no IO.
  */
 class V24FatigueMutationApplierTest {
@@ -410,8 +409,6 @@ class V24FatigueMutationApplierTest {
         assertEquals(1, count);
         assertEquals(88, p.getEnergy());
     }
-
-    // ========== V24D6F3: Edge Case Regression Tests ==========
 
     @Test
     void allPlayersInjured_noEnergyDrained() {

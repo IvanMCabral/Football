@@ -19,7 +19,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * V24D6K6: Support helpers for season-shaped diagnostic harness.
  *
  * <p>Provides utilities for:
  * <ul>

@@ -17,7 +17,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C48 — E2E coverage for SecurityConfig hardening of /api/v1/world/**.
  *
  * <p><b>Scope:</b> 5 tests verifying:
  * <ol>
@@ -78,7 +77,7 @@ class WorldAuthHardeningC48E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C48 Test #1: Anonymous → POST /world/seed-la-liga → 401 (SecurityConfig reject)")
+    @DisplayName("Anonymous → POST /world/seed-la-liga → 401 (SecurityConfig reject)")
     void anonymous_seedLaLiga_returns401() {
         // SecurityConfig.java:144 changed from permitAll to authenticated. The JWT
         // filter rejects the request before reaching the controller.
@@ -91,7 +90,7 @@ class WorldAuthHardeningC48E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C48 Test #2: Authenticated user A → POST /world/seed-la-liga?userId=B "
+    @DisplayName("Authenticated user A → POST /world/seed-la-liga?userId=B "
         + "→ 403 IMPERSONATION_FORBIDDEN (C47 regression guard — auth check must still run after SecurityConfig change)")
     void authenticatedImpostor_seedLaLiga_returns403() {
         // C47 contract regression guard: changing SecurityConfig must NOT remove the
@@ -110,7 +109,7 @@ class WorldAuthHardeningC48E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C48 Test #3: Admin user (role=ADMIN) → POST /admin/world/seed-la-liga?userId=B → 200 OK "
+    @DisplayName("Admin user (role=ADMIN) → POST /admin/world/seed-la-liga?userId=B → 200 OK "
         + "(admin escape hatch — can seed any user)")
     void admin_seedLaLigaForOtherUser_returns200() {
         // AdminWorldController.adminSeedLaLiga is gated by @PreAuthorize("hasRole('ADMIN')")
@@ -131,13 +130,13 @@ class WorldAuthHardeningC48E2ETest extends AbstractIntegrationTest {
         String key = "world:" + OTHER_USER_ID;
         Long bytes = redisTemplate.opsForValue().size(key).block();
         org.assertj.core.api.Assertions.assertThat(bytes)
-            .as("V25D78-C48 admin endpoint MUST persist world:{userId} to Redis")
+            .as("{userId} to Redis")
             .isNotNull()
             .isGreaterThan(0L);
     }
 
     @Test
-    @DisplayName("V25D78-C48 Test #4: Anonymous → DELETE /world/snapshot → 401 (SecurityConfig reject)")
+    @DisplayName("Anonymous → DELETE /world/snapshot → 401 (SecurityConfig reject)")
     void anonymous_deleteSnapshot_returns401() {
         webTestClient.delete().uri(uriBuilder -> uriBuilder
                 .path("/api/v1/world/snapshot")
@@ -148,7 +147,7 @@ class WorldAuthHardeningC48E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C48 Test #5: Authenticated user A → DELETE /world/snapshot → 200 OK own, 403 other")
+    @DisplayName("Authenticated user A → DELETE /world/snapshot → 200 OK own, 403 other")
     void authenticated_deleteSnapshot_ownReturns200_otherReturns403() {
         // OWN snapshot: same UUID in JWT and query param → 200 OK (regenerated)
         withJwt(SEED_USER_ID.toString(), "USER")
@@ -175,7 +174,7 @@ class WorldAuthHardeningC48E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C48 Bonus: Non-admin user → /admin/world/seed-la-liga → 403 "
+    @DisplayName("Non-admin user → /admin/world/seed-la-liga → 403 "
         + "(@PreAuthorize rejects non-ADMIN role at method level)")
     void nonAdmin_adminEndpoint_returns403() {
         // SecurityConfig allows /api/v1/admin/world/** to authenticated users, but

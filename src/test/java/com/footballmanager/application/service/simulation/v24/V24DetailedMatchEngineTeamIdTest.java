@@ -13,14 +13,12 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6O-fix: Timeline events must use real session team UUIDs, not the
  * legacy "HOME"/"AWAY" sentinel strings. Persisted V24_DETAIL data is
  * consumed by the V24 match detail page, and the UI/UX contract is:
  * - teamId is a sessionTeamId UUID that matches V24MatchContext.homeTeamId()
  *   or .awayTeamId()
  * - HOME/AWAY are never exposed in the timeline
  *
- * These tests fail with the pre-V24D6O code and pass after the fix.
  */
 class V24DetailedMatchEngineTeamIdTest {
 
@@ -96,7 +94,6 @@ class V24DetailedMatchEngineTeamIdTest {
     }
 
     /**
-     * V24D6O-fix (shots consistency): the persisted detail's homeShots/awayShots
      * must equal the count of timeline events with type ∈ {GOAL, SHOT_ON_TARGET,
      * MISS, BLOCK}. The Stats summary in the V24 detail page reads homeShots/awayShots;
      * the Shot Map reads the timeline. They must agree.

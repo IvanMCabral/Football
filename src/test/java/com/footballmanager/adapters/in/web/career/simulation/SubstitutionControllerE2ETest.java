@@ -25,7 +25,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * LIVE-MATCH-F1-POC: E2E coverage for {@link SubstitutionController}.
  *
  * <p>Coverage:
  * <ul>
@@ -58,7 +57,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("SubstitutionController — E2E HTTP coverage (LIVE-MATCH-F1-POC, FLAG 1 UX)")
+@DisplayName("SubstitutionController — E2E HTTP coverage")
 class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
 
     @Autowired
@@ -143,7 +142,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             {"playerOffId":"off","playerOnId":"on","minute":null}
             """;
 
-        // V24D13-2 (F4.4): contract update from FLAG 1 UX to F2.5 protocol semantics.
         // Previously (FLAG 1): the controller's onErrorResume caught the
         // IllegalStateException from the use case and returned 200 OK with
         // success=false + descriptive error (front showed a snackbar).
@@ -207,7 +205,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2 (T3): the full wire — POST substitution through
      * the controller, the use case drives
      * {@code mutateContext(ctx -> ctx.withManualSubstitution(...))} +
      * {@code replayFromMinute(...)} (F1 replay infra), and the live
@@ -240,7 +237,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         UUID awayTeamUuid = UUID.randomUUID();
 
         V24MatchContext treatmentContext = buildHappyPathContext(homeTeamId, awayTeamId);
-        // V24D15-CLEANUP: was seed 99999L — switched to 12345L because seed 99999
         // produced baseline 0-2 == treatment 0-2 deterministically (the engine
         // path with that seed and a DEF→DEF bench swap yields the same goals
         // regardless of the sub). Seed 12345 produces 1-1 vs 3-4 with the same
@@ -292,7 +288,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5 (B4 / T3.4): a POST with
      * {@code minute < liveSession.currentMinute()} is a protocol-level
      * failure (the manager is trying to change the past). The use case
      * throws {@link com.footballmanager.application.exception.MinuteInPastException}
@@ -324,7 +319,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         // Request with minute=0, which is BEFORE currentMinute=1.
         // This is the protocol failure: the engine would never apply
         // a sub for a past minute.
-        // V24D13-2 (F4.3): homeTeamId="home-f2-5-past" so the generated
         // player IDs are "home-f2-5-past-starter-0" / "-bench-0", not
         // "home-starter-0" / "home-bench-0". The substitution use case
         // checks requestedMinute < currentMinute BEFORE validating the
@@ -348,7 +342,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * LIVE-MATCH-F2-LIVE F2.5 (B4 / T3.4 follow-up): a POST with
      * {@code minute == liveSession.currentMinute()} is a valid request
      * (the sub is applied "right now" from the live match clock
      * perspective). It must NOT be rejected as 400 — it should follow
@@ -378,7 +371,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         // Request with minute=1 (== currentMinute). Must succeed.
-        // V24D13-2 (F4.3): homeTeamId="home-f2-5-curr" so the generated
         // player IDs are "home-f2-5-curr-starter-0" / "-bench-0".
         String body = """
             {"playerOffId":"home-f2-5-curr-starter-0","playerOnId":"home-f2-5-curr-bench-0","minute":1}
@@ -486,7 +478,6 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             // existing happy-path test (success=true, substitutionsRemaining=4)
             // is unaffected because it does not assert on goals.
             //
-            // V25D75-C40 A5: pre-C31 engine (post C38 revert) has lower goal
             // rate than the V33a/V31 era. Differential widened from
             // 80/75/78/80 vs 70/70/70/70 to 99/99/99/99 vs 30/30/30/30 so the
             // bench swap measurably affects goal output even with low-rate

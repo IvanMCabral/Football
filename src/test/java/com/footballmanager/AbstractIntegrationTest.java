@@ -18,7 +18,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7 FASE A — Base class for HTTP/E2E integration tests.
  *
  * <p>Boots the full Spring context against the isolated test environment:
  * <ul>
@@ -71,7 +70,6 @@ public abstract class AbstractIntegrationTest {
             .flushDb()
             .block();
 
-        // V25D78-C55.4: also clean Postgres world tables that persist across
         // test runs in the same JVM. Without this, the BuildWorldViewUseCase
         // reloads stale teams + leagues (from a previous test run with
         // older algorithm-generated leagueIds) into the snapshot, and the
@@ -85,7 +83,6 @@ public abstract class AbstractIntegrationTest {
     }
 
     /**
-     * V25D78-C55.5: seed LaLiga for the given user via POST /world/seed-la-liga.
      * Use in @BeforeEach of test classes that depend on the seeded data.
      */
     protected void seedLaLigaForUser(UUID userId) {
@@ -99,7 +96,6 @@ public abstract class AbstractIntegrationTest {
     }
 
     /**
-     * V25D78-C55.5: fetch the teamId for the named team by filtering
      * /world/leagues/{laligaId}/teams. Replaces the legacy "first team"
      * helper that broke when C55.3 B1 extended LaLiga to 60 teams (the first
      * team alphabetically is now "Vigo City 1", a synthetic B1 add).

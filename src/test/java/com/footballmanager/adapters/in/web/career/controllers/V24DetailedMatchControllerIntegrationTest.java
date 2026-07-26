@@ -26,7 +26,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * V24D24: Integration tests for {@link V24DetailedMatchController} covering
  * the {@code /detail}, {@code /compare} and the new {@code /timeline} endpoints.
  *
  * <p>Tests the controller's response shape and error handling without
@@ -150,8 +149,6 @@ class V24DetailedMatchControllerIntegrationTest {
         assertNotNull(response);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
-
-    // ============== /timeline (V24D24) ==============
 
     @Test
     void getTimeline_blankCareerId_returns400() {

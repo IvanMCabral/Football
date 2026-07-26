@@ -13,7 +13,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24A3: Determinism test for V24DetailedMatchEngine.
  * Same seed + same context = identical result.
  */
 class V24DetailedMatchEngineDeterminismTest {
@@ -42,13 +41,11 @@ class V24DetailedMatchEngineDeterminismTest {
     }
 
     /**
-     * V24D20-SANDBOX-V2-MVP BUG #4: run 10 matches with different seeds
      * and assert no outlier (total goals > 5x total xG). The original
      * smoke failure was A1: xG 1.777 → 0-7 (7 goals from 1.777 xG is
      * ≈3.9x — borderline; with the new divergence instrumentation we
      * want a hard guard).
      *
-     * <p>The V24DetailedMatchEngine logs a [V24-XG-DIVERGENCE-OUTLIER]
      * warn when the heuristic is breached; this test surfaces that as
      * a hard failure.
      */

@@ -30,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C43 P0 (Bug #2 reproducer) — E2E test for the
  * "auto-select fills DEF slots with off-position CDM/CM" bug.
  *
  * <p>Pre-fix root cause: TWO compounding issues:
@@ -46,7 +45,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * squad and Phase 2 (off-position fallback) filled the 4 DEF slots with the
  * highest-OVR midfielders (Valverde CDM 85, Tchouameni CDM 80, etc.).
  *
- * <p>Post-fix (V25D78-C43 P0):
  * <ul>
  *   <li>{@code mapPosition("DEF") → CB} — the seed category code "DEF" now
  *       maps to a real defender position so the DB stores defenders as
@@ -59,7 +57,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * <p>Strategy: real {@code @SpringBootTest} (Redis DB 15, Postgres
  * {@code football_manager_test}, Flyway off, RANDOM_PORT). To make the
  * test hermetic from the pre-seeded test DB (which may have been populated
- * before the V25D78-C43 mapping fix), the test:
  * <ol>
  *   <li>Creates a career with the first LaLiga team.</li>
  *   <li>Reads the {@code CareerSave} JSON from Redis and rewrites the
@@ -117,7 +114,6 @@ class AutoSelectRoleMatchE2ETest extends AbstractIntegrationTest {
     void cleanState() {
         reactiveRedisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
         seedLaLigaForUser(SEED_USER_ID);
         careerSessionService.clearCache();
     }
@@ -155,10 +151,8 @@ class AutoSelectRoleMatchE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * V25D78-C43 P0 (Bug #2 E2E precondition): rewrite the positions of the
      * user-team SessionPlayers in the persisted CareerSave JSON to a
      * canonical 4-3-3 distribution. The DB-level test DB may have been
-     * populated before the V25D78-C43 {@code mapPosition("DEF") → CB}
      * fix, so we patch the CareerSave in Redis directly.
      *
      * <p>After this call, the user team has 11+ players in the canonical
@@ -261,7 +255,6 @@ class AutoSelectRoleMatchE2ETest extends AbstractIntegrationTest {
     void autoSelect_noOffPositionFillWarning_afterMappingFix() throws Exception {
         String teamId = seedRealTeam();
         seedCareer(teamId);
-        // V25D78-C43: rewrite positions in the CareerSave JSON so the test is
         // hermetic from the pre-seeded test DB (which may pre-date the
         // mapPosition("DEF") → CB fix).
         normalizeSquadPositionsInRedis();

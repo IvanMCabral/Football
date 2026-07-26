@@ -12,7 +12,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D40 (Sprint C5): unit tests for {@link OverallCalculator}, the shared
  * utility used by both {@code Player.getOverall()} and
  * {@code SessionPlayer.calculateOverall()}.
  *
@@ -205,7 +204,6 @@ class OverallCalculatorTest {
         @Test
         @DisplayName("WINGER height=170 (closed boundary) → -1 (matches V25D39 test expectation)")
         void wingerHeight170() {
-            // V25D39 winger_skills99_height170 expects base+4 net: skill 5 - height 1 = 4.
             int base = OverallCalculator.calculate(80, 80, 80, 80, 80, 80, "WINGER", null, null);
             int withHeight = OverallCalculator.calculate(80, 80, 80, 80, 80, 80, "WINGER", 170, null);
             assertEquals(base - 1, withHeight, "WINGER height=170 should subtract 1 (closed boundary)");

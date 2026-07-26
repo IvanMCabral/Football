@@ -16,10 +16,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-
-/**
- * V24D4C: Tests for V24DetailedMatchQueryService.
- */
 @ExtendWith(MockitoExtension.class)
 class V24DetailedMatchQueryServiceTest {
 

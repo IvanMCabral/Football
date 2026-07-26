@@ -314,7 +314,6 @@ class MatchEngineImplEventConsistencyTest {
         }
     }
 
-    // ========== V25D81.1 BUG #1 regression tests ==========
     //
     // Legacy V23 fallback in MatchEngineImpl#generateEvents used to emit INJURY
     // events mislabeled as SUBSTITUTION. After the cleanup the legacy marker is

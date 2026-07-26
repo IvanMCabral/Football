@@ -195,7 +195,7 @@ class MatchSimulationOrchestratorTest {
     }
 
     @Test
-    @DisplayName("V25D100.18: stale pending matchId backfills fixture result without advancing currentRound")
+    @DisplayName("stale pending matchId backfills fixture result without advancing currentRound")
     void processMatchDayResults_stalePendingMatchId_backfillsWithoutAdvancingCurrentRound() {
         CareerSave career = makeCareer(5, 10, Map.of(
                 3, List.<String[]>of(new String[]{USER_TEAM, OTHER_TEAM_A})

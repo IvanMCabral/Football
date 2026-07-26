@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * LIVE-MATCH-F5.2 BUG-003 regression test.
  *
  * <p>Repro: in Fecha 2+ (after a previous round), the orchestrator's
  * per-round mutations (suspensions, injuries, sales) may remove a player

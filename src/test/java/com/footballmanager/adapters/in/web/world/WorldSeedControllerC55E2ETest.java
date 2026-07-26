@@ -19,7 +19,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C55.1 — Multi-league seed E2E coverage for {@link WorldSeedController}.
  *
  * <p><b>Scope (5 tests):</b>
  * <ol>
@@ -68,7 +67,6 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
         // reads ALL league-team associations from Postgres (unfiltered by userId)
         // and syncs them into Redis under our userId, then TeamPlayerLoaderService
         // loads all players for those teams. Pre-existing test data has heightCm=0
-        // (from V25D75-C40 A3 nullable-fix) which triggers Player.setHeightCm
         // validation during domain reconstruction. Workaround: truncate the
         // affected tables before each test (order matters: children before parents).
         databaseClient.sql("DELETE FROM game_players").fetch().rowsUpdated().onErrorResume(e -> Mono.just(0L)).block();
@@ -80,7 +78,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.1 #1 (LaLiga regression): POST /world/seed/laliga still works "
+    @DisplayName("POST /world/seed/laliga still works "
         + "(delegates to LaLigaSeedService, C44 contract preserved)")
     void seedLaLiga_regression() {
         webTestClient.mutateWith(mockUser(USER_ID.toString()))
@@ -115,7 +113,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.1 #2 (new liga): POST /world/seed/premier seeds Premier League "
+    @DisplayName("POST /world/seed/premier seeds Premier League "
         + "(synthetic JSON, ~20 teams + ~440 players)")
     void seedPremier_newLiga() {
         webTestClient.mutateWith(mockUser(USER_ID.toString()))
@@ -155,7 +153,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.1 #3 (seed-all): POST /world/seed-all seeds all 10 leagues "
+    @DisplayName("POST /world/seed-all seeds all 10 leagues "
         + "(end-to-end test for the multi-league orchestration)")
     void seedAll_allTenLeagues() {
         webTestClient.mutateWith(mockUser(USER_ID.toString()))
@@ -223,7 +221,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.1 #4 (defensive validation): POST /world/seed/foobar returns 400 "
+    @DisplayName("POST /world/seed/foobar returns 400 "
         + "UNKNOWN_LEAGUE (no Spring exception, clean error code)")
     void seedUnknownSlug_returns400() {
         webTestClient.mutateWith(mockUser(USER_ID.toString()))
@@ -239,7 +237,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.1 #5 (idempotency): two consecutive seed-all calls produce "
+    @DisplayName("two consecutive seed-all calls produce "
         + "the same final state (no duplicate leagues, no duplicate teams)")
     void seedAll_idempotent() {
         // First call
@@ -330,7 +328,7 @@ class WorldSeedControllerC55E2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.1.1 (cosmetic fix): POST /world/seed/{slug} returns userId as UUID, "
+    @DisplayName("POST /world/seed/{slug} returns userId as UUID, "
         + "not the league name (regression for the REVISOR-reported cosmetic bug)")
     void seedLeague_responseUserId_isUuid_notLeagueName() {
         JsonNode body = webTestClient.mutateWith(mockUser(USER_ID.toString()))

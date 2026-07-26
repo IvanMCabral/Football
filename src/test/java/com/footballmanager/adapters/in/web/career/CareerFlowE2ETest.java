@@ -14,7 +14,6 @@ import java.util.UUID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7 FASE B — Career lifecycle E2E HTTP coverage.
  *
  * <p>Exercises the main flow end-to-end against the real DB + Redis:
  * <ol>

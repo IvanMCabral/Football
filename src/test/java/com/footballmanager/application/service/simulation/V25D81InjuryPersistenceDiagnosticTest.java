@@ -17,9 +17,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D81-F0: Diagnostic test for BUG #6 (injuries not persisting).
  *
- * <p>REVISOR F0 (V25D80 smoke) claimed "0 injured in Redis, 0 injured in API".
  * F0 investigation shows the in-memory state IS mutated and orchestrator's
  * saveCareer IS called. This test verifies the actual save→load roundtrip
  * for an injured player to determine whether the bug is real.
@@ -30,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * persistence layer works as documented.
  *
  * <p>Run: REDIS_PASSWORD=MgrRedis2026!Rotate#Secure DB_PASSWORD=Mgr2026Rot!Secure#
- * mvn test -Dtest=V25D81InjuryPersistenceDiagnosticTest
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

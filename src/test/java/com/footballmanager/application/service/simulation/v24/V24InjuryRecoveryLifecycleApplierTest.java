@@ -11,7 +11,6 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6I2: Unit tests for V24InjuryRecoveryLifecycleApplier.
  * Tests injury recovery lifecycle decrement in isolation — no Spring, no IO.
  */
 class V24InjuryRecoveryLifecycleApplierTest {

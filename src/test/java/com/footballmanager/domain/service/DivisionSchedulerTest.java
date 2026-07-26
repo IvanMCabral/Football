@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * V25D78-C55.2 phase 2 unit tests for {@link DivisionScheduler}.
  *
  * <p>Verifies the multi-division 78-matchday schedule generation:
  * <ul>
@@ -42,7 +41,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #1: 60-team league produces 78 matchdays total (38 intra + 40 cross)")
+    @DisplayName("60-team league produces 78 matchdays total (38 intra + 40 cross)")
     void generateSeason_produces_78_matchdays() {
         List<DivisionScheduler.DivisionFixtureRound> rounds = scheduler.generateSeasonFixtures(sixtyTeams);
         assertThat(rounds).hasSize(DivisionScheduler.TOTAL_MATCHDAYS);
@@ -51,7 +50,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #2: first 38 matchdays are INTRA (round-robin ida+vuelta per division)")
+    @DisplayName("first 38 matchdays are INTRA (round-robin ida+vuelta per division)")
     void intra_matchdays_have_30_matches_per_day() {
         List<DivisionScheduler.DivisionFixtureRound> rounds = scheduler.generateSeasonFixtures(sixtyTeams);
         for (int i = 0; i < DivisionScheduler.INTRA_MATCHDAYS; i++) {
@@ -62,7 +61,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #3: last 40 matchdays are CROSS (cross-division single round)")
+    @DisplayName("last 40 matchdays are CROSS (cross-division single round)")
     void cross_matchdays_have_30_matches_per_day() {
         List<DivisionScheduler.DivisionFixtureRound> rounds = scheduler.generateSeasonFixtures(sixtyTeams);
         for (int i = DivisionScheduler.INTRA_MATCHDAYS;
@@ -74,7 +73,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #4: no team plays twice in the same matchday (no overlaps)")
+    @DisplayName("no team plays twice in the same matchday (no overlaps)")
     void no_team_plays_twice_in_same_matchday() {
         List<DivisionScheduler.DivisionFixtureRound> rounds = scheduler.generateSeasonFixtures(sixtyTeams);
         for (DivisionScheduler.DivisionFixtureRound round : rounds) {
@@ -93,7 +92,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #5: each team plays 38 intra matches + 40 cross matches = 78 total")
+    @DisplayName("each team plays 38 intra matches + 40 cross matches = 78 total")
     void each_team_plays_78_matches_total() {
         List<DivisionScheduler.DivisionFixtureRound> rounds = scheduler.generateSeasonFixtures(sixtyTeams);
         Map<TeamId, Integer> appearanceCount = new HashMap<>();
@@ -123,7 +122,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #6: all 1,200 unique cross-division matchups appear exactly once")
+    @DisplayName("all 1,200 unique cross-division matchups appear exactly once")
     void all_cross_matchups_appear_exactly_once() {
         List<DivisionScheduler.DivisionFixtureRound> rounds = scheduler.generateSeasonFixtures(sixtyTeams);
         Map<TeamId, Division> teamDivisions = sixtyTeams.stream()
@@ -157,7 +156,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #7: intra-division matchdays have 10 matches per division per day")
+    @DisplayName("intra-division matchdays have 10 matches per division per day")
     void intra_matchdays_have_10_matches_per_division() {
         List<DivisionScheduler.DivisionFixtureRound> rounds = scheduler.generateSeasonFixtures(sixtyTeams);
         Map<TeamId, Division> teamDivisions = sixtyTeams.stream()
@@ -178,7 +177,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #8: validation rejects non-60-team lists")
+    @DisplayName("validation rejects non-60-team lists")
     void validate_rejects_wrong_team_count() {
         List<Team> fiftyNineTeams = sixtyTeams.subList(0, 59);
         assertThatThrownBy(() -> scheduler.generateSeasonFixtures(fiftyNineTeams))
@@ -187,7 +186,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #9: validation rejects wrong division count")
+    @DisplayName("validation rejects wrong division count")
     void validate_rejects_wrong_division_count() {
         // 60 teams but 25 in PRIMERA, 20 in SEGUNDA, 15 in TERCERA
         List<Team> wrongDistribution = new ArrayList<>(sixtyTeams);
@@ -208,7 +207,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #10: isLegacyLeague correctly detects legacy vs multi-division leagues")
+    @DisplayName("isLegacyLeague correctly detects legacy vs multi-division leagues")
     void isLegacyLeague_detection() {
         assertThat(scheduler.isLegacyLeague(sixtyTeams)).isFalse();
         List<Team> legacyLaLiga20 = sixtyTeams.subList(0, 20);
@@ -216,7 +215,7 @@ class DivisionSchedulerTest {
     }
 
     @Test
-    @DisplayName("V25D78-C55.2 #11: schedule is deterministic across two consecutive runs")
+    @DisplayName("schedule is deterministic across two consecutive runs")
     void schedule_is_deterministic() {
         List<DivisionScheduler.DivisionFixtureRound> run1 = scheduler.generateSeasonFixtures(sixtyTeams);
         List<DivisionScheduler.DivisionFixtureRound> run2 = scheduler.generateSeasonFixtures(sixtyTeams);

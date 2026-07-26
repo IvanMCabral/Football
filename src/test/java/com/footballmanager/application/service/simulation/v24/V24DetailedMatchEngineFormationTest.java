@@ -23,9 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V24D14-LIVE-FIX-1.7: critical contract test for the formation wire-up.
  *
- * <p>Before this fix, {@code V24DetailedMatchEngine.attemptShot()} and the
  * CHANCE_CREATED path invoked {@code V24PlayerSelector.selectShooter(players)}
  * and {@code V24AssistModel.selectAssistProvider(..., null, ...)} without a
  * formation argument, so the formation-aware weight tables were never
@@ -398,10 +396,7 @@ class V24DetailedMatchEngineFormationTest {
                 + "should gradually lower same-side defensive weight.");
     }
 
-    // ========== V24D23-A B2: shot-location distribution is formation-aware ==========
-
     /**
-     * V24D23-A: verify the {@code hasWingers} modifier (4-3-3, 3-4-3)
      * shifts the aggregate shot location distribution toward
      * {@link V24ShotLocation#PENALTY_AREA_WIDE} relative to a non-wingers
      * formation (4-4-2). Direct unit-level isolation of the
@@ -442,7 +437,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.189: a 3-4-3 has a back three, but also has natural high/wide
      * attackers. It must not be treated like a narrow 3-5-2 for shot
      * geography, otherwise the harness reads every formation as central and
      * wide players/carrileros stop feeling like real tactical decisions.
@@ -464,7 +458,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V24D23-A/V25D99.189: verify the narrow {@code defenders()==3} modifier (3-5-2)
      * shifts the aggregate shot location distribution
      * away from {@link V24ShotLocation#PENALTY_AREA_WIDE} relative to a
      * 4-defender formation (4-4-2). Direct unit-level isolation of the
@@ -535,7 +528,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * Helper for the V24D23-A B2 unit tests: invokes the private
      * {@code selectShotLocation(style, formation, random)} method
      * {@code samples} times via reflection and counts the resulting
      * {@link V24ShotLocation} draws. Each call uses a fresh
@@ -753,7 +745,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     // ============================================================================
-    // V25D47 (Sprint C11c): tactical engine smoke tests
     //
     // C11a added PositionEffectivenessCalculator + the naturalPosition field on
     // V24PlayerMatchState. aggregateAttackerStat / aggregateDefenderStat now
@@ -775,13 +766,11 @@ class V24DetailedMatchEngineFormationTest {
     // ========== C11c Test 1: tactical position changes effectiveness ==========
 
     /**
-     * V25D47 / C11c Test 1: verify that calling {@code setPosition(tactical)}
      * on a player with a fixed naturalPosition changes
      * {@code aggregateAttackerStat} via the effectiveness multiplier.
      *
      * <p>Methodology: reflective access to the private
      * {@code aggregateAttackerStat(players, formation)} method (same pattern
-     * as the V24D23-A selectShotLocation tests). Build 11 players with
      * controlled attack stats, then compare:
      * <ul>
      *   <li>Baseline: every player has {@code naturalPosition == position}
@@ -819,7 +808,6 @@ class V24DetailedMatchEngineFormationTest {
         double baselineAgg = invokeAggregateAttackerStat(baselineStates, "4-4-2");
         double misalignedAgg = invokeAggregateAttackerStat(misalignedStates, "4-4-2");
 
-        // Top-7 baseline (V25D99.18: widened from top-5): 100+99+98+97+96+95+94 = 679 / 7 = 97.0.
         // Top-7 misaligned: att0 still in top-7 by raw sort (raw attack=100 keeps it #1),
         // but weighted contribution is 100*0.7 = 70. So misaligned =
         // (70 + 99 + 98 + 97 + 96 + 95 + 94) / 7 = 649 / 7 = 92.71.
@@ -828,7 +816,6 @@ class V24DetailedMatchEngineFormationTest {
                 "aggregateAttackerStat must decrease when a top attacker is moved to a "
                         + "MID tactical slot (effectiveness 0.7). baseline=" + baselineAgg
                         + ", misaligned=" + misalignedAgg);
-        // Sanity: misaligned must be at least 3.5% lower (V25D99.18 top-7: expected delta ~4.4%).
         assertTrue(baselineAgg - misalignedAgg >= baselineAgg * 0.035,
                 "Misaligned aggregate should be at least 3.5% lower than baseline. "
                         + "baseline=" + baselineAgg + ", misaligned=" + misalignedAgg
@@ -838,7 +825,6 @@ class V24DetailedMatchEngineFormationTest {
     // ========== C11c Test 2: LWB (WINGER) vs CB (DEF) flexibility ==========
 
     /**
-     * V25D47 / C11c Test 2: prove the LWB/CB flexibility asymmetry.
      *
      * <p>In a 5-cat world, "LWB" (left wing-back) folds into the
      * {@code WINGER} category (the role is naturally wide and gets back on
@@ -924,7 +910,6 @@ class V24DetailedMatchEngineFormationTest {
     // ========== C11c Test 3: backward compat (no setPosition called) ==========
 
     /**
-     * V25D47 / C11c Test 3: when no player has {@code setPosition} called
      * (pre-C11a legacy path), {@code naturalPosition == position} for every
      * player. PositionEffectivenessCalculator.effectiveness(X, X) = 1.0 for
      * any X, so aggregateAttackerStat and aggregateDefenderStat reduce to
@@ -963,7 +948,6 @@ class V24DetailedMatchEngineFormationTest {
         double actualDefense = invokeAggregateDefenderStat(states);
 
         // Hand-computed baseline (no effectiveness weighting, mentality=75 for all).
-        // Top-7 by attack (V25D99.18: widened from top-5):
         // lineup is 1 GK(30) + 4 DEF(50) + 4 MID(75) + 2 ATT(90). Top-7 =
         // 2 ATT(90) + 4 MID(75) + 1 DEF(50) = 530 / 7 ≈ 75.71.
         double expectedAttack = (90.0 + 90.0 + 75.0 + 75.0 + 75.0 + 75.0 + 50.0) / 7.0;
@@ -984,7 +968,6 @@ class V24DetailedMatchEngineFormationTest {
     // ========== C11c Test 4: 5-formations probe ==========
 
     /**
-     * V25D47 / C11c Test 4: same 11-player base, same seed, 5 different
      * formation labels. Cumulative homeXg must vary across variants — the
      * engine consumes formation label via the offensive/defensive
      * modifiers (formationOffensiveModifier, formationDefensiveModifier,
@@ -1053,7 +1036,6 @@ class V24DetailedMatchEngineFormationTest {
     // ========== C11c Test 5: LWB-like (DEF-natural) in ATT = severe penalty ==========
 
     /**
-     * V25D47 / C11c Test 5: a defensive-natural player forced into the ATT
      * slot is severely penalized. In the
      * {@link com.footballmanager.domain.model.valueobject.PositionEffectivenessCalculator}
      * table, effectiveness(DEF, ATT) = 0.4 — a CB or LWB asked to play as
@@ -1121,7 +1103,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.22.1: the actual match engine must consume the same visual
      * free-positioning coordinates used by the formation editor preview.
      *
      * <p>Regression captured from the MVP editor: pushing one midfielder a bit
@@ -1207,7 +1188,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.22.2: tactical shape must be continuous with the visual pitch.
      * Moving one midfielder upward should gradually raise attack volume; moving
      * one more pixel should not cause a formation-level cliff.
      */
@@ -1243,7 +1223,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.76: horizontal pixels must feed the same channel story that the
      * visual editor now shows in "Shape & canales". Moving a left attacker
      * inward should reduce left-channel attack and increase central attack,
      * while keeping the formation label unchanged.
@@ -1288,7 +1267,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.20.3.20: manual pixel movement must be smooth. A coach nudging a
      * player a single percent/pixel inward should create a tiny channel signal,
      * not a discontinuous jump like changing to a whole new formation.
      */
@@ -1338,7 +1316,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.20.3.21: changing the player in the same visual slot must affect
      * the match engine. The formation editor can keep the exact same
      * coordinates while the DT swaps a stronger player for a weaker one, or
      * forces a defender into an attacking role; the partido must price both.
@@ -1386,7 +1363,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.20.3.22: live scheduled substitutions must change the tactical
      * attacking footprint only when their minute arrives. Same match/seed
      * before minute 60 should be neutral; from minute 60 onward, an upgrade
      * should raise attack volume and a downgrade should lower it.
@@ -1451,7 +1427,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.20.3.23: full-match smoke for manager substitutions. With the
      * same match setup and seeds, adding a meaningful minute-60 attacking
      * substitution must alter at least one output metric across a small sample.
      */
@@ -1494,7 +1469,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.26: the tactical shape must not treat an out-of-role player as a
      * perfect midfielder just because his custom coordinates sit in the middle
      * third. The editor/harness can visually place any player in a MID slot,
      * but the match engine must still price the loss of midfield structure.
@@ -1536,7 +1510,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.29: a technical attacker can stand in the central band, but he
      * should not provide the same tempo/control/screen value as a true pivot.
      * This protects the manager contract behind cases like
      * Tchouameni -> Rodrygo in the stress harness.
@@ -1584,7 +1557,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.61/77: a 5-4-1 should read as a low block, not merely as "one
      * fewer attacker". The manager-facing harness found that 5-4-1 could
      * concede too many useful opponent looks: this pins the shape contract so
      * the block gives up possession/volume but clearly protects the centre and
@@ -1631,7 +1603,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.340: the 5-4-1 low-block protection must come from the visual
      * geometry, not only from the formation label. Moving the midfield line
      * lower should protect more and avoid becoming a free attacking boost;
      * pushing it higher should add outlet/press height while weakening the
@@ -1680,7 +1651,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.217: 3-5-2-CDM is visually a 3-CB + LWB/RWB shape, not a narrow
      * back three. The side-mirror harness showed width OK but poor lateral
      * response; this pins the engine-side channel contract so the CDM variant
      * keeps real carrilero cover while the holder improves central protection.
@@ -1722,7 +1692,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.220: carrileros must react to pixel height. In the manager UI,
      * pushing LWB/RWB higher should create more lateral attack and less cover;
      * dropping them should protect more and attack less. This pins the visual
      * editor -> tactical shape -> engine contract for 3-5-2-CDM.
@@ -1757,7 +1726,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     /**
-     * V25D99.77: 4-2-2-2 is a narrow box trade-off. It may be stretchable wide,
      * but it should not be globally worse than a flat 4-4-2 just because it has
      * the same 4/4/2 line counts. It must protect the middle and keep a real
      * vertical attack identity.
@@ -2194,8 +2162,6 @@ class V24DetailedMatchEngineFormationTest {
     }
 
     // ============================================================================
-    // V25D55 (Sprint C16) — Engine integration tests for the 5 new formations
-    // added in V25D54 (C15): 3-5-2-CDM, 5-4-1, 3-4-1-2, 4-2-2-2, 4-1-2-3.
     //
     // Each test simulates a full match with the new formation on both teams and
     // asserts: (a) the simulation completes without exception, (b) cumulative
@@ -2208,42 +2174,41 @@ class V24DetailedMatchEngineFormationTest {
     // ============================================================================
 
     @Test
-    @DisplayName("V25D55 (C16) P1.5: 3-5-2-CDM simulation runs without error and produces valid xG")
+    @DisplayName("3-5-2-CDM simulation runs without error and produces valid xG")
     void simulation_3_5_2_CDM_runsWithoutError() {
         V24DetailedMatchResult result = runMatch("3-5-2-CDM", "4-4-2", 42L);
         assertValidMatchResult(result, "3-5-2-CDM");
     }
 
     @Test
-    @DisplayName("V25D55 (C16) P1.5: 5-4-1 simulation runs without error and produces valid xG")
+    @DisplayName("5-4-1 simulation runs without error and produces valid xG")
     void simulation_5_4_1_runsWithoutError() {
         V24DetailedMatchResult result = runMatch("5-4-1", "4-4-2", 42L);
         assertValidMatchResult(result, "5-4-1");
     }
 
     @Test
-    @DisplayName("V25D55 (C16) P1.5: 3-4-1-2 simulation runs without error and produces valid xG")
+    @DisplayName("3-4-1-2 simulation runs without error and produces valid xG")
     void simulation_3_4_1_2_runsWithoutError() {
         V24DetailedMatchResult result = runMatch("3-4-1-2", "4-4-2", 42L);
         assertValidMatchResult(result, "3-4-1-2");
     }
 
     @Test
-    @DisplayName("V25D55 (C16) P1.5: 4-2-2-2 simulation runs without error and produces valid xG")
+    @DisplayName("4-2-2-2 simulation runs without error and produces valid xG")
     void simulation_4_2_2_2_runsWithoutError() {
         V24DetailedMatchResult result = runMatch("4-2-2-2", "4-4-2", 42L);
         assertValidMatchResult(result, "4-2-2-2");
     }
 
     @Test
-    @DisplayName("V25D55 (C16) P1.5: 4-1-2-3 simulation runs without error and produces valid xG")
+    @DisplayName("4-1-2-3 simulation runs without error and produces valid xG")
     void simulation_4_1_2_3_runsWithoutError() {
         V24DetailedMatchResult result = runMatch("4-1-2-3", "4-4-2", 42L);
         assertValidMatchResult(result, "4-1-2-3");
     }
 
     /**
-     * V25D55 (C16) P1.5: shared assertion for the 5 formation integration
      * tests. Validates:
      * <ul>
      *   <li>{@code homeXg} is positive (sim produced shots).</li>

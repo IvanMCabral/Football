@@ -6,10 +6,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * V24B: Shot xG model tests.
- * Verifies: xG clamped [0.01, 0.60] (V24D6U4 tuned from 0.80), different locations produce different xG,
  * style modifier affects xG, goal resolution correlates with xG.
  *
- * <p><b>V25D25 update:</b> {@code calculateXg} now takes a formation argument
  * (formation-specific xG modifier pipeline). All calls pass
  * {@code "4-4-2"} (the BALANCED_DEFAULT) so the unit tests verify the
  * non-formation multipliers in isolation. Formation effects are
@@ -17,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class V24ShotXgModelTest {
 
-    // V25D25: formation default for unit tests — parser falls back to 4-4-2 (modifier=1.03)
     // when null/blank, so we explicitly pass "4-4-2" to keep test semantics stable.
     private static final String BASELINE_FORMATION = "4-4-2";
 
@@ -35,7 +32,6 @@ class V24ShotXgModelTest {
         V24ShotQuality max = new V24ShotQuality(
                 V24ShotLocation.SIX_YARD_BOX, 0.95, 0.95, 0.05, 0.1, 1.15);
         double xgMax = calc.calculateXg(max, BASELINE_FORMATION);
-        // V24D6U4: MAX_XG tuned from 0.80 to 0.60
         assertTrue(xgMax <= 0.60, "xG must be <= 0.60, got " + xgMax);
     }
 
@@ -108,7 +104,6 @@ class V24ShotXgModelTest {
         for (V24ShotLocation loc : locations) {
             V24ShotQuality q = new V24ShotQuality(loc, 0.5, 0.5, 0.5, 0.5, 1.0);
             double xg = calc.calculateXg(q, BASELINE_FORMATION);
-            // V24D6U4: xG range updated from [0.01, 0.80] to [0.01, 0.60]
             assertTrue(xg >= 0.01 && xg <= 0.60,
                     "xG for " + loc + " must be in [0.01, 0.60], got " + xg);
         }

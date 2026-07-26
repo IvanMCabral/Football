@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V25D78-C43 P0 (Bug #1 reproducer) — E2E test for the
  * "formation doesn't persist between seasons / after orchestrator save" bug.
  *
  * <p>Pre-fix root cause: {@code LineupCommandUseCaseImpl} wrote to Redis via
@@ -82,9 +81,7 @@ class LineupFormationPersistenceE2ETest extends AbstractIntegrationTest {
     void cleanState() {
         reactiveRedisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
         seedLaLigaForUser(SEED_USER_ID);
-        // V25D75-C40 A2: clear the in-memory cache between tests so a previous
         // test's cached CareerSave doesn't leak across the @BeforeEach.
         careerSessionService.clearCache();
     }

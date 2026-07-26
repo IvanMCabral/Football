@@ -8,7 +8,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * F6 Sprint 2 (LIVE-MATCH-F6-MATCH-COMPARE): Unit tests for
  * {@link MatchComparisonDiff} and {@link EventBucketDiff}.
  */
 class MatchComparisonDiffTest {

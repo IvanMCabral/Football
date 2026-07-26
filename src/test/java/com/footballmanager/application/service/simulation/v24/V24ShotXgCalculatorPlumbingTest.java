@@ -9,16 +9,12 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V25D32-F4: V24ShotXgCalculator plumbing regression test.
  *
  * <p>Verifica:
  * <ul>
- *   <li>El overload 5-args (V25D27) delega al 9-args con defaults Map.of() / null
  *       y produce el MISMO resultado que el overload 2-args (regression check).
  *   <li>El overload 9-args con skills=empty + height=null produce MISMO resultado
- *       que el overload 5-args (regression check, V25D32 NO impact engine).
  *   <li>El overload 9-args con skills/heights distintos produce MISMO resultado
- *       tambien (V25D32 NO usa los nuevos params todavia).
  * </ul>
  */
 class V24ShotXgCalculatorPlumbingTest {
@@ -41,9 +37,7 @@ class V24ShotXgCalculatorPlumbingTest {
 
     @Test
     void overload5Args_matchesOverload2Args() {
-        // V25D32-F4: regression — el overload 5-args (que delega al 9-args)
         // debe producir el mismo resultado que el overload 2-args (que tambien
-        // delega al 5-args via V25D27). Ambos caminos deben converger.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
 
         double xg2 = calc.calculateXg(BASELINE_QUALITY, "4-3-3");
@@ -55,18 +49,13 @@ class V24ShotXgCalculatorPlumbingTest {
 
     @Test
     void overload9Args_nonImplementedSkills_remainIgnored() {
-        // V25D33-F3 update: only HEADER (F1) and WALL (F3) are implemented.
-        // Skills deferred to V25D34 (PLAYMAKER, AERIAL, MARKER, TACKLER,
         // SHOOTER, PASSER, SPEEDSTER) must STILL produce identical results
-        // when passed via 9-args. This test replaces the V25D32-F4 "ignores
-        // all skills" check with the V25D33 contract: only HEADER + WALL
         // change behavior.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();
 
         double xgEmpty = calc.calculateXg(BASELINE_QUALITY, "4-3-3", "4-4-2", 70.0, 70.0,
                 Map.of(), null, Map.of(), null);
 
-        // Skills deferred to V25D34 (no engine impact en F1/F2/F3)
         Map<PlayerSkill, Integer> shooterSkills = new HashMap<>();
         shooterSkills.put(PlayerSkill.PLAYMAKER, 99);
         shooterSkills.put(PlayerSkill.MARKER, 99);
@@ -83,14 +72,13 @@ class V24ShotXgCalculatorPlumbingTest {
                 gkSkills, 195);      // GK alto
 
         assertEquals(xgEmpty, xgWithSkills, 0.0001,
-                "V25D33-F1/F3: skills NO implementados (PLAYMAKER, MARKER, "
+                "skills NO implementados (PLAYMAKER, MARKER, "
                 + "TACKLER, SHOOTER, PASSER, SPEEDSTER, AERIAL) deben seguir "
                 + "sin impacto. Si esto cambia, V25D34 los empezo a usar.");
     }
 
     @Test
     void overload9Args_withWall99_reducesXgByWallDivisor() {
-        // V25D33-F3: WALL=99 en gkSkills debe REDUCIR el xG via divisor.
         // El 9-args overload delega al 10-args con OPEN_PLAY (HEADER gated off)
         // + gkSkills={WALL:99}, por lo que el WALL divisor SI aplica.
         V24ShotXgCalculator calc = new V24ShotXgCalculator();

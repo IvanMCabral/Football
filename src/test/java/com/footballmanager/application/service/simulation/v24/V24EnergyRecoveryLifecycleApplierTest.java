@@ -10,7 +10,6 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D6J4: Unit tests for V24EnergyRecoveryLifecycleApplier.
  * Tests energy recovery lifecycle in isolation — no Spring, no IO.
  */
 class V24EnergyRecoveryLifecycleApplierTest {

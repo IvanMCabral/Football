@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * V25D78-C55.11 (BUG_C55.9_FINDING_01): unit coverage that
  * {@code POST /api/v1/career/start} invalidates the JVM-local
  * {@code careerCache} inside {@link CareerSessionService} right after a
  * successful start, so a second {@code /career/start} for the same user
@@ -60,7 +59,7 @@ import static org.mockito.Mockito.when;
  * </ul>
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CareerCommandController.startCareer — cache invalidation (V25D78-C55.11)")
+@DisplayName("CareerCommandController.startCareer — cache invalidation")
 class CareerCommandControllerStartCareerCacheInvalidationTest {
 
     private static final UUID USER_ID =
@@ -93,7 +92,6 @@ class CareerCommandControllerStartCareerCacheInvalidationTest {
 
     private Authentication authForUser() {
         Authentication auth = mock(Authentication.class);
-        // V25D78-C55.11: only stub the controllerHelper collaborator (the
         // SUT calls controllerHelper.getUserId(auth) directly). We do NOT
         // stub auth.getName() because the mocked controllerHelper never
         // consults it — Mockito strict mode would flag that stub as
@@ -103,7 +101,7 @@ class CareerCommandControllerStartCareerCacheInvalidationTest {
     }
 
     @Test
-    @DisplayName("startCareer on success invalidates careerCache (BUG_C55.9_FINDING_01)")
+    @DisplayName("startCareer on success invalidates careerCache")
     void startCareer_invalidatesCacheOnSuccess() {
         CareerSave newCareer = mock(CareerSave.class);
         Game game = mock(Game.class);
@@ -119,7 +117,6 @@ class CareerCommandControllerStartCareerCacheInvalidationTest {
         StepVerifier.create(controller.startCareer(sampleRequest(), authForUser()))
             .verifyComplete();
 
-        // V25D78-C55.11: the cache MUST be invalidated so the next
         // /career/status read re-fetches the new CareerSave from Redis
         // instead of returning the previously-cached one.
         verify(sessionService, times(1)).invalidateCache(USER_ID);

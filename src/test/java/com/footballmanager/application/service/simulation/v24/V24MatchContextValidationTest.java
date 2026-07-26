@@ -21,7 +21,6 @@ class V24MatchContextValidationTest {
 
     @Test
     void rejectsInvalidStartingEleven() {
-        // V24D6U2: short-handed lineups are accepted in [MIN=7, 11]. Test the
         // boundary below MIN (6 players) which should still be rejected.
         List<SessionPlayer> homeStart = makePlayers("home", 6, 75); // below MIN
         List<SessionPlayer> awayStart = makePlayers("away", 11, 75);
@@ -42,7 +41,6 @@ class V24MatchContextValidationTest {
 
     @Test
     void acceptsShortHandedStartingEleven() {
-        // V24D6U2: 10-player home is now accepted
         List<SessionPlayer> homeStart = makePlayers("home", 10, 75);
         List<SessionPlayer> awayStart = makePlayers("away", 11, 75);
         V24MatchContext ctx = buildContext("match-valid", 75, 75);

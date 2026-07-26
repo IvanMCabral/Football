@@ -16,9 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * V25D71-C33 Phase 2 — V33a calibration REGRESSION test.
  *
- * <p><b>Background:</b> Sprint C31 applied 2 simultaneous fixes to
  * {@link V24ShotXgCalculator} that over-corrected:
  * <ol>
  *   <li>Cap ratio offFormMod/defFormMod at 2.0 (was effectively uncapped, 2.98x)</li>
@@ -26,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * </ol>
  *
  * <p>C32 runtime smoke showed intermedios dropped 5.45 → 2.08 (target [3.0, 4.5])
- * and top-wins dropped 100% → ~50% (REGRESSION). Sprint C33 calibrated the
  * sweet-spot by running 5 variants (V33a-e) × 5 scenarios × N=200 diagnostics.
  * V33a (cap=2.5, statsAmp=0.025) was chosen as the best compromise and is now
  * the production value.
@@ -42,7 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>The target top-wins ≥85% (per C33 task spec) is structurally unreachable
  * with cap/statsAmp knobs alone — diagnostic ceiling is ~75%. The runtime gap
  * (~25pp) comes from mechanisms not modeled in the diagnostic (chemistry,
- * multi-match state, synthetic league attrs). REVISOR smoke runtime is the
  * ground truth for the 85% target.
  *
  * <p><b>Phase 1 historical data</b> (V33a-e matrix, see reporte-C33-phase1.md):

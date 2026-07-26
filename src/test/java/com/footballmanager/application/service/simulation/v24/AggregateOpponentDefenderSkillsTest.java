@@ -15,14 +15,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * V25D35 verifier nit: dedicated unit tests for the
- * {@link V24DetailedMatchEngine#aggregateOpponentDefenderSkills(List)} helper.
  *
- * <p><b>Why package-private + VisibleForTesting:</b> pre-V25D35 the helper
  * was {@code private} and only exercised indirectly through the full
- * {@code simulate()} path. The V25D34 verifier flagged that as a coverage
  * gap (helper logic was untestable without reflection on private methods).
- * V25D35 changes visibility to package-private and marks it
  * {@code @VisibleForTesting} so this suite can drive it directly.
  *
  * <p><b>Contract under test:</b>
@@ -153,7 +148,6 @@ class AggregateOpponentDefenderSkillsTest {
         @Test
         @DisplayName("Math.round: 67 + 68 → avg 67.5 → rounds to 68 (HALF_UP)")
         void mathRound_halfUp_behavior() {
-            // V25D35 verifier nit: explicit Math.round contract check.
             // Math.round(67.5) == 68 (HALF_UP). avg = (67+68)/2 = 67.5 → 68.
             List<V24PlayerMatchState> opponents = List.of(
                 buildDefender("d1", "DEF", PlayerSkill.MARKER, 67, true),

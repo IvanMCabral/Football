@@ -20,7 +20,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24D5B: LeagueSimulator V24 detailed engine path tests.
  *
  * <p>Tests the third simulation path behind use-v24-detailed-engine flag.
  * Validates flag precedence, context building, result mapping,
@@ -42,7 +41,6 @@ class V24LeagueSimulationPathTest {
     @Test
     void flagDisabledUsesExistingDefaultPath() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
-        // useV24DetailedEngine=false, useV23Engine=false
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false);
 
         CareerSave career = makeCareer(AWAY1, HOME1, AWAY1, 11, 11);
@@ -65,7 +63,6 @@ class V24LeagueSimulationPathTest {
     void v23FlagStillUsesV23PathWhenV24FlagFalse() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         MatchEngineImpl realEngine = new MatchEngineImpl();
-        // useV24DetailedEngine=false, useV23Engine=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, realEngine, true, false);
 
         CareerSave career = makeCareer(AWAY2, HOME2, AWAY2, 11, 11);
@@ -87,7 +84,6 @@ class V24LeagueSimulationPathTest {
     @Test
     void v24FlagUsesV24DetailedEnginePath() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
-        // useV24DetailedEngine=true
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true);
 
         CareerSave career = makeCareer(AWAY3, HOME3, AWAY3, 11, 11);

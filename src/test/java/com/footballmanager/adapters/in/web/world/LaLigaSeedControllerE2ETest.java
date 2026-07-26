@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D7 FASE C — E2E HTTP coverage for {@link LaLigaSeedController}.
  *
  * <p>Strategy: real {@code @SpringBootTest} against the isolated test DB +
  * Redis DB 15. Exercises the LaLigaSeedService real implementation, which
@@ -106,10 +105,9 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C44 P0: POST /world/seed-la-liga — Redis world:{userId} PERSISTS with non-zero bytes "
+    @DisplayName("POST /world/seed-la-liga — Redis world:{userId} PERSISTS with non-zero bytes "
         + "after the call returns (regression for the post-save delete bug)")
     void seed_persistsSnapshotInRedis_post_returns200() throws Exception {
-        // V25D78-C44 reproducer (Bug root cause was: LaLigaSeedService.applySeed
         // deleted the snapshot right after saveSnapshot via worldRepository.deleteByUserId,
         // leaving Redis empty (STRLEN=0, TTL=-2) immediately after the POST).
         // Post-fix: saveSnapshot IS the last write — the snapshot persists.
@@ -130,7 +128,7 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
         String redisKey = "world:" + SEED_USER_ID;
         Long lenBytes = redisTemplate.opsForValue().size(redisKey).block();
         assertThat(lenBytes)
-            .as("V25D78-C44 contract: world:{userId} MUST exist in Redis after "
+            .as("world:{userId} MUST exist in Redis after "
                 + "POST /seed-la-liga returns (pre-fix: STRLEN=0, TTL=-2). Got size=" + lenBytes)
             .isNotNull()
             .isGreaterThan(0L);
@@ -170,7 +168,7 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C47 P0: POST /world/seed-la-liga — JWT user CAN seed for self (200 OK, "
+    @DisplayName("POST /world/seed-la-liga — JWT user CAN seed for self (200 OK, "
         + "regression guard for the happy path after C47 security fix)")
     void seed_jwtMatchesParam_returns200() {
         // Same UUID as mockUser → expected behavior preserved (200 OK)
@@ -187,11 +185,10 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V25D78-C47 P0: POST /world/seed-la-liga — JWT user A trying to seed for "
+    @DisplayName("POST /world/seed-la-liga — JWT user A trying to seed for "
         + "user B → 403 IMPERSONATION_FORBIDDEN (regression for the C44 finding)")
     void seed_jwtDoesNotMatchParam_returns403() {
         // DIFFERENT UUIDs — JWT for user A, param for user B. This is the
-        // exact attack vector REVISOR C44 found.
         UUID impostorUuid = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
         webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
             .post().uri(uriBuilder -> uriBuilder
@@ -208,16 +205,15 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
         String impostorRedisKey = "world:" + impostorUuid;
         Long impostorBytes = redisTemplate.opsForValue().size(impostorRedisKey).block();
         assertThat(impostorBytes == null || impostorBytes == 0L)
-            .as("V25D78-C47 contract: NO Redis write for impostor target (impostorUuid="
+            .as("NO Redis write for impostor target (impostorUuid="
                 + impostorUuid + ", bytes=" + impostorBytes + ")")
             .isTrue();  // STRLEN should be 0 (key absent) — no seed performed
     }
 
     @Test
-    @DisplayName("V25D78-C48 P0: POST /world/seed-la-liga — anonymous request (no JWT) "
+    @DisplayName("POST /world/seed-la-liga — anonymous request (no JWT) "
         + "returns 401 (post-C48 SecurityConfig: /world/** requires authenticated)")
     void seed_anonymousRequest_returns401() {
-        // V25D78-C48: SecurityConfig.java:144 changed from permitAll to authenticated.
         // Pre-C48 (and pre-C47): anonymous could seed anyone's WorldSnapshot.
         // Post-C48: anonymous is rejected at the security filter level with 401.
         // Admin pre-user setup, if needed, goes through /api/v1/admin/world/seed-la-liga

@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
 /**
- * V24D8-BUG-001 — E2E test for squad population after career creation.
  *
  * <p>Verifies that:
  * <ol>
@@ -65,9 +64,7 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
-        // V25D78-C55.5: seed LaLiga per-test so seedTeamId/seedCareer find data
         seedLaLigaForUser(SEED_USER_ID);
-        // V25D75-C40 A2: also clear the in-memory CareerSessionService cache.
         // Without this, CareerSquadFallbackE2ETest (which runs before us in
         // the full mvn test suite) leaves a cached career for SEED_USER_ID
         // that survives the Redis flushDb — getCareerFromCache returns the
@@ -193,7 +190,7 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("V24D8-BUG-003: POST /career/start → GET /career/status has non-null userSessionTeamId and squadSize > 0")
+    @DisplayName("POST /career/start → GET /career/status has non-null userSessionTeamId and squadSize > 0")
     void careerCreation_withFreshUser_hasValidUserSessionTeamId() {
         // 1. Get first team from La Liga
         List<Map<String, Object>> teams = webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
@@ -259,16 +256,14 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
     }
 
     /**
-     * V24D8-BUG-004: Squad shows "Player N MAD" placeholders instead of real La Liga player names.
      *
      * Fix: LaLigaSeedService.persistPlayerNamesInPostgres() now inserts players + team_squad entries
      * into PostgreSQL using DatabaseClient. BuildWorldViewUseCase rebuilds WorldView from Postgres
      * and loads real player names (Vinicius Jr., Bellingham, Mbappe, etc.).
      */
     @Test
-    @DisplayName("V24D8-BUG-004: POST /world/seed-la-liga + POST /career/start → squad has REAL player names (not placeholders)")
+    @DisplayName("POST /world/seed-la-liga + POST /career/start → squad has REAL player names (not placeholders)")
     void seedLaLiga_careerStart_squadHasRealPlayerNames() {
-        // V25D78-C55.4: replaced the hardcoded UUID with a dynamic lookup.
         // The previous UUID was tied to a specific seed-data version and
         // stopped matching Real Madrid's teamId after C55.1's UUID
         // generation algorithm. We look up Real Madrid by name via the
@@ -315,7 +310,6 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
             .exchange()
             .expectStatus().isCreated();
 
-        // 4. GET squad — names must NOT match "Player N XXX" pattern
         List<Map<String, Object>> squad = webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
             .get().uri("/api/v1/career/teams/me/squad")
             .accept(MediaType.APPLICATION_JSON)
@@ -330,7 +324,6 @@ class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
             .isNotNull()
             .hasSizeGreaterThanOrEqualTo(11);
 
-        // All squad players must have real names (not "Player N XXX" placeholders)
         for (Map<String, Object> player : squad) {
             String name = (String) player.get("name");
             assertThat(name)
