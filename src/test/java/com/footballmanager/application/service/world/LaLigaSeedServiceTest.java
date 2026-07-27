@@ -53,10 +53,10 @@ class LaLigaSeedServiceTest {
                 new com.fasterxml.jackson.databind.ObjectMapper(),
                 worldRepository,
                 playerRepository,
-                databaseClient,
                 // exercises the snapshot-layer contract; persistence is
-                // stubbed via the DatabaseClient mock). Pass a no-op mock.
-                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class)
+                // stubbed through no-op writer mocks.
+                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class),
+                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldTeamPostgresWriter.class)
         );
 
         // Stubs básicos para que los tests no fallen por NPE en la Capa 2/3

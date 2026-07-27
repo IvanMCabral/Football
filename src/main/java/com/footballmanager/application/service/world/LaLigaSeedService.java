@@ -8,9 +8,7 @@ import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.model.valueobject.Division;
-import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
-import org.springframework.r2dbc.core.DatabaseClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -23,10 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -52,8 +47,8 @@ public class LaLigaSeedService {
     private final ObjectMapper objectMapper;
     private final RedisWorldRepository worldRepository;
     private final PlayerRepository playerRepository;
-    private final DatabaseClient databaseClient;
     private final WorldSeedBatchWriter batchWriter;
+    private final WorldTeamPostgresWriter teamWriter;
 
     // Antes era un singleton de Spring con Random(seed) interno. java.util.Random
     // NO es thread-safe — dos requests concurrentes de executeSeed() podían
@@ -100,10 +95,11 @@ public class LaLigaSeedService {
         List<WorldPlayer> createdOrUpdated = ensurePlayers(snapshot, seed, teamsByName, attributesGenerator);
 
         // Java so the Redis snapshot stores correct PRIMERA/SEGUNDA/TERCERA
-        // even though this seed path skips persistTeamsInPostgres
-        // (C55.6 deferred to a migration that never applied to LaLiga).
+        // before both Redis and Postgres are updated.
         // See DivisionRankDistributor for details.
         DivisionRankDistributor.applyPerLeagueRankDivision(snapshot);
+
+        teamWriter.upsertTeams(new ArrayList<>(teamsByName.values()), realLeagueId, "[LA-LIGA-SEED]");
 
         // Capa 3: persiste nombres reales y team_squad en PostgreSQL para que BuildWorldViewUseCase
         // encuentre los jugadores reales (no placeholders) cuando reconstruya el WorldView después del seed
@@ -368,23 +364,6 @@ public class LaLigaSeedService {
 
     private static int safe(Integer v) {
         return v == null ? 50 : v;
-    }
-
-    /**
-     * INSERT crudo en Postgres. Devuelve null si el map es null o vacio (no string
-     * vacia ni literal "null" — queremos que la columna quede NULL en la DB para
-     * los players sin skills curated).
-     */
-    private String serializeSkillLevelsOrNull(Map<PlayerSkill, Integer> skillLevels) {
-        if (skillLevels == null || skillLevels.isEmpty()) {
-            return null;
-        }
-        try {
-            return objectMapper.writeValueAsString(skillLevels);
-        } catch (Exception e) {
-            log.warn("[LA-LIGA-SEED] failed to serialize skillLevels: {}", e.getMessage());
-            return null;
-        }
     }
 
     /**

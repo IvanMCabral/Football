@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -66,11 +67,23 @@ public class WorldSeedBatchWriter {
         // Drop players without realPlayerId (can't be persisted as a Postgres row).
         List<WorldPlayer> toPersist = players.stream()
                 .filter(wp -> wp.getRealPlayerId() != null)
+                .collect(Collectors.toMap(
+                        WorldPlayer::getRealPlayerId,
+                        Function.identity(),
+                        (first, ignoredDuplicate) -> first,
+                        LinkedHashMap::new
+                ))
+                .values()
+                .stream()
                 .toList();
         if (toPersist.isEmpty()) {
             log.info("[BATCH-WRITE] no players to persist (skipped={})",
                     players.size());
             return 0;
+        }
+        int duplicatesSkipped = players.size() - toPersist.size();
+        if (duplicatesSkipped > 0) {
+            log.debug("[BATCH-WRITE] skipped duplicate player ids={}", duplicatesSkipped);
         }
 
         // First, bulk-clean team_squad entries for affected teams (matches
@@ -291,23 +304,26 @@ public class WorldSeedBatchWriter {
         if (withTeam.isEmpty()) return 0;
 
         int n = withTeam.size();
-        Object[] teamIdsArr = new UUID[n];
-        Object[] playerIdsArr = new UUID[n];
+        UUID[] teamIdsArr = new UUID[n];
+        UUID[] playerIdsArr = new UUID[n];
         for (int i = 0; i < n; i++) {
             WorldPlayer wp = withTeam.get(i);
             teamIdsArr[i] = UUID.fromString(wp.getWorldTeamId());
             playerIdsArr[i] = wp.getRealPlayerId();
         }
         try {
-            databaseClient.sql("""
+            Long written = databaseClient.sql("""
                 INSERT INTO team_squad (team_id, player_id)
-                SELECT * FROM unnest(:teamIds::uuid[], :playerIds::uuid[])
+                SELECT candidate.team_id, candidate.player_id
+                FROM unnest(:teamIds::uuid[], :playerIds::uuid[]) AS candidate(team_id, player_id)
+                INNER JOIN teams t ON t.id = candidate.team_id
+                INNER JOIN players p ON p.id = candidate.player_id
                 ON CONFLICT DO NOTHING
                 """)
                 .bind("teamIds", teamIdsArr)
                 .bind("playerIds", playerIdsArr)
                 .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
-            return n;
+            return written == null ? 0 : written.intValue();
         } catch (Exception e) {
             log.warn("[BATCH-WRITE] team_squad chunk failed: {}", e.getMessage());
             return 0;

@@ -17,11 +17,10 @@ import java.util.UUID;
  * {@link WorldTeam} so the frontend could surface division tiers (PRIMERA /
  * SEGUNDA / TERCERA). The seed services hardcoded
  * {@link Division#defaultDivision()} (=PRIMERA) for every team at create
- * downstream. Two issues with that assumption:
+ * downstream. That assumption was fragile because:
  *
  * <ol>
- *   <li>{@code LaLigaSeedService} never calls {@code persistTeamsInPostgres}
- *       (legacy code path), so its 60 teams never reach Postgres at all
+ *   <li>Seed paths can update Redis and Postgres in different moments.
  *   <li>Even for leagues whose teams DO reach Postgres, the
  *       {@code BuildWorldViewUseCase} read path returns the Redis
  *       {@code WorldSnapshot} verbatim — never re-queries Postgres for

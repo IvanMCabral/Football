@@ -62,8 +62,8 @@ class LaLigaSeedServiceV25D32Test {
                 new ObjectMapper(),
                 worldRepository,
                 playerRepository,
-                databaseClient,
-                batchWriter = org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class)
+                batchWriter = org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class),
+                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldTeamPostgresWriter.class)
         );
 
         when(worldRepository.deleteByUserId(any(UUID.class))).thenReturn(Mono.just(true));

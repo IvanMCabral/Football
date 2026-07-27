@@ -13,7 +13,6 @@ import com.footballmanager.domain.model.entity.Player.Position;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,10 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * "Top 10 mundial" leagues (La Liga, Premier, Bundesliga, Serie A, Ligue 1,
@@ -54,9 +50,9 @@ public class WorldSeedService {
     private final ObjectMapper objectMapper;
     private final RedisWorldRepository worldRepository;
     private final PlayerRepository playerRepository;
-    private final DatabaseClient databaseClient;
     private final LaLigaSeedService laLigaSeedService;
     private final WorldSeedBatchWriter batchWriter;
+    private final WorldTeamPostgresWriter teamWriter;
 
     /**
      * Seeds a single league. Delegates La Liga to the existing service
@@ -138,10 +134,10 @@ public class WorldSeedService {
         // verbatim — without this step the response would still show all
         // PRIMERA. See DivisionRankDistributor for details.
         DivisionRankDistributor.applyPerLeagueRankDivision(snapshot);
-        persistPlayerNamesInPostgres(userId, players, logPrefix);
         // sentinel manager_id (00000000-0000-0000-0000-000000000000) for
         // synthetic teams that have no real user manager.
-        persistTeamsInPostgres(new ArrayList<>(teamsByName.values()), leagueId, logPrefix);
+        teamWriter.upsertTeams(new ArrayList<>(teamsByName.values()), leagueId, logPrefix);
+        persistPlayerNamesInPostgres(userId, players, logPrefix);
 
         return snapshotService.saveSnapshot(snapshot)
                 .map(saved -> {
@@ -336,89 +332,6 @@ public class WorldSeedService {
                                               String logPrefix) {
         int written = batchWriter.upsertPlayersBatched(players, this::mapPositionString);
         log.info("{} postgres persist (batched): input={}, written={}", logPrefix, players.size(), written);
-    }
-
-    /**
-     *
-     * <p>The seeder previously only manipulated the in-memory WorldSnapshot.
-     * C55.3 B1 needs the Postgres teams table populated with league_id so
-     *
-     * <p>teams.manager_id has a FK to users.id (auto-managed by Hibernate).
-     * Since synthetic B1 teams have no real user manager, we ensure a
-     * sentinel "synthetic-manager" row exists in users (one per league,
-     * reused across all teams in that league) and use its id.
-     */
-    private static final java.time.Duration BLOCK_TIMEOUT = java.time.Duration.ofSeconds(120);
-
-    private void persistTeamsInPostgres(List<WorldTeam> teams, UUID leagueId, String logPrefix) {
-        int upserted = 0, skipped = 0, errors = 0;
-        java.time.Instant now = java.time.Instant.now();
-        // Ensure a sentinel user exists for FK on teams.manager_id.
-        UUID syntheticManagerId = ensureSyntheticManager(leagueId, logPrefix);
-        for (WorldTeam t : teams) {
-            UUID teamId = t.getRealTeamId();
-            if (teamId == null) { skipped++; continue; }
-            String name = t.getName() == null ? "Unknown" : t.getName();
-            String country = t.getCountry() == null ? "" : t.getCountry();
-            String formation = t.getBaseFormation() == null ? "4-3-3" : t.getBaseFormation();
-            java.math.BigDecimal budget = t.getBaseBudget() == null
-                    ? java.math.BigDecimal.valueOf(10_000_000L) : t.getBaseBudget();
-            try {
-                databaseClient.sql("""
-                    INSERT INTO teams (id, manager_id, name, country, formation, league_id, budget, created_at, updated_at)
-                    VALUES (:id, :managerId, :name, :country, :formation, :leagueId, :budget, :createdAt, :updatedAt)
-                    ON CONFLICT (id) DO UPDATE SET
-                        league_id = EXCLUDED.league_id,
-                        updated_at = EXCLUDED.updated_at
-                    """)
-                    .bind("id", teamId)
-                    .bind("managerId", syntheticManagerId)
-                    .bind("name", name)
-                    .bind("country", country)
-                    .bind("formation", formation)
-                    .bind("leagueId", leagueId)
-                    .bind("budget", budget)
-                    .bind("createdAt", now)
-                    .bind("updatedAt", now)
-                    .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
-                upserted++;
-            } catch (Exception e) {
-                log.error("{} team upsert failed for {} (id={}): {}", logPrefix, name, teamId, e.getMessage(), e);
-                errors++;
-            }
-        }
-        log.info("{} postgres teams upsert: total={}, upserted={}, skipped={}, errors={}",
-                logPrefix, teams.size(), upserted, skipped, errors);
-    }
-
-    /**
-     * Ensure a sentinel user exists for the FK from teams.manager_id.
-     * Returns the user's id (deterministic per leagueId so re-runs reuse it).
-     */
-    private UUID ensureSyntheticManager(UUID leagueId, String logPrefix) {
-        UUID managerId = UUID.nameUUIDFromBytes(("synthetic-manager|" + leagueId.toString()).getBytes());
-        try {
-            databaseClient.sql("""
-                INSERT INTO users (id, username, email, password_hash, created_at, updated_at)
-                VALUES (:id, :username, :email, :password, :createdAt, :updatedAt)
-                ON CONFLICT (id) DO NOTHING
-                """)
-                .bind("id", managerId)
-                .bind("username", "synthetic_" + leagueId.toString().substring(0, 8))
-                .bind("email", "synthetic_" + leagueId.toString().substring(0, 8) + "@synthetic.local")
-                .bind("password", "synthetic_no_login")
-                .bind("createdAt", now())
-                .bind("updatedAt", now())
-                .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
-        } catch (Exception e) {
-            log.warn("{} synthetic manager INSERT failed (may be schema mismatch): {}",
-                    logPrefix, e.getMessage());
-        }
-        return managerId;
-    }
-
-    private java.time.Instant now() {
-        return java.time.Instant.now();
     }
 
     // ========== Result types ==========
