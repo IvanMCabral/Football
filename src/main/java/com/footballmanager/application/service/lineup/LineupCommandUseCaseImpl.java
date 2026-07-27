@@ -58,8 +58,7 @@ import java.util.stream.Collectors;
  * the next {@code saveCareer} call would overwrite Redis with the stale
  * state — wiping the lineup (the "0/11 players + formation null after
  * Confirmar y Jugar" smoke symptom). Reads also go through the session
- * service so the cache is populated on the read path; subsequent
- * orchestrator reads then see the fresh lineup.
+ * service so the cache is populated on the read path and orchestrator reads stay fresh.
  */
 @Service
 @RequiredArgsConstructor

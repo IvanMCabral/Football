@@ -50,16 +50,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
     // @RequiredArgsConstructor.
     private final FormationService formationService;
 
-    // layer (ConcurrentHashMap in CareerSessionService) when Spring has
-    // wired the dependency. Tests construct this class with the 3-arg
-    // constructor (no Spring context), so the field stays null and the
-    // legacy direct-repo path is exercised. With it, the read path
-    // matches the write path (/auto-select, /manual-select, /confirm,
-    // /preview-chemistry, /preview-ratings) which already use
-    // careerSessionService.getCareerFromCache. Pre-fix: /current hit
-    // Redis directly and returned 200 + empty body when the Redis key was
-    // temporarily missing (TTL race, post-restart before first warming),
-    // while every other endpoint kept serving from cache.
+    // Prefer the session cache when Spring wires it; isolated tests keep the direct repository path.
     @Autowired(required = false)
     @SuppressWarnings("PMD.UnusedPrivateField")
     private CareerSessionService careerSessionService;
@@ -89,7 +80,6 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         List<String> lineupIds = career.getTeamStarting11().get(userTeamId);
 
         if (lineupIds == null || lineupIds.isEmpty()) {
-            // empty per-player map, teamAverage=1.0).
             return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0,
                     ChemistryBreakdownDTO.empty(),
                     FormationEffectivenessDTO.empty());
@@ -101,13 +91,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         List<SessionPlayer> lineup = lineupIds.stream()
             .map(id -> career.getSessionPlayers().get(id))
             .filter(Objects::nonNull)
-            // lineup. The persisted state may include players that became
-            // suspended mid-match (red card) AFTER the lineup was set —
-            // we don't auto-cleanup the persisted state (other code paths
-            // may rely on it), but the API response should not surface a
-            // suspended player as part of the "current starting XI".
-            // Mirrors the auto-select filter (LineupCommandUseCaseImpl
-            // line ~266) and the validatePlayerFitness gate.
+            // The current XI response must not surface suspended players.
             .filter(p -> !Boolean.TRUE.equals(p.getSuspended()))
             .filter(p -> p.getSuspensionRemainingMatches() == null
                 || p.getSuspensionRemainingMatches() <= 0)
@@ -185,9 +169,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                         persistedFormationCode,
                         coordsBySubdivision);
 
-        // Pre-C25 bug: warnings=List.of() here caused the banner to disappear
-        // on reload (only POST /manual-select and /auto-select returned warnings).
-        // Now warnings persist with the lineup (recomputed each /current call).
+        // Recompute persisted lineup warnings on every read.
         List<LineupWarningDTO> warnings = computePersistedWarnings(
                 lineup, slots, formationEffectiveness);
 
