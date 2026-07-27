@@ -53,8 +53,7 @@ public class WorldSeedController {
         return worldSeedService.seedLeague(lt, userId)
                 .map(result -> ResponseEntity.ok(success(userId, result)))
                 .onErrorResume(e -> {
-                    log.error("[WORLD-SEED] seed/{}/{} failed with full stack:", lt.slug(), userId, e);
-                    e.printStackTrace();
+                    log.error("World seed failed for league={} userId={}", lt.slug(), userId, e);
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body(error("SEED_FAILED", e.getMessage())));
                 });
