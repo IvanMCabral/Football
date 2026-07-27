@@ -5,6 +5,8 @@ import com.footballmanager.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +31,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * <ul>
  *   <li>Each league seed produces 60 teams + ~900 players</li>
  *   <li>Postgres teams table is populated with league_id (B1 sets it)</li>
- *   <li>seed-all produces 10 leagues × 60 teams = 600 teams total</li>
+ *   <li>seed-all produces 10 leagues x 60 teams = 600 teams total</li>
  *   <li>Idempotency: re-seeding doesn't add duplicates</li>
  * </ul>
  *
@@ -45,8 +47,10 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("V25D78-C55.3 B1 — multi-league seed extended to 60 teams per league")
+@DisplayName("V25D78-C55.3 B1 - multi-league seed extended to 60 teams per league")
 class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
+
+    private static final Logger log = LoggerFactory.getLogger(WorldSeedControllerC55B1E2ETest.class);
 
     private static final UUID USER_ID =
         UUID.fromString("00000000-0000-0000-0000-00000000c552");
@@ -80,7 +84,7 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
         databaseClient.sql("TRUNCATE TABLE teams CASCADE")
             .fetch().rowsUpdated().onErrorResume(e -> Mono.just(0L)).block();
         databaseClient.sql("DELETE FROM leagues").fetch().rowsUpdated().onErrorResume(e -> Mono.just(0L)).block();
-        System.out.println("[DEBUG] After cleanup, teams count: " + countTeams());
+        log.debug("After cleanup, teams count: {}", countTeams());
         logShortNamedTeams();
     }
 
@@ -102,7 +106,7 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
             .map(row -> row.get("id", UUID.class) + "|" + row.get("name", String.class))
             .all()
             .collectList()
-            .doOnNext(list -> System.out.println("[DEBUG] Short-named teams: " + list))
+            .doOnNext(list -> log.debug("Short-named teams: {}", list))
             .block();
     }
 
@@ -180,7 +184,7 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
             .map(row -> row.get("cnt", Long.class))
             .first()
             .block();
-        System.out.println("[DEBUG] Total teams: " + totalCount + ", with league_id: " + withLeagueId);
+        log.debug("Total teams: {}, with league_id: {}", totalCount, withLeagueId);
         Map<UUID, Long> teamsPerLeague = new HashMap<>();
         List<Object[]> rawResults = databaseClient.sql("SELECT league_id, COUNT(*) AS cnt FROM teams WHERE league_id IS NOT NULL GROUP BY league_id")
             .map(row -> {
@@ -191,13 +195,19 @@ class WorldSeedControllerC55B1E2ETest extends AbstractIntegrationTest {
             .all()
             .collectList()
             .block();
-        System.out.println("[DEBUG] Raw GROUP BY result: " + (rawResults == null ? "null" : rawResults.size() + " rows: " + rawResults));
+        log.debug("Raw GROUP BY result: {}", rawResults == null ? "null" : rawResults.size() + " rows: " + rawResults);
         for (int i = 0; i < rawResults.size(); i++) {
             Object[] arr = rawResults.get(i);
-            System.out.println("[DEBUG] row " + i + ": arr=" + java.util.Arrays.toString(arr)
-                + " arr.length=" + arr.length
-                + " arr[0]=" + arr[0] + " (class=" + (arr[0] == null ? "null" : arr[0].getClass().getName()) + ")"
-                + " arr[1]=" + arr[1] + " (class=" + (arr[1] == null ? "null" : arr[1].getClass().getName()) + ")");
+            log.debug(
+                "row {}: arr={} arr.length={} arr[0]={} (class={}) arr[1]={} (class={})",
+                i,
+                java.util.Arrays.toString(arr),
+                arr.length,
+                arr[0],
+                arr[0] == null ? "null" : arr[0].getClass().getName(),
+                arr[1],
+                arr[1] == null ? "null" : arr[1].getClass().getName()
+            );
             teamsPerLeague.put((UUID) arr[0], (Long) arr[1]);
         }
 

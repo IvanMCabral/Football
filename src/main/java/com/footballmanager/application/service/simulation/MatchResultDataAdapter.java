@@ -5,7 +5,7 @@ import com.footballmanager.domain.model.valueobject.MatchFixture;
 
 /**
  * Maps MatchEngineImpl.MatchResult to MatchFixture.MatchResultData.
- * Events and summary from V23 engine are discarded — not persisted for AI matches.
+ * Events and summary from the V23 engine are not persisted for automated matches.
  */
 public final class MatchResultDataAdapter {
 
