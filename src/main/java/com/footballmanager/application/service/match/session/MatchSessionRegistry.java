@@ -2,6 +2,7 @@ package com.footballmanager.application.service.match.session;
 
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.domain.model.entity.MatchState;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 @Component
+@Slf4j
 public class MatchSessionRegistry {
 
     private final Map<String, MatchSession> activeSessions = new ConcurrentHashMap<>();
@@ -94,15 +96,15 @@ public class MatchSessionRegistry {
      * Usado cuando se elimina una carrera.
      */
     public void clearAllSessions() {
-        System.out.println("[MATCH-REGISTRY] Clearing ALL sessions, count: " + activeSessions.size());
+        log.debug("Clearing active match sessions count={}", activeSessions.size());
         activeSessions.values().forEach(session -> {
             try {
                 session.stop();
             } catch (Exception e) {
-                System.out.println("[MATCH-REGISTRY] Error stopping session: " + e.getMessage());
+                log.warn("Error stopping match session", e);
             }
         });
         activeSessions.clear();
-        System.out.println("[MATCH-REGISTRY] All sessions stopped and cleared");
+        log.debug("Active match sessions cleared");
     }
 }

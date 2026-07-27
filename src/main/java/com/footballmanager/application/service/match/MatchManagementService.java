@@ -1,7 +1,6 @@
 package com.footballmanager.application.service.match;
 
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
-import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.domain.model.entity.MatchCommand;
@@ -9,6 +8,7 @@ import com.footballmanager.domain.model.entity.MatchFinishedResult;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.port.in.match.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,6 +23,7 @@ import java.util.function.Consumer;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MatchManagementService {
 
     private final StartMatchUseCase startMatchUseCase;
@@ -55,9 +56,7 @@ public class MatchManagementService {
             Consumer<MatchFinishedResult> onFinishCallback,
             V24LiveSession v24LiveSession) {
 
-        // Create session with V24LiveSession
-        MatchSession session = sessionRegistry.getOrCreateSessionWithV24(
-                userId, matchId, homeTeamId, awayTeamId, v24LiveSession);
+        sessionRegistry.getOrCreateSessionWithV24(userId, matchId, homeTeamId, awayTeamId, v24LiveSession);
 
         return startMatchUseCaseImpl.executeV24(userId, matchId, onFinishCallback, v24LiveSession);
     }
@@ -74,24 +73,19 @@ public class MatchManagementService {
      * También reanuda el RoundEngine asociado.
      */
     public Mono<Void> resumeMatch(UUID userId, UUID matchId) {
-        System.out.println("[MATCH-MGMT] resumeMatch called - userId: " + userId + ", matchId: " + matchId);
+        log.debug("resumeMatch requested userId={}, matchId={}", userId, matchId);
 
         return resumeMatchUseCase.execute(userId, matchId)
             .doOnSuccess(v -> {
-                System.out.println("[MATCH-MGMT] UseCase.execute success, looking for RoundEngine...");
                 var roundEngine = roundEngineRegistry.getByMatchId(matchId);
                 if (roundEngine != null) {
-                    System.out.println("[MATCH-MGMT] Found RoundEngine, calling resumeAll()...");
                     roundEngine.resumeAll();
-                    System.out.println("[MATCH-MGMT] RoundEngine.resumeAll() called successfully for matchId: " + matchId);
+                    log.debug("RoundEngine resumed for matchId={}", matchId);
                 } else {
-                    System.out.println("[MATCH-MGMT] RoundEngine NOT FOUND for matchId: " + matchId);
+                    log.debug("No RoundEngine registered for matchId={}", matchId);
                 }
             })
-            .doOnError(e -> {
-                System.out.println("[MATCH-MGMT] UseCase.execute ERROR: " + e.getMessage());
-                e.printStackTrace();
-            });
+            .doOnError(e -> log.warn("Could not resume match matchId={}", matchId, e));
     }
 
     /**
