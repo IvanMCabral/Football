@@ -30,8 +30,8 @@ import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.model.valueobject.PositionEffectivenessCalculator;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -55,26 +55,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- *
- * <p>All methods assume the caller has already been authenticated
- * (the controller uses {@code controllerHelper.getUserId(authentication)})
- * and is operating within a {@code dev|local|test} profile context.
- *
- * <p><b>Determinism guarantee:</b> when {@code app.simulation.random-seed}
- * is set to a fixed value (e.g. 42L), match simulation becomes reproducible
- * — same squads + same fixtures + same formation + same seed ⇒ same outcome.
- * This is what enables Bloque B (same match × N runs ⇒ similar results).
- *
- * <p><b>CareerSave manipulation pattern:</b> load via repository → mutate
- * state in-memory → {@code careerRepository.save(career)}. The save
- * pipeline re-serializes via Jackson so all Redis round-trip semantics are
- * preserved (no shape drift).
- */
 @Service
 @Profile({"dev", "local", "test"})
 @Slf4j
-@RequiredArgsConstructor
 public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
     private static final String AUTO_POSITION_PIXEL_PREFIX = "__AUTO_";
@@ -87,29 +70,49 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     private final V24MatchContextFactory v24ContextFactory;
     private final V24DetailedMatchStoragePort v24StoragePort;
     private final BaselineStateStoragePort baselineStoragePort;
+    private final TestHarnessPreviewRunner previewRunner;
     private final FormationService formationService = new FormationService();
-    // the next /match-engine/rounds/start call rebuilds the engine from
-    // scratch (see MatchEngineRegistry.startEngine line 25-30 for the
-    // guard we're working around).
     private final MatchEngineRegistry matchEngineRegistry;
 
-    /**
-     * Dev/local harness safety net: labs mutate Redis career state, so prepare
-     * stores exact player stats + lineup slots in-memory and restore puts them
-     * back. This keeps experiments reversible while the backend process is
-     * alive. If the process restarts between prepare/restore, the individual
-     * restore methods still use their legacy smoke defaults as a fallback.
-     */
-    private final ConcurrentMap<String, LabSnapshot> labSnapshots = new ConcurrentHashMap<>();
+    @Autowired
+    public TestHarnessUseCaseImpl(
+            CareerRepository careerRepository,
+            CareerSessionService careerSessionService,
+            V24MatchContextFactory v24ContextFactory,
+            V24DetailedMatchStoragePort v24StoragePort,
+            BaselineStateStoragePort baselineStoragePort,
+            TestHarnessPreviewRunner previewRunner,
+            MatchEngineRegistry matchEngineRegistry) {
+        this.careerRepository = careerRepository;
+        this.careerSessionService = careerSessionService;
+        this.v24ContextFactory = v24ContextFactory;
+        this.v24StoragePort = v24StoragePort;
+        this.baselineStoragePort = baselineStoragePort;
+        this.previewRunner = previewRunner;
+        this.matchEngineRegistry = matchEngineRegistry;
+    }
 
-    // ========== replaceFixtures ==========
+    TestHarnessUseCaseImpl(
+            CareerRepository careerRepository,
+            CareerSessionService careerSessionService,
+            V24MatchContextFactory v24ContextFactory,
+            V24DetailedMatchStoragePort v24StoragePort,
+            BaselineStateStoragePort baselineStoragePort,
+            MatchEngineRegistry matchEngineRegistry) {
+        this(
+            careerRepository,
+            careerSessionService,
+            v24ContextFactory,
+            v24StoragePort,
+            baselineStoragePort,
+            new TestHarnessPreviewRunner(v24ContextFactory),
+            matchEngineRegistry);
+    }
+
+    private final ConcurrentMap<String, LabSnapshot> labSnapshots = new ConcurrentHashMap<>();
 
     @Override
     public Mono<Void> replaceFixtures(UUID userId, List<CustomFixture> fixtures) {
-        // null guard stays (genuine client-error → 400), empty list is
-        // treated as a no-op so the test-harness frontend can "skip
-        // replacement" when the preset builder returns [] (F2 scope
-        // single-match preset path.
         if (fixtures == null) {
             return Mono.error(new IllegalArgumentException("fixtures must be a non-null list"));
         }
@@ -121,7 +124,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -149,23 +152,14 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         career.getTournamentState().setFinished(false);
         career.getTournamentState().setCareerPhase(CareerPhase.PRE_MATCH);
         career.getTournamentState().initializeStandings(career.getAllSessionTeams());
-        // any future side-effect on setFixtures / setCurrentRound /
-        // setFinished / setCareerPhase / initializeStandings cannot clobber
-        // it. The invariant is totalRounds == max(fixtures.round).
         career.getTournamentState().setTotalRounds(maxRound);
 
         log.info("replaceFixtures userId={} count={} maxRound={}",
             career.getUserId(), fixtures.size(), maxRound);
-
-        // so the next getCareerFromCache(userId) returns the updated career,
-        // not the stale in-memory copy. Without this, the V24 engine sees
-        // the OLD fixtures.
         return careerRepository.save(career)
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())));
     }
-
-    // ========== resetInjuries ==========
 
     @Override
     public Mono<Void> resetInjuries(UUID userId) {
@@ -211,8 +205,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 careerSessionService.invalidateCache(career.getUserId())));
     }
 
-    // ========== setFormation ==========
-
     @Override
     public Mono<Void> setFormation(UUID userId, String formation) {
         if (formation == null || formation.isBlank()) {
@@ -232,17 +224,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             });
     }
 
-    /**
-     * field AND the {@code teamStarting11Formation} map.
-     *
-     * <p>CRITICAL: the V24 engine reads formation from
-     * {@code career.getTeamStarting11Formation().get(userSessionTeamId)} —
-     * NOT from {@code sessionTeam.getFormation()}. The 1.7 sprint regression
-     * {@code SessionTeam.formation} (the simulation never picked it up).
-     *
-     * <p>Both writes must succeed for the smoke harness to drive formation
-     * changes that the engine actually respects.
-     */
     private Mono<Void> executeSetFormation(CareerSave career, String formation) {
         String userSessionTeamId = career.getUserSessionTeamId();
 
@@ -252,9 +233,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 "User session team not found: " + userSessionTeamId));
         }
         userTeam.setFormation(formation);
-
-        // CRITICAL: the V24 engine reads from this map, not from
-        // SessionTeam.formation. Setting only the SessionTeam was the
         career.getTeamStarting11Formation().put(userSessionTeamId, formation);
 
         log.trace("setFormation userId={} team={} formation={}",
@@ -265,15 +243,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 careerSessionService.invalidateCache(career.getUserId())));
     }
 
-    /**
-     * COUNTER, POSSESSION). Persists to {@code SessionTeam.style} so that the
-     * V24 engine can read it via {@link com.footballmanager.application.service.simulation.v24.V24MatchContextFactory#build}
-     * in the test-harness replay path.
-     *
-     * <p>Note: unlike {@code setFormation}, the engine does NOT read style from
-     * {@code teamStarting11Formation} map — style is a single per-team value, so
-     * persisting it on SessionTeam directly is sufficient (consistent with the
-     */
     public Mono<Void> setStyle(UUID userId, TeamStyle style) {
         if (style == null) {
             return Mono.error(new IllegalArgumentException("style must be non-null"));
@@ -310,32 +279,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 careerSessionService.invalidateCache(career.getUserId())));
     }
 
-    /**
-     * engine convention).
-     *
-     * physical + skill metadata:
-     * <ul>
-     *   <li>{@code heightCm} — nullable; bounds-checked to {@code [160, 210]}
-     *       (matches {@link SessionPlayer#setHeightCm}). Null = leave
-     *       current value unchanged (sparse semantics: setting to null
-     *       would erase it, so null in the request = no-op).</li>
-     *   <li>{@code skillLevels} — nullable sparse {@code Map<PlayerSkill, Integer>};
-     *       each entry is bounds-checked to {@code [0, 99]} (matches
-     *       {@link SessionPlayer#setSkillLevel}). Null OR empty map = no-op
-     *       (does NOT clear existing skills — sparse map semantics).
-     *       Setting a skill to {@code 0} via the map removes that entry
-     *       from the sparse map (bit-a-bit consistent with
-     *       {@code SessionPlayer.setSkillLevel(skill, 0)}).</li>
-     * </ul>
-     *
-     * <p>Note: mutates a {@code SessionPlayer} inside the {@code
-     * career.allSessionPlayers} map (engine reads from there). Mutates ALL
-     * copies of the player — both the team-roster copy AND any bench copy
-     * with the same {@code sessionPlayerId}.
-     *
-     * with {@code heightCm=null} and {@code skillLevels=null}) keep working
-     * bit-a-bit — the new fields are skipped entirely.
-     */
     @Override
     public Mono<Void> injectPlayerStats(UUID userId, String playerId,
                                        Integer attack, Integer defense,
@@ -346,18 +289,10 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (playerId == null || playerId.isBlank()) {
             return Mono.error(new IllegalArgumentException("playerId must be non-blank"));
         }
-
-        // Bounds check. Reject out-of-range values BEFORE the career load so
-        // we don't partially mutate the career.
         String rangeErr = validateStatRanges(attack, defense, technique, speed, stamina, mentality);
         if (rangeErr != null) {
             return Mono.error(new IllegalArgumentException(rangeErr));
         }
-        // so out-of-range values reject cleanly without partial mutation. The
-        // SessionPlayer setters (setHeightCm / setSkillLevel) also throw IAE on
-        // out-of-range, but those errors would surface AFTER findById — duplicating
-        // the check here keeps the pre-load validation pattern consistent with
-        // validateStatRanges above.
         if (heightCm != null && (heightCm < 160 || heightCm > 210)) {
             return Mono.error(new IllegalArgumentException(
                 "heightCm out of range [160, 210]: " + heightCm));
@@ -420,10 +355,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         if (speed != null) { target.setSpeed(speed); logMsg.append(" speed=").append(speed); }
         if (stamina != null) { target.setStamina(stamina); logMsg.append(" stamina=").append(stamina); }
         if (mentality != null) { target.setMentality(mentality); logMsg.append(" mentality=").append(mentality); }
-
-        // current value). skillLevels: null OR empty = no-op; otherwise iterate
-        // each entry through SessionPlayer.setSkillLevel which bounds-checks
-        // [0, 99] and treats 0 as "remove from sparse map".
         if (heightCm != null) {
             target.setHeightCm(heightCm);
             logMsg.append(" heightCm=").append(heightCm);
@@ -432,9 +363,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             int skillCount = 0;
             for (Map.Entry<PlayerSkill, Integer> entry : skillLevels.entrySet()) {
                 if (entry.getKey() == null || entry.getValue() == null) {
-                    // Skip null entries defensively — Jackson may emit them
-                    // if the caller sent {"HEADER": null} or {"null": 80}.
-                    // SessionPlayer.setSkillLevel would throw IAE on null.
                     continue;
                 }
                 target.setSkillLevel(entry.getKey(), entry.getValue());
@@ -642,12 +570,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                         return persistLabMutation(career, restored.get());
                     }
                 }
-
-                // Offensive pair: starter is safe/limited, bench is explosive but less protective.
                 applyLabStats(pairs.offensiveStarter(), 62, 70, 66, 68, 82, 78);
                 applyLabStats(pairs.offensiveBench(), 98, 42, 94, 96, 78, 64);
-
-                // Defensive pair: starter is more progressive but vulnerable, bench is conservative/protective.
                 applyLabStats(pairs.defensiveStarter(), 72, 58, 78, 78, 82, 68);
                 applyLabStats(pairs.defensiveBench(), 38, 98, 58, 74, 88, 96);
 
@@ -1772,8 +1696,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
     private record ChannelSlot(String subdivisionId, double x) {}
 
-    // ========== createCustom ==========
-
     @Override
     public Mono<CareerSave> createCustom(UUID userId, String worldLeagueId, String worldTeamId,
                                           String difficulty, String gameSpeed, int teamsPerDivision) {
@@ -1799,8 +1721,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 }));
     }
 
-    // ========== snapshot ==========
-
     @Override
     public Mono<CareerSave> snapshot(UUID userId) {
         return careerRepository.findById(userId.toString())
@@ -1825,7 +1745,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -1849,7 +1769,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         int safeSeedCount = Math.max(1, Math.min(50, seedCount));
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -1861,119 +1781,13 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
                         "Match not found in current tournament: " + matchId));
-                SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
-                SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
-                if (home == null || away == null) {
-                    return Mono.error(new IllegalStateException(
-                        "SessionTeam not found for match " + matchId
-                        + " (home=" + fixture.getHomeTeamId()
-                        + ", away=" + fixture.getAwayTeamId() + ")"));
-                }
-
-                boolean userIsHome = previewControlledTeamIsHome(career, fixture, controlledTeamSide);
-                PreviewSums sums = new PreviewSums();
-                for (int i = 0; i < safeSeedCount; i++) {
-                    long seed = seedStart + i;
-                    V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
-                    V24DetailedMatchResult result = new V24DetailedMatchEngine()
-                        .simulate(context, new Random(seed));
-                    addPreviewSample(sums, result, userIsHome);
-                }
-
-                SessionTeam controlledTeam = userIsHome ? home : away;
-                String side = userIsHome ? "HOME" : "AWAY";
-                int n = safeSeedCount;
-                return Mono.just(new MatchPreviewSummary(
-                    matchId,
-                    side,
+                return Mono.just(previewRunner.run(
+                    career,
+                    fixture,
                     seedStart,
-                    seedStart + safeSeedCount - 1L,
                     safeSeedCount,
-                    controlledTeam.getName(),
-                    controlledTeam.getFormation(),
-                    round2(sums.goalsFor / n),
-                    round2(sums.goalsAgainst / n),
-                    round2((sums.goalsFor - sums.goalsAgainst) / n),
-                    round2(sums.possessionFor / n),
-                    round2(sums.shotsFor / n),
-                    round2(sums.shotsAgainst / n),
-                    round2((sums.shotsFor - sums.shotsAgainst) / n),
-                    round3(sums.xgFor / n),
-                    round3(sums.xgAgainst / n),
-                    round3((sums.xgFor - sums.xgAgainst) / n),
-                    round2(sums.centralShotsFor / n),
-                    round2(sums.wideShotsFor / n),
-                    round2(sums.longShotsFor / n),
-                    round2(sums.centralShotsAgainst / n),
-                    round2(sums.wideShotsAgainst / n),
-                    round2(sums.longShotsAgainst / n)
-                ));
+                    controlledTeamSide));
             });
-    }
-
-    private boolean previewControlledTeamIsHome(
-            CareerSave career,
-            MatchFixture fixture,
-            String controlledTeamSide) {
-        String side = controlledTeamSide == null ? "USER" : controlledTeamSide.trim().toUpperCase(Locale.ROOT);
-        if ("HOME".equals(side)) return true;
-        if ("AWAY".equals(side)) return false;
-        String userTeamId = career.getUserSessionTeamId();
-        return Objects.equals(fixture.getHomeTeamId(), userTeamId);
-    }
-
-    private void addPreviewSample(PreviewSums sums, V24DetailedMatchResult result, boolean userIsHome) {
-        sums.goalsFor += userIsHome ? result.homeGoals() : result.awayGoals();
-        sums.goalsAgainst += userIsHome ? result.awayGoals() : result.homeGoals();
-        sums.possessionFor += userIsHome ? result.homePossession() : result.awayPossession();
-        sums.shotsFor += userIsHome ? result.homeShots() : result.awayShots();
-        sums.shotsAgainst += userIsHome ? result.awayShots() : result.homeShots();
-        sums.xgFor += userIsHome ? result.homeXg() : result.awayXg();
-        sums.xgAgainst += userIsHome ? result.awayXg() : result.homeXg();
-
-        String ownTeamId = userIsHome ? result.homeTeamId() : result.awayTeamId();
-        if (result.timeline() == null || result.timeline().events() == null) {
-            return;
-        }
-        for (V24MatchEvent event : result.timeline().events()) {
-            if (!previewIsShotLike(event)) continue;
-            boolean ownShot = Objects.equals(event.teamId(), ownTeamId);
-            V24ShotLocation location = event.shotCoordinate() != null
-                ? event.shotCoordinate().location()
-                : null;
-            if (location == V24ShotLocation.PENALTY_AREA_WIDE) {
-                if (ownShot) sums.wideShotsFor += 1.0; else sums.wideShotsAgainst += 1.0;
-            } else if (location == V24ShotLocation.OUTSIDE_BOX || location == V24ShotLocation.LONG_RANGE) {
-                if (ownShot) sums.longShotsFor += 1.0; else sums.longShotsAgainst += 1.0;
-            } else {
-                if (ownShot) sums.centralShotsFor += 1.0; else sums.centralShotsAgainst += 1.0;
-            }
-        }
-    }
-
-    private boolean previewIsShotLike(V24MatchEvent event) {
-        if (event == null || event.xg() <= 0.0) return false;
-        return event.type() == V24MatchEventType.SHOT
-            || event.type() == V24MatchEventType.SHOT_ON_TARGET
-            || event.type() == V24MatchEventType.MISS
-            || event.type() == V24MatchEventType.BLOCK
-            || event.type() == V24MatchEventType.GOAL;
-    }
-
-    private static final class PreviewSums {
-        double goalsFor;
-        double goalsAgainst;
-        double possessionFor;
-        double shotsFor;
-        double shotsAgainst;
-        double xgFor;
-        double xgAgainst;
-        double centralShotsFor;
-        double wideShotsFor;
-        double longShotsFor;
-        double centralShotsAgainst;
-        double wideShotsAgainst;
-        double longShotsAgainst;
     }
 
     @Override
@@ -1984,7 +1798,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         long seed = (seedOverride != null) ? seedOverride : 12345L;
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -2192,8 +2006,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             slot != null ? finiteOrNull(slot.xPercent()) : null,
             slot != null ? finiteOrNull(slot.yPercent()) : null,
             slot != null ? slot.source() : "missing",
-            profile != null ? String.join(" · ", profile.roles()) : "-",
-            profile != null ? String.join(" · ", profile.sides()) : "-",
+            profile != null ? String.join(" Â· ", profile.roles()) : "-",
+            profile != null ? String.join(" Â· ", profile.sides()) : "-",
             roleBonus,
             sideBonus,
             assignmentScore,
@@ -2211,12 +2025,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         );
     }
 
-    /**
-     * list. The match engine can receive either persisted/manual slots or a
-     * default formation with no saved slots. For the latter, derive the
-     * canonical slot from FormationService so the debug UI can show the same
-     * base coordinates the manager sees in the modal.
-     */
     private ResolvedDiagnosticSlot resolveDiagnosticSlot(
             SessionPlayer player,
             String formation,
@@ -2540,13 +2348,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException(
                 "Match not found in current tournament: " + matchId));
-
-        // 1. Reset the fixture to PENDING (was COMPLETED from the original
-        // simulation). The new V24 simulation will set it back to COMPLETED
-        // via fixture.complete() below.
         fixture.reset();
-
-        // 2. Build the V24 context and re-simulate.
         SessionTeam home = career.getSessionTeam(fixture.getHomeTeamId());
         SessionTeam away = career.getSessionTeam(fixture.getAwayTeamId());
         if (home == null || away == null) {
@@ -2559,13 +2361,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
         V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
         V24DetailedMatchResult result = engine.simulate(context, new Random(seed));
-
-        // "change formation/player/pixels -> replay -> open Match Compare".
-        // Match Compare needs two persisted pieces: the live detail (saved
-        // below) and the baseline snapshot that can be re-simulated with the
-        // same seed. Live matches create this baseline in RoundController; the
-        // harness replay path must do the same or the compare button opens a
-        // valid route that returns 404.
         try {
             String careerId = career.getData().getCareerId();
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
@@ -2583,27 +2378,12 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             log.warn("replayMatch: failed to prepare Match Compare baseline "
                 + "for matchId={}, continuing: {}", matchId, e.getMessage());
         }
-
-        // previous implementation passed `0, 0, 0, 0` for those four fields
-        // up), so any replay of a match returned
-        // {homePossession: 0, awayPossession: 0, homeShots: 0, awayShots: 0}
-        // forward the real values from the engine. xG lives on the V24 detail
-        // endpoint and is not stored on the fixture's MatchResultData.
         MatchFixture.MatchResultData resultData = new MatchFixture.MatchResultData(
             result.homeGoals(), result.awayGoals(),
             result.homePossession(), result.awayPossession(),
             result.homeShots(), result.awayShots());
         fixture.complete(resultData);
-
-        // 4. Update standings with the new result. This will double-count if
-        // the original result was already applied (the standings were
-        // updated when the match first finished). Known limitation of MVP
-        // replay — the manager should reset-injuries + replace-fixtures to
-        // get a clean state if standings correctness is required.
         career.getTournamentState().updateStandingsWithResult(fixture);
-
-        // 5. Best-effort: clear the old V24 detail from Redis so the next
-        // GET /detail returns the new result, not the old one.
         try {
             String careerId = career.getData().getCareerId();
             v24StoragePort.deleteByMatchId(careerId, matchId);
@@ -2612,29 +2392,12 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 + "for matchId={}, continuing (replay is best-effort): {}",
                 matchId, e.getMessage());
         }
-
-        // V24 detail built from the re-simulation result. Without this, the
-        // existing deleteByMatchId above leaves Redis empty and the next
-        // GET /api/v1/careers/{careerId}/matches/{matchId}/detail returns
-        // 404 — blocking the "what-if" smoke (replay with a changed
-        // formation needs the new timeline / shot map / xG to compare
-        // against the original).
-        //
-        // Player ratings are passed empty: the assembler lives inside
-        // LeagueSimulator and replay currently has no per-player rating
-        // derivation. This is a known limitation; a follow-up sprint
-        // should extract V24PlayerRatingsAssembler so replay can reuse it.
-        // Best-effort: a Redis failure logs a warning but does NOT fail
-        // the replay — the fixture result is still saved to MongoDB and
-        // the manager can re-run replay once Redis recovers.
         try {
             String careerId = career.getData().getCareerId();
             Integer seasonNumber = career.getCurrentSeason();
             Integer round = fixture.getRound();
             String homeTeamName = home.getName() != null ? home.getName() : "";
             String awayTeamName = away.getName() != null ? away.getName() : "";
-            // time so the persisted detail reflects what formation was active
-            // when the replay ran. Falls back to null for "—" in UI.
             String homeFormation = home.getFormation();
             String awayFormation = away.getFormation();
 
@@ -2667,8 +2430,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         log.trace("replayMatch complete: matchId={}, "
             + "newResult=({}-{}), seed={}",
             matchId, result.homeGoals(), result.awayGoals(), seed);
-
-        // 6. Persist + invalidate cache (same pattern as the other endpoints)
         return careerRepository.save(career)
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())))
@@ -2684,7 +2445,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -3001,7 +2762,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -3296,16 +3057,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 executeScenarioMatrixSummary(career, matchId, seedStart, seedCount, scenarioGroup, controlledTeamSide)));
     }
 
-    /**
-     * Panel C in the debug harness is fed by CareerSessionService
-     * (/career/fixtures/round-with-bye). Scenario matrix actions must read the
-     * same live career source, otherwise the UI can select a matchId from the
-     * cache while the smoke looks in an older Redis snapshot and reports a
-     * misleading 404 "Match not found".
-     *
-     * <p>Keep a repository fallback for older unit tests and defensive local
-     * flows where the cache facade is unavailable or returns empty.
-     */
     private Mono<CareerSave> loadLiveCareer(UUID userId) {
         Mono<CareerSave> cachedCareer = null;
         if (careerSessionService != null) {
@@ -3352,7 +3103,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -3421,7 +3172,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -3520,9 +3271,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         double deltaShotsFor = round2(subAvg.shotsFor() - baseAvg.shotsFor());
         String read = safeName(off) + " -> " + safeName(on)
             + " min " + minute
-            + " | ΔxG " + deltaXgFor
-            + " | Δshots " + deltaShotsFor
-            + " | ΔxGA " + deltaXgAgainst;
+            + " | Î”xG " + deltaXgFor
+            + " | Î”shots " + deltaShotsFor
+            + " | Î”xGA " + deltaXgAgainst;
 
         return new SubstitutionWhatIfSummaryRow(
             matchId,
@@ -3826,7 +3577,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         }
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException("Career not found for userId=" + userId));
@@ -3901,7 +3652,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException("Career not found for userId=" + userId));
@@ -6401,7 +6152,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " — call create-custom first")))
+                "No career for userId=" + userId + " â€” call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -6412,34 +6163,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             });
     }
 
-    /**
-     * given round so the next {@code /match-engine/rounds/start} call
-     * runs a fresh V24 simulation. Concretely, for every fixture in the
-     * round we:
-     *
-     * <ol>
-     *   <li>Call {@code fixture.reset()} — clears status=COMPLETED →
-     *       PENDING and nulls the result. Without this step,
-     *       {@code MatchFixture.startSimulation} (line 88-93) throws
-     *       "Match can only start from PENDING state".</li>
-     *   <li>Call {@code matchEngineRegistry.stopAndRemoveEngine} — evicts
-     *       the cached {@code MatchSession} so the next
-     *       {@code engineRegistry.startEngine} call rebuilds from
-     *       scratch. Without this step, the registry returns the old
-     *       session (which has already finished) and the new
-     *       simulation never starts.</li>
-     *   <li>Call {@code v24StoragePort.deleteByMatchId} — clears the V24
-     *       detail (timeline / shot map / xG) from Redis so the next
-     *       {@code GET /detail} returns the new simulation's events,
-     *       not the old one.</li>
-     * </ol>
-     *
-     * <p>The reverse-update is deliberately omitted: re-running the same
-     * round does not change career-level standings here (the smoke
-     * harness accepts that "standings drift" is the cost of true
-     * clean state if needed). This matches the documented limitation
-     * of {@code replayMatch}.
-     */
     private Mono<Void> executeResetRound(CareerSave career, String roundId) {
         String careerId = career.getCareerId();
         int totalRounds = career.getTournamentState().getTotalRounds();
@@ -6474,9 +6197,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             boolean wasCompleted = fixture.isCompleted();
             fixture.reset();
             resetCount++;
-
-            // Stop & remove the cached MatchSession so the next
-            // /match-engine/rounds/start gets a fresh engine.
             try {
                 if (matchEngineRegistry.hasEngine(userId, UUID.fromString(matchId))) {
                     matchEngineRegistry.stopAndRemoveEngine(userId, UUID.fromString(matchId));
@@ -6486,11 +6206,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 log.warn("resetRound: failed to remove engine for matchId={}: {}",
                     matchId, e.getMessage());
             }
-
-            // Clear the old V24 detail from Redis (best-effort — a
-            // Redis failure logs a warning but does NOT fail the reset,
-            // so a stale Redis state is preferable to blocking the
-            // smoke flow).
             try {
                 v24StoragePort.deleteByMatchId(careerId, matchId);
                 clearedDetails++;
@@ -6502,22 +6217,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             log.info("resetRound matchId={} round={} wasCompleted={}",
                 matchId, fixture.getRound(), wasCompleted);
         }
-
-        // The MatchSimulationOrchestrator.processResultsInternal early-returns
-        // when `firstFixture.getRound() != careerCurrentRound` (line 126-128 of
-        // MatchSimulationOrchestrator.java). After running several rounds, the
-        // career's `currentRound` may be 4 while the manager is now re-simulating
-        // round 1 — the orchestrator would silently skip the result-persistence
-        // and the fixtures would stay PENDING in Mongo (despite the V24 detail
-        // being updated in Redis).
-        //
-        // Fix: rewind `currentRound` to the round being re-simulated so the
-        // orchestrator's round-equality guard passes. The test-harness is the
-        // ONLY caller of this method (it's @Profile-gated) and the manager
-        // accepts the "rewind" cost (it just means the next natural advance
-        // step will be `round + 1` instead of whatever the previous current
-        // was — the smoke accepts that the tournament may finish earlier than
-        // the stored totalRounds on a rewind-reset).
         int previousCurrentRound = career.getTournamentState().getCurrentRound();
         if (previousCurrentRound != round) {
             log.info("resetRound rewinding currentRound: {} -> {} "
@@ -6525,9 +6224,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 previousCurrentRound, round, round);
             career.getTournamentState().setCurrentRound(round);
         }
-        // Force the career back into PRE_MATCH so the round engine is allowed
-        // to start a new round. (The orchestrator would normally set
-        // careerPhase=WAITING_USER after a round finishes, blocking a re-run.)
         career.getTournamentState().setCareerPhase(
             com.footballmanager.domain.model.entity.CareerPhase.PRE_MATCH);
 
@@ -6539,19 +6235,6 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
                 careerSessionService.invalidateCache(career.getUserId())));
     }
 
-    /**
-     * (careerId, round) via {@code FixtureQueryHelper.deriveRoundId}.
-     * Since we don't have a direct lookup index for roundId, we
-     * recover the round number by enumerating all possible rounds and
-     * matching the UUID. With {@code totalRounds <= 38} (typical
-     * tournament) this is cheap.
-     *
-     * <p>If we ever extend the tournament beyond 38 rounds, this should
-     * be replaced with a direct UUID→round index or by storing the
-     * roundId on the fixture.
-     *
-     * @return 1-based round number, or -1 if no match found
-     */
     private int deriveRoundFromUuid(String roundId, String careerId, int totalRounds) {
         try {
             UUID target = UUID.fromString(roundId);

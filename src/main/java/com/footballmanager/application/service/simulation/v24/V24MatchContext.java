@@ -15,34 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Built from CareerSave data externally.
- *
- * {@link #manualSubstitutions()}. The wire schedules a substitution by
- * appending a {@link ScheduledSub} (no immediate lineup mutation); the
- * engine applies the swap when it reaches the {@code effectiveMinute}
- * inside the per-minute loop. The list is kept sorted by
- * {@code (effectiveMinute ASC, teamId ASC, playerOffId ASC)} so iteration
- * during the engine loop is deterministic and supports an early-exit
- * optimization.
- */
 public final class V24MatchContext {
 
-    /**
-     * the manager through the live-match wire.
-     *
-     * <p>The engine applies the swap (move {@code playerOffId} to bench,
-     * {@code playerOnId} to starting) at the start of the minute loop
-     * iteration where {@code effectiveMinute == currentMinute}. The swap
-     * uses the existing {@code V24SubstitutionEngine.manualSubstitute}
-     * path so the per-team 5-sub cap, position compatibility, and
-     * already-subbed checks are enforced.
-     *
-     * @param teamId          homeTeamId or awayTeamId (NOT NULL)
-     * @param playerOffId     sessionPlayerId of the player going off (NOT NULL)
-     * @param playerOnId      sessionPlayerId of the bench player coming on (NOT NULL)
-     * @param effectiveMinute match minute when the swap is applied, in [0, 90]
-     */
     public record ScheduledSub(
             String teamId,
             String playerOffId,
@@ -50,12 +24,6 @@ public final class V24MatchContext {
             int effectiveMinute
     ) {}
 
-    /**
-     * Deterministic sort order for {@link #manualSubstitutions()}: by
-     * effectiveMinute ASC, then teamId ASC, then playerOffId ASC. Used
-     * by the constructor and by {@link #withManualSubstitution} so the
-     * engine can early-exit the iteration.
-     */
     private static final Comparator<ScheduledSub> SCHEDULED_SUB_ORDER =
             Comparator.comparingInt(ScheduledSub::effectiveMinute)
                     .thenComparing(ScheduledSub::teamId, Comparator.nullsLast(Comparator.naturalOrder()))
@@ -76,17 +44,8 @@ public final class V24MatchContext {
     private final TeamStyle awayStyle;
     private final Map<String, LineupSlotDTO> homeSlotsByPlayerId;
     private final Map<String, LineupSlotDTO> awaySlotsByPlayerId;
-    /**
-     * Internal storage is mutable for the constructor to build the sorted
-     * copy; the public accessor returns an unmodifiable view.
-     */
     private final List<ScheduledSub> manualSubstitutions;
 
-    /**
-     * fields. The {@code manualSubstitutions} list is defensively copied
-     * and sorted by {@link #SCHEDULED_SUB_ORDER} so iteration is
-     * deterministic.
-     */
     public V24MatchContext(
             @JsonProperty("matchId") String matchId,
             @JsonProperty("homeTeamId") String homeTeamId,
@@ -108,13 +67,6 @@ public final class V24MatchContext {
                 manualSubstitutions, Collections.emptyMap(), Collections.emptyMap());
     }
 
-    /**
-     *
-     * <p>The slot maps are keyed by {@code sessionPlayerId}. They let the
-     * match engine rebuild its mutable player state with the manager's exact
-     * tactical slot/free-positioning decision without mutating the
-     * {@link SessionPlayer} objects stored in the career save.
-     */
     public V24MatchContext(
             String matchId,
             String homeTeamId,
@@ -155,13 +107,6 @@ public final class V24MatchContext {
         validate();
     }
 
-    /**
-     * F1/F2/F5 compatibility constructor — defaults
-     * {@link #manualSubstitutions} to an empty list. Used by every
-     * existing call site (production wire + 32 test fixtures) that does
-     * not need to schedule a deferred sub. Internally delegates to the
-     * 14-arg primary constructor.
-     */
     public V24MatchContext(
             String matchId,
             String homeTeamId,
@@ -188,10 +133,6 @@ public final class V24MatchContext {
         validateStarterCount(awayStartingPlayers, "awayStartingPlayers");
     }
 
-    /**
-     * any starting-XI size in {@code [MIN, 11]} inclusive. Below MIN the
-     * team cannot field a match.
-     */
     private static void validateStarterCount(List<SessionPlayer> starters, String label) {
         int size = starters.size();
         int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
@@ -218,12 +159,6 @@ public final class V24MatchContext {
         return Collections.unmodifiableMap(copy);
     }
 
-    /**
-     * list and sort it by the deterministic order. Returns an empty
-     * unmodifiable list for null/empty input. The returned list is NOT
-     * publicly exposed (the accessor wraps it in another
-     * {@code unmodifiableList}).
-     */
     private static List<ScheduledSub> defensiveCopyAndSort(List<ScheduledSub> list) {
         if (list == null || list.isEmpty()) {
             return Collections.emptyList();
@@ -255,38 +190,11 @@ public final class V24MatchContext {
     @JsonProperty("homeSlotsByPlayerId") public Map<String, LineupSlotDTO> homeSlotsByPlayerId() { return homeSlotsByPlayerId; }
     @JsonProperty("awaySlotsByPlayerId") public Map<String, LineupSlotDTO> awaySlotsByPlayerId() { return awaySlotsByPlayerId; }
 
-    /**
-     * substitutions scheduled in this context. The list is sorted by
-     * {@code (effectiveMinute ASC, teamId ASC, playerOffId ASC)}.
-     *
-     * <p>Returned as {@link Collections#unmodifiableList(java.util.List)};
-     * mutating the returned list throws {@link UnsupportedOperationException}.
-     */
     @JsonProperty("manualSubstitutions")
     public List<ScheduledSub> manualSubstitutions() {
         return Collections.unmodifiableList(manualSubstitutions);
     }
 
-    /**
-     * {@code teamId}'s tactical style replaced by {@code newStyle}. This
-     * context is otherwise immutable (F1 design): the helper builds a fresh
-     * instance rather than mutating in-place, so the replay path can compare
-     * snapshots and the cache invalidation logic in F1 stays valid.
-     *
-     * <p>F2.5: the {@code manualSubstitutions} list is carried over to the
-     * new context (it is shared by reference inside the unmodifiable view
-     * — defensive copy in the constructor handles isolation).
-     *
-     * <p>Validation: {@code newStyle} must be non-null, {@code teamId} must
-     * match the home or away team of this context. The F5 spec restricts
-     * tactical changes to the manager's team (home), but the helper is
-     * generic — the policy lives in {@code TacticalChangeService}.
-     *
-     * @param teamId   homeTeamId or awayTeamId of this match
-     * @param newStyle the new tactical style (NOT NULL)
-     * @return a new V24MatchContext with the style replaced
-     * @throws IllegalArgumentException if teamId is unknown or newStyle is null
-     */
     public V24MatchContext withNewStyle(String teamId, TeamStyle newStyle) {
         if (newStyle == null) {
             throw new IllegalArgumentException("newStyle must not be null");
@@ -321,23 +229,6 @@ public final class V24MatchContext {
                 + homeTeamId + "') or away ('" + awayTeamId + "')");
     }
 
-    /**
-     * {@code teamId}'s formation string replaced by {@code newFormation}.
-     * Like {@link #withNewStyle}, this returns a fresh instance.
-     *
-     * <p>F2.5: the {@code manualSubstitutions} list is carried over to the
-     * new context.
-     *
-     * <p>Validation is delegated to {@link V24TeamMatchState#setFormation(String)}
-     * (which the tactical-change service invokes after {@code mutateContext}
-     * rebuilds the {@code V24TeamMatchState}). The helper itself only checks
-     * the identity constraint (teamId must match home/away) and non-blank.
-     *
-     * @param teamId        homeTeamId or awayTeamId of this match
-     * @param newFormation  the new formation code (NOT NULL, NOT BLANK)
-     * @return a new V24MatchContext with the formation replaced
-     * @throws IllegalArgumentException if teamId is unknown or formation is null/blank
-     */
     public V24MatchContext withNewFormation(String teamId, String newFormation) {
         if (newFormation == null || newFormation.isBlank()) {
             throw new IllegalArgumentException("newFormation must not be null or blank");
@@ -372,11 +263,6 @@ public final class V24MatchContext {
                 + homeTeamId + "') or away ('" + awayTeamId + "')");
     }
 
-    /**
-     * for one team. Used by the test harness and live tactical tooling to
-     * replay the same match after a manager moves players on the pitch by
-     * pixels, not only after changing the formation label.
-     */
     public V24MatchContext withSlots(String teamId, Map<String, LineupSlotDTO> slotsByPlayerId) {
         if (teamId == null || teamId.isBlank()) {
             throw new IllegalArgumentException("teamId must not be blank");
@@ -409,60 +295,6 @@ public final class V24MatchContext {
                 + homeTeamId + "') or away ('" + awayTeamId + "')");
     }
 
-    /**
-     * {@link V24MatchContext} that records {@code playerOffId} → bench and
-     * {@code playerOnId} → starting for {@code teamId} as a deferred
-     * (scheduled) substitution. The swap is applied by the engine when
-     * the minute loop reaches {@code minute}, NOT immediately in this
-     * helper.
-     *
-     * <p><b>F2.5 contract change (vs F2):</b> the helper no longer
-     * mutates the starting/bench lists synchronously. Instead it appends
-     * a {@link ScheduledSub} to {@link #manualSubstitutions()}; the
-     * engine reads that list at the start of each minute and calls
-     * {@code V24SubstitutionEngine.manualSubstitute} for the entries
-     * whose {@code effectiveMinute == currentMinute}. The starting and
-     * bench lists returned by the new context are identical to the
-     * input's (the lineup is "deferred" until the engine fires).
-     *
-     * <p>Validation (F2 rules, preserved):
-     * <ul>
-     *   <li>{@code teamId} must match {@code homeTeamId} or {@code awayTeamId}
-     *       (else {@link IllegalArgumentException}).</li>
-     *   <li>{@code playerOffId} must be in the starting lineup of
-     *       {@code teamId} (else {@link IllegalArgumentException}
-     *       "playerOffId not in starting XI").</li>
-     *   <li>{@code playerOnId} must be in the bench of {@code teamId} (else
-     *       {@link IllegalArgumentException} "playerOnId not on bench").</li>
-     *   <li>{@code minute} must be in {@code [0, 90]} (else
-     *       {@link IllegalArgumentException}).</li>
-     *   <li>{@code playerOffId} must not equal {@code playerOnId} (else
-     *       {@link IllegalArgumentException}).</li>
-     * </ul>
-     *
-     * <p><b>F2.5 new validation:</b> a player may not have two
-     * scheduled subs on the same team. If {@code manualSubstitutions}
-     * already contains an entry with the same {@code teamId} and
-     * {@code playerOffId}, throws {@link IllegalArgumentException}
-     * "playerOffId '<id>' already has a scheduled substitution for
-     * team '<teamId>'". O(n) with n ≤ 5.
-     *
-     * <p><b>Side effects:</b> NONE on the lineup. The helper returns a
-     * new context carrying the appended {@link ScheduledSub} (the list
-     * is re-sorted by {@link #SCHEDULED_SUB_ORDER}). The caller
-     * (typically {@code SubstitutionCommandUseCaseImpl} via
-     * {@code V24LiveSession.mutateContext}) is responsible for invoking
-     * {@code replayFromMinute} to make the engine pick up the change.
-     *
-     * @param teamId        homeTeamId or awayTeamId of this match (NOT NULL, NOT BLANK)
-     * @param playerOffId   sessionPlayerId of the player going off (NOT NULL, must be in starting)
-     * @param playerOnId    sessionPlayerId of the player coming on (NOT NULL, must be in bench)
-     * @param minute        the match minute the substitution is applied at (in [0, 90])
-     * @return a new V24MatchContext with the scheduled sub appended; the
-     *         starting/bench lists are identical to this context's
-     * @throws IllegalArgumentException if any validation fails (including
-     *         the F2.5 duplicate-scheduled-sub check)
-     */
     public V24MatchContext withManualSubstitution(String teamId,
                                                   String playerOffId,
                                                   String playerOnId,
@@ -527,7 +359,7 @@ public final class V24MatchContext {
         }
 
         // F2.5 NEW: validate no duplicate scheduled sub for the same (teamId, playerOffId).
-        // O(n) with n ≤ 5 per team — trivial.
+        // O(n) with n â‰¤ 5 per team â€” trivial.
         for (ScheduledSub existing : manualSubstitutions) {
             if (existing.teamId().equals(teamId)
                     && existing.playerOffId().equals(playerOffId)) {

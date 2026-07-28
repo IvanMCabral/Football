@@ -41,12 +41,6 @@ import reactor.core.publisher.Mono;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Controller for round operations (start round).
- * Uses non-blocking reactive patterns.
- *
- * and per-minute SSE tick-by-tick simulation.
- */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/match-engine/rounds")
@@ -60,44 +54,16 @@ public class RoundController {
     private final CareerSessionService careerSessionService;
     private final V24MatchContextFactory v24ContextFactory;
     private final LeagueSimulator leagueSimulator;
-    // GET /api/v1/matches returns them (was always []). Best-effort fire-and-forget.
     private final MatchRepository matchRepository;
-    // BaselineState at match start, deletes it on match finish.
     private final BaselineStateStoragePort baselineStoragePort;
-    // copy-paste getUserIdFromAuth helper that accepted an optional
-    // requestUserId from the body and threw IAE on auth failure.
     private final ControllerHelper controllerHelper;
 
     @Value("${simulation.use-v24-detailed-engine:true}")
     private boolean useV24DetailedEngine;
 
-    /**
-     * POST /api/v1/match-engine/rounds/start
-     * Starts a new round with multiple matches.
-     * Returns immediately while round starts asynchronously.
-     */
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
-        // FIRST so the 401 case beats body validation. Before this fix, an
-        // unauthenticated request with `matches:[]` returned 422
-        // LINEUP_VALIDATION_ERROR (matches empty) instead of 401
-        // UNAUTHORIZED — the E2E test
-        // `startRound_unauthenticated_returns401` failed because of this.
         UUID userId = controllerHelper.getUserId(authentication);
-
-        // touching UUID.fromString. Without this guard, an empty / wrong-field
-        // body (e.g. {gameId, round} from a misbehaving client) makes
-        // `UUID.fromString(null)` throw a raw NPE
-        // ("Cannot invoke String.length() because name is null") which
-        // surfaces as HTTP 500. We map the missing/invalid roundId to a
-        // 422 LINEUP_VALIDATION_ERROR with a clear message instead.
-        //
-        // The empty-matches case is a legitimate "advance round with no
-        // matches scheduled yet" request — the UI uses it as a heartbeat
-        // / readiness probe — and startMatches handles the empty list
-        // correctly (returns RoundState with `matches: []` and status
-        // IN_PROGRESS). Keeping the guard caused
-        // `startRound_emptyMatchesArray_returns200` to fail with 422.
         if (request == null || request.roundId() == null || request.roundId().isBlank()) {
             return Mono.error(new IllegalArgumentException(
                 "roundId is required and must be a non-blank UUID string"));
@@ -109,12 +75,6 @@ public class RoundController {
         return startMatches(roundId, userId, request)
             .map(initialState -> ResponseEntity.ok(initialState))
             .onErrorResume(e -> {
-                // from missing career/session, IllegalArgumentException from invalid
-                // roundId UUID, MinuteInPastException from F2.5) must propagate to
-                // GlobalExceptionHandler so the frontend gets the right 4xx semantic
-                // code (422 LINEUP_STATE_ERROR, 422 LINEUP_VALIDATION_ERROR, 400
-                // MINUTE_IN_PAST). Only genuinely unexpected errors (NPE, DB, etc.)
-                // are mapped to 500 here.
                 if (e instanceof IllegalStateException
                         || e instanceof IllegalArgumentException) {
                     return Mono.error(e);
@@ -132,17 +92,6 @@ public class RoundController {
         final AtomicInteger matchesFinished = new AtomicInteger(0);
         final List<MatchResultProcessor.MatchResultInfo> matchResults =
                 Collections.synchronizedList(new ArrayList<>());
-
-        // {@code careerSessionService.getCareerFromCache(userId).block()} here,
-        // which throws {@code IllegalStateException("block() not supported in
-        // thread parallel-N")} on Reactor parallel threads. The exception is
-        // caught by {@code GlobalExceptionHandler} and surfaced to the
-        // frontend as HTTP 422 LINEUP_STATE_ERROR, blocking the live smoke
-        // (posesión animándose, sustitución en vivo). The fix loads the
-        // CareerSave reactively via {@code flatMap}; the per-match side
-        // effects (startMatch subscribe, engine registration, lifecycle
-        // tracking) are dispatched inside {@code doOnNext} and run on the
-        // Reactor scheduler, never blocking the caller thread.
         return careerSessionService.getCareerFromCache(userId)
             .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
             .doOnNext(career -> {
@@ -154,8 +103,6 @@ public class RoundController {
                 int currentSeason = career.getSeasonManager().getCurrentSeason();
                 LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
                 capturePreRoundState(career, tracking);
-
-                // Iniciar todos los partidos
                 for (StartRoundRequest.MatchInfo matchInfo : request.matches()) {
                     UUID matchId = UUID.fromString(matchInfo.matchId());
                     UUID homeTeamId = UUID.fromString(matchInfo.homeTeamId());
@@ -166,7 +113,6 @@ public class RoundController {
                     V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
 
                     if (v24LiveSession != null) {
-                        // V24 path — use MatchFinishedResult callback
                         matchManagementService.startMatch(
                                 userId,
                                 matchId,
@@ -176,7 +122,6 @@ public class RoundController {
                                 v24LiveSession)
                             .subscribe();
                     } else {
-                        // Legacy path — use MatchStateSnapshot callback
                         matchManagementService.startMatch(
                                 userId,
                                 matchId,
@@ -231,9 +176,6 @@ public class RoundController {
             });
     }
 
-    /**
-     * Returns null if V24 is disabled (falls back to legacy path).
-     */
     private V24LiveSession buildV24LiveSession(CareerSave career, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
         if (!useV24DetailedEngine) {
             log.debug("[ROUND-CONTROLLER] V24DetailedEngine disabled, using legacy path for match {}", matchId);
@@ -267,15 +209,6 @@ public class RoundController {
 
             V24LiveSession session = new V24LiveSession(context, seed);
             log.info("[ROUND-CONTROLLER] V24LiveSession created for match {} with seed {}", matchId, seed);
-
-            // applied. The SubstitutionCommandUseCaseImpl hook will append
-            // subs to this state as the manager makes changes. Cleaned up
-            // in handleMatchFinished.
-            //
-            // Mono<Void>. We subscribe on a bounded-elastic scheduler and
-            // log a warn on failure — baseline persistence MUST NOT block
-            // the live match start (the compare endpoint will simply 404
-            // for that match if Redis is down).
             String careerId = career.getData().getCareerId();
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
             baselineStoragePort.save(careerId, baseline)
@@ -297,10 +230,6 @@ public class RoundController {
         }
     }
 
-    /**
-     * Uses v24Result.timeline().events() for persistence when V24LiveSession was active.
-     * Also persists V24 detail data to Redis via LeagueSimulator.
-     */
     private void handleMatchFinished(MatchFinishedResult result,
                                      java.util.List<MatchResultProcessor.MatchResultInfo> matchResults,
                                      AtomicInteger matchesFinished,
@@ -323,8 +252,6 @@ public class RoundController {
                 ));
             }
             log.info("[ROUND-CONTROLLER] V24 match finished, {} timeline events for persistence", events.size());
-
-            // are about to be persisted so a future 404 on GET /detail can
             log.info("[V24-DETAIL-CALLSITE-PERSIST] careerId={}, matchId={}, "
                     + "homeGoals={}, awayGoals={}, homeTeamId={}, awayTeamId={}",
                 career.getData().getCareerId(),
@@ -342,26 +269,6 @@ public class RoundController {
                     result.snapshot().score().away(),
                     tracking
             );
-
-            // code deleted the BaselineState here as "cleanup". That
-            // broke the /compare endpoint: the manager goes to match
-            // detail → click "Comparar" AFTER the match has finished,
-            // but by then the baseline was already gone and the
-            // endpoint returned 404.
-//
-// expects the baseline to outlive the match — that way the manager
-// can compare "what would have happened" vs "what happened with my
-// subs" up to 7 days later. Deleting it here contradicted that
-// refactor of the save() didn't matter because the save worked; the
-// delete-after-match was wiping the baseline before the UI could
-// request the comparison).
-//
-// Fix: KEEP the baseline after match finish. It expires naturally
-// via TTL 7d. After 7d the compare endpoint returns 404 — that's the
-// documented contract.
-//
-// The only call site of baselineStoragePort.delete in the codebase
-// is here, so removing it has no other side effects.
             log.info("[F6-MATCH-COMPARE] BaselineState PRESERVED for matchId={}, careerId={} (TTL 7d, compare endpoint will use it)",
                     result.snapshot().matchId(), career.getData().getCareerId());
         } else {
@@ -374,13 +281,6 @@ public class RoundController {
                 result.snapshot().score().away(),
                 events
         ));
-
-        // MatchRepository so GET /api/v1/matches returns it. Pass the
-        // controller's userId (derived from JWT) explicitly — relying on
-        // snap.userId()/career.getUserId() caused the C41 regression where
-        // the live path returned null in both (MatchSessionRegistry never
-        // set the initial state.userId for the V24 path) and the C40
-        // fallback to UUID.randomUUID() persisted under a junk key.
         persistFinishedMatch(result, events, career, userId);
 
         int finished = matchesFinished.incrementAndGet();
@@ -404,20 +304,6 @@ public class RoundController {
         }
     }
 
-    /**
-     * Mirrors {@code LeagueSimulator.capturePreRoundSuspendedPlayerIds} and
-     * {@code capturePreRoundInjuredPlayerIds} but lives in the controller
-     * since tracking is a per-round artifact created at startMatches.
-     */
-        /**
-     * {@code GET /api/v1/matches} surfaces it. The live engine path never
-     * called {@code matchRepository.save} — the legacy
-     * {@code MatchFinishService.finishMatch} expects a pre-existing Match
-     * entity via {@code findById}, which is also empty for live matches, so
-     * nothing ever reached Redis. We build a fresh Match from the snapshot
-     * (id, teams, score, status) and save it best-effort — failures are
-     * logged and swallowed so the live match flow is never blocked.
-     */
     private void persistFinishedMatch(MatchFinishedResult result,
                                       java.util.List<com.footballmanager.domain.model.entity.MatchEvent> events,
                                       CareerSave career,
@@ -425,7 +311,7 @@ public class RoundController {
         try {
             MatchStateSnapshot snap = result.snapshot();
             if (snap.matchId() == null || snap.homeTeamId() == null || snap.awayTeamId() == null) {
-                log.warn("[C41] persistFinishedMatch skipped — incomplete snapshot (matchId={}, home={}, away={})",
+                log.warn("[C41] persistFinishedMatch skipped â€” incomplete snapshot (matchId={}, home={}, away={})",
                     snap.matchId(), snap.homeTeamId(), snap.awayTeamId());
                 return;
             }
@@ -438,7 +324,6 @@ public class RoundController {
                 events,
                 null
             );
-            // Find the fixture to get round number
             int round = 1;
             java.time.Instant scheduledAt = java.time.Instant.now();
             if (career != null && career.getTournamentState() != null
@@ -459,17 +344,8 @@ public class RoundController {
                 round
             );
             match.simulate(matchResult);
-            // (derived from JWT) as the authoritative user namespace for
-            // MatchRepository. NEVER fall back to UUID.randomUUID() — that
-            // persisted under a junk key in C40 and /api/v1/matches could
-            // never find the match. If authUserId is somehow null, log error
-            // and skip (don't pollute the repository with orphan keys).
             UUID userId = authUserId;
             if (userId == null) {
-                // Defensive: also check snap.userId() + career.getUserId()
-                // before giving up. These should normally also be null in
-                // this fallback path (see C41 investigation), but we check
-                // them anyway for defense in depth.
                 String snapUserId = snap.userId();
                 if (snapUserId != null && !snapUserId.isBlank()) {
                     try { userId = UUID.fromString(snapUserId); } catch (Exception ignored) {}
@@ -479,7 +355,7 @@ public class RoundController {
                 }
             }
             if (userId == null) {
-                log.error("[C41] persistFinishedMatch ABORTED — cannot determine userId for matchId={}. "
+                log.error("[C41] persistFinishedMatch ABORTED â€” cannot determine userId for matchId={}. "
                     + "snap.userId={}, career.userId={}, authUserId={}. "
                     + "Match will NOT be persisted (avoids orphan keys that /api/v1/matches cannot find).",
                     snap.matchId(), snap.userId(),
@@ -487,7 +363,6 @@ public class RoundController {
                     authUserId);
                 return;
             }
-            // userId is effectively final at this point (guarded by the null check above).
             final UUID persistUserId = userId;
             matchRepository.save(persistUserId, match)
                 .doOnSuccess(v -> log.info("[C41] Persisted finished match matchId={} to MatchRepository (userId={})",
@@ -502,11 +377,6 @@ public class RoundController {
         }
     }
 
-    /**
-     * Mirrors {@code LeagueSimulator.capturePreRoundSuspendedPlayerIds} and
-     * {@code capturePreRoundInjuredPlayerIds} but lives in the controller
-     * since tracking is a per-round artifact created at startMatches.
-     */
     private void capturePreRoundState(CareerSave career, LiveRoundMutationTracking tracking) {
         for (var team : career.getAllSessionTeams()) {
             for (String playerId : career.getSquadPlayerIds(team.getSessionTeamId())) {
@@ -535,9 +405,6 @@ public class RoundController {
         public record MatchInfo(String matchId, String homeTeamId, String awayTeamId) {}
     }
 
-    /**
-     * Every V24MatchEventType maps explicitly — no lossy fallbacks.
-     */
     private com.footballmanager.domain.model.entity.MatchEvent.EventType toDomainEventType(
             V24MatchEventType v24Type) {
         if (v24Type == null) {

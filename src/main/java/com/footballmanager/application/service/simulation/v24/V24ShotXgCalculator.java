@@ -21,7 +21,7 @@ import java.util.Map;
  *       shots only (long-range specialist). Applied AFTER HEADER/AERIAL but
  *       BEFORE WALL divisor so WALL still compounds.</li>
  *       (no eventSubType gating) because 1v1 duels happen in any context.</li>
- *       {@link V24ShotEventType#OPEN_PLAY}). En corners/crosses NO aplica —
+ *       {@link V24ShotEventType#OPEN_PLAY}). En corners/crosses NO aplica â€”
  *       modelo "entradas en juego abierto", no en balon parado.</li>
  * </ul>
  *
@@ -37,36 +37,36 @@ import java.util.Map;
  *
  * cuando {@code shooterHeightCm &ge; 185}. Formula:
  * {@code headerMult = (1 + headerSkill/200) * (1 + aerialSkill/300)}. Si
- * HEADER=0 y AERIAL=80 con height=190cm → headerMult = 1.0 × 1.267 = 1.267
+ * HEADER=0 y AERIAL=80 con height=190cm â†’ headerMult = 1.0 Ã— 1.267 = 1.267
  * (aun con HEADER ausente el AERIAL agrega bonus). Si HEADER=80 y AERIAL=80
- * con height=190cm → headerMult = 1.4 × 1.267 = 1.774 (+77%). Sin height o
- * con height &lt; 185 → AERIAL NO aplica.
+ * con height=190cm â†’ headerMult = 1.4 Ã— 1.267 = 1.774 (+77%). Sin height o
+ * con height &lt; 185 â†’ AERIAL NO aplica.
  *
  * {@link V24ShotLocation#LONG_RANGE}. Formula:
  * {@code shooterLongRangeMult = 1 + shooterSkill/250}. SHOOTER=0 o skill
- * ausente → multiplier = 1.0 (sin cambio). SHOOTER=90 → multiplier = 1.36
+ * ausente â†’ multiplier = 1.0 (sin cambio). SHOOTER=90 â†’ multiplier = 1.36
  * (+36%). El resto de las locations (SIX_YARD_BOX, PENALTY_AREA_*,
- * OUTSIDE_BOX) NO reciben bonus aunque tengan SHOOTER alto — modela "el
- * rematador long-range" (Mbappé style).
+ * OUTSIDE_BOX) NO reciben bonus aunque tengan SHOOTER alto â€” modela "el
+ * rematador long-range" (MbappÃ© style).
  *
  * overload 11-args con {@code defenderSkills}. Este overload 10-args delega
- * al 11-args con {@code Map.of()} (sin defending skills) → MARKER y TACKLER
+ * al 11-args con {@code Map.of()} (sin defending skills) â†’ MARKER y TACKLER
  * NO aplican (no-op para callers legacy que solo pasan hasta 10-args).
  *
- * MARKER=0 → ×1.0 (no change). MARKER=90 → ×0.70 (-30%). Aplica SIEMPRE
+ * MARKER=0 â†’ Ã—1.0 (no change). MARKER=90 â†’ Ã—0.70 (-30%). Aplica SIEMPRE
  * (en cualquier eventSubType) porque los duelos 1v1 ocurren en todo
- * contexto — corner, cross, open play, penalty.
+ * contexto â€” corner, cross, open play, penalty.
  *
- * {@code xg *= (1 - skill/250)}. TACKLER=0 → ×1.0 (no change). TACKLER=90
- * → ×0.64 (-36%). Gated en {@link V24ShotEventType#OPEN_PLAY} — en corners
+ * {@code xg *= (1 - skill/250)}. TACKLER=0 â†’ Ã—1.0 (no change). TACKLER=90
+ * â†’ Ã—0.64 (-36%). Gated en {@link V24ShotEventType#OPEN_PLAY} â€” en corners
  * / crosses / penalties NO aplica (las entradas a balon parado son
  * diferentes y dependen de WALL mas que de TACKLER).
  *
  * <ul>
- *   <li>AERIAL absent o height &lt; 185 → headerMult no cambia.</li>
- *   <li>SHOOTER absent o location != LONG_RANGE → shooterLongRangeMult = 1.0.</li>
- *   <li>Overloads 5/9/10-args → delegan al 11-args con {@code Map.of()}
- *       (sin defender skills) → MARKER y TACKLER no aplican.</li>
+ *   <li>AERIAL absent o height &lt; 185 â†’ headerMult no cambia.</li>
+ *   <li>SHOOTER absent o location != LONG_RANGE â†’ shooterLongRangeMult = 1.0.</li>
+ *   <li>Overloads 5/9/10-args â†’ delegan al 11-args con {@code Map.of()}
+ *       (sin defender skills) â†’ MARKER y TACKLER no aplican.</li>
  *   <li>Por lo tanto, los overloads 5-args / 9-args / 10-args con OPEN_PLAY
  *       defending skills.</li>
  * </ul>
@@ -103,8 +103,8 @@ public class V24ShotXgCalculator {
     /**
      *
      *
-     * <p>Pipeline: baseXg × shooter × assist × defensive × gk × style ×
-     *   formationOffensive(possFormation, possessorAttack) ×
+     * <p>Pipeline: baseXg Ã— shooter Ã— assist Ã— defensive Ã— gk Ã— style Ã—
+     *   formationOffensive(possFormation, possessorAttack) Ã—
      *   formationDefensive(opponentFormation, opponentDefense).
      *
      * {@code V24ShotEventType.OPEN_PLAY} (default). Mantiene el contrato
@@ -136,7 +136,7 @@ public class V24ShotXgCalculator {
      *
      * <ul>
      *   <li>HEADER multiplier ({@code 1.0 + skill/200.0}) se aplica SOLO
-     *       cuando {@code eventSubType ∈ {CORNER, CROSS}}. En OPEN_PLAY el
+     *       cuando {@code eventSubType âˆˆ {CORNER, CROSS}}. En OPEN_PLAY el
      *       multiplier es 1.0 (sin cambio).</li>
      *   <li>El 9-args overload delega a este con OPEN_PLAY, preservando el
      * </ul>
@@ -144,50 +144,50 @@ public class V24ShotXgCalculator {
      * <ul>
      *   <li>WALL divisor ({@code 1.0 + skill/150.0}) se aplica cuando
      *       {@code gkSkills} contiene {@link PlayerSkill#WALL}. WALL=0 (o skill
-     *       ausente) → divisor = 1.0 (sin cambio). WALL=99 → divisor = 1.66
-     *       (xg / 1.66 ≈ xg * 0.602, ≈40% menos xG). Stored as divisor value
+     *       ausente) â†’ divisor = 1.0 (sin cambio). WALL=99 â†’ divisor = 1.66
+     *       (xg / 1.66 â‰ˆ xg * 0.602, â‰ˆ40% menos xG). Stored as divisor value
      *       (1+skill/150), then xg = ... / wallDivisor (NOT reciprocal).</li>
      *   <li>WALL es un DIVISOR (no multiplicador) siguiendo el memory lesson
-     *       DIVISOR. WALL=92 → xg /= 1.613 (-38%); WALL=99 → xg /= 1.66 (-40%).</li>
+     *       DIVISOR. WALL=92 â†’ xg /= 1.613 (-38%); WALL=99 â†’ xg /= 1.66 (-40%).</li>
      * </ul>
      *
      * <ul>
      *   <li>AERIAL ({@code 1.0 + skill/300.0}) MULTIPLICA el HEADER multiplier
      *       cuando shooter height &ge; 185 cm. Si height &lt; 185 o ausente,
      *       AERIAL NO aplica. Compounding: HEADER=80 + AERIAL=80 + height=190
-     *       → headerMult = 1.4 × 1.267 = 1.774 (+77%).</li>
+     *       â†’ headerMult = 1.4 Ã— 1.267 = 1.774 (+77%).</li>
      *   <li>SHOOTER ({@code 1.0 + skill/250.0}) aplica SOLO en
-     *       {@link V24ShotLocation#LONG_RANGE}. SHOOTER=90 en LONG_RANGE →
+     *       {@link V24ShotLocation#LONG_RANGE}. SHOOTER=90 en LONG_RANGE â†’
      *       shooterLongRangeMult = 1.36 (+36%). El resto de las locations NO
      *       reciben bonus aunque SHOOTER sea alto.</li>
      *   <li>Ambos se aplican DESPUES del HEADER multiplier y ANTES del WALL
-     *       divisor — el orden es: shooter/assist/def/gk/style/formation →
-     *       HEADER (×mult) → AERIAL (×mult si aplica) → SHOOTER (×mult si
-     *       aplica) → WALL (/div).</li>
+     *       divisor â€” el orden es: shooter/assist/def/gk/style/formation â†’
+     *       HEADER (Ã—mult) â†’ AERIAL (Ã—mult si aplica) â†’ SHOOTER (Ã—mult si
+     *       aplica) â†’ WALL (/div).</li>
      * </ul>
      *
      * <ul>
-     *   <li>HEADER=0 → multiplier = 1.0 (sin cambio)</li>
-     *   <li>HEADER=80 → multiplier = 1.40 (+40%)</li>
-     *   <li>HEADER=99 → multiplier = 1.495 (+49.5%)</li>
+     *   <li>HEADER=0 â†’ multiplier = 1.0 (sin cambio)</li>
+     *   <li>HEADER=80 â†’ multiplier = 1.40 (+40%)</li>
+     *   <li>HEADER=99 â†’ multiplier = 1.495 (+49.5%)</li>
      * </ul>
      *
      * <ul>
-     *   <li>AERIAL=0 o height &lt; 185 → no compounding (headerMult unchanged)</li>
-     *   <li>AERIAL=80, height=190 → headerMult *= 1.267 (+26.7% adicional)</li>
-     *   <li>AERIAL=99, height=190 → headerMult *= 1.33 (+33% adicional)</li>
+     *   <li>AERIAL=0 o height &lt; 185 â†’ no compounding (headerMult unchanged)</li>
+     *   <li>AERIAL=80, height=190 â†’ headerMult *= 1.267 (+26.7% adicional)</li>
+     *   <li>AERIAL=99, height=190 â†’ headerMult *= 1.33 (+33% adicional)</li>
      * </ul>
      *
      * <ul>
-     *   <li>SHOOTER=0 o location != LONG_RANGE → multiplier = 1.0 (sin cambio)</li>
-     *   <li>SHOOTER=90 en LONG_RANGE → multiplier = 1.36 (+36%)</li>
-     *   <li>SHOOTER=99 en LONG_RANGE → multiplier = 1.396 (+39.6%)</li>
+     *   <li>SHOOTER=0 o location != LONG_RANGE â†’ multiplier = 1.0 (sin cambio)</li>
+     *   <li>SHOOTER=90 en LONG_RANGE â†’ multiplier = 1.36 (+36%)</li>
+     *   <li>SHOOTER=99 en LONG_RANGE â†’ multiplier = 1.396 (+39.6%)</li>
      * </ul>
      *
      * <ul>
-     *   <li>WALL=0 → divisor = 1.0 (sin cambio)</li>
-     *   <li>WALL=92 → divisor = 1 + 92/150 = 1.613 (xg / 1.613 ≈ -38%)</li>
-     *   <li>WALL=99 → divisor = 1 + 99/150 = 1.660 (xg / 1.660 ≈ -39.8%)</li>
+     *   <li>WALL=0 â†’ divisor = 1.0 (sin cambio)</li>
+     *   <li>WALL=92 â†’ divisor = 1 + 92/150 = 1.613 (xg / 1.613 â‰ˆ -38%)</li>
+     *   <li>WALL=99 â†’ divisor = 1 + 99/150 = 1.660 (xg / 1.660 â‰ˆ -39.8%)</li>
      * </ul>
      *
      * @param quality shot context (location, shooter, assist, pressure, GK, style)
@@ -226,36 +226,36 @@ public class V24ShotXgCalculator {
      * <p>{@code defenderSkills} representa el AVG de MARKER y TACKLER de los
      * defensores (DEF position) en cancha del equipo oponente. El caller
      * {@code aggregateOpponentDefenderSkills(...)} antes de invocar este
-     * overload. Modelo simple (no individual 1v1 duel) — si en el futuro
+     * overload. Modelo simple (no individual 1v1 duel) â€” si en el futuro
      * se necesita marcador especifico por atacante, se puede refactor.
      *
      * <ul>
      *   <li>MARKER multiplier ({@code 1 - skill/300}) se aplica SIEMPRE
-     *       (en cualquier eventSubType) — los duelos 1v1 ocurren en cualquier
+     *       (en cualquier eventSubType) â€” los duelos 1v1 ocurren en cualquier
      *       contexto (corner, cross, open play).</li>
      *   <li>TACKLER multiplier ({@code 1 - skill/250}) se aplica SOLO en
-     *       {@link V24ShotEventType#OPEN_PLAY} — en corners/crosses no hay
+     *       {@link V24ShotEventType#OPEN_PLAY} â€” en corners/crosses no hay
      *       entradas abiertas.</li>
      *   <li>Ambos se aplican DESPUES del HEADER/AERIAL/SHOOTER y ANTES del
      *       WALL divisor (orden: ... * headerMult * shooterLongRangeMult
      *       * markerMult * tacklerMult / wallDivisor).</li>
      *   <li>Con {@code Map.of()} (defender skills vacios) o MARKER=0 y
-     *       TACKLER=0 → ambos multipliers = 1.0 → resultado identico al
+     *       TACKLER=0 â†’ ambos multipliers = 1.0 â†’ resultado identico al
      *       overload 10-args.</li>
      * </ul>
      *
      * <ul>
-     *   <li>MARKER=0 → multiplier = 1.0 (sin cambio)</li>
-     *   <li>MARKER=50 → multiplier = 0.833 (-16.7%)</li>
-     *   <li>MARKER=90 → multiplier = 0.70 (-30%)</li>
-     *   <li>MARKER=99 → multiplier = 0.67 (-33%)</li>
+     *   <li>MARKER=0 â†’ multiplier = 1.0 (sin cambio)</li>
+     *   <li>MARKER=50 â†’ multiplier = 0.833 (-16.7%)</li>
+     *   <li>MARKER=90 â†’ multiplier = 0.70 (-30%)</li>
+     *   <li>MARKER=99 â†’ multiplier = 0.67 (-33%)</li>
      * </ul>
      *
      * <ul>
-     *   <li>TACKLER=0 → multiplier = 1.0 (sin cambio)</li>
-     *   <li>TACKLER=50 → multiplier = 0.80 (-20%)</li>
-     *   <li>TACKLER=90 → multiplier = 0.64 (-36%)</li>
-     *   <li>TACKLER=99 → multiplier = 0.604 (-39.6%)</li>
+     *   <li>TACKLER=0 â†’ multiplier = 1.0 (sin cambio)</li>
+     *   <li>TACKLER=50 â†’ multiplier = 0.80 (-20%)</li>
+     *   <li>TACKLER=90 â†’ multiplier = 0.64 (-36%)</li>
+     *   <li>TACKLER=99 â†’ multiplier = 0.604 (-39.6%)</li>
      * </ul>
      *
      * @param quality shot context (location, shooter, assist, pressure, GK, style)
@@ -295,13 +295,13 @@ public class V24ShotXgCalculator {
 
         // conceded (a 5-3-2 with defFormMod=1.25 means opponent xG is divided by 1.25,
         // (5-3-2 received MORE goals than 4-3-3). Confirmed by smoke: avg_AG for
-        // 5-3-2 was 4.40 (highest) vs 4-3-3 at 2.97 (lowest) — wrong direction.
+        // 5-3-2 was 4.40 (highest) vs 4-3-3 at 2.97 (lowest) â€” wrong direction.
 
         // xG inflation when a high-attack team (e.g. Real Madrid, OVR 84) meets a
         // low-defense opponent (e.g. Deportivo Verde, OVR 60). Without the cap,
         // offFormMod/defFormMod reaches 2.98x, pushing most shots to MAX_XG=0.60
         // and producing 50%+ conversion (runtime smoke showed 7.14 goals/match avg).
-        // With the cap, the ratio is bounded at 2.0x — strong teams still dominate
+        // With the cap, the ratio is bounded at 2.0x â€” strong teams still dominate
         // but match outcomes stay in [3.0, 4.5] for intermedios per spec.
         // The cap is symmetric (Math.max vs Math.min): if ratio is < 0.5 (defense
         // dominates offense by 2x), also clamped to 0.5 to keep defensive ceiling
@@ -317,70 +317,13 @@ public class V24ShotXgCalculator {
         // factor remain semantically correct).
         offFormMod = formationModRatio * defFormMod;
 
-        // CORNER or CROSS shots — open-play shots are unchanged. Missing/null
-        // HEADER skill is treated as 0 (multiplier stays 1.0).
-        double headerMult = 1.0;
-        if (eventSubType == V24ShotEventType.CORNER || eventSubType == V24ShotEventType.CROSS) {
-            int headerSkill = (shooterSkills != null && shooterSkills.get(PlayerSkill.HEADER) != null)
-                    ? shooterSkills.get(PlayerSkill.HEADER)
-                    : 0;
-            headerMult = 1.0 + (headerSkill / 200.0);
-
-            // Models "jugador alto cabeceador" — el bonus realista cuando un
-            // rematador de cabeza tiene ademas la altura para cabecear en el
-            // punto penal. Si height < 185 o ausente, AERIAL NO aplica (el
-            // jugador cabecea pero no domina el juego aereo).
-            // Gated en el mismo branch CORNER/CROSS que HEADER (no aplica en
-            // open play).
-            int aerialSkill = (shooterSkills != null && shooterSkills.get(PlayerSkill.AERIAL) != null)
-                    ? shooterSkills.get(PlayerSkill.AERIAL)
-                    : 0;
-            if (aerialSkill > 0 && shooterHeightCm != null && shooterHeightCm >= 185) {
-                headerMult *= 1.0 + (aerialSkill / 300.0);
-            }
-        }
-
-        // Models "rematador long-range" (Mbappé style) — solo dispara fuerte
-        // desde afuera del box. En SIX_YARD_BOX / PENALTY_AREA_* / OUTSIDE_BOX
-        // SHOOTER NO aporta (ahi manda HEADER, técnica, etc.).
-        int shooterSkillLevel = (shooterSkills != null && shooterSkills.get(PlayerSkill.SHOOTER) != null)
-                ? shooterSkills.get(PlayerSkill.SHOOTER)
-                : 0;
-        double shooterLongRangeMult = 1.0;
-        if (shooterSkillLevel > 0 && quality.location() == V24ShotLocation.LONG_RANGE) {
-            shooterLongRangeMult = 1.0 + (shooterSkillLevel / 250.0);
-        }
-
-        // skill" — no individual duel). Aplica SIEMPRE (en cualquier
-        // eventSubType) porque los duelos 1v1 ocurren en todo contexto.
-        // Formula: markerMult = 1 - skill/300. MARKER=0 o ausente → 1.0.
-        // MARKER=90 → 0.70 (-30%).
-        int markerSkill = (defenderSkills != null && defenderSkills.get(PlayerSkill.MARKER) != null)
-                ? defenderSkills.get(PlayerSkill.MARKER)
-                : 0;
-        double markerMult = 1.0 - (markerSkill / 300.0);
-
-        // OPEN_PLAY (no en corners/crosses — ahi manda WALL). Formula:
-        // tacklerMult = 1 - skill/250. TACKLER=0 o ausente → 1.0. TACKLER=90
-        // → 0.64 (-36%).
-        double tacklerMult = 1.0;
-        if (eventSubType == V24ShotEventType.OPEN_PLAY) {
-            int tacklerSkill = (defenderSkills != null && defenderSkills.get(PlayerSkill.TACKLER) != null)
-                    ? defenderSkills.get(PlayerSkill.TACKLER)
-                    : 0;
-            tacklerMult = 1.0 - (tacklerSkill / 250.0);
-        }
-
-        // WALL=0 o skill ausente → divisor = 1.0 (sin cambio). WALL=99 →
-        // divisor = 1 + 99/150 = 1.66 → xg / 1.66 ≈ xg * 0.602 (≈40% menos
-        // xG). Aplicado DESPUES del HEADER multiplier para que HEADER (shooter)
-        // y WALL (GK) compongan en cualquier combinacion.
-        double wallDivisor = 1.0;
-        if (gkSkills != null && gkSkills.get(PlayerSkill.WALL) != null) {
-            int wallSkill = gkSkills.get(PlayerSkill.WALL);
-            wallDivisor = 1.0 + (wallSkill / 150.0);
-        }
-
+        double headerMult = V24ShotSkillMultipliers.headerAndAerial(
+            eventSubType, shooterSkills, shooterHeightCm);
+        double shooterLongRangeMult = V24ShotSkillMultipliers.longRangeShooter(
+            quality.location(), shooterSkills);
+        double markerMult = V24ShotSkillMultipliers.marker(defenderSkills);
+        double tacklerMult = V24ShotSkillMultipliers.tackler(eventSubType, defenderSkills);
+        double wallDivisor = V24ShotSkillMultipliers.wallDivisor(gkSkills);
         double xg = baseXgVal * shooterMult * assistMult * defMult * gkMult * styleMult
                 * offFormMod / defFormMod * headerMult * shooterLongRangeMult
                 * markerMult * tacklerMult / wallDivisor;
@@ -405,20 +348,20 @@ public class V24ShotXgCalculator {
     /**
      *
      * it with the possessor's aggregate attack stat: an elite 4-3-3 squad
-     * (attack avg ≈ 85) gets a much larger offensive boost than a weak 4-3-3
-     * (attack avg ≈ 55). This addresses the user feedback that "formation ×
-     * stats should sum" — a 4-3-3 with poor attackers is just a vulnerable 4-3-3,
+     * (attack avg â‰ˆ 85) gets a much larger offensive boost than a weak 4-3-3
+     * (attack avg â‰ˆ 55). This addresses the user feedback that "formation Ã—
+     * stats should sum" â€” a 4-3-3 with poor attackers is just a vulnerable 4-3-3,
      * not a free +40% xG.
      *
-     * <p>Formula: {@code mod = baseFormationMod × (1 + (teamAttack - 70) × 0.012)}
+     * <p>Formula: {@code mod = baseFormationMod Ã— (1 + (teamAttack - 70) Ã— 0.012)}
      * <ul>
-     *   <li>teamAttack = 70 (median) → multiplier = 1.0 (no amplification)
-     *   <li>teamAttack = 85 (elite) → multiplier = 1.18
-     *   <li>teamAttack = 55 (weak) → multiplier = 0.82
+     *   <li>teamAttack = 70 (median) â†’ multiplier = 1.0 (no amplification)
+     *   <li>teamAttack = 85 (elite) â†’ multiplier = 1.18
+     *   <li>teamAttack = 55 (weak) â†’ multiplier = 0.82
      * </ul>
      *
-     * reduced from 0.025 → 0.012 to prevent extreme xG inflation in asymmetric
-     * matchups (e.g. Real Madrid OVR=84 vs Deportivo Verde OVR=60 → 2.98x xG
+     * reduced from 0.025 â†’ 0.012 to prevent extreme xG inflation in asymmetric
+     * matchups (e.g. Real Madrid OVR=84 vs Deportivo Verde OVR=60 â†’ 2.98x xG
      * boost). The reduced coefficient still gives elite teams a meaningful
      * advantage (1.18x for OVR=85) but caps the asymptotic blowout potential.
      *
@@ -438,19 +381,19 @@ public class V24ShotXgCalculator {
 
     /**
      *
-     * <p>This is a PROTECTION factor — applied as DIVISION in {@link #calculateXg}
+     * <p>This is a PROTECTION factor â€” applied as DIVISION in {@link #calculateXg}
      * (not multiplication). A 5-3-2 with mod=1.25 means opponent's xG is divided
      * by 1.25 (i.e. 20% less xG conceded); a 4-3-3 with mod=0.85 means opponent's
-     * xG is divided by 0.85 (i.e. 18% MORE xG conceded — wingers don't track back).
+     * xG is divided by 0.85 (i.e. 18% MORE xG conceded â€” wingers don't track back).
      *
-     * <p>Formula: {@code mod = baseFormationDef × (1 + (teamDefense - 70) × 0.012)}
+     * <p>Formula: {@code mod = baseFormationDef Ã— (1 + (teamDefense - 70) Ã— 0.012)}
      * <ul>
-     *   <li>teamDefense = 70 (median) → multiplier = 1.0 (no change)
-     *   <li>teamDefense = 85 (elite) → multiplier = 1.18 (more protection)
-     *   <li>teamDefense = 55 (weak) → multiplier = 0.82 (less protection)
+     *   <li>teamDefense = 70 (median) â†’ multiplier = 1.0 (no change)
+     *   <li>teamDefense = 85 (elite) â†’ multiplier = 1.18 (more protection)
+     *   <li>teamDefense = 55 (weak) â†’ multiplier = 0.82 (less protection)
      * </ul>
      *
-     * reduced from 0.025 → 0.012 (matches formationOffensiveModifier change).
+     * reduced from 0.025 â†’ 0.012 (matches formationOffensiveModifier change).
      *
      * Defensive protection now comes from the actual tactical shape (defensive
      */

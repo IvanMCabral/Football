@@ -21,44 +21,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- *
- * <p>Provides a safe bridge between CareerSave/MatchFixture/SessionTeam data
- * and V24MatchContext. Fully isolated — no production simulation wiring.
- *
- * <p>Validation rules:
- * <ul>
- *   <li>career, fixture, homeTeam, awayTeam must not be null</li>
- *   <li>starting XI must resolve to exactly 11 valid SessionPlayer objects per team</li>
- *   <li>player IDs must exist in CareerSave.playerManager</li>
- *   <li>duplicate starter IDs are rejected</li>
- *   <li>bench excludes starters; may be empty</li>
- * </ul>
- *
- * <p>Behavior on invalid input:
- * <ul>
- *   <li>{@link #build(Career, fixture, homeTeam, awayTeam, seed) throws IllegalArgumentException</li>
- *   <li>{@link #canBuild(...)} returns false and never throws</li>
- * </ul>
- *
- * <p>No mutation: does not modify CareerSave, SessionPlayer, SessionTeam, or MatchFixture.
- */
 @Component
 public final class V24MatchContextFactory {
 
     private final FormationService formationService = new FormationService();
 
-    /**
-     * Builds a V24MatchContext from career/session data.
-     *
-     * @param career   non-null CareerSave with playerManager and teamStarting11
-     * @param fixture  non-null MatchFixture providing matchId, homeTeamId, awayTeamId
-     * @param homeTeam non-null SessionTeam providing formation and team identity
-     * @param awayTeam non-null SessionTeam providing formation and team identity
-     * @param seed     deterministic seed passed through to V24MatchContext
-     * @return a new V24MatchContext (never null)
-     * @throws IllegalArgumentException on validation failure
-     */
     public V24MatchContext build(
             CareerSave career,
             MatchFixture fixture,
@@ -84,19 +51,6 @@ public final class V24MatchContextFactory {
             seed);
     }
 
-    /**
-     * Builds a V24MatchContext with explicit TeamStyles.
-     *
-     * @param career    non-null CareerSave
-     * @param fixture   non-null MatchFixture
-     * @param homeTeam  non-null SessionTeam
-     * @param awayTeam non-null SessionTeam
-     * @param homeStyle nullable; defaults to BALANCED if null
-     * @param awayStyle nullable; defaults to BALANCED if null
-     * @param seed      deterministic seed
-     * @return a new V24MatchContext
-     * @throws IllegalArgumentException on validation failure
-     */
     public V24MatchContext buildWithStyles(
             CareerSave career,
             MatchFixture fixture,
@@ -158,10 +112,6 @@ public final class V24MatchContextFactory {
                 awaySlotsByPlayerId);
     }
 
-    /**
-     * Returns true if buildWithStyles would succeed for the given inputs.
-     * Never throws — returns false for any validation failure.
-     */
     public boolean canBuild(
             CareerSave career,
             MatchFixture fixture,
@@ -174,8 +124,6 @@ public final class V24MatchContextFactory {
             return false;
         }
     }
-
-    // ========== Validation helpers ==========
 
     private void validateInputs(
             CareerSave career,
@@ -208,21 +156,10 @@ public final class V24MatchContextFactory {
         }
     }
 
-    // ========== Resolution helpers ==========
-
-    /**
-     * The fixture's teamId may not match career storage format.
-     */
     private String resolveTeamId(String fixtureTeamId, SessionTeam team) {
         return team.getSessionTeamId();
     }
 
-    /**
-     * Resolve starting XI via:
-     * 1. CareerSave.teamStarting11 (HashMap written by LineupController).
-     * 2. CareerTeamManager.teamSquads (written by CareerTeamManager.assignPlayerToSquad).
-     * Either path must yield 11 valid SessionPlayer objects.
-     */
     private List<SessionPlayer> resolveStartingXI(CareerSave career, String teamId, String formation, String teamLabel) {
         // Try CareerSave.teamStarting11 first (LineupController writes here)
         List<SessionPlayer> resolved = resolveFromStarting11OrNull(career, teamId, teamLabel);
@@ -238,25 +175,6 @@ public final class V24MatchContextFactory {
                 + " for teamId: " + teamId);
     }
 
-    /**
-     * Try CareerSave.teamStarting11 (LineupController writes Map.Entry<teamId, List<playerId&gt;).
-     * Returns null if not found or too few entries — signals fallback.
-     * Throws if entries exist but contain null/blank/unknown playerId.
-     *
-     * at least one stale player ID (player not found in CareerSave.playerManager
-     * anymore), we treat the teamStarting11 as untrustworthy and return null
-     * so the caller falls back to {@link #deriveStartingXIfromSquad}. This
-     * scenario occurs when the orchestrator's per-round mutations
-     * (suspensions, injuries, sales) remove a player from the playerManager
-     * between rounds, leaving teamStarting11 with dangling references. The
-     * old behaviour threw an IAE that bubbled up to a 422 LINEUP_VALIDATION_ERROR,
-     * blocking Fecha 2+. The new behaviour recovers gracefully by using the
-     * squad (the players currently in the team) as the source of truth.
-     *
-     * <p>Behaviour is unchanged for the happy path (teamStarting11 has all
-     * valid IDs) and for fully missing teamStarting11 (returns null as
-     * before, caller falls back to squad derivation).
-     */
     private List<SessionPlayer> resolveFromStarting11OrNull(
             CareerSave career, String teamId, String teamLabel) {
         Map<String, List<String>> starting11 = career.getTeamStarting11();
@@ -266,7 +184,7 @@ public final class V24MatchContextFactory {
         if (ids.size() > 11) {
             throw new IllegalArgumentException(
                     teamLabel + " starting XI has " + ids.size()
-                    + " entries — maximum is 11 for teamId: " + teamId);
+                    + " entries â€” maximum is 11 for teamId: " + teamId);
         }
         // derivation, but that masks user intent; the user explicitly submitted
         // a short-handed XI and the engine should honour it).
@@ -274,7 +192,7 @@ public final class V24MatchContextFactory {
         if (ids.size() < min) {
             throw new IllegalArgumentException(
                     teamLabel + " starting XI has " + ids.size()
-                    + " entries — minimum is " + min + " for teamId: " + teamId);
+                    + " entries â€” minimum is " + min + " for teamId: " + teamId);
         }
 
         List<SessionPlayer> resolved = new ArrayList<>();
@@ -302,7 +220,7 @@ public final class V24MatchContextFactory {
             org.slf4j.LoggerFactory.getLogger(V24MatchContextFactory.class).warn(
                 "[BUG-003] teamStarting11 for teamId={} has {} stale playerId(s) "
                 + "(player removed from playerManager between rounds). "
-                + "Resolved {}/{} — falling back to squad derivation to ensure "
+                + "Resolved {}/{} â€” falling back to squad derivation to ensure "
                 + "a complete 11-player starting XI.",
                 teamId, staleCount, resolved.size(), ids.size());
             // is partially invalid; fall back to deriveStartingXIfromSquad
@@ -320,9 +238,6 @@ public final class V24MatchContextFactory {
         return resolved;
     }
 
-    /**
-     * Handles fresh careers where LineupController has not been used yet.
-     */
     private List<SessionPlayer> deriveStartingXIfromSquad(
             CareerSave career, String teamId, String formation, String teamLabel) {
         // Try CareerTeamManager.teamSquads (written by CareerTeamManager.assignPlayerToSquad)
@@ -333,7 +248,7 @@ public final class V24MatchContextFactory {
                     teamLabel + " squad has only "
                     + (squadIds != null ? squadIds.size() : 0)
                     + " players for teamId: " + teamId
-                    + " — need at least " + min + " for starting XI");
+                    + " â€” need at least " + min + " for starting XI");
         }
         List<SessionPlayer> squad = new ArrayList<>();
         for (String squadId : squadIds) {
@@ -356,12 +271,6 @@ public final class V24MatchContextFactory {
                 .toList();
     }
 
-    /**
-     * fallback used the first 11 squad entries, so a big club could start two
-     * keepers or miss its best attackers depending only on JSON/import order.
-     * Build a role-aware XI from the team's formation instead: GK slot gets a
-     * keeper, CB/ST/wing/mid slots get compatible players, and OVR breaks ties.
-     */
     private List<SessionPlayer> deriveSmartStartingXIfromSquad(List<SessionPlayer> squad, String formation) {
         FormationDTO formationDto = formationService.getFormationByName(formation);
         if (formationDto == null || formationDto.positions() == null || formationDto.positions().isEmpty()) {
@@ -475,10 +384,6 @@ public final class V24MatchContextFactory {
         return overall != null ? overall : 0;
     }
 
-    /**
-     * Derives bench as all team players minus the starting XI.
-     * Bench may be empty — acceptable.
-     */
     private List<SessionPlayer> deriveBench(
             CareerSave career, String teamId, List<SessionPlayer> starters) {
         Set<String> starterIds = starters.stream()
@@ -491,10 +396,6 @@ public final class V24MatchContextFactory {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * decisions into the V24 match context, keyed by playerId for O(1) lookup
-     * when building mutable {@link V24PlayerMatchState} copies.
-     */
     private Map<String, LineupSlotDTO> resolveSlotsByPlayerId(
             CareerSave career,
             String teamId,
@@ -523,14 +424,6 @@ public final class V24MatchContextFactory {
         return byPlayerId;
     }
 
-    /**
-     * (e.g. S17-2), but the same subdivision can have different professional
-     * coordinates depending on formation. The match engine consumes only the
-     * slot DTO, so canonical non-manual slots must carry the selected
-     * formation's x/y here; otherwise 4-1-2-3 collapses into flat 4-3-3 and
-     * similar variants become tactical clones. Manual drag coordinates still
-     * win and pass through unchanged.
-     */
     private LineupSlotDTO enrichWithFormationCoords(LineupSlotDTO slot, String formation) {
         if (slot == null || slot.subdivisionId() == null || formation == null || formation.isBlank()) {
             return slot;

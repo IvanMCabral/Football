@@ -2,153 +2,21 @@ package com.footballmanager.domain.model.valueobject;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
- * (attack / midfield / defense) using the SAME formulas the V24 simulation
- * engine uses during a real match.
- *
- * <p>The simulation engine computes:
- * <ul>
- *   <li><b>teamAttack</b> = avg of top-7 attackers'
- *       {@code attack * PositionEffectivenessCalculator.effectiveness(naturalPos, slotCategory)}
- *       slots with high eff enter the cohort.</li>
- *   <li><b>teamDefense</b> = avg of DEF + GK players'
- *       {@code ((defense + mentality) / 2.0) * effectiveness}
- *   <li><b>formationOffensiveModifier</b> = baseMod[formation] * statsAmp(teamAttack)
- *       (V24ShotXgCalculator.formationOffensiveModifier, line 522).</li>
- *   <li><b>formationDefensiveModifier</b> = baseMod[formation] * statsAmp(teamDefense)
- *       applied as DIVISOR in the engine
- *       (V24ShotXgCalculator.formationDefensiveModifier, line 574).</li>
- * </ul>
- *
- * <p>This class exposes the same arithmetic as a STATIC method so the
- * frontend can call it indirectly (via the dedicated preview endpoint)
- * instead of re-implementing the math on the TS side. Single source of
- * truth: any engine re-calibration updates BOTH the live match engine
- * and the lineup preview.
- *
- * {@link PositionEffectivenessCalculator#effectiveness(String, String)}
- * which collapses per-player contribution into 3-4 zone buckets. Two
- * slots in the SAME zone (e.g. CB at S22-2 vs S24-2) produced identical
- * effectiveness &mdash; fine-grained drag-and-drop on the field had no
- * effect on the team ratings.
- *
- * {@link SubdivisionEffectivenessCalculator}, which also factors in the
- * Euclidean distance from the slot to the natural position's ideal
- * centroid on the field. A CB at the natural CB slot (S22-1/S23-1/S23-3
- * range) still scores ~1.0; a CB dragged to the opposite wing slot
- * (S22-2 vs S24-2 in 4-4-2) drops ~0.05-0.15 depending on layout.
- *
- * <p>Backward compat: callers that don't supply {@code slotXPercent /
- * in-tree caller {@code FormationEffectiveness.computeRatings} passes
- * the coords resolved from {@code FormationService}.
- *
- * <h2>Rating scale</h2>
- * <p>The engine uses the modifiers as a multiplier on xG
- * (offensive) or as a divisor on opponent xG (defensive). For the
- * lineup preview we expose:
- * <ul>
- *   <li>{@code attackRating} = {@code formationOffensiveModifier * 100},
- *       55-165 in practice. 100 = 4-4-2 baseline at median stats
- *       (70 attack). &gt;100 = "more dangerous than baseline".</li>
- *   <li>{@code defenseRating} = {@code formationDefensiveModifier * 100},
- *       55-165. 100 = 4-4-2 baseline. HIGHER = more protection
- *       (divided into opponent xG, so it REDUCES goals conceded).</li>
- *   <li>{@code midfieldRating} = symmetric for the MID cohort
- *       using the {@code technique} attribute (midfield-domain metric
- *       &mdash; engine doesn't compute this directly; we mirror the
- *       formula so the panel stays consistent).</li>
- * </ul>
- *
- * <h2>Backward compat</h2>
- * <p>If the lineup is empty / null, returns the baseline values for
- * the requested formation (100 / 100 / 100 for 4-4-2, scaled for others).
- * The frontend can render "&mdash;" via the same fallback rules it uses for
- * missing data.
- */
-public final class TeamRatingsCalculator {
+ * Computes attack, midfield and defense ratings for the current lineup using
+ * the same tactical ideas as the match engine: player quality, slot fit,
+ * manual coordinates and formation trade-offs.
+ */public final class TeamRatingsCalculator {
 
     private TeamRatingsCalculator() {
-        // Pure utility — no instances.
+        // Pure utility Ã¢â‚¬â€ no instances.
     }
-
-    /**
-     * Per-formation offensive base modifier for the squad preview.
-     *
-     * strict upgrades. 4-4-2 is the neutral reference; attack-heavy shapes
-     * gain danger but must pay with lower defensive base, while defensive
-     * shapes gain protection but lose attacking threat. Unknown formations
-     * default to 4-4-2 (1.00).
-     *
-     * <p>The three base maps (ATT/MID/DEF) are a conserved 300-point budget:
-     * each formation distributes roughly 1.00 + 1.00 + 1.00 across the three
-     * lanes before player quality and manual positioning are applied. This
-     * makes the UI read like a real tactical choice instead of a hidden tier
-     * list where one formation is simply better by name.
-     */
-    private static final Map<String, Double> FORMATION_OFF_BASE = Map.ofEntries(
-            Map.entry("4-4-2", 1.00),
-            Map.entry("4-3-3", 1.18),
-            Map.entry("4-2-3-1", 1.16),
-            Map.entry("3-4-3", 1.14),
-            Map.entry("3-5-2", 0.90),
-            Map.entry("5-3-2", 0.82),
-            Map.entry("4-1-4-1", 0.88),
-            Map.entry("3-5-2-CDM", 0.84),
-            Map.entry("5-4-1", 0.76),
-            Map.entry("3-4-1-2", 1.06),
-            Map.entry("4-2-2-2", 1.08),
-            Map.entry("4-1-2-3", 1.14)
-    );
-
-    /**
-     * Per-formation midfield base modifier from the same conserved 300-point
-     * tactical budget as ATT/DEF. Player technique, role fit and coordinates
-     * still decide the final number; this only states the shape's structural
-     * emphasis.
-     */
-    private static final Map<String, Double> FORMATION_MID_BASE = Map.ofEntries(
-            Map.entry("4-4-2", 1.00),
-            Map.entry("4-3-3", 0.95),
-            Map.entry("4-2-3-1", 1.02),
-            Map.entry("3-4-3", 0.98),
-            Map.entry("3-5-2", 1.05),
-            Map.entry("5-3-2", 0.98),
-            Map.entry("4-1-4-1", 1.04),
-            Map.entry("3-5-2-CDM", 1.04),
-            Map.entry("5-4-1", 1.02),
-            Map.entry("3-4-1-2", 1.00),
-            Map.entry("4-2-2-2", 0.96),
-            Map.entry("4-1-2-3", 0.98)
-    );
-
-    /**
-     * Per-formation defensive base modifier for the squad preview.
-     *
-     * <p>The defensive values mirror the offensive trade-offs above. No named
-     * formation should be better than 4-4-2 in every dimension just because it
-     * is selected; player quality and manual shape can still make a tactic work.
-     */
-    private static final Map<String, Double> FORMATION_DEF_BASE = Map.ofEntries(
-            Map.entry("4-4-2", 1.00),
-            Map.entry("4-3-3", 0.87),
-            Map.entry("4-2-3-1", 0.82),
-            Map.entry("3-4-3", 0.88),
-            Map.entry("3-5-2", 1.05),
-            Map.entry("5-3-2", 1.20),
-            Map.entry("4-1-4-1", 1.10),
-            Map.entry("3-5-2-CDM", 1.12),
-            Map.entry("5-4-1", 1.22),
-            Map.entry("3-4-1-2", 0.94),
-            Map.entry("4-2-2-2", 0.96),
-            Map.entry("4-1-2-3", 0.88)
-    );
 
     /**
      * Stats amplification coefficient (engine: 0.025). Stats are mapped
      * to a multiplier in {@code 1 + (stat - 70) * STATS_AMP}. Median
-     * stat (70) → 1.0 (no amp), elite (85) → 1.375, weak (55) → 0.625.
+     * stat (70) Ã¢â€ â€™ 1.0 (no amp), elite (85) Ã¢â€ â€™ 1.375, weak (55) Ã¢â€ â€™ 0.625.
      */
     private static final double STATS_AMP = 0.025;
 
@@ -212,9 +80,9 @@ public final class TeamRatingsCalculator {
         // requested formation keeps the panel readable while no lineup
         // is loaded yet (lineup.length == 0).
         if (attrs == null || attrs.isEmpty()) {
-            double attBase = FORMATION_OFF_BASE.getOrDefault(canonicalFormation, 1.00);
-            double midBase = FORMATION_MID_BASE.getOrDefault(canonicalFormation, 1.00);
-            double defBase = FORMATION_DEF_BASE.getOrDefault(canonicalFormation, 1.00);
+            double attBase = FormationRatingBases.attack(canonicalFormation);
+            double midBase = FormationRatingBases.midfield(canonicalFormation);
+            double defBase = FormationRatingBases.defense(canonicalFormation);
             return new TeamRatings(attBase * 100.0, midBase * 100.0, defBase * 100.0);
         }
 
@@ -271,7 +139,7 @@ public final class TeamRatingsCalculator {
         }
         double teamDefense;
         if (defenderScores.isEmpty()) {
-            // Fallback: avg defense of all 11 (no effectiveness penalty —
+            // Fallback: avg defense of all 11 (no effectiveness penalty Ã¢â‚¬â€
             // there are no defenders/GK in the lineup at all, so the
             // engine shouldn't down-weight anyone). Mirrors engine.
             List<Integer> allDef = new java.util.ArrayList<>();
@@ -402,9 +270,9 @@ public final class TeamRatingsCalculator {
      * or no blend; clear shapes get most/all of the target base.
      */
     private static FormationBaseBlend effectiveFormationBase(List<PlayerAttrs> attrs, String selectedFormation) {
-        double selectedAttack = FORMATION_OFF_BASE.getOrDefault(selectedFormation, 1.00);
-        double selectedMidfield = FORMATION_MID_BASE.getOrDefault(selectedFormation, 1.00);
-        double selectedDefense = FORMATION_DEF_BASE.getOrDefault(selectedFormation, 1.00);
+        double selectedAttack = FormationRatingBases.attack(selectedFormation);
+        double selectedMidfield = FormationRatingBases.midfield(selectedFormation);
+        double selectedDefense = FormationRatingBases.defense(selectedFormation);
         if (attrs == null || attrs.isEmpty()) {
             return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
@@ -420,7 +288,7 @@ public final class TeamRatingsCalculator {
 
         ShapeCandidate best = null;
         ShapeCandidate second = null;
-        for (String candidate : FORMATION_OFF_BASE.keySet()) {
+        for (String candidate : FormationRatingBases.formations()) {
             int[] counts = parseCoarseFormation(candidate);
             if (counts == null) {
                 continue;
@@ -458,9 +326,9 @@ public final class TeamRatingsCalculator {
             return new FormationBaseBlend(selectedAttack, selectedMidfield, selectedDefense);
         }
 
-        double targetAttack = FORMATION_OFF_BASE.getOrDefault(best.formation(), selectedAttack);
-        double targetMidfield = FORMATION_MID_BASE.getOrDefault(best.formation(), selectedMidfield);
-        double targetDefense = FORMATION_DEF_BASE.getOrDefault(best.formation(), selectedDefense);
+        double targetAttack = FormationRatingBases.attack(best.formation());
+        double targetMidfield = FormationRatingBases.midfield(best.formation());
+        double targetDefense = FormationRatingBases.defense(best.formation());
         return new FormationBaseBlend(
                 selectedAttack + (targetAttack - selectedAttack) * blend,
                 selectedMidfield + (targetMidfield - selectedMidfield) * blend,
@@ -490,12 +358,12 @@ public final class TeamRatingsCalculator {
             double attDrift = soft.att() - selected[2];
             double defDrift = soft.def() - selected[0];
             if (attDrift > 0.35) {
-                return FORMATION_OFF_BASE.getOrDefault(candidate.formation(), 1.00)
-                        > FORMATION_OFF_BASE.getOrDefault(current.formation(), 1.00);
+                return FormationRatingBases.attack(candidate.formation())
+                        > FormationRatingBases.attack(current.formation());
             }
             if (defDrift > 0.35) {
-                return FORMATION_DEF_BASE.getOrDefault(candidate.formation(), 1.00)
-                        > FORMATION_DEF_BASE.getOrDefault(current.formation(), 1.00);
+                return FormationRatingBases.defense(candidate.formation())
+                        > FormationRatingBases.defense(current.formation());
             }
         }
 
@@ -509,7 +377,7 @@ public final class TeamRatingsCalculator {
     ) {
         int[] bestCounts = parseCoarseFormation(best.formation());
         ShapeCandidate second = null;
-        for (String candidate : FORMATION_OFF_BASE.keySet()) {
+        for (String candidate : FormationRatingBases.formations()) {
             int[] counts = parseCoarseFormation(candidate);
             if (counts == null || sameCoarseShape(counts, bestCounts)) {
                 continue;

@@ -36,30 +36,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Implementación de UseCase para comandos del lineup.
- *
- * (range {@code [MIN, MAX]}). See {@link LineupRules}.
- *
- * It guarantees exactly 11 slots (GK + DEF + MID + ATT) by filling missing
- * formation-row slots with the best-OVR off-position players and attaching
- * a {@code LINEUP_OFF_POSITION_FILL} warning per affected row. If the squad
- * has fewer than {@link LineupRules#TARGET_LINEUP_PLAYERS} available players
- * the call throws {@link NotEnoughPlayersException} — silent short-handed
- * success is the bug this fix closes.
- *
- * <p>Manual select and confirmLineup still accept the {@code [MIN, MAX]}
- * range for backward compat with careers mid-rescue from short squads.
- *
- * {@link CareerSessionService#saveCareer(CareerSave)} (which atomically
- * persists to Redis AND updates the in-memory {@code careerCache}) instead
- * of the raw {@code careerRepository.save}. Pre-fix, the orchestrator's
- * {@code getCareerFromCache} could return a stale pre-lineup object and
- * the next {@code saveCareer} call would overwrite Redis with the stale
- * state — wiping the lineup (the "0/11 players + formation null after
- * Confirmar y Jugar" smoke symptom). Reads also go through the session
- * service so the cache is populated on the read path and orchestrator reads stay fresh.
- */
 @Service
 @RequiredArgsConstructor
 public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
@@ -71,12 +47,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
     @Override
     public Mono<LineupDTO> autoSelectLineup(UUID userId, String formationCode) {
         Formation formation = Formation.fromString(formationCode);
-
-        // cached CareerSave. Saves go through careerSessionService.saveCareer which
-        // updates the cache atomically (saves to Redis then puts the new object in
-        // the in-memory cache) — without this, the next read from
-        // MatchSimulationOrchestrator would return a stale pre-lineup object and
-        // overwrite Redis, losing the lineup (the "0/11 after continue-season" bug).
         return careerSessionService.continueCareer(userId)
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
@@ -88,22 +58,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     .map(SessionPlayer::getSessionPlayerId)
                     .toList();
                 career.getTeamStarting11().put(userTeamId, lineupIds);
-
-                // MVP1-lineup-cancha-1.5: persist subdivision map so that
-                // re-opening the modal restores exact slot assignments
-                // (vs. role-match fallback that only fills GK + first 2 CB).
-                // fallback fires (auto-select requires 11 slots).
-                // Map<String, LineupSlotDTO> (subdivisionId → LineupSlotDTO
-                // with customX/Y=null because auto-select is canonical). The
-                // front's free-positioning overrides only arrive via manual-select.
                 Map<String, LineupSlotDTO> slotMap = buildAutoSelectSlotMap(formation, lineup, true);
-                // lineup.size() check (TARGET_LINEUP_PLAYERS = 11) catches the
-                // common "short squad" case, but if for any reason slotMap is
-                // still incomplete (e.g. a future formation breaks the
-                // formationDto.positions().size() == 11 invariant, or all
-                // playerIds are null), fail loud instead of silently
-                // persisting a partial slot map. Manual-select keeps the
-                // best-effort behavior for short-handed rescues.
                 if (slotMap.size() != LineupRules.TARGET_LINEUP_PLAYERS) {
                     throw new IllegalStateException(
                         "Auto-select slot assignment incomplete: " + slotMap.size()
@@ -111,30 +66,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         + " (formation: " + formation.getCode() + ", squad may be too small)"
                     );
                 }
-                // operated on a NEW typed map returned by
-                // getTeamStarting11SubdivisionSlots(), then wrote it back
-                // via setTeamStarting11SubdivisionSlots(). The unit test
-                // passed (mocked same in-memory object). The runtime
-                // FAILED because between unit and runtime, the CareerSave
-                // is JSON-serialized to Redis and deserialized back.
-                // Jackson's Map<String, Object> field deserializes the
-                // inner values as raw LinkedHashMap (not LineupSlotDTO),
-                // so the runtime's typed getter wraps them but the legacy
-                // getter (which drove the runtime check) skips them
-                // (instanceof String fails on LinkedHashMap).
-                //
-                // To eliminate the gap, operate directly on the RAW
-                // field via the dedicated clear-and-put helper. This
-                // bypasses the typed/raw conversion round-trip and
-                // guarantees the raw field (and therefore the JSON
-                // serialization) ends up with exactly the slotMap we
-                // want, with no stale keys surviving the cycle.
                 career.replaceTeamStarting11SubdivisionRaw(userTeamId, slotMap);
-
-                // MVP1-lineup-cancha-1.6: persist formation code so that
-                // getCurrentLineup returns the actual formation the user
-                // selected (not the one inferred from DEF/MID/ATT counts
-                // of the lineup, which stays as the previous formation).
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
                 syncSessionTeamFormation(career, userTeamId, formation.getCode());
 
@@ -145,7 +77,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     @Override
     public Mono<LineupDTO> manualSelectLineup(UUID userId, String formationCode, List<String> playerIds) {
-        // Backward compat: legacy callers sin slots.
         return manualSelectLineupWithSlots(userId, formationCode, playerIds, List.of());
     }
 
@@ -185,11 +116,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     .map(id -> career.getSessionPlayers().get(id))
                     .filter(Objects::nonNull)
                     .toList();
-
-                // Reject if selected players are not all available (injured/suspended/low energy)
                 lineupHelper.validatePlayerFitness(selectedPlayers);
-
-                // Compute warnings (no-GK, position-deficit informational)
                 List<LineupWarningDTO> warnings = lineupHelper.detectShortHandedWarnings(selectedPlayers);
                 if (selectedPlayers.size() < LineupRules.TARGET_LINEUP_PLAYERS) {
                     warnings = new ArrayList<>(warnings);
@@ -197,25 +124,8 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 }
 
                 career.getTeamStarting11().put(userTeamId, playerIds);
-
-                // MVP1-lineup-cancha-1.6: persist formation code so that
-                // getCurrentLineup returns the actual formation the user
-                // selected (same rationale as autoSelectLineup above).
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
                 syncSessionTeamFormation(career, userTeamId, formation.getCode());
-
-                // MVP1-lineup-cancha-1.6: persist subdivision map using
-                // HELPER-BASED match (back is source-of-truth for slot
-                // assignments). Front overrides apply on top for slots the
-                // user assigned explicitly (manual drag-drop). Si el front
-                // no envía slots, back completa los 11 slots vía helper.
-                // fallback does NOT fire for short-handed manual-select
-                // (prevents 7 players → 8 slots with a duplicated playerId).
-                // front's customXPercent / customYPercent override coords
-                // the String-only shape discarded these coords and the
-                // SubdivisionEffectivenessCalculator always saw canonical
-                // coords (causing 1px-drag sensitivity = no observable
-                // penalty because the back's penalty was always 0).
                 boolean hasExplicitSlotOverrides = slots != null && !slots.isEmpty();
                 boolean hasCustomSlotOverrides = hasExplicitSlotOverrides
                     && slots.stream().anyMatch(this::hasCustomCoordinates);
@@ -224,10 +134,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     selectedPlayers,
                     !hasExplicitSlotOverrides && selectedPlayers.size() == LineupRules.TARGET_LINEUP_PLAYERS);
                 if (hasExplicitSlotOverrides) {
-                    // Override con lo que el front envió explícitamente
-                    // (autoridad del front si el usuario asignó manualmente).
-                    // customYPercent so the engine's distance-from-ideal
-                    // penalty reflects the actual drop point.
                     for (LineupSlotDTO slot : slots) {
                         if (slot.subdivisionId() == null || slot.subdivisionId().isBlank()) {
                             continue;
@@ -236,16 +142,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                             continue;
                         }
                         if (!playerIds.contains(slot.playerId())) {
-                            // Slot referencia un playerId no incluido en este lineup — ignorar.
                             continue;
                         }
-                        // Si dos slots intentan usar el mismo subdivisionId, el último gana.
                         slotMap.put(slot.subdivisionId(), slot);
                     }
                 }
-                // Use the dedicated clear-and-put helper on the raw field
-                // to bypass the typed/raw round-trip and guarantee the
-                // JSON serialization ends up with exactly the slotMap.
                 career.replaceTeamStarting11SubdivisionRaw(userTeamId, slotMap);
 
                 return careerSessionService.saveCareer(career)
@@ -313,11 +214,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .filter(p -> p.getSuspensionRemainingMatches() <= 0)
             .sorted(Comparator.comparing(SessionPlayer::calculateOverall).reversed())
             .toList();
-
-        // Below TARGET_LINEUP_PLAYERS (11) → throw NotEnoughPlayersException so the
-        // controller returns 422 LINEUP_MINIMUM_PLAYERS_NOT_MET instead of persisting
-        // a silently short-handed lineup (the C18b audit bug). Manual-select keeps the
-        // [MIN, MAX] short-handed path for career rescue.
         if (availablePlayers.size() < LineupRules.TARGET_LINEUP_PLAYERS) {
             throw new NotEnoughPlayersException(
                 "Auto-select requires " + LineupRules.TARGET_LINEUP_PLAYERS
@@ -327,10 +223,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         List<SessionPlayer> lineup = new ArrayList<>();
         List<LineupWarningDTO> warnings = new ArrayList<>();
         Set<String> alreadyTaken = new HashSet<>();
-
-        // 1. GK — strict-match first; off-position fallback to best OVR if no
-        // natural GK in the squad (e.g. a CDM filling GK). Attaches
-        // LINEUP_NO_GOALKEEPER warning so the UI surfaces the tactical hit.
         SessionPlayer gk = availablePlayers.stream()
             .filter(p -> "GK".equals(p.getPosition()))
             .findFirst()
@@ -348,11 +240,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             alreadyTaken.add(gkFallback.getSessionPlayerId());
             warnings.add(LineupWarningDTO.noGoalkeeper(availablePlayers.size()));
         }
-
-        // 2. DEF — best DEF-capable players first; any remaining DEF slots
-        // are filled with the best-OVR remaining players (off-position).
-        // This keeps LWB/RWB defensive and LW/RW attacking instead of relying
-        // on coarse enum counts that collapse wingback/winger variants.
         OutfieldRoleNeeds roleNeeds = getOutfieldRoleNeeds(formation);
         int wideAttackingSlots = countFormationRoles(formation, Set.of("LW", "RW"));
         boolean hasWideAttackingSlots = wideAttackingSlots > 0 && roleNeeds.attackers() >= wideAttackingSlots + 1;
@@ -363,11 +250,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
         fillRow(availablePlayers, lineup, alreadyTaken, warnings,
             roleNeeds.defenders(), "DEF", lineupHelper::isDefender);
-
-        // 3. MID — when the visual formation has wide MID/wingback/AM
-        // slots, reserve enough wide profiles before filling central mids.
-        // Otherwise a high-OVR central midfielder can steal RW/LW and leave
-        // natural wingers on the bench, which makes the modal feel fake.
         if (wideMidfieldSlots > 0) {
             fillMidfieldRowWithWideSlotPreference(availablePlayers, lineup, alreadyTaken, warnings,
                 roleNeeds.midfielders(), wideMidfieldSlots, hasWideAttackingSlots);
@@ -376,8 +258,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 roleNeeds.midfielders(), "MID",
                 playerPosition -> isAutoSelectMidfieldCandidate(playerPosition, hasWideMidfieldSlots && !hasWideAttackingSlots));
         }
-
-        // 4. ATT — same off-position fallback pattern.
         if (hasWideAttackingSlots) {
             fillAttackingRowWithWideSlotPreference(formation, availablePlayers, lineup, alreadyTaken, warnings,
                 roleNeeds.attackers(), wideAttackingSlots);
@@ -389,11 +269,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
         includeSpecificRoleIfNeeded(formation, availablePlayers, lineup, alreadyTaken, "CAM");
         ensureWideRoleDepthIfNeeded(formation, availablePlayers, lineup, alreadyTaken);
-
-        // persisting. Defensive — the algorithm above should always reach 11
-        // for a squad of ≥11, but if a future formation breaks the invariant
-        // (defenders + midfielders + attackers != 10) we fail loud instead of
-        // silently persisting a malformed lineup.
         if (lineup.size() != LineupRules.TARGET_LINEUP_PLAYERS) {
             throw new NotEnoughPlayersException(
                 "Auto-select produced " + lineup.size() + " players, expected "
@@ -732,15 +607,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         };
     }
 
-    /**
-     * slots with the best players available, preferring {@code positionMatcher}-compatible
-     * players and falling back to the best-OVR remaining players (off-position) when
-     * the squad lacks enough compatible players for the row. Adds a
-     * {@link LineupWarningDTO#offPositionFill} warning when the fallback path is used.
-     *
-     * <p>Contract: appends to {@code lineup} in-place and updates {@code alreadyTaken}.
-     * Assumes the caller has reserved the GK slot (slot 0) before calling.
-     */
     private void fillRow(List<SessionPlayer> availablePlayers,
                          List<SessionPlayer> lineup,
                          Set<String> alreadyTaken,
@@ -751,8 +617,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         if (slotsNeeded <= 0) {
             return;
         }
-
-        // Phase 1: take up to slotsNeeded position-perfect players.
         List<SessionPlayer> perfect = availablePlayers.stream()
             .filter(p -> positionMatcher.test(p.getPosition()))
             .filter(p -> !alreadyTaken.contains(p.getSessionPlayerId()))
@@ -760,11 +624,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
             .collect(Collectors.toList());
         lineup.addAll(perfect);
         perfect.forEach(p -> alreadyTaken.add(p.getSessionPlayerId()));
-
-        // Phase 2: any remaining slots for this row → off-position fallback
-        // (best OVR from remaining available players). The penalty is reflected
-        // in formationEffectiveness (sprint C11a PositionEffectivenessCalculator),
-        // and surfaced as a LINEUP_OFF_POSITION_FILL warning.
         int stillNeeded = slotsNeeded - perfect.size();
         if (stillNeeded > 0) {
             List<SessionPlayer> offPosFill = availablePlayers.stream()
@@ -787,13 +646,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         }
     }
 
-    /**
-     * When a formation row cannot be filled naturally, choose the least-bad
-     * tactical fallback before raw OVR. This keeps auto-select professional:
-     * a lower-rated winger/half-space profile is usually a better emergency
-     * midfield fill than a pure striker, while a defender is a better defensive
-     * emergency fill than a forward.
-     */
     private int tacticalFallbackScore(String positionGroup, String playerPosition) {
         if (positionGroup == null || playerPosition == null) {
             return 0;
@@ -842,26 +694,11 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 p.getSuspensionRemainingMatches()
             ))
             .toList();
-
-        // (subdivisionId → LineupSlotDTO with playerId + customX/Y). Pass the
-        // LineupSlotDTO values through directly so the front's free-positioning
-        // into the LineupDTO and downstream FormationEffectiveness.from() can
-        // apply the distance-from-ideal penalty at the actual drop point.
-        //
-        // — args MUST be (playerId, subdivisionId). slotMap is keyed by
-        // subdivisionId with LineupSlotDTO values (whose playerId is the
-        // with String playerId values, and the constructor call was
-        // (e.getValue(), e.getKey()) — now it's (slot.playerId(),
-        // slot.subdivisionId()) since the outer key + inner field agree.
         List<LineupSlotDTO> slots = (slotMap == null || slotMap.isEmpty())
                 ? List.of()
                 : slotMap.entrySet().stream()
                     .map(e -> {
                         LineupSlotDTO inner = e.getValue();
-                        // Prefer the LineupSlotDTO's own subdivisionId (it
-                        // may differ from the outer key for legacy
-                        // subdivisionId in the inner DTO). Fall back to
-                        // the outer key when the inner is null.
                         String subdivisionId = inner.subdivisionId() != null
                                 ? inner.subdivisionId()
                                 : e.getKey();
@@ -878,9 +715,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 naturalByPlayer.put(p.getSessionPlayerId(), p.getPosition());
             }
         }
-        // FormationEffectiveness pipeline can compute the engine's
-        // teamAttack / teamDefense / teamMidfield aggregates. Without
-        // attributes the calculator falls back to median 70 per stat.
         List<FormationEffectiveness.PlayerAttrDTO> attrsByPlayer = new ArrayList<>();
         for (SessionPlayer p : players) {
             if (p.getSessionPlayerId() != null) {
@@ -892,14 +726,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         p.getMentality()));
             }
         }
-        // into CareerSave.teamStarting11Formation (line above). Pass it through
-        // so the inferredFormation field matches the actual selected label
-        // (e.g., "3-5-2-CDM") instead of collapsing to a 3-DIGIT triple.
-        //
-        // FormationService cache so the team ratings use the new
-        // distance-aware effectiveness instead of the legacy zone-only
-        // table. Without this, fine-grained drag-and-drop on the field
-        // produces no rating change.
         Map<String, double[]> coordsBySubdivision =
                 formationService.getCoordsByFormation(formation.getCode());
         FormationEffectiveness formationEffectiveness =
@@ -928,48 +754,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
         return true;
     }
 
-    /**
-     * MVP1-lineup-cancha-1.6: Build the subdivision map using HELPER-BASED
-     * role match — GK is exact, defensive roles (LB/CB/RB/LWB/RWB) match via
-     * {@code lineupHelper.isDefender}, midfield roles (CDM/CM/CAM/LM/RM/LW/RW)
-     * via {@code lineupHelper.isMidfielder}, and attacking roles (CF/ST)
-     * via {@code lineupHelper.isAttacker}.
-     *
-     * <p>HELPER-BASED is a super-set of the EXACT-match used in 1.5: it
-     * matches every player the EXACT-match would, plus players with
-     * compatible-but-not-identical positions (e.g. a CB player filling a
-     * LB slot — both are defenders per the helper). For a real-world squad
-     * like Real Madrid with mixed positions (CB/LB/RB/CDM/CAM/LW/ST/RW),
-     * EXACT match only filled 5-7 of the 11 slots; HELPER-BASED fills all 11.
-     *
-     * <p>Back is source-of-truth for slot assignments (F4 manual-select also
-     * uses this method, with front overrides applied on top). The front's
-     * re-open modal restores slots verbatim from the persisted subdivision
-     * map (no role-match fallback), so back/front cannot diverge.
-     *
-     * the {@code isAutoSelect} flag. Auto-select ({@code true}) requires the
-     * slot map to cover every formation position (11 slots) so downstream
-     * consumers (FormationEffectiveness, manual-select re-open) cannot recover
-     * from a partial map. Manual-select ({@code false}) preserves the
-     * short-handed contract — only helper-compatible assignments are made,
-     * remaining slots are left empty, and no off-position fallback fires
-     * (which would over-fill the map when {@code lineup.size() < formation
-     * positions}, e.g. 7 players → 8 slots with a duplicated playerId).
-     *
-     * @param formation the formation whose positions drive the slot map
-     * @param lineup the players available for assignment (already filtered
-     *               by fitness for manual-select; full squad for auto-select)
-     * @param isAutoSelect {@code true} for the auto-select path (requires
-     *                     full coverage via off-position fallback);
-     *                     {@code false} for the manual-select path (best-effort
-     *                     helper match only)
-     * @return subdivisionId → LineupSlotDTO map. For auto-select the
-     *         customX/Y are null (canonical snap-to-slot). For manual-select
-     *         the front's overrides are applied on top in
-     *         {@link #manualSelectLineupWithSlots}. May have fewer entries
-     *         than formation positions when {@code isAutoSelect} is
-     *         {@code false}.
-     */
     private Map<String, LineupSlotDTO> buildAutoSelectSlotMap(
             Formation formation,
             List<SessionPlayer> lineup,
@@ -997,7 +781,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 continue;
             }
             boolean assigned = false;
-            // Phase 1: helper/category-compatible match.
             SessionPlayer bestMatch = null;
             int bestScore = Integer.MIN_VALUE;
             for (SessionPlayer player : lineup) {
@@ -1042,9 +825,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 }
                 if (!isAutoSelect) {
                     break;
-                    // subdivisionId. customX/Y null at auto-select stage
-                    // (canonical coords only — manual-select overrides
-                    // these if the front sent free-positioning coords).
                 }
             }
             if (bestMatch != null) {
@@ -1053,9 +833,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 usedPlayerIds.add(playerId);
                 assigned = true;
             }
-            // Phase 2: category-compatible match. This preserves robustness for
-            // broad seed roles (DEF/MID/ATT) and thin squads, but only after
-            // trying a specific slot-role fit first.
             if (!assigned) {
                 for (SessionPlayer player : lineup) {
                     String playerId = player.getSessionPlayerId();
@@ -1070,21 +847,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     }
                 }
             }
-            // helper-compatible player was found for this slot, take the next
-            // unused player from the lineup (any position). The effectiveness
-            // penalty is surfaced downstream by PositionEffectivenessCalculator
-            // (sprint C11a). Without this fallback the slot map can end up with
-            // fewer entries than formation positions (e.g. squad without natural
-            // DEF → DEF slots unassigned → only 7 of 11 subdivision entries
-            // persisted), which downstream consumers (FormationEffectiveness,
-            // manual-select re-open) cannot recover from.
-            //
-            // auto-select the fallback is required (caller fails loud via
-            // IllegalStateException if slotMap.size() != 11). For manual-select
-            // short-handed, the fallback is SKIPPED — otherwise it would
-            // over-fill the map when lineup.size() < formation.positions (e.g.
-            // 7 players + 4-4-2 → 8 slots with a duplicated playerId), breaking
-            // the [MIN, MAX] contract.
             if (!assigned && isAutoSelect) {
                 lineup.stream()
                     .filter(player -> player.getSessionPlayerId() != null)
@@ -1095,10 +857,6 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                             .thenComparingInt(player -> tacticalFallbackScore(tacticalPositionGroupForRole(role), player.getPosition()))
                             .thenComparing(SessionPlayer::calculateOverall))
                     .ifPresent(player -> {
-                        // playerId in a LineupSlotDTO with the subdivisionId
-                        // and no customX/Y override (canonical coords for
-                        // off-position players, penalty surfaced by
-                        // FormationEffectiveness downstream).
                         String playerId = player.getSessionPlayerId();
                         slotMap.put(subdivisionId, new LineupSlotDTO(playerId, subdivisionId, null, null));
                         usedPlayerIds.add(playerId);
