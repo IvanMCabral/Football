@@ -111,3 +111,20 @@ El backend esta mas limpio y jugable, pero todavia no esta 100% clean code por t
 | `TestHarnessUseCase` | Contrato enorme con demasiados records anidados. |
 
 Conclusion: esta pasada deja el codigo productivo mas prolijo, sin mojibake y con tests verdes. La siguiente mejora profesional debe ser separar `TestHarnessUseCaseImpl` por runners/services.
+
+## Corte adicional - loadCareer centralizado
+
+Se agrego `loadCareer(UUID userId)` en `TestHarnessUseCaseImpl` para eliminar repeticion en comandos administrativos del harness. Primeros metodos migrados:
+
+- `replaceFixtures`
+- `resetInjuries`
+- `setFormation`
+- `setStyle`
+
+Verificacion:
+
+- Compilacion backend verde.
+- Suite enfocada de harness, controller, motor, xG, lineup y formaciones verde.
+- Codigo productivo sin mojibake detectable ni marcadores `TODO/FIXME/HACK/System.out/DIAG`.
+
+Nota: esto mejora el codigo, pero no cierra la deuda estructural. El siguiente corte debe extraer servicios/runners reales desde `TestHarnessUseCaseImpl`, no seguir acumulando helpers privados.

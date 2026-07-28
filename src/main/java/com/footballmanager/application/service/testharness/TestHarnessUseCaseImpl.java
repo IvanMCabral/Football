@@ -111,6 +111,16 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
     private final ConcurrentMap<String, LabSnapshot> labSnapshots = new ConcurrentHashMap<>();
 
+    private Mono<CareerSave> loadCareer(UUID userId) {
+        return careerRepository.findById(userId.toString())
+            .switchIfEmpty(Mono.error(new IllegalStateException(
+                "No career for userId=" + userId + " - call create-custom first")))
+            .flatMap(optionalCareer -> optionalCareer
+                .map(Mono::just)
+                .orElseGet(() -> Mono.error(new IllegalStateException(
+                    "Career not found for userId=" + userId))));
+    }
+
     @Override
     public Mono<Void> replaceFixtures(UUID userId, List<CustomFixture> fixtures) {
         if (fixtures == null) {
@@ -122,17 +132,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return Mono.empty();
         }
 
-        return careerRepository.findById(userId.toString())
-            .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " - call create-custom first")))
-            .flatMap(optionalCareer -> {
-                if (optionalCareer.isEmpty()) {
-                    return Mono.error(new IllegalStateException(
-                        "Career not found for userId=" + userId));
-                }
-                CareerSave career = optionalCareer.get();
-                return executeReplaceFixtures(career, fixtures);
-            });
+        return loadCareer(userId)
+            .flatMap(career -> executeReplaceFixtures(career, fixtures));
     }
 
     private Mono<Void> executeReplaceFixtures(CareerSave career, List<CustomFixture> fixtures) {
@@ -163,17 +164,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
     @Override
     public Mono<Void> resetInjuries(UUID userId) {
-        return careerRepository.findById(userId.toString())
-            .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId)))
-            .flatMap(optionalCareer -> {
-                if (optionalCareer.isEmpty()) {
-                    return Mono.error(new IllegalStateException(
-                        "Career not found for userId=" + userId));
-                }
-                CareerSave career = optionalCareer.get();
-                return executeResetInjuries(career);
-            });
+        return loadCareer(userId)
+            .flatMap(this::executeResetInjuries);
     }
 
     private Mono<Void> executeResetInjuries(CareerSave career) {
@@ -211,17 +203,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return Mono.error(new IllegalArgumentException("formation must be non-blank"));
         }
 
-        return careerRepository.findById(userId.toString())
-            .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId)))
-            .flatMap(optionalCareer -> {
-                if (optionalCareer.isEmpty()) {
-                    return Mono.error(new IllegalStateException(
-                        "Career not found for userId=" + userId));
-                }
-                CareerSave career = optionalCareer.get();
-                return executeSetFormation(career, formation);
-            });
+        return loadCareer(userId)
+            .flatMap(career -> executeSetFormation(career, formation));
     }
 
     private Mono<Void> executeSetFormation(CareerSave career, String formation) {
@@ -248,17 +231,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             return Mono.error(new IllegalArgumentException("style must be non-null"));
         }
 
-        return careerRepository.findById(userId.toString())
-            .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId)))
-            .flatMap(optionalCareer -> {
-                if (optionalCareer.isEmpty()) {
-                    return Mono.error(new IllegalStateException(
-                        "Career not found for userId=" + userId));
-                }
-                CareerSave career = optionalCareer.get();
-                return executeSetStyle(career, style);
-            });
+        return loadCareer(userId)
+            .flatMap(career -> executeSetStyle(career, style));
     }
 
     private Mono<Void> executeSetStyle(CareerSave career, TeamStyle style) {
