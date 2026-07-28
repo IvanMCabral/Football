@@ -61,10 +61,10 @@ public class RedisEntityConfig {
     }
 
     @Bean
-    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.v24.V24DetailedMatchData> v24DetailedMatchDataRedisTemplate(
+    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.detailed.DetailedMatchData> v24DetailedMatchDataRedisTemplate(
             ReactiveRedisConnectionFactory connectionFactory) {
         return createTemplate(connectionFactory,
-                com.footballmanager.application.service.simulation.v24.V24DetailedMatchData.class);
+                com.footballmanager.application.service.simulation.detailed.DetailedMatchData.class);
     }
 
     /**
@@ -74,10 +74,10 @@ public class RedisEntityConfig {
      * store.
      */
     @Bean
-    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.v24.BaselineState> v24MatchBaselineStateRedisTemplate(
+    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.detailed.BaselineState> v24MatchBaselineStateRedisTemplate(
             ReactiveRedisConnectionFactory connectionFactory) {
         return createTemplate(connectionFactory,
-                com.footballmanager.application.service.simulation.v24.BaselineState.class);
+                com.footballmanager.application.service.simulation.detailed.BaselineState.class);
     }
 
     private <T> ReactiveRedisTemplate<String, T> createTemplate(

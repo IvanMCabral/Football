@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -9,7 +9,7 @@ import com.footballmanager.domain.model.valueobject.MatchFixture;
 
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ final class TestHarnessScenarioPlanSupport {
     }
 
 static Optional<PositionPlan> chooseMidfielderPositionPlan(
-            V24MatchContext context,
+            MatchContext context,
             String userTeamId,
             double xPercent,
             double yPercent) {
@@ -74,7 +74,7 @@ static Optional<PositionPlan> chooseMidfielderPositionPlan(
     }
 
     static Optional<PositionPlan> buildShapePlan(
-            V24MatchContext context,
+            MatchContext context,
             String userTeamId,
             String formation,
             String shapeName,
@@ -256,7 +256,7 @@ static Optional<PositionPlan> chooseMidfielderPositionPlan(
     }
 
     static Optional<SubPlan> chooseImpactSubstitution(
-            V24MatchContextFactory v24ContextFactory,
+            MatchContextFactory matchContextFactory,
             CareerSave career,
             MatchFixture fixture,
             String userTeamId,
@@ -264,7 +264,7 @@ static Optional<PositionPlan> chooseMidfielderPositionPlan(
             SessionTeam away) {
 
         boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
-        V24MatchContext context = v24ContextFactory.buildWithStyles(
+        MatchContext context = matchContextFactory.buildWithStyles(
             career,
             fixture,
             home,
@@ -320,18 +320,18 @@ static Optional<PositionPlan> chooseMidfielderPositionPlan(
     }
 
     static Optional<SubPlan> chooseScoredSubstitution(
-            V24MatchContextFactory v24ContextFactory,
+            MatchContextFactory matchContextFactory,
             CareerSave career,
             MatchFixture fixture,
             String userTeamId,
             SessionTeam home,
             SessionTeam away,
             boolean upgrade) {
-        return chooseScoredSubstitution(v24ContextFactory, career, fixture, userTeamId, home, away, upgrade, Set.of());
+        return chooseScoredSubstitution(matchContextFactory, career, fixture, userTeamId, home, away, upgrade, Set.of());
     }
 
     static Optional<SubPlan> chooseScoredSubstitution(
-            V24MatchContextFactory v24ContextFactory,
+            MatchContextFactory matchContextFactory,
             CareerSave career,
             MatchFixture fixture,
             String userTeamId,
@@ -341,7 +341,7 @@ static Optional<PositionPlan> chooseMidfielderPositionPlan(
             Set<String> allowedPositions) {
 
         boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
-        V24MatchContext context = v24ContextFactory.buildWithStyles(
+        MatchContext context = matchContextFactory.buildWithStyles(
             career,
             fixture,
             home,
@@ -402,7 +402,7 @@ static Optional<SessionPlayer> resolvePositionPixelPlayer(List<SessionPlayer> pl
     }
 
 static String resolveSlotId(
-            V24MatchContext context,
+            MatchContext context,
             boolean userIsHome,
             String starterPlayerId,
             String requestedSlotId) {

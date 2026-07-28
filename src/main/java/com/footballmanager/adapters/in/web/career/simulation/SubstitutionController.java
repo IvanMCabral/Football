@@ -22,7 +22,7 @@ import java.util.UUID;
 /**
  *
  * <p>F2 wire: manual substitutions now affect the match result. The use case
- * drives the substitution through {@code V24LiveSession.mutateContext(...)} +
+ * drives the substitution through {@code LiveSession.mutateContext(...)} +
  * {@code replayFromMinute(...)} (the F1 replay infrastructure), so
  * {@code homeGoals}/{@code awayGoals} can change from the baseline after a
  * substitution is applied. The D1=B invariant was removed in F2.
@@ -108,7 +108,7 @@ public class SubstitutionController {
                 result.substitutionsRemaining(),
                 result.error())))
             .onErrorResume(e -> {
-                // for "no active match session" / missing V24LiveSession / missing
+                // for "no active match session" / missing LiveSession / missing
                 // context, IllegalArgumentException — and its subclass
                 // MinuteInPastException — for "minute in past") must propagate to
                 // GlobalExceptionHandler so the frontend gets the right 4xx

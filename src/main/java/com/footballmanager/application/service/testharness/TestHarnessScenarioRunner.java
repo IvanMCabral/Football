@@ -1,11 +1,11 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.TeamStyle;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
@@ -31,14 +31,14 @@ final class TestHarnessScenarioRunner {
             TeamStyle initialStyle,
             Integer changeMinute,
             ScenarioAction action,
-            V24MatchContextFactory v24ContextFactory) {
+            MatchContextFactory matchContextFactory) {
 
         boolean userIsHome = fixture.getHomeTeamId().equals(userTeamId);
         TeamStyle homeStyle = userIsHome ? initialStyle : home.getStyle();
         TeamStyle awayStyle = userIsHome ? away.getStyle() : initialStyle;
         ScenarioAction safeAction = action != null ? action : ScenarioAction.none();
 
-        V24MatchContext context = v24ContextFactory.buildWithStyles(
+        MatchContext context = matchContextFactory.buildWithStyles(
             career, fixture, home, away, homeStyle, awayStyle, seed);
 
         ScenarioRunResult runResult = simulateScenario(
@@ -55,7 +55,7 @@ final class TestHarnessScenarioRunner {
     }
 
     private static ScenarioRunResult simulateScenario(
-            V24MatchContext context,
+            MatchContext context,
             MatchFixture fixture,
             String userTeamId,
             boolean userIsHome,
@@ -63,11 +63,11 @@ final class TestHarnessScenarioRunner {
             Integer changeMinute,
             ScenarioAction safeAction) {
         if (changeMinute == null || safeAction.type() == ScenarioActionType.NONE) {
-            V24DetailedMatchResult result = new V24DetailedMatchEngine().simulate(context, new Random(seed));
+            DetailedMatchResult result = new DetailedMatchEngine().simulate(context, new Random(seed));
             return new ScenarioRunResult(result, 0, 0);
         }
 
-        V24LiveSession session = new V24LiveSession(context, seed);
+        LiveSession session = new LiveSession(context, seed);
         for (int i = 0; i < changeMinute; i++) {
             session.tick();
         }
@@ -90,7 +90,7 @@ final class TestHarnessScenarioRunner {
     }
 
     private static ScenarioMutationCounters applyAction(
-            V24LiveSession session,
+            LiveSession session,
             MatchFixture fixture,
             String userTeamId,
             boolean userIsHome,
@@ -111,7 +111,7 @@ final class TestHarnessScenarioRunner {
         }
         if (safeAction.type() == ScenarioActionType.FORMATION) {
             session.mutateContext(ctx -> {
-                V24MatchContext changed = ctx.withNewFormation(userTeamId, safeAction.changedFormation());
+                MatchContext changed = ctx.withNewFormation(userTeamId, safeAction.changedFormation());
                 return safeAction.formationSlotsByPlayerId() != null
                     && !safeAction.formationSlotsByPlayerId().isEmpty()
                         ? changed.withSlots(userTeamId, safeAction.formationSlotsByPlayerId())
@@ -158,7 +158,7 @@ final class TestHarnessScenarioRunner {
             Integer changeMinute,
             ScenarioAction safeAction,
             ScenarioRunResult runResult) {
-        V24DetailedMatchResult result = runResult.result();
+        DetailedMatchResult result = runResult.result();
         TestHarnessZoneCounts zones = TestHarnessZoneCounter.count(result);
         return new ScenarioMatrixRow(
             scenario,
@@ -203,7 +203,7 @@ final class TestHarnessScenarioRunner {
     }
 
     private record ScenarioRunResult(
-        V24DetailedMatchResult result,
+        DetailedMatchResult result,
         long tacticalChanges,
         long substitutions
     ) {

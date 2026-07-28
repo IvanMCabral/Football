@@ -1,28 +1,28 @@
 package com.footballmanager.application.service.simulation;
 import com.footballmanager.application.service.domain.MatchEngineImpl;
 import com.footballmanager.application.service.domain.TeamOverallCalculator;
-import com.footballmanager.application.service.simulation.v24.V24SuspensionLifecycleApplier;
-import com.footballmanager.application.service.simulation.v24.V24InjuryRecoveryLifecycleApplier;
-import com.footballmanager.application.service.simulation.v24.V24EnergyRecoveryLifecycleApplier;
-import com.footballmanager.application.service.simulation.v24.V24InjuryMutationApplier;
-import com.footballmanager.application.service.simulation.v24.LiveRoundMutationTracking;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.application.service.simulation.v24.V24MatchTimeline;
-import com.footballmanager.application.service.simulation.v24.V24MatchLineupPlayerDto;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
-import com.footballmanager.application.service.simulation.v24.V24PlayerRatingsAssembler;
-import com.footballmanager.application.service.simulation.v24.V24CareerMutationPolicy;
-import com.footballmanager.application.service.simulation.v24.V24CareerMutationResult;
-import com.footballmanager.application.service.simulation.v24.V24CareerMutationService;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngineProvider;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResultAdapter;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.SuspensionLifecycleApplier;
+import com.footballmanager.application.service.simulation.detailed.InjuryRecoveryLifecycleApplier;
+import com.footballmanager.application.service.simulation.detailed.EnergyRecoveryLifecycleApplier;
+import com.footballmanager.application.service.simulation.detailed.InjuryMutationApplier;
+import com.footballmanager.application.service.simulation.detailed.LiveRoundMutationTracking;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.MatchTimeline;
+import com.footballmanager.application.service.simulation.detailed.MatchLineupPlayerDto;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.detailed.PlayerRatingsAssembler;
+import com.footballmanager.application.service.simulation.detailed.CareerMutationPolicy;
+import com.footballmanager.application.service.simulation.detailed.CareerMutationResult;
+import com.footballmanager.application.service.simulation.detailed.CareerMutationService;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngineProvider;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResultAdapter;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchResult;
@@ -48,84 +48,84 @@ public class LeagueSimulator {
 
     private final MatchSimulator matchSimulator;
     private final MatchEngineImpl matchEngine;
-    private final boolean useV23LeagueEngine;
-    private final boolean useV24DetailedEngine;
+    private final boolean useClassicLeagueEngine;
+    private final boolean useDetailedMatchEngine;
     private final boolean persistDetail;
-    private final V24MatchContextFactory v24ContextFactory;
-    private final V24DetailedMatchEngineProvider v24EngineProvider;
-    private final V24DetailedMatchStoragePort storagePort;
-    private final V24PlayerRatingsAssembler v24PlayerRatingsAssembler;
-    private final V24CareerMutationService v24MutationService;
-    private final V24CareerMutationPolicy v24MutationPolicy;
-    private final V24SuspensionLifecycleApplier v24SuspensionLifecycleApplier = new V24SuspensionLifecycleApplier();
-    private final V24InjuryRecoveryLifecycleApplier v24InjuryRecoveryLifecycleApplier = new V24InjuryRecoveryLifecycleApplier();
-    private final V24EnergyRecoveryLifecycleApplier v24EnergyRecoveryLifecycleApplier = new V24EnergyRecoveryLifecycleApplier();
+    private final MatchContextFactory matchContextFactory;
+    private final DetailedMatchEngineProvider detailedEngineProvider;
+    private final DetailedMatchStoragePort storagePort;
+    private final PlayerRatingsAssembler playerRatingsAssembler;
+    private final CareerMutationService careerMutationService;
+    private final CareerMutationPolicy careerMutationPolicy;
+    private final SuspensionLifecycleApplier suspensionLifecycleApplier = new SuspensionLifecycleApplier();
+    private final InjuryRecoveryLifecycleApplier injuryRecoveryLifecycleApplier = new InjuryRecoveryLifecycleApplier();
+    private final EnergyRecoveryLifecycleApplier energyRecoveryLifecycleApplier = new EnergyRecoveryLifecycleApplier();
     public LeagueSimulator(MatchSimulator matchSimulator) {
         this(matchSimulator, null, false, false, false, null, false, false, false, false, false);
     }
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
-                          boolean useV23LeagueEngine) {
-        this(matchSimulator, matchEngine, useV23LeagueEngine, false, false, null, false, false, false, false, false);
+                          boolean useClassicLeagueEngine) {
+        this(matchSimulator, matchEngine, useClassicLeagueEngine, false, false, null, false, false, false, false, false);
     }
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
-                          boolean useV23LeagueEngine, boolean useV24DetailedEngine) {
-        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine, false, null, false, false, false, false, false);
+                          boolean useClassicLeagueEngine, boolean useDetailedMatchEngine) {
+        this(matchSimulator, matchEngine, useClassicLeagueEngine, useDetailedMatchEngine, false, null, false, false, false, false, false);
     }
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
-                          boolean useV23LeagueEngine, boolean useV24DetailedEngine,
-                          boolean persistDetail, V24DetailedMatchStoragePort storagePort) {
-        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine,
+                          boolean useClassicLeagueEngine, boolean useDetailedMatchEngine,
+                          boolean persistDetail, DetailedMatchStoragePort storagePort) {
+        this(matchSimulator, matchEngine, useClassicLeagueEngine, useDetailedMatchEngine,
                 persistDetail, storagePort, false, false, false, false, false);
     }
     public LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
-                          boolean useV23LeagueEngine, boolean useV24DetailedEngine,
-                          boolean persistDetail, V24DetailedMatchStoragePort storagePort,
+                          boolean useClassicLeagueEngine, boolean useDetailedMatchEngine,
+                          boolean persistDetail, DetailedMatchStoragePort storagePort,
                           boolean mutateCareerState, boolean persistInjuries,
                           boolean persistFatigue, boolean persistDiscipline,
                           boolean persistForm) {
-        this(matchSimulator, matchEngine, useV23LeagueEngine, useV24DetailedEngine,
+        this(matchSimulator, matchEngine, useClassicLeagueEngine, useDetailedMatchEngine,
                 persistDetail, storagePort, mutateCareerState, persistInjuries,
                 persistFatigue, persistDiscipline, persistForm,
-                new V24DetailedMatchEngine());
+                new DetailedMatchEngine());
     }
     LeagueSimulator(MatchSimulator matchSimulator, MatchEngineImpl matchEngine,
-                    boolean useV23LeagueEngine, boolean useV24DetailedEngine,
-                    boolean persistDetail, V24DetailedMatchStoragePort storagePort,
+                    boolean useClassicLeagueEngine, boolean useDetailedMatchEngine,
+                    boolean persistDetail, DetailedMatchStoragePort storagePort,
                     boolean mutateCareerState, boolean persistInjuries,
                     boolean persistFatigue, boolean persistDiscipline,
                     boolean persistForm,
-                    V24DetailedMatchEngineProvider v24EngineProvider) {
+                    DetailedMatchEngineProvider detailedEngineProvider) {
         this.matchSimulator = matchSimulator;
         this.matchEngine = matchEngine;
-        this.useV23LeagueEngine = useV23LeagueEngine;
-        this.useV24DetailedEngine = useV24DetailedEngine;
+        this.useClassicLeagueEngine = useClassicLeagueEngine;
+        this.useDetailedMatchEngine = useDetailedMatchEngine;
         this.persistDetail = persistDetail;
         this.storagePort = storagePort;
-        this.v24ContextFactory = new V24MatchContextFactory();
-        this.v24EngineProvider = v24EngineProvider;
-        this.v24PlayerRatingsAssembler = new V24PlayerRatingsAssembler();
-        this.v24MutationPolicy = new V24CareerMutationPolicy(
+        this.matchContextFactory = new MatchContextFactory();
+        this.detailedEngineProvider = detailedEngineProvider;
+        this.playerRatingsAssembler = new PlayerRatingsAssembler();
+        this.careerMutationPolicy = new CareerMutationPolicy(
                 mutateCareerState, persistInjuries, persistFatigue,
                 persistDiscipline, persistForm);
-        this.v24MutationService = new V24CareerMutationService(new V24InjuryMutationApplier());
+        this.careerMutationService = new CareerMutationService(new InjuryMutationApplier());
     }
     public void simulateLeagueRound(CareerSave career, int round) {
         TournamentState tournamentState = career.getTournamentState();
         List<MatchFixture> allFixtures = tournamentState.getFixtures();
-        V24RoundMutationTracking tracking = new V24RoundMutationTracking();
+        RoundMutationTracking tracking = new RoundMutationTracking();
         Set<String> preRoundInjured = capturePreRoundInjuredPlayerIds(career);
         for (MatchFixture fixture : allFixtures) {
             if (fixture.getRound() != round) continue;
             if (!fixture.canBeSimulated()) continue;
             int homeOvr = calculateTeamOVR(career, fixture.getHomeTeamId());
             int awayOvr = calculateTeamOVR(career, fixture.getAwayTeamId());
-            if (useV24DetailedEngine) {
-                V24DetailedMatchResult v24Result = simulateWithV24Engine(career, fixture, homeOvr, awayOvr, tournamentState, tracking);
-                if (v24Result != null) {
+            if (useDetailedMatchEngine) {
+                DetailedMatchResult detailedResult = simulateWithDetailedEngine(career, fixture, homeOvr, awayOvr, tournamentState, tracking);
+                if (detailedResult != null) {
                     tracking.v24RoundProcessed = true;
                 }
-            } else if (useV23LeagueEngine) {
-                simulateWithV23Engine(fixture, homeOvr, awayOvr, tournamentState);
+            } else if (useClassicLeagueEngine) {
+                simulateWithClassicEngine(fixture, homeOvr, awayOvr, tournamentState);
             } else {
                 simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             }
@@ -144,23 +144,23 @@ public class LeagueSimulator {
         );
         tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
     }
-    private void simulateWithV23Engine(MatchFixture fixture, int homeOvr, int awayOvr, TournamentState tournamentState) {
+    private void simulateWithClassicEngine(MatchFixture fixture, int homeOvr, int awayOvr, TournamentState tournamentState) {
         if (matchEngine == null) {
-            throw new IllegalStateException("useV23LeagueEngine is true but MatchEngineImpl is not provided");
+            throw new IllegalStateException("useClassicLeagueEngine is true but MatchEngineImpl is not provided");
         }
         Team homeTeam = buildMinimalTeam(fixture.getHomeTeamId(), "Home Team");
         Team awayTeam = buildMinimalTeam(fixture.getAwayTeamId(), "Away Team");
         long seed = deriveSeed(fixture);
         MatchResult result = matchEngine.simulateWithStrengthSync(homeTeam, awayTeam, homeOvr, awayOvr, seed);
         if (result == null) {
-            throw new IllegalStateException("V23 engine returned null for fixture " + fixture.getMatchId());
+            throw new IllegalStateException("classic engine returned null for fixture " + fixture.getMatchId());
         }
         MatchFixture.MatchResultData resultData = MatchResultDataAdapter.fromMatchResult(result);
         tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
     }
-    private V24DetailedMatchResult simulateWithV24Engine(CareerSave career, MatchFixture fixture,
+    private DetailedMatchResult simulateWithDetailedEngine(CareerSave career, MatchFixture fixture,
                                         int homeOvr, int awayOvr, TournamentState tournamentState,
-                                        V24RoundMutationTracking tracking) {
+                                        RoundMutationTracking tracking) {
         long seed = deriveSeed(fixture);
         SessionTeam homeTeam = career.getSessionTeam(fixture.getHomeTeamId());
         SessionTeam awayTeam = career.getSessionTeam(fixture.getAwayTeamId());
@@ -171,39 +171,39 @@ public class LeagueSimulator {
             return null;
         }
         try {
-            V24MatchContext context = v24ContextFactory.build(
+            MatchContext context = matchContextFactory.build(
                     career, fixture, homeTeam, awayTeam, seed);
-            V24DetailedMatchResult v24Result = v24EngineProvider.simulate(context, seed);
-            MatchFixture.MatchResultData resultData = V24DetailedMatchResultAdapter.toMatchResultData(v24Result);
+            DetailedMatchResult detailedResult = detailedEngineProvider.simulate(context, seed);
+            MatchFixture.MatchResultData resultData = DetailedMatchResultAdapter.toMatchResultData(detailedResult);
             tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
-            log.debug("Fixture {} simulated with V24 engine: {} - {}",
+            log.debug("Fixture {} simulated with detailed match engine: {} - {}",
                     fixture.getMatchId(), resultData.homeGoals, resultData.awayGoals);
             if (persistDetail && storagePort != null) {
-                persistV24Detail(career, fixture, homeTeam.getName(), awayTeam.getName(), v24Result, context);
+                persistDetailedMatchDetail(career, fixture, homeTeam.getName(), awayTeam.getName(), detailedResult, context);
             }
             collectStartingXIParticipation(context, tracking);
-            collectV24ResultParticipation(v24Result, tracking);
-            applyV24CareerMutation(career, v24Result, tracking);
-            return v24Result;
+            collectDetailedResultParticipation(detailedResult, tracking);
+            applyDetailedCareerMutation(career, detailedResult, tracking);
+            return detailedResult;
         } catch (IllegalArgumentException e) {
-            log.warn("V24 context build failed for fixture {}: {}, falling back to default",
+            log.warn("detailed match context build failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             return null;
         } catch (Exception e) {
-            log.warn("V24 simulation failed for fixture {}: {}, falling back to default",
+            log.warn("detailed match simulation failed for fixture {}: {}, falling back to default",
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             return null;
         }
     }
-    private void persistV24Detail(CareerSave career, MatchFixture fixture,
+    private void persistDetailedMatchDetail(CareerSave career, MatchFixture fixture,
                                    String homeTeamName, String awayTeamName,
-                                   V24DetailedMatchResult v24Result,
-                                   V24MatchContext context) {
+                                   DetailedMatchResult detailedResult,
+                                   MatchContext context) {
         /*
          * simulateLeagueRound is a synchronous league/batch workflow: callers
-         * expect the fixture, standings and optional V24 detail snapshot to be
+         * expect the fixture, standings and optional detailed match detail snapshot to be
          * settled before the round returns. The bounded block stays at this
          * batch boundary and is not used from a WebFlux controller pipeline.
          */
@@ -211,11 +211,11 @@ public class LeagueSimulator {
             String careerId = career.getData().getCareerId();
             Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
             Integer round = fixture.getRound();
-            List<V24PlayerMatchRatingDto> playerRatings =
-                    v24PlayerRatingsAssembler.assemblePlayerRatings(career, fixture, v24Result);
+            List<PlayerMatchRatingDto> playerRatings =
+                    playerRatingsAssembler.assemblePlayerRatings(career, fixture, detailedResult);
             String homeFormation = resolveFormation(career, fixture.getHomeTeamId());
             String awayFormation = resolveFormation(career, fixture.getAwayTeamId());
-            V24DetailedMatchData detail = V24DetailedMatchData.fromResult(
+            DetailedMatchData detail = DetailedMatchData.fromResult(
                     careerId,
                     seasonNumber,
                     round,
@@ -223,7 +223,7 @@ public class LeagueSimulator {
                     awayTeamName,
                     homeFormation,
                     awayFormation,
-                    v24Result,
+                    detailedResult,
                     playerRatings,
                     lineupSnapshot(context.homeStartingPlayers()),
                     lineupSnapshot(context.homeBenchPlayers()),
@@ -245,21 +245,21 @@ public class LeagueSimulator {
                     fixture.getMatchId(), e.getMessage());
         }
     }
-    private List<V24MatchLineupPlayerDto> lineupSnapshot(List<SessionPlayer> players) {
+    private List<MatchLineupPlayerDto> lineupSnapshot(List<SessionPlayer> players) {
         if (players == null || players.isEmpty()) {
             return List.of();
         }
         return players.stream()
                 .filter(java.util.Objects::nonNull)
-                .map(V24MatchLineupPlayerDto::fromSessionPlayer)
+                .map(MatchLineupPlayerDto::fromSessionPlayer)
                 .toList();
     }
-    private void applyV24CareerMutation(CareerSave career, V24DetailedMatchResult v24Result,
-                                         V24RoundMutationTracking tracking) {
+    private void applyDetailedCareerMutation(CareerSave career, DetailedMatchResult detailedResult,
+                                         RoundMutationTracking tracking) {
         try {
             Set<String> preMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
-            V24CareerMutationResult mutationResult =
-                    v24MutationService.applyMutations(career, v24Result, v24MutationPolicy);
+            CareerMutationResult mutationResult =
+                    careerMutationService.applyMutations(career, detailedResult, careerMutationPolicy);
             if (!mutationResult.failures().isEmpty()) {
                 log.warn("Career mutation partial failures for career {}: {}",
                         career.getData().getCareerId(), mutationResult.failures());
@@ -276,7 +276,7 @@ public class LeagueSimulator {
                 log.debug("Applied {} discipline mutations for career {}",
                         mutationResult.disciplineApplied(), career.getData().getCareerId());
             }
-            if (v24MutationPolicy.isDisciplinePersistenceEnabled()) {
+            if (careerMutationPolicy.isDisciplinePersistenceEnabled()) {
                 Set<String> postMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
                 postMutationSuspended.removeAll(preMutationSuspended);
                 if (!postMutationSuspended.isEmpty()) {
@@ -285,7 +285,7 @@ public class LeagueSimulator {
                             postMutationSuspended);
                 }
             }
-            if (v24MutationPolicy.isInjuryPersistenceEnabled()) {
+            if (careerMutationPolicy.isInjuryPersistenceEnabled()) {
                 Set<String> preMutationInjured = capturePreRoundInjuredPlayerIds(career);
                 Set<String> postMutationInjured = capturePreRoundInjuredPlayerIds(career);
                 postMutationInjured.removeAll(preMutationInjured);
@@ -300,9 +300,9 @@ public class LeagueSimulator {
                     career.getData().getCareerId(), e.getMessage());
         }
     }
-    void applyLiveMatchCareerMutations(CareerSave career, V24DetailedMatchResult v24Result,
+    void applyLiveMatchCareerMutations(CareerSave career, DetailedMatchResult detailedResult,
                                        LiveRoundMutationTracking tracking) {
-        liveMutationService().apply(career, v24Result, tracking);
+        liveMutationService().apply(career, detailedResult, tracking);
     }
     public Set<String> capturePreRoundSuspendedPlayerIds(CareerSave career) {
         return liveLifecycleService().capturePreRoundSuspendedPlayerIds(career);
@@ -319,8 +319,8 @@ public class LeagueSimulator {
         liveLifecycleService().applyEndOfRoundLiveLifecycle(career, currentRound, allFixtures, tracking);
     }
 
-    private void collectStartingXIParticipation(V24MatchContext context,
-                                                  V24RoundMutationTracking tracking) {
+    private void collectStartingXIParticipation(MatchContext context,
+                                                  RoundMutationTracking tracking) {
         for (SessionPlayer p : context.homeStartingPlayers()) {
             if (p != null && p.getSessionPlayerId() != null && !Boolean.TRUE.equals(p.getSuspended())) {
                 tracking.participatedPlayerIds.add(p.getSessionPlayerId());
@@ -332,17 +332,17 @@ public class LeagueSimulator {
             }
         }
     }
-    private void collectV24ResultParticipation(V24DetailedMatchResult v24Result,
-                                               V24RoundMutationTracking tracking) {
-        if (v24Result == null || v24Result.timeline() == null) return;
-        for (V24MatchEvent event : v24Result.timeline().events()) {
+    private void collectDetailedResultParticipation(DetailedMatchResult detailedResult,
+                                               RoundMutationTracking tracking) {
+        if (detailedResult == null || detailedResult.timeline() == null) return;
+        for (DetailedMatchEvent event : detailedResult.timeline().events()) {
             if (event.playerId() != null && !event.playerId().isBlank()) {
                 tracking.participatedPlayerIds.add(event.playerId());
             }
             if (event.relatedPlayerId() != null && !event.relatedPlayerId().isBlank()) {
                 tracking.participatedPlayerIds.add(event.relatedPlayerId());
             }
-            if (event.type() == V24MatchEventType.RED_CARD) {
+            if (event.type() == DetailedMatchEventType.RED_CARD) {
                 if (event.playerId() != null && !event.playerId().isBlank()) {
                     tracking.newlySuspendedPlayerIds.add(event.playerId());
                 }
@@ -366,35 +366,35 @@ public class LeagueSimulator {
     private long deriveSeed(MatchFixture fixture) {
         return fixture.getMatchId().hashCode();
     }
-    public Mono<Void> persistV24DetailForLiveMatch(
+    public Mono<Void> persistDetailedMatchDetailForLiveMatch(
             CareerSave career,
-            V24DetailedMatchResult v24Result,
+            DetailedMatchResult detailedResult,
             String homeTeamId,
             String awayTeamId,
             int homeGoals,
             int awayGoals) {
-        return liveDetailPersister().persist(career, v24Result, homeTeamId, awayTeamId, null);
+        return liveDetailPersister().persist(career, detailedResult, homeTeamId, awayTeamId, null);
     }
 
-    public Mono<Void> persistV24DetailForLiveMatch(
+    public Mono<Void> persistDetailedMatchDetailForLiveMatch(
             CareerSave career,
-            V24DetailedMatchResult v24Result,
+            DetailedMatchResult detailedResult,
             String homeTeamId,
             String awayTeamId,
             int homeGoals,
             int awayGoals,
             LiveRoundMutationTracking tracking) {
-        return liveDetailPersister().persist(career, v24Result, homeTeamId, awayTeamId, tracking);
+        return liveDetailPersister().persist(career, detailedResult, homeTeamId, awayTeamId, tracking);
     }
 
-    public Mono<Void> persistV24DetailForLiveMatch(
+    public Mono<Void> persistDetailedMatchDetailForLiveMatch(
             CareerSave career,
             UUID matchId,
             UUID homeTeamId,
             UUID awayTeamId,
             int homeGoals,
             int awayGoals) {
-        return persistV24DetailForLiveMatch(
+        return persistDetailedMatchDetailForLiveMatch(
                 career,
                 null,
                 homeTeamId.toString(),
@@ -404,34 +404,34 @@ public class LeagueSimulator {
         );
     }
 
-    private V24LiveLifecycleService liveLifecycleService() {
-        return new V24LiveLifecycleService(v24MutationPolicy, log);
+    private LiveMatchLifecycleService liveLifecycleService() {
+        return new LiveMatchLifecycleService(careerMutationPolicy, log);
     }
 
-    private V24RoundLifecycleService roundLifecycleService() {
-        return new V24RoundLifecycleService(
-                v24MutationPolicy,
-                v24SuspensionLifecycleApplier,
-                v24InjuryRecoveryLifecycleApplier,
-                v24EnergyRecoveryLifecycleApplier,
+    private RoundLifecycleService roundLifecycleService() {
+        return new RoundLifecycleService(
+                careerMutationPolicy,
+                suspensionLifecycleApplier,
+                injuryRecoveryLifecycleApplier,
+                energyRecoveryLifecycleApplier,
                 liveLifecycleService(),
                 log);
     }
 
-    private V24LiveMutationService liveMutationService() {
-        return new V24LiveMutationService(
-                v24MutationService,
-                v24MutationPolicy,
+    private LiveMatchMutationService liveMutationService() {
+        return new LiveMatchMutationService(
+                careerMutationService,
+                careerMutationPolicy,
                 liveLifecycleService(),
                 log);
     }
 
-    private V24LiveDetailPersister liveDetailPersister() {
-        return new V24LiveDetailPersister(
+    private LiveDetailPersister liveDetailPersister() {
+        return new LiveDetailPersister(
                 persistDetail,
-                useV24DetailedEngine,
+                useDetailedMatchEngine,
                 storagePort,
-                v24PlayerRatingsAssembler,
+                playerRatingsAssembler,
                 liveMutationService()::apply,
                 log);
     }

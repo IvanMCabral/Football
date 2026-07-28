@@ -20,7 +20,7 @@ import java.util.UUID;
  * in real time:
  * <ul>
  *   <li>{@code homePossession} / {@code awayPossession} — ints 0-100 read
- *       from {@code V24LiveSnapshot}.</li>
+ *       from {@code LiveSnapshot}.</li>
  *   <li>{@code homeStyle} / {@code awayStyle} — String (e.g. "ATTACKING").</li>
  *   <li>{@code homeFormation} / {@code awayFormation} — String (e.g. "4-4-2").</li>
  * </ul>
@@ -31,7 +31,7 @@ import java.util.UUID;
  *   <li>{@code homePlayerRatings} / {@code awayPlayerRatings} — list of
  *       {@link PlayerMatchRating}, one per player in the team (starter
  *       + bench). Computed by
- *       {@code V24PlayerMatchStatsModel.computeRatings()} in
+ *       {@code PlayerMatchStatsModel.computeRatings()} in
  *       {@code MatchSession.adaptV24Snapshot()}. Defaults to empty list.</li>
  *   <li>{@code substitutionsRemaining} — integer in [0, 5], the number of
  *       substitutions the manager team can still make. Computed as

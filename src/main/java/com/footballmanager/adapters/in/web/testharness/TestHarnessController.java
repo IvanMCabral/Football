@@ -174,7 +174,7 @@ public class TestHarnessController {
                 Map<String, Object> body = new LinkedHashMap<>();
                 body.put("success", true);
                 body.put("style", request.style());
-                body.put("message", "Style persisted to SessionTeam; V24 engine will use it on next replay");
+                body.put("message", "Style persisted to SessionTeam; detailed match engine will use it on next replay");
                 return ResponseEntity.ok(body);
             }));
     }
@@ -197,7 +197,7 @@ public class TestHarnessController {
                 Map<String, Object> body = new LinkedHashMap<>();
                 body.put("success", true);
                 body.put("playerId", request.playerId());
-                body.put("message", "Player stats mutated; V24 engine will use them via aggregateAttackerStat/aggregateDefenderStat on next replay");
+                body.put("message", "Player stats mutated; detailed match engine will use them via aggregateAttackerStat/aggregateDefenderStat on next replay");
                 return ResponseEntity.ok(body);
             }));
     }
@@ -434,7 +434,7 @@ public class TestHarnessController {
                 Map<String, Object> body = new LinkedHashMap<>();
                 body.put("success", true);
                 body.put("roundId", request.roundId());
-                body.put("message", "Round reset - fixtures back to PENDING, engines evicted, V24 details cleared");
+                body.put("message", "Round reset - fixtures back to PENDING, engines evicted, detailed match details cleared");
                 return ResponseEntity.ok(body);
             }));
     }

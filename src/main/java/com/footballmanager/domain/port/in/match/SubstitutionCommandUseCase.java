@@ -8,7 +8,7 @@ import java.util.UUID;
  *
  * <p>Phase 1 POC: manual substitutions are UI-only and do NOT alter the match result
  * (per D1=B decision). The substitution is recorded in the live session's
- * {@code accumulatedEvents} and the {@code V24PlayerMatchState} objects are mutated
+ * {@code accumulatedEvents} and the {@code PlayerMatchState} objects are mutated
  * (substituteOn/substituteOff) for downstream consumers (animation, stats display),
  * but {@code homeGoals}/{@code awayGoals} are NOT recalculated.
  *

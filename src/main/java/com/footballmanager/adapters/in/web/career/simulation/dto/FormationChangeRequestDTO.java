@@ -7,7 +7,7 @@ import java.util.List;
  *
  * <p>The client sends the full formation (10-11 slots). The service validates
  * (per F5 spec D-formation: 10-11 players, exactly 1 GK, unique slots) and
- * applies via {@code V24MatchContext.withNewFormation(teamId, newFormation)}.
+ * applies via {@code MatchContext.withNewFormation(teamId, newFormation)}.
  *
  * <p>For pragmatic client ergonomics the request carries slots directly
  * (not a pre-parsed formation code) so the F3 UI can let the manager drag

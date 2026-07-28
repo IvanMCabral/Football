@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V23 Phase 8: Full Simulation Quality Gate.
+ * classic phase 8: Full Simulation Quality Gate.
  *
  * Comprehensive regression test that combines all Phase 1-7 validation guarantees
  * into a single reproducible test suite. This is the required gate before any
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * All tests use seeded simulation for reproducibility.
  * No production code changes — purely validation infrastructure.
  */
-class V23SimulationQualityGateTest {
+class classicSimulationQualityGateTest {
 
     private static final long SEED = 42L;
 

@@ -123,8 +123,8 @@ public class CreateCareerSnapshotUseCaseImpl implements CreateCareerSnapshotUseC
     }
 
     private SessionPlayer cloneWorldPlayerToSessionPlayer(WorldPlayer worldPlayer, String sessionTeamId) {
-        // engine (V24PlayerMatchState) can read them via the 9-args overload of
-        // V24ShotXgCalculator. Without this, top-5 LaLiga curated skills and
+        // engine (PlayerMatchState) can read them via the 9-args overload of
+        // ShotXgCalculator. Without this, top-5 LaLiga curated skills and
         // top-20 hardcoded heights were dropped at the clone boundary.
         return SessionPlayer.cloneFromWorldPlayer(
                 worldPlayer.getWorldPlayerId(),

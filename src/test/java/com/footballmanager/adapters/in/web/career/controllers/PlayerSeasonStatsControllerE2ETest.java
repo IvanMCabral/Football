@@ -128,7 +128,7 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/careers/{random}/.../player-stats — 200 with empty list and message (no V24 detail in Redis)")
+    @DisplayName("GET /api/v1/careers/{random}/.../player-stats — 200 with empty list and message (no detailed match detail in Redis)")
     void getAllPlayerStats_noV24Data_returns200WithEmptyList() {
         String userId = uniqueUserId();
         String careerId = UUID.randomUUID().toString(); // careerId random — sin V24 data
@@ -146,10 +146,10 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
                 org.junit.jupiter.api.Assertions.assertEquals(1, json.get("season").asInt());
                 org.junit.jupiter.api.Assertions.assertTrue(json.get("playerStats").isArray());
                 org.junit.jupiter.api.Assertions.assertEquals(0, json.get("playerStats").size());
-                // The queryService sets a message when there is no V24 detail data.
+                // The queryService sets a message when there is no detailed match detail data.
                 org.junit.jupiter.api.Assertions.assertNotNull(json.get("message"));
                 org.junit.jupiter.api.Assertions.assertTrue(
-                    json.get("message").asText().contains("No V24 detail data"));
+                    json.get("message").asText().contains("No detailed match detail data"));
             });
     }
 

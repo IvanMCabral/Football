@@ -7,20 +7,20 @@ import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.application.service.simulation.v24.V24MatchLineupPlayerDto;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
-import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.MatchLineupPlayerDto;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.detailed.ShotLocation;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -62,22 +62,22 @@ class TestHarnessFormationMatrixService {
 
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
     private final BaselineStateStoragePort baselineStoragePort;
-    private final V24DetailedMatchStoragePort v24StoragePort;
+    private final DetailedMatchStoragePort v24StoragePort;
     private final FormationService formationService = new FormationService();
     private final TestHarnessSideMirrorSyntheticLabService sideMirrorSyntheticLabService;
 
     TestHarnessFormationMatrixService(
             CareerRepository careerRepository,
             CareerSessionService careerSessionService,
-            V24MatchContextFactory v24ContextFactory,
+            MatchContextFactory matchContextFactory,
             BaselineStateStoragePort baselineStoragePort,
-            V24DetailedMatchStoragePort v24StoragePort,
+            DetailedMatchStoragePort v24StoragePort,
             TestHarnessSideMirrorSyntheticLabService sideMirrorSyntheticLabService) {
         this.careerRepository = careerRepository;
         this.careerSessionService = careerSessionService;
-        this.v24ContextFactory = v24ContextFactory;
+        this.matchContextFactory = matchContextFactory;
         this.baselineStoragePort = baselineStoragePort;
         this.v24StoragePort = v24StoragePort;
         this.sideMirrorSyntheticLabService = sideMirrorSyntheticLabService;
@@ -180,7 +180,7 @@ private List<FormationMatrixRow> executeFormationMatrix(CareerSave career, Strin
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
         TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
 
-        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
+        MatchContext baseContext = matchContextFactory.buildWithStyles(
             career,
             fixture,
             home,
@@ -200,20 +200,20 @@ private List<FormationMatrixRow> executeFormationMatrix(CareerSave career, Strin
         }
 
         List<FormationMatrixRow> rows = new ArrayList<>();
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
+        DetailedMatchEngine engine = new DetailedMatchEngine();
         for (FormationDefinition formation : formationService.getAllFormations()) {
             Map<String, LineupSlot> slots = FormationMatrixSlotSupport.buildSlots(userStarters, formation);
-            V24MatchContext shapedContext = baseContext
+            MatchContext shapedContext = baseContext
                 .withNewFormation(controlledTeamId, formation.name())
                 .withSlots(controlledTeamId, slots);
-            V24DetailedMatchEngine.TacticalShapeDebug shapeDebug = engine.debugTacticalShape(
+            DetailedMatchEngine.TacticalShapeDebug shapeDebug = engine.debugTacticalShape(
                 controlledIsHome ? home : away,
                 userStarters,
                 userBench,
                 controlledIsHome ? homeStyle : awayStyle,
                 formation.name(),
                 slots);
-            V24DetailedMatchResult result =
+            DetailedMatchResult result =
                 engine.simulate(shapedContext, new Random(seed));
             ZoneCounts zones = countZones(result);
             rows.add(new FormationMatrixRow(
@@ -272,7 +272,7 @@ private List<FormationMatrixRow> executeFormationMatrix(CareerSave career, Strin
         };
     }
 
-private ZoneCounts countZones(V24DetailedMatchResult result) {
+private ZoneCounts countZones(DetailedMatchResult result) {
         int homeCentral = 0, homeWide = 0, homeLong = 0;
         int awayCentral = 0, awayWide = 0, awayLong = 0;
         int homeLeftWide = 0, homeRightWide = 0;
@@ -281,13 +281,13 @@ private ZoneCounts countZones(V24DetailedMatchResult result) {
         double awayCentralXg = 0.0, awayWideXg = 0.0, awayLongXg = 0.0;
         double homeLeftWideXg = 0.0, homeRightWideXg = 0.0;
         double awayLeftWideXg = 0.0, awayRightWideXg = 0.0;
-        for (V24MatchEvent event : result.timeline().events()) {
+        for (DetailedMatchEvent event : result.timeline().events()) {
             if (!isShotLike(event) || event.shotCoordinate() == null) {
                 continue;
             }
-            V24ShotLocation location = event.shotCoordinate().location();
+            ShotLocation location = event.shotCoordinate().location();
             boolean home = result.homeTeamId().equals(event.teamId());
-            if (location == V24ShotLocation.SIX_YARD_BOX || location == V24ShotLocation.PENALTY_AREA_CENTER) {
+            if (location == ShotLocation.SIX_YARD_BOX || location == ShotLocation.PENALTY_AREA_CENTER) {
                 if (home) {
                     homeCentral++;
                     homeCentralXg += event.xg();
@@ -295,7 +295,7 @@ private ZoneCounts countZones(V24DetailedMatchResult result) {
                     awayCentral++;
                     awayCentralXg += event.xg();
                 }
-            } else if (location == V24ShotLocation.PENALTY_AREA_WIDE) {
+            } else if (location == ShotLocation.PENALTY_AREA_WIDE) {
                 if (home) {
                     homeWide++;
                     homeWideXg += event.xg();
@@ -350,16 +350,16 @@ private ZoneCounts countZones(V24DetailedMatchResult result) {
             round3(awayRightWideXg));
     }
 
-private boolean isLeftWide(V24MatchEvent event) {
+private boolean isLeftWide(DetailedMatchEvent event) {
         return event.shotCoordinate() != null && event.shotCoordinate().y() < 50.0;
     }
 
-private boolean isShotLike(V24MatchEvent event) {
-        return event.type() == V24MatchEventType.SHOT
-            || event.type() == V24MatchEventType.SHOT_ON_TARGET
-            || event.type() == V24MatchEventType.MISS
-            || event.type() == V24MatchEventType.BLOCK
-            || event.type() == V24MatchEventType.GOAL;
+private boolean isShotLike(DetailedMatchEvent event) {
+        return event.type() == DetailedMatchEventType.SHOT
+            || event.type() == DetailedMatchEventType.SHOT_ON_TARGET
+            || event.type() == DetailedMatchEventType.MISS
+            || event.type() == DetailedMatchEventType.BLOCK
+            || event.type() == DetailedMatchEventType.GOAL;
     }
 
 
@@ -386,13 +386,13 @@ private record ZoneCounts(
         double awayRightWideXg
     ) {}
 
-    private List<V24MatchLineupPlayerDto> lineupSnapshot(List<SessionPlayer> players) {
+    private List<MatchLineupPlayerDto> lineupSnapshot(List<SessionPlayer> players) {
         if (players == null || players.isEmpty()) {
             return List.of();
         }
         return players.stream()
             .filter(java.util.Objects::nonNull)
-            .map(V24MatchLineupPlayerDto::fromSessionPlayer)
+            .map(MatchLineupPlayerDto::fromSessionPlayer)
             .toList();
     }
 

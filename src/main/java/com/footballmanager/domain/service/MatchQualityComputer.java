@@ -6,7 +6,7 @@ import com.footballmanager.domain.model.valueobject.TeamStyle;
 /**
  * Pure utility for computing Poisson match quality lambdas.
  *
- * Encapsulates the calibrated V23 lambda formula used by MatchEngineImpl.
+ * Encapsulates the calibrated classic lambda formula used by MatchEngineImpl.
  * No randomness, no side effects, no gameplay effect.
  *
  * Phase 1B: On-demand xG computation without changing MatchResult or persistence.

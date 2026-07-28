@@ -315,15 +315,15 @@ class MatchEngineImplEventConsistencyTest {
     }
 
     //
-    // Legacy V23 fallback in MatchEngineImpl#generateEvents used to emit INJURY
+    // Legacy classic fallback in MatchEngineImpl#generateEvents used to emit INJURY
     // events mislabeled as SUBSTITUTION. After the cleanup the legacy marker is
-    // description="InJURED_V23_LEGACY" with EventType=INJURY. These tests sweep
+    // description="InJURED_classic_LEGACY" with EventType=INJURY. These tests sweep
     // many matches (≥1_000) to surface the 20% legacy path and assert the shape.
 
     @Test
     void substitutionEventsNeverHaveLegacyInjuryPlayerName_V25D81_1() {
         // BUG #1 regression: a SUBSTITUTION event must never have
-        // playerName="InjuredPlayer" — that was the legacy V23 mislabeling.
+        // playerName="InjuredPlayer" — that was the legacy classic mislabeling.
         boolean foundBadEvent = false;
         StringBuilder sample = new StringBuilder();
         int sweep = 0;
@@ -347,13 +347,13 @@ class MatchEngineImplEventConsistencyTest {
             }
         }
         assertFalse(foundBadEvent,
-                String.format("Legacy V23 SUBSTITUTION-as-INJURY leaked through after %d matches: %s",
+                String.format("Legacy classic SUBSTITUTION-as-INJURY leaked through after %d matches: %s",
                         sweep, sample));
     }
 
     @Test
     void legacyInjuryEventsHaveCorrectShape_V25D81_1() {
-        // BUG #1 regression: any event tagged "InJURED_V23_LEGACY" must be of
+        // BUG #1 regression: any event tagged "InJURED_classic_LEGACY" must be of
         // type INJURY, with playerName="InjuredPlayer", null playerId/teamId,
         // and minute in [30, 79].
         int sweep = 0;
@@ -366,7 +366,7 @@ class MatchEngineImplEventConsistencyTest {
             assertNotNull(r);
             sweep++;
             for (MatchEvent e : r.getEvents()) {
-                if ("InJURED_V23_LEGACY".equals(e.getDescription())) {
+                if ("InJURED_classic_LEGACY".equals(e.getDescription())) {
                     legacyFound++;
                     assertEquals(MatchEvent.EventType.INJURY, e.getEventType(),
                             "V25D81.1 legacy marker must be INJURY, got " + e.getEventType()

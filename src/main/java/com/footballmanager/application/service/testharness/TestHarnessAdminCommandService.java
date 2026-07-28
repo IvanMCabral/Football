@@ -7,20 +7,20 @@ import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.application.service.simulation.v24.V24MatchLineupPlayerDto;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
-import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.MatchLineupPlayerDto;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.detailed.ShotLocation;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -62,13 +62,13 @@ class TestHarnessAdminCommandService {
 
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
-    private final V24DetailedMatchStoragePort v24StoragePort;
+    private final DetailedMatchStoragePort v24StoragePort;
     private final MatchEngineRegistry matchEngineRegistry;
 
     TestHarnessAdminCommandService(
             CareerRepository careerRepository,
             CareerSessionService careerSessionService,
-            V24DetailedMatchStoragePort v24StoragePort,
+            DetailedMatchStoragePort v24StoragePort,
             MatchEngineRegistry matchEngineRegistry) {
         this.careerRepository = careerRepository;
         this.careerSessionService = careerSessionService;
@@ -381,12 +381,12 @@ private Mono<Void> executeResetRound(CareerSave career, String roundId) {
             try {
                 detailDeletes.add(v24StoragePort.deleteByMatchId(careerId, matchId)
                     .onErrorResume(e -> {
-                        log.warn("resetRound: failed to clear V24 detail for matchId={}: {}",
+                        log.warn("resetRound: failed to clear detailed match detail for matchId={}: {}",
                             matchId, e.getMessage());
                         return Mono.empty();
                     }));
             } catch (Exception e) {
-                log.warn("resetRound: failed to clear V24 detail for matchId={}: {}",
+                log.warn("resetRound: failed to clear detailed match detail for matchId={}: {}",
                     matchId, e.getMessage());
             }
 

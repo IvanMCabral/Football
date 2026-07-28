@@ -32,7 +32,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *   <li><b>Bug #3:</b> GET /api/v1/matches/{matchId}/minute-by-minute — the
  *       endpoint did not exist (Spring returned 404 for the no-handler path),
  *       which made the frontend's MatchDetailComponent stay in "Loading..."
- *       state. Post-C53, the endpoint exists and returns 404 (no V24 detail
+ *       state. Post-C53, the endpoint exists and returns 404 (no detailed match detail
  *       for this match yet) when the user has no career — the frontend can
  *       then render the failure message instead of hanging.</li>
  * </ul>
@@ -151,12 +151,12 @@ class MatchControllerReactiveC53E2ETest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("GET /matches/{matchId}/minute-by-minute endpoint exists "
-        + "and returns 404 (no career / no V24 detail) instead of 404 for missing handler")
+        + "and returns 404 (no career / no detailed match detail) instead of 404 for missing handler")
     void getMinuteByMinute_noCareer_returns404_notHandlerNotFound() {
         // Pre-C53: this endpoint did not exist → Spring's no-handler path returned
         // 404 with a generic body → frontend stayed in "Loading..." indefinitely.
         // Post-C53: the endpoint exists and returns 404 when there is no career
-        // (because V24 detail is keyed by careerId+matchId). The status code is
+        // (because detailed match detail is keyed by careerId+matchId). The status code is
         // still 404 but with the right semantics — the frontend's error handler
         // can now correctly transition out of the loading state.
         UUID anyMatchId = UUID.randomUUID();

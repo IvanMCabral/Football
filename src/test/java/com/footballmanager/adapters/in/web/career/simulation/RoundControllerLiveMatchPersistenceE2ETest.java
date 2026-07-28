@@ -27,7 +27,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * <p><b>Root cause (C40-B3 + C41):</b> the live match path in
  * {@code RoundController.handleMatchFinished → persistFinishedMatch} tried to
  * derive the user namespace from {@code snap.userId()} /
- * {@code career.getUserId()}, but the V24 path's MatchSessionRegistry never
+ * {@code career.getUserId()}, but the detailed match path's MatchSessionRegistry never
  * set the initial state's userId (RoundController line 52 — fixed in C41).
  * The C40 fallback to {@code UUID.randomUUID()} then persisted finished
  * matches under a junk key that {@code GET /api/v1/matches}
@@ -47,7 +47,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *   <li>Create career + game via {@code POST /api/v1/games} (real LaLiga seed).</li>
  *   <li>Auto-select lineup ({@code POST /career/lineup/auto-select 4-4-2}).</li>
  *   <li>Start round via {@code POST /api/v1/match-engine/rounds/start}
- *       (V24 path: 90 ticks × ~500ms = ~45s per match; legacy path: 5 ticks
+ *       (detailed match path: 90 ticks × ~500ms = ~45s per match; legacy path: 5 ticks
  *       × 500ms = ~2.5s; we wait up to 90s for safety).</li>
  *   <li>Poll {@code GET /api/v1/matches} every 1s with 90s budget — assert
  *       match is present (length >= 1, includes the played matchId).</li>
@@ -126,7 +126,7 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
             .exchange()
             .expectStatus().isCreated();
 
-        // 5. Auto-select lineup (4-4-2). Without this, the V24 path's session
+        // 5. Auto-select lineup (4-4-2). Without this, the detailed match path's session
         //    factory throws on empty starting XI.
         webTestClient.mutateWith(mockUser(userId))
             .post().uri("/api/v1/career/lineup/auto-select")
@@ -151,7 +151,7 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
         JsonNode firstMatch = fixtures.get(0);
         String matchId = firstMatch.get("matchId").asText();
 
-        // 7. Start the round — kicks off the V24 live engine scheduler for this match.
+        // 7. Start the round — kicks off the detailed live engine scheduler for this match.
         webTestClient.mutateWith(mockUser(userId))
             .post().uri("/api/v1/match-engine/rounds/start")
             .contentType(MediaType.APPLICATION_JSON)
@@ -164,7 +164,7 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
             .exchange()
             .expectStatus().isOk();
 
-        // 8. Poll /api/v1/matches until the match appears (V24 engine: 90 ticks × 500ms
+        // 8. Poll /api/v1/matches until the match appears (detailed match engine: 90 ticks × 500ms
         //    ≈ 45s in the worst case; legacy path: 5 ticks ≈ 2.5s; we wait 90s for safety).
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(90);
         List<Map<String, Object>> matches = List.of();

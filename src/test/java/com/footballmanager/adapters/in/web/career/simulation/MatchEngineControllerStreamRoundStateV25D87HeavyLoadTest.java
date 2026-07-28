@@ -40,10 +40,10 @@ import static org.mockito.Mockito.when;
 /**
  *
  * 6/6 with the {@code replay().latest()} fix. But runtime smoke with
- * 30 REAL matches (V24 simulation per match) still drops to 1 event.
+ * 30 REAL matches (detailed match simulation per match) still drops to 1 event.
  *
  * <p>This test reproduces the production load: 30 mock matches whose
- * {@code advanceTick()} blocks for 50ms (to mimic V24 simulation CPU
+ * {@code advanceTick()} blocks for 50ms (to mimic detailed match simulation CPU
  * cost). The scheduler will fall behind — each "tick" of 30×50ms takes
  * 1.5s wall clock — exactly the production scenario.
  *
@@ -53,7 +53,7 @@ import static org.mockito.Mockito.when;
  * explicit queue, or off-board serialization).
  *
  * <p>If the test passes (all 30 emits received), the runtime bug is
- * somewhere specific to real V24 simulation (NPE, race, or
+ * somewhere specific to real detailed match simulation (NPE, race, or
  * serializer config) and not the sink itself.
  */
 @SpringBootTest(

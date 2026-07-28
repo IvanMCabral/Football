@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Phase 1A: V23 Metrics & xG Instrumentation Validation
+ * Phase 1A: classic Metrics & xG Instrumentation Validation
  * Test-only collector validates Poisson model produces expected observable metrics.
  *
  * Runs ≥10,000 matches per scenario and asserts metrics are within acceptable ranges.

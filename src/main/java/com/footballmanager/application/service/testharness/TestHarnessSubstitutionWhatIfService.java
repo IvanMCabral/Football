@@ -1,10 +1,10 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.TeamStyle;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -25,7 +25,7 @@ import java.util.UUID;
 class TestHarnessSubstitutionWhatIfService {
 
     private final CareerRepository careerRepository;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
 
     Mono<SubstitutionWhatIfSummaryRow> run(
             UUID userId,
@@ -105,7 +105,7 @@ class TestHarnessSubstitutionWhatIfService {
 
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
         TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
-        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(career, fixture, home, away, homeStyle, awayStyle, seedStart);
+        MatchContext baseContext = matchContextFactory.buildWithStyles(career, fixture, home, away, homeStyle, awayStyle, seedStart);
         List<SessionPlayer> starters = userIsHome ? baseContext.homeStartingPlayers() : baseContext.awayStartingPlayers();
         List<SessionPlayer> bench = userIsHome ? baseContext.homeBenchPlayers() : baseContext.awayBenchPlayers();
         SessionPlayer off = TestHarnessCommonSupport.findPlayer(starters, playerOffId)
@@ -117,7 +117,7 @@ class TestHarnessSubstitutionWhatIfService {
         TestHarnessSwapAccumulator substituted = new TestHarnessSwapAccumulator();
         for (int i = 0; i < seedCount; i++) {
             long seed = seedStart + i;
-            V24MatchContext seededBase = v24ContextFactory.buildWithStyles(career, fixture, home, away, homeStyle, awayStyle, seed);
+            MatchContext seededBase = matchContextFactory.buildWithStyles(career, fixture, home, away, homeStyle, awayStyle, seed);
             baseline.add(simulateWithNoopReplay(seededBase, minute, seed), userIsHome);
             substituted.add(simulateWithManualSubstitution(seededBase, controlledTeamId, playerOffId, playerOnId, minute, seed), userIsHome);
         }
@@ -157,14 +157,14 @@ class TestHarnessSubstitutionWhatIfService {
             read);
     }
 
-    private V24DetailedMatchResult simulateWithManualSubstitution(
-            V24MatchContext context,
+    private DetailedMatchResult simulateWithManualSubstitution(
+            MatchContext context,
             String teamId,
             String playerOffId,
             String playerOnId,
             int minute,
             long seed) {
-        V24LiveSession session = new V24LiveSession(context, seed);
+        LiveSession session = new LiveSession(context, seed);
         for (int i = 0; i < minute; i++) {
             session.tick();
         }
@@ -175,8 +175,8 @@ class TestHarnessSubstitutionWhatIfService {
         return session.finalResult();
     }
 
-    private V24DetailedMatchResult simulateWithNoopReplay(V24MatchContext context, int minute, long seed) {
-        V24LiveSession session = new V24LiveSession(context, seed);
+    private DetailedMatchResult simulateWithNoopReplay(MatchContext context, int minute, long seed) {
+        LiveSession session = new LiveSession(context, seed);
         for (int i = 0; i < minute; i++) {
             session.tick();
         }

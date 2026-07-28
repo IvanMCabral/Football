@@ -93,7 +93,7 @@ public class MatchEngineImpl implements MatchEngine {
         int homePossession = calculatePossession(homeOverall, awayOverall, random);
         int awayPossession = 100 - homePossession;
 
-        // V23 Poisson goal model — style-aware lambda computation
+        // classic Poisson goal model — style-aware lambda computation
         MatchQualityComputer.MatchQualityLambdas lambdas;
         if (homeStyle == TeamStyle.BALANCED && awayStyle == TeamStyle.BALANCED) {
             // Use baseline formula for BALANCED+BALANCED (guaranteed equivalence)
@@ -107,7 +107,7 @@ public class MatchEngineImpl implements MatchEngine {
         int homeGoals = poissonSample(homeLambda, random);
         int awayGoals = poissonSample(awayLambda, random);
 
-        // V23 Phase 3: Hybrid Lambda + Possession Split with Goal Floor (Option D)
+        // classic phase 3: Hybrid Lambda + Possession Split with Goal Floor (Option D)
         double avgXgPerShot = 0.20;
         double expectedTotalShots = (homeLambda + awayLambda) / avgXgPerShot;
         int totalShots = poissonSample(expectedTotalShots, random);
@@ -140,7 +140,7 @@ public class MatchEngineImpl implements MatchEngine {
         int homePossession = calculatePossession(resolvedHomeOvr, resolvedAwayOvr, random);
         int awayPossession = 100 - homePossession;
 
-        // V23 Poisson goal model — explicit OVR path
+        // classic Poisson goal model — explicit OVR path
         MatchQualityComputer.MatchQualityLambdas lambdas =
                 MatchQualityComputer.computeLambdas(resolvedHomeOvr, resolvedAwayOvr);
         double homeLambda = lambdas.homeLambda();
@@ -240,10 +240,10 @@ public class MatchEngineImpl implements MatchEngine {
         if (random.nextDouble() < 0.2) {
             int injuryMinute = 30 + random.nextInt(50);
             // injury events as SUBSTITUTION (semantically wrong). Emit a proper
-            // INJURY event tagged "InJURED_V23_LEGACY" so downstream consumers
+            // INJURY event tagged "InJURED_classic_LEGACY" so downstream consumers
             // (UI modals, persistence) can distinguish them from real subs.
             events.add(MatchEvent.of(MatchEvent.EventType.INJURY, injuryMinute,
-                    null, "InjuredPlayer", null, "InJURED_V23_LEGACY"));
+                    null, "InjuredPlayer", null, "InJURED_classic_LEGACY"));
         }
 
         events.sort(java.util.Comparator.comparingInt(MatchEvent::getMinute));

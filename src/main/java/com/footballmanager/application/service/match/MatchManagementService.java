@@ -2,7 +2,7 @@ package com.footballmanager.application.service.match;
 
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
@@ -54,7 +54,7 @@ public class MatchManagementService {
             UUID homeTeamId,
             UUID awayTeamId,
             Consumer<MatchFinishedResult> onFinishCallback,
-            V24LiveSession v24LiveSession) {
+            LiveSession v24LiveSession) {
 
         sessionRegistry.getOrCreateSessionWithV24(userId, matchId, homeTeamId, awayTeamId, v24LiveSession);
 

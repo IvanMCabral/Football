@@ -24,7 +24,7 @@ public final class MatchFinishedResult {
 
     /**
      * The MatchStateSnapshot — used for SSE stream and as fallback for persistence
-     * when v24Result is null.
+     * when detailedResult is null.
      */
     public MatchStateSnapshot snapshot() {
         return snapshot;
@@ -38,7 +38,7 @@ public final class MatchFinishedResult {
     }
 
     /**
-     * Convenience: true when this result came from a V24LiveSession.
+     * Convenience: true when this result came from a LiveSession.
      */
     public boolean isV24() {
         return detailedResult != null;

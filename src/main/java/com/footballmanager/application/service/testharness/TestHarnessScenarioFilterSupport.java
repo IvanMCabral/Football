@@ -2,7 +2,7 @@ package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -65,14 +65,14 @@ final class TestHarnessScenarioFilterSupport {
             TeamStyle baseUserStyle,
             Integer changeMinute,
             ScenarioAction action,
-            V24MatchContextFactory v24ContextFactory) {
+            MatchContextFactory matchContextFactory) {
         if (!normalizedScenarioGroup.isBlank()
             && !"ALL".equals(normalizedScenarioGroup)
             && !scenarioMatchesGroup(scenario, normalizedScenarioGroup)) {
             return;
         }
         rows.add(TestHarnessScenarioRunner.run(career, fixture, home, away, userTeamId, seed,
-            scenario, description, formation, baseUserStyle, changeMinute, action, v24ContextFactory));
+            scenario, description, formation, baseUserStyle, changeMinute, action, matchContextFactory));
     }
 
     static boolean scenarioMatchesGroup(String scenario, String group) {

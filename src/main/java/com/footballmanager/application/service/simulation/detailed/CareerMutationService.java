@@ -1,0 +1,121 @@
+package com.footballmanager.application.service.simulation.detailed;
+
+import com.footballmanager.domain.model.entity.CareerSave;
+
+/**
+ * Pure orchestration service that coordinates detailed career mutations after a match result.
+ *
+ *
+ * <p>This service is isolated — no Spring, no Redis, no IO.
+ * It is not yet wired into LeagueSimulator; it exists as a standalone component.
+ */
+public class CareerMutationService {
+
+    private final InjuryMutationApplier injuryMutationApplier;
+    private final FatigueMutationApplier fatigueMutationApplier;
+    private final DisciplineMutationApplier disciplineMutationApplier;
+    private final FormMutationApplier formMutationApplier;
+
+    public CareerMutationService(InjuryMutationApplier injuryMutationApplier) {
+        this(injuryMutationApplier, new FatigueMutationApplier(),
+                new DisciplineMutationApplier(), new FormMutationApplier());
+    }
+
+    public CareerMutationService(
+            InjuryMutationApplier injuryMutationApplier,
+            FatigueMutationApplier fatigueMutationApplier) {
+        this(injuryMutationApplier, fatigueMutationApplier,
+                new DisciplineMutationApplier(), new FormMutationApplier());
+    }
+
+    public CareerMutationService(
+            InjuryMutationApplier injuryMutationApplier,
+            FatigueMutationApplier fatigueMutationApplier,
+            DisciplineMutationApplier disciplineMutationApplier) {
+        this(injuryMutationApplier, fatigueMutationApplier, disciplineMutationApplier,
+                new FormMutationApplier());
+    }
+
+    public CareerMutationService(
+            InjuryMutationApplier injuryMutationApplier,
+            FatigueMutationApplier fatigueMutationApplier,
+            DisciplineMutationApplier disciplineMutationApplier,
+            FormMutationApplier formMutationApplier) {
+        this.injuryMutationApplier = injuryMutationApplier;
+        this.fatigueMutationApplier = fatigueMutationApplier != null
+                ? fatigueMutationApplier
+                : new FatigueMutationApplier();
+        this.disciplineMutationApplier = disciplineMutationApplier != null
+                ? disciplineMutationApplier
+                : new DisciplineMutationApplier();
+        this.formMutationApplier = formMutationApplier != null
+                ? formMutationApplier
+                : new FormMutationApplier();
+    }
+
+    /**
+     * Apply career mutations from detailed match result to CareerSave.
+     *
+     * @param career the CareerSave to mutate; if null, returns empty result
+     * @param policy the mutation policy; if null, returns empty result
+     * @return mutation result with counts and any failures
+     */
+    public CareerMutationResult applyMutations(
+            CareerSave career,
+            DetailedMatchResult result,
+            CareerMutationPolicy policy) {
+
+        if (career == null) return CareerMutationResult.empty();
+        if (result == null) return CareerMutationResult.empty();
+        if (policy == null) return CareerMutationResult.empty();
+        if (!policy.isCareerMutationEnabled()) return CareerMutationResult.empty();
+
+        int injuries = 0;
+        int fatigue = 0;
+        int discipline = 0;
+        int form = 0;
+        java.util.List<String> failures = new java.util.ArrayList<>();
+
+        if (policy.isInjuryPersistenceEnabled()) {
+            try {
+                injuries = injuryMutationApplier.applyInjuries(career, result, policy);
+            } catch (Exception e) {
+                failures.add("Injury mutation failed: " + e.getMessage());
+            }
+        }
+
+        if (policy.isFatiguePersistenceEnabled()) {
+            try {
+                fatigue = fatigueMutationApplier.applyFatigue(career, result, policy);
+            } catch (Exception e) {
+                failures.add("Fatigue mutation failed: " + e.getMessage());
+            }
+        }
+
+        if (policy.isDisciplinePersistenceEnabled()) {
+            try {
+                discipline = disciplineMutationApplier.applyDiscipline(career, result, policy);
+            } catch (Exception e) {
+                failures.add("Discipline mutation failed: " + e.getMessage());
+            }
+        }
+
+        if (policy.isFormPersistenceEnabled()) {
+            try {
+                form = formMutationApplier.applyForm(career, result, policy);
+            } catch (Exception e) {
+                failures.add("Form mutation failed: " + e.getMessage());
+            }
+        }
+
+        if (!failures.isEmpty()) {
+            return CareerMutationResult.partial(injuries, fatigue, discipline, form, failures);
+        }
+
+        if (injuries == 0 && fatigue == 0 && discipline == 0 && form == 0) {
+            return CareerMutationResult.empty();
+        }
+
+        return CareerMutationResult.success(injuries, fatigue, discipline, form);
+    }
+}

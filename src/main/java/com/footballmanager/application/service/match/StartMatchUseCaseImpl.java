@@ -2,7 +2,7 @@ package com.footballmanager.application.service.match;
 
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.port.in.match.StartMatchUseCase;
@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 /**
  * Implementación de StartMatchUseCase.
  *
- * The V24 path is used when V24LiveSession is active and should use
+ * The detailed match path is used when LiveSession is active and should use
  */
 @Service
 @RequiredArgsConstructor
@@ -39,11 +39,11 @@ public class StartMatchUseCaseImpl implements StartMatchUseCase {
     }
 
     /**
-     * Used when V24LiveSession is active for the match.
+     * Used when LiveSession is active for the match.
      */
     public Flux<MatchStateSnapshot> executeV24(UUID userId, UUID matchId,
                                                Consumer<MatchFinishedResult> onFinishCallback,
-                                               V24LiveSession v24LiveSession) {
+                                               LiveSession v24LiveSession) {
         return sessionRegistry.getSession(userId, matchId)
             .map(session -> {
                 session.setOnFinishCallback(onFinishCallback);

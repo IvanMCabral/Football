@@ -2,9 +2,9 @@ package com.footballmanager.adapters.in.web.versus;
 
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchQueryService;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventDto;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchQueryService;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventDto;
 import com.footballmanager.application.service.world.WorldSnapshotService;
 import com.footballmanager.domain.model.entity.*;
 import com.footballmanager.domain.model.valueobject.*;
@@ -45,9 +45,9 @@ public class MatchControllerReactive {
     // synchronous resolution inside mapToDTO.
     private final WorldSnapshotService worldSnapshotService;
     // from Redis via the user's active careerId (CareerSessionService) +
-    // the V24 query service that already exists for /careers/{careerId}/matches/{matchId}/detail.
+    // the detailed match query service that already exists for /careers/{careerId}/matches/{matchId}/detail.
     private final CareerSessionService careerSessionService;
-    private final V24DetailedMatchQueryService v24DetailedMatchQueryService;
+    private final DetailedMatchQueryService v24DetailedMatchQueryService;
 
     @PostMapping("/{matchId}/advance")
     public Mono<ResponseEntity<RuntimeMatch>> advanceMatch(@PathVariable String matchId, @RequestBody AdvanceRequest req, Authentication authentication) {
@@ -241,17 +241,17 @@ public class MatchControllerReactive {
      * <p>The frontend {@code MatchDetailComponent} calls this endpoint to drive
      * its 700ms-step animation of the match timeline. Pre-fix, the endpoint
      * did not exist → 404 from Spring's no-handler path → frontend stays in
-     * loading state. Now we look up the V24 detail for the user's active
+     * loading state. Now we look up the detailed match detail for the user's active
      * career + this match and return one synthetic final-state entry that
      * the frontend can render (cumulative goals + all events).
      *
-     * <p>Why a single-state list: the V24 detail timeline has all events
+     * <p>Why a single-state list: the detailed match detail timeline has all events
      * Emitting one state with the final score + the full event list keeps
      * the frontend's animation logic simple (it shows the final state in
      * one tick) while solving the "Loading..." indefinitely symptom.
      *
      * <p>404 if no career or no detail (which is the common case — V24
-     * detail is only persisted when the V24 engine + persistence are both
+     * detail is only persisted when the detailed match engine + persistence are both
      * enabled for that career). The frontend error handler treats this as
      * "no data" and shows the failure message.
      */
@@ -278,17 +278,17 @@ public class MatchControllerReactive {
                 .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
     }
 
-    private List<MatchMinuteState> buildMinuteByMinuteStates(V24DetailedMatchData detail) {
-        List<V24MatchEventDto> events = detail.timeline() == null ? List.of() : detail.timeline();
+    private List<MatchMinuteState> buildMinuteByMinuteStates(DetailedMatchData detail) {
+        List<DetailedMatchEventDto> events = detail.timeline() == null ? List.of() : detail.timeline();
         // Sort events by minute to keep the order stable regardless of persistence order.
-        List<V24MatchEventDto> sorted = new ArrayList<>(events);
+        List<DetailedMatchEventDto> sorted = new ArrayList<>(events);
         sorted.sort((a, b) -> Integer.compare(a.minute(), b.minute()));
 
         List<MatchMinuteState> states = new ArrayList<>();
         int homeGoals = 0;
         int awayGoals = 0;
         int lastMinute = 0;
-        for (V24MatchEventDto ev : sorted) {
+        for (DetailedMatchEventDto ev : sorted) {
             if ("GOAL".equalsIgnoreCase(ev.type())) {
                 if (detail.homeTeamId() != null && detail.homeTeamId().equals(ev.teamId())) {
                     homeGoals++;
@@ -316,11 +316,11 @@ public class MatchControllerReactive {
     }
 
     private MatchMinuteState toState(int minute, int home, int away, List<MatchEventDTO> evs,
-                                     V24DetailedMatchData detail) {
+                                     DetailedMatchData detail) {
         return new MatchMinuteState(minute, home, away, evs, "IN_PROGRESS");
     }
 
-    private MatchEventDTO toEvent(V24MatchEventDto ev) {
+    private MatchEventDTO toEvent(DetailedMatchEventDto ev) {
         // Frontend enum: 'GOAL' | 'CARD' | 'INJURY' | 'SUBSTITUTION'.
         // Map V24 type strings to one of those (V24 has more granular types
         // but they all collapse into one of the four frontend buckets).

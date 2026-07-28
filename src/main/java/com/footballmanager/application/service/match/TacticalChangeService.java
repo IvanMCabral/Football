@@ -7,10 +7,10 @@ import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ import java.util.UUID;
  * style/formation changes during a live match.
  *
  * <p>This is the FIRST end-to-end consumer of the F1 replay path
- * ({@link V24LiveSession#mutateContext} + {@link V24LiveSession#replayFromMinute}).
+ * ({@link LiveSession#mutateContext} + {@link LiveSession#replayFromMinute}).
  * Style changes are simple: update the {@code homeStyle} (or {@code awayStyle}
  * for the rival — not exposed in F5) on the effective context. Formation
  * changes are richer: they reassign player positions AND recompute a
@@ -43,17 +43,17 @@ import java.util.UUID;
  *   <li>Only the manager's home team can be changed (away is F4 scope).</li>
  *   <li>The match must be in flight (not finished) — same guard as F1 substitutions.</li>
  *   <li>No rate limit (D-cambios-x-minuto).</li>
- *   <li>The change is persisted as a {@link V24MatchEventType#TACTICAL_CHANGE}
+ *   <li>The change is persisted as a {@link DetailedMatchEventType#TACTICAL_CHANGE}
  *       event in the timeline so the F3 UI can render it.</li>
  * </ul>
  *
  * <p><b>How the engine picks up the change:</b>
- * the F1 replay path rebuilds the {@code V24TeamMatchState} on every
+ * the F1 replay path rebuilds the {@code TeamMatchState} on every
  * {@code replayFromMinute} call, reading from
  * {@code context.homeTeam().getFormation()} and
  * {@code context.homeStartingPlayers().get(i).getPosition()}. So a tactical
  * change mutates the {@link SessionTeam} (formation code) and the
- * {@link SessionPlayer} (positions) AND swaps the {@link V24MatchContext}
+ * {@link SessionPlayer} (positions) AND swaps the {@link MatchContext}
  * via {@code withNewFormation} / {@code withNewStyle}. The engine's next
  * rebuild picks up all three changes.
  */
@@ -74,7 +74,7 @@ public class TacticalChangeService {
      *       maps to 409).</li>
      *   <li>Validate the live session is in flight (not finished) — fails
      *       with {@code IllegalStateException} if the match has ended.</li>
-     *   <li>Apply the style via {@code V24LiveSession.mutateContext(ctx -> ctx.withNewStyle(homeTeamId, newStyle))}
+     *   <li>Apply the style via {@code LiveSession.mutateContext(ctx -> ctx.withNewStyle(homeTeamId, newStyle))}
      *       — this triggers {@code replayFromMinute(currentMinute)} automatically.</li>
      *   <li>Record a {@code TACTICAL_CHANGE} event so the F3 UI can render the change.</li>
      *   <li>Return the {@link TacticalStyleChangeResult} with the new state.</li>
@@ -101,17 +101,17 @@ public class TacticalChangeService {
             .orElseThrow(() -> new IllegalStateException(
                 "No active match session for userId=" + userId + " matchId=" + matchId));
 
-        V24LiveSession liveSession = session.getV24LiveSession();
+        LiveSession liveSession = session.getLiveSession();
         if (liveSession == null) {
             throw new IllegalStateException(
-                "Session has no V24LiveSession (not in V24 path?) for matchId=" + matchId);
+                "Session has no LiveSession (not in detailed match path?) for matchId=" + matchId);
         }
         if (liveSession.isFinished()) {
             throw new IllegalStateException(
                 "Match " + matchId + " has already finished — cannot change style");
         }
 
-        V24MatchContext context = liveSession.context();
+        MatchContext context = liveSession.context();
         String homeTeamId = context.homeTeamId();
 
         // 2. Drive mutateContext — F1 replays from currentMinute automatically.
@@ -119,9 +119,9 @@ public class TacticalChangeService {
 
         // 3. Record the tactical-change event in the timeline (visible to F3 UI).
         int minute = Math.max(1, liveSession.currentMinute());
-        V24MatchEvent event = new V24MatchEvent(
+        DetailedMatchEvent event = new DetailedMatchEvent(
             minute,
-            V24MatchEventType.TACTICAL_CHANGE,
+            DetailedMatchEventType.TACTICAL_CHANGE,
             homeTeamId,
             null, // no player
             null, // no player name
@@ -190,17 +190,17 @@ public class TacticalChangeService {
             .orElseThrow(() -> new IllegalStateException(
                 "No active match session for userId=" + userId + " matchId=" + matchId));
 
-        V24LiveSession liveSession = session.getV24LiveSession();
+        LiveSession liveSession = session.getLiveSession();
         if (liveSession == null) {
             throw new IllegalStateException(
-                "Session has no V24LiveSession (not in V24 path?) for matchId=" + matchId);
+                "Session has no LiveSession (not in detailed match path?) for matchId=" + matchId);
         }
         if (liveSession.isFinished()) {
             throw new IllegalStateException(
                 "Match " + matchId + " has already finished — cannot change formation");
         }
 
-        V24MatchContext context = liveSession.context();
+        MatchContext context = liveSession.context();
         String managerTeamId = resolveFormationTeamId(context, newFormation);
 
         // 3. Roster validation: every playerId must be in the manager team's live roster.
@@ -239,15 +239,15 @@ public class TacticalChangeService {
         // 7. Drive mutateContext — F1 replays from currentMinute automatically.
         Map<String, LineupSlot> liveSlots = buildLiveSlots(newFormation);
         liveSession.mutateContext(ctx -> {
-            V24MatchContext changed = ctx.withNewFormation(managerTeamId, newCode);
+            MatchContext changed = ctx.withNewFormation(managerTeamId, newCode);
             return liveSlots.isEmpty() ? changed : changed.withSlots(managerTeamId, liveSlots);
         });
 
         // 8. Record the tactical-change event.
         int minute = Math.max(1, liveSession.currentMinute());
-        V24MatchEvent event = new V24MatchEvent(
+        DetailedMatchEvent event = new DetailedMatchEvent(
             minute,
-            V24MatchEventType.TACTICAL_CHANGE,
+            DetailedMatchEventType.TACTICAL_CHANGE,
             managerTeamId,
             null,
             null,
@@ -302,7 +302,7 @@ public class TacticalChangeService {
             String previousCode,
             String newCode,
             List<TacticalFormationSlot> formation,
-            V24MatchContext context,
+            MatchContext context,
             String managerTeamId) {
         StringBuilder description = new StringBuilder("Formation changed from ")
             .append(previousCode)
@@ -392,7 +392,7 @@ public class TacticalChangeService {
     /**
      * Derive a formation code (X-Y-Z) from the slot positions. Counts DEF, MID, ATT
      * (WINGER counts as MID) and formats accordingly. This is a best-effort mapping
-     * so the engine's formation string stays parseable by {@code V24FormationParser}.
+     * so the engine's formation string stays parseable by {@code FormationParser}.
      */
     private String deriveFormationCode(List<TacticalFormationSlot> formation) {
         int def = 0, mid = 0, fwd = 0;
@@ -421,7 +421,7 @@ public class TacticalChangeService {
         return code;
     }
 
-    private String resolveFormationTeamId(V24MatchContext context, List<TacticalFormationSlot> formation) {
+    private String resolveFormationTeamId(MatchContext context, List<TacticalFormationSlot> formation) {
         Set<String> requestedIds = new HashSet<>();
         for (TacticalFormationSlot slot : formation) {
             requestedIds.add(slot.playerId());
@@ -437,7 +437,7 @@ public class TacticalChangeService {
         throw new IllegalArgumentException("formation players do not belong to a single live team roster");
     }
 
-    private Set<String> rosterIdsForTeam(V24MatchContext context, String teamId) {
+    private Set<String> rosterIdsForTeam(MatchContext context, String teamId) {
         Set<String> rosterIds = new HashSet<>();
         List<SessionPlayer> starters = context.homeTeamId().equals(teamId)
             ? context.homeStartingPlayers()
@@ -450,7 +450,7 @@ public class TacticalChangeService {
         return rosterIds;
     }
 
-    private SessionPlayer findPlayer(V24MatchContext context, String teamId, String playerId) {
+    private SessionPlayer findPlayer(MatchContext context, String teamId, String playerId) {
         List<SessionPlayer> starters = context.homeTeamId().equals(teamId)
             ? context.homeStartingPlayers()
             : context.awayStartingPlayers();

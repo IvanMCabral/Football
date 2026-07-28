@@ -33,7 +33,7 @@ Incorrect controller-level manual subscriptions were removed from the live round
 Remaining blocking usages are classified:
 
 - `WorldSeedBatchWriter` and `WorldTeamPostgresWriter`: batch/startup seed persistence; not WebFlux request-path orchestration.
-- `LeagueSimulator.persistV24Detail`: synchronous league-round simulation API used by batch-style league simulation and legacy tests; bounded to a 5s persistence timeout.
+- `LeagueSimulator.persistDetailedMatchDetail`: synchronous league-round simulation API used by batch-style league simulation and legacy tests; bounded to a 5s persistence timeout.
 - `ReactiveLifecycleExecutor.subscribe`: single explicit lifecycle boundary for engine callbacks fired outside an HTTP publisher; controller code no longer owns those subscriptions.
 
 ### Tests and reflection

@@ -8,7 +8,7 @@ package com.footballmanager.adapters.in.web.career.simulation.dto;
  * desired formation when changing tactics mid-match.
  *
  * <p>The position is a free-form string (e.g. "GK", "DEF", "MID", "WINGER",
- * "ATT") — it matches the {@code V24PlayerMatchState.position} convention
+ * "ATT") — it matches the {@code PlayerMatchState.position} convention
  * (String, not enum) used by the engine.
  */
 public record FormationSlotDTO(

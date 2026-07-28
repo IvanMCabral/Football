@@ -37,7 +37,7 @@ import java.util.List;
  * may produce transient states during the edit flow where slots are
  * partial — refusing to infer would crash the engine. Graceful degradation
  * keeps callers safe; the engine will still compute xG using the actual
- * persisted formation via {@code V24FormationParser}.
+ * persisted formation via {@code FormationParser}.
  *
  * <p>Similarly {@code categoryFor} returns {@code null} for unparseable
  * subdivisionIds so callers can decide whether to skip or default.

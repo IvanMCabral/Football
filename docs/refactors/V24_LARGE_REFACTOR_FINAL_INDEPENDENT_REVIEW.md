@@ -106,7 +106,7 @@ Relevant findings:
 - `SubstitutionCommandUseCaseImpl` no longer hides baseline persistence through manual subscription.
 - `LeagueRepositoryAdapter` composes cache warming into reactive chains.
 - `MatchStatePersister` returns a `Mono<Void>` that callers can compose.
-- `V24DetailedMatchController#getDetail` isolates the synchronous detailed-match query on `boundedElastic`.
+- `DetailedMatchController#getDetail` isolates the synchronous detailed-match query on `boundedElastic`.
 
 ### Still important
 
@@ -115,7 +115,7 @@ Relevant findings:
   - They may be intentional fire-and-forget behavior, but they are still request-path manual subscriptions in a WebFlux adapter.
   - The previous report's statement that no unresolved critical WebFlux misuse remains is too strong.
 
-- `src/main/java/com/footballmanager/infrastructure/persistence/redis/V24DetailedMatchRedisAdapter.java` still performs blocking Redis operations via `block()` and waits on `CompletableFuture.get(...)` at lines 84, 85, 110, 111, 140, 141, 161, 171, 175, 206, 207, 228, and 229.
+- `src/main/java/com/footballmanager/infrastructure/persistence/redis/DetailedMatchRedisAdapter.java` still performs blocking Redis operations via `block()` and waits on `CompletableFuture.get(...)` at lines 84, 85, 110, 111, 140, 141, 161, 171, 175, 206, 207, 228, and 229.
   - This is isolated in infrastructure and partially wrapped in an executor.
   - However, the adapter implements a synchronous storage port and still forces blocking semantics around reactive Redis.
   - It is acceptable as compatibility debt, not as final professional WebFlux style.
@@ -166,9 +166,9 @@ Largest production files:
 | 448 | `TestHarnessWideDefenderLabService.java` |
 | 436 | `LeagueSimulator.java` |
 | 435 | `LineupAutoSelector.java` |
-| 433 | `V24LiveSession.java` |
+| 433 | `LiveSession.java` |
 | 425 | `TacticalChangeService.java` |
-| 422 | `V24DetailedMatchEngine.java` |
+| 422 | `DetailedMatchEngine.java` |
 | 401 | `TestHarnessUseCaseImpl.java` |
 | 395 | `RoundController.java` |
 | 394 | `FormationService.java` |
@@ -236,7 +236,7 @@ None found that currently prevent compilation, test execution, or basic architec
 
 1. WebFlux is not fully clean:
    - `RoundController` still uses manual `.subscribe()` in a web adapter.
-   - `V24DetailedMatchRedisAdapter` still wraps reactive Redis calls with blocking calls and `CompletableFuture.get`.
+   - `DetailedMatchRedisAdapter` still wraps reactive Redis calls with blocking calls and `CompletableFuture.get`.
    - `MatchSimulationOrchestrator` still blocks on reactive operations.
 
 2. Git state is not release-clean:
@@ -249,7 +249,7 @@ None found that currently prevent compilation, test execution, or basic architec
    - `TestHarnessScenarioRunner`
    - `LeagueSimulator`
    - `RoundController`
-   - `V24LiveSession`
+   - `LiveSession`
    - `TacticalChangeService`
 
 4. Domain ports still expose Reactor:
@@ -284,7 +284,7 @@ This update appends the final closure corrections requested after the previous
   intentional lifecycle fire-and-forget boundary. It now owns subscription,
   logging, error swallowing for non-critical lifecycle side effects, in-flight
   tracking, and shutdown disposal.
-- `LeagueSimulator.persistV24Detail` uses a named timeout and documents the
+- `LeagueSimulator.persistDetailedMatchDetail` uses a named timeout and documents the
   bounded block as a synchronous league/batch boundary, not a WebFlux request
   path.
 - Naming cleanup was not performed by design. The required inventory lives in
@@ -336,7 +336,7 @@ Result:
 
 ### Composition/coordinator review
 
-- `V24DetailedMatchEngine` is now a composition root for cohesive tactical,
+- `DetailedMatchEngine` is now a composition root for cohesive tactical,
   probability, event, fatigue, discipline, injury, assist and finalization
   components. It still coordinates the minute loop, but rules are delegated to
   named collaborators instead of hidden private shims.

@@ -12,14 +12,14 @@ import com.footballmanager.application.service.simulation.LeagueSimulator;
 import com.footballmanager.application.service.simulation.MatchResultProcessor;
 import com.footballmanager.application.service.simulation.MatchSimulationOrchestrator;
 import com.footballmanager.application.service.reactive.ReactiveLifecycleExecutor;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.application.service.simulation.v24.LiveRoundMutationTracking;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.LiveRoundMutationTracking;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.Match;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
@@ -54,7 +54,7 @@ public class RoundController {
     private final RoundEngineRegistry roundEngineRegistry;
     private final MatchSimulationOrchestrator orchestrator;
     private final CareerSessionService careerSessionService;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
     private final LeagueSimulator leagueSimulator;
     private final MatchRepository matchRepository;
     private final BaselineStateStoragePort baselineStoragePort;
@@ -62,7 +62,7 @@ public class RoundController {
     private final ReactiveLifecycleExecutor lifecycleExecutor;
 
     @Value("${simulation.use-v24-detailed-engine:true}")
-    private boolean useV24DetailedEngine;
+    private boolean useDetailedMatchEngine;
 
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
@@ -98,7 +98,7 @@ public class RoundController {
         return careerSessionService.getCareerFromCache(userId)
             .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
             .flatMapMany(career -> {
-                log.info("[ROUND-CONTROLLER] CareerSave loaded for V24 context construction");
+                log.info("[ROUND-CONTROLLER] CareerSave loaded for detailed match context construction");
                 String traceCareerId = career.getData().getCareerId();
                 log.info("RoundController careerId={}, roundId={}", traceCareerId, roundId);
 
@@ -114,7 +114,7 @@ public class RoundController {
 
                     log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
 
-                    V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
+                    LiveSession v24LiveSession = buildLiveSession(career, matchId, homeTeamId, awayTeamId);
 
                     if (v24LiveSession != null) {
                         matchStarts.add(matchManagementService.startMatch(
@@ -187,8 +187,8 @@ public class RoundController {
             });
     }
 
-    private V24LiveSession buildV24LiveSession(CareerSave career, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
-        if (!useV24DetailedEngine) {
+    private LiveSession buildLiveSession(CareerSave career, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
+        if (!useDetailedMatchEngine) {
             log.debug("[ROUND-CONTROLLER] V24DetailedEngine disabled, using legacy path for match {}", matchId);
             return null;
         }
@@ -216,10 +216,10 @@ public class RoundController {
             }
 
             long seed = matchId.getLeastSignificantBits();
-            V24MatchContext context = v24ContextFactory.build(career, fixture, homeTeam, awayTeam, seed);
+            MatchContext context = matchContextFactory.build(career, fixture, homeTeam, awayTeam, seed);
 
-            V24LiveSession session = new V24LiveSession(context, seed);
-            log.info("[ROUND-CONTROLLER] V24LiveSession created for match {} with seed {}", matchId, seed);
+            LiveSession session = new LiveSession(context, seed);
+            log.info("[ROUND-CONTROLLER] LiveSession created for match {} with seed {}", matchId, seed);
             String careerId = career.getData().getCareerId();
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
             lifecycleExecutor.execute("save baseline state",
@@ -235,7 +235,7 @@ public class RoundController {
 
             return session;
         } catch (Exception e) {
-            log.error("[ROUND-CONTROLLER] Failed to create V24LiveSession for match {}, falling back to legacy: {}", matchId, e.getMessage());
+            log.error("[ROUND-CONTROLLER] Failed to create LiveSession for match {}, falling back to legacy: {}", matchId, e.getMessage());
             return null;
         }
     }
@@ -249,9 +249,9 @@ public class RoundController {
                                      CareerSave career,
                                      LiveRoundMutationTracking tracking) {
         List<com.footballmanager.domain.model.entity.MatchEvent> events;
-        if (result.detailedResult() instanceof V24DetailedMatchResult v24Result) {
+        if (result.detailedResult() instanceof DetailedMatchResult detailedResult) {
             events = new java.util.ArrayList<>();
-            for (var v24Event : v24Result.timeline().events()) {
+            for (var v24Event : detailedResult.timeline().events()) {
                 events.add(com.footballmanager.domain.model.entity.MatchEvent.of(
                         toDomainEventType(v24Event.type()),
                         v24Event.minute(),
@@ -261,8 +261,8 @@ public class RoundController {
                         v24Event.description()
                 ));
             }
-            log.info("[ROUND-CONTROLLER] V24 match finished, {} timeline events for persistence", events.size());
-            log.info("[V24-DETAIL-CALLSITE-PERSIST] careerId={}, matchId={}, "
+            log.info("[ROUND-CONTROLLER] detailed match finished, {} timeline events for persistence", events.size());
+            log.info("[DETAIL-CALLSITE-PERSIST] careerId={}, matchId={}, "
                     + "homeGoals={}, awayGoals={}, homeTeamId={}, awayTeamId={}",
                 career.getData().getCareerId(),
                 result.snapshot().matchId(),
@@ -270,10 +270,10 @@ public class RoundController {
                 result.snapshot().score().away(),
                 result.snapshot().homeTeamId(),
                 result.snapshot().awayTeamId());
-            lifecycleExecutor.execute("persist V24 live detail",
-                leagueSimulator.persistV24DetailForLiveMatch(
+            lifecycleExecutor.execute("persist detailed live detail",
+                leagueSimulator.persistDetailedMatchDetailForLiveMatch(
                     career,
-                    v24Result,
+                    detailedResult,
                     result.snapshot().homeTeamId().toString(),
                     result.snapshot().awayTeamId().toString(),
                     result.snapshot().score().home(),
@@ -312,7 +312,7 @@ public class RoundController {
             }
 
             lifecycleExecutor.execute(
-                    "process V24 match-day results",
+                    "process detailed match-day results",
                     orchestrator.processMatchDayResults(userId.toString(), matchResults));
         }
     }
@@ -419,9 +419,9 @@ public class RoundController {
     }
 
     private com.footballmanager.domain.model.entity.MatchEvent.EventType toDomainEventType(
-            V24MatchEventType v24Type) {
+            DetailedMatchEventType v24Type) {
         if (v24Type == null) {
-            throw new IllegalArgumentException("V24MatchEventType cannot be null");
+            throw new IllegalArgumentException("DetailedMatchEventType cannot be null");
         }
         return switch (v24Type) {
             case GOAL -> com.footballmanager.domain.model.entity.MatchEvent.EventType.GOAL;

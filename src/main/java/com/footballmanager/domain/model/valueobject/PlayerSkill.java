@@ -3,7 +3,7 @@ package com.footballmanager.domain.model.valueobject;
 /**
  * PlayerSkill - Catalogo de 10 habilidades que un jugador puede tener.
  *
- * por parte del V24 engine.
+ * por parte del detailed match engine.
  *
  * Categoria:
  *   - primarilyOffensive = true para HEADER, DRIBBLER, PLAYMAKER, SHOOTER.

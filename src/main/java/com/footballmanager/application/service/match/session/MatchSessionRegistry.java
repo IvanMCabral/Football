@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.match.session;
 
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
 import com.footballmanager.domain.model.entity.MatchState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -42,13 +42,13 @@ public class MatchSessionRegistry {
             return new MatchSession(userId, matchId, initialState, tickHandler);
         }));
     }
-    public MatchSession getOrCreateSessionWithV24(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, V24LiveSession v24LiveSession) {
+    public MatchSession getOrCreateSessionWithV24(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, LiveSession v24LiveSession) {
         String key = buildKey(userId, matchId);
         return activeSessions.computeIfAbsent(key, id -> {
             MatchState initialState = new MatchState(matchId);
             // downstream MatchStateSnapshot carries it (used by
             // RoundController.persistFinishedMatch as a secondary fallback
-            // for the userId namespace). Without this, the V24 path
+            // for the userId namespace). Without this, the detailed match path
             // produced a snapshot with userId=null, forcing
             // extractUserIdForMatchPersistence to fall back to
             // UUID.randomUUID() — which persisted the match under an

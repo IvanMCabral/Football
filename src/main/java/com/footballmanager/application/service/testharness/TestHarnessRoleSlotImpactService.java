@@ -2,10 +2,10 @@ package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -31,7 +31,7 @@ import java.util.UUID;
 class TestHarnessRoleSlotImpactService {
 
     private final CareerRepository careerRepository;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
 
     Mono<List<RoleSlotImpactSummaryRow>> run(
             UUID userId,
@@ -107,7 +107,7 @@ class TestHarnessRoleSlotImpactService {
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
         TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
 
-        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
+        MatchContext baseContext = matchContextFactory.buildWithStyles(
             career,
             fixture,
             home,
@@ -137,7 +137,7 @@ class TestHarnessRoleSlotImpactService {
             TestHarnessSwapAccumulator accumulator = new TestHarnessSwapAccumulator();
             for (int i = 0; i < seedCount; i++) {
                 long seed = seedStart + i;
-                V24MatchContext seededBase = v24ContextFactory.buildWithStyles(
+                MatchContext seededBase = matchContextFactory.buildWithStyles(
                     career,
                     fixture,
                     home,
@@ -145,13 +145,13 @@ class TestHarnessRoleSlotImpactService {
                     homeStyle,
                     awayStyle,
                     seed);
-                V24MatchContext roleContext = TestHarnessContextMutationSupport.buildRoleOverrideContext(
+                MatchContext roleContext = TestHarnessContextMutationSupport.buildRoleOverrideContext(
                     seededBase,
                     controlledTeamId,
                     baselinePlayer.getSessionPlayerId(),
                     natural);
-                V24DetailedMatchResult result =
-                    new V24DetailedMatchEngine().simulate(roleContext, new Random(seed));
+                DetailedMatchResult result =
+                    new DetailedMatchEngine().simulate(roleContext, new Random(seed));
                 accumulator.add(result, userIsHome);
             }
             TestHarnessSwapAverages avg = accumulator.averages();

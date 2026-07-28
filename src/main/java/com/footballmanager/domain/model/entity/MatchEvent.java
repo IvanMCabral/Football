@@ -13,8 +13,8 @@ import java.util.Objects;
  * for SUBSTITUTION events so the F3 UI can render "Salió X, entró Y" in the
  * timeline without resolving sessionPlayerId to a name. The existing
  * {@code playerName} field carries the OFF player (consistent with
- * {@code V24MatchEvent.playerName()}); {@code playerOnName} carries the ON
- * player (from {@code V24MatchEvent.relatedPlayerName()}). The matching
+ * {@code MatchEvent.playerName()}); {@code playerOnName} carries the ON
+ * player (from {@code MatchEvent.relatedPlayerName()}). The matching
  * {@code relatedPlayerId} is also preserved so the UI can reconstruct live
  * lineups after a page reload without relying on player-name matching.
  * For non-SUBSTITUTION events {@code playerOnName} is {@code null}.
@@ -50,12 +50,12 @@ public class MatchEvent {
         SUBSTITUTION,
         /**
          * Legacy domain type for backward compatibility with MatchEventGenerator
-         * and MatchEngineImpl. Not mapped from V24MatchEventType (V24 uses YELLOW_CARD/RED_CARD).
+         * and MatchEngineImpl. Not mapped from MatchEventType (V24 uses YELLOW_CARD/RED_CARD).
          * Prefer YELLOW_CARD or RED_CARD in new code.
          */
         CARD,
         /**
-         * Mapped 1:1 from {@code V24MatchEventType.TACTICAL_CHANGE}.
+         * Mapped 1:1 from {@code MatchEventType.TACTICAL_CHANGE}.
          */
         TACTICAL_CHANGE
     }
@@ -170,7 +170,7 @@ public class MatchEvent {
     }
 
     /**
-     * Factory preserving both primary and secondary V24 player attribution.
+     * Factory preserving both primary and secondary detailed player attribution.
      *
      * <p>For SUBSTITUTION events, {@code playerId/playerName} is the player
      * leaving the pitch and {@code relatedPlayerId/relatedPlayerName} is the
@@ -234,7 +234,7 @@ public class MatchEvent {
 
     /**
      * Returns {@code null} for non-SUBSTITUTION events or when the
-     * V24MatchEvent did not carry a {@code relatedPlayerName}.
+     * MatchEvent did not carry a {@code relatedPlayerName}.
      */
     public String getPlayerOnName() {
         return playerOnName;

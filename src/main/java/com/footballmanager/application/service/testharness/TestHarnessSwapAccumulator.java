@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.testharness;
 
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
 
 final class TestHarnessSwapAccumulator {
 
@@ -33,7 +33,7 @@ final class TestHarnessSwapAccumulator {
     private double leftWideXgAgainst;
     private double rightWideXgAgainst;
 
-    void add(V24DetailedMatchResult result, boolean userIsHome) {
+    void add(DetailedMatchResult result, boolean userIsHome) {
         TestHarnessZoneCounts zones = TestHarnessZoneCounter.count(result);
         count++;
         goalsFor += userIsHome ? result.homeGoals() : result.awayGoals();

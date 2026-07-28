@@ -2,10 +2,10 @@ package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -29,7 +29,7 @@ import java.util.UUID;
 class TestHarnessPlayerSwapService {
 
     private final CareerRepository careerRepository;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
 
     Mono<PlayerSwapMatrixSummaryRow> run(
             UUID userId,
@@ -127,7 +127,7 @@ private PlayerSwapMatrixSummaryRow executePlayerSwapMatrixSummary(
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
         TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
 
-        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
+        MatchContext baseContext = matchContextFactory.buildWithStyles(
             career,
             fixture,
             home,
@@ -148,7 +148,7 @@ private PlayerSwapMatrixSummaryRow executePlayerSwapMatrixSummary(
             String autoMode = TestHarnessAutoSwapSupport.mode(resolvedStarterPlayerId, resolvedBenchPlayerId);
             PlayerSwapAutoPair pair = TestHarnessAutoSwapSupport.choosePair(userStarters, userBench, autoMode)
                 .orElseThrow(() -> new IllegalArgumentException(
-                    "No automatic starter/bench swap candidate found in V24 match context for mode " + autoMode));
+                    "No automatic starter/bench swap candidate found in detailed match context for mode " + autoMode));
             resolvedStarterPlayerId = pair.starter().getSessionPlayerId();
             resolvedBenchPlayerId = pair.bench().getSessionPlayerId();
         }
@@ -171,7 +171,7 @@ private PlayerSwapMatrixSummaryRow executePlayerSwapMatrixSummary(
 
         for (int i = 0; i < seedCount; i++) {
             long seed = seedStart + i;
-            V24MatchContext seededBase = v24ContextFactory.buildWithStyles(
+            MatchContext seededBase = matchContextFactory.buildWithStyles(
                 career,
                 fixture,
                 home,
@@ -179,16 +179,16 @@ private PlayerSwapMatrixSummaryRow executePlayerSwapMatrixSummary(
                 homeStyle,
                 awayStyle,
                 seed);
-            V24DetailedMatchResult baselineResult =
-                new V24DetailedMatchEngine().simulate(seededBase, new Random(seed));
-            V24MatchContext swappedContext = TestHarnessContextMutationSupport.buildInitialSwapContext(
+            DetailedMatchResult baselineResult =
+                new DetailedMatchEngine().simulate(seededBase, new Random(seed));
+            MatchContext swappedContext = TestHarnessContextMutationSupport.buildInitialSwapContext(
                 seededBase, controlledTeamId, effectiveStarterPlayerId, effectiveBenchPlayerId);
-            V24DetailedMatchResult swappedResult =
-                new V24DetailedMatchEngine().simulate(swappedContext, new Random(seed));
-            V24DetailedMatchResult baselinePreAutoSubResult =
-                new V24DetailedMatchEngine().simulate(seededBase, new Random(seed), 59);
-            V24DetailedMatchResult swappedPreAutoSubResult =
-                new V24DetailedMatchEngine().simulate(swappedContext, new Random(seed), 59);
+            DetailedMatchResult swappedResult =
+                new DetailedMatchEngine().simulate(swappedContext, new Random(seed));
+            DetailedMatchResult baselinePreAutoSubResult =
+                new DetailedMatchEngine().simulate(seededBase, new Random(seed), 59);
+            DetailedMatchResult swappedPreAutoSubResult =
+                new DetailedMatchEngine().simulate(swappedContext, new Random(seed), 59);
             baseline.add(baselineResult, userIsHome);
             swapped.add(swappedResult, userIsHome);
             baselinePreAutoSub.add(baselinePreAutoSubResult, userIsHome);
@@ -286,7 +286,7 @@ private PlayerSwapMatrixSummaryRow executePlayerSwapMatrixSummary(
 
 
     private String resolveSlotId(
-            V24MatchContext context,
+            MatchContext context,
             boolean userIsHome,
             String starterPlayerId,
             String requestedSlotId) {

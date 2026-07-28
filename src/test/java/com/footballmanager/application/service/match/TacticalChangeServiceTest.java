@@ -6,9 +6,9 @@ package com.footballmanager.application.service.match;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,27 +36,27 @@ import static org.mockito.Mockito.when;
 /**
  *
  * <p>Per the F5 spec section 5: {@code changeStyle_invokesMutateContext}
- * (B3) — verifies the service calls {@code V24LiveSession.mutateContext}
+ * (B3) — verifies the service calls {@code LiveSession.mutateContext}
  * with a {@link UnaryOperator} that swaps the home team's style.
  *
  * <p>Mockito is used to mock {@link MatchSessionRegistry} and
- * {@link V24LiveSession} so the test focuses on the service's contract,
+ * {@link LiveSession} so the test focuses on the service's contract,
  * not the live-session internals.
  */
 class TacticalChangeServiceTest {
 
     private MatchSessionRegistry registry;
-    private V24LiveSession liveSession;
+    private LiveSession liveSession;
     private MatchSession session;
     private TacticalChangeService service;
     private UUID userId;
     private UUID matchId;
-    private V24MatchContext context;
+    private MatchContext context;
 
     @BeforeEach
     void setUp() {
         registry = mock(MatchSessionRegistry.class);
-        liveSession = mock(V24LiveSession.class);
+        liveSession = mock(LiveSession.class);
         session = mock(MatchSession.class);
         service = new TacticalChangeService(registry);
 
@@ -64,7 +64,7 @@ class TacticalChangeServiceTest {
         matchId = UUID.randomUUID();
         context = buildContext("home", "away");
 
-        when(session.getV24LiveSession()).thenReturn(liveSession);
+        when(session.getLiveSession()).thenReturn(liveSession);
         when(liveSession.context()).thenReturn(context);
         when(liveSession.isFinished()).thenReturn(false);
         when(liveSession.currentMinute()).thenReturn(30);
@@ -80,8 +80,8 @@ class TacticalChangeServiceTest {
         // mutateContext is void; capture the UnaryOperator arg and execute it.
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
-            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
-            V24MatchContext result = op.apply(context);
+            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
+            MatchContext result = op.apply(context);
             assertEquals(TeamStyle.ATTACKING, result.homeStyle(),
                 "withNewStyle must swap homeStyle to the new value");
             return null;
@@ -194,8 +194,8 @@ class TacticalChangeServiceTest {
         // No-op mutateContext for the test (mutateContext is void)
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
-            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
-            V24MatchContext result = op.apply(context);
+            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
+            MatchContext result = op.apply(context);
             assertEquals("4-4-2", result.homeFormation(),
                 "withNewFormation must swap homeFormation to the derived code");
             return null;
@@ -232,8 +232,8 @@ class TacticalChangeServiceTest {
 
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
-            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
-            V24MatchContext result = op.apply(context);
+            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
+            MatchContext result = op.apply(context);
             assertEquals("4-3-3", result.homeFormation(),
                 "manager-selected code must win over role-count derivation");
             return null;
@@ -245,7 +245,7 @@ class TacticalChangeServiceTest {
     }
 
     @Test
-    @DisplayName("changeFormation carries live custom pixel coordinates into V24 context slots")
+    @DisplayName("changeFormation carries live custom pixel coordinates into detailed match context slots")
     void changeFormation_customCoordinatesUpdateContextSlots() {
         List<TacticalFormationSlot> formation = new ArrayList<>();
         formation.add(new TacticalFormationSlot("home-starter-0", "GK", 0, null, null));
@@ -262,8 +262,8 @@ class TacticalChangeServiceTest {
 
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
-            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
-            V24MatchContext result = op.apply(context);
+            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
+            MatchContext result = op.apply(context);
             assertTrue(result.homeSlotsByPlayerId().containsKey("home-starter-6"),
                 "custom live slot must be written into the home slot map");
             assertEquals(47.25, result.homeSlotsByPlayerId().get("home-starter-6").customXPercent());
@@ -298,7 +298,7 @@ class TacticalChangeServiceTest {
             .assertNext(result -> assertTrue(result.success()))
             .verifyComplete();
 
-        ArgumentCaptor<V24MatchEvent> eventCaptor = ArgumentCaptor.forClass(V24MatchEvent.class);
+        ArgumentCaptor<DetailedMatchEvent> eventCaptor = ArgumentCaptor.forClass(DetailedMatchEvent.class);
         verify(liveSession, atLeastOnce()).recordTacticalChange(eventCaptor.capture());
         String description = eventCaptor.getValue().description();
         assertTrue(description.contains("Formation changed from 4-3-3 to 4-4-2"));
@@ -324,8 +324,8 @@ class TacticalChangeServiceTest {
 
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
-            UnaryOperator<V24MatchContext> op = (UnaryOperator<V24MatchContext>) inv.getArgument(0);
-            V24MatchContext result = op.apply(context);
+            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
+            MatchContext result = op.apply(context);
             assertEquals("4-4-2", result.awayFormation(),
                 "away manager formation change must mutate awayFormation");
             assertTrue(result.awaySlotsByPlayerId().containsKey("away-starter-6"),
@@ -345,10 +345,10 @@ class TacticalChangeServiceTest {
 
     // ========== Fixture helpers ==========
 
-    private V24MatchContext buildContext(String homeTeamId, String awayTeamId) {
+    private MatchContext buildContext(String homeTeamId, String awayTeamId) {
         SessionTeam homeTeam = makeTeam(homeTeamId, "Home FC");
         SessionTeam awayTeam = makeTeam(awayTeamId, "Away FC");
-        return new V24MatchContext(
+        return new MatchContext(
             "match-test",
             homeTeam.getSessionTeamId(),
             awayTeam.getSessionTeamId(),

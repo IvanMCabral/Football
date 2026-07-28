@@ -2,10 +2,10 @@ package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -31,7 +31,7 @@ class TestHarnessPositionPixelService {
     private static final String AUTO_POSITION_PIXEL_PREFIX = "__AUTO_";
 
     private final CareerRepository careerRepository;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
 
     Mono<PositionPixelMatrixSummaryRow> run(
             UUID userId,
@@ -132,7 +132,7 @@ class TestHarnessPositionPixelService {
         TeamStyle homeStyle = home.getStyle() != null ? home.getStyle() : TeamStyle.BALANCED;
         TeamStyle awayStyle = away.getStyle() != null ? away.getStyle() : TeamStyle.BALANCED;
 
-        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
+        MatchContext baseContext = matchContextFactory.buildWithStyles(
             career,
             fixture,
             home,
@@ -167,7 +167,7 @@ class TestHarnessPositionPixelService {
         TestHarnessSwapAccumulator moved = new TestHarnessSwapAccumulator();
         for (int i = 0; i < seedCount; i++) {
             long seed = seedStart + i;
-            V24MatchContext seededBase = v24ContextFactory.buildWithStyles(
+            MatchContext seededBase = matchContextFactory.buildWithStyles(
                 career,
                 fixture,
                 home,
@@ -175,17 +175,17 @@ class TestHarnessPositionPixelService {
                 homeStyle,
                 awayStyle,
                 seed);
-            V24DetailedMatchResult baselineResult =
-                new V24DetailedMatchEngine().simulate(seededBase, new Random(seed));
-            V24MatchContext movedContext = TestHarnessContextMutationSupport.buildMovedPositionContext(
+            DetailedMatchResult baselineResult =
+                new DetailedMatchEngine().simulate(seededBase, new Random(seed));
+            MatchContext movedContext = TestHarnessContextMutationSupport.buildMovedPositionContext(
                 seededBase,
                 controlledTeamId,
                 resolvedPlayerId,
                 slotId,
                 targetXPercent,
                 targetYPercent);
-            V24DetailedMatchResult movedResult =
-                new V24DetailedMatchEngine().simulate(movedContext, new Random(seed));
+            DetailedMatchResult movedResult =
+                new DetailedMatchEngine().simulate(movedContext, new Random(seed));
             baseline.add(baselineResult, userIsHome);
             moved.add(movedResult, userIsHome);
         }

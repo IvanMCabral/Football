@@ -2,8 +2,8 @@ package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -58,22 +58,22 @@ class TestHarnessReplayPossessionV25D37F4Test {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort v24StoragePort;
     @Mock private MatchEngineRegistry matchEngineRegistry;
 
     // Real factory — same rationale as the sibling test: a mock would return
-    // null teams and the engine's V24TeamMatchState.create would NPE.
-    private V24MatchContextFactory v24ContextFactory;
+    // null teams and the engine's TeamMatchState.create would NPE.
+    private MatchContextFactory matchContextFactory;
     private TestHarnessUseCaseImpl useCase;
 
     private CareerSave career;
 
     @BeforeEach
     void setUp() {
-        v24ContextFactory = new V24MatchContextFactory();
+        matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);
@@ -100,7 +100,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
     }
 
     @Test
-    @DisplayName("replayMatch forwards V24 engine possession + shots (NOT zeros)")
+    @DisplayName("replayMatch forwards detailed match engine possession + shots (NOT zeros)")
     void replayMatch_forwardsV24PossessionAndShots() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -124,10 +124,10 @@ class TestHarnessReplayPossessionV25D37F4Test {
         // possession ticks should be roughly balanced (the engine returns the
         // integer percentage). Assert both fields are in [0, 100] and sum to 100.
         assertThat(result.getHomePossession())
-            .as("replayed homePossession must come from V24 engine, not the old 0 stub")
+            .as("replayed homePossession must come from detailed match engine, not the old 0 stub")
             .isBetween(0, 100);
         assertThat(result.getAwayPossession())
-            .as("replayed awayPossession must come from V24 engine, not the old 0 stub")
+            .as("replayed awayPossession must come from detailed match engine, not the old 0 stub")
             .isBetween(0, 100);
         assertThat(result.getHomePossession() + result.getAwayPossession())
             .as("homePossession + awayPossession must sum to 100 (V24 returns percentages)")
@@ -136,10 +136,10 @@ class TestHarnessReplayPossessionV25D37F4Test {
         // Shots: engine produces non-negative shot counts. The old code hardcoded
         // these to 0 — assert the engine's real value is propagated.
         assertThat(result.getHomeShots())
-            .as("replayed homeShots must come from V24 engine, not the old 0 stub")
+            .as("replayed homeShots must come from detailed match engine, not the old 0 stub")
             .isGreaterThanOrEqualTo(0);
         assertThat(result.getAwayShots())
-            .as("replayed awayShots must come from V24 engine, not the old 0 stub")
+            .as("replayed awayShots must come from detailed match engine, not the old 0 stub")
             .isGreaterThanOrEqualTo(0);
 
         // Goals: were always forwarded correctly even before the fix; sanity check.
@@ -152,7 +152,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
 
         // Status must be COMPLETED after the replay (the engine finished).
         assertThat(replayed.getStatus().name())
-            .as("replayMatch must mark the fixture COMPLETED after V24 simulation")
+            .as("replayMatch must mark the fixture COMPLETED after detailed match simulation")
             .isEqualTo("COMPLETED");
     }
 

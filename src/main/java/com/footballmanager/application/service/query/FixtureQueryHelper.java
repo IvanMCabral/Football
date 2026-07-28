@@ -104,7 +104,7 @@ public final class FixtureQueryHelper {
 
     /**
      * {@code awayFormation} from {@code career.getTeamStarting11Formation()}
-     * (the V24 engine's source of truth for formations — see
+     * (the detailed match engine's source of truth for formations — see
      * {@code TestHarnessUseCaseImpl.executeSetFormation}). Also computes
      * xG metrics (which the {@code String careerId} overload cannot
      * because it has no access to the career). Nullable formations: a

@@ -5,7 +5,7 @@ import com.footballmanager.domain.model.valueobject.MatchFixture;
 
 /**
  * Maps MatchEngineImpl.MatchResult to MatchFixture.MatchResultData.
- * Events and summary from the V23 engine are not persisted for automated matches.
+ * Events and summary from the classic engine are not persisted for automated matches.
  */
 public final class MatchResultDataAdapter {
 
@@ -13,7 +13,7 @@ public final class MatchResultDataAdapter {
 
     /**
      * Map all 6 fields from MatchResult to MatchResultData.
-     * @param result from MatchEngineImpl (V23 engine)
+     * @param result from MatchEngineImpl (classic engine)
      * @return MatchResultData for TournamentState persistence
      * @throws NullPointerException if result is null
      */

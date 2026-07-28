@@ -85,8 +85,8 @@ public class SessionPlayer {
      *
      * {@code LaLigaSeedService} sets these on WorldPlayer (top-20 heights
      * hardcoded + curated skills for top-5), but the clone into SessionPlayer
-     * can read them via {@link V24PlayerMatchState#heightCm()} and
-     * {@link V24PlayerMatchState#skillLevels()}.
+     * can read them via {@link PlayerMatchState#heightCm()} and
+     * {@link PlayerMatchState#skillLevels()}.
      *
      * <p>Null/empty inputs are normalized:
      * <ul>

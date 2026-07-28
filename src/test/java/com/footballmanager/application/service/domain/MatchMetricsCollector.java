@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Test-only metrics collector for V23 Poisson goal model validation.
+ * Test-only metrics collector for classic Poisson goal model validation.
  * Aggregates match statistics across many simulations to compute observable metrics.
  *
  * Phase 1A: No production model changes. Pure test utility.

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 /**
  * scenario.
  *
- * <p>Production runtime has 30 matches × V24 simulation per tick. If any
+ * <p>Production runtime has 30 matches × detailed match simulation per tick. If any
  * single {@code engine.advanceTick()} throws (e.g., a V24 corner case),
  * the exception propagates out of {@code RoundEngine.executeTick()}.
  * {@link java.util.concurrent.ScheduledExecutorService#scheduleAtFixedRate}

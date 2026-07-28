@@ -14,8 +14,8 @@ import java.util.Random;
  *
  * <p>Originally: handled injury logic after match simulation. Modified players
  * in memory; the caller was expected to persist the changes to Redis. This
- * class does NOT write directly to SQL. As of the V24 detailed engine, this
- * responsibility moved into {@code V24InjuryMutationApplier}, which is called
+ * class does NOT write directly to SQL. As of the detailed match engine, this
+ * responsibility moved into {@code InjuryMutationApplier}, which is called
  * code is preserved (deprecated) for one release to keep the public API
  *
  */

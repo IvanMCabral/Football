@@ -1,16 +1,16 @@
 package com.footballmanager.application.service.testharness;
 
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
+import com.footballmanager.application.service.simulation.detailed.ShotLocation;
 
 final class TestHarnessZoneCounter {
 
     private TestHarnessZoneCounter() {
     }
 
-    static TestHarnessZoneCounts count(V24DetailedMatchResult result) {
+    static TestHarnessZoneCounts count(DetailedMatchResult result) {
         int homeCentral = 0, homeWide = 0, homeLong = 0;
         int awayCentral = 0, awayWide = 0, awayLong = 0;
         int homeLeftWide = 0, homeRightWide = 0;
@@ -20,13 +20,13 @@ final class TestHarnessZoneCounter {
         double homeLeftWideXg = 0.0, homeRightWideXg = 0.0;
         double awayLeftWideXg = 0.0, awayRightWideXg = 0.0;
 
-        for (V24MatchEvent event : result.timeline().events()) {
+        for (DetailedMatchEvent event : result.timeline().events()) {
             if (!isShotLike(event) || event.shotCoordinate() == null) {
                 continue;
             }
-            V24ShotLocation location = event.shotCoordinate().location();
+            ShotLocation location = event.shotCoordinate().location();
             boolean home = result.homeTeamId().equals(event.teamId());
-            if (location == V24ShotLocation.SIX_YARD_BOX || location == V24ShotLocation.PENALTY_AREA_CENTER) {
+            if (location == ShotLocation.SIX_YARD_BOX || location == ShotLocation.PENALTY_AREA_CENTER) {
                 if (home) {
                     homeCentral++;
                     homeCentralXg += event.xg();
@@ -34,7 +34,7 @@ final class TestHarnessZoneCounter {
                     awayCentral++;
                     awayCentralXg += event.xg();
                 }
-            } else if (location == V24ShotLocation.PENALTY_AREA_WIDE) {
+            } else if (location == ShotLocation.PENALTY_AREA_WIDE) {
                 if (home) {
                     homeWide++;
                     homeWideXg += event.xg();
@@ -88,16 +88,16 @@ final class TestHarnessZoneCounter {
             round3(awayRightWideXg));
     }
 
-    private static boolean isLeftWide(V24MatchEvent event) {
+    private static boolean isLeftWide(DetailedMatchEvent event) {
         return event.shotCoordinate() != null && event.shotCoordinate().y() < 50.0;
     }
 
-    private static boolean isShotLike(V24MatchEvent event) {
-        return event.type() == V24MatchEventType.SHOT
-            || event.type() == V24MatchEventType.SHOT_ON_TARGET
-            || event.type() == V24MatchEventType.MISS
-            || event.type() == V24MatchEventType.BLOCK
-            || event.type() == V24MatchEventType.GOAL;
+    private static boolean isShotLike(DetailedMatchEvent event) {
+        return event.type() == DetailedMatchEventType.SHOT
+            || event.type() == DetailedMatchEventType.SHOT_ON_TARGET
+            || event.type() == DetailedMatchEventType.MISS
+            || event.type() == DetailedMatchEventType.BLOCK
+            || event.type() == DetailedMatchEventType.GOAL;
     }
 
     private static double round3(double value) {

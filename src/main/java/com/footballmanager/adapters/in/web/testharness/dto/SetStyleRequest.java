@@ -8,8 +8,8 @@ import com.footballmanager.domain.model.valueobject.TeamStyle;
  * {@code COUNTER}, {@code POSSESSION}. Null check is done imperatively in the
  * UseCase (returns 400 IAE).
  *
- * <p>Persists to {@code SessionTeam.style} so the V24 engine reads the chosen
- * style via {@code V24MatchContextFactory.build()} when test-harness replays
+ * <p>Persists to {@code SessionTeam.style} so the detailed match engine reads the chosen
+ * style via {@code MatchContextFactory.build()} when test-harness replays
  * a match (replay path doesn't pass an explicit style).
  */
 public record SetStyleRequest(

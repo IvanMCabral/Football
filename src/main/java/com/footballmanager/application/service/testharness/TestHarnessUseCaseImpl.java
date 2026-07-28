@@ -4,9 +4,9 @@ import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -28,12 +28,12 @@ import java.util.UUID;
 @Service
 @Profile({"dev", "local", "test"})
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
-    private final V24MatchContextFactory v24ContextFactory;
-    private final V24DetailedMatchStoragePort v24StoragePort;
+    private final MatchContextFactory matchContextFactory;
+    private final DetailedMatchStoragePort v24StoragePort;
     private final BaselineStateStoragePort baselineStoragePort;
     private final TestHarnessPreviewRunner previewRunner;
     private final TestHarnessLabService labService;
@@ -50,27 +50,27 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     TestHarnessUseCaseImpl(
             CareerRepository careerRepository,
             CareerSessionService careerSessionService,
-            V24MatchContextFactory v24ContextFactory,
-            V24DetailedMatchStoragePort v24StoragePort,
+            MatchContextFactory matchContextFactory,
+            DetailedMatchStoragePort v24StoragePort,
             BaselineStateStoragePort baselineStoragePort,
             MatchEngineRegistry matchEngineRegistry) {
         this(
             careerRepository,
             careerSessionService,
-            v24ContextFactory,
+            matchContextFactory,
             v24StoragePort,
             baselineStoragePort,
-            TestHarnessUseCaseDependencyFactory.previewRunner(v24ContextFactory),
+            TestHarnessUseCaseDependencyFactory.previewRunner(matchContextFactory),
             TestHarnessUseCaseDependencyFactory.labService(careerRepository, careerSessionService),
             TestHarnessUseCaseDependencyFactory.adminService(careerRepository, careerSessionService, v24StoragePort, matchEngineRegistry),
-            TestHarnessUseCaseDependencyFactory.lineupDiagnosticService(careerRepository, v24ContextFactory),
-            TestHarnessUseCaseDependencyFactory.formationMatrixService(careerRepository, careerSessionService, v24ContextFactory, baselineStoragePort, v24StoragePort),
-            TestHarnessUseCaseDependencyFactory.replayService(careerRepository, careerSessionService, v24ContextFactory, baselineStoragePort, v24StoragePort),
-            new TestHarnessSubstitutionWhatIfService(careerRepository, v24ContextFactory),
-            new TestHarnessRoleSlotImpactService(careerRepository, v24ContextFactory),
-            new TestHarnessPositionPixelService(careerRepository, v24ContextFactory),
-            new TestHarnessPlayerSwapService(careerRepository, v24ContextFactory),
-            new TestHarnessScenarioMatrixService(careerRepository, v24ContextFactory),
+            TestHarnessUseCaseDependencyFactory.lineupDiagnosticService(careerRepository, matchContextFactory),
+            TestHarnessUseCaseDependencyFactory.formationMatrixService(careerRepository, careerSessionService, matchContextFactory, baselineStoragePort, v24StoragePort),
+            TestHarnessUseCaseDependencyFactory.replayService(careerRepository, careerSessionService, matchContextFactory, baselineStoragePort, v24StoragePort),
+            new TestHarnessSubstitutionWhatIfService(careerRepository, matchContextFactory),
+            new TestHarnessRoleSlotImpactService(careerRepository, matchContextFactory),
+            new TestHarnessPositionPixelService(careerRepository, matchContextFactory),
+            new TestHarnessPlayerSwapService(careerRepository, matchContextFactory),
+            new TestHarnessScenarioMatrixService(careerRepository, matchContextFactory),
             matchEngineRegistry);
     }
     @Override

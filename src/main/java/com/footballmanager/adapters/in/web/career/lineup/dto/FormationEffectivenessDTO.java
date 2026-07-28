@@ -36,8 +36,8 @@ import java.util.Map;
  * applied. C13b aligns the wire contract on subdivisionId.
  *
  * ({@code attackRating}, {@code midfieldRating}, {@code defenseRating})
- * expose the same modifiers the V24 simulation engine uses during a real
- * match (V24ShotXgCalculator.formationOffensiveModifier +
+ * expose the same modifiers the detailed match simulation engine uses during a real
+ * match (ShotXgCalculator.formationOffensiveModifier +
  * formationDefensiveModifier, weighted by PositionEffectivenessCalculator
  * .effectiveness). All three values are in {@code [0, ~200]}; 100 = 4-4-2
  * baseline at median stats. Higher attack = more dangerous, higher defense

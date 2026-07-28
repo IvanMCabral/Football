@@ -1,6 +1,6 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
-import com.footballmanager.application.service.simulation.v24.stats.*;
+import com.footballmanager.application.service.simulation.detailed.stats.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +30,7 @@ import java.util.Map;
  * </ul>
  *
  * <p>Feature-gated: returns 404 when {@code app.simulation.v24.expose-detail-api=false}.
- * Does NOT enable V24 simulation, persistence, or any production simulation path.
+ * Does NOT enable detailed match simulation, persistence, or any production simulation path.
  */
 @Slf4j
 @RestController

@@ -3,8 +3,8 @@ package com.footballmanager.application.service.testharness;
 import com.footballmanager.application.service.editor.FormationDefinition;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -33,7 +33,7 @@ class TestHarnessScenarioMatrixService {
     private static final String AUTO_POSITION_PIXEL_PREFIX = "__AUTO_";
 
     private final CareerRepository careerRepository;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
     private final FormationService formationService = new FormationService();
 
     private Mono<CareerSave> loadLiveCareer(UUID userId) {
@@ -186,10 +186,10 @@ private List<ScenarioMatrixSummaryRow> executeScenarioMatrixSummary(
         List<ScenarioMatrixRow> rows = new ArrayList<>();
         rows.add(TestHarnessScenarioRunner.run(career, fixture, home, away, userTeamId, seed,
             "base-balanced", "Base: full match BALANCED", formation,
-            TeamStyle.BALANCED, null, ScenarioAction.none(), v24ContextFactory));
+            TeamStyle.BALANCED, null, ScenarioAction.none(), matchContextFactory));
         rows.add(TestHarnessScenarioRunner.run(career, fixture, home, away, userTeamId, seed,
             "m45-noop-replay", "Minute 45 -> replay without tactical change", formation,
-            TeamStyle.BALANCED, 45, ScenarioAction.noopReplay(), v24ContextFactory));
+            TeamStyle.BALANCED, 45, ScenarioAction.noopReplay(), matchContextFactory));
         addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
             "m45-wide", "Minute 45 -> WIDE_PLAY", formation,
             TeamStyle.BALANCED, 45, ScenarioAction.style(TeamStyle.WIDE_PLAY));
@@ -230,7 +230,7 @@ private List<ScenarioMatrixSummaryRow> executeScenarioMatrixSummary(
             TeamStyle.BALANCED,
             45,
             ScenarioAction.opponentStyle(TeamStyle.CENTRAL_PLAY));
-        V24MatchContext baseContext = v24ContextFactory.buildWithStyles(
+        MatchContext baseContext = matchContextFactory.buildWithStyles(
             career,
             fixture,
             home,
@@ -327,17 +327,17 @@ private List<ScenarioMatrixSummaryRow> executeScenarioMatrixSummary(
             45,
             ScenarioAction.position(plan))));
 
-        Optional<SubPlan> impactSub = TestHarnessScenarioPlanSupport.chooseImpactSubstitution(v24ContextFactory, career, fixture, userTeamId, home, away);
-        Optional<SubPlan> upgradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(v24ContextFactory, career, fixture, userTeamId, home, away, true);
-        Optional<SubPlan> downgradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(v24ContextFactory, career, fixture, userTeamId, home, away, false);
+        Optional<SubPlan> impactSub = TestHarnessScenarioPlanSupport.chooseImpactSubstitution(matchContextFactory, career, fixture, userTeamId, home, away);
+        Optional<SubPlan> upgradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(matchContextFactory, career, fixture, userTeamId, home, away, true);
+        Optional<SubPlan> downgradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(matchContextFactory, career, fixture, userTeamId, home, away, false);
         Optional<SubPlan> offensiveUpgradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(
-            v24ContextFactory, career, fixture, userTeamId, home, away, true, Set.of("ATT", "WINGER"));
+            matchContextFactory, career, fixture, userTeamId, home, away, true, Set.of("ATT", "WINGER"));
         Optional<SubPlan> offensiveDowngradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(
-            v24ContextFactory, career, fixture, userTeamId, home, away, false, Set.of("ATT", "WINGER"));
+            matchContextFactory, career, fixture, userTeamId, home, away, false, Set.of("ATT", "WINGER"));
         Optional<SubPlan> defensiveUpgradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(
-            v24ContextFactory, career, fixture, userTeamId, home, away, true, Set.of("DEF"));
+            matchContextFactory, career, fixture, userTeamId, home, away, true, Set.of("DEF"));
         Optional<SubPlan> defensiveDowngradeSub = TestHarnessScenarioPlanSupport.chooseScoredSubstitution(
-            v24ContextFactory, career, fixture, userTeamId, home, away, false, Set.of("DEF"));
+            matchContextFactory, career, fixture, userTeamId, home, away, false, Set.of("DEF"));
 
         impactSub.ifPresent(sub -> {
             highPressPlan.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
@@ -374,7 +374,7 @@ private List<ScenarioMatrixSummaryRow> executeScenarioMatrixSummary(
             TeamStyle.BALANCED,
             30,
             ScenarioAction.noopReplay(),
-            v24ContextFactory));
+            matchContextFactory));
         }
         offensiveUpgradeSub.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
             "m30-offensive-upgrade-sub",
@@ -419,7 +419,7 @@ private List<ScenarioMatrixSummaryRow> executeScenarioMatrixSummary(
             TeamStyle.BALANCED,
             60,
             ScenarioAction.noopReplay(),
-            v24ContextFactory));
+            matchContextFactory));
         }
         impactSub.ifPresent(plan -> addScenarioIfRequested(rows, normalizedScenarioGroup, career, fixture, home, away, userTeamId, seed,
             "m60-impact-sub",
@@ -494,7 +494,7 @@ private void addScenarioIfRequested(
             return;
         }
         rows.add(TestHarnessScenarioRunner.run(career, fixture, home, away, userTeamId, seed,
-            scenario, description, formation, baseUserStyle, changeMinute, action, v24ContextFactory));
+            scenario, description, formation, baseUserStyle, changeMinute, action, matchContextFactory));
     }
 
 }

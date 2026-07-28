@@ -2,8 +2,8 @@ package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.repository.CareerRepository;
@@ -53,10 +53,10 @@ class InjectPlayerStatsExtendedTest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort v24StoragePort;
     @Mock private MatchEngineRegistry matchEngineRegistry;
     // Real factory — same pattern as TestHarnessUseCaseImplTest.
-    private V24MatchContextFactory v24ContextFactory;
+    private MatchContextFactory matchContextFactory;
     private TestHarnessUseCaseImpl useCase;
 
     private CareerSave career;
@@ -64,10 +64,10 @@ class InjectPlayerStatsExtendedTest {
 
     @BeforeEach
     void setUp() {
-        v24ContextFactory = new V24MatchContextFactory();
+        matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);

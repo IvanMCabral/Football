@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V23 Phase 7: Player/Role Contribution Validation Tests.
+ * classic phase 7: Player/Role Contribution Validation Tests.
  * Verifies that goal scorer names use synthetic role-based labels
  * and that role distribution matches expected weights.
  *

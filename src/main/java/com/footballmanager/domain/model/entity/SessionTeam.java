@@ -26,7 +26,7 @@ public class SessionTeam {
     private BigDecimal budget;
     private String formation;
 
-    // so the V24 engine can read it via V24MatchContextFactory.build() when the
+    // so the detailed match engine can read it via MatchContextFactory.build() when the
     // caller does not pass an explicit style (test-harness replay path).
     private TeamStyle style;
 

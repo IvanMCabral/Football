@@ -1,12 +1,12 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
-import com.footballmanager.application.service.simulation.v24.MatchComparison;
-import com.footballmanager.application.service.simulation.v24.MatchComparisonDiff;
-import com.footballmanager.application.service.simulation.v24.MatchComparisonService;
-import com.footballmanager.application.service.simulation.v24.MatchComparisonService.BaselineNotFoundException;
-import com.footballmanager.application.service.simulation.v24.MatchComparisonService.LiveDetailNotFoundException;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchQueryService;
+import com.footballmanager.application.service.simulation.detailed.MatchComparison;
+import com.footballmanager.application.service.simulation.detailed.MatchComparisonDiff;
+import com.footballmanager.application.service.simulation.detailed.MatchComparisonService;
+import com.footballmanager.application.service.simulation.detailed.MatchComparisonService.BaselineNotFoundException;
+import com.footballmanager.application.service.simulation.detailed.MatchComparisonService.LiveDetailNotFoundException;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,18 +33,18 @@ import static org.mockito.Mockito.*;
 class MatchCompareControllerTest {
 
     @Mock
-    private V24DetailedMatchQueryService queryService;
+    private DetailedMatchQueryService queryService;
     @Mock
     private MatchComparisonService comparisonService;
 
-    private V24DetailedMatchController controller;
+    private DetailedMatchController controller;
 
     private static final String CAREER_ID = "career-001";
     private static final String MATCH_ID = "match-001";
 
     @BeforeEach
     void setUp() {
-        controller = new V24DetailedMatchController(queryService, comparisonService);
+        controller = new DetailedMatchController(queryService, comparisonService);
     }
 
     @Test
@@ -127,7 +127,7 @@ class MatchCompareControllerTest {
     }
 
     private MatchComparison sampleComparison() {
-        V24DetailedMatchData live = new V24DetailedMatchData(
+        DetailedMatchData live = new DetailedMatchData(
                 MATCH_ID, CAREER_ID, 1, 5,
                 "home-id", "away-id",
                 "Home", "Away",
@@ -135,7 +135,7 @@ class MatchCompareControllerTest {
                 12, 8, 55, 45,
                 List.of(), List.of(),
                 "Live", "V24", 1, Instant.now(), null, null);
-        V24DetailedMatchData baseline = new V24DetailedMatchData(
+        DetailedMatchData baseline = new DetailedMatchData(
                 MATCH_ID, CAREER_ID, 1, 5,
                 "home-id", "away-id",
                 "Home", "Away",

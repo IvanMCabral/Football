@@ -1,42 +1,32 @@
-# Naming consolidation plan
+# MANAGER ? Domain Naming Consolidation Plan
 
-Fecha: 2026-07-28
+## Status
 
-Este documento inventaría nombres temporales o técnicos que todavía existen y propone cómo consolidarlos en una fase futura. En esta fase no se renombran clases porque el cierre de producción pidió inventario, no cambio de contratos/nombres.
+Verdict: APPROVED
 
-## Criterio
+This plan was refreshed after the naming consolidation pass. The detailed match engine is now named as a stable domain capability instead of an internal version experiment.
 
-- Mantener nombres versionados solo cuando representan compatibilidad real o selección de motor.
-- Renombrar nombres activos a lenguaje de dominio cuando V24/V23 ya no sean experimentos.
-- Evitar `Helper` cuando la clase tenga una responsabilidad nombrable.
-- Mantener `Impl` solo cuando sea una implementación explícita de un puerto/use case y no esconda una responsabilidad difusa.
+## Decisions
 
-## Inventario prioritario
+| Topic | Decision | Evidence |
+| --- | --- | --- |
+| Detailed match engine | Consolidated from versioned naming to `simulation.detailed` and `DetailedMatch*` names. | Main package is `com.footballmanager.application.service.simulation.detailed`; active controller/storage/engine names are `DetailedMatchController`, `DetailedMatchRedisAdapter`, `DetailedMatchEngine`, `DetailedMatchStoragePort`. |
+| Live and round services | Removed versioned service names. | `LiveMatchLifecycleService`, `LiveMatchMutationService`, `RoundLifecycleService`, `RoundMutationTracking`. |
+| Formation parser | Removed internal `V24Formation` name. | Parser exposes `FormationParser.FormationShape`. |
+| Classic engine path | Kept as active fallback, renamed internally to classic language. | `LeagueSimulator` uses `useClassicLeagueEngine` and `simulateWithClassicEngine`; old property remains as an alias. |
+| Config compatibility | New detailed/classic property names added while old versioned keys remain accepted. | `app.simulation.league.use-detailed-match-engine` aliases `app.simulation.league.use-v24-detailed-engine`; `app.simulation.detailed.*` aliases `app.simulation.v24.*`. |
+| Persistence compatibility | Existing stored `engineVersion: "V24"` is intentionally preserved. | `DetailedMatchData` and `BaselineState` keep the persisted value to read already-stored match detail and baseline snapshots. |
+| Test packages | Detailed-engine tests moved off the `simulation/v24` path. | Tests now live under `src/test/java/com/footballmanager/application/service/simulation/detailed`. |
 
-| Señal | Ubicaciones principales | Riesgo | Consolidación propuesta |
-|---|---|---:|---|
-| `V24` | `application/service/simulation/v24/*`, `V24DetailedMatchController`, tests de motor/harness/stats | Medio | Cuando el motor detallado sea el camino estable, renombrar a `detailedmatch/*`, `DetailedMatchEngine`, `LiveMatchSession`, `DetailedMatchStoragePort`, `DetailedMatchController`. |
-| `V23` | `MatchEngineImpl`, configuración de simulación, tests de calidad V23, docs archivados | Bajo/medio | Mantener solo donde exista selección real del motor anterior; si queda como default legacy, aislar bajo `legacy` o `classicmatch`. |
-| `Legacy` | comentarios de compatibilidad en lineup, match session, controllers y docs archivados | Bajo | Reescribir comentarios activos a lenguaje funcional: “historic save format”, “classic match path”, “backward-compatible read”. |
-| `MVP` | comentarios y docs de lineup/test harness/stats | Bajo | Eliminar de código activo al tocar cada área; reemplazar por explicación estable del comportamiento. |
-| `compat` / `backward compat` | DTOs de lineup, snapshots, query services, docs | Bajo | Mantener solo en adaptadores de entrada/salida o migración de saves; evitarlo en dominio salvo que describa invariantes de serialización. |
-| `Helper` | `ControllerHelper`, `LineupHelper`, `FixtureQueryHelper`, servicios/test support | Medio | Renombrar por responsabilidad concreta: `LineupValidator`, `LineupSlotResolver`, `FixtureQueryAssembler`, `ControllerResponseFactory`, etc. |
-| `Impl` | use cases y servicios de aplicación | Bajo/medio | Aceptable para implementaciones de puertos. Si una clase `Impl` concentra reglas múltiples, dividir por capability antes de renombrar. |
+## Remaining allowed version references
 
-## Archivos activos a revisar primero
+- Persisted data value `engineVersion = "V24"` remains for save/Redis compatibility.
+- Legacy property aliases containing `v24` / `v23` remain so existing local and deployment configuration keeps working.
+- Historical test display names or old regression ticket labels may still mention V24/V23 when they identify a past bug. They are not production architecture names.
 
-| Prioridad | Archivo/área | Motivo |
-|---:|---|---|
-| 1 | `src/main/java/com/footballmanager/application/service/simulation/v24/` | Es el motor principal detallado; `V24` ya comunica historia interna más que dominio. |
-| 2 | `src/main/java/com/footballmanager/application/service/lineup/LineupHelper.java` | `Helper` oculta validación, inferencia y normalización de lineup. |
-| 3 | `src/main/java/com/footballmanager/application/service/query/FixtureQueryHelper.java` | `Helper` puede dividirse en assembler/resolver si vuelve a crecer. |
-| 4 | `src/main/java/com/footballmanager/adapters/in/web/common/ControllerHelper.java` | Nombre genérico aceptable a corto plazo, pero debería expresar construcción de respuestas/autenticación si amplía alcance. |
-| 5 | `src/main/java/com/footballmanager/application/service/domain/MatchEngineImpl.java` | `Impl` y `V23` en comentarios indican que el motor clásico debería tener nombre estable. |
+## Naming rules going forward
 
-## Regla para ejecutar la consolidación
-
-1. Renombrar una familia por vez.
-2. Mantener compatibilidad externa de endpoints y JSON.
-3. Ejecutar suite focalizada de la familia renombrada.
-4. Ejecutar suite completa antes de commit.
-5. Actualizar docs y mapa mental en el mismo cambio.
+- Use capability names: `detailed match`, `classic engine`, `live match`, `round lifecycle`, `formation shape`.
+- Do not introduce new versioned class, package, method, or field names unless the version is an external protocol/persisted contract.
+- Avoid `Helper` for production services that own a real responsibility; prefer validator, resolver, assembler, mapper, policy, or lifecycle names.
+- Keep `Impl` only where it is an implementation of a port/use case and not a substitute for responsibility naming.

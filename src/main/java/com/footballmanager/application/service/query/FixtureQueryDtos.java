@@ -26,7 +26,7 @@ public final class FixtureQueryDtos {
             Double awayXG,
             Double totalXG,
             String roundId,
-            // career.teamStarting11Formation which is the V24 engine's
+            // career.teamStarting11Formation which is the detailed match engine's
             // source of truth). Nullable: a team may not have a formation
             // recorded yet (e.g. brand-new career, BYE team).
             String homeFormation,

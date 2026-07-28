@@ -1,9 +1,9 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
  * the timeline / shot map / xG of the new run never reached Redis.
  *
  * <p>Strategy: full use-case test (no Spring context). Wire a real
- * {@link CareerSave} with 11-man squads for both teams (the V24 engine
+ * {@link CareerSave} with 11-man squads for both teams (the detailed match engine
  * requires MIN_AVAILABLE_PLAYERS=7 in the starting list), call
  * {@code useCase.replayMatch(...)} which runs the real
  * replayed matchId.
@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
  * site exists in {@code executeReplayMatch}) and GREEN after.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TestHarnessUseCaseImpl — replayMatch persists V24 detail")
+@DisplayName("TestHarnessUseCaseImpl — replayMatch persists detailed match detail")
 class TestHarnessReplayPersistsDetailE2ETest {
 
     private static final UUID USER_ID =
@@ -65,30 +65,30 @@ class TestHarnessReplayPersistsDetailE2ETest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort v24StoragePort;
     // resetRound() use case. Default `@Mock` is fine.
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
-    // Real factory so V24MatchContext has valid teams (a mock would return
-    // null teams and the engine's V24TeamMatchState.create would NPE).
+    // Real factory so MatchContext has valid teams (a mock would return
+    // null teams and the engine's TeamMatchState.create would NPE).
     // See TestHarnessUseCaseImplTest.setUp() comment for the same rationale.
-    private V24MatchContextFactory v24ContextFactory;
+    private MatchContextFactory matchContextFactory;
     private TestHarnessUseCaseImpl useCase;
 
     private CareerSave career;
 
     @BeforeEach
     void setUp() {
-        v24ContextFactory = new V24MatchContextFactory();
+        matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);
         career.setUserSessionTeamId("user-team-id");
 
-        // 11 healthy players per team so the V24 engine's
+        // 11 healthy players per team so the detailed match engine's
         // MIN_AVAILABLE_PLAYERS=7 invariant is met.
         List<SessionPlayer> userPlayers = new java.util.ArrayList<>();
         for (int i = 1; i <= 11; i++) {
@@ -110,7 +110,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
     }
 
     @Test
-    @DisplayName("replayMatch: persists new V24DetailedMatchData to storage port")
+    @DisplayName("replayMatch: persists new DetailedMatchData to storage port")
     void replayMatch_persistsV24DetailToStoragePort() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -123,13 +123,13 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .verifyComplete();
 
         ArgumentCaptor<String> careerIdCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<V24DetailedMatchData> detailCaptor =
-            ArgumentCaptor.forClass(V24DetailedMatchData.class);
+        ArgumentCaptor<DetailedMatchData> detailCaptor =
+            ArgumentCaptor.forClass(DetailedMatchData.class);
 
         verify(v24StoragePort, times(1)).save(careerIdCaptor.capture(), detailCaptor.capture());
 
         String savedCareerId = careerIdCaptor.getValue();
-        V24DetailedMatchData savedDetail = detailCaptor.getValue();
+        DetailedMatchData savedDetail = detailCaptor.getValue();
 
         // The saved detail must be for the same careerId that the
         // controller passes to GET /detail — if these diverge the API
@@ -141,7 +141,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
 
         // The detail must reference the replayed matchId, not a stale one.
         assertThat(savedDetail)
-            .as("V24DetailedMatchData must not be null — BUG_REPLAY_NO_PERSIST means a null save() would silently 404 the detail API")
+            .as("DetailedMatchData must not be null — BUG_REPLAY_NO_PERSIST means a null save() would silently 404 the detail API")
             .isNotNull();
         assertThat(savedDetail.matchId())
             .as("saved detail.matchId must match the replayed matchId")
@@ -172,7 +172,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
     }
 
     @Test
-    @DisplayName("replayMatch: even when save() fails, career + fixture are still persisted (replay is best-effort for V24 detail)")
+    @DisplayName("replayMatch: even when save() fails, career + fixture are still persisted (replay is best-effort for detailed match detail)")
     void replayMatch_saveFailure_doesNotPropagate() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -180,11 +180,11 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .thenReturn(Mono.empty());
         // Storage port save throws — replay must not fail the whole flow.
         org.mockito.Mockito.doThrow(new RuntimeException("Redis down (simulated)"))
-            .when(v24StoragePort).save(anyString(), any(V24DetailedMatchData.class));
+            .when(v24StoragePort).save(anyString(), any(DetailedMatchData.class));
 
         useCase.replayMatch(USER_ID, MATCH_ID, 42L)
             .as(StepVerifier::create)
-            // The fixture save must still complete even if V24 detail save blew up.
+            // The fixture save must still complete even if detailed match detail save blew up.
             .expectNextCount(1)
             .verifyComplete();
 
@@ -192,7 +192,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
         verify(careerRepository, times(1)).save(career);
         verify(careerSessionService, times(1)).invalidateCache(USER_ID);
         // And we DID attempt to persist the new detail (the bug was the opposite).
-        verify(v24StoragePort, times(1)).save(anyString(), any(V24DetailedMatchData.class));
+        verify(v24StoragePort, times(1)).save(anyString(), any(DetailedMatchData.class));
     }
 
     @Test
@@ -207,7 +207,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .verify();
 
         // Critical guard: never persist detail for a fixture that doesn't exist.
-        verify(v24StoragePort, never()).save(anyString(), any(V24DetailedMatchData.class));
+        verify(v24StoragePort, never()).save(anyString(), any(DetailedMatchData.class));
         verify(careerRepository, never()).save(any());
     }
 

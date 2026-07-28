@@ -2,9 +2,9 @@ package com.footballmanager.infrastructure.persistence.redis;
 
 import reactor.core.publisher.Flux;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
-import com.footballmanager.application.service.simulation.v24.BaselinePersistenceException;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.detailed.BaselinePersistenceException;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +69,7 @@ class BaselineStateRedisAdapterTest {
         List<SessionPlayer> homeBench = makePlayers("home-id-bench", 5);
         List<SessionPlayer> awayBench = makePlayers("away-id-bench", 5);
 
-        V24MatchContext ctx = new V24MatchContext(
+        MatchContext ctx = new MatchContext(
                 "match-001", "home-id", "away-id",
                 homeTeam, awayTeam,
                 homeStarting, awayStarting, homeBench, awayBench,

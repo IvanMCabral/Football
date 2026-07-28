@@ -3,8 +3,8 @@ package com.footballmanager.adapters.in.web.career.simulation;
 import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import org.junit.jupiter.api.AfterEach;
@@ -34,7 +34,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *   <li>POST with null newStyle → 400 BAD_REQUEST (controller-level validation).</li>
  *   <li>POST with auth + valid matchId but no live session → 409 CONFLICT
  *       (TacticalChangeService throws IllegalStateException on missing session).</li>
- *   <li>POST happy path with registered MatchSession + V24LiveSession fixture
+ *   <li>POST happy path with registered MatchSession + LiveSession fixture
  *       → 200 OK with success=true and the requested style.</li>
  * </ul>
  */
@@ -140,9 +140,9 @@ class StyleChangeControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST happy path with registered MatchSession+V24LiveSession — 200 OK with success=true")
+    @DisplayName("POST happy path with registered MatchSession+LiveSession — 200 OK with success=true")
     void changeStyle_happyPath_returns200WithNewStyle() {
-        // Arrange: build a V24LiveSession fixture and register a MatchSession.
+        // Arrange: build a LiveSession fixture and register a MatchSession.
         String homeTeamId = "home";
         String awayTeamId = "away";
         UUID userId = UUID.randomUUID();
@@ -150,8 +150,8 @@ class StyleChangeControllerE2ETest extends AbstractIntegrationTest {
         UUID homeTeamUuid = UUID.randomUUID();
         UUID awayTeamUuid = UUID.randomUUID();
 
-        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession liveSession = new V24LiveSession(context, 12345L);
+        MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        LiveSession liveSession = new LiveSession(context, 12345L);
         liveSession.tick(); // pre-simulate + advance to minute 1
 
         matchSessionRegistry.getOrCreateSessionWithV24(
@@ -177,7 +177,7 @@ class StyleChangeControllerE2ETest extends AbstractIntegrationTest {
 
     // ========== Fixture helpers ==========
 
-    private V24MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {
+    private MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {
         SessionTeam homeTeam = SessionTeam.custom(homeTeamId, "Home FC FP", "ARG",
             BigDecimal.valueOf(1_000_000L), "4-3-3");
         homeTeam.setSessionTeamId(homeTeamId);
@@ -190,7 +190,7 @@ class StyleChangeControllerE2ETest extends AbstractIntegrationTest {
         List<SessionPlayer> awayStarting = makePlayers(awayTeamId, 11);
         List<SessionPlayer> awayBench = makePlayers(awayTeamId + "-bench", 5);
 
-        return new V24MatchContext(
+        return new MatchContext(
             "match-style-fp",
             homeTeamId,
             awayTeamId,

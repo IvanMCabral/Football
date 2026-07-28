@@ -3,8 +3,8 @@ package com.footballmanager.adapters.in.web.career.simulation;
 import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import org.junit.jupiter.api.AfterEach;
@@ -33,7 +33,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *   <li>POST with 12-player formation → 400 BAD_REQUEST (size validation).</li>
  *   <li>POST with no GK in formation → 400 BAD_REQUEST (GK validation).</li>
  *   <li>POST with auth + valid matchId but no live session → 409 CONFLICT.</li>
- *   <li>POST happy path with registered MatchSession + V24LiveSession fixture
+ *   <li>POST happy path with registered MatchSession + LiveSession fixture
  *       and a valid 4-4-2 formation → 200 OK with success=true.</li>
  * </ul>
  */
@@ -165,7 +165,7 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("POST happy path with 4-4-2 formation — 200 OK with success=true")
     void changeFormation_happyPath_returns200() {
-        // Arrange: build a V24LiveSession fixture with 11 home starters (home-p0..home-p10)
+        // Arrange: build a LiveSession fixture with 11 home starters (home-p0..home-p10)
         // and register a MatchSession.
         String homeTeamId = "home";
         String awayTeamId = "away";
@@ -174,8 +174,8 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
         UUID homeTeamUuid = UUID.randomUUID();
         UUID awayTeamUuid = UUID.randomUUID();
 
-        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession liveSession = new V24LiveSession(context, 12345L);
+        MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        LiveSession liveSession = new LiveSession(context, 12345L);
         liveSession.tick();
 
         matchSessionRegistry.getOrCreateSessionWithV24(
@@ -219,7 +219,7 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
         return body.toString();
     }
 
-    private V24MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {
+    private MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {
         SessionTeam homeTeam = SessionTeam.custom(homeTeamId, "Home FC FP", "ARG",
             BigDecimal.valueOf(1_000_000L), "4-3-3");
         homeTeam.setSessionTeamId(homeTeamId);
@@ -232,7 +232,7 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
         List<SessionPlayer> awayStarting = makePlayers(awayTeamId, 11);
         List<SessionPlayer> awayBench = makePlayers(awayTeamId + "-bench", 5);
 
-        return new V24MatchContext(
+        return new MatchContext(
             "match-formation-fp",
             homeTeamId,
             awayTeamId,

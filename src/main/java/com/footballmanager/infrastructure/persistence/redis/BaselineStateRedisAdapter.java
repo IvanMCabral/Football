@@ -1,8 +1,8 @@
 package com.footballmanager.infrastructure.persistence.redis;
 
-import com.footballmanager.application.service.simulation.v24.BaselinePersistenceException;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.BaselinePersistenceException;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.QueryTimeoutException;

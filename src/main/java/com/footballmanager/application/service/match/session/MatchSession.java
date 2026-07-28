@@ -1,17 +1,16 @@
 package com.footballmanager.application.service.match.session;
 
 import com.footballmanager.application.engine.match.MatchCommandHandler;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24LiveSnapshot;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24MatchTimeline;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSnapshot;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.MatchTimeline;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
 import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchState;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchStatsModel;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchState;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchStatsModel;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.model.entity.MatchEvent;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
@@ -34,7 +33,7 @@ import java.util.function.Consumer;
  *
  * <p>Thread-safe: usa estado inmutable (MatchStateSnapshot) volatile.
  *
- * via V24LiveSession.tick() for tick-by-tick SSE simulation. The legacy
+ * via LiveSession.tick() for tick-by-tick SSE simulation. The legacy
  * path (v24LiveSession == null) uses MatchTickHandler.
  */
 public class MatchSession {
@@ -44,15 +43,15 @@ public class MatchSession {
     private final MatchTickHandler tickHandler;
     private final ConcurrentLinkedQueue<MatchCommand> commandQueue;
     private final Sinks.Many<MatchStateSnapshot> stateSink;
-    /** V24 live session — null means legacy path (use MatchTickHandler). */
-    private final V24LiveSession v24LiveSession;
+    /** detailed live session — null means legacy path (use MatchTickHandler). */
+    private final LiveSession v24LiveSession;
 
     /**
-     * Returns null if this session is on the legacy (non-V24) path.
+     * Returns null if this session is on the legacy (classic) path.
      * Callers that need V24-specific behavior (manual substitutions, etc.)
      * must null-check.
      */
-    public V24LiveSession getV24LiveSession() {
+    public LiveSession getLiveSession() {
         return v24LiveSession;
     }
 
@@ -60,7 +59,7 @@ public class MatchSession {
     private volatile boolean finishCallbackExecuted = false;
 
     /**
-     * Legacy constructor — no V24LiveSession.
+     * Legacy constructor — no LiveSession.
      * Uses MatchTickHandler for event generation.
      */
     public MatchSession(UUID userId, UUID matchId, MatchState state, MatchTickHandler tickHandler) {
@@ -68,11 +67,11 @@ public class MatchSession {
     }
 
     /**
-     * Full constructor with optional V24LiveSession.
+     * Full constructor with optional LiveSession.
      *
      */
     public MatchSession(UUID userId, UUID matchId, MatchState state,
-                        MatchTickHandler tickHandler, V24LiveSession v24LiveSession) {
+                        MatchTickHandler tickHandler, LiveSession v24LiveSession) {
         this.matchId = matchId;
         this.currentState = convertToSnapshot(matchId, state);
         this.tickHandler = tickHandler;
@@ -131,8 +130,8 @@ public class MatchSession {
         }
 
         if (v24LiveSession != null) {
-            // V24 path: use V24LiveSession.tick() — no MatchTickHandler involved
-            V24LiveSnapshot snap = v24LiveSession.tick();
+            // detailed match path: use LiveSession.tick() — no MatchTickHandler involved
+            LiveSnapshot snap = v24LiveSession.tick();
             this.currentState = adaptV24Snapshot(snap);
             emitState();
         } else {
@@ -155,10 +154,10 @@ public class MatchSession {
         if (isFinished() && onFinishCallback != null && !finishCallbackExecuted) {
             finishCallbackExecuted = true;
             try {
-                V24DetailedMatchResult v24Result = (v24LiveSession != null)
+                DetailedMatchResult detailedResult = (v24LiveSession != null)
                         ? v24LiveSession.finalResult()
                         : null;
-                onFinishCallback.accept(new MatchFinishedResult(currentState, v24Result));
+                onFinishCallback.accept(new MatchFinishedResult(currentState, detailedResult));
             } catch (Exception ignored) {
             }
         }
@@ -167,7 +166,7 @@ public class MatchSession {
     }
 
     /**
-     * Refresh the exposed match state from the V24 live engine without
+     * Refresh the exposed match state from the detailed live engine without
      * advancing the match clock.
      *
      * <p>This keeps the UI/API snapshot aligned with manager actions applied
@@ -230,15 +229,15 @@ public class MatchSession {
     }
 
     /**
-     * Adapt V24LiveSnapshot to MatchStateSnapshot for SSE stream.
-     * Events are converted from V24MatchEvent → domain MatchEvent.
+     * Adapt LiveSnapshot to MatchStateSnapshot for SSE stream.
+     * Events are converted from DetailedMatchEvent → domain DetailedMatchEvent.
      *
      * (homePossession, awayPossession, homeStyle, awayStyle, homeFormation,
      * awayFormation) so the F3 UI can render the possession bar and the
      * current style/formation per team in real time.
      *
      * {@code awayPlayerRatings} (per-player live stats via
-     * {@link V24PlayerMatchStatsModel#computeRatings(java.util.Collection, V24MatchTimeline)})
+     * {@link PlayerMatchStatsModel#computeRatings(java.util.Collection, MatchTimeline)})
      * and {@code substitutionsRemaining} (max(0, 5 - count(SUBSTITUTION events))).
      * The ratings are computed against the LIVE partial timeline (events up to
      * {@code snap.minute()}), not the cached full-match engine result, so the
@@ -246,35 +245,35 @@ public class MatchSession {
      *
      * can drive it with controlled inputs. Not part of the public API.
      */
-    MatchStateSnapshot adaptV24Snapshot(V24LiveSnapshot snap) {
+    MatchStateSnapshot adaptV24Snapshot(LiveSnapshot snap) {
         UUID homeTeamId = parseSnapshotTeamId(snap.homeTeamId(), currentState != null ? currentState.homeTeamId() : null);
         UUID awayTeamId = parseSnapshotTeamId(snap.awayTeamId(), currentState != null ? currentState.awayTeamId() : null);
 
         List<MatchEvent> adaptedEvents = new ArrayList<>();
-        for (V24MatchEvent e : snap.allEvents()) {
+        for (DetailedMatchEvent e : snap.allEvents()) {
             adaptedEvents.add(toDomainMatchEvent(e));
         }
 
         // to currentMinute — snap.allEvents() is already filtered by
-        // V24LiveSession.buildSnapshot()) so the ratings reflect the live
+        // LiveSession.buildSnapshot()) so the ratings reflect the live
         // match, NOT the final 90-minute projection.
-        List<V24PlayerMatchRatingDto> homePlayerRatings = List.of();
-        List<V24PlayerMatchRatingDto> awayPlayerRatings = List.of();
-        V24MatchContext ctx = v24LiveSession.context();
+        List<PlayerMatchRatingDto> homePlayerRatings = List.of();
+        List<PlayerMatchRatingDto> awayPlayerRatings = List.of();
+        MatchContext ctx = v24LiveSession.context();
         if (ctx != null) {
             String homeIdStr = snap.homeTeamId();
             String awayIdStr = snap.awayTeamId();
-            List<V24PlayerMatchState> homeStates = buildPlayerStates(
+            List<PlayerMatchState> homeStates = buildPlayerStates(
                     homeIdStr, ctx.homeStartingPlayers(), ctx.homeBenchPlayers());
-            List<V24PlayerMatchState> awayStates = buildPlayerStates(
+            List<PlayerMatchState> awayStates = buildPlayerStates(
                     awayIdStr, ctx.awayStartingPlayers(), ctx.awayBenchPlayers());
 
-            V24MatchTimeline liveTimeline = new V24MatchTimeline();
-            for (V24MatchEvent e : snap.allEvents()) {
+            MatchTimeline liveTimeline = new MatchTimeline();
+            for (DetailedMatchEvent e : snap.allEvents()) {
                 liveTimeline.addEvent(e);
             }
 
-            V24PlayerMatchStatsModel statsModel = new V24PlayerMatchStatsModel();
+            PlayerMatchStatsModel statsModel = new PlayerMatchStatsModel();
             homePlayerRatings = statsModel.computeRatings(homeStates, liveTimeline);
             awayPlayerRatings = statsModel.computeRatings(awayStates, liveTimeline);
         }
@@ -311,7 +310,7 @@ public class MatchSession {
         );
     }
 
-    private List<PlayerMatchRating> toDomainRatings(List<V24PlayerMatchRatingDto> ratings) {
+    private List<PlayerMatchRating> toDomainRatings(List<PlayerMatchRatingDto> ratings) {
         if (ratings == null || ratings.isEmpty()) {
             return List.of();
         }
@@ -347,42 +346,42 @@ public class MatchSession {
     }
 
     /**
-     * or away team from the {@code V24MatchContext}'s starting + bench lists
+     * or away team from the {@code MatchContext}'s starting + bench lists
      * (both {@link SessionPlayer}). Returns an empty list when the team has no
      * players (defensive — never crashes SSE).
      */
-    private List<V24PlayerMatchState> buildPlayerStates(
+    private List<PlayerMatchState> buildPlayerStates(
             String teamId,
             List<SessionPlayer> starting,
             List<SessionPlayer> bench) {
         if (teamId == null) {
             return List.of();
         }
-        List<V24PlayerMatchState> states = new ArrayList<>();
+        List<PlayerMatchState> states = new ArrayList<>();
         if (starting != null) {
             for (SessionPlayer p : starting) {
                 if (p == null) continue;
-                states.add(V24PlayerMatchState.fromSessionPlayer(p, teamId));
+                states.add(PlayerMatchState.fromSessionPlayer(p, teamId));
             }
         }
         if (bench != null) {
             for (SessionPlayer p : bench) {
                 if (p == null) continue;
-                states.add(V24PlayerMatchState.fromSessionPlayer(p, teamId));
+                states.add(PlayerMatchState.fromSessionPlayer(p, teamId));
             }
         }
         return states;
     }
 
     /**
-     * Convert a V24MatchEvent to domain MatchEvent, preserving player attribution.
-     * Used for SSE stream — no information loss since V24MatchEvent has all needed fields.
+     * Convert a DetailedMatchEvent to domain DetailedMatchEvent, preserving player attribution.
+     * Used for SSE stream — no information loss since DetailedMatchEvent has all needed fields.
      *
-     * {@code relatedPlayerName} from V24MatchEvent is propagated to the domain
+     * {@code relatedPlayerName} from DetailedMatchEvent is propagated to the domain
      * {@code playerOnName} so the F3 UI can render "Salió X, entró Y" in the
      * timeline without resolving IDs.
      */
-    private MatchEvent toDomainMatchEvent(V24MatchEvent e) {
+    private MatchEvent toDomainMatchEvent(DetailedMatchEvent e) {
         MatchEvent.EventType domainType = toDomainEventType(e.type());
         return MatchEvent.of(
                 domainType,
@@ -402,12 +401,12 @@ public class MatchSession {
     }
 
     /**
-     * Map V24MatchEventType to domain MatchEvent.EventType.
-     * Every V24MatchEventType maps explicitly — no lossy fallbacks.
+     * Map DetailedMatchEventType to domain DetailedMatchEventType.
+     * Every DetailedMatchEventType maps explicitly — no lossy fallbacks.
      */
-    private MatchEvent.EventType toDomainEventType(V24MatchEventType v24Type) {
+    private MatchEvent.EventType toDomainEventType(com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType v24Type) {
         if (v24Type == null) {
-            throw new IllegalArgumentException("V24MatchEventType cannot be null");
+            throw new IllegalArgumentException("DetailedMatchEventType cannot be null");
         }
         return switch (v24Type) {
             case GOAL -> MatchEvent.EventType.GOAL;

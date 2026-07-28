@@ -1,0 +1,247 @@
+package com.footballmanager.application.service.simulation.detailed;
+
+import com.footballmanager.domain.model.valueobject.TeamStyle;
+import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.valueobject.PlayerSkill;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ *
+ * <ul>
+ *   <li>PASSER skill del mejor pasador on-pitch amplifica la possession
+ *       share base del equipo. Formula:
+ *       <pre>
+ *       homePossAdj = homePossBase * (1 + homeMaxPasser / 300)
+ *       awayPossAdj = awayPossBase * (1 + awayMaxPasser / 300)
+ *       homeShare = homePossAdj / (homePossAdj + awayPossAdj)
+ *       </pre>
+ *   </li>
+ *   <li>Calibration:
+ *     <ul>
+ *       <li>PASSER=85 (Valverde) → factor 1.283 (+28% retention)</li>
+ *       <li>PASSER=99 → factor 1.33 (+33% retention)</li>
+ *     </ul>
+ *   </li>
+ *   <li>Gating: PASSER aplica en cualquier style (no hay gating — es
+ *       "precision de pase general", no atado a un esquema tactico).</li>
+ *   <li>Absent/null PASSER skill → tratado como 0 (max retorna 0, factor 1.0).</li>
+ * </ul>
+ */
+class DetailedMatchEnginePasserTest {
+
+    private static final long SEED = 42L;
+
+    // ========== Unit: formula de maxPasserSkill ==========
+
+    @Test
+    void maxPasser_noPasserSkill_returnsZero() throws Exception {
+        List<PlayerMatchState> players = makeMatchStates(11, "MID", 70, -1);
+        assertEquals(0, invokeMaxPasser(players),
+                "Sin PASSER skills, maxPasser debe retornar 0");
+    }
+
+    @Test
+    void maxPasser_singlePlayerWithSkill_returnsSkillLevel() throws Exception {
+        List<PlayerMatchState> players = makeMatchStates(11, "MID", 70, -1);
+        // Set PASSER on player index 3 via SessionPlayer + fromSessionPlayer.
+        SessionPlayer p3 = makePlayer("home_p3", 70);
+        p3.setSkillLevel(PlayerSkill.PASSER, 85);
+        players.set(3, PlayerMatchState.fromSessionPlayer(p3, "home"));
+
+        assertEquals(85, invokeMaxPasser(players),
+                "maxPasser debe retornar el max PASSER (85) entre on-pitch players");
+    }
+
+    @Test
+    void maxPasser_multiplePlayers_returnsMax() throws Exception {
+        List<PlayerMatchState> players = makeMatchStates(11, "MID", 70, -1);
+        SessionPlayer p2 = makePlayer("home_p2", 70);
+        p2.setSkillLevel(PlayerSkill.PASSER, 50);
+        players.set(2, PlayerMatchState.fromSessionPlayer(p2, "home"));
+        SessionPlayer p5 = makePlayer("home_p5", 70);
+        p5.setSkillLevel(PlayerSkill.PASSER, 75);
+        players.set(5, PlayerMatchState.fromSessionPlayer(p5, "home"));
+        SessionPlayer p8 = makePlayer("home_p8", 70);
+        p8.setSkillLevel(PlayerSkill.PASSER, 99);
+        players.set(8, PlayerMatchState.fromSessionPlayer(p8, "home"));
+
+        assertEquals(99, invokeMaxPasser(players),
+                "maxPasser debe retornar el max entre multiples players (99)");
+    }
+
+    @Test
+    void maxPasser_skipsOffPitchPlayers() throws Exception {
+        // Player con PASSER=99 pero off-pitch no debe contar. Creamos
+        // directamente un PlayerMatchState y lo sacamos del campo con la API publica.
+        SessionPlayer offPitchPlayer = makePlayer("home_off", 70);
+        offPitchPlayer.setSkillLevel(PlayerSkill.PASSER, 99);
+        PlayerMatchState offState = PlayerMatchState.fromSessionPlayer(offPitchPlayer, "home");
+
+        offState.substituteOff();
+        assertFalse(offState.onPitch(), "Sanity: el player debe estar off-pitch");
+
+        List<PlayerMatchState> players = new ArrayList<>();
+        players.add(offState);  // primer player off-pitch con PASSER=99
+        for (int i = 1; i < 11; i++) {
+            players.add(PlayerMatchState.fromSessionPlayer(makePlayer("home_p" + i, 70), "home"));
+        }
+
+        assertEquals(0, invokeMaxPasser(players),
+                "maxPasser debe ignorar players off-pitch");
+    }
+
+    // ========== Integration: full match reflects the change ==========
+
+    @Test
+    void fullMatch_passerHigh_homeHasMorePossessionThanBaseline() {
+        // Baseline: home BALANCED sin PASSER (away BALANCED sin PASSER).
+        // Treatment: home key attacker PASSER=99, away sin PASSER.
+        // PASSER amplifica possession share del home → home deberia acumular
+        // mas possession ticks. away ticks deberian ser similares (away no
+        // cambio).
+        MatchContext baseline = buildContextWithPasser("passer-base", -1);
+        MatchContext treatment = buildContextWithPasser("passer-high", 99);
+
+        DetailedMatchEngine engine = new DetailedMatchEngine();
+        DetailedMatchResult baselineResult = engine.simulate(baseline, SEED);
+        DetailedMatchResult treatmentResult = engine.simulate(treatment, SEED);
+
+        // PASSER=99 amplifica possession base por 1.33. Para BALANCED (base=50),
+        // homePossAdj = 50 * 1.33 = 66.5. homeShare = 66.5 / (66.5 + 50) ≈ 0.571.
+        // Sin PASSER: homeShare = 0.5. Delta esperado: ~7% mas ticks para home.
+        int baselineHomePoss = baselineResult.homePossession();
+        int treatmentHomePoss = treatmentResult.homePossession();
+
+        assertTrue(treatmentHomePoss >= baselineHomePoss,
+                "PASSER=99 home debe producir >= possession que baseline (actual: baseline="
+                        + baselineHomePoss + ", treatment=" + treatmentHomePoss + ")");
+    }
+
+    @Test
+    void fullMatch_noPasserSkill_preservesV25D33Baseline() {
+        // Regression: sin PASSER en el dominio, el engine debe producir
+        // homeGoals/awayGoals, etc.).
+        MatchContext baseline = buildContextWithPasser("no-passer", -1);
+
+        DetailedMatchEngine engine = new DetailedMatchEngine();
+        DetailedMatchResult result = engine.simulate(baseline, SEED);
+
+        // Sanity: el match produce resultado razonable.
+        int totalGoals = result.homeGoals() + result.awayGoals();
+        assertTrue(totalGoals >= 0 && totalGoals <= 10,
+                "Sin skills, totalGoals debe estar en [0,10] (actual: " + totalGoals + ")");
+        assertTrue(result.homePossession() >= 0 && result.awayPossession() >= 0,
+                "Possession debe ser no-negativo");
+    }
+
+    @Test
+    void fullMatch_passerSymmetric_homeAndAwayBothHave99_producesSimilarPossessionToBaseline() {
+        // Si AMBOS equipos tienen PASSER=99 maximo, el efecto se cancela
+        // (ambos boosts son iguales → homeShare = 50/(50+50) = 0.5 igual
+        // que sin boost). Verificamos que el resultado sea similar al
+        // baseline sin PASSER (symmetric boost = no-op).
+        MatchContext baseline = buildContextWithPasserSymmetric("passer-sym-base", -1);
+        MatchContext treatment = buildContextWithPasserSymmetric("passer-sym-high", 99);
+
+        DetailedMatchEngine engine = new DetailedMatchEngine();
+        DetailedMatchResult baselineResult = engine.simulate(baseline, SEED);
+        DetailedMatchResult treatmentResult = engine.simulate(treatment, SEED);
+
+        // Symmetric PASSER boost (home y away ambos +33%) → homeShare = 0.5
+        // igual que sin boost. Los possession deben ser similares (±3 por
+        // la varianza natural de los rolls, no sistematica).
+        int baselineHomePoss = baselineResult.homePossession();
+        int treatmentHomePoss = treatmentResult.homePossession();
+
+        int delta = Math.abs(treatmentHomePoss - baselineHomePoss);
+        assertTrue(delta <= 5,
+                "PASSER=99 simetrico (home+away) debe dar delta de possession <= 5 (actual: "
+                        + delta + ", baseline=" + baselineHomePoss + ", treatment=" + treatmentHomePoss + ")");
+    }
+
+    private int invokeMaxPasser(List<PlayerMatchState> players) {
+        return new PlayerSkillService().maxSkill(players, PlayerSkill.PASSER);
+    }
+
+    // ========== Fixture builders ==========
+
+    private MatchContext buildContextWithPasser(String matchId, int passerSkill) {
+        List<SessionPlayer> homeStart = makePlayersWithPasser("home", 11, 70, passerSkill);
+        List<SessionPlayer> awayStart = makePlayersWithPasser("away", 11, 70, -1);
+        SessionTeam homeTeam = makeTeam("home-" + matchId, "Home FC");
+        SessionTeam awayTeam = makeTeam("away-" + matchId, "Away FC");
+        return new MatchContext(
+                matchId,
+                homeTeam.getSessionTeamId(),
+                awayTeam.getSessionTeamId(),
+                homeTeam, awayTeam,
+                homeStart, awayStart,
+                List.of(), List.of(),
+                "4-3-3", "4-3-3",
+                TeamStyle.BALANCED, TeamStyle.BALANCED
+        );
+    }
+
+    private MatchContext buildContextWithPasserSymmetric(String matchId, int passerSkill) {
+        List<SessionPlayer> homeStart = makePlayersWithPasser("home", 11, 70, passerSkill);
+        List<SessionPlayer> awayStart = makePlayersWithPasser("away", 11, 70, passerSkill);
+        SessionTeam homeTeam = makeTeam("home-" + matchId, "Home FC");
+        SessionTeam awayTeam = makeTeam("away-" + matchId, "Away FC");
+        return new MatchContext(
+                matchId,
+                homeTeam.getSessionTeamId(),
+                awayTeam.getSessionTeamId(),
+                homeTeam, awayTeam,
+                homeStart, awayStart,
+                List.of(), List.of(),
+                "4-3-3", "4-3-3",
+                TeamStyle.BALANCED, TeamStyle.BALANCED
+        );
+    }
+
+    private List<SessionPlayer> makePlayersWithPasser(String prefix, int count, int ovr, int passerSkill) {
+        List<SessionPlayer> list = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            SessionPlayer p = makePlayer(prefix + "_p" + i, ovr);
+            if (i == 0 && passerSkill > 0) {
+                p.setSkillLevel(PlayerSkill.PASSER, passerSkill);
+            }
+            list.add(p);
+        }
+        return list;
+    }
+
+    private List<PlayerMatchState> makeMatchStates(int count, String position, int ovr, int skill) {
+        List<PlayerMatchState> list = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            SessionPlayer p = makePlayer("p" + i, ovr);
+            if (skill > 0) {
+                p.setSkillLevel(PlayerSkill.PASSER, skill);
+            }
+            list.add(PlayerMatchState.fromSessionPlayer(p, "home"));
+        }
+        return list;
+    }
+
+    private SessionPlayer makePlayer(String id, int ovr) {
+        return SessionPlayer.custom(
+                id, 25, "MID",
+                ovr, ovr, ovr, ovr, ovr, ovr,
+                BigDecimal.valueOf(ovr * 1000));
+    }
+
+    private SessionTeam makeTeam(String id, String name) {
+        return SessionTeam.fromRealTeam(
+                UUID.nameUUIDFromBytes(id.getBytes()),
+                "world_" + id, name, "Country",
+                BigDecimal.ZERO, "4-3-3", null);
+    }
+}

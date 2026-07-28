@@ -52,10 +52,10 @@ Result: no production dependency violations found; only a documentation string m
 - `SubstitutionCommandUseCaseImpl` no longer blocks or manually subscribes while updating baseline state; baseline mutation is composed into the returned `Mono`.
 - `LeagueRepositoryAdapter` no longer manually subscribes while warming cache; the save is composed into the fallback reactive chain.
 - `MatchStatePersister` returns `Mono<Void>` and lifecycle callers compose the persistence instead of hiding a manual subscription.
-- `V24DetailedMatchController#getDetail` isolates the legacy synchronous storage port call on `boundedElastic` so it does not run on the WebFlux event loop.
+- `DetailedMatchController#getDetail` isolates the legacy synchronous storage port call on `boundedElastic` so it does not run on the WebFlux event loop.
 - Remaining blocking calls are classified as non-request-path synchronous/batch/infrastructure compatibility points:
   - seed/batch writers perform startup/admin batch persistence with explicit timeout boundaries;
-  - `V24DetailedMatchRedisAdapter` implements a synchronous storage port used by legacy query services/tests and is called from request paths through bounded-elastic isolation;
+  - `DetailedMatchRedisAdapter` implements a synchronous storage port used by legacy query services/tests and is called from request paths through bounded-elastic isolation;
   - `MatchSimulationOrchestrator` synchronous sections are isolated behind its scheduler boundary for league simulation work;
   - `RoundController` subscriptions are lifecycle fire-and-forget starts of live round/match engines, not ignored request publishers; failures are logged and surfaced through engine state.
 
@@ -82,7 +82,7 @@ No production Java file exceeds 500 lines after the refactor. The largest classe
 - `LineupDtoAssembler` (~480): assembles lineup view data at the application boundary; does not own persistence, controller, or engine behavior.
 - `TestHarnessScenarioRunner` (~474): harness scenario orchestration; helpers contain mutation/diagnostic specifics.
 - `TestHarnessLineupDiagnosticService` (~466): diagnostic report use case; isolated from production gameplay path.
-- `V24LiveSession` (~433): live-session aggregate for mutable match state/replay; detailed simulation remains in V24 engine/services.
+- `LiveSession` (~433): live-session aggregate for mutable match state/replay; detailed simulation remains in V24 engine/services.
 - `TacticalChangeService` (~425): tactical command service; DTO mapping has been extracted to controllers and application result records.
 
 No remaining class is considered a god class for this MVP refactor scope.

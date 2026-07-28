@@ -84,7 +84,7 @@ class MatchControllerReactiveV25D37F3Test {
     private com.footballmanager.application.service.career.CareerSessionService careerSessionService;
 
     @Mock
-    private com.footballmanager.application.service.simulation.v24.V24DetailedMatchQueryService v24DetailedMatchQueryService;
+    private com.footballmanager.application.service.simulation.detailed.DetailedMatchQueryService v24DetailedMatchQueryService;
 
     private MatchControllerReactive controller;
     private Authentication auth;

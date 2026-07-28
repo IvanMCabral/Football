@@ -7,20 +7,20 @@ import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.application.service.simulation.v24.V24MatchLineupPlayerDto;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
-import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.MatchLineupPlayerDto;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
+import com.footballmanager.application.service.simulation.detailed.ShotLocation;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -60,15 +60,15 @@ import java.util.stream.IntStream;
 class TestHarnessLineupDiagnosticService {
 
     private final CareerRepository careerRepository;
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
     private final FormationService formationService = new FormationService();
     private final TestHarnessDiagnosticAssignmentSupport assignmentSupport = new TestHarnessDiagnosticAssignmentSupport();
 
     TestHarnessLineupDiagnosticService(
             CareerRepository careerRepository,
-            V24MatchContextFactory v24ContextFactory) {
+            MatchContextFactory matchContextFactory) {
         this.careerRepository = careerRepository;
-        this.v24ContextFactory = v24ContextFactory;
+        this.matchContextFactory = matchContextFactory;
     }
 
     public Mono<LineupDiagnostic> lineupDiagnostic(UUID userId, String matchId, Long seedOverride) {
@@ -98,7 +98,7 @@ class TestHarnessLineupDiagnosticService {
                         + " (home=" + fixture.getHomeTeamId()
                         + ", away=" + fixture.getAwayTeamId() + ")"));
                 }
-                V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
+                MatchContext context = matchContextFactory.build(career, fixture, home, away, seed);
                 return Mono.just(new LineupDiagnostic(
                     matchId,
                     seed,

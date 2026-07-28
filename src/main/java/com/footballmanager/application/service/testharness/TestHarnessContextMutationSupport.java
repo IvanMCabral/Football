@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 
@@ -15,8 +15,8 @@ final class TestHarnessContextMutationSupport {
     private TestHarnessContextMutationSupport() {
     }
 
-    static V24MatchContext buildInitialSwapContext(
-            V24MatchContext context,
+    static MatchContext buildInitialSwapContext(
+            MatchContext context,
             String userTeamId,
             String starterPlayerId,
             String benchPlayerId) {
@@ -52,7 +52,7 @@ final class TestHarnessContextMutationSupport {
                 previousSlot.customYPercent()));
         }
 
-        return new V24MatchContext(
+        return new MatchContext(
             context.matchId(),
             context.homeTeamId(),
             context.awayTeamId(),
@@ -71,8 +71,8 @@ final class TestHarnessContextMutationSupport {
             userIsHome ? awaySlots : userSlots);
     }
 
-    static V24MatchContext buildMovedPositionContext(
-            V24MatchContext context,
+    static MatchContext buildMovedPositionContext(
+            MatchContext context,
             String userTeamId,
             String playerId,
             String slotId,
@@ -92,7 +92,7 @@ final class TestHarnessContextMutationSupport {
             previous != null && previous.subdivisionId() != null ? previous.subdivisionId() : slotId,
             targetXPercent,
             targetYPercent));
-        return new V24MatchContext(
+        return new MatchContext(
             context.matchId(),
             context.homeTeamId(),
             context.awayTeamId(),
@@ -111,8 +111,8 @@ final class TestHarnessContextMutationSupport {
             userIsHome ? awaySlots : userSlots);
     }
 
-    static V24MatchContext buildRoleOverrideContext(
-            V24MatchContext context,
+    static MatchContext buildRoleOverrideContext(
+            MatchContext context,
             String userTeamId,
             String playerId,
             String naturalPosition) {
@@ -135,7 +135,7 @@ final class TestHarnessContextMutationSupport {
         if (!replaced) {
             throw new IllegalArgumentException("playerId '" + playerId + "' not in controlled starting XI");
         }
-        return new V24MatchContext(
+        return new MatchContext(
             context.matchId(),
             context.homeTeamId(),
             context.awayTeamId(),

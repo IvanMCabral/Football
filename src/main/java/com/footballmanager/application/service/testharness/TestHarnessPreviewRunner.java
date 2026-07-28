@@ -1,12 +1,12 @@
 package com.footballmanager.application.service.testharness;
 
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
+import com.footballmanager.application.service.simulation.detailed.ShotLocation;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
@@ -24,7 +24,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 class TestHarnessPreviewRunner {
 
-    private final V24MatchContextFactory v24ContextFactory;
+    private final MatchContextFactory matchContextFactory;
 
     MatchPreviewSummary run(
             CareerSave career,
@@ -46,8 +46,8 @@ class TestHarnessPreviewRunner {
         PreviewSums sums = new PreviewSums();
         for (int i = 0; i < safeSeedCount; i++) {
             long seed = seedStart + i;
-            V24MatchContext context = v24ContextFactory.build(career, fixture, home, away, seed);
-            V24DetailedMatchResult result = new V24DetailedMatchEngine()
+            MatchContext context = matchContextFactory.build(career, fixture, home, away, seed);
+            DetailedMatchResult result = new DetailedMatchEngine()
                 .simulate(context, new Random(seed));
             addSample(sums, result, userIsHome);
         }
@@ -94,7 +94,7 @@ class TestHarnessPreviewRunner {
         return Objects.equals(fixture.getHomeTeamId(), career.getUserSessionTeamId());
     }
 
-    private void addSample(PreviewSums sums, V24DetailedMatchResult result, boolean userIsHome) {
+    private void addSample(PreviewSums sums, DetailedMatchResult result, boolean userIsHome) {
         sums.goalsFor += userIsHome ? result.homeGoals() : result.awayGoals();
         sums.goalsAgainst += userIsHome ? result.awayGoals() : result.homeGoals();
         sums.possessionFor += userIsHome ? result.homePossession() : result.awayPossession();
@@ -107,15 +107,15 @@ class TestHarnessPreviewRunner {
         if (result.timeline() == null || result.timeline().events() == null) {
             return;
         }
-        for (V24MatchEvent event : result.timeline().events()) {
+        for (DetailedMatchEvent event : result.timeline().events()) {
             if (!isShotLike(event)) continue;
             boolean ownShot = Objects.equals(event.teamId(), ownTeamId);
-            V24ShotLocation location = event.shotCoordinate() != null
+            ShotLocation location = event.shotCoordinate() != null
                 ? event.shotCoordinate().location()
                 : null;
-            if (location == V24ShotLocation.PENALTY_AREA_WIDE) {
+            if (location == ShotLocation.PENALTY_AREA_WIDE) {
                 if (ownShot) sums.wideShotsFor += 1.0; else sums.wideShotsAgainst += 1.0;
-            } else if (location == V24ShotLocation.OUTSIDE_BOX || location == V24ShotLocation.LONG_RANGE) {
+            } else if (location == ShotLocation.OUTSIDE_BOX || location == ShotLocation.LONG_RANGE) {
                 if (ownShot) sums.longShotsFor += 1.0; else sums.longShotsAgainst += 1.0;
             } else {
                 if (ownShot) sums.centralShotsFor += 1.0; else sums.centralShotsAgainst += 1.0;
@@ -123,13 +123,13 @@ class TestHarnessPreviewRunner {
         }
     }
 
-    private boolean isShotLike(V24MatchEvent event) {
+    private boolean isShotLike(DetailedMatchEvent event) {
         if (event == null || event.xg() <= 0.0) return false;
-        return event.type() == V24MatchEventType.SHOT
-            || event.type() == V24MatchEventType.SHOT_ON_TARGET
-            || event.type() == V24MatchEventType.MISS
-            || event.type() == V24MatchEventType.BLOCK
-            || event.type() == V24MatchEventType.GOAL;
+        return event.type() == DetailedMatchEventType.SHOT
+            || event.type() == DetailedMatchEventType.SHOT_ON_TARGET
+            || event.type() == DetailedMatchEventType.MISS
+            || event.type() == DetailedMatchEventType.BLOCK
+            || event.type() == DetailedMatchEventType.GOAL;
     }
 
     private static double round3(double value) {

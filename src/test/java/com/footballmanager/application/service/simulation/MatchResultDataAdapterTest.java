@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Phase 10C2: MatchResultDataAdapter unit tests.
- * Validates that V23 MatchResult maps correctly to MatchResultData.
+ * Validates that classic MatchResult maps correctly to MatchResultData.
  * Events and summary are ignored — only 6 fields mapped.
  */
 class MatchResultDataAdapterTest {

@@ -3,9 +3,9 @@ package com.footballmanager.adapters.in.web.career.simulation;
 import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import org.junit.jupiter.api.AfterEach;
@@ -36,7 +36,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *       {@code success=false} and descriptive {@code error} (FLAG 1 UX fix —
  *       was 409 CONFLICT in the previous commit; use case now catches
  *       validation failures internally).</li>
- *   <li>POST happy path with registered MatchSession + V24LiveSession
+ *   <li>POST happy path with registered MatchSession + LiveSession
  *       fixture → 200 OK with {@code success=true}, real
  *       {@code substitutionsRemaining} (read from engine, NOT hardcoded),
  *       and {@code minuteApplied} reflecting the live session clock
@@ -44,9 +44,9 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *       commit).</li>
  * </ul>
  *
- * <p>Unit tests in {@link com.footballmanager.application.service.simulation.v24.V24SubstitutionEngineTest}
+ * <p>Unit tests in {@link com.footballmanager.application.service.simulation.detailed.SubstitutionEngineTest}
  * (manualSubstitute happy + fail cases) and the D1=B regression test in
- * {@link com.footballmanager.application.service.simulation.v24.V24LiveSessionTest}
+ * {@link com.footballmanager.application.service.simulation.detailed.LiveSessionTest}
  * continue to enforce the engine invariants.
  */
 @SpringBootTest(
@@ -166,9 +166,9 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST happy path with registered MatchSession+V24LiveSession — 200 OK with success=true (FLAG 1 UX)")
+    @DisplayName("POST happy path with registered MatchSession+LiveSession — 200 OK with success=true (FLAG 1 UX)")
     void substitute_happyPath_returns200WithRealData() {
-        // Arrange: build a fixture V24LiveSession with deterministic seed, register
+        // Arrange: build a fixture LiveSession with deterministic seed, register
         // a MatchSession for (userId, matchId), and tick once so currentMinute == 1.
         // Use short teamIds ("home"/"away") so the player IDs stay readable:
         //   home-starter-0, home-bench-0, away-starter-0, away-bench-0.
@@ -179,8 +179,8 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         UUID homeTeamUuid = UUID.randomUUID();
         UUID awayTeamUuid = UUID.randomUUID();
 
-        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession liveSession = new V24LiveSession(context, 12345L);
+        MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        LiveSession liveSession = new LiveSession(context, 12345L);
         liveSession.tick(); // pre-simulate + advance to minute 1
 
         matchSessionRegistry.getOrCreateSessionWithV24(
@@ -227,18 +227,18 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         String lastComparison = "";
 
         for (long seed : java.util.List.of(42L, 123L, 777L, 9999L, 12345L, 22222L, 54321L)) {
-            V24MatchContext baselineContext = buildHappyPathContext(homeTeamId, awayTeamId);
-            V24LiveSession baselineSession = new V24LiveSession(baselineContext, seed);
+            MatchContext baselineContext = buildHappyPathContext(homeTeamId, awayTeamId);
+            LiveSession baselineSession = new LiveSession(baselineContext, seed);
             for (int i = 0; i < 90; i++) baselineSession.tick();
-            V24DetailedMatchResult baseline = baselineSession.finalResult();
+            DetailedMatchResult baseline = baselineSession.finalResult();
 
             UUID userId = UUID.randomUUID();
             UUID matchId = UUID.randomUUID();
             UUID homeTeamUuid = UUID.randomUUID();
             UUID awayTeamUuid = UUID.randomUUID();
 
-            V24MatchContext treatmentContext = buildHappyPathContext(homeTeamId, awayTeamId);
-            V24LiveSession treatmentSession = new V24LiveSession(treatmentContext, seed);
+            MatchContext treatmentContext = buildHappyPathContext(homeTeamId, awayTeamId);
+            LiveSession treatmentSession = new LiveSession(treatmentContext, seed);
             treatmentSession.tick();
 
             matchSessionRegistry.getOrCreateSessionWithV24(
@@ -259,7 +259,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
                 .jsonPath("$.error").doesNotExist();
 
             for (int i = 0; i < 90; i++) treatmentSession.tick();
-            V24DetailedMatchResult treatment = treatmentSession.finalResult();
+            DetailedMatchResult treatment = treatmentSession.finalResult();
 
             changed = baseline.homeGoals() != treatment.homeGoals()
                 || baseline.awayGoals() != treatment.awayGoals()
@@ -299,7 +299,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
     @Test
     @DisplayName("F2.5 E2E: POST with minute < currentMinute returns 400 BAD_REQUEST (D-protocolo)")
     void substitute_pastMinute_returns400() {
-        // Arrange: register a MatchSession with a V24LiveSession that has
+        // Arrange: register a MatchSession with a LiveSession that has
         // already advanced past minute 0. After tick(), currentMinute=1.
         String homeTeamId = "home-f2-5-past";
         String awayTeamId = "away-f2-5-past";
@@ -308,8 +308,8 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         UUID homeTeamUuid = UUID.randomUUID();
         UUID awayTeamUuid = UUID.randomUUID();
 
-        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession liveSession = new V24LiveSession(context, 7777L);
+        MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        LiveSession liveSession = new LiveSession(context, 7777L);
         liveSession.tick(); // currentMinute=1
 
         matchSessionRegistry.getOrCreateSessionWithV24(
@@ -362,8 +362,8 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         UUID homeTeamUuid = UUID.randomUUID();
         UUID awayTeamUuid = UUID.randomUUID();
 
-        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession liveSession = new V24LiveSession(context, 8888L);
+        MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        LiveSession liveSession = new LiveSession(context, 8888L);
         liveSession.tick(); // currentMinute=1
 
         matchSessionRegistry.getOrCreateSessionWithV24(
@@ -396,8 +396,8 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         UUID homeTeamUuid = UUID.randomUUID();
         UUID awayTeamUuid = UUID.randomUUID();
 
-        V24MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
-        V24LiveSession liveSession = new V24LiveSession(context, 9999L);
+        MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
+        LiveSession liveSession = new LiveSession(context, 9999L);
 
         matchSessionRegistry.getOrCreateSessionWithV24(
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
@@ -419,7 +419,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
 
     // ========== Fixture helpers (FLAG 1 happy path) ==========
 
-    private V24MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {
+    private MatchContext buildHappyPathContext(String homeTeamId, String awayTeamId) {
         SessionTeam homeTeam = SessionTeam.custom(homeTeamId, "Home FC FP", "ARG",
             BigDecimal.valueOf(1_000_000L), "4-3-3");
         // CRITICAL for FLAG 1 happy path: SessionTeam.custom() generates a random
@@ -443,7 +443,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         List<SessionPlayer> awayStarting = makePlayers(awayTeamId, "starter", 11);
         List<SessionPlayer> awayBench = makePlayers(awayTeamId, "bench", 5);
 
-        return new V24MatchContext(
+        return new MatchContext(
             "match-fp",
             homeTeamId,
             awayTeamId,

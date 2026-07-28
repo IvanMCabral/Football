@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Phase 10C4: LeagueSimulator integration tests.
- * Validates dual-path simulation (DefaultMatchSimulator vs V23 engine).
+ * Validates dual-path simulation (DefaultMatchSimulator vs classic engine).
  * Tests only — no production code changes.
  */
 class LeagueSimulatorTest {
@@ -147,10 +147,10 @@ class LeagueSimulatorTest {
         assertEquals(5, career.getTournamentState().getFixtures().get(0).getResult().awayShots);
     }
 
-    // ========== Test 3: flag true uses V23 engine, computed possession/shots ==========
+    // ========== Test 3: flag true uses classic engine, computed possession/shots ==========
 
     @Test
-    void flagTrueUsesV23Path_computedPossessionShots() {
+    void flagTrueUsesclassicPath_computedPossessionShots() {
         MatchEngineImpl realEngine = new MatchEngineImpl();
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, realEngine, true);
@@ -165,7 +165,7 @@ class LeagueSimulatorTest {
         assertFalse(fakeSim.simulateQuickCalled, "simulateQuick should NOT be called when flag=true");
 
         MatchFixture fixture = career.getTournamentState().getFixtures().get(0);
-        assertNotNull(fixture.getResult(), "Result should be recorded via V23 engine");
+        assertNotNull(fixture.getResult(), "Result should be recorded via classic engine");
 
         int homePoss = fixture.getResult().homePossession;
         int awayPoss = fixture.getResult().awayPossession;
@@ -173,8 +173,8 @@ class LeagueSimulatorTest {
 
         int homeShots = fixture.getResult().homeShots;
         int awayShots = fixture.getResult().awayShots;
-        assertTrue(homeShots >= 3, "Home shots >= 3 (V23 floor)");
-        assertTrue(awayShots >= 3, "Away shots >= 3 (V23 floor)");
+        assertTrue(homeShots >= 3, "Home shots >= 3 (classic floor)");
+        assertTrue(awayShots >= 3, "Away shots >= 3 (classic floor)");
 
         assertTrue(fixture.getResult().homeGoals >= 0, "Home goals non-negative");
         assertTrue(fixture.getResult().awayGoals >= 0, "Away goals non-negative");
@@ -183,7 +183,7 @@ class LeagueSimulatorTest {
         assertTrue(awayShots >= fixture.getResult().awayGoals, "Away shots >= away goals");
     }
 
-    // ========== Test 4: V23 path is deterministic for same fixture ==========
+    // ========== Test 4: classic path is deterministic for same fixture ==========
 
     @Test
     void v23PathIsDeterministicForSameFixture() {

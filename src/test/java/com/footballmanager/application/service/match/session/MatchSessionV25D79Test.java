@@ -1,10 +1,10 @@
 package com.footballmanager.application.service.match.session;
 
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24LiveSnapshot;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSnapshot;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
 import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.entity.MatchEvent;
@@ -25,12 +25,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * <p>Drives the SSE-payload adapter with a controlled {@link V24LiveSnapshot}
+ * <p>Drives the SSE-payload adapter with a controlled {@link LiveSnapshot}
  * to validate that:
  * <ul>
  *   <li>{@code homePlayerRatings} / {@code awayPlayerRatings} are computed
  *       from the live (partial) timeline via {@link
- *       com.footballmanager.application.service.simulation.v24.V24PlayerMatchStatsModel}.
+ *       com.footballmanager.application.service.simulation.detailed.PlayerMatchStatsModel}.
  *       Each player in the context gets exactly one rating entry; ratings
  *       reflect the partial timeline so live stats evolve minute-by-minute.</li>
  *   <li>{@code substitutionsRemaining} starts at 5 (full quota) when no
@@ -48,7 +48,7 @@ public class MatchSessionV25D79Test {
 
     @Test
     void adaptV24Snapshot_carriesV25D79Fields_onControlledSnapshot() {
-        // (1) Build a minimal V24MatchContext: 7 starters per side (LineupRules.MIN), 0 bench.
+        // (1) Build a minimal MatchContext: 7 starters per side (LineupRules.MIN), 0 bench.
         UUID homeTeamUuid = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
         UUID awayTeamUuid = UUID.fromString("00000000-0000-0000-0000-0000000000a2");
         SessionTeam homeTeam = SessionTeam.custom(
@@ -61,7 +61,7 @@ public class MatchSessionV25D79Test {
         List<SessionPlayer> homeStarting = roster("home", 7, 80);
         List<SessionPlayer> awayStarting = roster("away", 7, 80);
 
-        V24MatchContext ctx = new V24MatchContext(
+        MatchContext ctx = new MatchContext(
                 MATCH_ID.toString(),
                 homeTeamUuid.toString(),
                 awayTeamUuid.toString(),
@@ -71,11 +71,11 @@ public class MatchSessionV25D79Test {
                 "4-4-2", "4-4-2",
                 TeamStyle.BALANCED, TeamStyle.BALANCED);
 
-        // (2) Wire a real V24LiveSession — the engine ticks are deterministic
+        // (2) Wire a real LiveSession — the engine ticks are deterministic
         // and we don't actually need to call tick() before adaptV24Snapshot()
         // because we drive the snapshot by hand below.
         long seed = 42L;
-        V24LiveSession session = new V24LiveSession(ctx, seed);
+        LiveSession session = new LiveSession(ctx, seed);
 
         // (3) Build a MatchSession with the v24LiveSession. MatchState +
         // MatchTickHandler are required by the constructor but the test never
@@ -90,21 +90,21 @@ public class MatchSessionV25D79Test {
                 UUID.fromString("00000000-0000-0000-0000-00000000b001"),
                 MATCH_ID, legacyState, tickHandler, session);
 
-        // (4) Drive a controlled V24LiveSnapshot at minute 30 with one GOAL
+        // (4) Drive a controlled LiveSnapshot at minute 30 with one GOAL
         // event for the home side (so we see a live rating carry) and
         // 2 SUBSTITUTION events for the away team (so we see the decremented
         // counter).
-        List<V24MatchEvent> liveEvents = new ArrayList<>();
-        liveEvents.add(makeEvent(V24MatchEventType.GOAL, 25,
+        List<DetailedMatchEvent> liveEvents = new ArrayList<>();
+        liveEvents.add(makeEvent(DetailedMatchEventType.GOAL, 25,
                 "home-p1", "Home Striker", homeTeamUuid.toString(), null, 0.5));
-        liveEvents.add(makeEvent(V24MatchEventType.SUBSTITUTION, 30,
+        liveEvents.add(makeEvent(DetailedMatchEventType.SUBSTITUTION, 30,
                 "away-off-1", "Away Off 1", awayTeamUuid.toString(),
                 "away-on-1", 0.0));
-        liveEvents.add(makeEvent(V24MatchEventType.SUBSTITUTION, 32,
+        liveEvents.add(makeEvent(DetailedMatchEventType.SUBSTITUTION, 32,
                 "away-off-2", "Away Off 2", awayTeamUuid.toString(),
                 "away-on-2", 0.0));
 
-        V24LiveSnapshot snap = new V24LiveSnapshot(
+        LiveSnapshot snap = new LiveSnapshot(
                 MATCH_ID.toString(),
                 /* minute */ 30,
                 /* homeGoals */ 1,
@@ -117,7 +117,7 @@ public class MatchSessionV25D79Test {
                 "4-4-2", "4-4-2"
         );
 
-        // (5) Adapt the V24LiveSnapshot to the SSE-facing MatchStateSnapshot.
+        // (5) Adapt the LiveSnapshot to the SSE-facing MatchStateSnapshot.
         MatchStateSnapshot out = matchSession.adaptV24Snapshot(snap);
 
         // (6) Sanity: BE1 fields preserved.
@@ -149,8 +149,8 @@ public class MatchSessionV25D79Test {
         assertEquals(3, out.substitutionsRemaining(),
                 "5 sub quota minus 2 SUBSTITUTION events = 3 remaining");
 
-        MatchEvent firstSub = out.events().stream()
-                .filter(event -> event.getEventType() == MatchEvent.EventType.SUBSTITUTION)
+        com.footballmanager.domain.model.entity.MatchEvent firstSub = out.events().stream()
+                .filter(event -> event.getEventType() == com.footballmanager.domain.model.entity.MatchEvent.EventType.SUBSTITUTION)
                 .findFirst()
                 .orElseThrow();
         assertEquals("away-off-1", firstSub.getPlayerId(),
@@ -169,7 +169,7 @@ public class MatchSessionV25D79Test {
 
     @Test
     void adaptV24Snapshot_substitutionsRemaining_floorsAtZero_whenManySubstitutionEvents() {
-        // No V24MatchContext needed for this branch — we just exercise the
+        // No MatchContext needed for this branch — we just exercise the
         // SUBSTITUTION counting on a v24LiveSession with an empty/no-context.
         // When ctx is null, ratings default to empty; substitutions still
         // come from the events list and that path is the regression sentinel.
@@ -187,7 +187,7 @@ public class MatchSessionV25D79Test {
         List<SessionPlayer> homeStarting = roster("home", 7, 80);
         List<SessionPlayer> awayStarting = roster("away", 7, 80);
 
-        V24MatchContext ctx = new V24MatchContext(
+        MatchContext ctx = new MatchContext(
                 MATCH_ID.toString(),
                 homeTeamUuid.toString(),
                 awayTeamUuid.toString(),
@@ -196,7 +196,7 @@ public class MatchSessionV25D79Test {
                 List.of(), List.of(),
                 "4-4-2", "4-4-2",
                 TeamStyle.BALANCED, TeamStyle.BALANCED);
-        V24LiveSession session = new V24LiveSession(ctx, 7L);
+        LiveSession session = new LiveSession(ctx, 7L);
 
         MatchState legacyState = new MatchState(MATCH_ID);
         legacyState.setHomeTeamId(homeTeamUuid);
@@ -208,13 +208,13 @@ public class MatchSessionV25D79Test {
         // 8 SUBSTITUTION events > MAX_SUBSTITUTIONS (5) — the floor at 0
         // protects the UI from a negative counter if a buggy engine emits
         // more SUBSTITUTION events than the per-match cap.
-        List<V24MatchEvent> overSubs = new ArrayList<>();
+        List<DetailedMatchEvent> overSubs = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
-            overSubs.add(makeEvent(V24MatchEventType.SUBSTITUTION, 30 + i,
+            overSubs.add(makeEvent(DetailedMatchEventType.SUBSTITUTION, 30 + i,
                     "away-off-" + i, "Away Off " + i,
                     awayTeamUuid.toString(), "away-on-" + i, 0.0));
         }
-        V24LiveSnapshot snap = new V24LiveSnapshot(
+        LiveSnapshot snap = new LiveSnapshot(
                 MATCH_ID.toString(), 60, 0, 0,
                 homeTeamUuid.toString(), awayTeamUuid.toString(),
                 false, overSubs, 50, 50,
@@ -243,12 +243,12 @@ public class MatchSessionV25D79Test {
         return players;
     }
 
-    private static V24MatchEvent makeEvent(
-            V24MatchEventType type, int minute,
+    private static DetailedMatchEvent makeEvent(
+            DetailedMatchEventType type, int minute,
             String playerId, String playerName,
             String teamId, String relatedPlayerId,
             double xg) {
-        return new V24MatchEvent(
+        return new DetailedMatchEvent(
                 /* minute */ minute,
                 /* type */ type,
                 /* teamId */ teamId,

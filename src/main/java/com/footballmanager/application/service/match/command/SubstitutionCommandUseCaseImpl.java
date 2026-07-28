@@ -3,15 +3,15 @@ package com.footballmanager.application.service.match.command;
 import com.footballmanager.application.exception.MinuteInPastException;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.v24.AppliedSubstitution;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24LiveSession;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchState;
-import com.footballmanager.application.service.simulation.v24.V24SubstitutionEngine;
-import com.footballmanager.application.service.simulation.v24.V24TeamMatchState;
+import com.footballmanager.application.service.simulation.detailed.AppliedSubstitution;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.PlayerMatchState;
+import com.footballmanager.application.service.simulation.detailed.SubstitutionEngine;
+import com.footballmanager.application.service.simulation.detailed.TeamMatchState;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.port.in.match.SubstitutionCommandUseCase;
@@ -30,15 +30,15 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  *
  * <p>F2 wire: manual substitutions now affect the match result via
- * {@link V24LiveSession#mutateContext} + {@link V24LiveSession#replayFromMinute}
+ * {@link LiveSession#mutateContext} + {@link LiveSession#replayFromMinute}
  * (the F1 replay infrastructure). The D1=B invariant was removed in F2:
  * swapping {@code playerOffId} out of the starting lineup and
- * {@code playerOnId} in via {@link V24MatchContext#withManualSubstitution}
+ * {@code playerOnId} in via {@link MatchContext#withManualSubstitution}
  * causes the engine's next replay to use the new lineup, so
  * {@code homeGoals}/{@code awayGoals} can change from the baseline.
  *
- * <p>Per-match {@link V24SubstitutionEngine} lifecycle: we keep a
- * {@code Map<UUID matchId, V24SubstitutionEngine>} for the duration of the
+ * <p>Per-match {@link SubstitutionEngine} lifecycle: we keep a
+ * {@code Map<UUID matchId, SubstitutionEngine>} for the duration of the
  * match so each match has its own counter. The map is cleared when the match
  * finishes (see {@link #onMatchFinished(UUID)}).
  *
@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link IllegalArgumentException}/{@link IllegalStateException} for business
  * validation. Those exceptions (raised by the engine for missing players,
  * max subs reached, already-subbed, etc. — or by
- * {@code V24MatchContext#withManualSubstitution} for invalid teamId / off
+ * {@code MatchContext#withManualSubstitution} for invalid teamId / off
  * not in starting / on not in bench / etc.) are caught and translated into
  * a {@link SubstitutionResult#failure(String)} so the controller can forward
  * a uniform 200 OK + {@code success=false} body to the frontend. Only
@@ -68,7 +68,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
 
     private final MatchSessionRegistry matchSessionRegistry;
     private final BaselineStateStoragePort baselineStoragePort;
-    private final Map<UUID, V24SubstitutionEngine> enginesByMatchId = new ConcurrentHashMap<>();
+    private final Map<UUID, SubstitutionEngine> enginesByMatchId = new ConcurrentHashMap<>();
 
     public SubstitutionCommandUseCaseImpl(
             MatchSessionRegistry matchSessionRegistry,
@@ -132,15 +132,15 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             .orElseThrow(() -> new IllegalStateException(
                 "No active match session for userId=" + userId + " matchId=" + matchId));
 
-        V24LiveSession liveSession = session.getV24LiveSession();
+        LiveSession liveSession = session.getLiveSession();
         if (liveSession == null) {
             throw new IllegalStateException(
-                "Session has no V24LiveSession (not in V24 path?) for matchId=" + matchId);
+                "Session has no LiveSession (not in detailed match path?) for matchId=" + matchId);
         }
-        V24MatchContext context = liveSession.context();
+        MatchContext context = liveSession.context();
         if (context == null) {
             throw new IllegalStateException(
-                "V24LiveSession has no context for matchId=" + matchId);
+                "LiveSession has no context for matchId=" + matchId);
         }
 
         // sub for a minute that is already in the past — the engine only
@@ -168,30 +168,30 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
 
         try {
             // 3. Validate the teamId by looking up the playerOff in the context.
-            //    SessionPlayer IDs are Strings (per V24SubstitutionEngine convention).
+            //    SessionPlayer IDs are Strings (per SubstitutionEngine convention).
             String resolvedTeamId = resolveTeamId(context, playerOffId);
             if (teamId != null && !teamId.isBlank() && !teamId.equals(resolvedTeamId)) {
                 throw new IllegalStateException(
                     "playerOffId " + playerOffId + " belongs to team " + resolvedTeamId
                     + ", not " + teamId);
             }
-            V24TeamMatchState team = buildTeamFromContext(context, resolvedTeamId);
+            TeamMatchState team = buildTeamFromContext(context, resolvedTeamId);
 
             // 4. Delegate to engine (validates + produces the event).
-            V24SubstitutionEngine engine = enginesByMatchId.computeIfAbsent(
-                matchId, id -> new V24SubstitutionEngine());
-            V24MatchEvent event = engine.manualSubstitute(team, playerOffId, playerOnId, minute);
+            SubstitutionEngine engine = enginesByMatchId.computeIfAbsent(
+                matchId, id -> new SubstitutionEngine());
+            DetailedMatchEvent event = engine.manualSubstitute(team, playerOffId, playerOnId, minute);
 
             // 5. F2 WIRE: drive the substitution through the F1 replay path so
             // homeGoals/awayGoals actually change. The engine call above
             // (engine.manualSubstitute) is still needed because it produces
-            // the V24MatchEvent and enforces the per-team substitution limit
-            // (5 subs / team), but its mutations to the local V24TeamMatchState
+            // the DetailedMatchEvent and enforces the per-team substitution limit
+            // (5 subs / team), but its mutations to the local TeamMatchState
             // are LOST when the method returns.
             //
             // (playerOff.name() / playerOn.name() populated by
-            // V24SubstitutionEngine.manualSubstitute) to
-            // V24LiveSession.recordManualSubstitution() so the SSE stream
+            // SubstitutionEngine.manualSubstitute) to
+            // LiveSession.recordManualSubstitution() so the SSE stream
             // surfaces the actual names ("Vinícius Jr.") instead of the
             // generic "Player 7 RMA" placeholder. The previous code called
             // mutateContext() directly, which dropped the event entirely
@@ -277,7 +277,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
      * Wired from the match-finished lifecycle (deferred to Phase 2 integration).
      */
     public void onMatchFinished(UUID matchId) {
-        V24SubstitutionEngine removed = enginesByMatchId.remove(matchId);
+        SubstitutionEngine removed = enginesByMatchId.remove(matchId);
         if (removed != null) {
             log.debug("Cleaned up substitution engine for matchId={}", matchId);
         }
@@ -287,7 +287,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
      * starting lineups and bench for the playerOffId.
      * Returns the teamId or throws IllegalArgumentException if not found.
      */
-    private String resolveTeamId(V24MatchContext context, String playerOffId) {
+    private String resolveTeamId(MatchContext context, String playerOffId) {
         if (containsPlayer(context.homeStartingPlayers(), playerOffId)) {
             return context.homeTeamId();
         }
@@ -322,13 +322,13 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     }
 
     /**
-     * by mapping the SessionPlayer lists to V24PlayerMatchState.
+     * by mapping the SessionPlayer lists to PlayerMatchState.
      *
-     * <p>We use the {@link V24TeamMatchState#create} factory which internally
-     * builds the V24PlayerMatchState objects via {@code V24PlayerMatchState.fromSessionPlayer}.
+     * <p>We use the {@link TeamMatchState#create} factory which internally
+     * builds the PlayerMatchState objects via {@code PlayerMatchState.fromSessionPlayer}.
      * The bench players are auto-marked as substituteOff in the factory.
      */
-    private V24TeamMatchState buildTeamFromContext(V24MatchContext context, String teamId) {
+    private TeamMatchState buildTeamFromContext(MatchContext context, String teamId) {
         SessionTeam team;
         List<SessionPlayer> starting;
         List<SessionPlayer> bench;
@@ -350,6 +350,6 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                 + ") or away (" + context.awayTeamId() + ") of this match");
         }
 
-        return V24TeamMatchState.create(team, new ArrayList<>(starting), new ArrayList<>(bench), style);
+        return TeamMatchState.create(team, new ArrayList<>(starting), new ArrayList<>(bench), style);
     }
 }

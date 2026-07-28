@@ -1,12 +1,12 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.simulation.v24.BaselineState;
-import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.v24.V24MatchContext;
-import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
+import com.footballmanager.application.service.simulation.detailed.BaselineState;
+import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -57,7 +57,7 @@ import static org.mockito.Mockito.when;
  *
  * <p>The {@code setFormation} test is the critical regression guard for
  * the formation is persisted to BOTH {@code SessionTeam.formation} AND
- * {@code teamStarting11Formation} map (the V24 engine reads from the
+ * {@code teamStarting11Formation} map (the detailed match engine reads from the
  * latter).
  */
 @ExtendWith(MockitoExtension.class)
@@ -68,7 +68,7 @@ class TestHarnessUseCaseImplTest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private V24DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort v24StoragePort;
     @Mock private BaselineStateStoragePort baselineStoragePort;
     // resetRound() use case (the previous 4-arg constructor was extended
     // with this dependency). Mockito's default `@Mock` is good enough
@@ -78,21 +78,21 @@ class TestHarnessUseCaseImplTest {
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
     // build() produces a context with valid homeTeam/awayTeam. A mocked
     // factory would return a context with null teams, which causes
-    // V24TeamMatchState.create to throw NPE("team must not be null").
+    // TeamMatchState.create to throw NPE("team must not be null").
     // We construct useCase manually in setUp() to inject the real
     // factory (Mockito's @InjectMocks doesn't play well with non-mock
     // fields in this JUnit/Mockito version).
-    private V24MatchContextFactory v24ContextFactory;
+    private MatchContextFactory matchContextFactory;
     private TestHarnessUseCaseImpl useCase;
 
     private CareerSave career;
 
     @BeforeEach
     void setUp() {
-        v24ContextFactory = new V24MatchContextFactory();
+        matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            v24ContextFactory, v24StoragePort, baselineStoragePort, matchEngineRegistry);
+            matchContextFactory, v24StoragePort, baselineStoragePort, matchEngineRegistry);
         lenient().when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
             .thenReturn(Mono.empty());
 
@@ -114,7 +114,7 @@ class TestHarnessUseCaseImplTest {
         userTeam.setSessionTeamId("user-team-id");
         userTeam.setFormation("4-3-3");
 
-        // Add 11 players to the rival team (all healthy). The V24 engine
+        // Add 11 players to the rival team (all healthy). The detailed match engine
         // needs MIN_AVAILABLE_PLAYERS=7 to start a match.
         List<SessionPlayer> rivalPlayers = new java.util.ArrayList<>();
         for (int i = 1; i <= 11; i++) {
@@ -594,7 +594,7 @@ class TestHarnessUseCaseImplTest {
             .isEqualTo("3-5-2");
 
         assertThat(career.getTeamStarting11Formation().get("user-team-id"))
-            .as("teamStarting11Formation map (the one the V24 engine reads) MUST be updated")
+            .as("teamStarting11Formation map (the one the detailed match engine reads) MUST be updated")
             .isEqualTo("3-5-2");
 
         verify(careerRepository, times(1)).save(career);
@@ -676,7 +676,7 @@ class TestHarnessUseCaseImplTest {
     // executeResetInjuries write to Redis via careerRepository.save(career) but
     // NEVER invalidate CareerSessionService.careerCache. The next
     // careerSessionService.getCareerFromCache(userId) returns the stale
-    // CareerSave from the in-memory cache, so the V24 engine sees the OLD
+    // CareerSave from the in-memory cache, so the detailed match engine sees the OLD
     // formation / fixtures / injury state, not the new one.
     //
     // Fix: every save in the test harness must invalidate the cache.
@@ -792,8 +792,8 @@ class TestHarnessUseCaseImplTest {
         when(careerRepository.save(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
-        // v24ContextFactory is the REAL factory (not mocked) — see setUp().
-        // It builds a valid V24MatchContext from the career + fixture + teams,
+        // matchContextFactory is the REAL factory (not mocked) — see setUp().
+        // It builds a valid MatchContext from the career + fixture + teams,
 
         // UseCase doesn't see the result of the simulation directly (the
         // engine runs internally). The match we control: the fixture's
@@ -820,7 +820,7 @@ class TestHarnessUseCaseImplTest {
         verify(careerSessionService, times(1)).invalidateCache(USER_ID);
         // Save called
         verify(careerRepository, times(1)).save(career);
-        // Old V24 detail cleared
+        // Old detailed match detail cleared
         verify(v24StoragePort, times(1)).deleteByMatchId(
             org.mockito.ArgumentMatchers.anyString(), eq("match-001"));
         verify(baselineStoragePort, times(1)).save(anyString(), any(BaselineState.class));
