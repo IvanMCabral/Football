@@ -7,6 +7,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.Formation;
 import com.footballmanager.domain.port.in.lineup.LineupWarning;
+import com.footballmanager.domain.service.LineupRules;
 
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -1,7 +1,7 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.application.service.domain.MatchQualityComputer;
 import com.footballmanager.domain.model.aggregate.Team;
+import com.footballmanager.domain.service.MatchQualityComputer;
 
 /**
  * Immutable record of match quality metrics computed from team OVR via Poisson lambda model.

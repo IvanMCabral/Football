@@ -4,7 +4,7 @@ package com.footballmanager.application.service.match;
 
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;

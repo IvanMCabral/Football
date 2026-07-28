@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.FormationInferer;
@@ -78,7 +78,7 @@ public class V24TeamMatchState {
         Objects.requireNonNull(team, "team must not be null");
         Objects.requireNonNull(starting, "starting list must not be null");
         Objects.requireNonNull(bench, "bench list must not be null");
-        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        int min = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (starting.size() < min || starting.size() > 11) {
             throw new IllegalArgumentException(
                 "starting must contain between " + min + " and 11 players, got " + starting.size());

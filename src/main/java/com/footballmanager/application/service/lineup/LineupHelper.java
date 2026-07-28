@@ -3,6 +3,7 @@ package com.footballmanager.application.service.lineup;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.Formation;
 import com.footballmanager.domain.port.in.lineup.LineupWarning;
+import com.footballmanager.domain.service.LineupRules;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

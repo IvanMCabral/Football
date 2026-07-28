@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class V24MatchContextShortHandedTest {
 
-    private static final int MIN = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+    private static final int MIN = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
     private static final int MAX = 11;
 
     private final V24MatchContextFactory factory = new V24MatchContextFactory();

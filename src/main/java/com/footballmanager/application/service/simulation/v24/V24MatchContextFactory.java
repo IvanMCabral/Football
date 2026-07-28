@@ -4,7 +4,7 @@ import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.service.editor.FormationDefinition;
 import com.footballmanager.application.service.editor.FormationPosition;
 import com.footballmanager.application.service.editor.FormationService;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -125,7 +125,7 @@ public final class V24MatchContextFactory {
     }
 
     private void validateStarterCount(List<SessionPlayer> starters, String teamLabel) {
-        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        int min = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (starters.size() < min || starters.size() > 11) {
             throw new IllegalArgumentException(
                     teamLabel + "StartingPlayers must contain between " + min
@@ -153,7 +153,7 @@ public final class V24MatchContextFactory {
         if (resolved != null) return resolved;
 
         resolved = deriveStartingXIfromSquad(career, teamId, formation, teamLabel);
-        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        int min = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (resolved.size() >= min) return resolved;
 
         throw new IllegalArgumentException(
@@ -173,7 +173,7 @@ public final class V24MatchContextFactory {
                     teamLabel + " starting XI has " + ids.size()
                     + " entries - maximum is 11 for teamId: " + teamId);
         }
-        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        int min = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (ids.size() < min) {
             throw new IllegalArgumentException(
                     teamLabel + " starting XI has " + ids.size()
@@ -212,7 +212,7 @@ public final class V24MatchContextFactory {
     private List<SessionPlayer> deriveStartingXIfromSquad(
             CareerSave career, String teamId, String formation, String teamLabel) {
         List<String> squadIds = career.getTeamManager().getSquadPlayerIds(teamId);
-        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
+        int min = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (squadIds == null || squadIds.size() < min) {
             throw new IllegalArgumentException(
                     teamLabel + " squad has only "

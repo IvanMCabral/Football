@@ -1,27 +1,25 @@
 package com.footballmanager.domain.model.entity;
 
-import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
-
 import java.util.Objects;
 
 /**
  *
- * <p>Carries both the SSE-compatible MatchStateSnapshot and, when V24LiveSession
- * player attribution for persistence.
+ * <p>Carries the SSE-compatible MatchStateSnapshot plus an optional detailed
+ * simulation payload owned by the application layer.
  *
- * <p>v24Result is null when the match used the legacy MatchTickHandler path.
+ * <p>detailedResult is null when the match used the legacy MatchTickHandler path.
  *
- * @param snapshot  the MatchStateSnapshot (used for SSE and legacy persistence)
- * @param v24Result the V24 detailed result with player-attributed timeline (null for legacy)
+ * @param snapshot       the MatchStateSnapshot used for SSE and legacy persistence
+ * @param detailedResult optional application-owned detailed result payload
  */
 public final class MatchFinishedResult {
 
     private final MatchStateSnapshot snapshot;
-    private final V24DetailedMatchResult v24Result;
+    private final Object detailedResult;
 
-    public MatchFinishedResult(MatchStateSnapshot snapshot, V24DetailedMatchResult v24Result) {
+    public MatchFinishedResult(MatchStateSnapshot snapshot, Object detailedResult) {
         this.snapshot = Objects.requireNonNull(snapshot, "snapshot must not be null");
-        this.v24Result = v24Result;
+        this.detailedResult = detailedResult;
     }
 
     /**
@@ -35,14 +33,14 @@ public final class MatchFinishedResult {
     /**
      * Null when the match used the legacy MatchTickHandler path.
      */
-    public V24DetailedMatchResult v24Result() {
-        return v24Result;
+    public Object detailedResult() {
+        return detailedResult;
     }
 
     /**
      * Convenience: true when this result came from a V24LiveSession.
      */
     public boolean isV24() {
-        return v24Result != null;
+        return detailedResult != null;
     }
 }

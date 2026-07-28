@@ -5,7 +5,7 @@ import com.footballmanager.application.service.editor.FormationPosition;
 import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.engine.match.MatchEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.application.service.simulation.v24.BaselineState;
 import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;

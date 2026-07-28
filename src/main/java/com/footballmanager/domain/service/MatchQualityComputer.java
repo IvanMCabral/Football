@@ -1,6 +1,7 @@
-package com.footballmanager.application.service.domain;
+package com.footballmanager.domain.service;
 
 import com.footballmanager.domain.model.aggregate.Team;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 
 /**
  * Pure utility for computing Poisson match quality lambdas.

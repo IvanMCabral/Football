@@ -7,6 +7,7 @@ import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.model.view.WorldView;
 import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
+import com.footballmanager.domain.service.SessionTeamRankingPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -35,18 +36,7 @@ public class TeamOVRQueryService {
      */
     public static Comparator<SessionTeam> sessionTeamComparator(
             java.util.function.Function<String, Integer> ovrProvider) {
-        return (a, b) -> {
-            int ovrA = ovrProvider.apply(a.getSessionTeamId());
-            int ovrB = ovrProvider.apply(b.getSessionTeamId());
-            if (ovrA != ovrB) {
-                return Integer.compare(ovrB, ovrA);  // Higher OVR first
-            }
-            int budgetCompare = b.getBudget().compareTo(a.getBudget());
-            if (budgetCompare != 0) {
-                return budgetCompare;  // Higher budget first
-            }
-            return a.getName().compareTo(b.getName());  // Alphabetical
-        };
+        return SessionTeamRankingPolicy.byStrengthBudgetAndName(ovrProvider);
     }
 
     /**

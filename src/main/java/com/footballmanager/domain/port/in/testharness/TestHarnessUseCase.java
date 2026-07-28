@@ -1,5 +1,5 @@
 package com.footballmanager.domain.port.in.testharness;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;

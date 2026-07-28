@@ -3,7 +3,7 @@ package com.footballmanager.application.service.simulation.v24;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.footballmanager.domain.model.valueobject.LineupSlot;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 
@@ -135,8 +135,8 @@ public final class V24MatchContext {
 
     private static void validateStarterCount(List<SessionPlayer> starters, String label) {
         int size = starters.size();
-        int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
-        if (size < min || size > com.footballmanager.application.service.lineup.LineupRules.MAX_LINEUP_PLAYERS) {
+        int min = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (size < min || size > com.footballmanager.domain.service.LineupRules.MAX_LINEUP_PLAYERS) {
             throw new IllegalArgumentException(
                     label + " must contain between " + min + " and 11 players, got " + size);
         }

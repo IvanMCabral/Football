@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.Test;
 

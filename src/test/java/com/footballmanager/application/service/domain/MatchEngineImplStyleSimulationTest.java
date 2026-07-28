@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.domain;
 
+import com.footballmanager.domain.model.valueobject.TeamStyle;
+
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.entity.MatchResult;
 import com.footballmanager.domain.model.entity.MatchEvent;

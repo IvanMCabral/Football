@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.testharness;
 
+import com.footballmanager.domain.model.valueobject.TeamStyle;
+
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;

@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.application.service.domain.MatchQualityComputer;
+import com.footballmanager.domain.service.MatchQualityComputer;
 import com.footballmanager.domain.model.aggregate.Team;
 import org.junit.jupiter.api.Test;
 

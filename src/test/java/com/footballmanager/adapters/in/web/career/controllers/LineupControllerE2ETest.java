@@ -6,7 +6,7 @@ import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.lineup.LineupRules;
+import com.footballmanager.domain.service.LineupRules;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.TournamentState;

@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage());
         body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
         body.put("minimumRequired",
-            com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS);
+            com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS);
         return Mono.just(
             ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)

@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.domain;
 
 import com.footballmanager.domain.model.entity.MatchResult;
-import com.footballmanager.application.service.domain.MatchQualityComputer;
+import com.footballmanager.domain.service.MatchQualityComputer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;

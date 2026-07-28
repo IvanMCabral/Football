@@ -1,5 +1,6 @@
 package com.footballmanager.infrastructure.security;
 
+import com.footballmanager.domain.ports.out.auth.AuthTokenService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -13,7 +14,7 @@ import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
-public class JwtTokenProvider {
+public class JwtTokenProvider implements AuthTokenService {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -24,10 +25,12 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-expiration}")
     private long refreshExpirationMs;
 
+    @Override
     public String generateToken(String userId, String role) {
         return createToken(userId, role, jwtExpirationMs);
     }
 
+    @Override
     public String generateRefreshToken(String userId) {
         return createToken(userId, "ROLE_USER", refreshExpirationMs);
     }
@@ -46,6 +49,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    @Override
     public String getUserIdFromToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         return Jwts.parserBuilder()
@@ -56,6 +60,7 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
+    @Override
     public String getRoleFromToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         return (String) Jwts.parserBuilder()
@@ -66,6 +71,7 @@ public class JwtTokenProvider {
                 .get("role");
     }
 
+    @Override
     public boolean validateToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
@@ -79,6 +85,7 @@ public class JwtTokenProvider {
         }
     }
 
+    @Override
     public long getExpirationTime() {
         return jwtExpirationMs / 1000;
     }

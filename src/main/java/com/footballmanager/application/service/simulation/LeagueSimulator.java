@@ -37,12 +37,15 @@ import com.footballmanager.domain.service.MatchSimulator;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 @Slf4j
 public class LeagueSimulator {
+    private static final Duration DETAIL_PERSIST_TIMEOUT = Duration.ofSeconds(5);
+
     private final MatchSimulator matchSimulator;
     private final MatchEngineImpl matchEngine;
     private final boolean useV23LeagueEngine;
@@ -198,6 +201,12 @@ public class LeagueSimulator {
                                    String homeTeamName, String awayTeamName,
                                    V24DetailedMatchResult v24Result,
                                    V24MatchContext context) {
+        /*
+         * simulateLeagueRound is a synchronous league/batch workflow: callers
+         * expect the fixture, standings and optional V24 detail snapshot to be
+         * settled before the round returns. The bounded block stays at this
+         * batch boundary and is not used from a WebFlux controller pipeline.
+         */
         try {
             String careerId = career.getData().getCareerId();
             Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
@@ -230,7 +239,7 @@ public class LeagueSimulator {
                                 fixture.getMatchId(), e.getMessage());
                         return Mono.empty();
                     })
-                    .block(java.time.Duration.ofSeconds(5));
+                    .block(DETAIL_PERSIST_TIMEOUT);
         } catch (Exception e) {
             log.warn("Failed to persist detail for fixture {}: {}, continuing round",
                     fixture.getMatchId(), e.getMessage());

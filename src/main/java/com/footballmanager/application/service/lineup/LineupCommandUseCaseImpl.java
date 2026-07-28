@@ -11,6 +11,7 @@ import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
 import com.footballmanager.domain.port.in.lineup.LineupView;
 import com.footballmanager.domain.port.in.lineup.LineupWarning;
 import com.footballmanager.domain.model.valueobject.Formation;
+import com.footballmanager.domain.service.LineupRules;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;

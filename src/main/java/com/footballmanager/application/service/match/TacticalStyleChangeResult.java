@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.match;
 
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 
 public record TacticalStyleChangeResult(
     boolean success,

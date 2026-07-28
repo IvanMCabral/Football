@@ -2,7 +2,7 @@ package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 
 import java.math.BigDecimal;
 import java.time.Instant;

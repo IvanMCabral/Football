@@ -6,7 +6,7 @@ import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.domain.model.entity.MatchEvent;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;

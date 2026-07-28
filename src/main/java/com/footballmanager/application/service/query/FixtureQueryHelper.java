@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.query;
 
+import com.footballmanager.domain.service.MatchQualityComputer;
+
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -119,7 +121,7 @@ public final class FixtureQueryHelper {
         if (homeTeam != null && awayTeam != null) {
             int homeOvr = calculateSessionTeamOvr(career, f.getHomeTeamId());
             int awayOvr = calculateSessionTeamOvr(career, f.getAwayTeamId());
-            var lambdas = com.footballmanager.application.service.domain.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
+            var lambdas = com.footballmanager.domain.service.MatchQualityComputer.computeLambdas(homeOvr, awayOvr);
             metrics = com.footballmanager.domain.model.valueobject.MatchQualityMetrics.fromLambdas(lambdas);
         }
         String homeFormation = resolveFormation(career, f.getHomeTeamId());

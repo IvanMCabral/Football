@@ -1,6 +1,6 @@
 package com.footballmanager.adapters.in.web.testharness.dto;
 
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 
 /**
  *

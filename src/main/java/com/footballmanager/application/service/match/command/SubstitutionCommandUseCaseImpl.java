@@ -332,7 +332,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
         SessionTeam team;
         List<SessionPlayer> starting;
         List<SessionPlayer> bench;
-        com.footballmanager.application.service.domain.TeamStyle style;
+        com.footballmanager.domain.model.valueobject.TeamStyle style;
 
         if (context.homeTeamId().equals(teamId)) {
             team = context.homeTeam();

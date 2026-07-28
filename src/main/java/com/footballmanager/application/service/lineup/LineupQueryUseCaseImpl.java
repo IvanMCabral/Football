@@ -16,6 +16,7 @@ import com.footballmanager.domain.port.in.lineup.LineupPlayerView;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
 import com.footballmanager.domain.port.in.lineup.LineupView;
 import com.footballmanager.domain.port.in.lineup.LineupWarning;
+import com.footballmanager.domain.service.LineupRules;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

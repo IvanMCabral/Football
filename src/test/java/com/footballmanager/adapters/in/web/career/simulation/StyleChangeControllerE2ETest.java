@@ -1,7 +1,7 @@
 package com.footballmanager.adapters.in.web.career.simulation;
 
 import com.footballmanager.AbstractIntegrationTest;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;

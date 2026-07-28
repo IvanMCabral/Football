@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import reactor.core.publisher.Mono;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.simulation.v24.MatchComparisonService.BaselineNotFoundException;
 import com.footballmanager.application.service.simulation.v24.MatchComparisonService.LiveDetailNotFoundException;
 import com.footballmanager.domain.model.entity.SessionPlayer;

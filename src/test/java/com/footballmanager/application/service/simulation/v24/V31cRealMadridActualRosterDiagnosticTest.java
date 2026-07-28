@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.world.LaLigaSeedData;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;

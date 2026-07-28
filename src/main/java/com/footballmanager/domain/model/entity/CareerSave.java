@@ -6,7 +6,7 @@ import com.footballmanager.domain.model.entity.career.*;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerSeasonManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
-import com.footballmanager.application.service.query.TeamOVRQueryService;
+import com.footballmanager.domain.service.SessionTeamRankingPolicy;
 
 import java.time.Instant;
 import java.util.*;
@@ -340,9 +340,8 @@ public class CareerSave {
     // ========== Season/Division delegation ==========
 
     public void assignTeamsToDivisions(int teamsPerDivision) {
-        // Use shared comparator from TeamOVRQueryService (same logic as Division Preview)
         seasonManager.assignTeamsToDivisions(teamManager.getAllSessionTeams(),
-                TeamOVRQueryService.sessionTeamComparator(this::calculateTeamOVR),
+                SessionTeamRankingPolicy.byStrengthBudgetAndName(this::calculateTeamOVR),
                 teamsPerDivision);
         data.touch();
     }

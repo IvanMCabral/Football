@@ -1,5 +1,8 @@
 package com.footballmanager.application.service.domain;
 
+import com.footballmanager.domain.model.valueobject.TeamStyle;
+import com.footballmanager.domain.service.MatchQualityComputer;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,6 +1,6 @@
 package com.footballmanager.domain.port.in.lineup;
 
-import com.footballmanager.application.service.lineup.LineupRules;
+import com.footballmanager.domain.service.LineupRules;
 
 public record LineupWarning(
     String code,

@@ -1,6 +1,6 @@
 package com.footballmanager.adapters.in.web.career.lineup.dto;
 
-import com.footballmanager.application.service.lineup.LineupRules;
+import com.footballmanager.domain.service.LineupRules;
 
 import java.util.List;
 

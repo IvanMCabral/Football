@@ -1,6 +1,6 @@
 package com.footballmanager.domain.port.in.testharness;
 
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 
 import java.util.List;
 import java.util.Map;

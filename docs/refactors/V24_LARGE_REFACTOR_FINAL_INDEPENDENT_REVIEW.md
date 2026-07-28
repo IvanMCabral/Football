@@ -262,8 +262,110 @@ None found that currently prevent compilation, test execution, or basic architec
 3. `dump.rdb` is untracked and should be reviewed before staging.
 4. The PowerShell profile emits a repeated alias warning during commands; it does not affect Maven/Git results, but it adds noise to audit logs.
 
-## Final independent verdict
+## Production readiness closure update - 2026-07-28
 
-APPROVED WITH ISSUES
+This update appends the final closure corrections requested after the previous
+`APPROVED WITH ISSUES` result.
 
-The refactor is materially improved and the full suite is green, but the current state should not be represented as fully professional `APPROVED` while important WebFlux, cohesion, naming, and Git cleanliness issues remain.
+### Corrections applied
+
+- Auth token generation/validation was inverted behind
+  `domain.ports.out.auth.AuthTokenService`; `AuthUseCaseImpl` no longer imports
+  `JwtTokenProvider` or any infrastructure token implementation.
+- `JwtTokenProvider` remains in infrastructure and implements the outbound auth
+  token port.
+- `TeamStyle`, `LineupRules`, `MatchQualityComputer`, and
+  `SessionTeamRankingPolicy` now live in domain packages because they are
+  football/tactical rules, not application-layer coordination.
+- `MatchFinishedResult` no longer imports V24 application result classes. It
+  carries an optional detailed payload as an opaque domain-side value; the web
+  adapter performs the V24-specific cast at the boundary.
+- `ReactiveLifecycleExecutor` is documented and encapsulated as the single
+  intentional lifecycle fire-and-forget boundary. It now owns subscription,
+  logging, error swallowing for non-critical lifecycle side effects, in-flight
+  tracking, and shutdown disposal.
+- `LeagueSimulator.persistV24Detail` uses a named timeout and documents the
+  bounded block as a synchronous league/batch boundary, not a WebFlux request
+  path.
+- Naming cleanup was not performed by design. The required inventory lives in
+  `docs/refactors/NAMING_CONSOLIDATION_PLAN.md`.
+
+### Architecture evidence
+
+Commands executed:
+
+- `rg -n "^import .*\\b(com\\.footballmanager\\.application|com\\.footballmanager\\.adapters|com\\.footballmanager\\.infrastructure|org\\.springframework)" src/main/java/com/footballmanager/domain`
+- `rg -n "^import .*\\b(com\\.footballmanager\\.adapters|com\\.footballmanager\\.infrastructure)" src/main/java/com/footballmanager/application`
+- `rg -n "JwtTokenProvider" src/main/java/com/footballmanager/application src/main/java/com/footballmanager/domain`
+
+Results:
+
+- No domain imports of application, adapters, infrastructure, or Spring remain.
+- No application imports of adapters or infrastructure remain.
+- No application/domain dependency on `JwtTokenProvider` remains.
+- Reactor remains present in ports by existing project convention; no new DTO,
+  Spring, adapter, infrastructure or persistence leak was introduced.
+
+### WebFlux evidence
+
+Current production occurrences:
+
+- Batch/startup world seed writers use bounded `.block(BLOCK_TIMEOUT)` outside
+  WebFlux request paths.
+- `ReactiveLifecycleExecutor` contains the only intentional `.subscribe()` and
+  centralizes lifecycle callback side effects outside HTTP publisher chains.
+- `LeagueSimulator` contains one documented bounded `.block(...)` at a
+  synchronous league-round/batch detail-persistence boundary.
+- Comment-only mentions remain in documentation/Javadocs describing removed
+  `blockOptional`/`CompletableFuture.get` behavior.
+
+No incorrect WebFlux use remains in the audited request path.
+
+### Reflection evidence
+
+Command executed:
+
+- `rg -n "setAccessible\\(true\\)|getDeclaredMethod|getDeclaredField|\\.invoke\\(" src/test/java/com/footballmanager -g "*.java"`
+
+Result:
+
+- No lifecycle, discipline, simulation or harness private-reflection tests remain.
+- The only remaining structural reflection is
+  `PlayerAttributesDeprecationTest`, which audits public class shape/deprecation
+  metadata and does not invoke private behavior or require test shims.
+
+### Composition/coordinator review
+
+- `V24DetailedMatchEngine` is now a composition root for cohesive tactical,
+  probability, event, fatigue, discipline, injury, assist and finalization
+  components. It still coordinates the minute loop, but rules are delegated to
+  named collaborators instead of hidden private shims.
+- `LeagueSimulator` remains an orchestration boundary for whole-round
+  simulation mode selection, fallback, persistence and lifecycle application.
+  Its remaining responsibilities are cohesive at the league-round level.
+- `LineupDtoAssembler` remains broad but acts as a read-model assembler: it
+  maps lineup domain/use-case data into a web-facing shape and does not own the
+  core lineup rules now moved to domain services.
+- `RoundController` is still a sizeable adapter, but reactive lifecycle side
+  effects are delegated to `ReactiveLifecycleExecutor`; it no longer manually
+  subscribes directly.
+
+### Final independent verdict
+
+APPROVED
+
+### Final validation evidence
+
+Commands executed:
+
+- `mvn -q -DskipTests test-compile`
+- `mvn -q test`
+- Surefire XML aggregation over `target/surefire-reports/*.xml`
+- `git diff --check`
+
+Results:
+
+- Test compile: passed.
+- Full suite: passed.
+- Surefire totals: `2433 tests, 0 failures, 0 errors, 4 skipped, 258 reports`.
+- Whitespace check: passed; Git only reported expected Windows line-ending warnings.

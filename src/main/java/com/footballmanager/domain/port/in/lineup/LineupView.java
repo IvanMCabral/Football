@@ -1,6 +1,6 @@
 package com.footballmanager.domain.port.in.lineup;
 
-import com.footballmanager.application.service.lineup.LineupRules;
+import com.footballmanager.domain.service.LineupRules;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
 import com.footballmanager.domain.model.valueobject.LineupSlot;

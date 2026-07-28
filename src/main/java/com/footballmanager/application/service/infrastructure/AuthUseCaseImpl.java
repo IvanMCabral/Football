@@ -6,10 +6,10 @@ import com.footballmanager.domain.port.in.auth.AuthRefreshCommand;
 import com.footballmanager.domain.port.in.auth.AuthRegisterCommand;
 import com.footballmanager.domain.port.in.auth.AuthTokenResult;
 import com.footballmanager.domain.ports.out.team.TeamRepository;
+import com.footballmanager.domain.ports.out.auth.AuthTokenService;
 import com.footballmanager.domain.ports.out.user.UserRepository;
 import com.footballmanager.domain.port.in.auth.AuthUserInfo;
 import com.footballmanager.domain.port.in.auth.AuthUseCase;
-import com.footballmanager.infrastructure.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthTokenService authTokenService;
 
     @Override
     public Mono<AuthTokenResult> register(AuthRegisterCommand command) {
@@ -57,19 +57,19 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
     @Override
     public Mono<AuthTokenResult> refreshToken(AuthRefreshCommand command) {
-        if (!jwtTokenProvider.validateToken(command.refreshToken())) {
+        if (!authTokenService.validateToken(command.refreshToken())) {
             return Mono.error(new IllegalArgumentException("Invalid refresh token"));
         }
 
-        String userId = jwtTokenProvider.getUserIdFromToken(command.refreshToken());
-        String role = jwtTokenProvider.getRoleFromToken(command.refreshToken());
+        String userId = authTokenService.getUserIdFromToken(command.refreshToken());
+        String role = authTokenService.getRoleFromToken(command.refreshToken());
 
-        String newAccessToken = jwtTokenProvider.generateToken(userId, role);
-        String newRefreshToken = jwtTokenProvider.generateRefreshToken(userId);
+        String newAccessToken = authTokenService.generateToken(userId, role);
+        String newRefreshToken = authTokenService.generateRefreshToken(userId);
 
         return Mono.just(new AuthTokenResult(
             newAccessToken, newRefreshToken,
-            jwtTokenProvider.getExpirationTime(), "Bearer"));
+            authTokenService.getExpirationTime(), "Bearer"));
     }
 
     @Override
@@ -109,12 +109,12 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
     private Mono<AuthTokenResult> generateTokenResponse(User user) {
         return Mono.fromCallable(() -> {
-            String accessToken = jwtTokenProvider.generateToken(
+            String accessToken = authTokenService.generateToken(
                 user.getId().getValue().toString(),
                 user.getRole().name());
-            String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId().getValue().toString());
+            String refreshToken = authTokenService.generateRefreshToken(user.getId().getValue().toString());
             return new AuthTokenResult(accessToken, refreshToken,
-                jwtTokenProvider.getExpirationTime(), "Bearer");
+                authTokenService.getExpirationTime(), "Bearer");
         });
     }
 }

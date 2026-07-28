@@ -15,6 +15,7 @@ import com.footballmanager.application.service.reactive.ReactiveLifecycleExecuto
 import com.footballmanager.application.service.simulation.v24.BaselineState;
 import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
+import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
 import com.footballmanager.application.service.simulation.v24.LiveRoundMutationTracking;
@@ -248,9 +249,9 @@ public class RoundController {
                                      CareerSave career,
                                      LiveRoundMutationTracking tracking) {
         List<com.footballmanager.domain.model.entity.MatchEvent> events;
-        if (result.v24Result() != null) {
+        if (result.detailedResult() instanceof V24DetailedMatchResult v24Result) {
             events = new java.util.ArrayList<>();
-            for (var v24Event : result.v24Result().timeline().events()) {
+            for (var v24Event : v24Result.timeline().events()) {
                 events.add(com.footballmanager.domain.model.entity.MatchEvent.of(
                         toDomainEventType(v24Event.type()),
                         v24Event.minute(),
@@ -272,7 +273,7 @@ public class RoundController {
             lifecycleExecutor.execute("persist V24 live detail",
                 leagueSimulator.persistV24DetailForLiveMatch(
                     career,
-                    result.v24Result(),
+                    v24Result,
                     result.snapshot().homeTeamId().toString(),
                     result.snapshot().awayTeamId().toString(),
                     result.snapshot().score().home(),

@@ -1,5 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import com.footballmanager.domain.model.valueobject.TeamStyle;
+
 import com.footballmanager.domain.model.valueobject.FormationSlot;
 
 import java.util.ArrayList;

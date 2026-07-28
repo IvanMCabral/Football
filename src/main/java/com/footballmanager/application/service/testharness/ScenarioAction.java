@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.testharness;
 
 import com.footballmanager.domain.model.valueobject.LineupSlot;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 
 import java.util.Map;
 

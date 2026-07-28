@@ -1,7 +1,7 @@
 package com.footballmanager.infrastructure.persistence.redis;
 
 import reactor.core.publisher.Flux;
-import com.footballmanager.application.service.domain.TeamStyle;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.simulation.v24.BaselinePersistenceException;
 import com.footballmanager.application.service.simulation.v24.BaselineState;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
