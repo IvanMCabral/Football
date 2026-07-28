@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * <p>GET /api/v1/careers/{careerId}/matches/{matchId}/detail
  *
- * <p>Feature-gated: returns 404 when {@code app.simulation.v24.expose-detail-api=false}.
+ * <p>Feature-gated: returns 404 when {@code app.simulation.detailed.expose-detail-api=false}.
  * Does NOT enable detailed match simulation, persistence, or any production simulation path.
  *
  * career namespace and the dev proxy (/api/v1 -> localhost:8080). Previously
@@ -92,7 +92,7 @@ public class DetailedMatchController {
      * algorithm.
      *
      * <p>Reuses the same feature flag as {@code /detail}
-     * ({@code app.simulation.v24.expose-detail-api}).
+     * ({@code app.simulation.detailed.expose-detail-api}).
      *
      * <p>Returns 400 if careerId or matchId is blank, 404 if:
      * <ul>
@@ -155,7 +155,7 @@ public class DetailedMatchController {
      * Pure derivation from the stored timeline — no re-simulation, no cache.
      *
      * <p>Feature-gated: returns 404 when
-     * {@code app.simulation.v24.expose-detail-api=false} (same flag as
+     * {@code app.simulation.detailed.expose-detail-api=false} (same flag as
      * {@code /detail} and {@code /compare}).
      *
      * <p>Returns 400 if:

@@ -34,7 +34,7 @@ import java.util.function.Consumer;
  * <p>Thread-safe: usa estado inmutable (MatchStateSnapshot) volatile.
  *
  * via LiveSession.tick() for tick-by-tick SSE simulation. The legacy
- * path (v24LiveSession == null) uses MatchTickHandler.
+ * path (detailedMatchSession == null) uses MatchTickHandler.
  */
 public class MatchSession {
 
@@ -44,15 +44,15 @@ public class MatchSession {
     private final ConcurrentLinkedQueue<MatchCommand> commandQueue;
     private final Sinks.Many<MatchStateSnapshot> stateSink;
     /** detailed live session — null means legacy path (use MatchTickHandler). */
-    private final LiveSession v24LiveSession;
+    private final LiveSession detailedMatchSession;
 
     /**
      * Returns null if this session is on the legacy (classic) path.
-     * Callers that need V24-specific behavior (manual substitutions, etc.)
+     * Callers that need detailed-match-specific behavior (manual substitutions, etc.)
      * must null-check.
      */
     public LiveSession getLiveSession() {
-        return v24LiveSession;
+        return detailedMatchSession;
     }
 
     private Consumer<MatchFinishedResult> onFinishCallback;
@@ -71,7 +71,7 @@ public class MatchSession {
      *
      */
     public MatchSession(UUID userId, UUID matchId, MatchState state,
-                        MatchTickHandler tickHandler, LiveSession v24LiveSession) {
+                        MatchTickHandler tickHandler, LiveSession detailedMatchSession) {
         this.matchId = matchId;
         this.currentState = convertToSnapshot(matchId, state);
         this.tickHandler = tickHandler;
@@ -80,7 +80,7 @@ public class MatchSession {
         // full rationale. MatchSession feeds the per-match SSE stream
         // consumed by startMatchUseCase / live components.
         this.stateSink = Sinks.many().replay().latest();
-        this.v24LiveSession = v24LiveSession;
+        this.detailedMatchSession = detailedMatchSession;
     }
 
     private MatchStateSnapshot convertToSnapshot(UUID matchId, MatchState state) {
@@ -129,10 +129,10 @@ public class MatchSession {
             return currentState;
         }
 
-        if (v24LiveSession != null) {
+        if (detailedMatchSession != null) {
             // detailed match path: use LiveSession.tick() — no MatchTickHandler involved
-            LiveSnapshot snap = v24LiveSession.tick();
-            this.currentState = adaptV24Snapshot(snap);
+            LiveSnapshot snap = detailedMatchSession.tick();
+            this.currentState = adaptDetailedSnapshot(snap);
             emitState();
         } else {
             // Legacy path: use MatchTickHandler
@@ -154,8 +154,8 @@ public class MatchSession {
         if (isFinished() && onFinishCallback != null && !finishCallbackExecuted) {
             finishCallbackExecuted = true;
             try {
-                DetailedMatchResult detailedResult = (v24LiveSession != null)
-                        ? v24LiveSession.finalResult()
+                DetailedMatchResult detailedResult = (detailedMatchSession != null)
+                        ? detailedMatchSession.finalResult()
                         : null;
                 onFinishCallback.accept(new MatchFinishedResult(currentState, detailedResult));
             } catch (Exception ignored) {
@@ -174,11 +174,11 @@ public class MatchSession {
      * modals). Without this, the next API read can still show the pre-action
      * lineup until the following tick.
      */
-    public synchronized MatchStateSnapshot refreshV24Snapshot() {
-        if (v24LiveSession == null) {
+    public synchronized MatchStateSnapshot refreshDetailedSnapshot() {
+        if (detailedMatchSession == null) {
             return currentState;
         }
-        this.currentState = adaptV24Snapshot(v24LiveSession.snapshot());
+        this.currentState = adaptDetailedSnapshot(detailedMatchSession.snapshot());
         emitState();
         return currentState;
     }
@@ -245,7 +245,7 @@ public class MatchSession {
      *
      * can drive it with controlled inputs. Not part of the public API.
      */
-    MatchStateSnapshot adaptV24Snapshot(LiveSnapshot snap) {
+    MatchStateSnapshot adaptDetailedSnapshot(LiveSnapshot snap) {
         UUID homeTeamId = parseSnapshotTeamId(snap.homeTeamId(), currentState != null ? currentState.homeTeamId() : null);
         UUID awayTeamId = parseSnapshotTeamId(snap.awayTeamId(), currentState != null ? currentState.awayTeamId() : null);
 
@@ -259,7 +259,7 @@ public class MatchSession {
         // match, NOT the final 90-minute projection.
         List<PlayerMatchRatingDto> homePlayerRatings = List.of();
         List<PlayerMatchRatingDto> awayPlayerRatings = List.of();
-        MatchContext ctx = v24LiveSession.context();
+        MatchContext ctx = detailedMatchSession.context();
         if (ctx != null) {
             String homeIdStr = snap.homeTeamId();
             String awayIdStr = snap.awayTeamId();

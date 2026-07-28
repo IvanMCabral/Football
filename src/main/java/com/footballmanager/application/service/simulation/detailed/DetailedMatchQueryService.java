@@ -10,7 +10,7 @@ import java.util.Optional;
  *
  * Does not simulate matches, does not persist data, does not call LeagueSimulator.
  *
- * <p>Feature-gated: returns empty when {@code app.simulation.v24.expose-detail-api=false}.
+ * <p>Feature-gated: returns empty when {@code app.simulation.detailed.expose-detail-api=false}.
  */
 @Service
 public class DetailedMatchQueryService {

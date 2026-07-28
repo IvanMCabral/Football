@@ -21,7 +21,7 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
     private final ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate;
 
     public DetailedMatchRedisAdapter(
-            @Qualifier("v24DetailedMatchDataRedisTemplate") ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate) {
+            @Qualifier("detailedMatchDataRedisTemplate") ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 

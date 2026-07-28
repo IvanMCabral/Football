@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * PlayerSeasonStatsAggregator. No mutation, no Redis writes.
  *
  * <p>Feature-gated: returns empty/incomplete when
- * {@code app.simulation.v24.expose-detail-api=false} (no data accessible).
+ * {@code app.simulation.detailed.expose-detail-api=false} (no data accessible).
  */
 @Slf4j
 @Service
@@ -275,7 +275,7 @@ public class PlayerSeasonStatsQueryService {
                 .returnedPlayers(result.playerStats().size())
                 .totalMatchesProcessed(result.totalMatchesProcessed())
                 .lastUpdatedRound(lastRound)
-                .dataSource("V24_DETAIL")
+                .dataSource("DETAILED_MATCH_DETAIL")
                 .dataCompleteness(completeness)
                 .generatedAt(Instant.now())
                 .versionHash(versionHash)

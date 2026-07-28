@@ -183,7 +183,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         LiveSession liveSession = new LiveSession(context, 12345L);
         liveSession.tick(); // pre-simulate + advance to minute 1
 
-        matchSessionRegistry.getOrCreateSessionWithV24(
+        matchSessionRegistry.getOrCreateDetailedSession(
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         String body = """
@@ -241,7 +241,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
             LiveSession treatmentSession = new LiveSession(treatmentContext, seed);
             treatmentSession.tick();
 
-            matchSessionRegistry.getOrCreateSessionWithV24(
+            matchSessionRegistry.getOrCreateDetailedSession(
                 userId, matchId, homeTeamUuid, awayTeamUuid, treatmentSession);
 
             String body = """
@@ -312,7 +312,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         LiveSession liveSession = new LiveSession(context, 7777L);
         liveSession.tick(); // currentMinute=1
 
-        matchSessionRegistry.getOrCreateSessionWithV24(
+        matchSessionRegistry.getOrCreateDetailedSession(
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         // Request with minute=0, which is BEFORE currentMinute=1.
@@ -366,7 +366,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         LiveSession liveSession = new LiveSession(context, 8888L);
         liveSession.tick(); // currentMinute=1
 
-        matchSessionRegistry.getOrCreateSessionWithV24(
+        matchSessionRegistry.getOrCreateDetailedSession(
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         // Request with minute=1 (== currentMinute). Must succeed.
@@ -399,7 +399,7 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
         MatchContext context = buildHappyPathContext(homeTeamId, awayTeamId);
         LiveSession liveSession = new LiveSession(context, 9999L);
 
-        matchSessionRegistry.getOrCreateSessionWithV24(
+        matchSessionRegistry.getOrCreateDetailedSession(
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         String body = """

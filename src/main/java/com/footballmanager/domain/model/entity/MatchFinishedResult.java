@@ -40,7 +40,7 @@ public final class MatchFinishedResult {
     /**
      * Convenience: true when this result came from a LiveSession.
      */
-    public boolean isV24() {
+    public boolean isDetailedMatch() {
         return detailedResult != null;
     }
 }

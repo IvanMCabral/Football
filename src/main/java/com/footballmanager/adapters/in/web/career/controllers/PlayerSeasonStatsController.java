@@ -29,7 +29,7 @@ import java.util.Map;
  *   <li>order: asc|desc (default: desc)</li>
  * </ul>
  *
- * <p>Feature-gated: returns 404 when {@code app.simulation.v24.expose-detail-api=false}.
+ * <p>Feature-gated: returns 404 when {@code app.simulation.detailed.expose-detail-api=false}.
  * Does NOT enable detailed match simulation, persistence, or any production simulation path.
  */
 @Slf4j

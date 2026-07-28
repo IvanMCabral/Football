@@ -5,7 +5,7 @@ import com.footballmanager.domain.model.valueobject.MatchFixture;
 /**
  *
  * <p>Maps only the 6 aggregate fields (goals, possession, shots).
- * Discards timeline, xG, and summary — those remain internal to V24.
+ * Discards timeline, xG, and summary — those remain internal to detailed match.
  *
  * <p>Not wired into any production flow.
  */

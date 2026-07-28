@@ -1266,7 +1266,7 @@ class V24MutationBalancingDiagnosticTest {
             System.out.println("Max unavailable: " + maxUnavailableAnyTeam + " (target <= 8).");
             System.out.println("Energy R20: " + String.format(Locale.US, "%.1f", leagueAvgEnergyRound20) + " (target >= 35).");
             System.out.println("No tuning recommended. V24 constants are within acceptable ranges.");
-            System.out.println("Recommendation: proceed with V24D6K7 status update, do NOT tune constants.");
+            System.out.println("Recommendation: proceed with detailed match engineD6K7 status update, do NOT tune constants.");
         } else {
             System.out.println("Season-shaped diagnostic shows concerning values:");
             if (!injuriesInTarget)

@@ -267,7 +267,7 @@ public class TacticalChangeService {
      *
      * <p>The pre-match lineup editor already sends customX/customY through
      * LineupSlot. The live Partido modal uses the same tactical language:
-     * when a slot arrives with custom coordinates, the V24 replay gets a
+     * when a slot arrives with custom coordinates, the detailed replay gets a
      * slotsByPlayerId map so width/center/vertical movement affects the
      * engine instead of being cosmetic UI-only movement.</p>
      */

@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *       per SUBSTITUTION event, and floors at 0.</li>
  * </ul>
  *
- * <p>{@code adaptV24Snapshot} is package-private (not part of the public API)
+ * <p>{@code adaptDetailedSnapshot} is package-private (not part of the public API)
  * — this test lives in the same package so it can drive the conversion
  * directly without spinning up the entire Spring context.
  */
@@ -47,7 +47,7 @@ public class MatchSessionV25D79Test {
     private static final UUID MATCH_ID = UUID.fromString("00000000-0000-0000-0000-00000000a001");
 
     @Test
-    void adaptV24Snapshot_carriesV25D79Fields_onControlledSnapshot() {
+    void adaptDetailedSnapshot_carriesV25D79Fields_onControlledSnapshot() {
         // (1) Build a minimal MatchContext: 7 starters per side (LineupRules.MIN), 0 bench.
         UUID homeTeamUuid = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
         UUID awayTeamUuid = UUID.fromString("00000000-0000-0000-0000-0000000000a2");
@@ -72,12 +72,12 @@ public class MatchSessionV25D79Test {
                 TeamStyle.BALANCED, TeamStyle.BALANCED);
 
         // (2) Wire a real LiveSession — the engine ticks are deterministic
-        // and we don't actually need to call tick() before adaptV24Snapshot()
+        // and we don't actually need to call tick() before adaptDetailedSnapshot()
         // because we drive the snapshot by hand below.
         long seed = 42L;
         LiveSession session = new LiveSession(ctx, seed);
 
-        // (3) Build a MatchSession with the v24LiveSession. MatchState +
+        // (3) Build a MatchSession with the detailedMatchSession. MatchState +
         // MatchTickHandler are required by the constructor but the test never
         // triggers the legacy path so they are just minimal stubs.
         MatchState legacyState = new MatchState(MATCH_ID);
@@ -118,7 +118,7 @@ public class MatchSessionV25D79Test {
         );
 
         // (5) Adapt the LiveSnapshot to the SSE-facing MatchStateSnapshot.
-        MatchStateSnapshot out = matchSession.adaptV24Snapshot(snap);
+        MatchStateSnapshot out = matchSession.adaptDetailedSnapshot(snap);
 
         // (6) Sanity: BE1 fields preserved.
         assertEquals(55, out.homePossession());
@@ -168,9 +168,9 @@ public class MatchSessionV25D79Test {
     }
 
     @Test
-    void adaptV24Snapshot_substitutionsRemaining_floorsAtZero_whenManySubstitutionEvents() {
+    void adaptDetailedSnapshot_substitutionsRemaining_floorsAtZero_whenManySubstitutionEvents() {
         // No MatchContext needed for this branch — we just exercise the
-        // SUBSTITUTION counting on a v24LiveSession with an empty/no-context.
+        // SUBSTITUTION counting on a detailedMatchSession with an empty/no-context.
         // When ctx is null, ratings default to empty; substitutions still
         // come from the events list and that path is the regression sentinel.
         UUID homeTeamUuid = UUID.fromString("00000000-0000-0000-0000-0000000000b1");
@@ -221,7 +221,7 @@ public class MatchSessionV25D79Test {
                 "BALANCED", "BALANCED", "4-4-2", "4-4-2"
         );
 
-        MatchStateSnapshot out = matchSession.adaptV24Snapshot(snap);
+        MatchStateSnapshot out = matchSession.adaptDetailedSnapshot(snap);
         assertEquals(0, out.substitutionsRemaining(),
                 "substitutionsRemaining must floor at 0 even when more SUBSTITUTION "
                     + "events than MAX_SUBSTITUTIONS (5) are present in the snapshot");

@@ -32,7 +32,7 @@ import java.util.UUID;
  *       {@link PlayerMatchRating}, one per player in the team (starter
  *       + bench). Computed by
  *       {@code PlayerMatchStatsModel.computeRatings()} in
- *       {@code MatchSession.adaptV24Snapshot()}. Defaults to empty list.</li>
+ *       {@code MatchSession.adaptDetailedSnapshot()}. Defaults to empty list.</li>
  *   <li>{@code substitutionsRemaining} — integer in [0, 5], the number of
  *       substitutions the manager team can still make. Computed as
  *       {@code max(0, 5 - count(SUBSTITUTION events))}. Source of truth (D5).
@@ -228,7 +228,7 @@ public record MatchStateSnapshot(
 
     /**
      * (player ratings + substitutions remaining). Used by
-     * {@code MatchSession.adaptV24Snapshot()} to fill in the per-player live
+     * {@code MatchSession.adaptDetailedSnapshot()} to fill in the per-player live
      * stats + sub counter without touching any other field.
      */
     public MatchStateSnapshot withLiveStats(

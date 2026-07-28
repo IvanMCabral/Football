@@ -54,11 +54,11 @@ public class MatchManagementService {
             UUID homeTeamId,
             UUID awayTeamId,
             Consumer<MatchFinishedResult> onFinishCallback,
-            LiveSession v24LiveSession) {
+            LiveSession detailedMatchSession) {
 
-        sessionRegistry.getOrCreateSessionWithV24(userId, matchId, homeTeamId, awayTeamId, v24LiveSession);
+        sessionRegistry.getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId, detailedMatchSession);
 
-        return startMatchUseCaseImpl.executeV24(userId, matchId, onFinishCallback, v24LiveSession);
+        return startMatchUseCaseImpl.executeDetailedMatch(userId, matchId, onFinishCallback, detailedMatchSession);
     }
 
     /**

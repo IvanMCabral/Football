@@ -11,7 +11,7 @@ import java.util.Objects;
  *
  * <p>A "bucket" is a 5-minute window. There are 18 buckets covering
  * minutes [0,5), [5,10), ..., [85,90). The {@code type} field is the
- * V24 event type (GOAL, SHOT, YELLOW_CARD, RED_CARD, SUBSTITUTION).
+ * detailed event type (GOAL, SHOT, YELLOW_CARD, RED_CARD, SUBSTITUTION).
  *
  * <p>{@code delta = liveCount - baselineCount}. Positive delta means the
  * live match had more of that event in that bucket than the baseline
@@ -32,7 +32,7 @@ public final class EventBucketDiff {
 
     /** Bucket index: minute / 5, so [0,18). */
     private final int bucket;
-    /** V24 event type, e.g. {@code "GOAL"}, {@code "SHOT"}, {@code "SUBSTITUTION"}. */
+    /** detailed event type, e.g. {@code "GOAL"}, {@code "SHOT"}, {@code "SUBSTITUTION"}. */
     private final String type;
     private final int baselineCount;
     private final int liveCount;

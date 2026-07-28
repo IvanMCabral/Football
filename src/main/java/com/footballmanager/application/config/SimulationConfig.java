@@ -1,49 +1,73 @@
 package com.footballmanager.application.config;
 
 import com.footballmanager.application.service.simulation.LeagueSimulator;
-import com.footballmanager.application.service.simulation.detailed.CareerMutationService;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
-import com.footballmanager.application.service.simulation.detailed.InjuryMutationApplier;
 import com.footballmanager.domain.service.MatchSimulator;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 /**
  * Wires simulation feature flags into the league simulator.
+ *
+ * <p>Current properties use domain language. Deprecated aliases are read only at
+ * this boundary so older deployments keep working without leaking versioned
+ * names into the simulator.
  */
 @Configuration("applicationSimulationConfig")
+@Slf4j
 public class SimulationConfig {
 
-    @Value("${app.simulation.league.use-classic-engine:${app.simulation.league.use-v23-engine:false}}")
-    private boolean useClassicEngine;
+    private final Environment environment;
 
-    @Value("${app.simulation.league.use-detailed-match-engine:${app.simulation.league.use-v24-detailed-engine:false}}")
-    private boolean useDetailedMatchEngine;
-
-    @Value("${app.simulation.detailed.persist-detail:${app.simulation.v24.persist-detail:false}}")
-    private boolean persistDetail;
-
-    @Value("${app.simulation.detailed.mutate-career-state:${app.simulation.v24.mutate-career-state:false}}")
-    private boolean mutateCareerState;
-
-    @Value("${app.simulation.detailed.persist-injuries:${app.simulation.v24.persist-injuries:false}}")
-    private boolean persistInjuries;
-
-    @Value("${app.simulation.detailed.persist-fatigue:${app.simulation.v24.persist-fatigue:false}}")
-    private boolean persistFatigue;
-
-    @Value("${app.simulation.detailed.persist-discipline:${app.simulation.v24.persist-discipline:false}}")
-    private boolean persistDiscipline;
-
-    @Value("${app.simulation.detailed.persist-form:${app.simulation.v24.persist-form:false}}")
-    private boolean persistForm;
+    public SimulationConfig(Environment environment) {
+        this.environment = environment;
+    }
 
     @Bean
     public LeagueSimulator leagueSimulator(MatchSimulator matchSimulator,
                                            DetailedMatchStoragePort detailedMatchStoragePort) {
+        boolean useClassicEngine = booleanProperty(
+                "app.simulation.league.use-classic-engine",
+                "app.simulation.league.use-v23-engine",
+                false);
+        boolean useDetailedMatchEngine = booleanProperty(
+                "app.simulation.league.use-detailed-match-engine",
+                "app.simulation.league.use-v24-detailed-engine",
+                false);
+        boolean persistDetail = detailedBoolean("persist-detail", false);
+        boolean mutateCareerState = detailedBoolean("mutate-career-state", false);
+        boolean persistInjuries = detailedBoolean("persist-injuries", false);
+        boolean persistFatigue = detailedBoolean("persist-fatigue", false);
+        boolean persistDiscipline = detailedBoolean("persist-discipline", false);
+        boolean persistForm = detailedBoolean("persist-form", false);
+
         return new LeagueSimulator(matchSimulator, null, useClassicEngine, useDetailedMatchEngine,
                 persistDetail, detailedMatchStoragePort,
                 mutateCareerState, persistInjuries, persistFatigue, persistDiscipline, persistForm);
+    }
+
+    private boolean detailedBoolean(String name, boolean defaultValue) {
+        return booleanProperty(
+                "app.simulation.detailed." + name,
+                "app.simulation.v24." + name,
+                defaultValue);
+    }
+
+    private boolean booleanProperty(String currentName, String deprecatedName, boolean defaultValue) {
+        String current = environment.getProperty(currentName);
+        if (current != null) {
+            return Boolean.parseBoolean(current);
+        }
+
+        String deprecated = environment.getProperty(deprecatedName);
+        if (deprecated != null) {
+            log.warn("Deprecated simulation property '{}' is still in use; switch to '{}'. "
+                    + "The alias is kept only for existing deployments.", deprecatedName, currentName);
+            return Boolean.parseBoolean(deprecated);
+        }
+
+        return defaultValue;
     }
 }

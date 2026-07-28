@@ -28,7 +28,7 @@ import java.util.Objects;
  * </ul>
  *
  * <p>schemaVersion: 1 — bumping requires a migration path.
- * engineVersion: "V24" — identifies the engine that produced this baseline.
+ * engineVersion: "detailed match" — identifies the engine that produced this baseline.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
         getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
@@ -76,7 +76,7 @@ public final class BaselineState {
         this.subs = (subs != null)
                 ? Collections.unmodifiableList(new ArrayList<>(subs))
                 : Collections.emptyList();
-        this.engineVersion = (engineVersion != null) ? engineVersion : "V24";
+        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.LEGACY_DETAILED_MATCH;
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
     }
@@ -95,7 +95,7 @@ public final class BaselineState {
                 seed,
                 initialContext,
                 Collections.emptyList(),
-                "V24",
+                PersistedEngineVersions.LEGACY_DETAILED_MATCH,
                 1,
                 Instant.now());
     }

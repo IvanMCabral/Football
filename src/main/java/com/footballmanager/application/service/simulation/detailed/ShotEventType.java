@@ -10,7 +10,7 @@ package com.footballmanager.application.service.simulation.detailed;
  *       {@link DetailedMatchEventType#CORNER} as a separate timeline event, but
  *       it does NOT trigger a follow-up shot — the corner roll happens
  *       412, after the shot attempt at line 337). Crosses are not modeled
- *       at all in V24 (no CROSS event type).</li>
+ *       at all in detailed match (no CROSS event type).</li>
  *   <li>{@link #OPEN_PLAY} — any other shot. Default for shots whose
  *       origin is not a set-piece delivery.</li>
  * </ul>

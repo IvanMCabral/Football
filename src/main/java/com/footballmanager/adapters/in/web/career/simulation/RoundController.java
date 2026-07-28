@@ -61,7 +61,7 @@ public class RoundController {
     private final ControllerHelper controllerHelper;
     private final ReactiveLifecycleExecutor lifecycleExecutor;
 
-    @Value("${simulation.use-v24-detailed-engine:true}")
+    @Value("${simulation.use-detailed-match-engine:true}")
     private boolean useDetailedMatchEngine;
 
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json;charset=UTF-8")
@@ -114,16 +114,16 @@ public class RoundController {
 
                     log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
 
-                    LiveSession v24LiveSession = buildLiveSession(career, matchId, homeTeamId, awayTeamId);
+                    LiveSession detailedMatchSession = buildLiveSession(career, matchId, homeTeamId, awayTeamId);
 
-                    if (v24LiveSession != null) {
+                    if (detailedMatchSession != null) {
                         matchStarts.add(matchManagementService.startMatch(
                                 userId,
                                 matchId,
                                 homeTeamId,
                                 awayTeamId,
                                 result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
-                                v24LiveSession)
+                                detailedMatchSession)
                             .take(1)
                             .then());
                     } else {
@@ -189,7 +189,7 @@ public class RoundController {
 
     private LiveSession buildLiveSession(CareerSave career, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
         if (!useDetailedMatchEngine) {
-            log.debug("[ROUND-CONTROLLER] V24DetailedEngine disabled, using legacy path for match {}", matchId);
+            log.debug("[ROUND-CONTROLLER] DetailedMatchEngine disabled, using legacy path for match {}", matchId);
             return null;
         }
 

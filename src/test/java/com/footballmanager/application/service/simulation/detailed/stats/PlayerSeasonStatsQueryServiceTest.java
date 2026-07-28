@@ -281,7 +281,7 @@ class PlayerSeasonStatsQueryServiceTest {
         PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON).block();
 
         assertThat(response.metadata()).isNotNull();
-        assertThat(response.metadata().dataSource()).isEqualTo("V24_DETAIL");
+        assertThat(response.metadata().dataSource()).isEqualTo("DETAILED_MATCH_DETAIL");
         assertThat(response.metadata().totalMatchesProcessed()).isEqualTo(1);
         assertThat(response.metadata().lastUpdatedRound()).isEqualTo(5);
         assertThat(response.metadata().versionHash()).isNotNull();

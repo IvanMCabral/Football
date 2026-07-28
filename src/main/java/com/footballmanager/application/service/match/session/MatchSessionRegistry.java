@@ -42,7 +42,7 @@ public class MatchSessionRegistry {
             return new MatchSession(userId, matchId, initialState, tickHandler);
         }));
     }
-    public MatchSession getOrCreateSessionWithV24(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, LiveSession v24LiveSession) {
+    public MatchSession getOrCreateDetailedSession(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, LiveSession detailedMatchSession) {
         String key = buildKey(userId, matchId);
         return activeSessions.computeIfAbsent(key, id -> {
             MatchState initialState = new MatchState(matchId);
@@ -56,7 +56,7 @@ public class MatchSessionRegistry {
             initialState.setUserId(userId != null ? userId.toString() : null);
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
-            return new MatchSession(userId, matchId, initialState, tickHandler, v24LiveSession);
+            return new MatchSession(userId, matchId, initialState, tickHandler, detailedMatchSession);
         });
     }
 

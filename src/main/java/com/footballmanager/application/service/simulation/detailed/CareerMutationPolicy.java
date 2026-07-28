@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.simulation.detailed;
 
 /**
- * Immutable policy object that governs V24 career state mutation behavior.
+ * Immutable policy object that governs detailed career state mutation behavior.
  * Evaluates which mutation effects are enabled based on feature flags.
  *
  * <p>Rules:

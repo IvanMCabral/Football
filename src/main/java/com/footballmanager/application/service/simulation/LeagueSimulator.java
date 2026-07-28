@@ -122,7 +122,7 @@ public class LeagueSimulator {
             if (useDetailedMatchEngine) {
                 DetailedMatchResult detailedResult = simulateWithDetailedEngine(career, fixture, homeOvr, awayOvr, tournamentState, tracking);
                 if (detailedResult != null) {
-                    tracking.v24RoundProcessed = true;
+                    tracking.detailedRoundProcessed = true;
                 }
             } else if (useClassicLeagueEngine) {
                 simulateWithClassicEngine(fixture, homeOvr, awayOvr, tournamentState);
@@ -165,7 +165,7 @@ public class LeagueSimulator {
         SessionTeam homeTeam = career.getSessionTeam(fixture.getHomeTeamId());
         SessionTeam awayTeam = career.getSessionTeam(fixture.getAwayTeamId());
         if (homeTeam == null || awayTeam == null) {
-            log.warn("Cannot simulate fixture {} with V24: missing team data, falling back to default",
+            log.warn("Cannot simulate fixture {} with detailed match engine: missing team data, falling back to default",
                     fixture.getMatchId());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             return null;

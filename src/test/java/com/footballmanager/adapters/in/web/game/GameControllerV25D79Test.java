@@ -161,7 +161,7 @@ class GameControllerV25D79Test {
                 assertEquals(3, body.substitutionsRemaining(),
                     "substitutionsRemaining must carry the V25D79 sub counter");
                 assertTrue(body.substitutionsRemaining() >= 0,
-                    "substitutionsRemaining must be >= 0 (clamped at 0 by adaptV24Snapshot)");
+                    "substitutionsRemaining must be >= 0 (clamped at 0 by adaptDetailedSnapshot)");
             })
             .verifyComplete();
 

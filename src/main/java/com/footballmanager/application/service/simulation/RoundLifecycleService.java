@@ -52,7 +52,7 @@ final class RoundLifecycleService {
             List<MatchFixture> allFixtures,
             RoundMutationTracking tracking) {
         try {
-            if (!tracking.v24RoundProcessed || !mutationPolicy.isDisciplinePersistenceEnabled()) return;
+            if (!tracking.detailedRoundProcessed || !mutationPolicy.isDisciplinePersistenceEnabled()) return;
             Set<String> preRoundSuspended = liveLifecycleService.capturePreRoundSuspendedPlayerIds(career);
             if (preRoundSuspended.isEmpty()) return;
             List<MatchFixture> roundFixtures = roundFixtures(allFixtures, round);
@@ -81,7 +81,7 @@ final class RoundLifecycleService {
             RoundMutationTracking tracking,
             Set<String> preRoundInjuredPlayerIds) {
         try {
-            if (!tracking.v24RoundProcessed || !mutationPolicy.isInjuryPersistenceEnabled()) return;
+            if (!tracking.detailedRoundProcessed || !mutationPolicy.isInjuryPersistenceEnabled()) return;
             int recovered = injuryRecoveryLifecycleApplier.applyRecovery(
                     career,
                     round,
@@ -102,7 +102,7 @@ final class RoundLifecycleService {
 
     private void applyEnergyRecoveryLifecycle(CareerSave career, RoundMutationTracking tracking) {
         try {
-            if (!tracking.v24RoundProcessed || !mutationPolicy.isFatiguePersistenceEnabled()) return;
+            if (!tracking.detailedRoundProcessed || !mutationPolicy.isFatiguePersistenceEnabled()) return;
             int recovered = energyRecoveryLifecycleApplier.applyRecovery(
                     career,
                     tracking.participatedPlayerIds,

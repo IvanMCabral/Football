@@ -33,7 +33,7 @@ import java.util.UUID;
  * Los IDs son determinísticos (UUID derivado de nombre vía {@link UUID#nameUUIDFromBytes}),
  * lo que permite UPSERT por nombre sin guardar mappings externos.
  *
- * <p><b>Scope:</b> 20 equipos + ~400 jugadores. No toca el simulador V24 ni el flow
+ * <p><b>Scope:</b> 20 equipos + ~400 jugadores. No toca el simulador detailed match ni el flow
  * de WorldSnapshot existente.
  */
 @Slf4j

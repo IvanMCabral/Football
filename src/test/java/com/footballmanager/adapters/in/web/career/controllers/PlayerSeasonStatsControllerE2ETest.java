@@ -25,7 +25,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *       {@code {"error": "..."}} — assert {@code $.error}, NOT {@code $.code}.</li>
  *   <li><b>401 from security filter</b>: {@code {"code": "UNAUTHORIZED", "message": "...", "status": 401}}
  *       — assert {@code $.code}.</li>
- *   <li><b>404 from feature gate</b> (when {@code app.simulation.v24.expose-detail-api=false})
+ *   <li><b>404 from feature gate</b> (when {@code app.simulation.detailed.expose-detail-api=false})
  *       or from single-player endpoint when playerStats is empty.</li>
  * </ul>
  *

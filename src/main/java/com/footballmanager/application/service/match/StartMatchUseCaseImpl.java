@@ -41,9 +41,9 @@ public class StartMatchUseCaseImpl implements StartMatchUseCase {
     /**
      * Used when LiveSession is active for the match.
      */
-    public Flux<MatchStateSnapshot> executeV24(UUID userId, UUID matchId,
+    public Flux<MatchStateSnapshot> executeDetailedMatch(UUID userId, UUID matchId,
                                                Consumer<MatchFinishedResult> onFinishCallback,
-                                               LiveSession v24LiveSession) {
+                                               LiveSession detailedMatchSession) {
         return sessionRegistry.getSession(userId, matchId)
             .map(session -> {
                 session.setOnFinishCallback(onFinishCallback);

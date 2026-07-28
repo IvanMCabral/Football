@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  *
  * <p>Validates all feature flag combinations across:
- * - use-v24-detailed-engine (detailed match simulation path)
+ * - use-detailed-match-engine (detailed match simulation path)
  * - persist-detail (detailed match detail persistence)
  * - expose-detail-api (read API flag, no simulation effect)
  *

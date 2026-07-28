@@ -250,7 +250,7 @@ public class MatchControllerReactive {
      * the frontend's animation logic simple (it shows the final state in
      * one tick) while solving the "Loading..." indefinitely symptom.
      *
-     * <p>404 if no career or no detail (which is the common case — V24
+     * <p>404 if no career or no detail (which is the common case — detailed match
      * detail is only persisted when the detailed match engine + persistence are both
      * enabled for that career). The frontend error handler treats this as
      * "no data" and shows the failure message.
@@ -322,7 +322,7 @@ public class MatchControllerReactive {
 
     private MatchEventDTO toEvent(DetailedMatchEventDto ev) {
         // Frontend enum: 'GOAL' | 'CARD' | 'INJURY' | 'SUBSTITUTION'.
-        // Map V24 type strings to one of those (V24 has more granular types
+        // Map detailed match event type strings to one of those (detailed match has more granular types
         // but they all collapse into one of the four frontend buckets).
         String type = "GOAL";
         String upper = ev.type() == null ? "" : ev.type().toUpperCase();

@@ -61,7 +61,7 @@ public class RedisEntityConfig {
     }
 
     @Bean
-    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.detailed.DetailedMatchData> v24DetailedMatchDataRedisTemplate(
+    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.detailed.DetailedMatchData> detailedMatchDataRedisTemplate(
             ReactiveRedisConnectionFactory connectionFactory) {
         return createTemplate(connectionFactory,
                 com.footballmanager.application.service.simulation.detailed.DetailedMatchData.class);
@@ -69,12 +69,12 @@ public class RedisEntityConfig {
 
     /**
      * {@code BaselineState} snapshots. Separate from
-     * {@code v24DetailedMatchDataRedisTemplate} because the key namespace
+     * {@code detailedMatchDataRedisTemplate} because the key namespace
      * ({@code match-baseline:}) and TTL (7d) differ from the live-detail
      * store.
      */
     @Bean
-    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.detailed.BaselineState> v24MatchBaselineStateRedisTemplate(
+    public ReactiveRedisTemplate<String, com.footballmanager.application.service.simulation.detailed.BaselineState> matchBaselineStateRedisTemplate(
             ReactiveRedisConnectionFactory connectionFactory) {
         return createTemplate(connectionFactory,
                 com.footballmanager.application.service.simulation.detailed.BaselineState.class);

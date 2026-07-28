@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Random;
 
 /**
- * V24B: Selects shooter and assist provider from team match state.
+ * detailed matchB: Selects shooter and assist provider from team match state.
  * Uses position-based weights and attribute-based quality scores.
  */
 public class PlayerSelector {

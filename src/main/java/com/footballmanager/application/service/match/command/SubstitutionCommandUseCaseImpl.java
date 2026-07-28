@@ -201,7 +201,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // (preserving the F2 replay contract) AND appends the event to
             // manualEvents, which is preserved across replays.
             liveSession.recordManualSubstitution(event);
-            session.refreshV24Snapshot();
+            session.refreshDetailedSnapshot();
 
             String careerId = session.getCurrentState() != null
                     ? session.getCurrentState().careerId() : null;

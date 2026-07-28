@@ -15,7 +15,7 @@ import java.util.Objects;
  * {@code career:{careerId}:match-detail:{matchId}}
  *
  * <p>schemaVersion: 1 — for future migrations.
- * engineVersion: "V24" — identifies the engine that produced this data.
+ * engineVersion: "detailed match" — identifies the engine that produced this data.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
         getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
@@ -151,7 +151,7 @@ public final class DetailedMatchData {
         this.timeline = (timeline != null) ? Collections.unmodifiableList(new ArrayList<>(timeline)) : Collections.emptyList();
         this.playerRatings = (playerRatings != null) ? Collections.unmodifiableList(new ArrayList<>(playerRatings)) : Collections.emptyList();
         this.summary = (summary != null) ? summary : "";
-        this.engineVersion = (engineVersion != null) ? engineVersion : "V24";
+        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.LEGACY_DETAILED_MATCH;
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
         // Jackson rellena con null al deserializar JSON sin los campos.
@@ -265,7 +265,7 @@ public final class DetailedMatchData {
                 eventDtos,
                 playerRatings,
                 result.summary(),
-                "V24",
+                PersistedEngineVersions.LEGACY_DETAILED_MATCH,
                 1,
                 Instant.now(),
                 homeFormation,

@@ -69,7 +69,7 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
     private final ReactiveRedisTemplate<String, BaselineState> redisTemplate;
 
     public BaselineStateRedisAdapter(
-            @Qualifier("v24MatchBaselineStateRedisTemplate")
+            @Qualifier("matchBaselineStateRedisTemplate")
             ReactiveRedisTemplate<String, BaselineState> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }

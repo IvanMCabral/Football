@@ -154,7 +154,7 @@ class StyleChangeControllerE2ETest extends AbstractIntegrationTest {
         LiveSession liveSession = new LiveSession(context, 12345L);
         liveSession.tick(); // pre-simulate + advance to minute 1
 
-        matchSessionRegistry.getOrCreateSessionWithV24(
+        matchSessionRegistry.getOrCreateDetailedSession(
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         String body = """

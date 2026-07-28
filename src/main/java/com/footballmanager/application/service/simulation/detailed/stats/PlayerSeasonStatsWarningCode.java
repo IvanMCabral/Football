@@ -15,7 +15,7 @@ public enum PlayerSeasonStatsWarningCode {
     /** No detail data was found for this career/season. */
     NO_DETAIL_DATA,
     /** detailed match detail API feature flag is disabled. */
-    V24_DETAIL_DISABLED,
+    DETAIL_API_DISABLED,
     /** Some rounds appear to have missing detail data. */
     PARTIAL_DETAIL_DATA,
     /** minutesPlayed is not available from source data. */

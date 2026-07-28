@@ -6,7 +6,7 @@ import java.util.Objects;
 
 /**
  * Immutable input bundle for shot xG computation.
- * V24A: this is a pure input record — no xG formula applied here.
+ * detailed matchA: this is a pure input record — no xG formula applied here.
  * Clamps numeric fields to safe ranges.
  */
 public final class ShotQuality {

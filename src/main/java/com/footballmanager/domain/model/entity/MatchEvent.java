@@ -50,7 +50,7 @@ public class MatchEvent {
         SUBSTITUTION,
         /**
          * Legacy domain type for backward compatibility with MatchEventGenerator
-         * and MatchEngineImpl. Not mapped from MatchEventType (V24 uses YELLOW_CARD/RED_CARD).
+         * and MatchEngineImpl. Not mapped from MatchEventType (detailed match uses YELLOW_CARD/RED_CARD).
          * Prefer YELLOW_CARD or RED_CARD in new code.
          */
         CARD,
@@ -89,7 +89,7 @@ public class MatchEvent {
     }
 
     /**
-     * Full constructor including secondary-player attribution from V24 events.
+     * Full constructor including secondary-player attribution from detailed match events.
      */
     private MatchEvent(EventType eventType, int minute, String playerName, String description,
                       String playerId, String teamId, String matchId,

@@ -1812,7 +1812,7 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test G: V24 disabled → no energy recovery.
-     * detailed match path not used → tracking.v24RoundProcessed=false → no recovery.
+     * detailed match path not used → tracking.detailedRoundProcessed=false → no recovery.
      * Expected: energy stays 70.
      */
     @Test

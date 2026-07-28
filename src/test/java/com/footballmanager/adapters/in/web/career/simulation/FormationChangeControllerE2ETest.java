@@ -178,7 +178,7 @@ class FormationChangeControllerE2ETest extends AbstractIntegrationTest {
         LiveSession liveSession = new LiveSession(context, 12345L);
         liveSession.tick();
 
-        matchSessionRegistry.getOrCreateSessionWithV24(
+        matchSessionRegistry.getOrCreateDetailedSession(
             userId, matchId, homeTeamUuid, awayTeamUuid, liveSession);
 
         // 4-4-2 formation using the 11 home starters

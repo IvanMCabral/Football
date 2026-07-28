@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * <p>Tests the third simulation path behind use-v24-detailed-engine flag.
+ * <p>Tests the third simulation path behind use-detailed-match-engine flag.
  * Validates flag precedence, context building, result mapping,
  * fallback behavior, and no Redis persistence.
  */
