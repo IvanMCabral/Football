@@ -33,7 +33,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
     private final MatchContextFactory matchContextFactory;
-    private final DetailedMatchStoragePort v24StoragePort;
+    private final DetailedMatchStoragePort detailedMatchStoragePort;
     private final BaselineStateStoragePort baselineStoragePort;
     private final TestHarnessPreviewRunner previewRunner;
     private final TestHarnessLabService labService;
@@ -51,21 +51,21 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             CareerRepository careerRepository,
             CareerSessionService careerSessionService,
             MatchContextFactory matchContextFactory,
-            DetailedMatchStoragePort v24StoragePort,
+            DetailedMatchStoragePort detailedMatchStoragePort,
             BaselineStateStoragePort baselineStoragePort,
             MatchEngineRegistry matchEngineRegistry) {
         this(
             careerRepository,
             careerSessionService,
             matchContextFactory,
-            v24StoragePort,
+            detailedMatchStoragePort,
             baselineStoragePort,
             TestHarnessUseCaseDependencyFactory.previewRunner(matchContextFactory),
             TestHarnessUseCaseDependencyFactory.labService(careerRepository, careerSessionService),
-            TestHarnessUseCaseDependencyFactory.adminService(careerRepository, careerSessionService, v24StoragePort, matchEngineRegistry),
+            TestHarnessUseCaseDependencyFactory.adminService(careerRepository, careerSessionService, detailedMatchStoragePort, matchEngineRegistry),
             TestHarnessUseCaseDependencyFactory.lineupDiagnosticService(careerRepository, matchContextFactory),
-            TestHarnessUseCaseDependencyFactory.formationMatrixService(careerRepository, careerSessionService, matchContextFactory, baselineStoragePort, v24StoragePort),
-            TestHarnessUseCaseDependencyFactory.replayService(careerRepository, careerSessionService, matchContextFactory, baselineStoragePort, v24StoragePort),
+            TestHarnessUseCaseDependencyFactory.formationMatrixService(careerRepository, careerSessionService, matchContextFactory, baselineStoragePort, detailedMatchStoragePort),
+            TestHarnessUseCaseDependencyFactory.replayService(careerRepository, careerSessionService, matchContextFactory, baselineStoragePort, detailedMatchStoragePort),
             new TestHarnessSubstitutionWhatIfService(careerRepository, matchContextFactory),
             new TestHarnessRoleSlotImpactService(careerRepository, matchContextFactory),
             new TestHarnessPositionPixelService(careerRepository, matchContextFactory),

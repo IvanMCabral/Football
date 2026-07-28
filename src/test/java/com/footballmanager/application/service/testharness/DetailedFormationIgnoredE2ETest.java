@@ -39,8 +39,8 @@ import static org.mockito.Mockito.when;
  * <p><b>Background (sprint investigation summary):</b>
  * <ul>
  *   <li>4 OTHER call sites (foul, injury, corner, offside) were MISSING the
- *       {@code formation} arg — a cosmetic inconsistency, but no test had ever
- *       covered the {@code setFormation → replaceFixtures → replay → assert
+ *       {@code formation} arg â€” a cosmetic inconsistency, but no test had ever
+ *       covered the {@code setFormation â†’ replaceFixtures â†’ replay â†’ assert
  *       byte" symptom was an E2E coverage gap, not a code bug.</li>
  *   <li>B0 (this sprint): pass {@code formation} to the 4 missing call sites.</li>
  *   <li>B1 (this sprint): this E2E test that closes the coverage gap with the
@@ -48,10 +48,10 @@ import static org.mockito.Mockito.when;
  * </ul>
  *
  * <p><b>Strategy:</b> Mockito-only (no Spring context, no {@code @MockBean}
- * for the use case) — same pattern as {@code TestHarnessReplayPersistsDetailE2ETest}.
+ * for the use case) â€” same pattern as {@code TestHarnessReplayPersistsDetailE2ETest}.
  * Wire a real {@link CareerSave} with 11-man squads for both teams, drive the
  * full {@code setFormation + replay} flow through the real
- * {@link TestHarnessUseCaseImpl} → real {@link MatchContextFactory} →
+ * {@link TestHarnessUseCaseImpl} â†’ real {@link MatchContextFactory} â†’
  *
  * <p><b>Squad composition matters:</b> the formation-driven variation is
  * SUBTLE (~5% shooter shift per the investigation) and can be INDETECTABLE
@@ -62,15 +62,15 @@ import static org.mockito.Mockito.when;
  * delta is in the WINGER/MID bracket where formation weights differ.
  *
  * <p><b>Profile gating:</b> the test class does not need {@code @ActiveProfiles}
- * because it doesn't boot Spring — it instantiates the use case directly with
+ * because it doesn't boot Spring â€” it instantiates the use case directly with
  * a real {@link MatchContextFactory} and mocked repos. The test exercises
  * the SAME code path as the HTTP endpoint
- * ({@code POST /api/v1/test-harness/career/set-formation} →
+ * ({@code POST /api/v1/test-harness/career/set-formation} â†’
  * {@code POST /api/v1/test-harness/career/match/{matchId}/replay}),
  * but without HTTP/auth/profile overhead.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("DetailedFormationIgnoredE2E — setFormation + replay flow (sprint V24D22)")
+@DisplayName("DetailedFormationIgnoredE2E â€” setFormation + replay flow (sprint V24D22)")
 class DetailedFormationIgnoredE2ETest {
 
     private static final UUID USER_ID =
@@ -78,14 +78,14 @@ class DetailedFormationIgnoredE2ETest {
     private static final String MATCH_ID = "match-formation-test-001";
     private static final long SEED = 42L;
     // Strict-but-realistic threshold: xG accumulation per match is on the
-    // order of 1.0–3.0, so 0.001 is well below noise. The formation-driven
-    // shift is ~5% shooter share, which translates to ~0.01–0.10 xG delta
+    // order of 1.0â€“3.0, so 0.001 is well below noise. The formation-driven
+    // shift is ~5% shooter share, which translates to ~0.01â€“0.10 xG delta
     // when the squad has mixed positions. See investigation doc.
     private static final double XG_EPSILON = 0.001;
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     // resetRound() use case. Default `@Mock` returns false from
     // hasEngine, which is what these replay tests want (no live engine
     // to evict).
@@ -101,15 +101,15 @@ class DetailedFormationIgnoredE2ETest {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
     }
 
-    // ========== Test 1 — formation change produces different result with same seed ==========
+    // ========== Test 1 â€” formation change produces different result with same seed ==========
 
     /**
      *
-     * <p>Iteration A: setFormation("4-3-3") + replay(seed=42) → resultA.
-     * Iteration B: setFormation("4-4-2") + replay(seed=42) → resultB.
+     * <p>Iteration A: setFormation("4-3-3") + replay(seed=42) â†’ resultA.
+     * Iteration B: setFormation("4-4-2") + replay(seed=42) â†’ resultB.
      *
      * <p>Assert at least ONE measurable delta:
      * <ul>
@@ -120,7 +120,7 @@ class DetailedFormationIgnoredE2ETest {
      * </ul>
      *
      * <p>If this test fails, it indicates an ADDITIONAL bug beyond the B0
-     * cosmetic fix — the detailed match engine has other formation-ignoring paths the
+     * cosmetic fix â€” the detailed match engine has other formation-ignoring paths the
      * requires escalating to MANAGER for a Fase 4 investigation.
      */
     @Test
@@ -135,24 +135,24 @@ class DetailedFormationIgnoredE2ETest {
         boolean awayGoalsDiffer = result433.awayGoals() != result442.awayGoals();
 
         assertThat(homeXgDiffers || awayXgDiffers || homeGoalsDiffer || awayGoalsDiffer)
-            .as("Expected formation change (4-3-3 → 4-4-2) to produce a measurable delta "
+            .as("Expected formation change (4-3-3 â†’ 4-4-2) to produce a measurable delta "
                 + "in xG or goals. Got resultA=(xG=%.3f/%d, goals=%d-%d) resultB=(xG=%.3f/%d, "
                 + "goals=%d-%d). If this assertion fails, there's an ADDITIONAL bug beyond "
-                + "B0 wire-up — escalate to MANAGER (Fase 4).",
+                + "B0 wire-up â€” escalate to MANAGER (Fase 4).",
                 result433.homeXg(), result433.awayXg(), result433.homeGoals(), result433.awayGoals(),
                 result442.homeXg(), result442.awayXg(), result442.homeGoals(), result442.awayGoals())
             .isTrue();
     }
 
-    // ========== Test 2 — same formation + same seed produces identical result ==========
+    // ========== Test 2 â€” same formation + same seed produces identical result ==========
 
     /**
      * (CareerSessionService cache invalidation after save). Without invalidation,
      * the second replay would read the stale in-memory CareerSave and either
      * crash or produce a different result.
      *
-     * <p>Iteration A: setFormation("4-3-3") + replay(seed=42) → resultA.
-     * Iteration B: setFormation("4-3-3") + replay(seed=42) → resultB.
+     * <p>Iteration A: setFormation("4-3-3") + replay(seed=42) â†’ resultA.
+     * Iteration B: setFormation("4-3-3") + replay(seed=42) â†’ resultB.
      *
      * <p>Assert resultA == resultB across all six numeric fields (homeXg,
      * awayXg, homeGoals, awayGoals, homeShots, awayShots).
@@ -177,7 +177,7 @@ class DetailedFormationIgnoredE2ETest {
         when(careerRepository.save(any(CareerSave.class))).thenReturn(Mono.empty());
         useCase.resetInjuries(USER_ID).block();
 
-        // Second iteration — same formation + same seed
+        // Second iteration â€” same formation + same seed
         DetailedMatchData resultB = replayWithFormation("4-3-3", SEED);
 
         assertThat(resultB.homeXg())
@@ -200,7 +200,7 @@ class DetailedFormationIgnoredE2ETest {
             .isEqualTo(resultA.awayShots());
     }
 
-    // ========== Test 3 — formation variation surfaces within 25 seeds ==========
+    // ========== Test 3 â€” formation variation surfaces within 25 seeds ==========
 
     /**
      *
@@ -246,7 +246,7 @@ class DetailedFormationIgnoredE2ETest {
             .as("Scanned seeds 1..25 with formations 4-3-3 vs 4-4-2; expected AT LEAST ONE "
                 + "seed to produce a measurable delta. Best delta observed: %.4f xG at seed=%d. "
                 + "If this fails, formation-driven variation is below 0.001 xG across all "
-                + "25 seeds with the Real Madrid-style squad — escalate to MANAGER (Fase 4) "
+                + "25 seeds with the Real Madrid-style squad â€” escalate to MANAGER (Fase 4) "
                 + "to widen the scan or reconsider the threshold.",
                 bestDelta, seedWithDelta)
             .isTrue();
@@ -280,16 +280,16 @@ class DetailedFormationIgnoredE2ETest {
 
         // Reset the mock invocation count so each replay's storage port
         // save() can be captured fresh.
-        org.mockito.Mockito.clearInvocations(v24StoragePort);
+        org.mockito.Mockito.clearInvocations(detailedMatchStoragePort);
 
-        // replayMatch drives the full flow: matchContextFactory.build() →
-        // engine.simulate() → v24StoragePort.save(newDetail). The new detail
+        // replayMatch drives the full flow: matchContextFactory.build() â†’
+        // engine.simulate() â†’ detailedMatchStoragePort.save(newDetail). The new detail
         // is what we assert on.
         useCase.replayMatch(USER_ID, MATCH_ID, seed).block();
 
         ArgumentCaptor<DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(DetailedMatchData.class);
-        verify(v24StoragePort, times(1)).save(anyString(), detailCaptor.capture());
+        verify(detailedMatchStoragePort, times(1)).save(anyString(), detailCaptor.capture());
 
         return detailCaptor.getValue();
     }
@@ -363,7 +363,7 @@ class DetailedFormationIgnoredE2ETest {
         p.setStamina(stamina);
         p.setMentality(mentality);
         p.setMarketValue(BigDecimal.valueOf(70000L));
-        // initDefaults() is private — replicate its effect so Boolean flags
+        // initDefaults() is private â€” replicate its effect so Boolean flags
         // are non-null (required by AssertJ's isFalse/isZero).
         p.setInjured(false);
         p.setInjuryType(null);
@@ -376,7 +376,7 @@ class DetailedFormationIgnoredE2ETest {
     }
 
     /**
-     * Mirrors TestHarnessUseCaseImplTest.wireSquad() — registers the SessionTeam
+     * Mirrors TestHarnessUseCaseImplTest.wireSquad() â€” registers the SessionTeam
      * and players via reflection so career.getSessionTeam(teamId),
      * career.getAllSessionTeams(), and career.getTeamStarting11() resolve to
      * the squads we built.

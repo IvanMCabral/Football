@@ -41,15 +41,15 @@ class LiveMatchEventConverterTest {
                 "Goal by striker"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event, "GOAL event should convert successfully");
-        assertEquals(45, v24Event.minute());
-        assertEquals(DetailedMatchEventType.GOAL, v24Event.type());
-        assertEquals(HOME, v24Event.teamId());
-        assertEquals("p_h_0", v24Event.playerId());
-        assertEquals("Goal by striker", v24Event.description());
-        assertEquals(0.0, v24Event.xg()); // MVP: no invented xG
+        assertNotNull(detailedEvent, "GOAL event should convert successfully");
+        assertEquals(45, detailedEvent.minute());
+        assertEquals(DetailedMatchEventType.GOAL, detailedEvent.type());
+        assertEquals(HOME, detailedEvent.teamId());
+        assertEquals("p_h_0", detailedEvent.playerId());
+        assertEquals("Goal by striker", detailedEvent.description());
+        assertEquals(0.0, detailedEvent.xg()); // MVP: no invented xG
     }
 
     // ========== Test 2: CARD defaults to YELLOW ==========
@@ -66,10 +66,10 @@ class LiveMatchEventConverterTest {
                 "Foul on player"  // No red/roja keyword
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event, "CARD event should convert");
-        assertEquals(DetailedMatchEventType.YELLOW_CARD, v24Event.type());
+        assertNotNull(detailedEvent, "CARD event should convert");
+        assertEquals(DetailedMatchEventType.YELLOW_CARD, detailedEvent.type());
     }
 
     // ========== Test 3: CARD with red descriptor maps to RED ==========
@@ -86,10 +86,10 @@ class LiveMatchEventConverterTest {
                 "Red card for violent conduct"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event, "RED CARD event should convert");
-        assertEquals(DetailedMatchEventType.RED_CARD, v24Event.type());
+        assertNotNull(detailedEvent, "RED CARD event should convert");
+        assertEquals(DetailedMatchEventType.RED_CARD, detailedEvent.type());
     }
 
     // ========== Test 4: INJURY maps correctly ==========
@@ -106,11 +106,11 @@ class LiveMatchEventConverterTest {
                 "Muscle strain"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event);
-        assertEquals(DetailedMatchEventType.INJURY, v24Event.type());
-        assertEquals("p_h_1", v24Event.playerId());
+        assertNotNull(detailedEvent);
+        assertEquals(DetailedMatchEventType.INJURY, detailedEvent.type());
+        assertEquals("p_h_1", detailedEvent.playerId());
     }
 
     // ========== Test 5: SUBSTITUTION maps correctly ==========
@@ -127,10 +127,10 @@ class LiveMatchEventConverterTest {
                 "Player substituted"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event);
-        assertEquals(DetailedMatchEventType.SUBSTITUTION, v24Event.type());
+        assertNotNull(detailedEvent);
+        assertEquals(DetailedMatchEventType.SUBSTITUTION, detailedEvent.type());
     }
 
     // ========== Test 6: PlayerId resolved by exact name match ==========
@@ -147,10 +147,10 @@ class LiveMatchEventConverterTest {
                 "Goal"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event);
-        assertEquals("p_h_5", v24Event.playerId());
+        assertNotNull(detailedEvent);
+        assertEquals("p_h_5", detailedEvent.playerId());
     }
 
     // ========== Test 7: PlayerId resolved by exact match ==========
@@ -168,11 +168,11 @@ class LiveMatchEventConverterTest {
                 "Goal"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event, "Exact match should resolve");
-        assertEquals("p_h_3", v24Event.playerId());
-        assertEquals(HOME, v24Event.teamId());
+        assertNotNull(detailedEvent, "Exact match should resolve");
+        assertEquals("p_h_3", detailedEvent.playerId());
+        assertEquals(HOME, detailedEvent.teamId());
     }
 
     // ========== Test 8: Unresolved player returns null and skips event ==========
@@ -189,9 +189,9 @@ class LiveMatchEventConverterTest {
                 "Goal"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNull(v24Event, "Unknown player should return null (event skipped)");
+        assertNull(detailedEvent, "Unknown player should return null (event skipped)");
     }
 
     // ========== Test 9: Ambiguous player (in both squads) returns null ==========
@@ -238,9 +238,9 @@ class LiveMatchEventConverterTest {
                 "Goal"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNull(v24Event, "Ambiguous player should return null");
+        assertNull(detailedEvent, "Ambiguous player should return null");
     }
 
     // ========== Test 10: buildTimeline with events ==========
@@ -293,9 +293,9 @@ class LiveMatchEventConverterTest {
         CareerSave career = makeCareer(HOME, AWAY, 11, 11);
         LiveMatchEventConverter converter = new LiveMatchEventConverter(career, HOME, AWAY);
 
-        DetailedMatchEvent v24Event = converter.convert(null);
+        DetailedMatchEvent detailedEvent = converter.convert(null);
 
-        assertNull(v24Event);
+        assertNull(detailedEvent);
     }
 
     // ========== Test 14: converter_jugadorLocal_mapsToHomeSquadRealPlayer ==========
@@ -316,16 +316,16 @@ class LiveMatchEventConverterTest {
                 HOME // matchId as pseudo-matchId
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event, "Jugador local should resolve to a real home player");
-        assertEquals(DetailedMatchEventType.GOAL, v24Event.type());
-        assertEquals(HOME, v24Event.teamId());
-        assertNotNull(v24Event.playerId());
-        assertFalse(v24Event.playerId().isBlank());
-        assertFalse("Jugador local".equals(v24Event.playerName()),
-                "playerName should be real, not generic 'Jugador local': " + v24Event.playerName());
-        assertEquals(0.0, v24Event.xg()); // MVP: no invented xG
+        assertNotNull(detailedEvent, "Jugador local should resolve to a real home player");
+        assertEquals(DetailedMatchEventType.GOAL, detailedEvent.type());
+        assertEquals(HOME, detailedEvent.teamId());
+        assertNotNull(detailedEvent.playerId());
+        assertFalse(detailedEvent.playerId().isBlank());
+        assertFalse("Jugador local".equals(detailedEvent.playerName()),
+                "playerName should be real, not generic 'Jugador local': " + detailedEvent.playerName());
+        assertEquals(0.0, detailedEvent.xg()); // MVP: no invented xG
  }
 
     // ========== Test 15: converter_jugadorVisitante_mapsToAwaySquadRealPlayer ==========
@@ -346,15 +346,15 @@ class LiveMatchEventConverterTest {
                 HOME // matchId
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event, "Jugador visitante should resolve to a real away player");
-        assertEquals(DetailedMatchEventType.GOAL, v24Event.type());
-        assertEquals(AWAY, v24Event.teamId());
-        assertNotNull(v24Event.playerId());
-        assertFalse(v24Event.playerId().isBlank());
-        assertFalse("Jugador visitante".equals(v24Event.playerName()),
-                "playerName should be real, not generic 'Jugador visitante': " + v24Event.playerName());
+        assertNotNull(detailedEvent, "Jugador visitante should resolve to a real away player");
+        assertEquals(DetailedMatchEventType.GOAL, detailedEvent.type());
+        assertEquals(AWAY, detailedEvent.teamId());
+        assertNotNull(detailedEvent.playerId());
+        assertFalse(detailedEvent.playerId().isBlank());
+        assertFalse("Jugador visitante".equals(detailedEvent.playerName()),
+                "playerName should be real, not generic 'Jugador visitante': " + detailedEvent.playerName());
     }
 
     // ========== Test 16: converter_genericJugador_skipsWhenTeamUnknown ==========
@@ -374,10 +374,10 @@ class LiveMatchEventConverterTest {
                 "Generic goal"
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
         // "Jugador" without team context cannot be resolved, so event is skipped
-        assertNull(v24Event, "Generic 'Jugador' without teamId should be skipped");
+        assertNull(detailedEvent, "Generic 'Jugador' without teamId should be skipped");
     }
 
     // ========== Test 17: convertedGoal_hasRealPlayerIdTeamIdName ==========
@@ -398,14 +398,14 @@ class LiveMatchEventConverterTest {
                 HOME
         );
 
-        DetailedMatchEvent v24Event = converter.convert(liveEvent);
+        DetailedMatchEvent detailedEvent = converter.convert(liveEvent);
 
-        assertNotNull(v24Event);
-        assertEquals(DetailedMatchEventType.GOAL, v24Event.type());
-        assertEquals(HOME, v24Event.teamId());
-        assertEquals("p_h_3", v24Event.playerId());
-        assertEquals("Real Player", v24Event.playerName());
-        assertEquals(0.0, v24Event.xg());
+        assertNotNull(detailedEvent);
+        assertEquals(DetailedMatchEventType.GOAL, detailedEvent.type());
+        assertEquals(HOME, detailedEvent.teamId());
+        assertEquals("p_h_3", detailedEvent.playerId());
+        assertEquals("Real Player", detailedEvent.playerName());
+        assertEquals(0.0, detailedEvent.xg());
     }
 
     // ========== Test 18: liveRoundTimeline_hasGoalEventsWithPlayerIds ==========

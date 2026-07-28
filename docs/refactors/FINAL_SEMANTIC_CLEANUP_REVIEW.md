@@ -1,4 +1,4 @@
-# MANAGER - Final Semantic Cleanup and Compatibility Closure
+# MANAGER - Final Semantic Cleanup Review
 
 ## Verdict
 
@@ -6,98 +6,120 @@ APPROVED
 
 ## 1. Baseline
 
-- Starting commit: `b3b32008 Consolidate simulation domain naming and retire versioned legacy code`.
+- Starting commit for this closure: `43538036 Complete semantic cleanup and isolate legacy version compatibility`.
 - Starting working tree: clean.
-- Baseline compile: `mvn -q -DskipTests test-compile` passed.
-- Baseline focused tests: detailed match, match sessions and league simulation tests passed.
+- Previous state: stable compile and full suite, 3750 tests, 0 failures, 0 errors, 8 skipped.
+- Scope: residual naming cleanup only; no architectural refactor or behaviour changes.
 
-## 2. APIs renamed
+## 2. Residual internal names corrected
 
-| Previous name | Current name | Scope |
-| --- | --- | --- |
-| `StartMatchUseCaseImpl.executeV24` | `executeDetailedMatch` | Application match start path for live detailed simulation. |
-| `MatchSessionRegistry.getOrCreateSessionWithV24` | `getOrCreateDetailedSession` | Session registry creation for detailed live sessions. |
-| `MatchSession.refreshV24Snapshot` | `refreshDetailedSnapshot` | Current state refresh from detailed live snapshot. |
-| `MatchSession.adaptV24Snapshot` | `adaptDetailedSnapshot` | Snapshot adapter from detailed live model to domain state. |
-| `MatchFinishedResult.isV24` | `isDetailedMatch` | Domain-facing result classifier. |
+Production fields, parameters and local variables with versioned names were renamed to domain language:
 
-No compatibility wrappers with old method names were kept because these are internal Java APIs and all known callers were updated.
-
-## 3. Variables and fields renamed
-
-- `v24LiveSession` became `detailedMatchSession`.
-- `v24RoundProcessed` became `detailedRoundProcessed`.
-- Session comments and warnings now use detailed-match/classic terminology.
-
-## 4. Beans and qualifiers renamed
-
-| Previous bean/qualifier | Current bean/qualifier |
+| Previous name | Current name |
 | --- | --- |
-| `v24DetailedMatchDataRedisTemplate` | `detailedMatchDataRedisTemplate` |
-| `v24MatchBaselineStateRedisTemplate` | `matchBaselineStateRedisTemplate` |
+| `TestHarnessUseCaseImpl.v24StoragePort` | `detailedMatchStoragePort` |
+| `TestHarnessReplayService.v24StoragePort` | `detailedMatchStoragePort` |
+| `TestHarnessFormationMatrixService.v24StoragePort` | `detailedMatchStoragePort` |
+| `TestHarnessAdminCommandService.v24StoragePort` | `detailedMatchStoragePort` |
+| `MatchControllerReactive.v24DetailedMatchQueryService` | `detailedMatchQueryService` |
+| `RoundController.v24Event` | `detailedEvent` |
+| `RoundController.v24Type` | `detailedEventType` |
+| `MatchSession.v24Type` | `detailedEventType` |
+| `LiveMatchEventConverter.v24Type` | `detailedEventType` |
+| `LiveMatchEventConverter.v24Event` | `detailedEvent` |
 
-Redis key names were not changed. They are persisted storage contracts and already use semantic namespaces such as `match-detail` and `match-baseline`.
+Related tests and mocks were updated to use the same observable domain names. No compatibility aliases with old field names were kept.
 
-## 5. Properties and aliases
+## 3. Properties updated
 
-Current properties are preferred:
+Active runtime profiles now use domain names:
 
 - `app.simulation.league.use-classic-engine`
-- `app.simulation.league.use-detailed-match-engine`
-- `app.simulation.detailed.persist-detail`
-- `app.simulation.detailed.mutate-career-state`
-- `app.simulation.detailed.persist-injuries`
-- `app.simulation.detailed.persist-fatigue`
-- `app.simulation.detailed.persist-discipline`
-- `app.simulation.detailed.persist-form`
-- `app.simulation.detailed.expose-detail-api`
+- `app.simulation.league.detailed-enabled`
+- `app.simulation.detailed.*`
 
-Deprecated aliases remain accepted only in configuration boundary classes:
+Updated active resources:
 
-- `app.simulation.league.use-v23-engine`
-- `app.simulation.league.use-v24-detailed-engine`
-- `app.simulation.v24.*`
+- `src/main/resources/application.yaml`
+- `src/main/resources/application-local.yml`
+- `src/test/resources/application-test.yml`
+- `src/main/resources/application-career-mutations.yml`
 
-When a deprecated alias is used, `SimulationConfig` or `DetailedSimulationConfig` logs a warning and prioritizes the current property if both are present. These aliases are retained for existing deployments and can be removed once deployment configs have migrated.
+## 4. Deprecated property aliases
+
+Legacy versioned properties are accepted only in configuration boundary classes so existing deployments can still boot while they migrate:
+
+| Legacy alias | Current property | Boundary |
+| --- | --- | --- |
+| `app.simulation.league.use-v23-engine` | `app.simulation.league.use-classic-engine` | `SimulationConfig` |
+| `app.simulation.league.use-v24-detailed-engine` | `app.simulation.league.detailed-enabled` | `SimulationConfig` |
+| `app.simulation.v24.*` | `app.simulation.detailed.*` | `SimulationConfig`, `DetailedSimulationConfig` |
+
+When a legacy alias is used and the current property is absent, the configuration class logs a warning. Current properties take priority. These aliases are isolated from the simulator core and can be removed after deployment configs have migrated.
+
+## 5. Profile rename
+
+The active mutation profile was renamed from version terminology to functional terminology:
+
+- `application-v24-mutations.yml` -> `application-career-mutations.yml`
+- profile name `v24-mutations` -> `career-mutations`
+
+Operational documentation was updated to reference `local,career-mutations`.
 
 ## 6. Persisted compatibility
 
-The stored value `engineVersion = "V24"` remains only as a Redis/JSON discriminator for existing match detail and baseline snapshots. It is isolated in:
+The stored value `engineVersion = "V24"` remains only as a persisted Redis/JSON discriminator for existing detailed match and baseline snapshots.
 
-- `PersistedEngineVersions.LEGACY_DETAILED_MATCH`
+It is isolated in:
 
-The current simulation domain does not use `V24` as a business concept.
+- `PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24`
 
-## 7. Remaining production V23/V24 references
+Consumers:
 
-| Reference | Classification | Justification |
+- `DetailedMatchData`
+- `BaselineState`
+- Redis adapters that serialize/deserialize those records
+
+Retirement condition: this value can be removed only after old Redis/JSON snapshots either expire, are migrated, or are no longer supported.
+
+## 7. Final production V23/V24 inventory
+
+Final search scope:
+
+- `src/main/java`
+- `src/main/resources`
+
+Classified remaining production references:
+
+| File | Reference | Classification |
 | --- | --- | --- |
-| `SimulationConfig` deprecated property literals | Deprecated property alias | Existing deployments may still set these names. Warning emitted when used. |
-| `DetailedSimulationConfig` deprecated property literals | Deprecated property alias | Existing deployments may still set these names. Warning emitted when used. |
-| `PersistedEngineVersions.LEGACY_DETAILED_MATCH = "V24"` | Persisted compatibility | Required to preserve Redis/JSON snapshots already stored with this discriminator. |
+| `SimulationConfig.java` | `app.simulation.league.use-v23-engine` | Deprecated config alias only |
+| `SimulationConfig.java` | `app.simulation.league.use-v24-detailed-engine` | Deprecated config alias only |
+| `SimulationConfig.java` | `app.simulation.v24.*` | Deprecated config alias only |
+| `DetailedSimulationConfig.java` | `app.simulation.v24.*` | Deprecated config alias only |
+| `PersistedEngineVersions.java` | `PERSISTED_ENGINE_VERSION_V24 = "V24"` | Persisted compatibility discriminator |
 
-No unclassified V23/V24 production references remain.
+No unclassified production V23/V24 references remain. Seed data entries such as `Goiania B`/`Goi?nia B` are football data, not version references.
 
-## 8. Validation
+## 8. Encoding
 
-Completed during this closure:
+- Removed BOMs introduced during local rewrite attempts.
+- Corrected active documentation headings from `MANAGER ?` to `MANAGER -`.
+- Normalized active profile comments and runbook references.
+- Verified files with UTF-8 reads and replacement-character checks.
 
-- `mvn -q -DskipTests test-compile`
-- Focused detailed match/session/league tests passed.
-- Focused Redis/config/controller tests passed.
-- Full suite `mvn -q test` passed.
-- Surefire result count: 3750 tests, 0 failures, 0 errors, 8 skipped.
-- `git diff --check` passed.
+## 9. Validation evidence
 
-## 9. Deferred non-scope items
+Commands executed during this closure:
 
-The following were intentionally not reopened, per closure scope:
+- `mvn -q -DskipTests test-compile` - passed.
+- Focused tests for test harness, match controller, round controller, match session, live event converter, config and detailed persistence - passed.
+- `mvn -q test` - passed after final commit validation.
+- Surefire totals after final suite: 3750 tests, 0 failures, 0 errors, 8 skipped.
+- `git diff --check` - passed.
+- Final production version scan - only classified compatibility references remain.
+- Final working tree - clean after commit and validation.
 
-- `ReactiveLifecycleExecutor`
-- `LeagueSimulator.block(DETAIL_PERSIST_TIMEOUT)`
-- internal composition of `DetailedMatchEngine`
-- `LineupDtoAssembler`
+## 10. Final decision
 
-## Final decision
-
-The semantic cleanup is approved because versioned terminology is removed from active internal APIs, fields and qualifiers; legacy property names and persisted discriminators are isolated at compatibility boundaries; behavior is preserved by compilation, focused tests and the complete test suite.
+APPROVED. The residual version naming cleanup is complete: current code paths and active properties use domain terminology; old versioned names remain only as deprecated config aliases or persisted compatibility discriminators; the profile was renamed to functional language; encoding issues were corrected; behaviour was preserved by focused and complete test suites.

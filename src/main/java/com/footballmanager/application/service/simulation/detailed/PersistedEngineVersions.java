@@ -9,7 +9,7 @@ package com.footballmanager.application.service.simulation.detailed;
  */
 final class PersistedEngineVersions {
 
-    static final String LEGACY_DETAILED_MATCH = "V24";
+    static final String PERSISTED_ENGINE_VERSION_V24 = "V24";
 
     private PersistedEngineVersions() {
     }

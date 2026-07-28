@@ -1,4 +1,4 @@
-# Local QA profile — V24D6M12 player season stats API enablement
+# Local QA profile - player season stats API enablement
 # Activate with: mvn spring-boot:run -Dspring-boot.run.profiles=local
 # Or: java -jar ... --spring.profiles.active=local
 spring:
@@ -18,12 +18,12 @@ jwt:
 app:
   simulation:
     league:
-      use-v23-engine: false
-      use-v24-detailed-engine: true    # V24D5B: Enable V24 detailed engine — needed to persist V24DetailedMatchData for stats
-    v24:
-      expose-detail-api: true         # V24D6M12: Enable stats/player-season API
-      persist-detail: true              # V24D5C: Persist V24DetailedMatchData to Redis after simulation
-      mutate-career-state: false       # Read-only — do NOT mutate career state
+      use-classic-engine: false
+      detailed-enabled: true
+    detailed:
+      expose-detail-api: true         # Enable stats/player-season API
+      persist-detail: true              # Persist detailed match data to Redis after simulation
+      mutate-career-state: false       # Read-only - do NOT mutate career state
       persist-injuries: false
       persist-fatigue: false
       persist-discipline: false

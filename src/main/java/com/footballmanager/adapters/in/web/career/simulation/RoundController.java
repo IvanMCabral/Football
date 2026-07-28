@@ -251,14 +251,14 @@ public class RoundController {
         List<com.footballmanager.domain.model.entity.MatchEvent> events;
         if (result.detailedResult() instanceof DetailedMatchResult detailedResult) {
             events = new java.util.ArrayList<>();
-            for (var v24Event : detailedResult.timeline().events()) {
+            for (var detailedEvent : detailedResult.timeline().events()) {
                 events.add(com.footballmanager.domain.model.entity.MatchEvent.of(
-                        toDomainEventType(v24Event.type()),
-                        v24Event.minute(),
-                        v24Event.playerId(),
-                        v24Event.playerName(),
-                        v24Event.teamId(),
-                        v24Event.description()
+                        toDomainEventType(detailedEvent.type()),
+                        detailedEvent.minute(),
+                        detailedEvent.playerId(),
+                        detailedEvent.playerName(),
+                        detailedEvent.teamId(),
+                        detailedEvent.description()
                 ));
             }
             log.info("[ROUND-CONTROLLER] detailed match finished, {} timeline events for persistence", events.size());
@@ -419,11 +419,11 @@ public class RoundController {
     }
 
     private com.footballmanager.domain.model.entity.MatchEvent.EventType toDomainEventType(
-            DetailedMatchEventType v24Type) {
-        if (v24Type == null) {
+            DetailedMatchEventType detailedEventType) {
+        if (detailedEventType == null) {
             throw new IllegalArgumentException("DetailedMatchEventType cannot be null");
         }
-        return switch (v24Type) {
+        return switch (detailedEventType) {
             case GOAL -> com.footballmanager.domain.model.entity.MatchEvent.EventType.GOAL;
             case SHOT -> com.footballmanager.domain.model.entity.MatchEvent.EventType.SHOT;
             case SHOT_ON_TARGET -> com.footballmanager.domain.model.entity.MatchEvent.EventType.SHOT_ON_TARGET;

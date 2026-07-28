@@ -14,7 +14,7 @@
 - **Sub-repo front:** `D:\ProyectosOpenCode\MANAGER\front-ciber\project`
 - **Stack:** Spring Boot 3.2.1 WebFlux + R2DBC PostgreSQL + Redis + Angular.
 - **Java 17/21** (`C:\Users\ichu_\.jdk\jdk-21.0.8\bin\java.exe`)
-- **Profile activo:** `local,v24-mutations`
+- **Profile activo:** `local,career-mutations`
 - **DB:** PostgreSQL en `localhost:5432` (DB `football_manager`, user/pass `postgres/postgres`).
 - **Redis:** binario en `C:\temp\redis\redis-server.exe`, puerto 6379.
 - **Backend port:** 8080, **Frontend port:** 4200.
@@ -358,8 +358,8 @@ _(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-
 
 - **P1a:** Match detail UI polish (85% listo).
 - **P1b:** Career mutations edge cases (90% listo).
-- **P2a:** V23 Phase 10C (TeamOverallCalculator M3).
-- **P2b:** V23 Phase 6C (TeamStyle user-configurable M3).
+- **P2a:** Classic-engine backlog: TeamOverallCalculator M3.
+- **P2b:** Classic-engine backlog: TeamStyle user-configurable M3.
 - **Deuda tecnica:** E2E coverage 36%→80% (V24D7+2 pendiente). `.env` con credenciales en plaintext RESUELTO en V24D12-D (4 commits, hash `ee27111`, pusheado a origin/master 2026-06-15 14:50).
 - **Incidente:** SENIOR pusheo V24D8-BUG-004 sin autorizacion (regla #1 violada). Conversacion pendiente.
 
@@ -446,7 +446,7 @@ _(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-
 
 **Para quién:** REVISOR (corre smokes Bloque A/B) + Iván (verifica empíricamente si formación/random afecta resultado).
 
-**Qué es:** 5 endpoints REST en `/api/v1/test-harness/career/*` (gated a `@Profile({"dev","local","test"})`). Permiten a un test crear carrera custom, sobreescribir fixtures, resetear lesiones, cambiar formación, y dumpear state — sin tocar el motor V24.
+**Qué es:** 5 endpoints REST en `/api/v1/test-harness/career/*` (gated a `@Profile({"dev","local","test"})`). Permiten a un test crear carrera custom, sobreescribir fixtures, resetear lesiones, cambiar formación, y dumpear state — sin tocar el motor detallado.
 
 ### Endpoints (todos con JWT auth)
 
@@ -567,12 +567,12 @@ El replay:
 1. Resetea el fixture a PENDING (era COMPLETED).
 2. Re-simula via `V24DetailedMatchEngine` con el seed (caller-provided o auto).
 3. Persiste el nuevo resultado + actualiza standings.
-4. Limpia el V24 detail viejo en Redis (best-effort).
+4. Limpia el detalle de partido viejo en Redis (best-effort).
 5. Save + invalidar cache (mismo pattern que los otros endpoints).
 
 **Limitaciones MVP (conocidas, documentadas):**
 - Standings double-count: el resultado original ya estaba en standings; replay aplica el nuevo encima. Para state limpio, REVISOR debe correr `replace-fixtures` antes de replay.
-- V24 detail delete es best-effort (errores se loggean, no se tiran).
+- El borrado de detalle de partido es best-effort (errores se loggean, no se tiran).
 
 ### Flujo "replay con formación cambiada" (REVISOR what-if)
 
@@ -595,7 +595,7 @@ diff pre.json post.json
 
 ### Tests automatizados
 
-- `TestHarnessUseCaseImplTest` — 18 unit tests (Mockito + real V24 engine). 4 nuevos BUG #1 + 1 nuevo BUG #2 + 4 nuevos replayMatch.
+- `TestHarnessUseCaseImplTest` — 18 unit tests (Mockito + real detailed engine). 4 nuevos BUG #1 + 1 nuevo BUG #2 + 4 nuevos replayMatch.
 - `V24DetailedMatchRedisAdapterTest` — 17 tests. 1 nuevo BUG #3 regression guard.
 - `V24DetailedMatchEngineDeterminismTest` — 2 tests. 1 nuevo BUG #4 outlier check.
 - `TestHarnessControllerE2ETest` — 8 E2E tests (HTTP wiring intacto).

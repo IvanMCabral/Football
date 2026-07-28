@@ -46,10 +46,10 @@ public final class LiveMatchEventConverter {
         String eventTeamId = liveEvent.getTeamId();
 
         if (eventPlayerId != null && eventTeamId != null) {
-            DetailedMatchEventType v24Type = mapEventType(liveEvent);
+            DetailedMatchEventType detailedEventType = mapEventType(liveEvent);
             return new DetailedMatchEvent(
                     liveEvent.getMinute(),
-                    v24Type,
+                    detailedEventType,
                     eventTeamId,
                     eventPlayerId,
                     liveEvent.getPlayerName() != null ? liveEvent.getPlayerName() : "Unknown",
@@ -75,11 +75,11 @@ public final class LiveMatchEventConverter {
         }
 
         String resolvedPlayerName = resolvePlayerName(liveEvent, side, playerId);
-        DetailedMatchEventType v24Type = mapEventType(liveEvent);
+        DetailedMatchEventType detailedEventType = mapEventType(liveEvent);
 
         return new DetailedMatchEvent(
                 liveEvent.getMinute(),
-                v24Type,
+                detailedEventType,
                 side.teamId,
                 playerId,
                 resolvedPlayerName,
@@ -100,9 +100,9 @@ public final class LiveMatchEventConverter {
         }
 
         for (MatchEvent event : liveEvents) {
-            DetailedMatchEvent v24Event = convert(event);
-            if (v24Event != null) {
-                timeline.addEvent(v24Event);
+            DetailedMatchEvent detailedEvent = convert(event);
+            if (detailedEvent != null) {
+                timeline.addEvent(detailedEvent);
             }
         }
         return timeline;

@@ -92,9 +92,9 @@ app:
   description: Turn-based football team management and match simulation system
   simulation:
     league:
-      use-v23-engine: false
-      use-v24-detailed-engine: true
-    v24:
+      use-classic-engine: false
+      detailed-enabled: true
+    detailed:
       mutate-career-state: false
       persist-injuries: false
       persist-fatigue: false

@@ -38,9 +38,9 @@ import static org.mockito.Mockito.when;
 
 /**
  *
- * but the resulting ΔxG (~0.05-0.13 per team per match) sat 1σ below the per-match
- * confirmed: 5 formations × same squad → byte-for-byte identical scores (5-1,
- * 2-5, 2-1, 3-0) — formation was a no-op for goals.
+ * but the resulting Î”xG (~0.05-0.13 per team per match) sat 1Ïƒ below the per-match
+ * confirmed: 5 formations Ã— same squad â†’ byte-for-byte identical scores (5-1,
+ * 2-5, 2-1, 3-0) â€” formation was a no-op for goals.
  *
  * {@code ShotXgCalculator.calculateXg(quality, formation)}. The modifier
  * is multiplicative on top of the existing shot-location / shooter / assist /
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
  *
  * <p><b>This test verifies the acceptance criterion</b>: with the same squad
  * and 5 different formations applied, at least 2 of 4 seeded matches produce
- * distinct scores. The probe runs the same setFormation → replayMatch flow
+ * distinct scores. The probe runs the same setFormation â†’ replayMatch flow
  * scores should now vary.
  *
  * <p><b>Why E2E (not unit):</b> the unit test
@@ -61,14 +61,14 @@ import static org.mockito.Mockito.when;
  * only level that catches this propagation end-to-end.
  *
  * <p><b>Squad reuse:</b> Real Madrid-style squad (1 GK + 4 DEF + 3 MID +
- * 2 WINGER + 1 ATT, 1 super-striker ATT=90) — same as
+ * 2 WINGER + 1 ATT, 1 super-striker ATT=90) â€” same as
  * {@code DetailedFormationShotLocationE2ETest.careerWithFreshSquad} for
  *
- * <p><b>Profile gating:</b> same as the reference tests — Mockito-only,
+ * <p><b>Profile gating:</b> same as the reference tests â€” Mockito-only,
  * no Spring context, no HTTP/auth/profile overhead.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("V25D25 FormationGoalDiversity — formation drives distinct goal counts (sprint V25D25 acceptance)")
+@DisplayName("V25D25 FormationGoalDiversity â€” formation drives distinct goal counts (sprint V25D25 acceptance)")
 class DetailedFormationGoalDiversityE2ETest {
 
     private static final UUID USER_ID =
@@ -88,7 +88,7 @@ class DetailedFormationGoalDiversityE2ETest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     @Mock private BaselineStateStoragePort baselineStoragePort;
     // returns false from hasEngine, which is fine for the replay tests below
     // (none of them exercise the reset-round path).
@@ -102,12 +102,12 @@ class DetailedFormationGoalDiversityE2ETest {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, baselineStoragePort, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, baselineStoragePort, matchEngineRegistry);
         when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
             .thenReturn(Mono.empty());
     }
 
-    // ========== Test 1 — formation-diversity acceptance criterion ==========
+    // ========== Test 1 â€” formation-diversity acceptance criterion ==========
 
     /**
      *
@@ -115,16 +115,16 @@ class DetailedFormationGoalDiversityE2ETest {
      * spread of integer goal counts (because the formation modifier shifts
      * per-shot xG by ~30% in the worst-vs-best formation pair, and that
      * shift propagates through 15+ Bernoulli shots into integer goal
-     * counts). The acceptance criterion: at least 2 of 4 seeds show ≥2
+     * counts). The acceptance criterion: at least 2 of 4 seeds show â‰¥2
      * distinct score tuples across the 5 formations.
      *
      * <p>The score-range check (max - min of homeGoals+awayGoals across
      * formations per seed) gives a magnitude floor: a Bernoulli-only
      * drift would still produce some range, but with the formation
-     * modifier in place we expect a range ≥ 1 in at least 2 of 4 seeds.
+     * modifier in place we expect a range â‰¥ 1 in at least 2 of 4 seeds.
      */
     @Test
-    @DisplayName("5 formations × 4 seeds on same squad: at least 2 of 4 seeds produce distinct scores")
+    @DisplayName("5 formations Ã— 4 seeds on same squad: at least 2 of 4 seeds produce distinct scores")
     void fiveFormationsAcrossFourSeeds_produceDistinctScores() {
         // Capture (homeGoals, awayGoals) for each (formationIdx, seedIdx).
         int[][] homeGoals = new int[FORMATIONS.length][SEEDS.length];
@@ -139,7 +139,7 @@ class DetailedFormationGoalDiversityE2ETest {
             }
         }
 
-        // Print the grid for diagnostic purposes — useful when the test fails.
+        // Print the grid for diagnostic purposes â€” useful when the test fails.
         printScoreGrid(homeGoals, awayGoals);
 
         // Count seeds whose 5-formation run shows distinct score tuples.
@@ -163,7 +163,7 @@ class DetailedFormationGoalDiversityE2ETest {
 
         // Determinism regression: for any formation, the 4 seeds MUST produce
         // distinct score patterns. If they don't, the seed is being ignored
-        // (RNG broken) — that's a hard correctness regression.
+        // (RNG broken) â€” that's a hard correctness regression.
         int formationsWithDistinctSeeds = 0;
         for (int fi = 0; fi < FORMATIONS.length; fi++) {
             Set<String> distinctScores = new HashSet<>();
@@ -195,7 +195,7 @@ class DetailedFormationGoalDiversityE2ETest {
             .isGreaterThanOrEqualTo(2);
     }
 
-    // ========== Test 2 — same formation + same seed = identical result (regression) ==========
+    // ========== Test 2 â€” same formation + same seed = identical result (regression) ==========
 
     /**
      * Determinism regression guard: same formation + same seed must produce
@@ -233,12 +233,12 @@ class DetailedFormationGoalDiversityE2ETest {
         when(careerRepository.save(any(CareerSave.class))).thenReturn(Mono.empty());
 
         useCase.setFormation(USER_ID, formation).block();
-        org.mockito.Mockito.clearInvocations(v24StoragePort);
+        org.mockito.Mockito.clearInvocations(detailedMatchStoragePort);
         useCase.replayMatch(USER_ID, MATCH_ID, seed).block();
 
         ArgumentCaptor<DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(DetailedMatchData.class);
-        verify(v24StoragePort, times(1)).save(anyString(), detailCaptor.capture());
+        verify(detailedMatchStoragePort, times(1)).save(anyString(), detailCaptor.capture());
 
         return detailCaptor.getValue();
     }

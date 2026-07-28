@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 /**
  *
  * <p>Bug: {@link TestHarnessUseCaseImpl#executeReplayMatch} ran the real V24
- * possession, shots, and goals per match — but then built the
+ * possession, shots, and goals per match â€” but then built the
  * {@link MatchFixture.MatchResultData} with hardcoded {@code 0, 0, 0, 0} for
  * possession + shots. The replayed fixture thus returned
  * {@code {homePossession: 0, awayPossession: 0, homeShots: 0, awayShots: 0}}
@@ -44,12 +44,12 @@ import static org.mockito.Mockito.when;
  * <p>Fix: forward the four real values from the engine result.
  *
  * <p>Strategy: full use-case test (no Spring context), mirroring
- * {@link TestHarnessReplayPersistsDetailE2ETest} — wire a real
+ * {@link TestHarnessReplayPersistsDetailE2ETest} â€” wire a real
  * {@link CareerSave} with 11-man squads, run the real
  * {@code MatchResultData} reflects the engine's possession / shots.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TestHarnessUseCaseImpl — replayMatch forwards V24 possession + shots")
+@DisplayName("TestHarnessUseCaseImpl â€” replayMatch forwards V24 possession + shots")
 class TestHarnessReplayPossessionV25D37F4Test {
 
     private static final UUID USER_ID =
@@ -58,10 +58,10 @@ class TestHarnessReplayPossessionV25D37F4Test {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     @Mock private MatchEngineRegistry matchEngineRegistry;
 
-    // Real factory — same rationale as the sibling test: a mock would return
+    // Real factory â€” same rationale as the sibling test: a mock would return
     // null teams and the engine's TeamMatchState.create would NPE.
     private MatchContextFactory matchContextFactory;
     private TestHarnessUseCaseImpl useCase;
@@ -73,7 +73,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);
@@ -91,7 +91,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
         wireSquad(career, "rival-1", rivalPlayers);
 
         // resetRound contract requires a fixture in COMPLETED state for
-        // resetRound — replayMatch doesn't, but starting from COMPLETED
+        // resetRound â€” replayMatch doesn't, but starting from COMPLETED
         // matches the production scenario: "replay a finished match").
         MatchFixture completed = new MatchFixture(
             MATCH_ID, "user-team-id", "rival-1", 1);
@@ -134,7 +134,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
             .isEqualTo(100);
 
         // Shots: engine produces non-negative shot counts. The old code hardcoded
-        // these to 0 — assert the engine's real value is propagated.
+        // these to 0 â€” assert the engine's real value is propagated.
         assertThat(result.getHomeShots())
             .as("replayed homeShots must come from detailed match engine, not the old 0 stub")
             .isGreaterThanOrEqualTo(0);
@@ -161,7 +161,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
     void replayMatch_possessionIsNotCarriedOverFromSeed() {
         // Pre-condition: the seed fixture has possession 50/50 (set in setUp).
         // After replay with seed=99 (different seed -> different result), the
-        // engine's possession must overwrite it — NOT keep 50/50.
+        // engine's possession must overwrite it â€” NOT keep 50/50.
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
         when(careerRepository.save(any(CareerSave.class)))
@@ -176,7 +176,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
 
         MatchFixture.MatchResultData result = out[0].getResult();
         // Possession values MUST be valid percentages (sum to 100, in [0,100]).
-        // The engine guarantees this for any seed — the bug was that the old code
+        // The engine guarantees this for any seed â€” the bug was that the old code
         // ignored the engine entirely and set them to 0, so this assertion would
         // have failed before the fix.
         assertThat(result.getHomePossession() + result.getAwayPossession())

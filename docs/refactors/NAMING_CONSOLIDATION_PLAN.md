@@ -1,4 +1,4 @@
-# MANAGER ? Domain Naming Consolidation Plan
+# MANAGER - Domain Naming Consolidation Plan
 
 ## Status
 
@@ -14,7 +14,7 @@ This plan was refreshed after the naming consolidation pass. The detailed match 
 | Live and round services | Removed versioned service names. | `LiveMatchLifecycleService`, `LiveMatchMutationService`, `RoundLifecycleService`, `RoundMutationTracking`. |
 | Formation parser | Removed internal `V24Formation` name. | Parser exposes `FormationParser.FormationShape`. |
 | Classic engine path | Kept as active fallback, renamed internally to classic language. | `LeagueSimulator` uses `useClassicLeagueEngine` and `simulateWithClassicEngine`; old property remains as an alias. |
-| Config compatibility | New detailed/classic property names added while old versioned keys remain accepted. | `app.simulation.league.use-detailed-match-engine` aliases `app.simulation.league.use-v24-detailed-engine`; `app.simulation.detailed.*` aliases `app.simulation.v24.*`. |
+| Config compatibility | New detailed/classic property names added while old versioned keys remain accepted. | `app.simulation.league.detailed-enabled` aliases `app.simulation.league.use-v24-detailed-engine`; `app.simulation.detailed.*` aliases `app.simulation.v24.*`. |
 | Persistence compatibility | Existing stored `engineVersion: "V24"` is intentionally preserved. | `DetailedMatchData` and `BaselineState` keep the persisted value to read already-stored match detail and baseline snapshots. |
 | Test packages | Detailed-engine tests moved off the `simulation/v24` path. | Tests now live under `src/test/java/com/footballmanager/application/service/simulation/detailed`. |
 

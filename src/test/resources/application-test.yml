@@ -8,8 +8,8 @@
 #   - Server: RANDOM_PORT (assigned by Spring TestContext, never clashes with :8080)
 #
 # DO NOT use this profile for the running dev backend.
-# DO NOT modify application.yaml / application-local.yml / application-v24-mutations.yml
-# to support this profile — keep test concerns in this file only.
+# DO NOT modify application.yaml / application-local.yml / application-career-mutations.yml
+# to support this profile - keep test concerns in this file only.
 
 spring:
   # Reuse the dev DB credentials, point at the TEST database
@@ -57,9 +57,9 @@ spring:
 app:
   simulation:
     league:
-      use-v23-engine: false
-      use-v24-detailed-engine: true
-    v24:
+      use-classic-engine: false
+      detailed-enabled: true
+    detailed:
       mutate-career-state: false
       persist-injuries: false
       persist-fatigue: false
@@ -68,7 +68,7 @@ app:
       persist-detail: true
       expose-detail-api: true
 
-# Quieter logging during tests — keep R2DBC/Redis noise low
+# Quieter logging during tests - keep R2DBC/Redis noise low
 logging:
   level:
     root: WARN

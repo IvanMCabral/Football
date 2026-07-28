@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
  * best-effort {@code deleteByMatchId} wiped even that, leaving the API
  * with nothing to return).
  *
- * <p>Impact: blocked Iván's "what-if" smoke — replaying a match with a
+ * <p>Impact: blocked IvÃ¡n's "what-if" smoke â€” replaying a match with a
  * changed formation couldn't be compared against the original because
  * the timeline / shot map / xG of the new run never reached Redis.
  *
@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
  * site exists in {@code executeReplayMatch}) and GREEN after.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TestHarnessUseCaseImpl — replayMatch persists detailed match detail")
+@DisplayName("TestHarnessUseCaseImpl â€” replayMatch persists detailed match detail")
 class TestHarnessReplayPersistsDetailE2ETest {
 
     private static final UUID USER_ID =
@@ -65,7 +65,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     // resetRound() use case. Default `@Mock` is fine.
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
@@ -82,7 +82,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);
@@ -126,13 +126,13 @@ class TestHarnessReplayPersistsDetailE2ETest {
         ArgumentCaptor<DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(DetailedMatchData.class);
 
-        verify(v24StoragePort, times(1)).save(careerIdCaptor.capture(), detailCaptor.capture());
+        verify(detailedMatchStoragePort, times(1)).save(careerIdCaptor.capture(), detailCaptor.capture());
 
         String savedCareerId = careerIdCaptor.getValue();
         DetailedMatchData savedDetail = detailCaptor.getValue();
 
         // The saved detail must be for the same careerId that the
-        // controller passes to GET /detail — if these diverge the API
+        // controller passes to GET /detail â€” if these diverge the API
         // returns 404 even with the fix in place.
         assertThat(savedCareerId)
             .as("save() careerId must equal career.getData().getCareerId()")
@@ -141,7 +141,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
 
         // The detail must reference the replayed matchId, not a stale one.
         assertThat(savedDetail)
-            .as("DetailedMatchData must not be null — BUG_REPLAY_NO_PERSIST means a null save() would silently 404 the detail API")
+            .as("DetailedMatchData must not be null â€” BUG_REPLAY_NO_PERSIST means a null save() would silently 404 the detail API")
             .isNotNull();
         assertThat(savedDetail.matchId())
             .as("saved detail.matchId must match the replayed matchId")
@@ -166,9 +166,9 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .isEqualTo("rival-1");
 
         // Sanity: the existing best-effort deleteByMatchId is still called
-        // (kept for backward compat — the new save() is idempotent, so the
+        // (kept for backward compat â€” the new save() is idempotent, so the
         // delete is now harmless but not harmful either).
-        verify(v24StoragePort, times(1)).deleteByMatchId(eq(savedCareerId), eq(MATCH_ID));
+        verify(detailedMatchStoragePort, times(1)).deleteByMatchId(eq(savedCareerId), eq(MATCH_ID));
     }
 
     @Test
@@ -178,9 +178,9 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .thenReturn(Mono.just(Optional.of(career)));
         when(careerRepository.save(any(CareerSave.class)))
             .thenReturn(Mono.empty());
-        // Storage port save throws — replay must not fail the whole flow.
+        // Storage port save throws â€” replay must not fail the whole flow.
         org.mockito.Mockito.doThrow(new RuntimeException("Redis down (simulated)"))
-            .when(v24StoragePort).save(anyString(), any(DetailedMatchData.class));
+            .when(detailedMatchStoragePort).save(anyString(), any(DetailedMatchData.class));
 
         useCase.replayMatch(USER_ID, MATCH_ID, 42L)
             .as(StepVerifier::create)
@@ -192,7 +192,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
         verify(careerRepository, times(1)).save(career);
         verify(careerSessionService, times(1)).invalidateCache(USER_ID);
         // And we DID attempt to persist the new detail (the bug was the opposite).
-        verify(v24StoragePort, times(1)).save(anyString(), any(DetailedMatchData.class));
+        verify(detailedMatchStoragePort, times(1)).save(anyString(), any(DetailedMatchData.class));
     }
 
     @Test
@@ -207,7 +207,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .verify();
 
         // Critical guard: never persist detail for a fixture that doesn't exist.
-        verify(v24StoragePort, never()).save(anyString(), any(DetailedMatchData.class));
+        verify(detailedMatchStoragePort, never()).save(anyString(), any(DetailedMatchData.class));
         verify(careerRepository, never()).save(any());
     }
 
@@ -225,7 +225,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
         p.setSpeed(70);
         p.setStamina(70);
         p.setMentality(70);
-        // initDefaults() is private — replicate its effect so Boolean flags
+        // initDefaults() is private â€” replicate its effect so Boolean flags
         // are non-null (required by AssertJ's isFalse/isZero).
         p.setInjured(false);
         p.setInjuryType(null);
@@ -239,7 +239,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
 
     /**
      * Wires SessionTeam + players into the career's managers via reflection.
-     * Mirrors TestHarnessUseCaseImplTest.wireSquad() — keeps this test
+     * Mirrors TestHarnessUseCaseImplTest.wireSquad() â€” keeps this test
      * hermetic (no CareerSessionService.startNewCareer round-trip needed).
      */
     private void wireSquad(CareerSave career, String teamId, List<SessionPlayer> players) {

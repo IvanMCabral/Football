@@ -62,17 +62,17 @@ class TestHarnessAdminCommandService {
 
     private final CareerRepository careerRepository;
     private final CareerSessionService careerSessionService;
-    private final DetailedMatchStoragePort v24StoragePort;
+    private final DetailedMatchStoragePort detailedMatchStoragePort;
     private final MatchEngineRegistry matchEngineRegistry;
 
     TestHarnessAdminCommandService(
             CareerRepository careerRepository,
             CareerSessionService careerSessionService,
-            DetailedMatchStoragePort v24StoragePort,
+            DetailedMatchStoragePort detailedMatchStoragePort,
             MatchEngineRegistry matchEngineRegistry) {
         this.careerRepository = careerRepository;
         this.careerSessionService = careerSessionService;
-        this.v24StoragePort = v24StoragePort;
+        this.detailedMatchStoragePort = detailedMatchStoragePort;
         this.matchEngineRegistry = matchEngineRegistry;
     }
 
@@ -379,7 +379,7 @@ private Mono<Void> executeResetRound(CareerSave career, String roundId) {
                     matchId, e.getMessage());
             }
             try {
-                detailDeletes.add(v24StoragePort.deleteByMatchId(careerId, matchId)
+                detailDeletes.add(detailedMatchStoragePort.deleteByMatchId(careerId, matchId)
                     .onErrorResume(e -> {
                         log.warn("resetRound: failed to clear detailed match detail for matchId={}: {}",
                             matchId, e.getMessage());

@@ -76,7 +76,7 @@ public final class BaselineState {
         this.subs = (subs != null)
                 ? Collections.unmodifiableList(new ArrayList<>(subs))
                 : Collections.emptyList();
-        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.LEGACY_DETAILED_MATCH;
+        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24;
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
     }
@@ -95,7 +95,7 @@ public final class BaselineState {
                 seed,
                 initialContext,
                 Collections.emptyList(),
-                PersistedEngineVersions.LEGACY_DETAILED_MATCH,
+                PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24,
                 1,
                 Instant.now());
     }

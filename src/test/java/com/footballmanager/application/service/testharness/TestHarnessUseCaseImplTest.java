@@ -61,19 +61,19 @@ import static org.mockito.Mockito.when;
  * latter).
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TestHarnessUseCaseImpl — unit tests")
+@DisplayName("TestHarnessUseCaseImpl â€” unit tests")
 class TestHarnessUseCaseImplTest {
 
     private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     @Mock private BaselineStateStoragePort baselineStoragePort;
     // resetRound() use case (the previous 4-arg constructor was extended
     // with this dependency). Mockito's default `@Mock` is good enough
     // because the only method the resetRound path calls on the registry
-    // is `hasEngine` (returns false) — the unit tests below never trigger
+    // is `hasEngine` (returns false) â€” the unit tests below never trigger
     // the engine-eviction branch.
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
     // build() produces a context with valid homeTeam/awayTeam. A mocked
@@ -92,7 +92,7 @@ class TestHarnessUseCaseImplTest {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, baselineStoragePort, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, baselineStoragePort, matchEngineRegistry);
         lenient().when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
             .thenReturn(Mono.empty());
 
@@ -100,7 +100,7 @@ class TestHarnessUseCaseImplTest {
         career.setUserId(USER_ID);
         career.setUserSessionTeamId("user-team-id");
 
-        // Add 11 players to the user team — first 3 have injury/suspension
+        // Add 11 players to the user team â€” first 3 have injury/suspension
         // flags to test resetInjuries, the rest are healthy. The V24
         // engine requires MIN_AVAILABLE_PLAYERS=7 in the starting list,
         // so we need 11 total to match the engine's expectation.
@@ -514,13 +514,13 @@ class TestHarnessUseCaseImplTest {
     //
     // Even though the in-memory state is correct today (setTotalRounds
     // is called inside executeReplaceFixtures), the previous order put
-    // setTotalRounds EARLY in the sequence — any future side-effect in
+    // setTotalRounds EARLY in the sequence â€” any future side-effect in
     // setFixtures / initializeStandings / setCareerPhase would clobber
     // it. The fix moves setTotalRounds to be the LAST call so the
     // invariant totalRounds == max(fixtures.round) holds even if a new
     // side-effect is added to an intermediate call.
     //
-    // Test: 4 fixtures across 4 rounds → totalRounds must be 4.
+    // Test: 4 fixtures across 4 rounds â†’ totalRounds must be 4.
     @Test
     @DisplayName("replaceFixtures: totalRounds == fixtures.size()")
     void replaceFixtures_totalRoundsEqualsFixtureCount() {
@@ -574,7 +574,7 @@ class TestHarnessUseCaseImplTest {
         verify(careerRepository, times(1)).save(career);
     }
 
-    // ========== setFormation (CRITICAL — sprint 1.7 regression guard) ==========
+    // ========== setFormation (CRITICAL â€” sprint 1.7 regression guard) ==========
 
     @Test
     @DisplayName("setFormation: persists to BOTH SessionTeam.formation AND teamStarting11Formation map (bug 1.7 fix)")
@@ -617,7 +617,7 @@ class TestHarnessUseCaseImplTest {
     @DisplayName("createCustom: deletes existing career, starts fresh, then resets injuries")
     void createCustom_deletesThenStartsThenResets() {
         // The user already has a career (the @BeforeEach one). createCustom
-        // should: deleteCareer → startNewCareer → resetInjuries.
+        // should: deleteCareer â†’ startNewCareer â†’ resetInjuries.
         when(careerSessionService.deleteCareer(USER_ID))
             .thenReturn(Mono.empty());
         when(careerSessionService.startNewCareer(
@@ -792,12 +792,12 @@ class TestHarnessUseCaseImplTest {
         when(careerRepository.save(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
-        // matchContextFactory is the REAL factory (not mocked) — see setUp().
+        // matchContextFactory is the REAL factory (not mocked) â€” see setUp().
         // It builds a valid MatchContext from the career + fixture + teams,
 
         // UseCase doesn't see the result of the simulation directly (the
         // engine runs internally). The match we control: the fixture's
-        // status goes PENDING → COMPLETED with a non-zero result.
+        // status goes PENDING â†’ COMPLETED with a non-zero result.
         useCase.replayMatch(USER_ID, "match-001", 42L)
             .as(StepVerifier::create)
             .assertNext(f -> {
@@ -810,7 +810,7 @@ class TestHarnessUseCaseImplTest {
                     .as("after replay, fixture has a new MatchResultData")
                     .isNotNull();
                 // The internal engine may or may not produce goals with the
-                // stubbed context — we just verify the status is COMPLETED
+                // stubbed context â€” we just verify the status is COMPLETED
                 // and the result is non-null. The homeGoals/awayGoals are
                 // engine-dependent.
             })
@@ -821,7 +821,7 @@ class TestHarnessUseCaseImplTest {
         // Save called
         verify(careerRepository, times(1)).save(career);
         // Old detailed match detail cleared
-        verify(v24StoragePort, times(1)).deleteByMatchId(
+        verify(detailedMatchStoragePort, times(1)).deleteByMatchId(
             org.mockito.ArgumentMatchers.anyString(), eq("match-001"));
         verify(baselineStoragePort, times(1)).save(anyString(), any(BaselineState.class));
     }
@@ -875,7 +875,7 @@ class TestHarnessUseCaseImplTest {
         p.setSpeed(70);
         p.setStamina(70);
         p.setMentality(70);
-        // initDefaults() is private — we replicate its effect here so
+        // initDefaults() is private â€” we replicate its effect here so
         // Boolean flags are non-null (required by AssertJ's isFalse/isZero).
         p.setInjured(false);
         p.setInjuryType(null);

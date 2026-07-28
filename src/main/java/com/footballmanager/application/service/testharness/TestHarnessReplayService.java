@@ -35,7 +35,7 @@ class TestHarnessReplayService {
     private final CareerSessionService careerSessionService;
     private final MatchContextFactory matchContextFactory;
     private final BaselineStateStoragePort baselineStoragePort;
-    private final DetailedMatchStoragePort v24StoragePort;
+    private final DetailedMatchStoragePort detailedMatchStoragePort;
 
     Mono<MatchFixture> replay(CareerSave career, String matchId, long seed) {
         MatchFixture fixture = findFixture(career, matchId);
@@ -130,13 +130,13 @@ class TestHarnessReplayService {
                 fixture.getMatchId(), e.getMessage());
             return Mono.empty();
         }
-        Mono<Void> deleteDetail = v24StoragePort.deleteByMatchId(careerId, fixture.getMatchId());
+        Mono<Void> deleteDetail = detailedMatchStoragePort.deleteByMatchId(careerId, fixture.getMatchId());
         if (deleteDetail == null) {
             deleteDetail = Mono.empty();
         }
         Mono<Void> saveDetail;
         try {
-            saveDetail = v24StoragePort.save(careerId, newDetail);
+            saveDetail = detailedMatchStoragePort.save(careerId, newDetail);
             if (saveDetail == null) {
                 saveDetail = Mono.empty();
             }

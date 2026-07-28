@@ -64,7 +64,7 @@ class TestHarnessFormationMatrixService {
     private final CareerSessionService careerSessionService;
     private final MatchContextFactory matchContextFactory;
     private final BaselineStateStoragePort baselineStoragePort;
-    private final DetailedMatchStoragePort v24StoragePort;
+    private final DetailedMatchStoragePort detailedMatchStoragePort;
     private final FormationService formationService = new FormationService();
     private final TestHarnessSideMirrorSyntheticLabService sideMirrorSyntheticLabService;
 
@@ -73,13 +73,13 @@ class TestHarnessFormationMatrixService {
             CareerSessionService careerSessionService,
             MatchContextFactory matchContextFactory,
             BaselineStateStoragePort baselineStoragePort,
-            DetailedMatchStoragePort v24StoragePort,
+            DetailedMatchStoragePort detailedMatchStoragePort,
             TestHarnessSideMirrorSyntheticLabService sideMirrorSyntheticLabService) {
         this.careerRepository = careerRepository;
         this.careerSessionService = careerSessionService;
         this.matchContextFactory = matchContextFactory;
         this.baselineStoragePort = baselineStoragePort;
-        this.v24StoragePort = v24StoragePort;
+        this.detailedMatchStoragePort = detailedMatchStoragePort;
         this.sideMirrorSyntheticLabService = sideMirrorSyntheticLabService;
     }
 

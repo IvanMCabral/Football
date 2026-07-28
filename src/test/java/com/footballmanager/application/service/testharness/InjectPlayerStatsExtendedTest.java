@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
  * including pre-existing height + skills stays untouched).
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("InjectPlayerStatsExtended — V25D35 height + skills extension")
+@DisplayName("InjectPlayerStatsExtended â€” V25D35 height + skills extension")
 class InjectPlayerStatsExtendedTest {
 
     private static final java.util.UUID USER_ID =
@@ -53,9 +53,9 @@ class InjectPlayerStatsExtendedTest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     @Mock private MatchEngineRegistry matchEngineRegistry;
-    // Real factory — same pattern as TestHarnessUseCaseImplTest.
+    // Real factory â€” same pattern as TestHarnessUseCaseImplTest.
     private MatchContextFactory matchContextFactory;
     private TestHarnessUseCaseImpl useCase;
 
@@ -67,7 +67,7 @@ class InjectPlayerStatsExtendedTest {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
 
         career = new CareerSave();
         career.setUserId(USER_ID);
@@ -428,7 +428,7 @@ class InjectPlayerStatsExtendedTest {
     void injectUnknownPlayer_rejects() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(java.util.Optional.of(career)));
-        // No save mock — the error path doesn't reach save
+        // No save mock â€” the error path doesn't reach save
 
         useCase.injectPlayerStats(USER_ID, MISSING_PLAYER_ID,
             70, 70, 70, 70, 70, 70, null, null)

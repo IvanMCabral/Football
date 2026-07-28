@@ -151,7 +151,7 @@ public final class DetailedMatchData {
         this.timeline = (timeline != null) ? Collections.unmodifiableList(new ArrayList<>(timeline)) : Collections.emptyList();
         this.playerRatings = (playerRatings != null) ? Collections.unmodifiableList(new ArrayList<>(playerRatings)) : Collections.emptyList();
         this.summary = (summary != null) ? summary : "";
-        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.LEGACY_DETAILED_MATCH;
+        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24;
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
         // Jackson rellena con null al deserializar JSON sin los campos.
@@ -265,7 +265,7 @@ public final class DetailedMatchData {
                 eventDtos,
                 playerRatings,
                 result.summary(),
-                PersistedEngineVersions.LEGACY_DETAILED_MATCH,
+                PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24,
                 1,
                 Instant.now(),
                 homeFormation,

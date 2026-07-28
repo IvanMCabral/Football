@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
  * threshold in the B1 test, or whether Fase 4 re-tuning is needed.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("V24D23-A diagnostic — per-formation xG/shots across seeds (evidence for B3 escalation)")
+@DisplayName("V24D23-A diagnostic â€” per-formation xG/shots across seeds (evidence for B3 escalation)")
 class DetailedFormationShotLocationDiagnostic {
 
     private static final UUID USER_ID =
@@ -50,7 +50,7 @@ class DetailedFormationShotLocationDiagnostic {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     // resetRound() use case. Default `@Mock` is fine for the diagnostic.
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
 
@@ -62,17 +62,17 @@ class DetailedFormationShotLocationDiagnostic {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
     }
 
     @Test
-    @DisplayName("diagnostic — per-seed xG/shots for 4 formations × 6 seeds")
+    @DisplayName("diagnostic â€” per-seed xG/shots for 4 formations Ã— 6 seeds")
     void diagnosticPrintPerSeedMetrics() {
         String[] formations = { "4-3-3", "4-4-2", "3-5-2", "4-2-3-1" };
         long[] seeds = { 1L, 7L, 19L, 42L, 73L, 137L };
 
         System.out.println();
-        System.out.println("=== V24D23-A DIAGNOSTIC — per-formation xG/shots by seed ===");
+        System.out.println("=== V24D23-A DIAGNOSTIC â€” per-formation xG/shots by seed ===");
         System.out.printf("%-6s %-8s %-9s %-9s %-7s %-7s%n",
             "seed", "formation", "homeXg", "awayXg", "homeSh", "awaySh");
         System.out.println("-------------------------------------------------------");
@@ -113,12 +113,12 @@ class DetailedFormationShotLocationDiagnostic {
         when(careerRepository.save(any(CareerSave.class))).thenReturn(Mono.empty());
 
         useCase.setFormation(USER_ID, formation).block();
-        org.mockito.Mockito.clearInvocations(v24StoragePort);
+        org.mockito.Mockito.clearInvocations(detailedMatchStoragePort);
         useCase.replayMatch(USER_ID, MATCH_ID, seed).block();
 
         ArgumentCaptor<DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(DetailedMatchData.class);
-        verify(v24StoragePort, times(1)).save(anyString(), detailCaptor.capture());
+        verify(detailedMatchStoragePort, times(1)).save(anyString(), detailCaptor.capture());
 
         return detailCaptor.getValue();
     }

@@ -1,4 +1,4 @@
-# MANAGER ? Domain Naming Consolidation Final Review
+# MANAGER - Domain Naming Consolidation Final Review
 
 ## Verdict
 

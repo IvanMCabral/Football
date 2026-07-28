@@ -404,11 +404,11 @@ public class MatchSession {
      * Map DetailedMatchEventType to domain DetailedMatchEventType.
      * Every DetailedMatchEventType maps explicitly — no lossy fallbacks.
      */
-    private MatchEvent.EventType toDomainEventType(com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType v24Type) {
-        if (v24Type == null) {
+    private MatchEvent.EventType toDomainEventType(com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType detailedEventType) {
+        if (detailedEventType == null) {
             throw new IllegalArgumentException("DetailedMatchEventType cannot be null");
         }
-        return switch (v24Type) {
+        return switch (detailedEventType) {
             case GOAL -> MatchEvent.EventType.GOAL;
             case SHOT -> MatchEvent.EventType.SHOT;
             case SHOT_ON_TARGET -> MatchEvent.EventType.SHOT_ON_TARGET;

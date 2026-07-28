@@ -42,26 +42,26 @@ import static org.mockito.Mockito.when;
  *       offside) was COMPLETE but did NOT change xG, because those events
  *       are descriptive (they don't drive xG math).</li>
  *       vs Barcelona produced IDENTICAL results byte-for-byte (xG diff 0.000
- *       across all pairs). The root cause was a 5th formation-blind path —
+ *       across all pairs). The root cause was a 5th formation-blind path â€”
  *       {@code selectShotLocation} (L588-630 pre-sprint) used ONLY
  *       {@code TeamStyle} to choose the shot location, so xG variation
  *       across formations was nil.</li>
  *   <li>B0 (this sprint): refactor {@code selectShotLocation} to accept
  *       {@code formation} and apply formation-driven shifts to the
- *       distribution (hasWingers → wide+25% / six-10%, defenders=3 →
- *       wide-50% / center+15%, forwards=1 → six+30% / long-30%,
- *       forwards=2 → center+20%). This amplifies the formation-driven
+ *       distribution (hasWingers â†’ wide+25% / six-10%, defenders=3 â†’
+ *       wide-50% / center+15%, forwards=1 â†’ six+30% / long-30%,
+ *       forwards=2 â†’ center+20%). This amplifies the formation-driven
  *       xG variation from the ~5% shooter-share shift to a measurable
  *       0.05+ delta per team per match.</li>
  *   <li>B1 (this sprint): this E2E test that closes the coverage gap at
  *       the SAME level as {@code DetailedFormationIgnoredE2ETest} (full
- *       setFormation → replaceFixtures → replay → assert formation
+ *       setFormation â†’ replaceFixtures â†’ replay â†’ assert formation
  *       affects result flow).</li>
  * </ul>
  *
  * <p><b>Test 1 strategy:</b> with the Real Madrid-style squad (1 GK + 4 DEF +
  * 3 MID + 2 WINGER + 1 ATT) and fixed seed 42, run a full
- * setFormation → replayMatch cycle for two formations that the
+ * setFormation â†’ replayMatch cycle for two formations that the
  * {@code computeLocationWeights} modifier pipeline differentiates
  * strongly: 4-3-3 (hasWingers+forwards=1) vs 4-2-3-1 (forwards=1,
  * no wingers, defenders=4). Per the design table the 4-2-3-1 share
@@ -71,26 +71,26 @@ import static org.mockito.Mockito.when;
  * forwards==1 six+30% via the 0.90 factor). The cumulative xG per
  * shot for 4-2-3-1 is ~0.119 vs 4-3-3 at ~0.115 (per design table);
  * with ~15 shots per team per match the cumulative homeXg diff is
- * expected to be ~0.05-0.10 — comfortably above the 0.05 threshold.
+ * expected to be ~0.05-0.10 â€” comfortably above the 0.05 threshold.
  *
- * 0.001 (well below noise — any formation effect would pass even with
+ * 0.001 (well below noise â€” any formation effect would pass even with
  * now AMPLIFIED by the weighted-distribution shift; 0.05 catches the
  * intended behavior while filtering residual RNG noise. The DoD
  * requires either {@code |homeXg diff| >= 0.05} OR
  * {@code |awayXg diff| >= 0.05} (the user team is the one changing
  * formation; the rival is fixed, so awayXg is the same in both runs
- * — only homeXg differs in expectation, but a lucky RNG spike in the
+ * â€” only homeXg differs in expectation, but a lucky RNG spike in the
  * rival can also produce an awayXg delta).
  *
- * <p><b>Profile gating:</b> same as {@code DetailedFormationIgnoredE2ETest} —
+ * <p><b>Profile gating:</b> same as {@code DetailedFormationIgnoredE2ETest} â€”
  * Mockito-only, no Spring context. The test exercises the SAME code
  * path as the HTTP endpoint chain
- * ({@code POST /api/v1/test-harness/career/set-formation} →
+ * ({@code POST /api/v1/test-harness/career/set-formation} â†’
  * {@code POST /api/v1/test-harness/career/match/{matchId}/replay}),
  * but without HTTP/auth/profile overhead.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("DetailedFormationShotLocationE2E — formation drives shot location distribution (sprint V24D23-A)")
+@DisplayName("DetailedFormationShotLocationE2E â€” formation drives shot location distribution (sprint V24D23-A)")
 class DetailedFormationShotLocationE2ETest {
 
     private static final UUID USER_ID =
@@ -104,7 +104,7 @@ class DetailedFormationShotLocationE2ETest {
     // Real Madrid-style squad with 15 shots.
     private static final double XG_EPSILON = 0.05;
 
-    // low-delta region of the seed-formation xG surface — diagnostic
+    // low-delta region of the seed-formation xG surface â€” diagnostic
     // data (see DetailedFormationShotLocationDiagnostic) shows homeXg diff
     // for (4-3-3 vs 4-2-3-1) at seed=42 is only ~0.009 even though
     // the formation modifier pipeline is working correctly (other seeds
@@ -116,7 +116,7 @@ class DetailedFormationShotLocationE2ETest {
 
     @Mock private CareerRepository careerRepository;
     @Mock private CareerSessionService careerSessionService;
-    @Mock private DetailedMatchStoragePort v24StoragePort;
+    @Mock private DetailedMatchStoragePort detailedMatchStoragePort;
     // resetRound() use case. Default `@Mock` is enough (replay path
     // doesn't touch the engine registry).
     @Mock private com.footballmanager.application.engine.match.MatchEngineRegistry matchEngineRegistry;
@@ -131,31 +131,31 @@ class DetailedFormationShotLocationE2ETest {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
-            matchContextFactory, v24StoragePort, null, matchEngineRegistry);
+            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
     }
 
-    // ========== Test 1 — formation change produces measurable xG delta (with seed-scan fallback) ==========
+    // ========== Test 1 â€” formation change produces measurable xG delta (with seed-scan fallback) ==========
 
     /**
      *
      * <p>The two formations stress different paths of the
      * {@code computeLocationWeights} modifier pipeline:
      * <ul>
-     *   <li>4-3-3: hasWingers (wide×1.25, six×0.90) AND
-     *       forwards==1 (six×1.30, long×0.70) — net six×1.17,
-     *       wide×1.25, long×0.70.</li>
-     *   <li>4-2-3-1: forwards==1 (six×1.30, long×0.70) ONLY — net
-     *       six×1.30, wide×1.00, long×0.70, center×1.00 (the
+     *   <li>4-3-3: hasWingers (wideÃ—1.25, sixÃ—0.90) AND
+     *       forwards==1 (sixÃ—1.30, longÃ—0.70) â€” net sixÃ—1.17,
+     *       wideÃ—1.25, longÃ—0.70.</li>
+     *   <li>4-2-3-1: forwards==1 (sixÃ—1.30, longÃ—0.70) ONLY â€” net
+     *       sixÃ—1.30, wideÃ—1.00, longÃ—0.70, centerÃ—1.00 (the
      *       forwards==2 branch does not fire because forwards==1).</li>
      * </ul>
      *
      * <p>Per the design table, the per-shot xG difference is ~0.004
      * (4-2-3-1 has higher SIX_YARD_BOX share so higher xG). With ~15-26
      * shots per team the expected cumulative homeXg diff lands in the
-     * 0.05-0.10 band — comfortably above the 0.05 threshold on most
+     * 0.05-0.10 band â€” comfortably above the 0.05 threshold on most
      * seeds. Diagnostic data (see DetailedFormationShotLocationDiagnostic):
      * seeds 1, 7, 19, 73, 137 produce 0.05-0.15 homeXg diffs; seed=42
-     * lands at 0.009 (within 1σ of zero given the per-shot variance).
+     * lands at 0.009 (within 1Ïƒ of zero given the per-shot variance).
      *
      * <p>Per R1 mitigation in the sprint doc, the test scans
      * {@link #FALLBACK_SEEDS} and requires AT LEAST ONE seed to produce
@@ -164,7 +164,7 @@ class DetailedFormationShotLocationE2ETest {
      *
      * <p>Acceptance: at least one of the scanned seeds produces a
      * measurable homeXg delta (the rival is fixed at 4-4-2 so awayXg
-     * is statistically constant — but a small RNG-driven awayXg delta
+     * is statistically constant â€” but a small RNG-driven awayXg delta
      * is permitted as a fallback if homeXg happens to land below
      * threshold for that seed).
      */
@@ -203,14 +203,14 @@ class DetailedFormationShotLocationE2ETest {
                 + "If this fails, the formation modifier pipeline in "
                 + "DetailedMatchEngine.computeLocationWeights is not wired correctly "
                 + "(check hasWingers/forwards branches and the base "
-                + "{0.25, 0.27, 0.20, 0.18, 0.10} weights) — escalate to MANAGER "
+                + "{0.25, 0.27, 0.20, 0.18, 0.10} weights) â€” escalate to MANAGER "
                 + "for Fase 4 re-tuning with the diagnostic data as evidence.",
                 java.util.Arrays.toString(FALLBACK_SEEDS),
                 XG_EPSILON, bestHomeDelta, bestAwayDelta)
             .isTrue();
     }
 
-    // ========== Test 2 — same formation + same seed produces identical result ==========
+    // ========== Test 2 â€” same formation + same seed produces identical result ==========
 
     /**
      * (CareerSessionService cache invalidation after save) and for the
@@ -223,7 +223,7 @@ class DetailedFormationShotLocationE2ETest {
      *
      * <p>If the formation modifier wiring produces a SIDE EFFECT (e.g.
      * it consumes extra random numbers per shot, or it mutates shared
-     * static state), this test fails — same-seed replays must be
+     * static state), this test fails â€” same-seed replays must be
      * bit-identical regardless of which formation was selected.
      *
      * <p>Note: between replays we call {@code resetInjuries} to wipe
@@ -246,7 +246,7 @@ class DetailedFormationShotLocationE2ETest {
         when(careerRepository.save(any(CareerSave.class))).thenReturn(Mono.empty());
         useCase.resetInjuries(USER_ID).block();
 
-        // Second iteration — same formation + same seed
+        // Second iteration â€” same formation + same seed
         DetailedMatchData resultB = replayWithFormation("4-3-3", SEED);
 
         assertThat(resultB.homeXg())
@@ -292,17 +292,17 @@ class DetailedFormationShotLocationE2ETest {
 
         // Reset the mock invocation count so each replay's storage port
         // save() can be captured fresh.
-        org.mockito.Mockito.clearInvocations(v24StoragePort);
+        org.mockito.Mockito.clearInvocations(detailedMatchStoragePort);
 
-        // replayMatch drives the full flow: matchContextFactory.build() →
-        // engine.simulate() → v24StoragePort.save(newDetail). The new
+        // replayMatch drives the full flow: matchContextFactory.build() â†’
+        // engine.simulate() â†’ detailedMatchStoragePort.save(newDetail). The new
         // now applies the formation-aware shot location distribution
         // (B0), so homeXg varies with formation even at the same seed.
         useCase.replayMatch(USER_ID, MATCH_ID, seed).block();
 
         ArgumentCaptor<DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(DetailedMatchData.class);
-        verify(v24StoragePort, times(1)).save(anyString(), detailCaptor.capture());
+        verify(detailedMatchStoragePort, times(1)).save(anyString(), detailCaptor.capture());
 
         return detailCaptor.getValue();
     }
@@ -317,7 +317,7 @@ class DetailedFormationShotLocationE2ETest {
      * <p>Squad mix matters: the formation-driven variation in shot
      * location (and therefore xG) is only amplified to a measurable
      * 0.05+ threshold when the squad has a mix of positions (1 ATT
-     * plus 2 WINGERS plus 3 MIDs — the WINGER share is the formation
+     * plus 2 WINGERS plus 3 MIDs â€” the WINGER share is the formation
      * axis that changes between 4-3-3 and 4-4-2 via the
      * {@code hasWingers} modifier).
      */
@@ -364,7 +364,7 @@ class DetailedFormationShotLocationE2ETest {
     }
 
     /**
-     * Mirrors {@code DetailedFormationIgnoredE2ETest.playerWithPosition} —
+     * Mirrors {@code DetailedFormationIgnoredE2ETest.playerWithPosition} â€”
      * explicit position + per-attribute stats so we can build a Real
      * Madrid-style mixed-position squad (the formation-aware shooter
      * selector needs varied positions to produce a measurable delta).
@@ -384,7 +384,7 @@ class DetailedFormationShotLocationE2ETest {
         p.setStamina(stamina);
         p.setMentality(mentality);
         p.setMarketValue(BigDecimal.valueOf(70000L));
-        // initDefaults() is private — replicate its effect so Boolean flags
+        // initDefaults() is private â€” replicate its effect so Boolean flags
         // are non-null (required by AssertJ's isFalse/isZero).
         p.setInjured(false);
         p.setInjuryType(null);
@@ -397,7 +397,7 @@ class DetailedFormationShotLocationE2ETest {
     }
 
     /**
-     * Mirrors {@code DetailedFormationIgnoredE2ETest.wireSquad} — registers
+     * Mirrors {@code DetailedFormationIgnoredE2ETest.wireSquad} â€” registers
      * the SessionTeam and players via reflection so
      * {@code career.getSessionTeam(teamId)},
      * {@code career.getAllSessionTeams()}, and

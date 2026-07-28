@@ -47,7 +47,7 @@ public class MatchControllerReactive {
     // from Redis via the user's active careerId (CareerSessionService) +
     // the detailed match query service that already exists for /careers/{careerId}/matches/{matchId}/detail.
     private final CareerSessionService careerSessionService;
-    private final DetailedMatchQueryService v24DetailedMatchQueryService;
+    private final DetailedMatchQueryService detailedMatchQueryService;
 
     @PostMapping("/{matchId}/advance")
     public Mono<ResponseEntity<RuntimeMatch>> advanceMatch(@PathVariable String matchId, @RequestBody AdvanceRequest req, Authentication authentication) {
@@ -269,7 +269,7 @@ public class MatchControllerReactive {
                     if (careerId == null || careerId.isBlank()) {
                         return Mono.<ResponseEntity<List<MatchMinuteState>>>just(ResponseEntity.notFound().build());
                     }
-                    return v24DetailedMatchQueryService.findDetail(careerId, matchId)
+                    return detailedMatchQueryService.findDetail(careerId, matchId)
                             .map(optionalDetail -> optionalDetail
                                     .<ResponseEntity<List<MatchMinuteState>>>map(detail ->
                                             ResponseEntity.ok(buildMinuteByMinuteStates(detail)))

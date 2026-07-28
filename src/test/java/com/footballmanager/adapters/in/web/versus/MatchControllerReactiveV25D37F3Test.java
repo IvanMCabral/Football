@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
  * {@code UUID.fromString(null)} which internally calls {@code name.length()}
  * and throws {@link NullPointerException}. Spring then returned
  * <b>500 Internal Server Error</b> with the leaky JVM message
- * {@code "Cannot invoke \"String.length()\" because \"name\" is null"} —
+ * {@code "Cannot invoke \"String.length()\" because \"name\" is null"} â€”
  *
  * <p>After the fix, the controller pre-validates the body and returns
  * <b>400 Bad Request</b> with a structured error Map before touching any
@@ -55,11 +55,11 @@ import static org.mockito.Mockito.when;
  *
  * <p>This test is a pure JUnit + Mockito unit test on the controller method
  * itself (no Spring context, no WebTestClient). Pure validation tests don't
- * need a Spring slice — calling {@code createMatch} with a hand-built
+ * need a Spring slice â€” calling {@code createMatch} with a hand-built
  * {@link Authentication} and a request DTO exercises the exact validation
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("MatchControllerReactive.createMatch — V25D37-F3 bad body validation (unit)")
+@DisplayName("MatchControllerReactive.createMatch â€” V25D37-F3 bad body validation (unit)")
 class MatchControllerReactiveV25D37F3Test {
 
     @Mock
@@ -84,7 +84,7 @@ class MatchControllerReactiveV25D37F3Test {
     private com.footballmanager.application.service.career.CareerSessionService careerSessionService;
 
     @Mock
-    private com.footballmanager.application.service.simulation.detailed.DetailedMatchQueryService v24DetailedMatchQueryService;
+    private com.footballmanager.application.service.simulation.detailed.DetailedMatchQueryService detailedMatchQueryService;
 
     private MatchControllerReactive controller;
     private Authentication auth;
@@ -95,7 +95,7 @@ class MatchControllerReactiveV25D37F3Test {
                 matchRepository, matchSimulationService,
                 getMatchStateQueryUseCase, advanceMatchUseCase,
                 executeMatchCommandUseCase, new ControllerHelper(),
-                worldSnapshotService, careerSessionService, v24DetailedMatchQueryService);
+                worldSnapshotService, careerSessionService, detailedMatchQueryService);
         UUID userId = UUID.randomUUID();
         auth = new UsernamePasswordAuthenticationToken(
                 userId.toString(), "n/a",
@@ -121,7 +121,7 @@ class MatchControllerReactiveV25D37F3Test {
                 })
                 .verifyComplete();
 
-        // Repository must NOT be touched — validation short-circuits.
+        // Repository must NOT be touched â€” validation short-circuits.
         verify(matchRepository, never()).save(any(UUID.class), any());
     }
 
@@ -249,7 +249,7 @@ class MatchControllerReactiveV25D37F3Test {
         // Note: the happy path invokes Match.schedule + matchRepository.save
         // which both need real domain objects. We verify that the
         // validation chain at the top of the method lets the request through
-        // (i.e., does NOT return 400) — the exact terminal status code is
+        // (i.e., does NOT return 400) â€” the exact terminal status code is
         // not asserted here because Match.schedule + save will throw with
         // incomplete mocks. The IMPORTANT thing is: NO 400, NO NPE.
         StepVerifier.create(controller.createMatch(request, auth))
@@ -260,7 +260,7 @@ class MatchControllerReactiveV25D37F3Test {
                 .verifyComplete();
     }
 
-    // unused — kept so static analysis flags dependencies honestly.
+    // unused â€” kept so static analysis flags dependencies honestly.
     @SuppressWarnings("unused")
     private void keepMocksAlive(Collection<?> ignored,
                                 CareerSave career, SessionTeam team,

@@ -1,11 +1,11 @@
 spring:
   config:
     activate:
-      on-profile: v24-mutations
+      on-profile: career-mutations
 
 app:
   simulation:
-    v24:
+    detailed:
       mutate-career-state: true
       persist-discipline: true
       persist-injuries: true
