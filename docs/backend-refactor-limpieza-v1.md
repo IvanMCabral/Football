@@ -80,3 +80,34 @@ No tocar todavía lesiones/stamina nueva. Antes conviene cerrar limpieza backend
 ## Nota importante
 
 Esta pasada deja mejor el backend, pero no significa “100% sin God Classes”. La deuda restante está localizada y testeada; el siguiente trabajo debe ser refactor por responsabilidad, no solo borrar líneas.
+
+## Auditoria adicional clean code - 2026-07-27 noche
+
+Se reviso codigo productivo con foco en limpieza real, no solo compilacion.
+
+### Limpieza aplicada
+
+- Se quitaron comentarios extensos y documentacion de parche que seguian dentro de clases productivas.
+- Se normalizaron mensajes mojibake en logs/respuestas (`Ã...`, `â...`) a texto ASCII simple.
+- Se verifico codigo productivo sin `TODO`, `FIXME`, `HACK`, `System.out.println` ni `DIAG`.
+
+### Verificacion
+
+Verde:
+
+- `mvn -q -DskipTests test-compile`
+- Suite enfocada: motor V24, xG, context, harness, lineup, formaciones, game controller y round engine.
+
+### Estado honesto clean code
+
+El backend esta mas limpio y jugable, pero todavia no esta 100% clean code por tamano/responsabilidad de estas clases:
+
+| Clase | Problema real |
+|---|---|
+| `TestHarnessUseCaseImpl` | Es el mayor problema: muchas familias de harness en una sola clase. |
+| `V24DetailedMatchEngine` | No tiene metodos gigantes, pero concentra demasiadas reglas de partido. |
+| `LineupCommandUseCaseImpl` | Mezcla seleccion, slots, warnings y DTOs. |
+| `LeagueSimulator` | Orquesta ronda, persistencia, fallback y mutaciones. |
+| `TestHarnessUseCase` | Contrato enorme con demasiados records anidados. |
+
+Conclusion: esta pasada deja el codigo productivo mas prolijo, sin mojibake y con tests verdes. La siguiente mejora profesional debe ser separar `TestHarnessUseCaseImpl` por runners/services.

@@ -422,7 +422,7 @@ public final class V24LiveSession {
 
     public synchronized void replayFromMinute(int fromMinute) {
         if (finished) {
-            throw new IllegalStateException("Match already finished â€” cannot replay");
+            throw new IllegalStateException("Match already finished - cannot replay");
         }
         if (fromMinute < 1 || fromMinute > currentMinute) {
             throw new IllegalArgumentException(
@@ -447,7 +447,7 @@ public final class V24LiveSession {
             throw new IllegalArgumentException("mutator must not be null");
         }
         if (finished) {
-            throw new IllegalStateException("Match already finished â€” cannot mutate");
+            throw new IllegalStateException("Match already finished - cannot mutate");
         }
         V24MatchContext next = mutator.apply(effectiveContext);
         if (next == null) {

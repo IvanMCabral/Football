@@ -299,7 +299,6 @@ public final class V24MatchContext {
                                                   String playerOffId,
                                                   String playerOnId,
                                                   int minute) {
-        // ---- Validation (F2 rules, preserved verbatim) ----
         if (teamId == null || teamId.isBlank()) {
             throw new IllegalArgumentException("teamId must not be blank");
         }
@@ -328,11 +327,6 @@ public final class V24MatchContext {
 
         List<SessionPlayer> currentStarting = isHome ? homeStartingPlayers : awayStartingPlayers;
         List<SessionPlayer> currentBench = isHome ? homeBenchPlayers : awayBenchPlayers;
-
-        // Validate playerOff is in starting XI (F2 rule). F2.5 still requires
-        // this because the engine applies the swap via the same
-        // V24SubstitutionEngine.manualSubstitute path, which would otherwise
-        // throw IllegalStateException at apply time.
         boolean offInStarting = false;
         for (SessionPlayer p : currentStarting) {
             if (p != null && playerOffId.equals(p.getSessionPlayerId())) {
@@ -344,8 +338,6 @@ public final class V24MatchContext {
             throw new IllegalArgumentException(
                 "playerOffId '" + playerOffId + "' not in starting XI of team '" + teamId + "'");
         }
-
-        // Validate playerOn is on bench (F2 rule). Same rationale.
         boolean onInBench = false;
         for (SessionPlayer p : currentBench) {
             if (p != null && playerOnId.equals(p.getSessionPlayerId())) {
@@ -357,9 +349,6 @@ public final class V24MatchContext {
             throw new IllegalArgumentException(
                 "playerOnId '" + playerOnId + "' not on bench of team '" + teamId + "'");
         }
-
-        // F2.5 NEW: validate no duplicate scheduled sub for the same (teamId, playerOffId).
-        // O(n) with n â‰¤ 5 per team â€” trivial.
         for (ScheduledSub existing : manualSubstitutions) {
             if (existing.teamId().equals(teamId)
                     && existing.playerOffId().equals(playerOffId)) {
@@ -367,16 +356,9 @@ public final class V24MatchContext {
                     "playerOffId '" + playerOffId + "' already has a scheduled substitution for team '" + teamId + "'");
             }
         }
-
-        // Build the new manualSubstitutions list with the appended entry.
-        // The constructor will re-sort by SCHEDULED_SUB_ORDER.
         List<ScheduledSub> nextManualSubs = new ArrayList<>(manualSubstitutions.size() + 1);
         nextManualSubs.addAll(manualSubstitutions);
         nextManualSubs.add(new ScheduledSub(teamId, playerOffId, playerOnId, minute));
-
-        // F2.5: return a new V24MatchContext with the SAME starting/bench
-        // lists (no mutation). The constructor's defensive copy + sort
-        // ensures the new list is unmodifiable and deterministically ordered.
         return new V24MatchContext(
                 matchId, homeTeamId, awayTeamId,
                 homeTeam, awayTeam,

@@ -124,7 +124,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -1745,7 +1745,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -1769,7 +1769,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         int safeSeedCount = Math.max(1, Math.min(50, seedCount));
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -1798,7 +1798,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         long seed = (seedOverride != null) ? seedOverride : 12345L;
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -2006,8 +2006,8 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
             slot != null ? finiteOrNull(slot.xPercent()) : null,
             slot != null ? finiteOrNull(slot.yPercent()) : null,
             slot != null ? slot.source() : "missing",
-            profile != null ? String.join(" Â· ", profile.roles()) : "-",
-            profile != null ? String.join(" Â· ", profile.sides()) : "-",
+            profile != null ? String.join(" / ", profile.roles()) : "-",
+            profile != null ? String.join(" / ", profile.sides()) : "-",
             roleBonus,
             sideBonus,
             assignmentScore,
@@ -2445,7 +2445,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -2762,7 +2762,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -3103,7 +3103,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -3172,7 +3172,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(
@@ -3271,9 +3271,9 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         double deltaShotsFor = round2(subAvg.shotsFor() - baseAvg.shotsFor());
         String read = safeName(off) + " -> " + safeName(on)
             + " min " + minute
-            + " | Î”xG " + deltaXgFor
-            + " | Î”shots " + deltaShotsFor
-            + " | Î”xGA " + deltaXgAgainst;
+            + " | - " + deltaXgFor
+            + " | - " + deltaShotsFor
+            + " | - " + deltaXgAgainst;
 
         return new SubstitutionWhatIfSummaryRow(
             matchId,
@@ -3577,7 +3577,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
         }
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException("Career not found for userId=" + userId));
@@ -3652,7 +3652,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException("Career not found for userId=" + userId));
@@ -6152,7 +6152,7 @@ public class TestHarnessUseCaseImpl implements TestHarnessUseCase {
 
         return careerRepository.findById(userId.toString())
             .switchIfEmpty(Mono.error(new IllegalStateException(
-                "No career for userId=" + userId + " â€” call create-custom first")))
+                "No career for userId=" + userId + " - call create-custom first")))
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
                     return Mono.error(new IllegalStateException(

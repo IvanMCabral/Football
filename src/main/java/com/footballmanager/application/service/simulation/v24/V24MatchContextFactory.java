@@ -32,14 +32,6 @@ public final class V24MatchContextFactory {
             SessionTeam homeTeam,
             SessionTeam awayTeam,
             long seed) {
-        // test-harness), fall back to the styles persisted on the SessionTeam.
-        // This lets the test-harness set-style endpoint (POST /test-harness/career/set-style)
-        // actually drive the engine's style-aware chanceProbability, possessionBase,
-        // and styleToModifier paths.
-        //
-        // We have to read the styles BEFORE delegating to buildWithStyles, so
-        // validateInputs (which checks for null homeTeam/awayTeam) would NPE on
-        // us if homeTeam/awayTeam were null. Manually check those here.
         if (career == null) throw new IllegalArgumentException("career must be non-null");
         if (fixture == null) throw new IllegalArgumentException("fixture must be non-null");
         if (homeTeam == null) throw new IllegalArgumentException("homeTeam must be non-null");
@@ -65,10 +57,6 @@ public final class V24MatchContextFactory {
         String matchId = fixture.getMatchId();
         String homeTeamId = resolveTeamId(fixture.getHomeTeamId(), homeTeam);
         String awayTeamId = resolveTeamId(fixture.getAwayTeamId(), awayTeam);
-
-        // LineupCommandUseCaseImpl.autoSelectLineup / manualSelectLineupWithSlots, sprint 1.6).
-        // Fall back to SessionTeam.getFormation() for backward compat with saves from sprint 1.5
-        // or earlier that pre-date the teamStarting11Formation map.
         Map<String, String> persistedFormations = career.getTeamStarting11Formation();
         String homeFormation = (persistedFormations != null && persistedFormations.containsKey(homeTeamId))
                 ? persistedFormations.get(homeTeamId)
@@ -161,7 +149,6 @@ public final class V24MatchContextFactory {
     }
 
     private List<SessionPlayer> resolveStartingXI(CareerSave career, String teamId, String formation, String teamLabel) {
-        // Try CareerSave.teamStarting11 first (LineupController writes here)
         List<SessionPlayer> resolved = resolveFromStarting11OrNull(career, teamId, teamLabel);
         if (resolved != null) return resolved;
 
@@ -184,33 +171,24 @@ public final class V24MatchContextFactory {
         if (ids.size() > 11) {
             throw new IllegalArgumentException(
                     teamLabel + " starting XI has " + ids.size()
-                    + " entries â€” maximum is 11 for teamId: " + teamId);
+                    + " entries - maximum is 11 for teamId: " + teamId);
         }
-        // derivation, but that masks user intent; the user explicitly submitted
-        // a short-handed XI and the engine should honour it).
         int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (ids.size() < min) {
             throw new IllegalArgumentException(
                     teamLabel + " starting XI has " + ids.size()
-                    + " entries â€” minimum is " + min + " for teamId: " + teamId);
+                    + " entries - minimum is " + min + " for teamId: " + teamId);
         }
 
         List<SessionPlayer> resolved = new ArrayList<>();
         int staleCount = 0;
         for (String pid : ids) {
             if (pid == null || pid.isBlank()) {
-                // Null/blank entries in teamStarting11 are clearly invalid
-                // user data; preserve the original IAE so the user can fix
-                // their lineup explicitly.
                 throw new IllegalArgumentException(
                         teamLabel + " starting XI contains null/blank playerId for teamId: " + teamId);
             }
             SessionPlayer p = career.getSessionPlayer(pid);
             if (p == null) {
-                // removed from the playerManager between rounds. Count it
-                // and continue; if ALL entries are stale we fall back to
-                // the squad (via returning null), otherwise we accept the
-                // partial lineup.
                 staleCount++;
                 continue;
             }
@@ -220,19 +198,12 @@ public final class V24MatchContextFactory {
             org.slf4j.LoggerFactory.getLogger(V24MatchContextFactory.class).warn(
                 "[BUG-003] teamStarting11 for teamId={} has {} stale playerId(s) "
                 + "(player removed from playerManager between rounds). "
-                + "Resolved {}/{} â€” falling back to squad derivation to ensure "
+                + "Resolved {}/{} - falling back to squad derivation to ensure "
                 + "a complete 11-player starting XI.",
                 teamId, staleCount, resolved.size(), ids.size());
-            // is partially invalid; fall back to deriveStartingXIfromSquad
-            // to ensure a complete 11-player starting XI. Partial lineups
-            // (e.g. 10 valid + 1 stale) would short the team by 1 player,
-            // which the engine would then complain about at runtime.
             return null;
         }
         if (resolved.size() < min) {
-            // The teamStarting11 had too few entries (already validated
-            // above for > min, so this means it's between 0 and min). Fall
-            // back to the squad so the match can still start.
             return null;
         }
         return resolved;
@@ -240,7 +211,6 @@ public final class V24MatchContextFactory {
 
     private List<SessionPlayer> deriveStartingXIfromSquad(
             CareerSave career, String teamId, String formation, String teamLabel) {
-        // Try CareerTeamManager.teamSquads (written by CareerTeamManager.assignPlayerToSquad)
         List<String> squadIds = career.getTeamManager().getSquadPlayerIds(teamId);
         int min = com.footballmanager.application.service.lineup.LineupRules.MIN_AVAILABLE_PLAYERS;
         if (squadIds == null || squadIds.size() < min) {
@@ -248,7 +218,7 @@ public final class V24MatchContextFactory {
                     teamLabel + " squad has only "
                     + (squadIds != null ? squadIds.size() : 0)
                     + " players for teamId: " + teamId
-                    + " â€” need at least " + min + " for starting XI");
+                    + " - need at least " + min + " for starting XI");
         }
         List<SessionPlayer> squad = new ArrayList<>();
         for (String squadId : squadIds) {
@@ -263,8 +233,6 @@ public final class V24MatchContextFactory {
         if (smartStarters.size() >= min) {
             return smartStarters;
         }
-        // Last-resort legacy fallback: use strongest available players, not raw
-        // import order, so CPU teams never degrade because of JSON/list order.
         return squad.stream()
                 .sorted(Comparator.comparingInt(this::playerOverallSafe).reversed())
                 .limit(11)

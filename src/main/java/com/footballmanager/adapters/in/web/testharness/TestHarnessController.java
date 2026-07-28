@@ -96,7 +96,7 @@ public class TestHarnessController {
                 body.put("totalRounds", career.getTournamentState().getTotalRounds());
                 body.put("currentRound", career.getTournamentState().getCurrentRound());
                 body.put("teamsPerDivision", teamsPerDivision);
-                body.put("message", "Custom career created Ã¢â‚¬â€ squad is healthy");
+                body.put("message", "Custom career created - squad is healthy");
                 return ResponseEntity.status(HttpStatus.CREATED).body(body);
             });
     }
@@ -124,7 +124,7 @@ public class TestHarnessController {
                 body.put("fixtureCount", specs.size());
                 body.put("maxRound", maxRound);
                 body.put("currentRound", 1);
-                body.put("message", "Fixtures replaced Ã¢â‚¬â€ currentRound=1, totalRounds=" + maxRound);
+                body.put("message", "Fixtures replaced - currentRound=1, totalRounds=" + maxRound);
                 return ResponseEntity.ok(body);
             }));
     }
@@ -433,7 +433,7 @@ public class TestHarnessController {
                 Map<String, Object> body = new LinkedHashMap<>();
                 body.put("success", true);
                 body.put("roundId", request.roundId());
-                body.put("message", "Round reset Ã¢â‚¬â€ fixtures back to PENDING, engines evicted, V24 details cleared");
+                body.put("message", "Round reset - fixtures back to PENDING, engines evicted, V24 details cleared");
                 return ResponseEntity.ok(body);
             }));
     }

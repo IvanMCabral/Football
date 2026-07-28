@@ -311,7 +311,7 @@ public class RoundController {
         try {
             MatchStateSnapshot snap = result.snapshot();
             if (snap.matchId() == null || snap.homeTeamId() == null || snap.awayTeamId() == null) {
-                log.warn("[C41] persistFinishedMatch skipped â€” incomplete snapshot (matchId={}, home={}, away={})",
+                log.warn("[C41] persistFinishedMatch skipped - incomplete snapshot (matchId={}, home={}, away={})",
                     snap.matchId(), snap.homeTeamId(), snap.awayTeamId());
                 return;
             }
@@ -355,7 +355,7 @@ public class RoundController {
                 }
             }
             if (userId == null) {
-                log.error("[C41] persistFinishedMatch ABORTED â€” cannot determine userId for matchId={}. "
+                log.error("[C41] persistFinishedMatch ABORTED - cannot determine userId for matchId={}. "
                     + "snap.userId={}, career.userId={}, authUserId={}. "
                     + "Match will NOT be persisted (avoids orphan keys that /api/v1/matches cannot find).",
                     snap.matchId(), snap.userId(),
