@@ -99,12 +99,12 @@ Classified remaining production references:
 | `DetailedSimulationConfig.java` | `app.simulation.v24.*` | Deprecated config alias only |
 | `PersistedEngineVersions.java` | `PERSISTED_ENGINE_VERSION_V24 = "V24"` | Persisted compatibility discriminator |
 
-No unclassified production V23/V24 references remain. Seed data entries such as `Goiania B`/`Goi?nia B` are football data, not version references.
+No unclassified production V23/V24 references remain. Seed data entries such as `Goiania B`/`Goiânia B` are football data, not version references.
 
 ## 8. Encoding
 
 - Removed BOMs introduced during local rewrite attempts.
-- Corrected active documentation headings from `MANAGER ?` to `MANAGER -`.
+- Corrected active documentation headings from corrupted punctuation to `MANAGER -`.
 - Normalized active profile comments and runbook references.
 - Verified files with UTF-8 reads and replacement-character checks.
 
