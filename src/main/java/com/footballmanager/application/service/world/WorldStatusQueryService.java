@@ -1,6 +1,5 @@
 package com.footballmanager.application.service.world;
 
-import com.footballmanager.adapters.in.web.dashboard.dto.WorldStatusResponse;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
@@ -35,19 +34,19 @@ public class WorldStatusQueryService {
      * matches count is derived from the user's CareerSave — fixtures
      * with a non-null {@code result} are considered played.
      */
-    public Mono<WorldStatusResponse> getWorldStatus(UUID userId) {
+    public Mono<WorldStatusSummary> getWorldStatus(UUID userId) {
         Mono<Integer> matchesMono = careerSessionService.getCareerFromCache(userId)
                 .map(this::countPlayedFixtures)
                 .defaultIfEmpty(0);
 
         return worldService.getWorldSnapshot(userId)
                 .zipWith(matchesMono)
-                .map(tuple -> new WorldStatusResponse(
+                .map(tuple -> new WorldStatusSummary(
                         tuple.getT1().getAllWorldTeams() != null ? tuple.getT1().getAllWorldTeams().size() : 0,
                         tuple.getT1().getAllWorldPlayers() != null ? tuple.getT1().getAllWorldPlayers().size() : 0,
                         tuple.getT2()
                 ))
-                .switchIfEmpty(Mono.just(new WorldStatusResponse(0, 0, 0)));
+                .switchIfEmpty(Mono.just(new WorldStatusSummary(0, 0, 0)));
     }
 
     /**

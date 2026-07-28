@@ -1,8 +1,8 @@
 package com.footballmanager.application.service.match;
 
-import com.footballmanager.adapters.in.web.career.simulation.dto.FormationChangeResultDTO;
-import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
-import com.footballmanager.adapters.in.web.career.simulation.dto.StyleChangeResultDTO;
+
+
+
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
@@ -146,9 +146,9 @@ class TacticalChangeServiceTest {
     @DisplayName("changeFormation validates 10-11 slots, 1 GK, unique playerIds")
     void changeFormation_invalidSlots_returnsError() {
         // 12 players — too many
-        List<FormationSlotDTO> tooMany = new ArrayList<>();
+        List<TacticalFormationSlot> tooMany = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
-            tooMany.add(new FormationSlotDTO("home-starter-" + i, "MID"));
+            tooMany.add(new TacticalFormationSlot("home-starter-" + i, "MID"));
         }
         StepVerifier.create(service.changeFormation(userId, matchId, tooMany))
             .expectErrorSatisfies(e -> {
@@ -162,9 +162,9 @@ class TacticalChangeServiceTest {
     @DisplayName("changeFormation fails when no GK slot is present")
     void changeFormation_noGoalkeeper_returnsError() {
         // 10 DEF slots, 0 GK
-        List<FormationSlotDTO> noGk = new ArrayList<>();
+        List<TacticalFormationSlot> noGk = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            noGk.add(new FormationSlotDTO("home-starter-" + (i + 1), "DEF"));
+            noGk.add(new TacticalFormationSlot("home-starter-" + (i + 1), "DEF"));
         }
         StepVerifier.create(service.changeFormation(userId, matchId, noGk))
             .expectErrorSatisfies(e -> {
@@ -178,18 +178,18 @@ class TacticalChangeServiceTest {
     @DisplayName("changeFormation invokes mutateContext + recordTacticalChange on happy path")
     void changeFormation_happyPath_invokesMutateContext() {
         // Build a valid 4-4-2 formation using the home starting players.
-        List<FormationSlotDTO> formation = new ArrayList<>();
-        formation.add(new FormationSlotDTO("home-starter-0", "GK"));
-        formation.add(new FormationSlotDTO("home-starter-1", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-2", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-3", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-4", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-5", "MID"));
-        formation.add(new FormationSlotDTO("home-starter-6", "MID"));
-        formation.add(new FormationSlotDTO("home-starter-7", "MID"));
-        formation.add(new FormationSlotDTO("home-starter-8", "MID"));
-        formation.add(new FormationSlotDTO("home-starter-9", "ATT"));
-        formation.add(new FormationSlotDTO("home-starter-10", "ATT"));
+        List<TacticalFormationSlot> formation = new ArrayList<>();
+        formation.add(new TacticalFormationSlot("home-starter-0", "GK"));
+        formation.add(new TacticalFormationSlot("home-starter-1", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-2", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-3", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-4", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-5", "MID"));
+        formation.add(new TacticalFormationSlot("home-starter-6", "MID"));
+        formation.add(new TacticalFormationSlot("home-starter-7", "MID"));
+        formation.add(new TacticalFormationSlot("home-starter-8", "MID"));
+        formation.add(new TacticalFormationSlot("home-starter-9", "ATT"));
+        formation.add(new TacticalFormationSlot("home-starter-10", "ATT"));
 
         // No-op mutateContext for the test (mutateContext is void)
         org.mockito.Mockito.doAnswer(inv -> {
@@ -217,18 +217,18 @@ class TacticalChangeServiceTest {
     @Test
     @DisplayName("changeFormation uses requested formationCode instead of deriving from role counts")
     void changeFormation_requestedFormationCodeWinsOverDerivedCode() {
-        List<FormationSlotDTO> formation = new ArrayList<>();
-        formation.add(new FormationSlotDTO("home-starter-0", "GK"));
-        formation.add(new FormationSlotDTO("home-starter-1", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-2", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-3", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-4", "DEF"));
-        formation.add(new FormationSlotDTO("home-starter-5", "MID"));
-        formation.add(new FormationSlotDTO("home-starter-6", "MID"));
-        formation.add(new FormationSlotDTO("home-starter-7", "MID"));
-        formation.add(new FormationSlotDTO("home-starter-8", "WINGER"));
-        formation.add(new FormationSlotDTO("home-starter-9", "ATT"));
-        formation.add(new FormationSlotDTO("home-starter-10", "WINGER"));
+        List<TacticalFormationSlot> formation = new ArrayList<>();
+        formation.add(new TacticalFormationSlot("home-starter-0", "GK"));
+        formation.add(new TacticalFormationSlot("home-starter-1", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-2", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-3", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-4", "DEF"));
+        formation.add(new TacticalFormationSlot("home-starter-5", "MID"));
+        formation.add(new TacticalFormationSlot("home-starter-6", "MID"));
+        formation.add(new TacticalFormationSlot("home-starter-7", "MID"));
+        formation.add(new TacticalFormationSlot("home-starter-8", "WINGER"));
+        formation.add(new TacticalFormationSlot("home-starter-9", "ATT"));
+        formation.add(new TacticalFormationSlot("home-starter-10", "WINGER"));
 
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
@@ -247,18 +247,18 @@ class TacticalChangeServiceTest {
     @Test
     @DisplayName("changeFormation carries live custom pixel coordinates into V24 context slots")
     void changeFormation_customCoordinatesUpdateContextSlots() {
-        List<FormationSlotDTO> formation = new ArrayList<>();
-        formation.add(new FormationSlotDTO("home-starter-0", "GK", 0, null, null));
-        formation.add(new FormationSlotDTO("home-starter-1", "DEF", 1, null, null));
-        formation.add(new FormationSlotDTO("home-starter-2", "DEF", 2, null, null));
-        formation.add(new FormationSlotDTO("home-starter-3", "DEF", 3, null, null));
-        formation.add(new FormationSlotDTO("home-starter-4", "DEF", 4, null, null));
-        formation.add(new FormationSlotDTO("home-starter-5", "MID", 5, null, null));
-        formation.add(new FormationSlotDTO("home-starter-6", "MID", 6, 47.25, 58.75));
-        formation.add(new FormationSlotDTO("home-starter-7", "MID", 7, null, null));
-        formation.add(new FormationSlotDTO("home-starter-8", "MID", 8, null, null));
-        formation.add(new FormationSlotDTO("home-starter-9", "ATT", 9, null, null));
-        formation.add(new FormationSlotDTO("home-starter-10", "ATT", 10, null, null));
+        List<TacticalFormationSlot> formation = new ArrayList<>();
+        formation.add(new TacticalFormationSlot("home-starter-0", "GK", 0, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-1", "DEF", 1, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-2", "DEF", 2, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-3", "DEF", 3, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-4", "DEF", 4, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-5", "MID", 5, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-6", "MID", 6, 47.25, 58.75));
+        formation.add(new TacticalFormationSlot("home-starter-7", "MID", 7, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-8", "MID", 8, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-9", "ATT", 9, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-10", "ATT", 10, null, null));
 
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
@@ -279,18 +279,18 @@ class TacticalChangeServiceTest {
     @Test
     @DisplayName("changeFormation records custom pixels in the tactical-change event")
     void changeFormation_customCoordinatesAreVisibleInTimelineEvent() {
-        List<FormationSlotDTO> formation = new ArrayList<>();
-        formation.add(new FormationSlotDTO("home-starter-0", "GK", 0, null, null));
-        formation.add(new FormationSlotDTO("home-starter-1", "DEF", 1, null, null));
-        formation.add(new FormationSlotDTO("home-starter-2", "DEF", 2, null, null));
-        formation.add(new FormationSlotDTO("home-starter-3", "DEF", 3, null, null));
-        formation.add(new FormationSlotDTO("home-starter-4", "DEF", 4, null, null));
-        formation.add(new FormationSlotDTO("home-starter-5", "MID", 5, null, null));
-        formation.add(new FormationSlotDTO("home-starter-6", "MID", 6, 47.25, 58.75));
-        formation.add(new FormationSlotDTO("home-starter-7", "MID", 7, null, null));
-        formation.add(new FormationSlotDTO("home-starter-8", "MID", 8, null, null));
-        formation.add(new FormationSlotDTO("home-starter-9", "ATT", 9, null, null));
-        formation.add(new FormationSlotDTO("home-starter-10", "ATT", 10, null, null));
+        List<TacticalFormationSlot> formation = new ArrayList<>();
+        formation.add(new TacticalFormationSlot("home-starter-0", "GK", 0, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-1", "DEF", 1, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-2", "DEF", 2, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-3", "DEF", 3, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-4", "DEF", 4, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-5", "MID", 5, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-6", "MID", 6, 47.25, 58.75));
+        formation.add(new TacticalFormationSlot("home-starter-7", "MID", 7, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-8", "MID", 8, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-9", "ATT", 9, null, null));
+        formation.add(new TacticalFormationSlot("home-starter-10", "ATT", 10, null, null));
 
         org.mockito.Mockito.doNothing().when(liveSession).mutateContext(any());
 
@@ -309,18 +309,18 @@ class TacticalChangeServiceTest {
     @Test
     @DisplayName("changeFormation supports away manager roster and writes custom pixels into away slots")
     void changeFormation_awayManagerRosterAndPixels() {
-        List<FormationSlotDTO> formation = new ArrayList<>();
-        formation.add(new FormationSlotDTO("away-starter-0", "GK", 0, null, null));
-        formation.add(new FormationSlotDTO("away-starter-1", "DEF", 1, null, null));
-        formation.add(new FormationSlotDTO("away-starter-2", "DEF", 2, null, null));
-        formation.add(new FormationSlotDTO("away-starter-3", "DEF", 3, null, null));
-        formation.add(new FormationSlotDTO("away-starter-4", "DEF", 4, null, null));
-        formation.add(new FormationSlotDTO("away-starter-5", "MID", 5, null, null));
-        formation.add(new FormationSlotDTO("away-starter-6", "MID", 6, 52.5, 41.25));
-        formation.add(new FormationSlotDTO("away-starter-7", "MID", 7, null, null));
-        formation.add(new FormationSlotDTO("away-starter-8", "MID", 8, null, null));
-        formation.add(new FormationSlotDTO("away-starter-9", "ATT", 9, null, null));
-        formation.add(new FormationSlotDTO("away-starter-10", "ATT", 10, null, null));
+        List<TacticalFormationSlot> formation = new ArrayList<>();
+        formation.add(new TacticalFormationSlot("away-starter-0", "GK", 0, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-1", "DEF", 1, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-2", "DEF", 2, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-3", "DEF", 3, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-4", "DEF", 4, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-5", "MID", 5, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-6", "MID", 6, 52.5, 41.25));
+        formation.add(new TacticalFormationSlot("away-starter-7", "MID", 7, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-8", "MID", 8, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-9", "ATT", 9, null, null));
+        formation.add(new TacticalFormationSlot("away-starter-10", "ATT", 10, null, null));
 
         org.mockito.Mockito.doAnswer(inv -> {
             @SuppressWarnings("unchecked")
@@ -384,3 +384,4 @@ class TacticalChangeServiceTest {
         return list;
     }
 }
+

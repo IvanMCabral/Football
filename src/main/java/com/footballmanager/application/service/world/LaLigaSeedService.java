@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.world;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.domain.model.entity.Player;
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
@@ -45,7 +45,7 @@ public class LaLigaSeedService {
 
     private final WorldSnapshotService snapshotService;
     private final ObjectMapper objectMapper;
-    private final RedisWorldRepository worldRepository;
+    private final WorldSnapshotRepository worldRepository;
     private final PlayerRepository playerRepository;
     private final WorldSeedBatchWriter batchWriter;
     private final WorldTeamPostgresWriter teamWriter;
@@ -417,3 +417,4 @@ public class LaLigaSeedService {
             long durationMs
     ) {}
 }
+

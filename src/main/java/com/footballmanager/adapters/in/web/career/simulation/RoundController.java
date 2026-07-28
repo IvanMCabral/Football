@@ -11,6 +11,7 @@ import com.footballmanager.application.service.match.MatchManagementService;
 import com.footballmanager.application.service.simulation.LeagueSimulator;
 import com.footballmanager.application.service.simulation.MatchResultProcessor;
 import com.footballmanager.application.service.simulation.MatchSimulationOrchestrator;
+import com.footballmanager.application.service.reactive.ReactiveLifecycleExecutor;
 import com.footballmanager.application.service.simulation.v24.BaselineState;
 import com.footballmanager.application.service.simulation.v24.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24LiveSession;
@@ -57,6 +58,7 @@ public class RoundController {
     private final MatchRepository matchRepository;
     private final BaselineStateStoragePort baselineStoragePort;
     private final ControllerHelper controllerHelper;
+    private final ReactiveLifecycleExecutor lifecycleExecutor;
 
     @Value("${simulation.use-v24-detailed-engine:true}")
     private boolean useV24DetailedEngine;
@@ -94,7 +96,7 @@ public class RoundController {
                 Collections.synchronizedList(new ArrayList<>());
         return careerSessionService.getCareerFromCache(userId)
             .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
-            .doOnNext(career -> {
+            .flatMapMany(career -> {
                 log.info("[ROUND-CONTROLLER] CareerSave loaded for V24 context construction");
                 String traceCareerId = career.getData().getCareerId();
                 log.info("RoundController careerId={}, roundId={}", traceCareerId, roundId);
@@ -103,6 +105,7 @@ public class RoundController {
                 int currentSeason = career.getSeasonManager().getCurrentSeason();
                 LiveRoundMutationTracking tracking = new LiveRoundMutationTracking(currentRound, currentSeason);
                 capturePreRoundState(career, tracking);
+                List<Mono<Void>> matchStarts = new ArrayList<>();
                 for (StartRoundRequest.MatchInfo matchInfo : request.matches()) {
                     UUID matchId = UUID.fromString(matchInfo.matchId());
                     UUID homeTeamId = UUID.fromString(matchInfo.homeTeamId());
@@ -113,16 +116,17 @@ public class RoundController {
                     V24LiveSession v24LiveSession = buildV24LiveSession(career, matchId, homeTeamId, awayTeamId);
 
                     if (v24LiveSession != null) {
-                        matchManagementService.startMatch(
+                        matchStarts.add(matchManagementService.startMatch(
                                 userId,
                                 matchId,
                                 homeTeamId,
                                 awayTeamId,
                                 result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
                                 v24LiveSession)
-                            .subscribe();
+                            .take(1)
+                            .then());
                     } else {
-                        matchManagementService.startMatch(
+                        matchStarts.add(matchManagementService.startMatch(
                                 userId,
                                 matchId,
                                 homeTeamId,
@@ -141,11 +145,13 @@ public class RoundController {
                                     if (finished == totalMatches) {
                                         log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
                                         roundEngine.emitCompletedState();
-                                        orchestrator.processMatchDayResults(userId.toString(), matchResults)
-                                                .subscribe();
+                                        lifecycleExecutor.execute(
+                                                "process legacy match-day results",
+                                                orchestrator.processMatchDayResults(userId.toString(), matchResults));
                                     }
                                 })
-                            .subscribe();
+                            .take(1)
+                            .then());
                     }
 
                     MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId);
@@ -155,13 +161,17 @@ public class RoundController {
 
                 roundEngineRegistry.register(roundId, roundEngine);
                 log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
-                roundEngine.start();
-                log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}", roundEngine.isRunning());
-            })
-            .flatMapMany(career -> Flux.fromIterable(request.matches()))
-            .flatMap(matchInfo -> {
-                UUID matchId = UUID.fromString(matchInfo.matchId());
-                return matchManagementService.getMatchState(userId, matchId);
+                return Mono.whenDelayError(matchStarts)
+                        .then(Mono.fromRunnable(() -> {
+                            roundEngine.start();
+                            log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}",
+                                    roundEngine.isRunning());
+                        }))
+                        .thenMany(Flux.fromIterable(request.matches())
+                                .flatMap(matchInfo -> {
+                                    UUID matchId = UUID.fromString(matchInfo.matchId());
+                                    return matchManagementService.getMatchState(userId, matchId);
+                                }));
             })
             .collectList()
             .map(matchStates -> {
@@ -211,8 +221,8 @@ public class RoundController {
             log.info("[ROUND-CONTROLLER] V24LiveSession created for match {} with seed {}", matchId, seed);
             String careerId = career.getData().getCareerId();
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
-            baselineStoragePort.save(careerId, baseline)
-                    .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+            lifecycleExecutor.execute("save baseline state",
+                    baselineStoragePort.save(careerId, baseline)
                     .doOnSuccess(v -> log.info(
                             "[F6-MATCH-COMPARE] BaselineState saved for matchId={}, careerId={}, seed={}",
                             matchId, careerId, seed))
@@ -220,8 +230,7 @@ public class RoundController {
                         log.warn("[F6-MATCH-COMPARE] Failed to save baseline for matchId={}: {}",
                                 matchId, e.getMessage());
                         return reactor.core.publisher.Mono.empty();
-                    })
-                    .subscribe();
+                    }));
 
             return session;
         } catch (Exception e) {
@@ -260,7 +269,8 @@ public class RoundController {
                 result.snapshot().score().away(),
                 result.snapshot().homeTeamId(),
                 result.snapshot().awayTeamId());
-            leagueSimulator.persistV24DetailForLiveMatch(
+            lifecycleExecutor.execute("persist V24 live detail",
+                leagueSimulator.persistV24DetailForLiveMatch(
                     career,
                     result.v24Result(),
                     result.snapshot().homeTeamId().toString(),
@@ -268,7 +278,7 @@ public class RoundController {
                     result.snapshot().score().home(),
                     result.snapshot().score().away(),
                     tracking
-            );
+                ));
             log.info("[F6-MATCH-COMPARE] BaselineState PRESERVED for matchId={}, careerId={} (TTL 7d, compare endpoint will use it)",
                     result.snapshot().matchId(), career.getData().getCareerId());
         } else {
@@ -281,7 +291,8 @@ public class RoundController {
                 result.snapshot().score().away(),
                 events
         ));
-        persistFinishedMatch(result, events, career, userId);
+        lifecycleExecutor.execute("persist finished match",
+                persistFinishedMatch(result, events, career, userId));
 
         int finished = matchesFinished.incrementAndGet();
         log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", result.snapshot().matchId(), finished, totalMatches);
@@ -299,12 +310,13 @@ public class RoundController {
                 );
             }
 
-            orchestrator.processMatchDayResults(userId.toString(), matchResults)
-                    .subscribe();
+            lifecycleExecutor.execute(
+                    "process V24 match-day results",
+                    orchestrator.processMatchDayResults(userId.toString(), matchResults));
         }
     }
 
-    private void persistFinishedMatch(MatchFinishedResult result,
+    private Mono<Void> persistFinishedMatch(MatchFinishedResult result,
                                       java.util.List<com.footballmanager.domain.model.entity.MatchEvent> events,
                                       CareerSave career,
                                       UUID authUserId) {
@@ -313,7 +325,7 @@ public class RoundController {
             if (snap.matchId() == null || snap.homeTeamId() == null || snap.awayTeamId() == null) {
                 log.warn("[C41] persistFinishedMatch skipped - incomplete snapshot (matchId={}, home={}, away={})",
                     snap.matchId(), snap.homeTeamId(), snap.awayTeamId());
-                return;
+                return Mono.empty();
             }
             int homeGoals = snap.score() != null ? snap.score().home() : 0;
             int awayGoals = snap.score() != null ? snap.score().away() : 0;
@@ -361,19 +373,19 @@ public class RoundController {
                     snap.matchId(), snap.userId(),
                     career != null ? career.getUserId() : null,
                     authUserId);
-                return;
+                return Mono.empty();
             }
             final UUID persistUserId = userId;
-            matchRepository.save(persistUserId, match)
+            return matchRepository.save(persistUserId, match)
                 .doOnSuccess(v -> log.info("[C41] Persisted finished match matchId={} to MatchRepository (userId={})",
                     snap.matchId(), persistUserId))
                 .doOnError(err -> log.warn("[C41] Failed to persist finished match matchId={}: {}",
                     snap.matchId(), err.getMessage()))
-                .onErrorResume(err -> reactor.core.publisher.Mono.empty())
-                .subscribe();
+                .onErrorResume(err -> reactor.core.publisher.Mono.empty());
         } catch (Exception e) {
             log.warn("[C41] persistFinishedMatch threw for matchId={}: {}",
                 result.snapshot().matchId(), e.getMessage());
+            return Mono.empty();
         }
     }
 

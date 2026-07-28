@@ -1,8 +1,8 @@
 package com.footballmanager.application.service.lineup;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.Formation;
+import com.footballmanager.domain.port.in.lineup.LineupWarning;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -177,11 +177,11 @@ public class LineupHelper {
     /**
      * Returns empty otherwise. Does not throw.
      */
-    public List<LineupWarningDTO> detectShortHandedWarnings(List<SessionPlayer> players) {
-        List<LineupWarningDTO> warnings = new ArrayList<>();
+    public List<LineupWarning> detectShortHandedWarnings(List<SessionPlayer> players) {
+        List<LineupWarning> warnings = new ArrayList<>();
         if (players != null && players.size() > 0
             && countGoalkeepers(players) == 0) {
-            warnings.add(LineupWarningDTO.noGoalkeeper(players.size()));
+            warnings.add(LineupWarning.noGoalkeeper(players.size()));
         }
         return warnings;
     }

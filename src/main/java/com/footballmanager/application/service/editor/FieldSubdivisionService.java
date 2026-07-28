@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.editor;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.FieldSubdivisionDTO;
+import com.footballmanager.application.service.editor.FieldSubdivision;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ public class FieldSubdivisionService {
     private static final double GK_WIDTH = 30.0;
     private static final double GK_HEIGHT = 10.0;
 
-    private final List<FieldSubdivisionDTO> cachedSubdivisions;
+    private final List<FieldSubdivision> cachedSubdivisions;
 
     public FieldSubdivisionService() {
         this.cachedSubdivisions = Collections.unmodifiableList(buildSubdivisions());
@@ -66,23 +66,23 @@ public class FieldSubdivisionService {
      * El orden es estable: primero el GK, después las 81 normales en orden
      * de sector/subIndex ascendente.
      */
-    public List<FieldSubdivisionDTO> getAllSubdivisions() {
+    public List<FieldSubdivision> getAllSubdivisions() {
         return cachedSubdivisions;
     }
 
     /**
      * Devuelve solo el slot de GK (con {@code isGoalkeeper=true}).
      */
-    public FieldSubdivisionDTO getGoalkeeperSlot() {
+    public FieldSubdivision getGoalkeeperSlot() {
         return cachedSubdivisions.get(0);
     }
 
-    private List<FieldSubdivisionDTO> buildSubdivisions() {
-        List<FieldSubdivisionDTO> result = new ArrayList<>(TOTAL_SUBDIVISIONS);
+    private List<FieldSubdivision> buildSubdivisions() {
+        List<FieldSubdivision> result = new ArrayList<>(TOTAL_SUBDIVISIONS);
 
         // GK primero (siempre primero en la lista, determinismo para el front).
         // subdivisionId "GK-1" evita colisión con la subdivisión normal S26-1.
-        result.add(new FieldSubdivisionDTO(
+        result.add(new FieldSubdivision(
             GK_SECTOR,
             1,
             true,
@@ -119,7 +119,7 @@ public class FieldSubdivisionService {
 
                 String subdivisionId = String.format("S%02d-%d", sector, subIndex);
 
-                result.add(new FieldSubdivisionDTO(
+                result.add(new FieldSubdivision(
                     sector,
                     subIndex,
                     false,
@@ -151,3 +151,4 @@ public class FieldSubdivisionService {
         return Math.round(v * 100.0) / 100.0;
     }
 }
+

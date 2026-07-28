@@ -4,7 +4,7 @@ import com.footballmanager.application.engine.match.MatchEngine;
 import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.domain.GameService;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
@@ -119,13 +119,13 @@ class GameControllerV25D79Test {
         // Hand-built snapshot with non-empty ratings + substitutionsRemaining=3
         UUID homeId = UUID.randomUUID();
         UUID awayId = UUID.randomUUID();
-        List<V24PlayerMatchRatingDto> homeRatings = List.of(
-            new V24PlayerMatchRatingDto(
+        List<PlayerMatchRating> homeRatings = List.of(
+            new PlayerMatchRating(
                 "p-home-1", "Home Striker", homeId.toString(), "ATT",
                 7.5, 1, 0, 2, 0, 0, 0, 0, 0, false, false)
         );
-        List<V24PlayerMatchRatingDto> awayRatings = List.of(
-            new V24PlayerMatchRatingDto(
+        List<PlayerMatchRating> awayRatings = List.of(
+            new PlayerMatchRating(
                 "p-away-1", "Away GK", awayId.toString(), "GK",
                 6.8, 0, 0, 0, 0, 0, 0, 0, 0, false, false)
         );

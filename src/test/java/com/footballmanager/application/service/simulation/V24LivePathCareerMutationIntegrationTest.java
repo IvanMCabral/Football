@@ -3,6 +3,8 @@ package com.footballmanager.application.service.simulation;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchData;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.application.service.simulation.v24.V24MatchTimeline;
@@ -70,7 +72,7 @@ class V24LivePathCareerMutationIntegrationTest {
         CareerSave career = makeCareerWithHealthyPlayer(HOME, AWAY, HOME, AWAY, playerId);
 
         simulator.persistV24DetailForLiveMatch(
-                career, v24Result, HOME, AWAY, 1, 0);
+                career, v24Result, HOME, AWAY, 1, 0).block();
 
         // Detail was saved
         assertEquals(1, storage.saveCount, "V24 detail must be saved");
@@ -109,7 +111,7 @@ class V24LivePathCareerMutationIntegrationTest {
         CareerSave career = makeCareerWithHealthyPlayer(HOME, AWAY, HOME, AWAY, playerId);
 
         simulator.persistV24DetailForLiveMatch(
-                career, v24Result, HOME, AWAY, 1, 0);
+                career, v24Result, HOME, AWAY, 1, 0).block();
 
         assertEquals(1, storage.saveCount, "V24 detail must be saved");
 
@@ -153,7 +155,7 @@ class V24LivePathCareerMutationIntegrationTest {
         CareerSave career = makeCareerWithHealthyPlayer(HOME, AWAY, HOME, AWAY, playerId);
 
         simulator.persistV24DetailForLiveMatch(
-                career, v24Result, HOME, AWAY, 1, 0);
+                career, v24Result, HOME, AWAY, 1, 0).block();
 
         // Detail IS saved (read-only mode still records for stats)
         assertEquals(1, storage.saveCount, "V24 detail must still be saved in read-only mode");
@@ -195,7 +197,7 @@ class V24LivePathCareerMutationIntegrationTest {
         CareerSave career = makeCareerWithHealthyPlayer(HOME, AWAY, HOME, AWAY, playerId);
 
         simulator.persistV24DetailForLiveMatch(
-                career, v24Result, HOME, AWAY, 0, 1);
+                career, v24Result, HOME, AWAY, 0, 1).block();
 
         assertEquals(1, storage.saveCount);
 
@@ -231,7 +233,7 @@ class V24LivePathCareerMutationIntegrationTest {
         CareerSave career = makeCareerWithHealthyPlayer(HOME, AWAY, HOME, AWAY, playerId);
 
         simulator.persistV24DetailForLiveMatch(
-                career, v24Result, HOME, AWAY, 0, 0);
+                career, v24Result, HOME, AWAY, 0, 0).block();
 
         assertEquals(0, storage.saveCount, "No detail must be saved when persistDetail=false");
         SessionPlayer p = career.getSessionPlayer(playerId);
@@ -332,26 +334,18 @@ class V24LivePathCareerMutationIntegrationTest {
         V24DetailedMatchData lastDetail;
 
         @Override
-        public void save(String careerId, V24DetailedMatchData detail) {
-            saveCount++;
+        public Mono<Void> save(String careerId, V24DetailedMatchData detail) {saveCount++;
             lastCareerId = careerId;
-            lastDetail = detail;
-        }
+            lastDetail = detail; return Mono.empty();}
 
         @Override
-        public Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId) {
-            return Optional.empty();
-        }
+        public Mono<Optional<V24DetailedMatchData>> findByMatchId(String careerId, String matchId) { return Mono.just(Optional.empty()); }
 
         @Override
-        public List<V24DetailedMatchData> findByCareerId(String careerId) {
-            return List.of();
-        }
+        public Flux<V24DetailedMatchData> findByCareerId(String careerId) { return Flux.empty(); }
 
         @Override
-        public void deleteByCareerId(String careerId) {
-            // no-op
-        }
+        public Mono<Void> deleteByCareerId(String careerId) { return Mono.empty(); }
     }
 
     private static class FakeMatchSimulator

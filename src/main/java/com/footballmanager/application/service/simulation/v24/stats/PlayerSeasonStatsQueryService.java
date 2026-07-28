@@ -5,6 +5,7 @@ import com.footballmanager.application.service.simulation.v24.V24DetailedMatchSt
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -46,7 +47,7 @@ public class PlayerSeasonStatsQueryService {
     /**
      * Get all player season stats for a career/season.
      */
-    public PlayerSeasonStatsResponse getPlayerSeasonStats(String careerId, Integer season) {
+    public Mono<PlayerSeasonStatsResponse> getPlayerSeasonStats(String careerId, Integer season) {
         return getPlayerSeasonStats(careerId, season, null, null,
                 DEFAULT_LIMIT, 0, null, null);
     }
@@ -54,7 +55,7 @@ public class PlayerSeasonStatsQueryService {
     /**
      * Get player season stats with optional team/player filter.
      */
-    public PlayerSeasonStatsResponse getPlayerSeasonStats(
+    public Mono<PlayerSeasonStatsResponse> getPlayerSeasonStats(
             String careerId,
             Integer season,
             String teamId,
@@ -66,7 +67,7 @@ public class PlayerSeasonStatsQueryService {
     /**
      * Get player season stats with sort options (backward-compatible overload).
      */
-    public PlayerSeasonStatsResponse getPlayerSeasonStats(
+    public Mono<PlayerSeasonStatsResponse> getPlayerSeasonStats(
             String careerId,
             Integer season,
             String teamId,
@@ -84,7 +85,7 @@ public class PlayerSeasonStatsQueryService {
     /**
      * Get player season stats with full pagination and sort options.
      */
-    public PlayerSeasonStatsResponse getPlayerSeasonStats(
+    public Mono<PlayerSeasonStatsResponse> getPlayerSeasonStats(
             String careerId,
             Integer season,
             String teamId,
@@ -98,15 +99,29 @@ public class PlayerSeasonStatsQueryService {
         Objects.requireNonNull(season, "season must not be null");
 
         if (!apiEnabled) {
-            return PlayerSeasonStatsResponse.builder()
+            return Mono.just(PlayerSeasonStatsResponse.builder()
                     .careerId(careerId)
                     .season(season)
                     .incomplete(true)
                     .message("Player season stats require V24 detail API to be enabled")
-                    .build();
+                    .build());
         }
 
-        List<V24DetailedMatchData> details = storagePort.findByCareerId(careerId);
+        return storagePort.findByCareerId(careerId)
+                .collectList()
+                .map(details -> buildResponse(careerId, season, teamId, playerId, limit, offset, sortBy, order, details));
+    }
+
+    private PlayerSeasonStatsResponse buildResponse(
+            String careerId,
+            Integer season,
+            String teamId,
+            String playerId,
+            int limit,
+            int offset,
+            String sortBy,
+            String order,
+            List<V24DetailedMatchData> details) {
 
         log.info("[V24-STATS-QUERY] careerId={}, teamId={}, details.size={}", careerId, teamId, details.size());
 

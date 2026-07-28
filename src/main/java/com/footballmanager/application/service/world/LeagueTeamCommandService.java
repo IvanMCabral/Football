@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.world;
 
-import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.ports.out.league.LeagueTeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.UUID;
 public class LeagueTeamCommandService {
 
     private final LeagueTeamRepository leagueTeamRepository;
-    private final RedisWorldRepository worldRepository;
+    private final WorldSnapshotRepository worldRepository;
 
     /**
      * Agrega un equipo a una liga.
@@ -61,3 +61,4 @@ public class LeagueTeamCommandService {
                 .onErrorResume(e -> Mono.empty());
     }
 }
+

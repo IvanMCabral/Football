@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
-import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
+import com.footballmanager.domain.model.valueobject.FormationSlot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +34,8 @@ public final class V24LiveSnapshot {
     private final String awayStyle;
     private final String homeFormation;
     private final String awayFormation;
-    private final List<FormationSlotDTO> homeSlots;
-    private final List<FormationSlotDTO> awaySlots;
+    private final List<FormationSlot> homeSlots;
+    private final List<FormationSlot> awaySlots;
 
     public V24LiveSnapshot(
             String matchId,
@@ -102,8 +102,8 @@ public final class V24LiveSnapshot {
             String awayStyle,
             String homeFormation,
             String awayFormation,
-            List<FormationSlotDTO> homeSlots,
-            List<FormationSlotDTO> awaySlots) {
+            List<FormationSlot> homeSlots,
+            List<FormationSlot> awaySlots) {
         this.matchId = matchId;
         this.minute = minute;
         this.homeGoals = homeGoals;
@@ -136,6 +136,6 @@ public final class V24LiveSnapshot {
     public String awayStyle() { return awayStyle; }
     public String homeFormation() { return homeFormation; }
     public String awayFormation() { return awayFormation; }
-    public List<FormationSlotDTO> homeSlots() { return homeSlots; }
-    public List<FormationSlotDTO> awaySlots() { return awaySlots; }
+    public List<FormationSlot> homeSlots() { return homeSlots; }
+    public List<FormationSlot> awaySlots() { return awaySlots; }
 }

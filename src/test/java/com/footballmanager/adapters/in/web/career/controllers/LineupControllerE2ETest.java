@@ -10,8 +10,13 @@ import com.footballmanager.application.service.lineup.LineupRules;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.TournamentState;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
+import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
+import com.footballmanager.domain.port.in.lineup.LineupPlayerView;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
+import com.footballmanager.domain.port.in.lineup.LineupView;
+import com.footballmanager.domain.port.in.lineup.LineupWarning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -142,6 +147,48 @@ class LineupControllerE2ETest {
             List.of(LineupWarningDTO.shortHanded(available)));
     }
 
+    private LineupView toLineupView(LineupDTO dto) {
+        return new LineupView(
+            dto.formation(),
+            dto.players().stream()
+                .map(player -> new LineupPlayerView(
+                    player.playerId(),
+                    player.name(),
+                    player.position(),
+                    player.overall(),
+                    player.energy(),
+                    player.injured(),
+                    player.age(),
+                    player.yellowCards(),
+                    player.redCards(),
+                    player.suspended(),
+                    player.suspensionRemainingMatches()))
+                .toList(),
+            dto.confirmed(),
+            dto.warnings().stream()
+                .map(warning -> new LineupWarning(
+                    warning.code(),
+                    warning.message(),
+                    warning.severity(),
+                    warning.available(),
+                    warning.minimumRequired(),
+                    warning.target()))
+                .toList(),
+            dto.slots().stream()
+                .map(slot -> new LineupSlot(
+                    slot.playerId(),
+                    slot.subdivisionId(),
+                    slot.customXPercent(),
+                    slot.customYPercent()))
+                .toList(),
+            dto.chemistryScore(),
+            TeamChemistryCalculator.calculate(List.of()),
+            null,
+            dto.formationEffectiveness() == null
+                ? com.footballmanager.domain.model.valueobject.FormationEffectiveness.empty()
+                : com.footballmanager.domain.model.valueobject.FormationEffectiveness.empty());
+    }
+
     // ---------- POST /auto-select ----------
 
     @Test
@@ -149,7 +196,7 @@ class LineupControllerE2ETest {
     void autoSelect_happyPath() {
         stubCareerInPhase(CareerPhase.PRE_MATCH);
         when(lineupCommandUseCase.autoSelectLineup(eq(TEST_USER_ID), eq("4-4-2")))
-            .thenReturn(Mono.just(lineupWith11Players()));
+            .thenReturn(Mono.just(toLineupView(lineupWith11Players())));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -171,7 +218,7 @@ class LineupControllerE2ETest {
     void autoSelect_shortHanded_returnsWarning() {
         stubCareerInPhase(CareerPhase.PRE_MATCH);
         when(lineupCommandUseCase.autoSelectLineup(eq(TEST_USER_ID), eq("4-4-1-1")))
-            .thenReturn(Mono.just(lineupShortHanded(LineupRules.MIN_AVAILABLE_PLAYERS)));
+            .thenReturn(Mono.just(toLineupView(lineupShortHanded(LineupRules.MIN_AVAILABLE_PLAYERS))));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -249,7 +296,7 @@ class LineupControllerE2ETest {
         when(lineupCommandUseCase.manualSelectLineupWithSlots(
                 eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds),
                 argThat(slots -> slots == null || slots.isEmpty())))
-            .thenReturn(Mono.just(lineupWith11Players()));
+            .thenReturn(Mono.just(toLineupView(lineupWith11Players())));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -301,7 +348,7 @@ class LineupControllerE2ETest {
         when(lineupCommandUseCase.manualSelectLineupWithSlots(
                 eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds),
                 argThat(slots -> slots != null && slots.size() == 11)))
-            .thenReturn(Mono.just(lineupWith11Players()));
+            .thenReturn(Mono.just(toLineupView(lineupWith11Players())));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -338,7 +385,7 @@ class LineupControllerE2ETest {
         when(lineupCommandUseCase.manualSelectLineupWithSlots(
                 eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds),
                 argThat(slots -> slots == null || slots.isEmpty())))
-            .thenReturn(Mono.just(lineupWith11Players()));
+            .thenReturn(Mono.just(toLineupView(lineupWith11Players())));
 
         // slots ausente
         webTestClient.mutateWith(
@@ -370,7 +417,7 @@ class LineupControllerE2ETest {
         // The endpoint itself accepts any slots[] shape and returns 200.
         when(lineupCommandUseCase.manualSelectLineupWithSlots(
                 eq(TEST_USER_ID), eq("4-4-2"), eq(playerIds), any()))
-            .thenReturn(Mono.just(lineupWith11Players()));
+            .thenReturn(Mono.just(toLineupView(lineupWith11Players())));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -424,7 +471,7 @@ class LineupControllerE2ETest {
     void getCurrent_emptyLineup() {
         LineupDTO empty = new LineupDTO("4-3-3", List.of(), false);
         when(lineupQueryUseCase.getCurrentLineup(eq(TEST_USER_ID)))
-            .thenReturn(Mono.just(empty));
+            .thenReturn(Mono.just(toLineupView(empty)));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -442,7 +489,7 @@ class LineupControllerE2ETest {
     @DisplayName("GET /current — 200 OK with full 11-player lineup")
     void getCurrent_fullLineup() {
         when(lineupQueryUseCase.getCurrentLineup(eq(TEST_USER_ID)))
-            .thenReturn(Mono.just(lineupWith11Players()));
+            .thenReturn(Mono.just(toLineupView(lineupWith11Players())));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -477,7 +524,7 @@ class LineupControllerE2ETest {
             "4-3-3", lineupWith11Players().players(), false, List.of(), slots);
 
         when(lineupQueryUseCase.getCurrentLineup(eq(TEST_USER_ID)))
-            .thenReturn(Mono.just(lineupWithSlots));
+            .thenReturn(Mono.just(toLineupView(lineupWithSlots)));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -510,7 +557,7 @@ class LineupControllerE2ETest {
         LineupDTO emptyLineup = new LineupDTO(
             "4-4-2", new ArrayList<>(), false, List.of(), List.of());
         when(lineupQueryUseCase.getCurrentLineup(eq(TEST_USER_ID)))
-            .thenReturn(Mono.just(emptyLineup));
+            .thenReturn(Mono.just(toLineupView(emptyLineup)));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server
@@ -535,7 +582,7 @@ class LineupControllerE2ETest {
     void autoSelect_responseDeclaresUtf8Charset() {
         stubCareerInPhase(CareerPhase.PRE_MATCH);
         when(lineupCommandUseCase.autoSelectLineup(eq(TEST_USER_ID), eq("4-4-2")))
-            .thenReturn(Mono.just(lineupWith11Players()));
+            .thenReturn(Mono.just(toLineupView(lineupWith11Players())));
 
         webTestClient.mutateWith(
                 org.springframework.security.test.web.reactive.server

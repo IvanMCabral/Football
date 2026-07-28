@@ -2,7 +2,8 @@ package com.footballmanager.adapters.in.web.testharness;
 
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
-import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
+import com.footballmanager.domain.port.in.testharness.*;
+import com.footballmanager.domain.port.in.testharness.CustomFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

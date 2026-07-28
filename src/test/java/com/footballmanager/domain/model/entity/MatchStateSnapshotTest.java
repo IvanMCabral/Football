@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.entity;
 
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
 import org.junit.jupiter.api.Test;
@@ -73,13 +73,13 @@ public class MatchStateSnapshotTest {
         UUID awayId = UUID.randomUUID();
         Score score = new Score(2, 1);
         List<MatchEvent> events = new ArrayList<>();
-        List<V24PlayerMatchRatingDto> homeRatings = List.of(
-            new V24PlayerMatchRatingDto(
+        List<PlayerMatchRating> homeRatings = List.of(
+            new PlayerMatchRating(
                 "p-home-1", "Home Player 1", homeId.toString(), "GK",
                 7.5, 0, 0, 0, 0, 0, 0, 0, 0, false, false)
         );
-        List<V24PlayerMatchRatingDto> awayRatings = List.of(
-            new V24PlayerMatchRatingDto(
+        List<PlayerMatchRating> awayRatings = List.of(
+            new PlayerMatchRating(
                 "p-away-1", "Away Player 1", awayId.toString(), "ATT",
                 8.0, 1, 0, 2, 3, 0, 0, 0, 0, false, false)
         );

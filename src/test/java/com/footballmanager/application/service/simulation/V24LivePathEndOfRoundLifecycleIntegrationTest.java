@@ -5,6 +5,8 @@ import com.footballmanager.application.service.simulation.v24.V24CareerMutationP
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngineProvider;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
@@ -438,17 +440,15 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
 
     private static class FakeStoragePort implements V24DetailedMatchStoragePort {
         @Override
-        public void save(String careerId, com.footballmanager.application.service.simulation.v24.V24DetailedMatchData detail) { /* no-op */ }
+        public Mono<Void> save(String careerId, com.footballmanager.application.service.simulation.v24.V24DetailedMatchData detail) { return Mono.empty(); }
         @Override
-        public java.util.Optional<com.footballmanager.application.service.simulation.v24.V24DetailedMatchData> findByMatchId(String careerId, String matchId) {
-            return java.util.Optional.empty();
-        }
+        public Mono<java.util.Optional<com.footballmanager.application.service.simulation.v24.V24DetailedMatchData>> findByMatchId(String careerId, String matchId) {
+            return Mono.just(java.util.Optional.empty());}
         @Override
-        public java.util.List<com.footballmanager.application.service.simulation.v24.V24DetailedMatchData> findByCareerId(String careerId) {
-            return java.util.List.of();
-        }
+        public Flux<com.footballmanager.application.service.simulation.v24.V24DetailedMatchData> findByCareerId(String careerId) {
+            return Flux.fromIterable(java.util.List.of());}
         @Override
-        public void deleteByCareerId(String careerId) { /* no-op */ }
+        public Mono<Void> deleteByCareerId(String careerId) { return Mono.empty(); }
     }
 
     private static class FakeMatchSimulator implements MatchSimulator {

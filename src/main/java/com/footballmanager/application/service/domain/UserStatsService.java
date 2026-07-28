@@ -1,10 +1,9 @@
 package com.footballmanager.application.service.domain;
 
-import com.footballmanager.adapters.in.web.dashboard.dto.UserStatsResponse;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.entity.TeamStandings;
 import com.footballmanager.domain.model.entity.TournamentState;
-import com.footballmanager.infrastructure.persistence.repository.UserR2dbcRepository;
+import com.footballmanager.domain.ports.out.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -21,10 +20,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserStatsService {
 
-    private final UserR2dbcRepository userRepository;
+    private final UserRepository userRepository;
     private final CareerSessionService careerSessionService;
 
-    public Mono<UserStatsResponse> getUserStats(UUID userId) {
+    public Mono<UserStatsSummary> getUserStats(UUID userId) {
         // Obtener nombre del usuario
         Mono<String> userNameMono = userRepository.findById(userId)
             .map(userEntity -> userEntity.getUsername())
@@ -51,7 +50,7 @@ public class UserStatsService {
                 TeamStandings standing = tuple.getT2();
 
                 if (standing == null) {
-                    return new UserStatsResponse(userName, 0, 0, 0, 0.0);
+                    return new UserStatsSummary(userName, 0, 0, 0, 0.0);
                 }
 
                 int played = standing.getPlayed() != null ? standing.getPlayed() : 0;
@@ -62,7 +61,7 @@ public class UserStatsService {
                     ? Math.round((wins * 100.0 / played) * 100.0) / 100.0
                     : 0.0;
 
-                return new UserStatsResponse(
+                return new UserStatsSummary(
                     userName,
                     played,
                     wins,

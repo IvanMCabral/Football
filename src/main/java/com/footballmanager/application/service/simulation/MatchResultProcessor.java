@@ -72,6 +72,7 @@ public class MatchResultProcessor {
      */
     public List<TournamentResult> determineDivisionChampions(CareerSave career) {
         List<TournamentResult> allResults = new ArrayList<>();
+        rebuildFinalStandingsFromCompletedFixtures(career.getTournamentState());
 
         for (Division division : career.getSeasonManager().getDivisions()) {
             Set<String> divisionTeamIds = new HashSet<>(division.getTeamIds());
@@ -102,5 +103,16 @@ public class MatchResultProcessor {
         }
 
         return allResults;
+    }
+
+    private void rebuildFinalStandingsFromCompletedFixtures(TournamentState tournamentState) {
+        if (tournamentState == null || tournamentState.getStandings() == null) {
+            return;
+        }
+        tournamentState.getStandings().replaceAll((teamId, current) ->
+                new TeamStandings(teamId, current != null ? current.getTeamName() : teamId));
+        tournamentState.getFixtures().stream()
+                .filter(fixture -> fixture.getResult() != null)
+                .forEach(tournamentState::updateStandingsWithResult);
     }
 }

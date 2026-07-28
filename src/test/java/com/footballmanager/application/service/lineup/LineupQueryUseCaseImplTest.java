@@ -1,8 +1,7 @@
 package com.footballmanager.application.service.lineup;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
+import com.footballmanager.domain.port.in.lineup.LineupWarning;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -217,20 +216,20 @@ class LineupQueryUseCaseImplTest {
         CareerSave career = makeCareerWithLineup(squad442, lineup442);
         career.setTeamStarting11Formation(Map.of(TEAM_ID, "4-4-2"));
 
-        Map<String, LineupSlotDTO> dirtySlots = new java.util.LinkedHashMap<>();
-        dirtySlots.put("GK-1", new LineupSlotDTO("gk-clean", "GK-1"));
-        dirtySlots.put("S22-2", new LineupSlotDTO("def1-clean", "S22-2"));
-        dirtySlots.put("S23-1", new LineupSlotDTO("def2-clean", "S23-1"));
-        dirtySlots.put("S23-3", new LineupSlotDTO("def3-clean", "S23-3"));
-        dirtySlots.put("S24-2", new LineupSlotDTO("def4-clean", "S24-2"));
-        dirtySlots.put("S16-2", new LineupSlotDTO("mid1-clean", "S16-2"));
-        dirtySlots.put("S17-1", new LineupSlotDTO("mid2-clean", "S17-1"));
-        dirtySlots.put("S17-3", new LineupSlotDTO("mid3-clean", "S17-3"));
-        dirtySlots.put("S18-2", new LineupSlotDTO("mid4-clean", "S18-2"));
-        dirtySlots.put("S05-1", new LineupSlotDTO("att1-clean", "S05-1"));
-        dirtySlots.put("S05-3", new LineupSlotDTO("att2-clean", "S05-3"));
-        dirtySlots.put("S04-1-stale-bench", new LineupSlotDTO("bench-clean", "S04-1"));
-        dirtySlots.put("S06-3-duplicate", new LineupSlotDTO("att2-clean", "S06-3"));
+        Map<String, LineupSlot> dirtySlots = new java.util.LinkedHashMap<>();
+        dirtySlots.put("GK-1", new LineupSlot("gk-clean", "GK-1"));
+        dirtySlots.put("S22-2", new LineupSlot("def1-clean", "S22-2"));
+        dirtySlots.put("S23-1", new LineupSlot("def2-clean", "S23-1"));
+        dirtySlots.put("S23-3", new LineupSlot("def3-clean", "S23-3"));
+        dirtySlots.put("S24-2", new LineupSlot("def4-clean", "S24-2"));
+        dirtySlots.put("S16-2", new LineupSlot("mid1-clean", "S16-2"));
+        dirtySlots.put("S17-1", new LineupSlot("mid2-clean", "S17-1"));
+        dirtySlots.put("S17-3", new LineupSlot("mid3-clean", "S17-3"));
+        dirtySlots.put("S18-2", new LineupSlot("mid4-clean", "S18-2"));
+        dirtySlots.put("S05-1", new LineupSlot("att1-clean", "S05-1"));
+        dirtySlots.put("S05-3", new LineupSlot("att2-clean", "S05-3"));
+        dirtySlots.put("S04-1-stale-bench", new LineupSlot("bench-clean", "S04-1"));
+        dirtySlots.put("S06-3-duplicate", new LineupSlot("att2-clean", "S06-3"));
         career.setTeamStarting11SubdivisionSlots(Map.of(TEAM_ID, dirtySlots));
 
         when(careerRepository.findById(USER_ID)).thenReturn(Mono.just(Optional.of(career)));
@@ -242,7 +241,7 @@ class LineupQueryUseCaseImplTest {
                 assertEquals(11, dto.slots().size(),
                     "La respuesta no debe arrastrar slots viejos de banco ni duplicados");
                 assertTrue(dto.slots().stream().noneMatch(slot -> "bench-clean".equals(slot.playerId())));
-                assertEquals(11, dto.slots().stream().map(LineupSlotDTO::playerId).distinct().count());
+                assertEquals(11, dto.slots().stream().map(slot -> slot.playerId()).distinct().count());
             })
             .verifyComplete();
     }
@@ -335,13 +334,13 @@ class LineupQueryUseCaseImplTest {
                 assertEquals(8, dto.players().size(), "lineup persistido tiene 8 players");
                 // Verificar que LINEUP_SHORT_HANDED está presente
                 boolean hasShortHanded = dto.warnings().stream()
-                    .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()));
+                    .anyMatch(w -> LineupWarning.CODE_SHORT_HANDED.equals(w.code()));
                 assertTrue(hasShortHanded,
                     "lineup con 8 players debe emitir LINEUP_SHORT_HANDED warning, "
                         + "warnings=" + dto.warnings());
                 // Verificar available=8 en el warning
-                LineupWarningDTO shortHanded = dto.warnings().stream()
-                    .filter(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()))
+                LineupWarning shortHanded = dto.warnings().stream()
+                    .filter(w -> LineupWarning.CODE_SHORT_HANDED.equals(w.code()))
                     .findFirst().orElseThrow();
                 assertEquals(8, shortHanded.available(),
                     "LINEUP_SHORT_HANDED.available debe reflejar el count del lineup");
@@ -511,9 +510,9 @@ class LineupQueryUseCaseImplTest {
                 assertNotNull(dto.warnings());
                 // No debe haber LINEUP_NO_GOALKEEPER ni LINEUP_SHORT_HANDED
                 boolean hasNoGK = dto.warnings().stream()
-                    .anyMatch(w -> LineupWarningDTO.CODE_NO_GOALKEEPER.equals(w.code()));
+                    .anyMatch(w -> LineupWarning.CODE_NO_GOALKEEPER.equals(w.code()));
                 boolean hasShortHanded = dto.warnings().stream()
-                    .anyMatch(w -> LineupWarningDTO.CODE_SHORT_HANDED.equals(w.code()));
+                    .anyMatch(w -> LineupWarning.CODE_SHORT_HANDED.equals(w.code()));
                 assertTrue(!hasNoGK,
                     "lineup con GK no debe emitir LINEUP_NO_GOALKEEPER, "
                         + "warnings=" + dto.warnings());

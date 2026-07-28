@@ -33,7 +33,8 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
         "spring.flyway.enabled=false",
-        "spring.data.redis.database=15"
+        "spring.data.redis.database=15",
+        "spring.codec.max-in-memory-size=2MB"
     }
 )
 @AutoConfigureWebTestClient

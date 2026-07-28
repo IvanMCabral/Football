@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -401,38 +402,16 @@ class V24FormationShotLocationE2ETest {
      * {@code career.getTeamStarting11()} resolve to the squads we
      * built.
      */
-    @SuppressWarnings("unchecked")
     private void wireSquad(CareerSave career, String teamId, List<SessionPlayer> players,
                            String formation) {
-        try {
-            Field tmField = CareerSave.class.getDeclaredField("teamManager");
-            tmField.setAccessible(true);
-            Object teamManager = tmField.get(career);
-
-            Field pmField = CareerSave.class.getDeclaredField("playerManager");
-            pmField.setAccessible(true);
-            Object playerManager = pmField.get(career);
-
-            SessionTeam team = new SessionTeam();
-            team.setSessionTeamId(teamId);
-            team.setName(teamId);
-            team.setFormation(formation);
-            java.lang.reflect.Method addSessionTeam =
-                teamManager.getClass().getMethod("addSessionTeam", SessionTeam.class);
-            addSessionTeam.invoke(teamManager, team);
-
-            java.lang.reflect.Method addSessionPlayer =
-                playerManager.getClass().getMethod("addSessionPlayer", SessionPlayer.class);
-            java.lang.reflect.Method assign =
-                teamManager.getClass().getMethod(
-                    "assignPlayerToSquad", String.class, String.class);
-
-            for (SessionPlayer p : players) {
-                addSessionPlayer.invoke(playerManager, p);
-                assign.invoke(teamManager, p.getSessionPlayerId(), teamId);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to wire squad via reflection", e);
+        SessionTeam team = new SessionTeam();
+        team.setSessionTeamId(teamId);
+        team.setName(teamId);
+        team.setFormation(formation);
+        career.addSessionTeam(team);
+        for (SessionPlayer player : players) {
+            career.addSessionPlayer(player);
+            career.assignPlayerToTeam(player.getSessionPlayerId(), teamId);
         }
     }
 }

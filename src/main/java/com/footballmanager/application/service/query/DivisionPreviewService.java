@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.query;
 
-import com.footballmanager.adapters.in.web.world.dto.DivisionPreview;
-import com.footballmanager.adapters.in.web.world.dto.TeamWithOVR;
+
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,21 +17,21 @@ public class DivisionPreviewService {
     /**
      * Calcula el preview de como quedarian las divisiones con X equipos por division
      */
-    public List<DivisionPreview> calculateDivisionPreview(
-            List<TeamWithOVR> teamsWithOVR,
+    public List<DivisionPreviewView> calculateDivisionPreview(
+            List<TeamOvrView> teamsWithOVR,
             int teamsPerDivision) {
 
-        List<DivisionPreview> previews = new ArrayList<>();
+        List<DivisionPreviewView> previews = new ArrayList<>();
         int totalTeams = teamsWithOVR.size();
         int fullDivisions = totalTeams / teamsPerDivision;
         int remainder = totalTeams % teamsPerDivision;
 
         int currentIndex = 0;
         for (int i = 0; i < fullDivisions; i++) {
-            List<TeamWithOVR> divisionTeams = teamsWithOVR.subList(currentIndex, currentIndex + teamsPerDivision);
+            List<TeamOvrView> divisionTeams = teamsWithOVR.subList(currentIndex, currentIndex + teamsPerDivision);
             currentIndex += teamsPerDivision;
 
-            previews.add(new DivisionPreview(
+            previews.add(new DivisionPreviewView(
                     i + 1,
                     getDivisionName(i + 1),
                     divisionTeams
@@ -40,8 +40,8 @@ public class DivisionPreviewService {
 
         // Ultima division con equipos sobrantes (si hay 2+)
         if (remainder >= 2) {
-            List<TeamWithOVR> divisionTeams = teamsWithOVR.subList(currentIndex, totalTeams);
-            previews.add(new DivisionPreview(
+            List<TeamOvrView> divisionTeams = teamsWithOVR.subList(currentIndex, totalTeams);
+            previews.add(new DivisionPreviewView(
                     fullDivisions + 1,
                     getDivisionName(fullDivisions + 1),
                     divisionTeams
@@ -63,3 +63,4 @@ public class DivisionPreviewService {
         };
     }
 }
+

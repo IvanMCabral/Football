@@ -1,6 +1,7 @@
 package com.footballmanager.adapters.out.sql;
 
 import com.footballmanager.domain.model.valueobject.TeamId;
+import com.footballmanager.domain.ports.out.league.LeagueTeamLink;
 import com.footballmanager.domain.ports.out.league.LeagueTeamRepository;
 import com.footballmanager.infrastructure.persistence.entity.LeagueTeamEntity;
 import com.footballmanager.infrastructure.persistence.redis.LeagueTeamRedisRepository;
@@ -40,13 +41,15 @@ public class LeagueTeamRepositoryAdapter implements LeagueTeamRepository {
     }
 
     @Override
-    public Flux<LeagueTeamEntity> findByTeamId(UUID userId, UUID teamId) {
-        return redisRepository.findByTeamId(userId, teamId);
+    public Flux<LeagueTeamLink> findByTeamId(UUID userId, UUID teamId) {
+        return redisRepository.findByTeamId(userId, teamId)
+                .map(this::toDomain);
     }
 
     @Override
-    public Flux<LeagueTeamEntity> findByLeagueId(UUID userId, UUID leagueId) {
-        return redisRepository.findByLeagueId(userId, leagueId);
+    public Flux<LeagueTeamLink> findByLeagueId(UUID userId, UUID leagueId) {
+        return redisRepository.findByLeagueId(userId, leagueId)
+                .map(this::toDomain);
     }
 
     @Override
@@ -59,5 +62,9 @@ public class LeagueTeamRepositoryAdapter implements LeagueTeamRepository {
     public Mono<Void> removeTeamFromLeague(UUID userId, UUID leagueId, UUID teamId) {
         return redisRepository.removeTeamFromLeague(userId, leagueId, teamId)
                 .then();
+    }
+
+    private LeagueTeamLink toDomain(LeagueTeamEntity entity) {
+        return new LeagueTeamLink(entity.getLeagueId(), entity.getTeamId());
     }
 }

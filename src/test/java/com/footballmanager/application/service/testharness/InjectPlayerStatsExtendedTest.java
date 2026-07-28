@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.util.HashMap;
@@ -93,17 +94,7 @@ class InjectPlayerStatsExtendedTest {
         player.setRedCards(0);
         player.setSuspended(false);
 
-        // Register player into career via reflection (same pattern as TestHarnessUseCaseImplTest)
-        try {
-            java.lang.reflect.Field pmField = CareerSave.class.getDeclaredField("playerManager");
-            pmField.setAccessible(true);
-            Object playerManager = pmField.get(career);
-            java.lang.reflect.Method addSessionPlayer =
-                playerManager.getClass().getMethod("addSessionPlayer", SessionPlayer.class);
-            addSessionPlayer.invoke(playerManager, player);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to register SessionPlayer via reflection", e);
-        }
+        career.addSessionPlayer(player);
     }
 
     @Test

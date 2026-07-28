@@ -77,21 +77,13 @@ public class MatchSimulationOrchestrator {
 
         UUID userUUID = UUID.fromString(userId);
         Semaphore semaphore = userSemaphores.computeIfAbsent(userId, k -> new Semaphore(1));
-        boolean acquired = semaphore.tryAcquire();
 
-        if (!acquired) {
-            return Mono.empty();
-        }
-
-        return Mono.fromCallable(() -> {
-                    try {
-                        return processResultsInternal(userId, userUUID, results);
-                    } finally {
-                        semaphore.release();
-                        userSemaphores.remove(userId, semaphore);
-                    }
-                })
+        return Mono.fromRunnable(semaphore::acquireUninterruptibly)
                 .subscribeOn(orchestratorScheduler)
+                .then(careerSessionService.getCareerFromCache(userUUID))
+                .flatMap(career -> Mono.fromCallable(() -> processResultsInternal(userId, career, results))
+                        .subscribeOn(orchestratorScheduler)
+                        .flatMap(processedCareer -> persistProcessedCareer(userUUID, processedCareer)))
                 .doOnNext(career -> {
                     if (career != null) {
                         int currentRound = career.getTournamentState().getCurrentRound();
@@ -102,9 +94,13 @@ public class MatchSimulationOrchestrator {
                     }
                 })
                 .onErrorResume(e -> {
+                    log.warn("[orchestrator] processMatchDayResults failed for userId={}: {}",
+                            userId, e.getMessage(), e);
+                    return Mono.empty();
+                })
+                .doFinally(signal -> {
                     semaphore.release();
                     userSemaphores.remove(userId, semaphore);
-                    return Mono.empty();
                 })
                 .then();
     }
@@ -120,21 +116,13 @@ public class MatchSimulationOrchestrator {
     private Mono<Void> handlePotentialBye(String userId) {
         UUID userUUID = UUID.fromString(userId);
         Semaphore semaphore = userSemaphores.computeIfAbsent(userId, k -> new Semaphore(1));
-        boolean acquired = semaphore.tryAcquire();
 
-        if (!acquired) {
-            return Mono.empty();
-        }
-
-        return Mono.fromCallable(() -> {
-                    try {
-                        return processByeRound(userId, userUUID);
-                    } finally {
-                        semaphore.release();
-                        userSemaphores.remove(userId, semaphore);
-                    }
-                })
+        return Mono.fromRunnable(semaphore::acquireUninterruptibly)
                 .subscribeOn(orchestratorScheduler)
+                .then(careerSessionService.getCareerFromCache(userUUID))
+                .flatMap(career -> Mono.fromCallable(() -> processByeRound(userId, userUUID, career))
+                        .subscribeOn(orchestratorScheduler)
+                        .flatMap(processedCareer -> persistProcessedCareer(userUUID, processedCareer)))
                 .doOnNext(career -> {
                     if (career != null) {
                         int currentRound = career.getTournamentState().getCurrentRound();
@@ -142,17 +130,18 @@ public class MatchSimulationOrchestrator {
                     }
                 })
                 .onErrorResume(e -> {
+                    log.warn("[orchestrator] handlePotentialBye failed for userId={}: {}",
+                            userId, e.getMessage(), e);
+                    return Mono.empty();
+                })
+                .doFinally(signal -> {
                     semaphore.release();
                     userSemaphores.remove(userId, semaphore);
-                    return Mono.empty();
                 })
                 .then();
     }
 
-    private CareerSave processByeRound(String userId, UUID userUUID) {
-        CareerSave career = careerSessionService.getCareerFromCache(userUUID)
-                .block(java.time.Duration.ofSeconds(10));
-
+    private CareerSave processByeRound(String userId, UUID userUUID, CareerSave career) {
         if (career == null) {
             return null;
         }
@@ -185,18 +174,10 @@ public class MatchSimulationOrchestrator {
             tournamentState.setCareerPhase(CareerPhase.WAITING_USER);
         }
 
-        careerSessionService.saveCareer(career)
-                .block(java.time.Duration.ofSeconds(10));
-
-        roundEngineRegistry.unregister(userUUID);
-
         return career;
     }
 
-    private CareerSave processResultsInternal(String userId, UUID userUUID, java.util.List<MatchResultProcessor.MatchResultInfo> results) {
-        CareerSave career = careerSessionService.getCareerFromCache(userUUID)
-                .block(java.time.Duration.ofSeconds(10));
-
+    private CareerSave processResultsInternal(String userId, CareerSave career, java.util.List<MatchResultProcessor.MatchResultInfo> results) {
         if (career == null) {
             return null;
         }
@@ -233,9 +214,6 @@ public class MatchSimulationOrchestrator {
                         if (processed == 0) {
                             return null;
                         }
-                        careerSessionService.saveCareer(career)
-                                .block(java.time.Duration.ofSeconds(10));
-                        roundEngineRegistry.unregister(userUUID);
                         return career;
                     }
                     log.warn("[orchestrator] userId={} stale matchId {} from round={} (careerCurrentRound={}) — already processed, skipping",
@@ -274,12 +252,16 @@ public class MatchSimulationOrchestrator {
             career.getTournamentState().setCareerPhase(CareerPhase.WAITING_USER);
         }
 
-        careerSessionService.saveCareer(career)
-                .block(java.time.Duration.ofSeconds(10));
-
-        roundEngineRegistry.unregister(userUUID);
-
         return career;
+    }
+
+    private Mono<CareerSave> persistProcessedCareer(UUID userUUID, CareerSave career) {
+        if (career == null) {
+            return Mono.empty();
+        }
+        return careerSessionService.saveCareer(career)
+                .thenReturn(career)
+                .doOnSuccess(saved -> roundEngineRegistry.unregister(userUUID));
     }
 
     private void finishTournament(CareerSave career, java.util.List<TournamentResult> allResults) {

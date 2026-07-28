@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.lineup;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -177,18 +177,18 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Slots con subdivisions que coinciden con HELPER-BASED para 4-4-2.
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("gk-1", "GK-1"),
-            new LineupSlotDTO("def-1", "S22-2"),
-            new LineupSlotDTO("def-2", "S23-1"),
-            new LineupSlotDTO("def-3", "S23-3"),
-            new LineupSlotDTO("def-4", "S24-2"),
-            new LineupSlotDTO("mid-1", "S16-2"),
-            new LineupSlotDTO("mid-2", "S17-1"),
-            new LineupSlotDTO("mid-3", "S17-3"),
-            new LineupSlotDTO("mid-4", "S18-2"),
-            new LineupSlotDTO("att-1", "S05-1"),
-            new LineupSlotDTO("att-2", "S05-3")
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("gk-1", "GK-1"),
+            new LineupSlot("def-1", "S22-2"),
+            new LineupSlot("def-2", "S23-1"),
+            new LineupSlot("def-3", "S23-3"),
+            new LineupSlot("def-4", "S24-2"),
+            new LineupSlot("mid-1", "S16-2"),
+            new LineupSlot("mid-2", "S17-1"),
+            new LineupSlot("mid-3", "S17-3"),
+            new LineupSlot("mid-4", "S18-2"),
+            new LineupSlot("att-1", "S05-1"),
+            new LineupSlot("att-2", "S05-3")
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -217,18 +217,18 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("gk-1", "GK-1"),
-            new LineupSlotDTO("att-1", "S23-1"),
-            new LineupSlotDTO("def-2", "S23-3"),
-            new LineupSlotDTO("def-3", "S22-2"),
-            new LineupSlotDTO("def-4", "S24-2"),
-            new LineupSlotDTO("mid-1", "S16-2"),
-            new LineupSlotDTO("mid-2", "S17-1"),
-            new LineupSlotDTO("mid-3", "S17-3"),
-            new LineupSlotDTO("mid-4", "S18-2"),
-            new LineupSlotDTO("def-1", "S05-1"),
-            new LineupSlotDTO("att-2", "S05-3")
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("gk-1", "GK-1"),
+            new LineupSlot("att-1", "S23-1"),
+            new LineupSlot("def-2", "S23-3"),
+            new LineupSlot("def-3", "S22-2"),
+            new LineupSlot("def-4", "S24-2"),
+            new LineupSlot("mid-1", "S16-2"),
+            new LineupSlot("mid-2", "S17-1"),
+            new LineupSlot("mid-3", "S17-3"),
+            new LineupSlot("mid-4", "S18-2"),
+            new LineupSlot("def-1", "S05-1"),
+            new LineupSlot("att-2", "S05-3")
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -319,9 +319,9 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("gk-1", "GK-1"),       // válido
-            new LineupSlotDTO("unknown-id", "S22-2") // playerId no en el lineup → ignorar
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("gk-1", "GK-1"),       // válido
+            new LineupSlot("unknown-id", "S22-2") // playerId no en el lineup → ignorar
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -362,11 +362,11 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Slots con subdivisionId en blanco y playerId en blanco — todos inválidos
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO(null, "S22-2"),
-            new LineupSlotDTO("", "S22-2"),
-            new LineupSlotDTO("gk-1", null),
-            new LineupSlotDTO("gk-1", "")
+        List<LineupSlot> slots = List.of(
+            new LineupSlot(null, "S22-2"),
+            new LineupSlot("", "S22-2"),
+            new LineupSlot("gk-1", null),
+            new LineupSlot("gk-1", "")
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -402,9 +402,9 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.continueCareer(UUID.fromString(USER_ID))).thenReturn(Mono.just(career));
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("gk-1", ""),
-            new LineupSlotDTO("def-1", null)
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("gk-1", ""),
+            new LineupSlot("def-1", null)
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -633,8 +633,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Front envía slots explícitos. HELPER-BASED para 4-4-2 con makeFullSquad442
         // habría asignado S22-2 → def-1 (CB, primer defensor). Front overridea
         // con def-3 (LB, jugador más natural para LB slot).
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("def-3", "S22-2")  // override: LB slot → LB player
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("def-3", "S22-2")  // override: LB slot → LB player
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -678,8 +678,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
      * multipliers (NOT all 1.0).
      *
      * <p>Before this fix, {@link LineupCommandUseCaseImpl#buildLineupDTO}
-     * constructed {@code LineupSlotDTO} with swapped args:
-     * {@code new LineupSlotDTO(subdivisionId, playerId)} instead of
+     * constructed {@code LineupSlot} with swapped args:
+     * {@code new LineupSlot(subdivisionId, playerId)} instead of
      * {@code (playerId, subdivisionId)}. The downstream
      * {@code FormationEffectiveness.from()} then:
      * <ul>
@@ -710,8 +710,8 @@ class LineupCommandUseCaseImplSubdivisionTest {
         // Override: send att-1 (ST) into S18-2 (MID slot) so we get a real
         // penalty (ST in MID = 0.7) instead of all-1.0. The rest follow the
         // HELPER-BASED baseline.
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("att-1", "S18-2")  // ST placed in MID slot
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("att-1", "S18-2")  // ST placed in MID slot
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -800,11 +800,11 @@ class LineupCommandUseCaseImplSubdivisionTest {
     // in a Map<String, String>, silently dropping the customX/Y values
     // the front sent. /current never surfaced them either because
     // LineupQueryUseCaseImpl.buildSlotsFromSubdivisionMap reconstructed
-    // LineupSlotDTO(playerId, subdivisionId) without customX/Y. Symptom:
+    // LineupSlot(playerId, subdivisionId) without customX/Y. Symptom:
     // drag 1px = no observable penalty because the back always saw
     // canonical coords.
     //
-    // Post-fix: subdivisionId → LineupSlotDTO(playerId, subdivisionId,
+    // Post-fix: subdivisionId → LineupSlot(playerId, subdivisionId,
     // customXPercent, customYPercent) is persisted. Re-read via
     // getTeamStarting11SubdivisionSlots() returns the exact customX/Y
     // ============================================================
@@ -817,18 +817,18 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Front sends customX/Y for one slot (Valverde-style free positioning).
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("gk-1", "GK-1"),
-            new LineupSlotDTO("def-1", "S22-2"),
-            new LineupSlotDTO("def-2", "S23-1"),
-            new LineupSlotDTO("def-3", "S23-3"),
-            new LineupSlotDTO("def-4", "S24-2"),
-            new LineupSlotDTO("mid-1", "S16-2"),
-            new LineupSlotDTO("mid-2", "S17-1", 25.0, 65.0),  // customX=25, customY=65
-            new LineupSlotDTO("mid-3", "S17-3"),
-            new LineupSlotDTO("mid-4", "S18-2"),
-            new LineupSlotDTO("att-1", "S05-1"),
-            new LineupSlotDTO("att-2", "S05-3")
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("gk-1", "GK-1"),
+            new LineupSlot("def-1", "S22-2"),
+            new LineupSlot("def-2", "S23-1"),
+            new LineupSlot("def-3", "S23-3"),
+            new LineupSlot("def-4", "S24-2"),
+            new LineupSlot("mid-1", "S16-2"),
+            new LineupSlot("mid-2", "S17-1", 25.0, 65.0),  // customX=25, customY=65
+            new LineupSlot("mid-3", "S17-3"),
+            new LineupSlot("mid-4", "S18-2"),
+            new LineupSlot("att-1", "S05-1"),
+            new LineupSlot("att-2", "S05-3")
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -843,13 +843,13 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         // customX/Y. The legacy String-only getter would have masked the
         // bug by returning only the playerId.
-        Map<String, LineupSlotDTO> teamSlots = saved.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        Map<String, LineupSlot> teamSlots = saved.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
         assertNotNull(teamSlots, "teamStarting11SubdivisionSlots map should be populated");
         // NOTE: don't assert on the EXACT count — the pre-existing
         // C20/C61 dual-map bug (manualSelectWithSlots_persistsSubdivisionMap
         // Just verify S17-1 carries the customX/Y round-trip.
 
-        LineupSlotDTO mid2Slot = teamSlots.get("S17-1");
+        LineupSlot mid2Slot = teamSlots.get("S17-1");
         assertNotNull(mid2Slot, "S17-1 must be a key (front sent it)");
         assertEquals("mid-2", mid2Slot.playerId(),
             "S17-1 -> mid-2 (playerId round-trip)");
@@ -861,7 +861,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
             "customYPercent=65.0 must survive the round-trip");
 
         // Sanity: a slot WITHOUT customX/Y keeps them null (canonical coords).
-        LineupSlotDTO gkSlot = teamSlots.get("GK-1");
+        LineupSlot gkSlot = teamSlots.get("GK-1");
         assertNotNull(gkSlot, "GK-1 must be a key");
         assertNull(gkSlot.customXPercent(),
             "GK-1 customXPercent stays null (front didn't set it)");
@@ -881,18 +881,18 @@ class LineupCommandUseCaseImplSubdivisionTest {
         when(careerSessionService.saveCareer(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         // Front sends customX=42.0, customY=88.0 for one slot.
-        List<LineupSlotDTO> slots = List.of(
-            new LineupSlotDTO("gk-1", "GK-1"),
-            new LineupSlotDTO("def-1", "S22-2"),
-            new LineupSlotDTO("def-2", "S23-1"),
-            new LineupSlotDTO("def-3", "S23-3"),
-            new LineupSlotDTO("def-4", "S24-2"),
-            new LineupSlotDTO("mid-1", "S16-2"),
-            new LineupSlotDTO("mid-2", "S17-1", 42.0, 88.0),
-            new LineupSlotDTO("mid-3", "S17-3"),
-            new LineupSlotDTO("mid-4", "S18-2"),
-            new LineupSlotDTO("att-1", "S05-1"),
-            new LineupSlotDTO("att-2", "S05-3")
+        List<LineupSlot> slots = List.of(
+            new LineupSlot("gk-1", "GK-1"),
+            new LineupSlot("def-1", "S22-2"),
+            new LineupSlot("def-2", "S23-1"),
+            new LineupSlot("def-3", "S23-3"),
+            new LineupSlot("def-4", "S24-2"),
+            new LineupSlot("mid-1", "S16-2"),
+            new LineupSlot("mid-2", "S17-1", 42.0, 88.0),
+            new LineupSlot("mid-3", "S17-3"),
+            new LineupSlot("mid-4", "S18-2"),
+            new LineupSlot("att-1", "S05-1"),
+            new LineupSlot("att-2", "S05-3")
         );
 
         StepVerifier.create(useCase.manualSelectLineupWithSlots(
@@ -911,12 +911,12 @@ class LineupCommandUseCaseImplSubdivisionTest {
     /**
      * inner map as {@code Map<String, String>} (subdivisionId -> playerId).
      * The new typed getter must wrap these legacy String values into
-     * LineupSlotDTO(playerId, null, null, null) so downstream consumers
+     * LineupSlot(playerId, null, null, null) so downstream consumers
      * (LineupQueryUseCaseImpl.buildSlotsFromSubdivisionMap) get a
-     * uniform LineupSlotDTO shape.
+     * uniform LineupSlot shape.
      */
     @Test
-    @DisplayName("legacy String values wrap to LineupSlotDTO on typed getter")
+    @DisplayName("legacy String values wrap to LineupSlot on typed getter")
     void legacyStringValues_wrapToLineupSlotDTO() {
         CareerSave career = makeCareer(makeFullSquad442());
 
@@ -929,15 +929,15 @@ class LineupCommandUseCaseImplSubdivisionTest {
         )));
         career.setTeamStarting11Subdivision(legacy);
 
-        // The typed slot getter must return LineupSlotDTO values for these
+        // The typed slot getter must return LineupSlot values for these
         // legacy String values, with customX/Y null and subdivisionId
         // recovered from the OUTER key (inner subdivisionId is null in
         // the legacy wrap).
-        Map<String, LineupSlotDTO> typed = career.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        Map<String, LineupSlot> typed = career.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
         assertNotNull(typed, "legacy values must produce a typed map");
         assertEquals(3, typed.size(), "3 entries from legacy map");
 
-        LineupSlotDTO gkSlot = typed.get("GK-1");
+        LineupSlot gkSlot = typed.get("GK-1");
         assertNotNull(gkSlot, "GK-1 wrapped");
         assertEquals("gk-1", gkSlot.playerId());
         assertNull(gkSlot.subdivisionId(),
@@ -981,7 +981,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
         useCase.autoSelectLineup(UUID.fromString(USER_ID), "4-4-2").block();
         verify(careerSessionService, atLeastOnce()).saveCareer(captor.capture());
         CareerSave after442 = captor.getValue();
-        Map<String, LineupSlotDTO> slots442 = after442.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        Map<String, LineupSlot> slots442 = after442.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
         assertNotNull(slots442, "4-4-2 must populate the slot map");
         assertEquals(11, slots442.size(),
             "4-4-2 has 11 canonical slots");
@@ -1005,7 +1005,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
 
         // Now the LAST auto-select (4-4-2 again) should leave exactly 11
         // slots for the team, NOT 14 (11 + 3 stale from 4-3-3's ATT row).
-        Map<String, LineupSlotDTO> slotsFinal = after433.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        Map<String, LineupSlot> slotsFinal = after433.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
         assertNotNull(slotsFinal, "final 4-4-2 must have slots");
         assertEquals(11, slotsFinal.size(),
             "cycle 4-4-2 -> 4-3-3 -> 4-4-2 must leave exactly 11 slots, no 4-3-3 stale entries");
@@ -1018,7 +1018,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
     // JSON-serialized to Redis via the application's ObjectMapper
     // and deserialized back. Jackson's Map<String, Object> field
     // deserializes the inner values as raw LinkedHashMap (not
-    // LineupSlotDTO), so the typed getter wraps them but the legacy
+    // LineupSlot), so the typed getter wraps them but the legacy
     // getter (which drove the runtime check) skips them via
     // `instanceof String` — the runtime saw slots=14 instead of 11.
     //
@@ -1097,7 +1097,7 @@ class LineupCommandUseCaseImplSubdivisionTest {
         verify(careerSessionService, atLeastOnce()).saveCareer(cap3.capture());
         CareerSave afterFinal = cap3.getValue();
 
-        Map<String, LineupSlotDTO> slotsFinal = afterFinal.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
+        Map<String, LineupSlot> slotsFinal = afterFinal.getTeamStarting11SubdivisionSlots().get(TEAM_ID);
         assertNotNull(slotsFinal, "final 4-4-2 must have slots");
         assertEquals(11, slotsFinal.size(),
             "cycle 4-4-2 -> 4-3-3 -> 4-4-2 with JSON round-trip must leave exactly 11 slots, no 4-3-3 stale entries");

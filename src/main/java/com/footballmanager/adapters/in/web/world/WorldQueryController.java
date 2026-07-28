@@ -4,7 +4,9 @@ import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.adapters.in.web.world.dto.DivisionPreview;
 import com.footballmanager.adapters.in.web.world.dto.TeamWithOVR;
 import com.footballmanager.application.service.query.DivisionPreviewService;
+import com.footballmanager.application.service.query.DivisionPreviewView;
 import com.footballmanager.application.service.query.TeamOVRQueryService;
+import com.footballmanager.application.service.query.TeamOvrView;
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
@@ -83,6 +85,7 @@ public class WorldQueryController {
         controllerHelper.requireSelfUserId(authentication, userId);
         return getTeamsByLeagueUseCase.execute(userId, leagueId)
                 .flatMap(teams -> teamOVRQueryService.buildTeamsWithOVR(userId, teams))
+                .map(teams -> teams.stream().map(WorldQueryController::toDto).toList())
                 .map(ResponseEntity::ok);
     }
 
@@ -99,7 +102,11 @@ public class WorldQueryController {
         return getTeamsByLeagueUseCase.execute(userId, leagueId)
                 .flatMap(teams -> teamOVRQueryService.buildTeamsWithOVR(userId, teams))
                 .map(teamsWithOVR -> {
-                    List<DivisionPreview> previews = divisionPreviewService.calculateDivisionPreview(teamsWithOVR, teamsPerDivision);
+                    List<DivisionPreview> previews = divisionPreviewService
+                        .calculateDivisionPreview(teamsWithOVR, teamsPerDivision)
+                        .stream()
+                        .map(WorldQueryController::toDto)
+                        .toList();
                     return ResponseEntity.ok(previews);
                 });
     }
@@ -151,5 +158,23 @@ public class WorldQueryController {
         controllerHelper.requireSelfUserId(authentication, userId);
         return getFreePlayersUseCase.execute(userId)
                 .map(ResponseEntity::ok);
+    }
+
+    private static TeamWithOVR toDto(TeamOvrView team) {
+        return new TeamWithOVR(
+            team.id(),
+            team.name(),
+            team.country(),
+            team.formation(),
+            team.ovr(),
+            team.playerCount(),
+            team.budget());
+    }
+
+    private static DivisionPreview toDto(DivisionPreviewView preview) {
+        return new DivisionPreview(
+            preview.divisionNumber(),
+            preview.divisionName(),
+            preview.teams().stream().map(WorldQueryController::toDto).toList());
     }
 }

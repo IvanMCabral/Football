@@ -30,7 +30,7 @@ class PlayerSeasonStatsControllerTest {
         PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
         when(queryService.isApiEnabled()).thenReturn(true);
         when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), isNull(), eq(50), eq(0), isNull(), isNull()))
-                .thenReturn(PlayerSeasonStatsResponse.builder()
+                .thenReturn(Mono.just(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
                         .playerStats(List.of())
@@ -40,7 +40,7 @@ class PlayerSeasonStatsControllerTest {
                         .averageRating(0.0)
                         .incomplete(false)
                         .message("ok")
-                        .build());
+                        .build()));
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
         Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, null, null, null, null);
@@ -59,7 +59,7 @@ class PlayerSeasonStatsControllerTest {
         PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
         when(queryService.isApiEnabled()).thenReturn(true);
         when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), eq("team-A"), isNull(), eq(50), eq(0), isNull(), isNull()))
-                .thenReturn(PlayerSeasonStatsResponse.builder()
+                .thenReturn(Mono.just(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
                         .playerStats(List.of())
@@ -69,7 +69,7 @@ class PlayerSeasonStatsControllerTest {
                         .averageRating(0.0)
                         .incomplete(false)
                         .message("ok")
-                        .build());
+                        .build()));
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
         Mono<ResponseEntity<Object>> result = controller.getTeamPlayerSeasonStats(CAREER_ID, SEASON, "team-A", null, null, null, null);
@@ -94,7 +94,7 @@ class PlayerSeasonStatsControllerTest {
                 30  // lastUpdatedRound
         );
         when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), eq("player-1")))
-                .thenReturn(PlayerSeasonStatsResponse.builder()
+                .thenReturn(Mono.just(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
                         .playerStats(List.of(playerDto))
@@ -104,7 +104,7 @@ class PlayerSeasonStatsControllerTest {
                         .averageRating(7.5)
                         .incomplete(false)
                         .message("ok")
-                        .build());
+                        .build()));
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
         Mono<ResponseEntity<Object>> result = controller.getPlayerStats(CAREER_ID, SEASON, "player-1");
@@ -124,7 +124,7 @@ class PlayerSeasonStatsControllerTest {
         when(queryService.isApiEnabled()).thenReturn(true);
         // Aggregator returns empty list when no data for the requested playerId
         when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), eq("missing-player")))
-                .thenReturn(PlayerSeasonStatsResponse.builder()
+                .thenReturn(Mono.just(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
                         .playerStats(List.of())
@@ -134,7 +134,7 @@ class PlayerSeasonStatsControllerTest {
                         .averageRating(0.0)
                         .incomplete(false)
                         .message("ok")
-                        .build());
+                        .build()));
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
         Mono<ResponseEntity<Object>> result = controller.getPlayerStats(CAREER_ID, SEASON, "missing-player");
@@ -273,7 +273,7 @@ class PlayerSeasonStatsControllerTest {
         PlayerSeasonStatsQueryService queryService = mock(PlayerSeasonStatsQueryService.class);
         when(queryService.isApiEnabled()).thenReturn(true);
         when(queryService.getPlayerSeasonStats(eq(CAREER_ID), eq(SEASON), isNull(), isNull(), eq(200), eq(0), isNull(), isNull()))
-                .thenReturn(PlayerSeasonStatsResponse.builder()
+                .thenReturn(Mono.just(PlayerSeasonStatsResponse.builder()
                         .careerId(CAREER_ID)
                         .season(SEASON)
                         .playerStats(List.of())
@@ -284,7 +284,7 @@ class PlayerSeasonStatsControllerTest {
                         .incomplete(false)
                         .message("ok")
                         .warnings(List.of())
-                        .build());
+                        .build()));
 
         PlayerSeasonStatsController controller = new PlayerSeasonStatsController(queryService);
         Mono<ResponseEntity<Object>> result = controller.getPlayerSeasonStats(CAREER_ID, SEASON, 500, null, null, null);

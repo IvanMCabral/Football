@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
+import reactor.core.publisher.Mono;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.application.service.simulation.v24.MatchComparisonService.BaselineNotFoundException;
 import com.footballmanager.application.service.simulation.v24.MatchComparisonService.LiveDetailNotFoundException;
@@ -70,7 +71,7 @@ class MatchComparisonServiceTest {
 
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
                 .thenReturn(reactor.core.publisher.Mono.just(Optional.of(baseline)));
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(live));
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(live)));
 
         MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID).block(Duration.ofSeconds(5));
 
@@ -105,7 +106,7 @@ class MatchComparisonServiceTest {
 
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
                 .thenReturn(reactor.core.publisher.Mono.just(Optional.of(baseline)));
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(live));
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(live)));
 
         MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID).block(Duration.ofSeconds(5));
 
@@ -138,7 +139,7 @@ class MatchComparisonServiceTest {
 
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
                 .thenReturn(reactor.core.publisher.Mono.just(Optional.of(baseline)));
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(live));
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(live)));
 
         MatchComparison cmp = service.getComparison(CAREER_ID, MATCH_ID).block(Duration.ofSeconds(5));
 
@@ -152,7 +153,7 @@ class MatchComparisonServiceTest {
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
                 .thenReturn(reactor.core.publisher.Mono.just(Optional.empty()));
         when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID))
-                .thenReturn(Optional.of(sampleLive()));
+                .thenReturn(Mono.just(Optional.of(sampleLive())));
 
         // Mono<MatchComparison>, so the exception propagates via Mono.error
         // and we verify with reactor.test.StepVerifier (no more .block()).
@@ -163,7 +164,7 @@ class MatchComparisonServiceTest {
 
     @Test
     void getComparison_liveNotFound_throwsLiveDetailNotFound() {
-        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Optional.empty());
+        when(detailStoragePort.findByMatchId(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.empty()));
         // baselineStoragePort stub required by type-check (never subscribed —
         // the service short-circuits on detail empty first).
         when(baselineStoragePort.findByMatchId(CAREER_ID, MATCH_ID))

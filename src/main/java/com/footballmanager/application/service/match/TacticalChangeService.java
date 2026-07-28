@@ -1,9 +1,9 @@
 package com.footballmanager.application.service.match;
 
-import com.footballmanager.adapters.in.web.career.simulation.dto.FormationChangeResultDTO;
-import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
-import com.footballmanager.adapters.in.web.career.simulation.dto.StyleChangeResultDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+
+
+
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
@@ -77,7 +77,7 @@ public class TacticalChangeService {
      *   <li>Apply the style via {@code V24LiveSession.mutateContext(ctx -> ctx.withNewStyle(homeTeamId, newStyle))}
      *       — this triggers {@code replayFromMinute(currentMinute)} automatically.</li>
      *   <li>Record a {@code TACTICAL_CHANGE} event so the F3 UI can render the change.</li>
-     *   <li>Return the {@link StyleChangeResultDTO} with the new state.</li>
+     *   <li>Return the {@link TacticalStyleChangeResult} with the new state.</li>
      * </ol>
      *
      * @param userId   authenticated user (for session lookup)
@@ -85,13 +85,13 @@ public class TacticalChangeService {
      * @param newStyle new tactical style (NOT NULL — caller validates)
      * @return Mono emitting the result DTO; Mono.error on validation failure
      */
-    public Mono<StyleChangeResultDTO> changeStyle(UUID userId, UUID matchId, TeamStyle newStyle) {
+    public Mono<TacticalStyleChangeResult> changeStyle(UUID userId, UUID matchId, TeamStyle newStyle) {
         return Mono.fromCallable(() -> changeStyleInternal(userId, matchId, newStyle))
             .doOnError(e -> log.warn("Style change failed for matchId={} userId={}: {}",
                 matchId, userId, e.getMessage()));
     }
 
-    private StyleChangeResultDTO changeStyleInternal(UUID userId, UUID matchId, TeamStyle newStyle) {
+    private TacticalStyleChangeResult changeStyleInternal(UUID userId, UUID matchId, TeamStyle newStyle) {
         if (newStyle == null) {
             throw new IllegalArgumentException("newStyle must not be null");
         }
@@ -134,7 +134,7 @@ public class TacticalChangeService {
         log.info("Style changed: matchId={} teamId={} newStyle={} minute={}",
             matchId, homeTeamId, newStyle, minute);
 
-        return StyleChangeResultDTO.ok(minute, newStyle);
+        return TacticalStyleChangeResult.ok(minute, newStyle);
     }
 
     /**
@@ -155,7 +155,7 @@ public class TacticalChangeService {
      *   <li>Drive {@code mutateContext(ctx -> ctx.withNewFormation(homeTeamId, code))}
      *       — F1 replays from currentMinute automatically.</li>
      *   <li>Record a {@code TACTICAL_CHANGE} event.</li>
-     *   <li>Return the {@link FormationChangeResultDTO} with the new slots.</li>
+     *   <li>Return the {@link TacticalFormationChangeResult} with the new slots.</li>
      * </ol>
      *
      * @param userId       authenticated user
@@ -163,24 +163,24 @@ public class TacticalChangeService {
      * @param newFormation new formation (List of 10-11 slots; controller validates non-null)
      * @return Mono emitting the result DTO; Mono.error on validation failure
      */
-    public Mono<FormationChangeResultDTO> changeFormation(UUID userId, UUID matchId, List<FormationSlotDTO> newFormation) {
+    public Mono<TacticalFormationChangeResult> changeFormation(UUID userId, UUID matchId, List<TacticalFormationSlot> newFormation) {
         return changeFormation(userId, matchId, newFormation, null);
     }
 
-    public Mono<FormationChangeResultDTO> changeFormation(
+    public Mono<TacticalFormationChangeResult> changeFormation(
             UUID userId,
             UUID matchId,
-            List<FormationSlotDTO> newFormation,
+            List<TacticalFormationSlot> newFormation,
             String requestedFormationCode) {
         return Mono.fromCallable(() -> changeFormationInternal(userId, matchId, newFormation, requestedFormationCode))
             .doOnError(e -> log.warn("Formation change failed for matchId={} userId={}: {}",
                 matchId, userId, e.getMessage()));
     }
 
-    private FormationChangeResultDTO changeFormationInternal(
+    private TacticalFormationChangeResult changeFormationInternal(
             UUID userId,
             UUID matchId,
-            List<FormationSlotDTO> newFormation,
+            List<TacticalFormationSlot> newFormation,
             String requestedFormationCode) {
         // 1. Slot-level validation.
         validateFormation(newFormation);
@@ -205,7 +205,7 @@ public class TacticalChangeService {
 
         // 3. Roster validation: every playerId must be in the manager team's live roster.
         Set<String> rosterIds = rosterIdsForTeam(context, managerTeamId);
-        for (FormationSlotDTO slot : newFormation) {
+        for (TacticalFormationSlot slot : newFormation) {
             if (!rosterIds.contains(slot.playerId())) {
                 throw new IllegalArgumentException(
                     "playerId '" + slot.playerId() + "' is not in the manager team's roster");
@@ -228,7 +228,7 @@ public class TacticalChangeService {
         managerTeam.setFormation(newCode);
 
         // 6. Mutate each affected SessionPlayer.position — engine reads this on the next rebuild.
-        for (FormationSlotDTO slot : newFormation) {
+        for (TacticalFormationSlot slot : newFormation) {
             // Find the player in either starting or bench and mutate.
             SessionPlayer p = findPlayer(context, managerTeamId, slot.playerId());
             if (p != null && !slot.position().equals(p.getPosition())) {
@@ -237,7 +237,7 @@ public class TacticalChangeService {
         }
 
         // 7. Drive mutateContext — F1 replays from currentMinute automatically.
-        Map<String, LineupSlotDTO> liveSlots = buildLiveSlots(newFormation);
+        Map<String, LineupSlot> liveSlots = buildLiveSlots(newFormation);
         liveSession.mutateContext(ctx -> {
             V24MatchContext changed = ctx.withNewFormation(managerTeamId, newCode);
             return liveSlots.isEmpty() ? changed : changed.withSlots(managerTeamId, liveSlots);
@@ -260,24 +260,24 @@ public class TacticalChangeService {
         log.info("Formation changed: matchId={} teamId={} from={} to={} minute={}",
             matchId, managerTeamId, previousCode, newCode, minute);
 
-        return FormationChangeResultDTO.ok(minute, new ArrayList<>(newFormation));
+        return TacticalFormationChangeResult.ok(minute, new ArrayList<>(newFormation));
     }
 
     /**
      *
      * <p>The pre-match lineup editor already sends customX/customY through
-     * LineupSlotDTO. The live Partido modal uses the same tactical language:
+     * LineupSlot. The live Partido modal uses the same tactical language:
      * when a slot arrives with custom coordinates, the V24 replay gets a
      * slotsByPlayerId map so width/center/vertical movement affects the
      * engine instead of being cosmetic UI-only movement.</p>
      */
-    private Map<String, LineupSlotDTO> buildLiveSlots(List<FormationSlotDTO> formation) {
-        Map<String, LineupSlotDTO> slots = new LinkedHashMap<>();
+    private Map<String, LineupSlot> buildLiveSlots(List<TacticalFormationSlot> formation) {
+        Map<String, LineupSlot> slots = new LinkedHashMap<>();
         if (formation == null) {
             return slots;
         }
         for (int i = 0; i < formation.size(); i++) {
-            FormationSlotDTO slot = formation.get(i);
+            TacticalFormationSlot slot = formation.get(i);
             if (slot == null || slot.playerId() == null || slot.playerId().isBlank()) {
                 continue;
             }
@@ -289,7 +289,7 @@ public class TacticalChangeService {
             String subdivisionId = "GK".equalsIgnoreCase(slot.position())
                 ? "GK-1"
                 : "LIVE-" + (slot.slotIndex() != null ? slot.slotIndex() : i);
-            slots.put(slot.playerId(), new LineupSlotDTO(slot.playerId(), subdivisionId, x, y));
+            slots.put(slot.playerId(), new LineupSlot(slot.playerId(), subdivisionId, x, y));
         }
         return slots;
     }
@@ -301,7 +301,7 @@ public class TacticalChangeService {
     private String buildFormationChangeDescription(
             String previousCode,
             String newCode,
-            List<FormationSlotDTO> formation,
+            List<TacticalFormationSlot> formation,
             V24MatchContext context,
             String managerTeamId) {
         StringBuilder description = new StringBuilder("Formation changed from ")
@@ -311,7 +311,7 @@ public class TacticalChangeService {
 
         List<String> moved = new ArrayList<>();
         if (formation != null) {
-            for (FormationSlotDTO slot : formation) {
+            for (TacticalFormationSlot slot : formation) {
                 if (slot == null || slot.playerId() == null) {
                     continue;
                 }
@@ -344,7 +344,7 @@ public class TacticalChangeService {
      * Validate the incoming formation: 10-11 slots, exactly 1 GK, unique playerIds,
      * non-blank playerId/position on every slot.
      */
-    private void validateFormation(List<FormationSlotDTO> formation) {
+    private void validateFormation(List<TacticalFormationSlot> formation) {
         if (formation == null) {
             throw new IllegalArgumentException("formation must not be null");
         }
@@ -355,7 +355,7 @@ public class TacticalChangeService {
         int gkCount = 0;
         Set<String> seenPlayerIds = new HashSet<>();
         Set<String> seenPositions = new HashSet<>();
-        for (FormationSlotDTO slot : formation) {
+        for (TacticalFormationSlot slot : formation) {
             if (slot == null || slot.playerId() == null || slot.playerId().isBlank()) {
                 throw new IllegalArgumentException("slot.playerId must not be blank");
             }
@@ -394,9 +394,9 @@ public class TacticalChangeService {
      * (WINGER counts as MID) and formats accordingly. This is a best-effort mapping
      * so the engine's formation string stays parseable by {@code V24FormationParser}.
      */
-    private String deriveFormationCode(List<FormationSlotDTO> formation) {
+    private String deriveFormationCode(List<TacticalFormationSlot> formation) {
         int def = 0, mid = 0, fwd = 0;
-        for (FormationSlotDTO slot : formation) {
+        for (TacticalFormationSlot slot : formation) {
             switch (slot.position()) {
                 case "GK" -> { /* ignored — GK is implicit */ }
                 case "DEF" -> def++;
@@ -421,9 +421,9 @@ public class TacticalChangeService {
         return code;
     }
 
-    private String resolveFormationTeamId(V24MatchContext context, List<FormationSlotDTO> formation) {
+    private String resolveFormationTeamId(V24MatchContext context, List<TacticalFormationSlot> formation) {
         Set<String> requestedIds = new HashSet<>();
-        for (FormationSlotDTO slot : formation) {
+        for (TacticalFormationSlot slot : formation) {
             requestedIds.add(slot.playerId());
         }
         Set<String> homeRoster = rosterIdsForTeam(context, context.homeTeamId());
@@ -466,3 +466,4 @@ public class TacticalChangeService {
         return null;
     }
 }
+

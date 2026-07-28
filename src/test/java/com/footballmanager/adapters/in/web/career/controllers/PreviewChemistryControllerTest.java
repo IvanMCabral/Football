@@ -254,8 +254,16 @@ class PreviewChemistryControllerTest {
         // Stub it to return an empty lineup. The fact that the call returns
         // Mono (without throwing) confirms the controller wiring still works.
         when(lineupQueryUseCase.getCurrentLineup(TEST_USER_ID))
-            .thenReturn(Mono.just(new com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO(
-                "4-4-2", List.of(), false, List.of(), List.of(), 0, null)));
+            .thenReturn(Mono.just(new com.footballmanager.domain.port.in.lineup.LineupView(
+                "4-4-2",
+                List.of(),
+                false,
+                List.of(),
+                List.of(),
+                0,
+                com.footballmanager.domain.model.valueobject.TeamChemistryCalculator.calculate(List.of()),
+                null,
+                com.footballmanager.domain.model.valueobject.FormationEffectiveness.empty())));
 
         StepVerifier.create(controller.getCurrentLineup(auth))
             .assertNext(dto -> {

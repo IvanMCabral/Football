@@ -503,18 +503,10 @@ class V24DisciplineMutationApplierTest {
         career.addSessionPlayer(p);
 
         // Use reflection to ensure fields are null before mutation
-        java.lang.reflect.Field ycField = SessionPlayer.class.getDeclaredField("yellowCards");
-        ycField.setAccessible(true);
-        ycField.set(p, null);
-        java.lang.reflect.Field rcField = SessionPlayer.class.getDeclaredField("redCards");
-        rcField.setAccessible(true);
-        rcField.set(p, null);
-        java.lang.reflect.Field suspField = SessionPlayer.class.getDeclaredField("suspended");
-        suspField.setAccessible(true);
-        suspField.set(p, null);
-        java.lang.reflect.Field srmField = SessionPlayer.class.getDeclaredField("suspensionRemainingMatches");
-        srmField.setAccessible(true);
-        srmField.set(p, null);
+        p.setYellowCards(null);
+        p.setRedCards(null);
+        p.setSuspended(null);
+        p.setSuspensionRemainingMatches(null);
 
         V24MatchEvent yc = yellowCardEvent("null-disc-player", 30);
         V24MatchEvent rc = redCardEvent("null-disc-player", 75);
@@ -543,9 +535,7 @@ class V24DisciplineMutationApplierTest {
         career.addSessionPlayer(p);
 
         // Force yellowCards to null (uninitialized state)
-        java.lang.reflect.Field ycField = SessionPlayer.class.getDeclaredField("yellowCards");
-        ycField.setAccessible(true);
-        ycField.set(p, null);
+        p.setYellowCards(null);
 
         V24MatchEvent yc = yellowCardEvent("p1", 30);
         V24DetailedMatchResult res = result(yc);

@@ -4,6 +4,7 @@ import com.footballmanager.adapters.in.web.career.simulation.dto.StyleChangeRequ
 import com.footballmanager.adapters.in.web.career.simulation.dto.StyleChangeResultDTO;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.match.TacticalChangeService;
+import com.footballmanager.application.service.match.TacticalStyleChangeResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -73,7 +74,8 @@ public class StyleChangeController {
             matchUuid, userId, request.newStyle());
 
         return tacticalChangeService.changeStyle(userId, matchUuid, request.newStyle())
-            .map(result -> ResponseEntity.ok(result))
+            .map(StyleChangeController::toDto)
+            .map(ResponseEntity::ok)
             .onErrorResume(IllegalArgumentException.class, e ->
                 Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(StyleChangeResultDTO.error(e.getMessage()))))
@@ -86,5 +88,13 @@ public class StyleChangeController {
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(StyleChangeResultDTO.error("Internal error: " + e.getMessage())));
             });
+    }
+
+    private static StyleChangeResultDTO toDto(TacticalStyleChangeResult result) {
+        return new StyleChangeResultDTO(
+            result.success(),
+            result.minuteApplied(),
+            result.currentStyle(),
+            result.error());
     }
 }

@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.world;
 
-import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
@@ -26,7 +26,7 @@ import java.util.*;
 public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
 
     private final LoadBaseDataService loadBaseDataService;
-    private final RedisWorldRepository redisWorldRepository;
+    private final WorldSnapshotRepository WorldSnapshotRepository;
     private final RealLeagueIdUpdater realLeagueIdUpdater;
 
     @Override
@@ -40,7 +40,7 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
     }
 
     private Mono<WorldSnapshot> getOrCreateSnapshot(UUID userId) {
-        return redisWorldRepository.findByUserId(userId)
+        return WorldSnapshotRepository.findByUserId(userId)
                 .defaultIfEmpty(new WorldSnapshot())
                 .flatMap(snapshot -> {
                     if (snapshot.getWorldTeams() == null || snapshot.getWorldTeams().isEmpty()) {
@@ -68,7 +68,7 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
         }
         newSnapshot.setWorldPlayers(playersMap);
 
-        return redisWorldRepository.save(newSnapshot);
+        return WorldSnapshotRepository.save(newSnapshot);
     }
 
     private Mono<WorldSnapshot> updateRealLeagueIds(WorldSnapshot snapshot, UUID userId) {
@@ -89,3 +89,4 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
         );
     }
 }
+

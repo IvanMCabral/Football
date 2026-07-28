@@ -9,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +56,7 @@ class PlayerSeasonStatsQueryServiceTest {
     void getPlayerSeasonStats_apiDisabled_returnsIncomplete() {
         var disabledService = new PlayerSeasonStatsQueryService(storagePort, aggregator, false);
 
-        PlayerSeasonStatsResponse response = disabledService.getPlayerSeasonStats(CAREER_ID, SEASON);
+        PlayerSeasonStatsResponse response = disabledService.getPlayerSeasonStats(CAREER_ID, SEASON).block();
 
         assertThat(response.incomplete()).isTrue();
         assertThat(response.message()).contains("detail API");
@@ -64,9 +66,9 @@ class PlayerSeasonStatsQueryServiceTest {
 
     @Test
     void getPlayerSeasonStats_noData_returnsEmptyResponse() {
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of());
+        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(Flux.just());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON).block();
 
         assertThat(response.playerStats()).isEmpty();
         assertThat(response.totalGoals()).isEqualTo(0);
@@ -80,7 +82,7 @@ class PlayerSeasonStatsQueryServiceTest {
                 makeRating("p1", "team-A", 7.0, 1, 0, 3, 0, 0, 0, 0, 1, false, false),
                 makeRating("p2", "team-A", 7.0, 0, 1, 2, 0, 0, 0, 0, 2, false, false)
         ));
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of(match1));
+        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(Flux.just(match1));
 
         PlayerSeasonStatsResponse aggregatorResponse = PlayerSeasonStatsResponse.builder()
                 .careerId(CAREER_ID)
@@ -105,7 +107,7 @@ class PlayerSeasonStatsQueryServiceTest {
                         .lastUpdatedRound(1)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON).block();
 
         assertThat(response.totalGoals()).isEqualTo(1);
         assertThat(response.totalAssists()).isEqualTo(1);
@@ -120,7 +122,7 @@ class PlayerSeasonStatsQueryServiceTest {
         V24DetailedMatchData matchS2 = makeDetail(CAREER_ID, 2, "match-2", "team-A", List.of(
                 makeRating("p1", "team-A", 7.5, 2, 0, 4, 0, 0, 0, 0, 1, false, false)
         ));
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of(matchS1, matchS2));
+        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(Flux.just(matchS1, matchS2));
 
         PlayerSeasonStatsResponse aggregatorResponse = PlayerSeasonStatsResponse.builder()
                 .careerId(CAREER_ID)
@@ -145,7 +147,7 @@ class PlayerSeasonStatsQueryServiceTest {
                         .lastUpdatedRound(1)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, 1);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, 1).block();
 
         assertThat(response.season()).isEqualTo(1);
         assertThat(response.totalGoals()).isEqualTo(1);
@@ -156,7 +158,7 @@ class PlayerSeasonStatsQueryServiceTest {
         V24DetailedMatchData match1 = makeDetail(CAREER_ID, 1, "match-1", "team-A", List.of(
                 makeRating("p1", "team-A", 7.0, 1, 0, 3, 0, 0, 0, 0, 1, false, false)
         ));
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of(match1));
+        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(Flux.just(match1));
 
         PlayerSeasonStatsResponse aggregatorResponse = PlayerSeasonStatsResponse.builder()
                 .careerId(CAREER_ID)
@@ -181,7 +183,7 @@ class PlayerSeasonStatsQueryServiceTest {
                         .lastUpdatedRound(1)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON, "team-A", null);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON, "team-A", null).block();
 
         assertThat(response.totalGoals()).isEqualTo(1);
     }
@@ -191,7 +193,7 @@ class PlayerSeasonStatsQueryServiceTest {
         V24DetailedMatchData match1 = makeDetail(CAREER_ID, 1, "match-1", "team-A", List.of(
                 makeRating("p1", "team-A", 7.0, 1, 0, 3, 0, 0, 0, 0, 1, false, false)
         ));
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of(match1));
+        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(Flux.just(match1));
 
         PlayerSeasonStatsResponse aggregatorResponse = PlayerSeasonStatsResponse.builder()
                 .careerId(CAREER_ID)
@@ -216,7 +218,7 @@ class PlayerSeasonStatsQueryServiceTest {
                         .lastUpdatedRound(1)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON, null, "p1");
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON, null, "p1").block();
 
         assertThat(response.totalGoals()).isEqualTo(1);
     }
@@ -226,7 +228,7 @@ class PlayerSeasonStatsQueryServiceTest {
         V24DetailedMatchData match1 = makeDetail(CAREER_ID, 1, "match-1", "team-A", List.of(
                 makeRating("p1", "team-A", 7.0, 1, 0, 3, 0, 0, 0, 0, 1, false, false)
         ));
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of(match1));
+        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(Flux.just(match1));
 
         PlayerSeasonStatsAggregator.SortOptions sortOpts = new PlayerSeasonStatsAggregator.SortOptions(
                 PlayerSeasonStatsAggregator.SortField.GOALS, PlayerSeasonStatsAggregator.SortOrder.DESC, 10, 0);
@@ -243,7 +245,7 @@ class PlayerSeasonStatsQueryServiceTest {
                         .lastUpdatedRound(1)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON, null, null, sortOpts);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON, null, null, sortOpts).block();
 
         assertThat(response.totalGoals()).isEqualTo(1);
     }
@@ -262,7 +264,7 @@ class PlayerSeasonStatsQueryServiceTest {
         V24DetailedMatchData match1 = makeDetail(CAREER_ID, 1, "match-1", "team-A", List.of(
                 makeRating("p1", "team-A", 7.0, 1, 0, 3, 0, 0, 0, 0, 1, false, false)
         ));
-        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(List.of(match1));
+        when(storagePort.findByCareerId(CAREER_ID)).thenReturn(Flux.just(match1));
 
         when(aggregator.aggregateWithMetadata(any(), eq(CAREER_ID), eq(SEASON), any(), any()))
                 .thenReturn(AggregationResult.builder()
@@ -276,7 +278,7 @@ class PlayerSeasonStatsQueryServiceTest {
                         .lastUpdatedRound(5)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(CAREER_ID, SEASON).block();
 
         assertThat(response.metadata()).isNotNull();
         assertThat(response.metadata().dataSource()).isEqualTo("V24_DETAIL");
@@ -301,7 +303,7 @@ class PlayerSeasonStatsQueryServiceTest {
         V24DetailedMatchData match2 = makeDetail(careerId, 1, "match-other", "some-other-team", List.of(
                 makeRating("p3", "other-team", 6.5, 0, 0, 1, 1, 0, 0, 0, 0, false, false)
         ));
-        when(storagePort.findByCareerId(careerId)).thenReturn(List.of(match1, match2));
+        when(storagePort.findByCareerId(careerId)).thenReturn(Flux.just(match1, match2));
 
         when(aggregator.aggregateWithMetadata(any(), eq(careerId), eq(1), any(), any()))
                 .thenReturn(AggregationResult.builder()
@@ -319,7 +321,7 @@ class PlayerSeasonStatsQueryServiceTest {
                         .lastUpdatedRound(1)
                         .build());
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(careerId, 1, realMadridTeamId, null);
+        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(careerId, 1, realMadridTeamId, null).block();
 
         assertThat(response.playerStats()).isNotEmpty();
         assertThat(response.playerStats().size()).isEqualTo(2);

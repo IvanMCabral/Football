@@ -592,7 +592,7 @@ class LineupShortHandedTest {
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
                 List<String> playerIdsInSlots = dto.slots().stream()
-                    .map(com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO::playerId)
+                    .map(slot -> slot.playerId())
                     .toList();
                 long distinct = playerIdsInSlots.stream().distinct().count();
                 assertEquals(playerIdsInSlots.size(), distinct,
@@ -629,7 +629,7 @@ class LineupShortHandedTest {
         StepVerifier.create(useCase.manualSelectLineup(UUID.fromString(USER_ID), "4-4-2", lineupIds))
             .assertNext(dto -> {
                 java.util.Set<String> filledSubdivisions = dto.slots().stream()
-                    .map(com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO::subdivisionId)
+                    .map(slot -> slot.subdivisionId())
                     .collect(java.util.stream.Collectors.toSet());
 
                 // 4-4-2 subdivisions that no helper match could fill (no ST/extra MID in lineup):
@@ -674,7 +674,7 @@ class LineupShortHandedTest {
                     + "(C20 P0 fallback contract preserved for auto-select path)");
                 // No duplicates either
                 long distinct = dto.slots().stream()
-                    .map(com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO::playerId)
+                    .map(slot -> slot.playerId())
                     .distinct()
                     .count();
                 assertEquals(11L, distinct,

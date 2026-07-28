@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.world;
 
-import com.footballmanager.adapters.in.web.dashboard.dto.WorldStatusResponse;
+import com.footballmanager.application.service.world.WorldStatusSummary;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
@@ -145,3 +145,4 @@ class C55_7_5_WorldStatusQueryServiceTest {
                 .verifyComplete();
     }
 }
+

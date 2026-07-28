@@ -4,7 +4,6 @@ import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -225,28 +224,15 @@ class V24DetailedMatchEngineSpeedsterTest {
                 "xG debe ser no-negativo");
     }
 
-    // ========== Reflection helpers ==========
-
-    /**
-     * Reflection para invocar el overload 5-args de chanceProbability (legacy
-     * speedsterSkill=0 produce el mismo resultado.
-     */
     private double invokeChanceProb5(TeamStyle style, int minute, int attack,
                                      int speed, int dribbler) throws Exception {
-        Method m = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "chanceProbability", TeamStyle.class, int.class, int.class, int.class, int.class);
-        m.setAccessible(true);
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        return (double) m.invoke(engine, style, minute, attack, speed, dribbler);
+        return new V24MatchProbabilityService()
+                .chanceProbability(style, minute, attack, speed, dribbler, 0);
     }
     private double invokeChanceProb6(TeamStyle style, int minute, int attack,
                                      int speed, int dribbler, int speedster) throws Exception {
-        Method m = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "chanceProbability", TeamStyle.class, int.class, int.class,
-                int.class, int.class, int.class);
-        m.setAccessible(true);
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        return (double) m.invoke(engine, style, minute, attack, speed, dribbler, speedster);
+        return new V24MatchProbabilityService()
+                .chanceProbability(style, minute, attack, speed, dribbler, speedster);
     }
 
     // ========== Fixture builders ==========

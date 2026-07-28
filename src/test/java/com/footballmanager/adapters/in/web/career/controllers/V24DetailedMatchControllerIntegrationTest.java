@@ -105,7 +105,7 @@ class V24DetailedMatchControllerIntegrationTest {
     void getDetail_found_returns200() {
         V24DetailedMatchData detail = sampleDetail();
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(detail));
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(detail)));
 
         Mono<ResponseEntity<Object>> mono = controller.getDetail(CAREER_ID, MATCH_ID);
         ResponseEntity<Object> response = mono.block();
@@ -118,7 +118,7 @@ class V24DetailedMatchControllerIntegrationTest {
     @Test
     void getDetail_notFound_returns404() {
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.empty());
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.empty()));
 
         Mono<ResponseEntity<Object>> mono = controller.getDetail(CAREER_ID, MATCH_ID);
         ResponseEntity<Object> response = mono.block();
@@ -210,7 +210,7 @@ class V24DetailedMatchControllerIntegrationTest {
     @Test
     void getTimeline_minute130_isAllowed() {
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(sampleDetail()));
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(sampleDetail())));
 
         Mono<ResponseEntity<Object>> mono = controller.getTimeline(CAREER_ID, MATCH_ID, 130);
         ResponseEntity<Object> response = mono.block();
@@ -234,7 +234,7 @@ class V24DetailedMatchControllerIntegrationTest {
     @Test
     void getTimeline_detailNotFound_returns404() {
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.empty());
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.empty()));
 
         Mono<ResponseEntity<Object>> mono = controller.getTimeline(CAREER_ID, MATCH_ID, 45);
         ResponseEntity<Object> response = mono.block();
@@ -246,7 +246,7 @@ class V24DetailedMatchControllerIntegrationTest {
     @Test
     void getTimeline_minute45_returns200WithSnapshot() {
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(sampleDetail()));
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(sampleDetail())));
 
         Mono<ResponseEntity<Object>> mono = controller.getTimeline(CAREER_ID, MATCH_ID, 45);
         ResponseEntity<Object> response = mono.block();
@@ -290,7 +290,7 @@ class V24DetailedMatchControllerIntegrationTest {
                 List.of(),
                 "match", "V24", 1, Instant.now(), null, null);
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(d));
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(d)));
 
         Mono<ResponseEntity<Object>> mono = controller.getTimeline(CAREER_ID, MATCH_ID, 0);
         ResponseEntity<Object> response = mono.block();
@@ -307,7 +307,7 @@ class V24DetailedMatchControllerIntegrationTest {
     @Test
     void getTimeline_minute90_returns200WithAllEvents() {
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(sampleDetail()));
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(sampleDetail())));
 
         Mono<ResponseEntity<Object>> mono = controller.getTimeline(CAREER_ID, MATCH_ID, 90);
         ResponseEntity<Object> response = mono.block();
@@ -334,7 +334,7 @@ class V24DetailedMatchControllerIntegrationTest {
                 List.of(), List.of(),
                 "no events", "V24", 1, Instant.now(), null, null);
         when(queryService.isApiEnabled()).thenReturn(true);
-        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Optional.of(d));
+        when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(d)));
 
         Mono<ResponseEntity<Object>> mono = controller.getTimeline(CAREER_ID, MATCH_ID, 0);
         ResponseEntity<Object> response = mono.block();

@@ -5,7 +5,7 @@ import com.footballmanager.application.service.simulation.v24.V24LiveSnapshot;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.MatchEvent;
 import com.footballmanager.domain.model.entity.MatchState;
@@ -139,7 +139,7 @@ public class MatchSessionV25D79Test {
         assertEquals(7, out.awayPlayerRatings().size(),
                 "7 away starters should produce 7 rating entries");
 
-        V24PlayerMatchRatingDto homeStriker = findByPlayerId(out.homePlayerRatings(), "home-p1");
+        PlayerMatchRating homeStriker = findByPlayerId(out.homePlayerRatings(), "home-p1");
         assertNotNull(homeStriker, "home strikers rating must be present");
         assertEquals(1, homeStriker.goals(),
                 "home striker scored once in the live timeline");
@@ -264,9 +264,9 @@ public class MatchSessionV25D79Test {
     }
 
     /** Find a rating entry by playerId. Returns null when not present. */
-    private static V24PlayerMatchRatingDto findByPlayerId(
-            List<V24PlayerMatchRatingDto> ratings, String playerId) {
-        for (V24PlayerMatchRatingDto r : ratings) {
+    private static PlayerMatchRating findByPlayerId(
+            List<PlayerMatchRating> ratings, String playerId) {
+        for (PlayerMatchRating r : ratings) {
             if (playerId.equals(r.playerId())) {
                 return r;
             }

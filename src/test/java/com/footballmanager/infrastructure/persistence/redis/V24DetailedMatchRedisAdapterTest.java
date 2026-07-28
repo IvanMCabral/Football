@@ -69,8 +69,8 @@ class V24DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.get(anyString())).thenReturn(Mono.just(sampleDetail));
         when(reactiveValueOps.set(anyString(), eq(sampleDetail))).thenReturn(Mono.just(true));
 
-        adapter.save("career-abc", sampleDetail);
-        Optional<V24DetailedMatchData> found = adapter.findByMatchId("career-abc", "match-123");
+        adapter.save("career-abc", sampleDetail).block();
+        Optional<V24DetailedMatchData> found = adapter.findByMatchId("career-abc", "match-123").block();
 
         assertTrue(found.isPresent());
         assertEquals("match-123", found.get().matchId());
@@ -87,7 +87,7 @@ class V24DetailedMatchRedisAdapterTest {
     void findMissingReturnsEmpty() {
         when(reactiveValueOps.get(anyString())).thenReturn(Mono.empty());
 
-        Optional<V24DetailedMatchData> found = adapter.findByMatchId("career-abc", "nonexistent-match");
+        Optional<V24DetailedMatchData> found = adapter.findByMatchId("career-abc", "nonexistent-match").block();
 
         assertTrue(found.isEmpty());
     }
@@ -97,8 +97,8 @@ class V24DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.set(anyString(), eq(sampleDetail))).thenReturn(Mono.just(true));
         when(reactiveValueOps.get(anyString())).thenReturn(Mono.just(sampleDetail));
 
-        adapter.save("career-abc", sampleDetail);
-        adapter.findByMatchId("career-abc", "match-123");
+        adapter.save("career-abc", sampleDetail).block();
+        adapter.findByMatchId("career-abc", "match-123").block();
 
         verify(reactiveValueOps, times(1)).set(anyString(), eq(sampleDetail));
     }
@@ -112,7 +112,7 @@ class V24DetailedMatchRedisAdapterTest {
         )));
         when(redisTemplate.delete(any(String[].class))).thenReturn(Mono.just(2L));
 
-        adapter.deleteByCareerId("career-abc");
+        adapter.deleteByCareerId("career-abc").block();
 
         verify(redisTemplate).keys(pattern);
         verify(redisTemplate).delete(any(String[].class));
@@ -123,7 +123,7 @@ class V24DetailedMatchRedisAdapterTest {
         String pattern = "career:career-abc:match-detail:*";
         when(redisTemplate.keys(pattern)).thenReturn(Flux.empty());
 
-        adapter.deleteByCareerId("career-abc");
+        adapter.deleteByCareerId("career-abc").block();
 
         verify(redisTemplate).keys(pattern);
     }
@@ -143,11 +143,11 @@ class V24DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.get("career:career-abc:match-detail:match-123")).thenReturn(Mono.just(sampleDetail));
         when(reactiveValueOps.get("career:career-xyz:match-detail:match-123")).thenReturn(Mono.just(careerXDetail));
 
-        adapter.save("career-abc", sampleDetail);
-        adapter.save("career-xyz", careerXDetail);
+        adapter.save("career-abc", sampleDetail).block();
+        adapter.save("career-xyz", careerXDetail).block();
 
-        Optional<V24DetailedMatchData> foundAbc = adapter.findByMatchId("career-abc", "match-123");
-        Optional<V24DetailedMatchData> foundXyz = adapter.findByMatchId("career-xyz", "match-123");
+        Optional<V24DetailedMatchData> foundAbc = adapter.findByMatchId("career-abc", "match-123").block();
+        Optional<V24DetailedMatchData> foundXyz = adapter.findByMatchId("career-xyz", "match-123").block();
 
         assertTrue(foundAbc.isPresent());
         assertTrue(foundXyz.isPresent());
@@ -160,35 +160,35 @@ class V24DetailedMatchRedisAdapterTest {
     @Test
     void rejectsBlankCareerIdOnSave() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-                adapter.save("  ", sampleDetail));
+                adapter.save("  ", sampleDetail).block());
         assertEquals("careerId must not be blank", e.getMessage());
     }
 
     @Test
     void rejectsNullDetail() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-                adapter.save("career-abc", null));
+                adapter.save("career-abc", null).block());
         assertEquals("detail must not be null", e.getMessage());
     }
 
     @Test
     void rejectsBlankCareerIdOnFind() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-                adapter.findByMatchId("  ", "match-123"));
+                adapter.findByMatchId("  ", "match-123").block());
         assertEquals("careerId must not be blank", e.getMessage());
     }
 
     @Test
     void rejectsBlankMatchIdOnFind() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-                adapter.findByMatchId("career-abc", "  "));
+                adapter.findByMatchId("career-abc", "  ").block());
         assertEquals("matchId must not be blank", e.getMessage());
     }
 
     @Test
     void rejectsBlankCareerIdOnDelete() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-                adapter.deleteByCareerId("  "));
+                adapter.deleteByCareerId("  ").block());
         assertEquals("careerId must not be blank", e.getMessage());
     }
 
@@ -223,8 +223,8 @@ class V24DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.set(anyString(), any())).thenReturn(Mono.just(true));
         when(reactiveValueOps.get(anyString())).thenReturn(Mono.just(detail));
 
-        adapter.save("career-xyz", detail);
-        Optional<V24DetailedMatchData> found = adapter.findByMatchId("career-xyz", "match-999");
+        adapter.save("career-xyz", detail).block();
+        Optional<V24DetailedMatchData> found = adapter.findByMatchId("career-xyz", "match-999").block();
 
         assertTrue(found.isPresent());
         assertEquals(3, found.get().timeline().size());
@@ -261,7 +261,7 @@ class V24DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.get("career:career-abc:match-detail:match-123")).thenReturn(Mono.just(sampleDetail));
         when(reactiveValueOps.get("career:career-abc:match-detail:match-456")).thenReturn(Mono.just(detail2));
 
-        List<V24DetailedMatchData> results = adapter.findByCareerId("career-abc");
+        List<V24DetailedMatchData> results = adapter.findByCareerId("career-abc").collectList().block();
 
         assertEquals(2, results.size());
     }
@@ -276,7 +276,7 @@ class V24DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.get("career:career-abc:match-detail:match-123")).thenReturn(Mono.just(sampleDetail));
         when(reactiveValueOps.get("career:career-abc:match-detail:match-456")).thenReturn(Mono.error(new RuntimeException("bad data")));
 
-        List<V24DetailedMatchData> results = adapter.findByCareerId("career-abc");
+        List<V24DetailedMatchData> results = adapter.findByCareerId("career-abc").collectList().block();
 
         assertEquals(1, results.size());
         assertEquals("match-123", results.get(0).matchId());
@@ -287,7 +287,7 @@ class V24DetailedMatchRedisAdapterTest {
         String pattern = "career:career-empty:match-detail:*";
         when(redisTemplate.keys(pattern)).thenReturn(Flux.empty());
 
-        List<V24DetailedMatchData> results = adapter.findByCareerId("career-empty");
+        List<V24DetailedMatchData> results = adapter.findByCareerId("career-empty").collectList().block();
 
         assertTrue(results.isEmpty());
     }
@@ -336,13 +336,13 @@ class V24DetailedMatchRedisAdapterTest {
             .thenReturn(Mono.just(m3));
 
         // Act: save 3, find 3
-        adapter.save("career-abc", m1);
-        adapter.save("career-abc", m2);
-        adapter.save("career-abc", m3);
+        adapter.save("career-abc", m1).block();
+        adapter.save("career-abc", m2).block();
+        adapter.save("career-abc", m3).block();
 
-        Optional<V24DetailedMatchData> f1 = adapter.findByMatchId("career-abc", "match-123");
-        Optional<V24DetailedMatchData> f2 = adapter.findByMatchId("career-abc", "match-A2");
-        Optional<V24DetailedMatchData> f3 = adapter.findByMatchId("career-abc", "match-A3");
+        Optional<V24DetailedMatchData> f1 = adapter.findByMatchId("career-abc", "match-123").block();
+        Optional<V24DetailedMatchData> f2 = adapter.findByMatchId("career-abc", "match-A2").block();
+        Optional<V24DetailedMatchData> f3 = adapter.findByMatchId("career-abc", "match-A3").block();
 
         // Assert: all 3 are findable
         assertTrue(f1.isPresent(), "A1 (match-123) must be findable");
@@ -407,8 +407,8 @@ class V24DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.get(key)).thenReturn(Mono.just(saved));
 
         // Act: save and immediately find by career
-        adapter.save(careerId, saved);
-        List<V24DetailedMatchData> results = adapter.findByCareerId(careerId);
+        adapter.save(careerId, saved).block();
+        List<V24DetailedMatchData> results = adapter.findByCareerId(careerId).collectList().block();
 
         // Assert: exactly 1 result with all fields preserved
         assertEquals(1, results.size(), "findByCareerId should return 1 result");

@@ -3,6 +3,7 @@ package com.footballmanager.application.service.match.session;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.ports.out.match.MatchStateRepository;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -48,17 +49,17 @@ public class MatchLifecycleManager {
         tickRunner.run();
     }
 
-    public void pause() {
+    public Mono<Void> pause() {
         if (!running) {
-            return;
+            return Mono.empty();
         }
         if (paused) {
-            return;
+            return Mono.empty();
         }
 
         paused = true;
         state.setStatus(MatchStatus.PAUSED);
-        persister.persistAsync(state);
+        return persister.persist(state);
     }
 
     public void resume() {
@@ -76,11 +77,11 @@ public class MatchLifecycleManager {
         state.setStatus(MatchStatus.RUNNING);
     }
 
-    public void stop() {
+    public Mono<Void> stop() {
         running = false;
         paused = false;
         state.setStatus(MatchStatus.CANCELLED);
-        persister.persistAsync(state);
+        return persister.persist(state);
     }
 
     public boolean isRunning() {

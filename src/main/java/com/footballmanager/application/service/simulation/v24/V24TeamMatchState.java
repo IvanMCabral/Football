@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -74,7 +74,7 @@ public class V24TeamMatchState {
             List<SessionPlayer> starting,
             List<SessionPlayer> bench,
             TeamStyle style,
-            Map<String, LineupSlotDTO> slotsByPlayerId) {
+            Map<String, LineupSlot> slotsByPlayerId) {
         Objects.requireNonNull(team, "team must not be null");
         Objects.requireNonNull(starting, "starting list must not be null");
         Objects.requireNonNull(bench, "bench list must not be null");
@@ -113,9 +113,9 @@ public class V24TeamMatchState {
 
     private static void applyPersistedTacticalSlot(
             V24PlayerMatchState playerState,
-            Map<String, LineupSlotDTO> slotsByPlayerId) {
+            Map<String, LineupSlot> slotsByPlayerId) {
         if (playerState == null || slotsByPlayerId == null || slotsByPlayerId.isEmpty()) return;
-        LineupSlotDTO slot = slotsByPlayerId.get(playerState.sessionPlayerId());
+        LineupSlot slot = slotsByPlayerId.get(playerState.sessionPlayerId());
         if (slot == null) return;
         String tacticalPosition = tacticalPositionFor(slot, playerState.naturalPosition());
         if (tacticalPosition != null && !tacticalPosition.isBlank()) {
@@ -123,7 +123,7 @@ public class V24TeamMatchState {
         }
     }
 
-    private static String tacticalPositionFor(LineupSlotDTO slot, String naturalPosition) {
+    private static String tacticalPositionFor(LineupSlot slot, String naturalPosition) {
         if (slot == null) return null;
         if ("GK-1".equals(slot.subdivisionId()) || "GK".equalsIgnoreCase(naturalPosition)) {
             return "GK";

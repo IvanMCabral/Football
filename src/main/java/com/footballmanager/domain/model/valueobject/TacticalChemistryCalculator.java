@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,7 +21,7 @@ public final class TacticalChemistryCalculator {
     }
 
     public static TacticalChemistry calculate(
-            List<LineupSlotDTO> slots,
+            List<LineupSlot> slots,
             Map<String, String> naturalByPlayer,
             Map<String, double[]> coordsBySubdivision
     ) {
@@ -29,7 +29,7 @@ public final class TacticalChemistryCalculator {
             return empty();
         }
         List<Node> nodes = new ArrayList<>();
-        for (LineupSlotDTO slot : slots) {
+        for (LineupSlot slot : slots) {
             if (slot == null || slot.playerId() == null || slot.subdivisionId() == null) {
                 continue;
             }

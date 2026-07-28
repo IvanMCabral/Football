@@ -86,25 +86,22 @@ class V24LiveSessionEventFilterTest {
     }
 
     @Test
-    @DisplayName("NOISE_EVENT_THRESHOLD_MIN constant is honoured (Set size >= 5)")
-    void noiseEventThresholdMin_constantIsHonoured() throws Exception {
-        // Read the constant via reflection so the test breaks if the field is
-        // ever renamed. We don't want to couple to the field name in the
-        // assertion — the contract is "the Set is at least 6 types big".
-        java.lang.reflect.Field thresholdField = V24LiveSession.class
-            .getDeclaredField("NOISE_EVENT_THRESHOLD_MIN");
-        thresholdField.setAccessible(true);
-        int threshold = (int) thresholdField.get(null);
-        assertTrue(threshold >= 5,
-            "NOISE_EVENT_THRESHOLD_MIN must be >= 5 (F5.2 measured ~30-50 important "
-                + "events per match, filtering out ~6 categories). Found: " + threshold);
-
-        // Verify the Set size matches. Indirectly: spawn a V24LiveSession
-        // and trigger the static initializer to confirm it doesn't throw.
-        // (The static initializer throws if size < threshold; if the class
-        //  loaded successfully, the contract holds.)
+    @DisplayName("noise filter contract is observable through live snapshots")
+    void noiseEventFilterContract_isObservable() {
         V24LiveSession session = new V24LiveSession(buildContext(), 42L);
-        assertNotNull(session);
+        for (int i = 0; i < 90; i++) {
+            session.tick();
+        }
+
+        V24LiveSnapshot snapshot = session.tick();
+        assertNotNull(snapshot);
+        assertTrue(snapshot.allEvents().stream().noneMatch(event ->
+                event.type() == V24MatchEventType.CHANCE_CREATED
+                    || event.type() == V24MatchEventType.OFFSIDE
+                    || event.type() == V24MatchEventType.CORNER
+                    || event.type() == V24MatchEventType.FOUL
+                    || event.type() == V24MatchEventType.MISS),
+            "visible live snapshots must filter noisy event types");
     }
 
     @Test

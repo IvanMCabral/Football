@@ -1,15 +1,13 @@
 package com.footballmanager.application.service.simulation.v24;
 
 import com.footballmanager.application.service.domain.TeamStyle;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -150,15 +148,11 @@ class V24DetailedMatchEngineFormationTest {
 
     @Test
     void defenderRosterChanceVolumeMultiplierRewardsAndPunishesDefensiveQuality() throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-            "defenderRosterChanceVolumeMultiplier",
-            double.class);
-        method.setAccessible(true);
+        V24DefenseChannelService defenseChannelService = defenseChannelService();
 
-        double weakDefense = (double) method.invoke(engine, 45.0);
-        double neutralDefense = (double) method.invoke(engine, 70.0);
-        double eliteDefense = (double) method.invoke(engine, 95.0);
+        double weakDefense = defenseChannelService.defenderRosterChanceVolumeMultiplier(45.0);
+        double neutralDefense = defenseChannelService.defenderRosterChanceVolumeMultiplier(70.0);
+        double eliteDefense = defenseChannelService.defenderRosterChanceVolumeMultiplier(95.0);
 
         assertTrue(weakDefense > neutralDefense,
             "Weak defensive roster should increase opponent chance volume.");
@@ -179,14 +173,7 @@ class V24DetailedMatchEngineFormationTest {
 
     @Test
     void channelSensitiveDefenderStatMakesWeakWideDefenderHurtWideShotsMore() throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-            "aggregateDefenderStatForLocation",
-            List.class,
-            Map.class,
-            V24ShotLocation.class,
-            double.class);
-        method.setAccessible(true);
+        V24DefenseChannelService defenseChannelService = defenseChannelService();
 
         V24PlayerMatchState gk = V24PlayerMatchState.fromSessionPlayer(
             makePlayer("chan_gk", "GK", 30, 82, 50), "teamC");
@@ -196,15 +183,15 @@ class V24DetailedMatchEngineFormationTest {
             makePlayer("chan_cb", "DEF", 40, 95, 55), "teamC");
         List<V24PlayerMatchState> defenders = List.of(gk, weakLeftBack, strongCenterBack);
 
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
-        slots.put(gk.sessionPlayerId(), new LineupSlotDTO(gk.sessionPlayerId(), "GK-1", 50.0, 93.0));
-        slots.put(weakLeftBack.sessionPlayerId(), new LineupSlotDTO(weakLeftBack.sessionPlayerId(), "S22-1", 18.0, 78.0));
-        slots.put(strongCenterBack.sessionPlayerId(), new LineupSlotDTO(strongCenterBack.sessionPlayerId(), "S23-2", 50.0, 80.0));
+        Map<String, LineupSlot> slots = new HashMap<>();
+        slots.put(gk.sessionPlayerId(), new LineupSlot(gk.sessionPlayerId(), "GK-1", 50.0, 93.0));
+        slots.put(weakLeftBack.sessionPlayerId(), new LineupSlot(weakLeftBack.sessionPlayerId(), "S22-1", 18.0, 78.0));
+        slots.put(strongCenterBack.sessionPlayerId(), new LineupSlot(strongCenterBack.sessionPlayerId(), "S23-2", 50.0, 80.0));
 
-        double wideDefense = (double) method.invoke(
-            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, 70.0);
-        double centralDefense = (double) method.invoke(
-            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_CENTER, 70.0);
+        double wideDefense = defenseChannelService.aggregateDefenderStatForLocation(
+            defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, null, 70.0);
+        double centralDefense = defenseChannelService.aggregateDefenderStatForLocation(
+            defenders, slots, V24ShotLocation.PENALTY_AREA_CENTER, null, 70.0);
 
         assertTrue(wideDefense < centralDefense,
             "A weak wide defender should reduce channel defensive quality more for wide shots "
@@ -213,15 +200,7 @@ class V24DetailedMatchEngineFormationTest {
 
     @Test
     void channelSensitiveDefenderStatDistinguishesLeftAndRightWideShots() throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-            "aggregateDefenderStatForLocation",
-            List.class,
-            Map.class,
-            V24ShotLocation.class,
-            V24ShotCoordinate.class,
-            double.class);
-        method.setAccessible(true);
+        V24DefenseChannelService defenseChannelService = defenseChannelService();
 
         V24PlayerMatchState gk = V24PlayerMatchState.fromSessionPlayer(
             makePlayer("lr_gk", "GK", 30, 82, 50), "teamLR");
@@ -233,19 +212,19 @@ class V24DetailedMatchEngineFormationTest {
             makePlayer("lr_cb", "DEF", 40, 70, 55), "teamLR");
         List<V24PlayerMatchState> defenders = List.of(gk, weakLeftBack, strongRightBack, neutralCenterBack);
 
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
-        slots.put(gk.sessionPlayerId(), new LineupSlotDTO(gk.sessionPlayerId(), "GK-1", 50.0, 94.0));
-        slots.put(weakLeftBack.sessionPlayerId(), new LineupSlotDTO(weakLeftBack.sessionPlayerId(), "S22-1", 18.0, 78.0));
-        slots.put(strongRightBack.sessionPlayerId(), new LineupSlotDTO(strongRightBack.sessionPlayerId(), "S24-1", 82.0, 78.0));
-        slots.put(neutralCenterBack.sessionPlayerId(), new LineupSlotDTO(neutralCenterBack.sessionPlayerId(), "S23-2", 50.0, 80.0));
+        Map<String, LineupSlot> slots = new HashMap<>();
+        slots.put(gk.sessionPlayerId(), new LineupSlot(gk.sessionPlayerId(), "GK-1", 50.0, 94.0));
+        slots.put(weakLeftBack.sessionPlayerId(), new LineupSlot(weakLeftBack.sessionPlayerId(), "S22-1", 18.0, 78.0));
+        slots.put(strongRightBack.sessionPlayerId(), new LineupSlot(strongRightBack.sessionPlayerId(), "S24-1", 82.0, 78.0));
+        slots.put(neutralCenterBack.sessionPlayerId(), new LineupSlot(neutralCenterBack.sessionPlayerId(), "S23-2", 50.0, 80.0));
 
         V24ShotCoordinate leftWideShot = new V24ShotCoordinate(88.0, 28.0, V24ShotLocation.PENALTY_AREA_WIDE);
         V24ShotCoordinate rightWideShot = new V24ShotCoordinate(88.0, 72.0, V24ShotLocation.PENALTY_AREA_WIDE);
 
-        double leftChannelDefense = (double) method.invoke(
-            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, leftWideShot, 70.0);
-        double rightChannelDefense = (double) method.invoke(
-            engine, defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, rightWideShot, 70.0);
+        double leftChannelDefense = defenseChannelService.aggregateDefenderStatForLocation(
+            defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, leftWideShot, 70.0);
+        double rightChannelDefense = defenseChannelService.aggregateDefenderStatForLocation(
+            defenders, slots, V24ShotLocation.PENALTY_AREA_WIDE, rightWideShot, 70.0);
 
         assertTrue(leftChannelDefense < rightChannelDefense - 8.0,
             "Left wide shots must feel the weak left defender more than the strong right defender. "
@@ -305,50 +284,32 @@ class V24DetailedMatchEngineFormationTest {
 
     @Test
     void balancedWideShotsBiasTowardOpponentWeakerDefensiveSide() throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Class<?> shapeClass = Class.forName(
-            "com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngine$V24TacticalShapeProfile");
-        Constructor<?> shapeCtor = shapeClass.getDeclaredConstructor(
-            double.class, double.class, double.class,
-            double.class, double.class, double.class,
-            double.class, double.class, double.class);
-        shapeCtor.setAccessible(true);
-        Object balancedAttack = shapeCtor.newInstance(
+        V24ShotLocationService shotLocationService = new V24ShotLocationService();
+        V24TacticalShapeProfile balancedAttack = new V24TacticalShapeProfile(
             1.0, 1.0, 1.0,
             0.72, 0.78, 0.72,
             0.90, 0.90, 0.90);
-        Object weakRightDefense = shapeCtor.newInstance(
+        V24TacticalShapeProfile weakRightDefense = new V24TacticalShapeProfile(
             1.0, 1.0, 1.0,
             0.72, 0.78, 0.72,
             0.88, 0.90, 0.58);
-        Object weakLeftDefense = shapeCtor.newInstance(
+        V24TacticalShapeProfile weakLeftDefense = new V24TacticalShapeProfile(
             1.0, 1.0, 1.0,
             0.72, 0.78, 0.72,
             0.58, 0.90, 0.88);
-
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-            "generateShotCoordinate",
-            V24ShotLocation.class,
-            TeamStyle.class,
-            shapeClass,
-            shapeClass,
-            Random.class);
-        method.setAccessible(true);
 
         int leftAttackWhenOpponentRightWeak = 0;
         int rightAttackWhenOpponentLeftWeak = 0;
         Random rightRandom = new Random(12345L);
         Random leftRandom = new Random(54321L);
         for (int i = 0; i < 200; i++) {
-            V24ShotCoordinate rightWeak = (V24ShotCoordinate) method.invoke(
-                engine,
+            V24ShotCoordinate rightWeak = shotLocationService.generateShotCoordinate(
                 V24ShotLocation.PENALTY_AREA_WIDE,
                 TeamStyle.BALANCED,
                 balancedAttack,
                 weakRightDefense,
                 rightRandom);
-            V24ShotCoordinate leftWeak = (V24ShotCoordinate) method.invoke(
-                engine,
+            V24ShotCoordinate leftWeak = shotLocationService.generateShotCoordinate(
                 V24ShotLocation.PENALTY_AREA_WIDE,
                 TeamStyle.BALANCED,
                 balancedAttack,
@@ -368,22 +329,16 @@ class V24DetailedMatchEngineFormationTest {
 
     @Test
     void defenderChannelWeightChangesSmoothlyAroundLaneBoundaries() throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-            "defenderChannelWeight",
-            V24ShotLocation.class,
-            double.class,
-            V24ShotCoordinate.class);
-        method.setAccessible(true);
+        V24DefenseChannelService defenseChannelService = defenseChannelService();
 
         V24ShotCoordinate leftWideShot = new V24ShotCoordinate(88.0, 28.0, V24ShotLocation.PENALTY_AREA_WIDE);
 
-        double x34 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 34.0, leftWideShot);
-        double x35 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 35.0, leftWideShot);
-        double x36 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 36.0, leftWideShot);
-        double x64 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 64.0, leftWideShot);
-        double x65 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 65.0, leftWideShot);
-        double x66 = (double) method.invoke(engine, V24ShotLocation.PENALTY_AREA_WIDE, 66.0, leftWideShot);
+        double x34 = defenseChannelService.defenderChannelWeight(V24ShotLocation.PENALTY_AREA_WIDE, 34.0, leftWideShot);
+        double x35 = defenseChannelService.defenderChannelWeight(V24ShotLocation.PENALTY_AREA_WIDE, 35.0, leftWideShot);
+        double x36 = defenseChannelService.defenderChannelWeight(V24ShotLocation.PENALTY_AREA_WIDE, 36.0, leftWideShot);
+        double x64 = defenseChannelService.defenderChannelWeight(V24ShotLocation.PENALTY_AREA_WIDE, 64.0, leftWideShot);
+        double x65 = defenseChannelService.defenderChannelWeight(V24ShotLocation.PENALTY_AREA_WIDE, 65.0, leftWideShot);
+        double x66 = defenseChannelService.defenderChannelWeight(V24ShotLocation.PENALTY_AREA_WIDE, 66.0, leftWideShot);
 
         assertTrue(Math.abs(x34 - x35) < 0.08 && Math.abs(x35 - x36) < 0.08,
             "Wide defensive weight must not jump around the left/center lane boundary. "
@@ -548,20 +503,12 @@ class V24DetailedMatchEngineFormationTest {
         for (V24ShotLocation loc : V24ShotLocation.values()) {
             counts.put(loc, 0);
         }
-        try {
-            V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-            Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "selectShotLocation", TeamStyle.class, String.class, Random.class);
-            method.setAccessible(true);
-            for (int i = 0; i < samples; i++) {
-                // Fresh Random per call — independent weighted draws.
-                Random r = new Random(i * 31L + 17L);
-                V24ShotLocation loc = (V24ShotLocation) method.invoke(
-                    engine, style, formation, r);
-                counts.merge(loc, 1, Integer::sum);
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to invoke selectShotLocation via reflection", e);
+        V24ShotLocationService shotLocationService = new V24ShotLocationService();
+        V24TacticalShapeProfile neutral = tacticalShapeService().neutralShapeProfile();
+        for (int i = 0; i < samples; i++) {
+            Random r = new Random(i * 31L + 17L);
+            V24ShotLocation loc = shotLocationService.selectShotLocation(style, formation, neutral, neutral, r);
+            counts.merge(loc, 1, Integer::sum);
         }
         return counts;
     }
@@ -676,8 +623,8 @@ class V24DetailedMatchEngineFormationTest {
         return list;
     }
 
-    private Map<String, LineupSlotDTO> fiveThreeTwoSlots(List<SessionPlayer> players) {
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
+    private Map<String, LineupSlot> fiveThreeTwoSlots(List<SessionPlayer> players) {
+        Map<String, LineupSlot> slots = new HashMap<>();
         putSlot(slots, players.get(0), "GK-1", 50.0, 98.0);
         putSlot(slots, players.get(1), "S22-1", 5.5, 76.0);
         putSlot(slots, players.get(2), "S22-2", 27.7, 78.0);
@@ -692,8 +639,8 @@ class V24DetailedMatchEngineFormationTest {
         return slots;
     }
 
-    private Map<String, LineupSlotDTO> fourFourTwoSlots(List<SessionPlayer> players) {
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
+    private Map<String, LineupSlot> fourFourTwoSlots(List<SessionPlayer> players) {
+        Map<String, LineupSlot> slots = new HashMap<>();
         putSlot(slots, players.get(0), "GK-1", 50.0, 98.0);
         putSlot(slots, players.get(1), "S22-2", 18.0, 83.0);
         putSlot(slots, players.get(2), "S23-1", 38.5, 83.0);
@@ -708,8 +655,8 @@ class V24DetailedMatchEngineFormationTest {
         return slots;
     }
 
-    private void putSlot(Map<String, LineupSlotDTO> slots, SessionPlayer player, String slotId, double x, double y) {
-        slots.put(player.getSessionPlayerId(), new LineupSlotDTO(player.getSessionPlayerId(), slotId, x, y));
+    private void putSlot(Map<String, LineupSlot> slots, SessionPlayer player, String slotId, double x, double y) {
+        slots.put(player.getSessionPlayerId(), new LineupSlot(player.getSessionPlayerId(), slotId, x, y));
     }
 
     private SessionPlayer makePlayer(String id, String position, int attack, int defense, int technique) {
@@ -1138,11 +1085,11 @@ class V24DetailedMatchEngineFormationTest {
                 .orElseThrow()
                 .sessionPlayerId();
 
-        Map<String, LineupSlotDTO> baselineSlots = new HashMap<>();
-        baselineSlots.put(movedMidfielderId, new LineupSlotDTO(movedMidfielderId, "S5-2", 50.0, 60.0));
+        Map<String, LineupSlot> baselineSlots = new HashMap<>();
+        baselineSlots.put(movedMidfielderId, new LineupSlot(movedMidfielderId, "S5-2", 50.0, 60.0));
 
-        Map<String, LineupSlotDTO> advancedSlots = new HashMap<>();
-        advancedSlots.put(movedMidfielderId, new LineupSlotDTO(movedMidfielderId, "S5-2", 50.0, 40.0));
+        Map<String, LineupSlot> advancedSlots = new HashMap<>();
+        advancedSlots.put(movedMidfielderId, new LineupSlot(movedMidfielderId, "S5-2", 50.0, 40.0));
 
         double baselineAttack = invokeAggregateAttackerStat(states, "4-4-2", baselineSlots);
         double advancedAttack = invokeAggregateAttackerStat(states, "4-4-2", advancedSlots);
@@ -1173,11 +1120,11 @@ class V24DetailedMatchEngineFormationTest {
                 .orElseThrow()
                 .sessionPlayerId();
 
-        Map<String, LineupSlotDTO> baselineSlots = new HashMap<>();
-        baselineSlots.put(movedAttackerId, new LineupSlotDTO(movedAttackerId, "A0", 40.0, 22.0));
+        Map<String, LineupSlot> baselineSlots = new HashMap<>();
+        baselineSlots.put(movedAttackerId, new LineupSlot(movedAttackerId, "A0", 40.0, 22.0));
 
-        Map<String, LineupSlotDTO> advancedSlots = new HashMap<>();
-        advancedSlots.put(movedAttackerId, new LineupSlotDTO(movedAttackerId, "A0", 40.0, 12.0));
+        Map<String, LineupSlot> advancedSlots = new HashMap<>();
+        advancedSlots.put(movedAttackerId, new LineupSlot(movedAttackerId, "A0", 40.0, 12.0));
 
         double baselineAttack = invokeAggregateAttackerStat(states, "4-4-2", baselineSlots);
         double advancedAttack = invokeAggregateAttackerStat(states, "4-4-2", advancedSlots);
@@ -1247,11 +1194,11 @@ class V24DetailedMatchEngineFormationTest {
                 .orElseThrow()
                 .getSessionPlayerId();
 
-        Map<String, LineupSlotDTO> wideLeft = explicitWideShapeSlots(starting);
-        wideLeft.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 18.0, 18.0));
+        Map<String, LineupSlot> wideLeft = explicitWideShapeSlots(starting);
+        wideLeft.put(leftAttackerId, new LineupSlot(leftAttackerId, "S04-1", 18.0, 18.0));
 
-        Map<String, LineupSlotDTO> movedCentral = explicitWideShapeSlots(starting);
-        movedCentral.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 54.0, 18.0));
+        Map<String, LineupSlot> movedCentral = explicitWideShapeSlots(starting);
+        movedCentral.put(leftAttackerId, new LineupSlot(leftAttackerId, "S04-1", 54.0, 18.0));
 
         double wideAttackLeft = invokeShapeMetric(starting, wideLeft, "attackLeft");
         double wideAttackCenter = invokeShapeMetric(starting, wideLeft, "attackCenter");
@@ -1290,11 +1237,11 @@ class V24DetailedMatchEngineFormationTest {
                 .orElseThrow()
                 .getSessionPlayerId();
 
-        Map<String, LineupSlotDTO> x30Slots = explicitWideShapeSlots(starting);
-        x30Slots.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 30.0, 18.0));
+        Map<String, LineupSlot> x30Slots = explicitWideShapeSlots(starting);
+        x30Slots.put(leftAttackerId, new LineupSlot(leftAttackerId, "S04-1", 30.0, 18.0));
 
-        Map<String, LineupSlotDTO> x31Slots = explicitWideShapeSlots(starting);
-        x31Slots.put(leftAttackerId, new LineupSlotDTO(leftAttackerId, "S04-1", 31.0, 18.0));
+        Map<String, LineupSlot> x31Slots = explicitWideShapeSlots(starting);
+        x31Slots.put(leftAttackerId, new LineupSlot(leftAttackerId, "S04-1", 31.0, 18.0));
 
         double attackLeft30 = invokeShapeMetric(starting, x30Slots, "attackLeft");
         double attackLeft31 = invokeShapeMetric(starting, x31Slots, "attackLeft");
@@ -1342,8 +1289,8 @@ class V24DetailedMatchEngineFormationTest {
         defenderInAttackingSlot.setPosition("ATT");
         forcedDefenderStates.set(9, defenderInAttackingSlot);
 
-        Map<String, LineupSlotDTO> sameVisualAttackingSlot = Map.of(
-                "att0", new LineupSlotDTO("att0", "A0", 40.0, 18.0));
+        Map<String, LineupSlot> sameVisualAttackingSlot = Map.of(
+                "att0", new LineupSlot("att0", "A0", 40.0, 18.0));
 
         double strongNaturalAttack = invokeAggregateAttackerStat(
                 toMatchStates(strongNaturalLineup), "4-4-2", sameVisualAttackingSlot);
@@ -1490,8 +1437,8 @@ class V24DetailedMatchEngineFormationTest {
         forcedAttackerInMidfield.set(5, makePlayer("mid0", "ATT", 76, 60, 82));
 
         String movedPlayerId = "mid0";
-        Map<String, LineupSlotDTO> sameVisualMidSlot = Map.of(
-                movedPlayerId, new LineupSlotDTO(movedPlayerId, "S5-2", 50.0, 52.0));
+        Map<String, LineupSlot> sameVisualMidSlot = Map.of(
+                movedPlayerId, new LineupSlot(movedPlayerId, "S5-2", 50.0, 52.0));
 
         double naturalPossession = invokeShapeMetric(naturalMidfield, sameVisualMidSlot, "possessionMultiplier");
         double outOfRolePossession = invokeShapeMetric(
@@ -1539,8 +1486,8 @@ class V24DetailedMatchEngineFormationTest {
                                 PlayerSkill.SHOOTER, 82,
                                 PlayerSkill.PASSER, 58)));
 
-        Map<String, LineupSlotDTO> sameCentralSlot = Map.of(
-                "pivot0", new LineupSlotDTO("pivot0", "S14-2", 50.0, 52.0));
+        Map<String, LineupSlot> sameCentralSlot = Map.of(
+                "pivot0", new LineupSlot("pivot0", "S14-2", 50.0, 52.0));
 
         double pivotPossession = invokeShapeMetric(pivotLineup, sameCentralSlot, "possessionMultiplier");
         double attackerPossession = invokeShapeMetric(attackerLineup, sameCentralSlot, "possessionMultiplier");
@@ -1567,8 +1514,8 @@ class V24DetailedMatchEngineFormationTest {
         List<SessionPlayer> fourFourTwo = makeLineup("442", 4, 4, 2);
         List<SessionPlayer> fiveFourOne = makeLineup("541", 5, 4, 1);
 
-        Map<String, LineupSlotDTO> fourFourTwoSlots = slots442(fourFourTwo);
-        Map<String, LineupSlotDTO> fiveFourOneSlots = slots541(fiveFourOne);
+        Map<String, LineupSlot> fourFourTwoSlots = slots442(fourFourTwo);
+        Map<String, LineupSlot> fiveFourOneSlots = slots541(fiveFourOne);
 
         double baselinePossession = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "possessionMultiplier");
         double lowBlockPossession = invokeShapeMetric(fiveFourOne, fiveFourOneSlots, "5-4-1", "possessionMultiplier");
@@ -1612,9 +1559,9 @@ class V24DetailedMatchEngineFormationTest {
     void fiveFourOneMidfieldPixelsTradeOutletForLowBlockCover() throws Exception {
         List<SessionPlayer> starting = makeLineup("541-pixels", 5, 4, 1);
 
-        Map<String, LineupSlotDTO> baseSlots = slots541(starting);
-        Map<String, LineupSlotDTO> highSecondLine = moveMidfieldSlotsY(baseSlots, 50.0);
-        Map<String, LineupSlotDTO> lowSecondLine = moveMidfieldSlotsY(baseSlots, 82.0);
+        Map<String, LineupSlot> baseSlots = slots541(starting);
+        Map<String, LineupSlot> highSecondLine = moveMidfieldSlotsY(baseSlots, 50.0);
+        Map<String, LineupSlot> lowSecondLine = moveMidfieldSlotsY(baseSlots, 82.0);
 
         double highAttack = invokeShapeMetric(starting, highSecondLine, "5-4-1", "attackVolumeMultiplier");
         double baseAttack = invokeShapeMetric(starting, baseSlots, "5-4-1", "attackVolumeMultiplier");
@@ -1661,9 +1608,9 @@ class V24DetailedMatchEngineFormationTest {
         List<SessionPlayer> threeFiveTwo = makeLineup("352", 3, 5, 2);
         List<SessionPlayer> threeFiveTwoCdm = makeLineup("352cdm", 3, 5, 2);
 
-        Map<String, LineupSlotDTO> fourFourTwoSlots = slots442(fourFourTwo);
-        Map<String, LineupSlotDTO> threeFiveTwoSlots = slots352(threeFiveTwo);
-        Map<String, LineupSlotDTO> threeFiveTwoCdmSlots = slots352Cdm(threeFiveTwoCdm);
+        Map<String, LineupSlot> fourFourTwoSlots = slots442(fourFourTwo);
+        Map<String, LineupSlot> threeFiveTwoSlots = slots352(threeFiveTwo);
+        Map<String, LineupSlot> threeFiveTwoCdmSlots = slots352Cdm(threeFiveTwoCdm);
 
         double baselineWideDefense = (
                 invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "defenseLeft")
@@ -1700,9 +1647,9 @@ class V24DetailedMatchEngineFormationTest {
     void threeFiveTwoCdmWingbackPixelsTradeAttackForCover() throws Exception {
         List<SessionPlayer> starting = makeLineup("352cdm-pixels", 3, 5, 2);
 
-        Map<String, LineupSlotDTO> middleWingbacks = slots352Cdm(starting);
-        Map<String, LineupSlotDTO> highWingbacks = moveWideMidfieldSlotsY(middleWingbacks, 42.0);
-        Map<String, LineupSlotDTO> lowWingbacks = moveWideMidfieldSlotsY(middleWingbacks, 76.0);
+        Map<String, LineupSlot> middleWingbacks = slots352Cdm(starting);
+        Map<String, LineupSlot> highWingbacks = moveWideMidfieldSlotsY(middleWingbacks, 42.0);
+        Map<String, LineupSlot> lowWingbacks = moveWideMidfieldSlotsY(middleWingbacks, 76.0);
 
         double middleAttack = averageWideAttack(starting, middleWingbacks, "3-5-2-CDM");
         double highAttack = averageWideAttack(starting, highWingbacks, "3-5-2-CDM");
@@ -1735,8 +1682,8 @@ class V24DetailedMatchEngineFormationTest {
         List<SessionPlayer> fourFourTwo = makeLineup("442", 4, 4, 2);
         List<SessionPlayer> fourTwoTwoTwo = makeLineup("4222", 4, 4, 2);
 
-        Map<String, LineupSlotDTO> fourFourTwoSlots = slots442(fourFourTwo);
-        Map<String, LineupSlotDTO> fourTwoTwoTwoSlots = slots4222(fourTwoTwoTwo);
+        Map<String, LineupSlot> fourFourTwoSlots = slots442(fourFourTwo);
+        Map<String, LineupSlot> fourTwoTwoTwoSlots = slots4222(fourTwoTwoTwo);
 
         double baselineAttack = invokeShapeMetric(fourFourTwo, fourFourTwoSlots, "4-4-2", "attackVolumeMultiplier");
         double boxAttack = invokeShapeMetric(fourTwoTwoTwo, fourTwoTwoTwoSlots, "4-2-2-2", "attackVolumeMultiplier");
@@ -1780,13 +1727,9 @@ class V24DetailedMatchEngineFormationTest {
     private double invokeAggregateAttackerStat(
             List<V24PlayerMatchState> players,
             String formation,
-            Map<String, LineupSlotDTO> slotsByPlayerId)
+            Map<String, LineupSlot> slotsByPlayerId)
             throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "aggregateAttackerStat", List.class, String.class, Map.class);
-        method.setAccessible(true);
-        return (double) method.invoke(engine, players, formation, slotsByPlayerId);
+        return attackContributionService().aggregateAttackerStat(players, slotsByPlayerId);
     }
 
     private double invokeScheduledSubAttackVolumeMultiplier(
@@ -1795,15 +1738,8 @@ class V24DetailedMatchEngineFormationTest {
             String teamId,
             int minute)
             throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "scheduledSubAttackVolumeMultiplier",
-                V24TeamMatchState.class,
-                List.class,
-                String.class,
-                int.class);
-        method.setAccessible(true);
-        return (double) method.invoke(engine, team, substitutions, teamId, minute);
+        return attackContributionService()
+                .scheduledSubAttackVolumeMultiplier(team, substitutions, teamId, minute);
     }
 
     /**
@@ -1813,11 +1749,7 @@ class V24DetailedMatchEngineFormationTest {
      */
     private double invokeAggregateDefenderStat(List<V24PlayerMatchState> players)
             throws Exception {
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "aggregateDefenderStat", List.class, Map.class);
-        method.setAccessible(true);
-        return (double) method.invoke(engine, players, Map.of());
+        return defenseChannelService().aggregateDefenderStat(players, Map.of());
     }
 
     private double invokeAttackVolumeForMovedMidfielder(
@@ -1826,23 +1758,16 @@ class V24DetailedMatchEngineFormationTest {
             double yPercent)
             throws Exception {
         SessionTeam team = makeTeam(HOME_UUID, "Home FC", "4-4-2");
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
-        slots.put(movedPlayerId, new LineupSlotDTO(movedPlayerId, "S5-2", 50.0, yPercent));
+        Map<String, LineupSlot> slots = new HashMap<>();
+        slots.put(movedPlayerId, new LineupSlot(movedPlayerId, "S5-2", 50.0, yPercent));
         V24TeamMatchState state = V24TeamMatchState.create(team, starting, List.of(), TeamStyle.BALANCED, slots);
 
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "tacticalShapeProfile", V24TeamMatchState.class, Map.class);
-        method.setAccessible(true);
-        Object profile = method.invoke(engine, state, slots);
-        Method accessor = profile.getClass().getDeclaredMethod("attackVolumeMultiplier");
-        accessor.setAccessible(true);
-        return (double) accessor.invoke(profile);
+        return tacticalShapeService().tacticalShapeProfile(state, slots).attackVolumeMultiplier();
     }
 
     private double invokeShapeMetric(
             List<SessionPlayer> starting,
-            Map<String, LineupSlotDTO> slots,
+            Map<String, LineupSlot> slots,
             String accessorName)
             throws Exception {
         return invokeShapeMetric(starting, slots, null, accessorName);
@@ -1850,31 +1775,53 @@ class V24DetailedMatchEngineFormationTest {
 
     private double invokeShapeMetric(
             List<SessionPlayer> starting,
-            Map<String, LineupSlotDTO> slots,
+            Map<String, LineupSlot> slots,
             String formation,
             String accessorName)
             throws Exception {
         SessionTeam team = makeTeam(HOME_UUID, "Home FC", "4-4-2");
         V24TeamMatchState state = V24TeamMatchState.create(team, starting, List.of(), TeamStyle.BALANCED, slots);
 
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        Method method = formation == null
-                ? V24DetailedMatchEngine.class.getDeclaredMethod(
-                        "tacticalShapeProfile", V24TeamMatchState.class, Map.class)
-                : V24DetailedMatchEngine.class.getDeclaredMethod(
-                        "tacticalShapeProfile", V24TeamMatchState.class, String.class, Map.class);
-        method.setAccessible(true);
-        Object profile = formation == null
-                ? method.invoke(engine, state, slots)
-                : method.invoke(engine, state, formation, slots);
-        Method accessor = profile.getClass().getDeclaredMethod(accessorName);
-        accessor.setAccessible(true);
-        return (double) accessor.invoke(profile);
+        V24TacticalShapeProfile profile = formation == null
+                ? tacticalShapeService().tacticalShapeProfile(state, slots)
+                : tacticalShapeService().tacticalShapeProfile(state, formation, slots);
+        return switch (accessorName) {
+            case "attackLeft" -> profile.attackLeft();
+            case "attackCenter" -> profile.attackCenter();
+            case "attackRight" -> profile.attackRight();
+            case "defenseLeft" -> profile.defenseLeft();
+            case "defenseCenter" -> profile.defenseCenter();
+            case "defenseRight" -> profile.defenseRight();
+            case "attackVolumeMultiplier" -> profile.attackVolumeMultiplier();
+            case "defensiveResistanceMultiplier" -> profile.defensiveResistanceMultiplier();
+            case "possessionMultiplier" -> profile.possessionMultiplier();
+            default -> throw new IllegalArgumentException("Unknown tactical shape metric: " + accessorName);
+        };
+    }
+
+    private V24TacticalPositionService tacticalPositionService() {
+        return new V24TacticalPositionService();
+    }
+
+    private V24TacticalEffectivenessService tacticalEffectivenessService() {
+        return new V24TacticalEffectivenessService(tacticalPositionService());
+    }
+
+    private V24AttackContributionService attackContributionService() {
+        return new V24AttackContributionService(tacticalEffectivenessService());
+    }
+
+    private V24DefenseChannelService defenseChannelService() {
+        return new V24DefenseChannelService(tacticalPositionService(), tacticalEffectivenessService());
+    }
+
+    private V24TacticalShapeService tacticalShapeService() {
+        return new V24TacticalShapeService(tacticalPositionService(), tacticalEffectivenessService());
     }
 
     private double averageWideAttack(
             List<SessionPlayer> starting,
-            Map<String, LineupSlotDTO> slots,
+            Map<String, LineupSlot> slots,
             String formation)
             throws Exception {
         return (
@@ -1884,7 +1831,7 @@ class V24DetailedMatchEngineFormationTest {
 
     private double averageWideDefense(
             List<SessionPlayer> starting,
-            Map<String, LineupSlotDTO> slots,
+            Map<String, LineupSlot> slots,
             String formation)
             throws Exception {
         return (
@@ -1907,29 +1854,29 @@ class V24DetailedMatchEngineFormationTest {
         return starting;
     }
 
-    private Map<String, LineupSlotDTO> slots442(List<SessionPlayer> starting) {
+    private Map<String, LineupSlot> slots442(List<SessionPlayer> starting) {
         return slotsByLines(starting,
                 new double[] {18.0, 40.0, 60.0, 82.0}, 83.0,
                 new double[] {18.0, 40.0, 60.0, 82.0}, 55.0,
                 new double[] {42.0, 58.0}, 18.0);
     }
 
-    private Map<String, LineupSlotDTO> slots541(List<SessionPlayer> starting) {
+    private Map<String, LineupSlot> slots541(List<SessionPlayer> starting) {
         return slotsByLines(starting,
                 new double[] {14.0, 32.0, 50.0, 68.0, 86.0}, 88.0,
                 new double[] {18.0, 40.0, 60.0, 82.0}, 68.0,
                 new double[] {50.0}, 30.0);
     }
 
-    private Map<String, LineupSlotDTO> slots352(List<SessionPlayer> starting) {
+    private Map<String, LineupSlot> slots352(List<SessionPlayer> starting) {
         return slotsByLines(starting,
                 new double[] {32.0, 50.0, 68.0}, 82.0,
                 new double[] {14.0, 36.0, 50.0, 64.0, 86.0}, 56.0,
                 new double[] {42.0, 58.0}, 18.0);
     }
 
-    private Map<String, LineupSlotDTO> slots352Cdm(List<SessionPlayer> starting) {
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
+    private Map<String, LineupSlot> slots352Cdm(List<SessionPlayer> starting) {
+        Map<String, LineupSlot> slots = new HashMap<>();
         int def = 0;
         int mid = 0;
         int att = 0;
@@ -1940,18 +1887,18 @@ class V24DetailedMatchEngineFormationTest {
         for (SessionPlayer player : starting) {
             String id = player.getSessionPlayerId();
             switch (player.getPosition()) {
-                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "GK" -> slots.put(id, new LineupSlot(id, "GK-1", 50.0, 98.0));
                 case "DEF" -> {
-                    slots.put(id, new LineupSlotDTO(id, "D" + def, defX[Math.min(def, defX.length - 1)], 82.0));
+                    slots.put(id, new LineupSlot(id, "D" + def, defX[Math.min(def, defX.length - 1)], 82.0));
                     def++;
                 }
                 case "MID" -> {
                     int idx = Math.min(mid, midX.length - 1);
-                    slots.put(id, new LineupSlotDTO(id, "M" + mid, midX[idx], midY[idx]));
+                    slots.put(id, new LineupSlot(id, "M" + mid, midX[idx], midY[idx]));
                     mid++;
                 }
                 default -> {
-                    slots.put(id, new LineupSlotDTO(id, "A" + att, attX[Math.min(att, attX.length - 1)], 18.0));
+                    slots.put(id, new LineupSlot(id, "A" + att, attX[Math.min(att, attX.length - 1)], 18.0));
                     att++;
                 }
             }
@@ -1959,16 +1906,16 @@ class V24DetailedMatchEngineFormationTest {
         return slots;
     }
 
-    private Map<String, LineupSlotDTO> moveWideMidfieldSlotsY(
-            Map<String, LineupSlotDTO> baseSlots,
+    private Map<String, LineupSlot> moveWideMidfieldSlotsY(
+            Map<String, LineupSlot> baseSlots,
             double yPercent) {
-        Map<String, LineupSlotDTO> moved = new HashMap<>(baseSlots);
-        for (Map.Entry<String, LineupSlotDTO> entry : baseSlots.entrySet()) {
-            LineupSlotDTO slot = entry.getValue();
+        Map<String, LineupSlot> moved = new HashMap<>(baseSlots);
+        for (Map.Entry<String, LineupSlot> entry : baseSlots.entrySet()) {
+            LineupSlot slot = entry.getValue();
             if (slot == null) continue;
             double x = slot.customXPercent();
             if (x <= 18.0 || x >= 82.0) {
-                moved.put(entry.getKey(), new LineupSlotDTO(
+                moved.put(entry.getKey(), new LineupSlot(
                         slot.playerId(),
                         slot.subdivisionId(),
                         slot.customXPercent(),
@@ -1978,16 +1925,16 @@ class V24DetailedMatchEngineFormationTest {
         return moved;
     }
 
-    private Map<String, LineupSlotDTO> moveMidfieldSlotsY(
-            Map<String, LineupSlotDTO> baseSlots,
+    private Map<String, LineupSlot> moveMidfieldSlotsY(
+            Map<String, LineupSlot> baseSlots,
             double yPercent) {
-        Map<String, LineupSlotDTO> moved = new HashMap<>(baseSlots);
-        for (Map.Entry<String, LineupSlotDTO> entry : baseSlots.entrySet()) {
-            LineupSlotDTO slot = entry.getValue();
+        Map<String, LineupSlot> moved = new HashMap<>(baseSlots);
+        for (Map.Entry<String, LineupSlot> entry : baseSlots.entrySet()) {
+            LineupSlot slot = entry.getValue();
             if (slot == null || slot.subdivisionId() == null || !slot.subdivisionId().startsWith("M")) {
                 continue;
             }
-            moved.put(entry.getKey(), new LineupSlotDTO(
+            moved.put(entry.getKey(), new LineupSlot(
                     slot.playerId(),
                     slot.subdivisionId(),
                     slot.customXPercent(),
@@ -1996,8 +1943,8 @@ class V24DetailedMatchEngineFormationTest {
         return moved;
     }
 
-    private Map<String, LineupSlotDTO> slots4222(List<SessionPlayer> starting) {
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
+    private Map<String, LineupSlot> slots4222(List<SessionPlayer> starting) {
+        Map<String, LineupSlot> slots = new HashMap<>();
         int def = 0;
         int mid = 0;
         int att = 0;
@@ -2008,9 +1955,9 @@ class V24DetailedMatchEngineFormationTest {
         for (SessionPlayer player : starting) {
             String id = player.getSessionPlayerId();
             switch (player.getPosition()) {
-                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "GK" -> slots.put(id, new LineupSlot(id, "GK-1", 50.0, 98.0));
                 case "DEF" -> {
-                    slots.put(id, new LineupSlotDTO(id, "D" + def, defX[Math.min(def, defX.length - 1)], 83.0));
+                    slots.put(id, new LineupSlot(id, "D" + def, defX[Math.min(def, defX.length - 1)], 83.0));
                     def++;
                 }
                 case "MID" -> {
@@ -2018,11 +1965,11 @@ class V24DetailedMatchEngineFormationTest {
                     double[] xs = pivot ? pivotX : amX;
                     double y = pivot ? 63.0 : 40.0;
                     int idx = pivot ? mid : mid - 2;
-                    slots.put(id, new LineupSlotDTO(id, "M" + mid, xs[Math.min(idx, xs.length - 1)], y));
+                    slots.put(id, new LineupSlot(id, "M" + mid, xs[Math.min(idx, xs.length - 1)], y));
                     mid++;
                 }
                 default -> {
-                    slots.put(id, new LineupSlotDTO(id, "A" + att, attX[Math.min(att, attX.length - 1)], 18.0));
+                    slots.put(id, new LineupSlot(id, "A" + att, attX[Math.min(att, attX.length - 1)], 18.0));
                     att++;
                 }
             }
@@ -2030,7 +1977,7 @@ class V24DetailedMatchEngineFormationTest {
         return slots;
     }
 
-    private Map<String, LineupSlotDTO> slotsByLines(
+    private Map<String, LineupSlot> slotsByLines(
             List<SessionPlayer> starting,
             double[] defX,
             double defY,
@@ -2038,24 +1985,24 @@ class V24DetailedMatchEngineFormationTest {
             double midY,
             double[] attX,
             double attY) {
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
+        Map<String, LineupSlot> slots = new HashMap<>();
         int def = 0;
         int mid = 0;
         int att = 0;
         for (SessionPlayer player : starting) {
             String id = player.getSessionPlayerId();
             switch (player.getPosition()) {
-                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "GK" -> slots.put(id, new LineupSlot(id, "GK-1", 50.0, 98.0));
                 case "DEF" -> {
-                    slots.put(id, new LineupSlotDTO(id, "D" + def, defX[Math.min(def, defX.length - 1)], defY));
+                    slots.put(id, new LineupSlot(id, "D" + def, defX[Math.min(def, defX.length - 1)], defY));
                     def++;
                 }
                 case "MID" -> {
-                    slots.put(id, new LineupSlotDTO(id, "M" + mid, midX[Math.min(mid, midX.length - 1)], midY));
+                    slots.put(id, new LineupSlot(id, "M" + mid, midX[Math.min(mid, midX.length - 1)], midY));
                     mid++;
                 }
                 default -> {
-                    slots.put(id, new LineupSlotDTO(id, "A" + att, attX[Math.min(att, attX.length - 1)], attY));
+                    slots.put(id, new LineupSlot(id, "A" + att, attX[Math.min(att, attX.length - 1)], attY));
                     att++;
                 }
             }
@@ -2063,28 +2010,28 @@ class V24DetailedMatchEngineFormationTest {
         return slots;
     }
 
-    private Map<String, LineupSlotDTO> explicitWideShapeSlots(List<SessionPlayer> starting) {
-        Map<String, LineupSlotDTO> slots = new HashMap<>();
+    private Map<String, LineupSlot> explicitWideShapeSlots(List<SessionPlayer> starting) {
+        Map<String, LineupSlot> slots = new HashMap<>();
         int def = 0;
         int mid = 0;
         int att = 0;
         for (SessionPlayer player : starting) {
             String id = player.getSessionPlayerId();
             switch (player.getPosition()) {
-                case "GK" -> slots.put(id, new LineupSlotDTO(id, "GK-1", 50.0, 98.0));
+                case "GK" -> slots.put(id, new LineupSlot(id, "GK-1", 50.0, 98.0));
                 case "DEF" -> {
                     double[] xs = {18.0, 40.0, 60.0, 82.0};
-                    slots.put(id, new LineupSlotDTO(id, "D" + def, xs[Math.min(def, xs.length - 1)], 83.0));
+                    slots.put(id, new LineupSlot(id, "D" + def, xs[Math.min(def, xs.length - 1)], 83.0));
                     def++;
                 }
                 case "MID" -> {
                     double[] xs = {18.0, 50.0, 82.0};
-                    slots.put(id, new LineupSlotDTO(id, "M" + mid, xs[Math.min(mid, xs.length - 1)], 55.0));
+                    slots.put(id, new LineupSlot(id, "M" + mid, xs[Math.min(mid, xs.length - 1)], 55.0));
                     mid++;
                 }
                 default -> {
                     double[] xs = {18.0, 50.0, 82.0};
-                    slots.put(id, new LineupSlotDTO(id, "A" + att, xs[Math.min(att, xs.length - 1)], 18.0));
+                    slots.put(id, new LineupSlot(id, "A" + att, xs[Math.min(att, xs.length - 1)], 18.0));
                     att++;
                 }
             }

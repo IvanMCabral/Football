@@ -1,10 +1,10 @@
 package com.footballmanager.application.service.world;
 
-import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
-import com.footballmanager.infrastructure.persistence.redis.LeagueTeamRedisRepository;
+import com.footballmanager.domain.ports.out.league.LeagueTeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RealLeagueIdUpdater {
 
-    private final RedisWorldRepository redisWorldRepository;
-    private final LeagueTeamRedisRepository leagueTeamRedisRepository;
+    private final WorldSnapshotRepository WorldSnapshotRepository;
+    private final LeagueTeamRepository leagueTeamRepository;
 
     /**
      * Resultado de actualizar realLeagueIds.
@@ -41,7 +41,7 @@ public class RealLeagueIdUpdater {
                 .flatMap(updatedTeams -> {
                     WorldSnapshot updated = buildUpdatedSnapshot(snapshot, updatedTeams);
                     int count = countUpdates(teams, updatedTeams);
-                    return redisWorldRepository.save(updated)
+                    return WorldSnapshotRepository.save(updated)
                             .map(saved -> new UpdateResult(saved, count));
                 });
     }
@@ -52,7 +52,8 @@ public class RealLeagueIdUpdater {
         try {
             UUID realTeamId = UUID.fromString(worldTeamId);
 
-            return leagueTeamRedisRepository.findLeagueIdsByTeamId(userId, realTeamId)
+            return leagueTeamRepository.findByTeamId(userId, realTeamId)
+                    .map(link -> link.leagueId())
                     .collectList()
                     .map(leagueIds -> {
                         UUID newLeagueId = leagueIds.isEmpty() ? null : leagueIds.get(0);
@@ -101,3 +102,4 @@ public class RealLeagueIdUpdater {
         return count;
     }
 }
+

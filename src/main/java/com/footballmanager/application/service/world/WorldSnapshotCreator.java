@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.world;
 
-import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class WorldSnapshotCreator {
 
     private final LoadBaseDataService loadBaseDataService;
-    private final RedisWorldRepository redisWorldRepository;
+    private final WorldSnapshotRepository WorldSnapshotRepository;
 
     /**
      * Crea el WorldSnapshot desde cero.
@@ -50,6 +50,7 @@ public class WorldSnapshotCreator {
         }
         snapshot.setWorldPlayers(playersMap);
 
-        return redisWorldRepository.save(snapshot);
+        return WorldSnapshotRepository.save(snapshot);
     }
 }
+

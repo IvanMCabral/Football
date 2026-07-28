@@ -4,6 +4,9 @@ import com.footballmanager.adapters.in.web.game.dto.*;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.domain.GameService;
 import com.footballmanager.domain.port.in.game.TournamentQueryUseCase;
+import com.footballmanager.domain.port.in.game.TournamentChampion;
+import com.footballmanager.domain.port.in.game.TournamentStanding;
+import com.footballmanager.domain.port.in.game.TournamentStatus;
 import com.footballmanager.domain.port.in.match.*;
 import com.footballmanager.domain.model.aggregate.Game;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
@@ -150,6 +153,7 @@ public class GameController {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
         return tournamentQueryUseCase.getTournamentStatus(userId)
+            .map(GameController::toTournamentStatusDto)
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.notFound().build());
     }
@@ -163,6 +167,7 @@ public class GameController {
         // check. Returns 404 with empty body (the explicit notFound().build())
         // both when the tournament doesn't exist and when it exists but has
         return tournamentQueryUseCase.getStandings(userId)
+            .map(GameController::toStandingDto)
             .collectList()
             .map(list -> list.isEmpty()
                 ? ResponseEntity.notFound().<List<StandingDTO>>build()
@@ -176,6 +181,7 @@ public class GameController {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
         return tournamentQueryUseCase.getChampion(userId)
+            .map(GameController::toChampionDto)
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.notFound().build());
     }
@@ -277,5 +283,37 @@ public class GameController {
                 .onErrorResume(e -> {
                     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
                 });
+    }
+
+    private static TournamentStatusDTO toTournamentStatusDto(TournamentStatus status) {
+        return new TournamentStatusDTO(
+                status.currentRound(),
+                status.totalRounds(),
+                status.hasNextRound(),
+                status.isFinished(),
+                status.champion() != null ? toChampionDto(status.champion()) : null);
+    }
+
+    private static StandingDTO toStandingDto(TournamentStanding standing) {
+        return new StandingDTO(
+                standing.teamId(),
+                standing.teamName(),
+                standing.played(),
+                standing.wins(),
+                standing.draws(),
+                standing.losses(),
+                standing.goalsFor(),
+                standing.goalsAgainst(),
+                standing.goalDifference(),
+                standing.points());
+    }
+
+    private static ChampionDTO toChampionDto(TournamentChampion champion) {
+        return new ChampionDTO(
+                champion.teamId(),
+                champion.teamName(),
+                champion.points(),
+                champion.wins(),
+                champion.goalDifference());
     }
 }

@@ -1,6 +1,9 @@
 package com.footballmanager.adapters.in.web.career.lineup.editor;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.FormationDTO;
+import com.footballmanager.adapters.in.web.career.lineup.dto.FormationPositionDTO;
+import com.footballmanager.application.service.editor.FormationDefinition;
+import com.footballmanager.application.service.editor.FormationPosition;
 import com.footballmanager.application.service.editor.FormationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -38,7 +41,9 @@ public class FormationController {
      */
     @GetMapping
     public Mono<List<FormationDTO>> getAllFormations() {
-        return Mono.just(formationService.getAllFormations());
+        return Mono.just(formationService.getAllFormations().stream()
+            .map(FormationController::toDto)
+            .toList());
     }
 
     /**
@@ -49,10 +54,32 @@ public class FormationController {
      */
     @GetMapping("/{name}")
     public Mono<FormationDTO> getFormationByName(@PathVariable String name) {
-        FormationDTO formation = formationService.getFormationByName(name);
+        FormationDefinition formation = formationService.getFormationByName(name);
         if (formation == null) {
             return Mono.error(new IllegalArgumentException("Unknown formation: " + name));
         }
-        return Mono.just(formation);
+        return Mono.just(toDto(formation));
+    }
+
+    private static FormationDTO toDto(FormationDefinition formation) {
+        return new FormationDTO(
+            formation.name(),
+            formation.description(),
+            formation.defenders(),
+            formation.midfielders(),
+            formation.attackers(),
+            formation.outfieldPlayers(),
+            formation.positions().stream().map(FormationController::toDto).toList());
+    }
+
+    private static FormationPositionDTO toDto(FormationPosition position) {
+        return new FormationPositionDTO(
+            position.index(),
+            position.role(),
+            position.xPercent(),
+            position.yPercent(),
+            position.actionRangePercent(),
+            position.subdivisionId());
     }
 }
+

@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.simulation.v24;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
@@ -97,14 +97,14 @@ class V24MatchContextFactoryTest {
         SessionTeam awayTeam = makeTeam("away-t2", "Away FC", "4-4-2");
 
         String movedPlayerId = career.getTeamStarting11().get("home-t1").get(6);
-        Map<String, LineupSlotDTO> homeSlots = new HashMap<>();
-        homeSlots.put("GK-1", new LineupSlotDTO(career.getTeamStarting11().get("home-t1").get(0), "GK-1"));
-        homeSlots.put("S16-2", new LineupSlotDTO(movedPlayerId, "S16-2", 44.25, 37.75));
+        Map<String, LineupSlot> homeSlots = new HashMap<>();
+        homeSlots.put("GK-1", new LineupSlot(career.getTeamStarting11().get("home-t1").get(0), "GK-1"));
+        homeSlots.put("S16-2", new LineupSlot(movedPlayerId, "S16-2", 44.25, 37.75));
         career.setTeamStarting11SubdivisionSlots(Map.of("home-t1", homeSlots));
 
         V24MatchContext ctx = factory.build(career, fixture, homeTeam, awayTeam, 99L);
 
-        LineupSlotDTO movedSlot = ctx.homeSlotsByPlayerId().get(movedPlayerId);
+        LineupSlot movedSlot = ctx.homeSlotsByPlayerId().get(movedPlayerId);
         assertNotNull(movedSlot,
                 "The V24 context must expose persisted modal slots keyed by playerId, "
                         + "otherwise the match engine cannot consume custom pixel moves.");

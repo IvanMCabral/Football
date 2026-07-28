@@ -106,17 +106,13 @@ public class MatchComparisonService {
             return Mono.error(new IllegalArgumentException("matchId must not be blank"));
         }
 
-        // thread, then chain baseline (now Mono). This order matches the
-        // test semantics (detail empty -> live error, baseline empty ->
-        // baseline error) and avoids the Mono.zip race where the error
-        // from one side cancels the other's worker before its mock is
-        // actually invoked.
+        // Chain detail first, then baseline. This order matches the test
+        // semantics (detail empty -> live error, baseline empty -> baseline
+        // error) without racing two storage reads.
         final String fCareerId = careerId;
         final String fMatchId = matchId;
-        Mono<V24DetailedMatchData> liveMono = Mono.fromCallable(() ->
-                        detailStoragePort.findByMatchId(fCareerId, fMatchId)
-                                .orElseThrow(() -> new LiveDetailNotFoundException(fCareerId, fMatchId)))
-                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic());
+        Mono<V24DetailedMatchData> liveMono = detailStoragePort.findByMatchId(fCareerId, fMatchId)
+                .map(opt -> opt.orElseThrow(() -> new LiveDetailNotFoundException(fCareerId, fMatchId)));
 
         Mono<BaselineState> baselineMono = baselineStoragePort.findByMatchId(fCareerId, fMatchId)
                 .switchIfEmpty(Mono.error(new BaselineNotFoundException(fCareerId, fMatchId)))

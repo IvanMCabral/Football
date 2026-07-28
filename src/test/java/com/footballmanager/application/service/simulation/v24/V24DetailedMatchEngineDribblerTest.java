@@ -6,7 +6,6 @@ import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -158,21 +157,10 @@ class V24DetailedMatchEngineDribblerTest {
                 "xG debe ser no-negativo");
     }
 
-    // ========== Reflection helper (chanceProbability es private) ==========
-
-    /**
-     * Reflection para invocar el overload 5-args de chanceProbability. El metodo
-     * es privado y NO se cambia a package-private para evitar exponer la API
-     * interna del engine. Tests acceden via reflection y testean la formula
-     * matematica exacta.
-     */
     private double invokeChanceProb(TeamStyle style, int minute, int attack,
                                     int speed, int dribbler) throws Exception {
-        Method m = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "chanceProbability", TeamStyle.class, int.class, int.class, int.class, int.class);
-        m.setAccessible(true);
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        return (double) m.invoke(engine, style, minute, attack, speed, dribbler);
+        return new V24MatchProbabilityService()
+                .chanceProbability(style, minute, attack, speed, dribbler, 0);
     }
 
     // ========== Fixture builders ==========

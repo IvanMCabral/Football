@@ -18,6 +18,7 @@ import java.util.UUID;
 @Primary
 @RequiredArgsConstructor
 public class LeagueRepositoryAdapter implements LeagueRepository {
+
     private final LeagueRedisRepository redisRepository;
     private final LeagueR2dbcRepository leagueR2dbcRepository;
 
@@ -42,7 +43,6 @@ public class LeagueRepositoryAdapter implements LeagueRepository {
 
     @Override
     public Flux<League> findAll(UUID userId) {
-        // Primero buscar en Redis
         return redisRepository.findAllByUserId(userId)
             .map(LeagueEntity::toDomain)
             .collectList()
@@ -51,14 +51,10 @@ public class LeagueRepositoryAdapter implements LeagueRepository {
                     return Flux.fromIterable(redisLeagues);
                 }
 
-                // Fallback: buscar en PostgreSQL y cachear en Redis
                 return leagueR2dbcRepository.findAll()
                     .map(LeagueEntity::toDomain)
-                    .doOnNext(league -> {
-                        // Guardar en Redis después de cargar
-                        redisRepository.save(userId, LeagueEntity.fromDomain(league))
-                            .subscribe();
-                    });
+                    .flatMap(league -> redisRepository.save(userId, LeagueEntity.fromDomain(league))
+                        .thenReturn(league));
             });
     }
 

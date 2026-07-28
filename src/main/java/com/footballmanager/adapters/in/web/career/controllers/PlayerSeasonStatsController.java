@@ -100,33 +100,12 @@ public class PlayerSeasonStatsController {
                     "limit"));
         }
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(
-                careerId, season, null, null, effectiveLimit, effectiveOffset, sortBy, order);
-
-        // Add any clamped warnings from controller
-        if (!warnings.isEmpty()) {
-            List<PlayerSeasonStatsWarning> allWarnings = new ArrayList<>(warnings);
-            if (response.warnings() != null) {
-                allWarnings.addAll(response.warnings());
-            }
-            response = PlayerSeasonStatsResponse.builder()
-                    .careerId(response.careerId())
-                    .season(response.season())
-                    .playerStats(response.playerStats())
-                    .totalGoals(response.totalGoals())
-                    .totalAssists(response.totalAssists())
-                    .totalAppearances(response.totalAppearances())
-                    .averageRating(response.averageRating())
-                    .incomplete(response.incomplete())
-                    .message(response.message())
-                    .metadata(response.metadata())
-                    .warnings(allWarnings)
-                    .build();
-        }
-
-        return Mono.just(ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response));
+        return queryService.getPlayerSeasonStats(
+                        careerId, season, null, null, effectiveLimit, effectiveOffset, sortBy, order)
+                .map(response -> withWarnings(response, warnings))
+                .map(response -> ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body((Object) response));
     }
 
     @GetMapping("/{careerId}/seasons/{season}/teams/{teamId}/player-stats")
@@ -190,32 +169,12 @@ public class PlayerSeasonStatsController {
                     "limit"));
         }
 
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(
-                careerId, season, teamId, null, effectiveLimit, effectiveOffset, sortBy, order);
-
-        if (!warnings.isEmpty()) {
-            List<PlayerSeasonStatsWarning> allWarnings = new ArrayList<>(warnings);
-            if (response.warnings() != null) {
-                allWarnings.addAll(response.warnings());
-            }
-            response = PlayerSeasonStatsResponse.builder()
-                    .careerId(response.careerId())
-                    .season(response.season())
-                    .playerStats(response.playerStats())
-                    .totalGoals(response.totalGoals())
-                    .totalAssists(response.totalAssists())
-                    .totalAppearances(response.totalAppearances())
-                    .averageRating(response.averageRating())
-                    .incomplete(response.incomplete())
-                    .message(response.message())
-                    .metadata(response.metadata())
-                    .warnings(allWarnings)
-                    .build();
-        }
-
-        return Mono.just(ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response));
+        return queryService.getPlayerSeasonStats(
+                        careerId, season, teamId, null, effectiveLimit, effectiveOffset, sortBy, order)
+                .map(response -> withWarnings(response, warnings))
+                .map(response -> ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body((Object) response));
     }
 
     @GetMapping("/{careerId}/seasons/{season}/players/{playerId}/stats")
@@ -243,13 +202,36 @@ public class PlayerSeasonStatsController {
             return Mono.just(ResponseEntity.notFound().build());
         }
 
-        // Single-player endpoint: no pagination needed, use defaults
-        PlayerSeasonStatsResponse response = queryService.getPlayerSeasonStats(careerId, season, null, playerId);
-        if (response.playerStats().isEmpty()) {
-            return Mono.just(ResponseEntity.notFound().build());
+        return queryService.getPlayerSeasonStats(careerId, season, null, playerId)
+                .map(response -> response.playerStats().isEmpty()
+                        ? ResponseEntity.notFound().build()
+                        : ResponseEntity.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .body((Object) response));
+    }
+
+    private PlayerSeasonStatsResponse withWarnings(
+            PlayerSeasonStatsResponse response,
+            List<PlayerSeasonStatsWarning> warnings) {
+        if (warnings == null || warnings.isEmpty()) {
+            return response;
         }
-        return Mono.just(ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response));
+        List<PlayerSeasonStatsWarning> allWarnings = new ArrayList<>(warnings);
+        if (response.warnings() != null) {
+            allWarnings.addAll(response.warnings());
+        }
+        return PlayerSeasonStatsResponse.builder()
+                .careerId(response.careerId())
+                .season(response.season())
+                .playerStats(response.playerStats())
+                .totalGoals(response.totalGoals())
+                .totalAssists(response.totalAssists())
+                .totalAppearances(response.totalAppearances())
+                .averageRating(response.averageRating())
+                .incomplete(response.incomplete())
+                .message(response.message())
+                .metadata(response.metadata())
+                .warnings(allWarnings)
+                .build();
     }
 }

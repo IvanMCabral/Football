@@ -6,7 +6,6 @@ import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -156,20 +155,8 @@ class V24DetailedMatchEnginePlaymakerTest {
                 "xG debe ser no-negativo");
     }
 
-    // ========== Reflection helper (playmakerAdjustedAssistQuality es private) ==========
-
-    /**
-     * Reflection para invocar {@code playmakerAdjustedAssistQuality(base, skill)}.
-     * El metodo es privado y NO se cambia a package-private para evitar exponer
-     * la API interna del engine. Tests acceden via reflection y testean la
-     * formula matematica exacta.
-     */
     private double invokePlaymakerAdj(double base, int playmakerSkill) throws Exception {
-        Method m = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "playmakerAdjustedAssistQuality", double.class, int.class);
-        m.setAccessible(true);
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        return (double) m.invoke(engine, base, playmakerSkill);
+        return V24ShotAttemptService.playmakerAdjustedAssistQuality(base, playmakerSkill);
     }
 
     // ========== Fixture builders ==========

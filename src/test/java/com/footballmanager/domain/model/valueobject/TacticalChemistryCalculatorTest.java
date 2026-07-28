@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -56,9 +56,9 @@ class TacticalChemistryCalculatorTest {
     @DisplayName("Custom pixel move changes tactical chemistry")
     void customMoveChangesTacticalChemistry() {
         TacticalChemistry base = TacticalChemistryCalculator.calculate(canonical442(), NATURAL, COORDS);
-        List<LineupSlotDTO> moved = canonical442().stream()
+        List<LineupSlot> moved = canonical442().stream()
                 .map(s -> "cm2".equals(s.playerId())
-                        ? new LineupSlotDTO(s.playerId(), s.subdivisionId(), 5.0, 18.0)
+                        ? new LineupSlot(s.playerId(), s.subdivisionId(), 5.0, 18.0)
                         : s)
                 .toList();
 
@@ -72,9 +72,9 @@ class TacticalChemistryCalculatorTest {
     @DisplayName("Wide midfielder projection changes the matching channel")
     void wideMidfielderProjectionChangesMatchingChannel() {
         TacticalChemistry base = TacticalChemistryCalculator.calculate(canonical442(), NATURAL, COORDS);
-        List<LineupSlotDTO> moved = canonical442().stream()
+        List<LineupSlot> moved = canonical442().stream()
                 .map(s -> "lm".equals(s.playerId())
-                        ? new LineupSlotDTO(s.playerId(), s.subdivisionId(), 10.0, 50.0)
+                        ? new LineupSlot(s.playerId(), s.subdivisionId(), 10.0, 50.0)
                         : s)
                 .toList();
 
@@ -91,9 +91,9 @@ class TacticalChemistryCalculatorTest {
     @DisplayName("Central midfielder moving wide shifts channel balance")
     void centralMidfielderWideMoveShiftsChannelBalance() {
         TacticalChemistry base = TacticalChemistryCalculator.calculate(canonical442(), NATURAL, COORDS);
-        List<LineupSlotDTO> moved = canonical442().stream()
+        List<LineupSlot> moved = canonical442().stream()
                 .map(s -> "cm1".equals(s.playerId())
-                        ? new LineupSlotDTO(s.playerId(), s.subdivisionId(), 18.0, 61.0)
+                        ? new LineupSlot(s.playerId(), s.subdivisionId(), 18.0, 61.0)
                         : s)
                 .toList();
 
@@ -107,19 +107,19 @@ class TacticalChemistryCalculatorTest {
                         + base.channelScores() + " changed=" + changed.channelScores());
     }
 
-    private static List<LineupSlotDTO> canonical442() {
+    private static List<LineupSlot> canonical442() {
         return List.of(
-                new LineupSlotDTO("gk", "GK-1"),
-                new LineupSlotDTO("lb", "S22-2"),
-                new LineupSlotDTO("cb1", "S23-1"),
-                new LineupSlotDTO("cb2", "S23-3"),
-                new LineupSlotDTO("rb", "S24-2"),
-                new LineupSlotDTO("lm", "S16-2"),
-                new LineupSlotDTO("cm1", "S17-1"),
-                new LineupSlotDTO("cm2", "S17-3"),
-                new LineupSlotDTO("rm", "S18-2"),
-                new LineupSlotDTO("st1", "S05-1"),
-                new LineupSlotDTO("st2", "S05-3")
+                new LineupSlot("gk", "GK-1"),
+                new LineupSlot("lb", "S22-2"),
+                new LineupSlot("cb1", "S23-1"),
+                new LineupSlot("cb2", "S23-3"),
+                new LineupSlot("rb", "S24-2"),
+                new LineupSlot("lm", "S16-2"),
+                new LineupSlot("cm1", "S17-1"),
+                new LineupSlot("cm2", "S17-3"),
+                new LineupSlot("rm", "S18-2"),
+                new LineupSlot("st1", "S05-1"),
+                new LineupSlot("st2", "S05-3")
         );
     }
 }

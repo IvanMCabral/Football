@@ -1,8 +1,8 @@
 package com.footballmanager.application.service.world.load;
 
 import com.footballmanager.domain.ports.out.league.LeagueRepository;
-import com.footballmanager.infrastructure.persistence.redis.LeagueTeamRedisRepository;
-import com.footballmanager.infrastructure.persistence.repository.LeagueTeamR2dbcRepository;
+import com.footballmanager.domain.ports.out.league.LeagueTeamRepository;
+import com.footballmanager.domain.ports.out.league.LeagueTeamSourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 public class LeagueTeamSyncService {
 
     private final LeagueRepository leagueRepository;
-    private final LeagueTeamRedisRepository leagueTeamRedisRepository;
-    private final LeagueTeamR2dbcRepository leagueTeamR2dbcRepository;
+    private final LeagueTeamRepository leagueTeamRepository;
+    private final LeagueTeamSourceRepository leagueTeamSourceRepository;
 
     /**
      * Carga el map de league-team, sincronizando desde SQL si es necesario.
@@ -42,8 +42,8 @@ public class LeagueTeamSyncService {
      */
     private Mono<Map<UUID, UUID>> loadFromRedis(UUID userId) {
         return leagueRepository.findAll(userId)
-                .flatMap(league -> leagueTeamRedisRepository.findByLeagueId(userId, league.getId().getValue())
-                        .map(entity -> Map.entry(entity.getTeamId(), league.getId().getValue())))
+                .flatMap(league -> leagueTeamRepository.findByLeagueId(userId, league.getId().getValue())
+                        .map(link -> Map.entry(link.teamId(), league.getId().getValue())))
                 .collectList()
                 .map(entries -> entries.stream()
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
@@ -54,8 +54,8 @@ public class LeagueTeamSyncService {
      */
     private Mono<Map<UUID, UUID>> syncFromSql(UUID userId) {
         return leagueRepository.findAll(userId)
-                .flatMap(league -> leagueTeamR2dbcRepository.findByLeagueId(league.getId().getValue())
-                        .map(entity -> Map.entry(entity.getTeamId(), league.getId().getValue())))
+                .flatMap(league -> leagueTeamSourceRepository.findByLeagueId(league.getId().getValue())
+                        .map(link -> Map.entry(link.teamId(), league.getId().getValue())))
                 .collectList()
                 .flatMap(entries -> {
                     Map<UUID, UUID> map = entries.stream()
@@ -71,7 +71,7 @@ public class LeagueTeamSyncService {
      */
     private Mono<Void> syncToRedis(UUID userId, Map<UUID, UUID> leagueTeamsMap) {
         List<Mono<Void>> operations = leagueTeamsMap.entrySet().stream()
-                .map(entry -> leagueTeamRedisRepository.addTeamToLeague(userId, entry.getValue(), entry.getKey()))
+                .map(entry -> leagueTeamRepository.addTeamToLeague(userId, entry.getValue(), entry.getKey()))
                 .toList();
 
         return Flux.concat(operations).then();

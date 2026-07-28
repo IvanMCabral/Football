@@ -44,7 +44,7 @@ public class LeagueManagementService implements LeagueManagementUseCase {
 
     private Mono<League> enrichLeagueWithTeamIds(UUID userId, League league) {
         return leagueTeamRepository.findByLeagueId(userId, league.getId().getValue())
-                .map(entity -> TeamId.of(entity.getTeamId()))
+                .map(link -> TeamId.of(link.teamId()))
                 .collectList()
                 .map(teamIds -> {
                     return League.reconstruct(
@@ -95,7 +95,7 @@ public class LeagueManagementService implements LeagueManagementUseCase {
     @Override
     public Flux<Team> getTeamsInLeague(UUID userId, UUID leagueId) {
         return leagueTeamRepository.findByLeagueId(userId, leagueId)
-                .map(entity -> entity.getTeamId())
+                .map(link -> link.teamId())
                 .collectList()
                 .flatMapMany(teamIds -> {
                     if (teamIds.isEmpty()) {

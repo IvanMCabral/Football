@@ -3,7 +3,6 @@ package com.footballmanager.domain.service;
 import com.footballmanager.domain.model.entity.MatchEvent;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
-import org.springframework.stereotype.Component;
 
 import java.util.Random;
 
@@ -14,7 +13,6 @@ import java.util.Random;
  * - simulateReal: Simulación detallada con eventos por minuto
  * - simulateQuick: Simulación rápida basada en OVR de equipos
  */
-@Component
 public class DefaultMatchSimulator implements MatchSimulator {
 
     private static final double GOAL_PROBABILITY_PER_MINUTE = 0.05;

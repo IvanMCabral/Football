@@ -1,7 +1,6 @@
 package com.footballmanager.domain.service;
 
 import com.footballmanager.domain.model.valueobject.TeamId;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -9,7 +8,6 @@ import java.util.*;
  * Validador de fixtures de tournament.
  * Verifica que un fixture generado cumpla con todas las reglas del torneo.
  */
-@Component
 public class FixtureValidator {
 
     public void validate(List<FixtureGenerator.FixtureRound> fixture, List<TeamId> teamIds,

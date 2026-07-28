@@ -1,12 +1,6 @@
 package com.footballmanager.application.service.lineup;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.ChemistryBreakdownDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.FormationEffectivenessDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupWarningDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.PlayerLineupDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.TacticalChemistryDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.domain.model.entity.CareerSave;
@@ -18,7 +12,10 @@ import com.footballmanager.domain.model.valueobject.FormationInferer;
 import com.footballmanager.domain.model.valueobject.TacticalChemistry;
 import com.footballmanager.domain.model.valueobject.TacticalChemistryCalculator;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
+import com.footballmanager.domain.port.in.lineup.LineupPlayerView;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
+import com.footballmanager.domain.port.in.lineup.LineupView;
+import com.footballmanager.domain.port.in.lineup.LineupWarning;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +53,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
     private CareerSessionService careerSessionService;
 
     @Override
-    public Mono<LineupDTO> getCurrentLineup(UUID userId) {
+    public Mono<LineupView> getCurrentLineup(UUID userId) {
         Mono<CareerSave> careerMono;
         if (careerSessionService != null) {
             careerMono = careerSessionService.getCareerFromCache(userId);
@@ -70,19 +67,21 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         return careerMono.map(this::buildLineupDTO);
     }
 
-    private LineupDTO buildLineupDTO(CareerSave career) {
+    private LineupView buildLineupDTO(CareerSave career) {
         String userTeamId = career.getUserSessionTeamId();
         if (userTeamId == null || userTeamId.isBlank()) {
-            return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0,
-                    ChemistryBreakdownDTO.empty(),
-                    FormationEffectivenessDTO.empty());
+            return new LineupView(null, Collections.emptyList(), false, List.of(), List.of(), 0,
+                    TeamChemistryCalculator.calculate(List.of()),
+                    null,
+                    FormationEffectiveness.empty());
         }
         List<String> lineupIds = career.getTeamStarting11().get(userTeamId);
 
         if (lineupIds == null || lineupIds.isEmpty()) {
-            return new LineupDTO(null, Collections.emptyList(), false, List.of(), List.of(), 0,
-                    ChemistryBreakdownDTO.empty(),
-                    FormationEffectivenessDTO.empty());
+            return new LineupView(null, Collections.emptyList(), false, List.of(), List.of(), 0,
+                    TeamChemistryCalculator.calculate(List.of()),
+                    null,
+                    FormationEffectiveness.empty());
         }
 
         // evaluar short-handed / no-GK / off-position). Matchea el comportamiento
@@ -108,8 +107,8 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         Map<String, double[]> coordsBySubdivision =
                 formationService.getCoordsByFormation(formationCode);
 
-        List<PlayerLineupDTO> playerDTOs = lineup.stream()
-            .map(p -> new PlayerLineupDTO(
+        List<LineupPlayerView> playerDTOs = lineup.stream()
+            .map(p -> new LineupPlayerView(
                 p.getSessionPlayerId(),
                 p.getName(),
                 p.getPosition(),
@@ -124,7 +123,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             ))
             .toList();
 
-        List<LineupSlotDTO> slots = buildSlotsFromSubdivisionMap(career, userTeamId, lineup);
+        List<LineupSlot> slots = buildSlotsFromSubdivisionMap(career, userTeamId, lineup);
 
         // objects (we have the lineup List<SessionPlayer> here, not just the DTOs).
         ChemistryDetail chemistryDetail = TeamChemistryCalculator.calculate(lineup);
@@ -170,25 +169,14 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
                         coordsBySubdivision);
 
         // Recompute persisted lineup warnings on every read.
-        List<LineupWarningDTO> warnings = computePersistedWarnings(
+        List<LineupWarning> warnings = computePersistedWarnings(
                 lineup, slots, formationEffectiveness);
 
-        return new LineupDTO(formationCode, playerDTOs, true, warnings, slots,
+        return new LineupView(formationCode, playerDTOs, true, warnings, slots,
                 chemistryDetail.score(),
-                // the ChemistryBreakdownDTO can pad empty PositionGroups with
-                // slot-category fallback entries (e.g. lineup with legacy/zero
-                // skill data where the skill-weight grouping yields empty
-                // groups but the lineup has assigned slots). Pre-fix
-                // Ivan saw `positionGroups: { GK: [], DEF: [], MID: [], ATT: [] }`
-                // + coveragePercentage 0 rendered as the "0% coverage" UX
-                // gap. The single-arg `from(detail)` remains available for
-                // /preview-chemistry callers that have no slot context.
-                ChemistryBreakdownDTO.from(
-                        chemistryDetail,
-                        slots,
-                        naturalByPlayer,
-                        TacticalChemistryDTO.from(tacticalChemistry)),
-                FormationEffectivenessDTO.from(formationEffectiveness));
+                chemistryDetail,
+                tacticalChemistry,
+                formationEffectiveness);
     }
 
     /**
@@ -210,19 +198,19 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
      *       Emits one warning per non-zero category.</li>
      * </ul>
      */
-    private List<LineupWarningDTO> computePersistedWarnings(
+    private List<LineupWarning> computePersistedWarnings(
             List<SessionPlayer> lineup,
-            List<LineupSlotDTO> slots,
+            List<LineupSlot> slots,
             FormationEffectiveness formationEffectiveness) {
 
         // Start with the helper's no-GK detection (covers lineup-null edge case).
-        List<LineupWarningDTO> warnings = new ArrayList<>(
+        List<LineupWarning> warnings = new ArrayList<>(
                 lineupHelper.detectShortHandedWarnings(lineup));
 
         // Short-handed (manual-select mode allows 7-10 players).
         if (lineup.size() >= LineupRules.MIN_AVAILABLE_PLAYERS
                 && lineup.size() < LineupRules.TARGET_LINEUP_PLAYERS) {
-            warnings.add(LineupWarningDTO.shortHanded(lineup.size()));
+            warnings.add(LineupWarning.shortHanded(lineup.size()));
         }
 
         // Off-position fill (only if effectiveness data is available — empty
@@ -244,7 +232,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             Map<String, Double> perPlayer = formationEffectiveness.perPlayerEffectiveness();
             // category (GK/DEF/MID/ATT) → count of off-position slots in that row.
             Map<String, Integer> offPositionCountByGroup = new HashMap<>();
-            for (LineupSlotDTO slot : slots) {
+            for (LineupSlot slot : slots) {
                 if (slot == null || slot.subdivisionId() == null) continue;
                 Double eff = perPlayer.get(slot.subdivisionId());
                 if (eff != null && eff < 0.85) {
@@ -259,7 +247,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             for (String group : List.of("GK", "DEF", "MID", "ATT")) {
                 Integer count = offPositionCountByGroup.get(group);
                 if (count != null && count > 0) {
-                    warnings.add(LineupWarningDTO.offPositionFill(group, count));
+                    warnings.add(LineupWarning.offPositionFill(group, count));
                 }
             }
         }
@@ -267,7 +255,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         return warnings;
     }
 
-    private List<LineupSlotDTO> buildSlotsFromSubdivisionMap(
+    private List<LineupSlot> buildSlotsFromSubdivisionMap(
             CareerSave career,
             String userTeamId,
             List<SessionPlayer> currentLineup) {
@@ -276,11 +264,11 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
         // FormationEffectiveness calculator downstream would silently
         // fall back to canonical subdivision coords (no penalty for
         // free-positioned players).
-        Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
+        Map<String, Map<String, LineupSlot>> allSlots = career.getTeamStarting11SubdivisionSlots();
         if (allSlots == null) {
             return List.of();
         }
-        Map<String, LineupSlotDTO> teamSlots = allSlots.get(userTeamId);
+        Map<String, LineupSlot> teamSlots = allSlots.get(userTeamId);
         if (teamSlots == null || teamSlots.isEmpty()) {
             return List.of();
         }
@@ -295,10 +283,10 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             return List.of();
         }
 
-        List<LineupSlotDTO> result = new ArrayList<>(Math.min(teamSlots.size(), allowedPlayerIds.size()));
+        List<LineupSlot> result = new ArrayList<>(Math.min(teamSlots.size(), allowedPlayerIds.size()));
         java.util.Set<String> seenPlayerIds = new java.util.LinkedHashSet<>();
-        for (Map.Entry<String, LineupSlotDTO> entry : teamSlots.entrySet()) {
-            LineupSlotDTO inner = entry.getValue();
+        for (Map.Entry<String, LineupSlot> entry : teamSlots.entrySet()) {
+            LineupSlot inner = entry.getValue();
             if (inner == null || inner.playerId() == null || !allowedPlayerIds.contains(inner.playerId())) {
                 continue;
             }
@@ -314,7 +302,7 @@ public class LineupQueryUseCaseImpl implements LineupQueryUseCase {
             String subdivisionId = inner.subdivisionId() != null
                     ? inner.subdivisionId()
                     : entry.getKey();
-            result.add(new LineupSlotDTO(
+            result.add(new LineupSlot(
                     inner.playerId(),
                     subdivisionId,
                     inner.customXPercent(),

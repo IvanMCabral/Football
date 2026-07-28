@@ -2,6 +2,7 @@ package com.footballmanager.adapters.out.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -17,7 +18,7 @@ import java.util.UUID;
  * NO se borra automáticamente (no tiene TTL).
  */
 @Repository
-public class RedisWorldRepository {
+public class RedisWorldRepository implements WorldSnapshotRepository {
 
     private static final String KEY_PREFIX = "world:";
 

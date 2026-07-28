@@ -1,11 +1,9 @@
 package com.footballmanager.domain.service;
 
 import com.footballmanager.domain.model.valueobject.TeamId;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Component
 public class FixtureGenerator {
 
     private final FixtureValidator validator;

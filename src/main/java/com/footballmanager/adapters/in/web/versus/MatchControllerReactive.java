@@ -269,13 +269,11 @@ public class MatchControllerReactive {
                     if (careerId == null || careerId.isBlank()) {
                         return Mono.<ResponseEntity<List<MatchMinuteState>>>just(ResponseEntity.notFound().build());
                     }
-                    V24DetailedMatchData detail =
-                            v24DetailedMatchQueryService.findDetail(careerId, matchId).orElse(null);
-                    if (detail == null) {
-                        return Mono.<ResponseEntity<List<MatchMinuteState>>>just(ResponseEntity.notFound().build());
-                    }
-                    List<MatchMinuteState> states = buildMinuteByMinuteStates(detail);
-                    return Mono.just(ResponseEntity.ok(states));
+                    return v24DetailedMatchQueryService.findDetail(careerId, matchId)
+                            .map(optionalDetail -> optionalDetail
+                                    .<ResponseEntity<List<MatchMinuteState>>>map(detail ->
+                                            ResponseEntity.ok(buildMinuteByMinuteStates(detail)))
+                                    .orElseGet(() -> ResponseEntity.notFound().build()));
                 })
                 .switchIfEmpty(Mono.fromSupplier(() -> ResponseEntity.notFound().build()));
     }

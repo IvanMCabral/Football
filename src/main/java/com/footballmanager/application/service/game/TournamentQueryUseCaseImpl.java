@@ -1,14 +1,14 @@
 package com.footballmanager.application.service.game;
 
-import com.footballmanager.adapters.in.web.game.dto.ChampionDTO;
-import com.footballmanager.adapters.in.web.game.dto.StandingDTO;
-import com.footballmanager.adapters.in.web.game.dto.TournamentStatusDTO;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.TeamStandings;
 import com.footballmanager.domain.model.entity.TournamentResult;
 import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.domain.port.in.game.TournamentChampion;
 import com.footballmanager.domain.port.in.game.TournamentQueryUseCase;
+import com.footballmanager.domain.port.in.game.TournamentStanding;
+import com.footballmanager.domain.port.in.game.TournamentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -46,26 +46,26 @@ public class TournamentQueryUseCaseImpl implements TournamentQueryUseCase {
     }
 
     @Override
-    public Mono<TournamentStatusDTO> getTournamentStatus(String userId) {
+    public Mono<TournamentStatus> getTournamentStatus(String userId) {
         return careerRepository.findById(userId)
             .flatMap(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
-                    return Mono.just(new TournamentStatusDTO(0, 0, false, true, null));
+                    return Mono.just(new TournamentStatus(0, 0, false, true, null));
                 }
 
                 CareerSave career = optionalCareer.get();
                 TournamentState state = career.getTournamentState();
 
-                ChampionDTO champion = null;
+                TournamentChampion champion = null;
                 if (state.getChampionTeamId() != null) {
-                    champion = new ChampionDTO(
+                    champion = new TournamentChampion(
                         UUID.fromString(state.getChampionTeamId()),
                         getTeamName(state, state.getChampionTeamId()),
                         0, 0, 0
                     );
                 }
 
-                return Mono.just(new TournamentStatusDTO(
+                return Mono.just(new TournamentStatus(
                     state.getCurrentRound(),
                     state.getTotalRounds(),
                     state.canAdvanceToNextRound(),
@@ -73,11 +73,11 @@ public class TournamentQueryUseCaseImpl implements TournamentQueryUseCase {
                     champion
                 ));
             })
-            .switchIfEmpty(Mono.just(new TournamentStatusDTO(0, 0, false, true, null)));
+            .switchIfEmpty(Mono.just(new TournamentStatus(0, 0, false, true, null)));
     }
 
     @Override
-    public Flux<StandingDTO> getStandings(String userId) {
+    public Flux<TournamentStanding> getStandings(String userId) {
         return careerRepository.findById(userId)
             .flatMapMany(optionalCareer -> {
                 if (optionalCareer.isEmpty()) {
@@ -91,7 +91,7 @@ public class TournamentQueryUseCaseImpl implements TournamentQueryUseCase {
     }
 
     @Override
-    public Mono<ChampionDTO> getChampion(String userId) {
+    public Mono<TournamentChampion> getChampion(String userId) {
         return getStandings(userId)
             .collectList()
             .flatMap(standings -> {
@@ -107,8 +107,8 @@ public class TournamentQueryUseCaseImpl implements TournamentQueryUseCase {
                 if (standings.isEmpty()) {
                     return Mono.empty();
                 }
-                StandingDTO champion = standings.get(0);
-                return Mono.just(new ChampionDTO(
+                TournamentStanding champion = standings.get(0);
+                return Mono.just(new TournamentChampion(
                     champion.teamId(),
                     champion.teamName(),
                     champion.points(),
@@ -118,11 +118,11 @@ public class TournamentQueryUseCaseImpl implements TournamentQueryUseCase {
             });
     }
 
-    private Flux<StandingDTO> buildStandingsDTOs(CareerSave career) {
+    private Flux<TournamentStanding> buildStandingsDTOs(CareerSave career) {
         TournamentState state = career.getTournamentState();
 
         return Flux.fromIterable(state.getSortedStandings())
-            .map(standing -> new StandingDTO(
+            .map(standing -> new TournamentStanding(
                 UUID.fromString(standing.getTeamId()),
                 standing.getTeamName(),
                 standing.getPlayed(),

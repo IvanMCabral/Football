@@ -1,0 +1,34 @@
+package com.footballmanager.application.service.testharness;
+
+record TestHarnessSwapAverages(
+    double goalsFor,
+    double goalsAgainst,
+    double goalDiff,
+    double shotsFor,
+    double shotsAgainst,
+    double possessionFor,
+    double xgFor,
+    double xgAgainst,
+    double xgDiff,
+    double centralShotsFor,
+    double wideShotsFor,
+    double longShotsFor,
+    double centralShotsAgainst,
+    double wideShotsAgainst,
+    double longShotsAgainst,
+    double centralXgFor,
+    double wideXgFor,
+    double longXgFor,
+    double centralXgAgainst,
+    double wideXgAgainst,
+    double longXgAgainst,
+    double leftWideShotsFor,
+    double rightWideShotsFor,
+    double leftWideShotsAgainst,
+    double rightWideShotsAgainst,
+    double leftWideXgFor,
+    double rightWideXgFor,
+    double leftWideXgAgainst,
+    double rightWideXgAgainst
+) {
+}

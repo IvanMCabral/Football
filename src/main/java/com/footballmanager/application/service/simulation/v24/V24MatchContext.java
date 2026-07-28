@@ -2,7 +2,7 @@ package com.footballmanager.application.service.simulation.v24;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -42,8 +42,8 @@ public final class V24MatchContext {
     private final String awayFormation;
     private final TeamStyle homeStyle;
     private final TeamStyle awayStyle;
-    private final Map<String, LineupSlotDTO> homeSlotsByPlayerId;
-    private final Map<String, LineupSlotDTO> awaySlotsByPlayerId;
+    private final Map<String, LineupSlot> homeSlotsByPlayerId;
+    private final Map<String, LineupSlot> awaySlotsByPlayerId;
     private final List<ScheduledSub> manualSubstitutions;
 
     public V24MatchContext(
@@ -82,8 +82,8 @@ public final class V24MatchContext {
             TeamStyle homeStyle,
             TeamStyle awayStyle,
             List<ScheduledSub> manualSubstitutions,
-            Map<String, LineupSlotDTO> homeSlotsByPlayerId,
-            Map<String, LineupSlotDTO> awaySlotsByPlayerId) {
+            Map<String, LineupSlot> homeSlotsByPlayerId,
+            Map<String, LineupSlot> awaySlotsByPlayerId) {
         if (matchId == null || matchId.isBlank()) {
             throw new IllegalArgumentException("matchId must not be blank");
         }
@@ -147,10 +147,10 @@ public final class V24MatchContext {
         return Collections.unmodifiableList(new java.util.ArrayList<>(list));
     }
 
-    private static Map<String, LineupSlotDTO> defensiveCopyMap(Map<String, LineupSlotDTO> map) {
+    private static Map<String, LineupSlot> defensiveCopyMap(Map<String, LineupSlot> map) {
         if (map == null || map.isEmpty()) return Collections.emptyMap();
-        Map<String, LineupSlotDTO> copy = new LinkedHashMap<>();
-        for (Map.Entry<String, LineupSlotDTO> entry : map.entrySet()) {
+        Map<String, LineupSlot> copy = new LinkedHashMap<>();
+        for (Map.Entry<String, LineupSlot> entry : map.entrySet()) {
             if (entry == null || entry.getKey() == null || entry.getKey().isBlank() || entry.getValue() == null) {
                 continue;
             }
@@ -187,8 +187,8 @@ public final class V24MatchContext {
     @JsonProperty("awayFormation") public String awayFormation() { return awayFormation; }
     @JsonProperty("homeStyle") public TeamStyle homeStyle() { return homeStyle; }
     @JsonProperty("awayStyle") public TeamStyle awayStyle() { return awayStyle; }
-    @JsonProperty("homeSlotsByPlayerId") public Map<String, LineupSlotDTO> homeSlotsByPlayerId() { return homeSlotsByPlayerId; }
-    @JsonProperty("awaySlotsByPlayerId") public Map<String, LineupSlotDTO> awaySlotsByPlayerId() { return awaySlotsByPlayerId; }
+    @JsonProperty("homeSlotsByPlayerId") public Map<String, LineupSlot> homeSlotsByPlayerId() { return homeSlotsByPlayerId; }
+    @JsonProperty("awaySlotsByPlayerId") public Map<String, LineupSlot> awaySlotsByPlayerId() { return awaySlotsByPlayerId; }
 
     @JsonProperty("manualSubstitutions")
     public List<ScheduledSub> manualSubstitutions() {
@@ -263,11 +263,11 @@ public final class V24MatchContext {
                 + homeTeamId + "') or away ('" + awayTeamId + "')");
     }
 
-    public V24MatchContext withSlots(String teamId, Map<String, LineupSlotDTO> slotsByPlayerId) {
+    public V24MatchContext withSlots(String teamId, Map<String, LineupSlot> slotsByPlayerId) {
         if (teamId == null || teamId.isBlank()) {
             throw new IllegalArgumentException("teamId must not be blank");
         }
-        Map<String, LineupSlotDTO> safeSlots = slotsByPlayerId != null ? slotsByPlayerId : Map.of();
+        Map<String, LineupSlot> safeSlots = slotsByPlayerId != null ? slotsByPlayerId : Map.of();
         if (homeTeamId.equals(teamId)) {
             return new V24MatchContext(
                     matchId, homeTeamId, awayTeamId,

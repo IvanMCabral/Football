@@ -73,7 +73,7 @@ public class V24DetailedMatchController {
             return Mono.just(ResponseEntity.notFound().build());
         }
 
-        return Mono.just(queryService.findDetail(careerId, matchId))
+        return queryService.findDetail(careerId, matchId)
                 .flatMap(optionalDetail -> {
                     if (optionalDetail.isPresent()) {
                         return Mono.just(ResponseEntity.ok(optionalDetail.get()));
@@ -195,13 +195,10 @@ public class V24DetailedMatchController {
             return Mono.just(ResponseEntity.notFound().build());
         }
 
-        V24DetailedMatchData detail = queryService.findDetail(careerId, matchId)
-                .orElse(null);
-        if (detail == null) {
-            return Mono.just(ResponseEntity.notFound().build());
-        }
-
-        V24TimelineSnapshot snapshot = TimelineSnapshotBuilder.build(detail, minute);
-        return Mono.just(ResponseEntity.ok((Object) snapshot));
+        return queryService.findDetail(careerId, matchId)
+                .map(optionalDetail -> optionalDetail
+                        .<ResponseEntity<Object>>map(detail ->
+                                ResponseEntity.ok((Object) TimelineSnapshotBuilder.build(detail, minute)))
+                        .orElseGet(() -> ResponseEntity.notFound().build()));
     }
 }

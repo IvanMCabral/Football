@@ -16,7 +16,8 @@ import com.footballmanager.adapters.in.web.testharness.dto.SetStyleRequest;
 import com.footballmanager.adapters.in.web.testharness.dto.SubstitutionWhatIfRequest;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
-import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
+import com.footballmanager.domain.port.in.testharness.*;
+import com.footballmanager.domain.port.in.testharness.CustomFixture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -226,7 +227,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/preview-summary")
-    public Mono<ResponseEntity<TestHarnessUseCase.MatchPreviewSummary>> previewSummary(
+    public Mono<ResponseEntity<MatchPreviewSummary>> previewSummary(
             @PathVariable String matchId,
             @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
             Authentication authentication) {
@@ -246,7 +247,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/lineup-diagnostic")
-    public Mono<ResponseEntity<TestHarnessUseCase.LineupDiagnostic>> lineupDiagnostic(
+    public Mono<ResponseEntity<LineupDiagnostic>> lineupDiagnostic(
             @PathVariable String matchId,
             @RequestBody(required = false) ReplayMatchRequest request,
             Authentication authentication) {
@@ -259,7 +260,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/formation-matrix")
-    public Mono<ResponseEntity<List<TestHarnessUseCase.FormationMatrixRow>>> formationMatrix(
+    public Mono<ResponseEntity<List<FormationMatrixRow>>> formationMatrix(
             @PathVariable String matchId,
             @RequestBody(required = false) ReplayMatchRequest request,
             Authentication authentication) {
@@ -273,7 +274,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/formation-matrix/summary")
-    public Mono<ResponseEntity<List<TestHarnessUseCase.FormationMatrixSummaryRow>>> formationMatrixSummary(
+    public Mono<ResponseEntity<List<FormationMatrixSummaryRow>>> formationMatrixSummary(
             @PathVariable String matchId,
             @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
             Authentication authentication) {
@@ -288,7 +289,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/labs/side-mirror-synthetic")
-    public Mono<ResponseEntity<List<TestHarnessUseCase.SideMirrorSyntheticLabRow>>> sideMirrorSyntheticLab(
+    public Mono<ResponseEntity<List<SideMirrorSyntheticLabRow>>> sideMirrorSyntheticLab(
             @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
             Authentication authentication) {
 
@@ -301,7 +302,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/scenario-matrix")
-    public Mono<ResponseEntity<List<TestHarnessUseCase.ScenarioMatrixRow>>> scenarioMatrix(
+    public Mono<ResponseEntity<List<ScenarioMatrixRow>>> scenarioMatrix(
             @PathVariable String matchId,
             @RequestBody(required = false) ReplayMatchRequest request,
             Authentication authentication) {
@@ -314,7 +315,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/scenario-matrix/summary")
-    public Mono<ResponseEntity<List<TestHarnessUseCase.ScenarioMatrixSummaryRow>>> scenarioMatrixSummary(
+    public Mono<ResponseEntity<List<ScenarioMatrixSummaryRow>>> scenarioMatrixSummary(
             @PathVariable String matchId,
             @RequestBody(required = false) ScenarioMatrixSummaryRequest request,
             Authentication authentication) {
@@ -330,7 +331,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/player-swap-matrix/summary")
-    public Mono<ResponseEntity<TestHarnessUseCase.PlayerSwapMatrixSummaryRow>> playerSwapMatrixSummary(
+    public Mono<ResponseEntity<PlayerSwapMatrixSummaryRow>> playerSwapMatrixSummary(
             @PathVariable String matchId,
             @RequestBody PlayerSwapMatrixSummaryRequest request,
             Authentication authentication) {
@@ -352,7 +353,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/substitution-what-if/summary")
-    public Mono<ResponseEntity<TestHarnessUseCase.SubstitutionWhatIfSummaryRow>> substitutionWhatIfSummary(
+    public Mono<ResponseEntity<SubstitutionWhatIfSummaryRow>> substitutionWhatIfSummary(
             @PathVariable String matchId,
             @RequestBody SubstitutionWhatIfRequest request,
             Authentication authentication) {
@@ -374,7 +375,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/position-pixel-matrix/summary")
-    public Mono<ResponseEntity<TestHarnessUseCase.PositionPixelMatrixSummaryRow>> positionPixelMatrixSummary(
+    public Mono<ResponseEntity<PositionPixelMatrixSummaryRow>> positionPixelMatrixSummary(
             @PathVariable String matchId,
             @RequestBody PositionPixelMatrixSummaryRequest request,
             Authentication authentication) {
@@ -398,7 +399,7 @@ public class TestHarnessController {
     }
 
     @PostMapping("/match/{matchId}/role-slot-impact/summary")
-    public Mono<ResponseEntity<List<TestHarnessUseCase.RoleSlotImpactSummaryRow>>> roleSlotImpactSummary(
+    public Mono<ResponseEntity<List<RoleSlotImpactSummaryRow>>> roleSlotImpactSummary(
             @PathVariable String matchId,
             @RequestBody(required = false) RoleSlotImpactRequest request,
             Authentication authentication) {

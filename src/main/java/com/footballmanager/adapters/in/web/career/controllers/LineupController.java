@@ -9,12 +9,16 @@ import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.valueobject.ChemistryDetail;
 import com.footballmanager.domain.model.valueobject.FormationEffectiveness;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.valueobject.TacticalChemistry;
 import com.footballmanager.domain.model.valueobject.TacticalChemistryCalculator;
 import com.footballmanager.domain.model.valueobject.TeamChemistryCalculator;
 import com.footballmanager.domain.model.valueobject.TeamRatingsCalculator;
 import com.footballmanager.domain.port.in.lineup.LineupCommandUseCase;
 import com.footballmanager.domain.port.in.lineup.LineupQueryUseCase;
+import com.footballmanager.domain.port.in.lineup.LineupPlayerView;
+import com.footballmanager.domain.port.in.lineup.LineupView;
+import com.footballmanager.domain.port.in.lineup.LineupWarning;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -66,7 +70,8 @@ public class LineupController {
                     return Mono.error(new IllegalStateException(
                         "No se puede modificar lineup. La fase actual es " + phase + ". Solo se permite en PRE_MATCH o WAITING_USER."));
                 }
-                return lineupCommandUseCase.autoSelectLineup(userId, request.formation());
+                return lineupCommandUseCase.autoSelectLineup(userId, request.formation())
+                    .map(LineupController::toLineupDto);
             });
     }
 
@@ -97,7 +102,8 @@ public class LineupController {
                     userId,
                     request.formation(),
                     request.playerIds(),
-                    request.slots());
+                    toDomainSlots(request.slots()))
+                    .map(LineupController::toLineupDto);
             });
     }
 
@@ -130,7 +136,8 @@ public class LineupController {
     @GetMapping("/current")
     public Mono<LineupDTO> getCurrentLineup(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        return lineupQueryUseCase.getCurrentLineup(userId);
+        return lineupQueryUseCase.getCurrentLineup(userId)
+            .map(LineupController::toLineupDto);
     }
 
     /**
@@ -206,7 +213,7 @@ public class LineupController {
                 Map<String, double[]> coordsBySubdivision =
                         formationService.getCoordsByFormation(request.formation());
                 tacticalChemistry = TacticalChemistryCalculator.calculate(
-                        request.slots(),
+                        toDomainSlots(request.slots()),
                         naturalByPlayer,
                         coordsBySubdivision);
                 ChemistryBreakdownDTO breakdown = ChemistryBreakdownDTO.from(
@@ -310,7 +317,7 @@ public class LineupController {
                     // and teamAverage are computed too but the response
                     // here only surfaces the ratings).
                     FormationEffectiveness fe = FormationEffectiveness.from(
-                            slots,
+                            toDomainSlots(slots),
                             naturalByPlayer,
                             request.formation(),
                             attrsByPlayer,
@@ -328,5 +335,77 @@ public class LineupController {
                         Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))))
                 .onErrorResume(NotEnoughPlayersException.class, ex ->
                         Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))));
+    }
+
+    private List<LineupSlot> toDomainSlots(List<LineupSlotDTO> slots) {
+        if (slots == null || slots.isEmpty()) {
+            return List.of();
+        }
+        return slots.stream()
+                .filter(Objects::nonNull)
+                .map(slot -> new LineupSlot(
+                        slot.playerId(),
+                        slot.subdivisionId(),
+                        slot.customXPercent(),
+                        slot.customYPercent()))
+                .toList();
+    }
+
+    private static LineupDTO toLineupDto(LineupView view) {
+        List<LineupSlotDTO> slots = view.slots().stream()
+                .map(LineupController::toLineupSlotDto)
+                .toList();
+        Map<String, String> naturalByPlayer = new HashMap<>();
+        for (LineupPlayerView player : view.players()) {
+            if (player.playerId() != null && player.position() != null) {
+                naturalByPlayer.put(player.playerId(), player.position());
+            }
+        }
+        return new LineupDTO(
+                view.formation(),
+                view.players().stream().map(LineupController::toPlayerLineupDto).toList(),
+                view.confirmed(),
+                view.warnings().stream().map(LineupController::toLineupWarningDto).toList(),
+                slots,
+                view.chemistryScore(),
+                ChemistryBreakdownDTO.from(
+                        view.chemistryBreakdown(),
+                        slots,
+                        naturalByPlayer,
+                        TacticalChemistryDTO.from(view.tacticalChemistry())),
+                FormationEffectivenessDTO.from(view.formationEffectiveness()));
+    }
+
+    private static PlayerLineupDTO toPlayerLineupDto(LineupPlayerView player) {
+        return new PlayerLineupDTO(
+                player.playerId(),
+                player.name(),
+                player.position(),
+                player.overall(),
+                player.energy(),
+                player.injured(),
+                player.age(),
+                player.yellowCards(),
+                player.redCards(),
+                player.suspended(),
+                player.suspensionRemainingMatches());
+    }
+
+    private static LineupSlotDTO toLineupSlotDto(LineupSlot slot) {
+        return new LineupSlotDTO(
+                slot.playerId(),
+                slot.subdivisionId(),
+                slot.customXPercent(),
+                slot.customYPercent());
+    }
+
+    private static LineupWarningDTO toLineupWarningDto(LineupWarning warning) {
+        return new LineupWarningDTO(
+                warning.code(),
+                warning.message(),
+                warning.severity(),
+                warning.available(),
+                warning.minimumRequired(),
+                warning.target());
     }
 }

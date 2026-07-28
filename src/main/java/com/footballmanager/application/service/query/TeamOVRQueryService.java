@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.query;
 
-import com.footballmanager.adapters.in.web.world.dto.TeamWithOVR;
+
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.WorldPlayer;
@@ -31,7 +31,7 @@ public class TeamOVRQueryService {
 
     /**
      * Comparator for sorting SessionTeams by OVR (desc), then budget (desc), then name (asc).
-     * Reused by CareerSave.assignTeamsToDivisions() and DivisionPreviewService.
+     * Reused by CareerSave.assignTeamsToDivisions() and DivisionPreviewViewService.
      */
     public static Comparator<SessionTeam> sessionTeamComparator(
             java.util.function.Function<String, Integer> ovrProvider) {
@@ -50,9 +50,9 @@ public class TeamOVRQueryService {
     }
 
     /**
-     * Comparator for sorting TeamWithOVR by OVR (desc), then budget (desc), then name (asc).
+     * Comparator for sorting TeamOvrView by OVR (desc), then budget (desc), then name (asc).
      */
-    public static Comparator<TeamWithOVR> teamWithOVRComparator() {
+    public static Comparator<TeamOvrView> teamWithOVRComparator() {
         return (a, b) -> {
             if (a.ovr() != b.ovr()) {
                 return Integer.compare(b.ovr(), a.ovr());  // Higher OVR first
@@ -85,20 +85,20 @@ public class TeamOVRQueryService {
     }
 
     /**
-     * Construye lista de TeamWithOVR para una lista de equipos
+     * Construye lista de TeamOvrView para una lista de equipos
      */
-    public Mono<List<TeamWithOVR>> buildTeamsWithOVR(UUID userId, List<WorldTeam> teams) {
+    public Mono<List<TeamOvrView>> buildTeamsWithOVR(UUID userId, List<WorldTeam> teams) {
         return buildWorldViewUseCase.build(userId)
                 .map(worldView -> buildTeamsWithOVRFromView(worldView, teams));
     }
 
-    private List<TeamWithOVR> buildTeamsWithOVRFromView(WorldView worldView, List<WorldTeam> teams) {
-        List<TeamWithOVR> teamsWithOVR = new ArrayList<>();
+    private List<TeamOvrView> buildTeamsWithOVRFromView(WorldView worldView, List<WorldTeam> teams) {
+        List<TeamOvrView> teamsWithOVR = new ArrayList<>();
 
         for (WorldTeam team : teams) {
             List<WorldPlayer> players = worldView.getPlayersByTeam(team.getWorldTeamId());
             int ovr = calculateTeamOVR(players);
-            teamsWithOVR.add(new TeamWithOVR(
+            teamsWithOVR.add(new TeamOvrView(
                     team.getWorldTeamId(),
                     team.getName(),
                     team.getCountry(),
@@ -115,3 +115,4 @@ public class TeamOVRQueryService {
         return teamsWithOVR;
     }
 }
+

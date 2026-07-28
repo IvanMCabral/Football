@@ -1,6 +1,6 @@
 package com.footballmanager.application.service.world;
 
-import com.footballmanager.adapters.out.redis.RedisWorldRepository;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class WorldSnapshotService {
 
-    private final RedisWorldRepository worldRepository;
+    private final WorldSnapshotRepository worldRepository;
     private final WorldSnapshotCreator snapshotCreator;
 
     /**
@@ -88,3 +88,4 @@ public class WorldSnapshotService {
         return false;
     }
 }
+

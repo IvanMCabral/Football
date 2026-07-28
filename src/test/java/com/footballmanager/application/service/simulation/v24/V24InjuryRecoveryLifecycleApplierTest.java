@@ -622,9 +622,7 @@ class V24InjuryRecoveryLifecycleApplierTest {
 
     private void setInjuryRemainingMatches(SessionPlayer p, Integer value) {
         try {
-            java.lang.reflect.Field field = SessionPlayer.class.getDeclaredField("injuryRemainingMatches");
-            field.setAccessible(true);
-            field.set(p, value);
+            p.setInjuryRemainingMatches(value);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

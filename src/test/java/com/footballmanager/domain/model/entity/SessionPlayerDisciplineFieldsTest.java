@@ -89,48 +89,36 @@ class SessionPlayerDisciplineFieldsTest {
 
     @Test
     void nullYellowCards_defaultsToZero() throws Exception {
-        SessionPlayer player = new SessionPlayer();
-        player.setSessionPlayerId(UUID.randomUUID().toString());
-
-        java.lang.reflect.Field field = SessionPlayer.class.getDeclaredField("yellowCards");
-        field.setAccessible(true);
-        field.set(player, null);
+        SessionPlayer player = new ObjectMapper().readValue("""
+            {"sessionPlayerId":"p-null-yellow","yellowCards":null}
+            """, SessionPlayer.class);
 
         assertEquals(0, player.getYellowCards());
     }
 
     @Test
     void nullRedCards_defaultsToZero() throws Exception {
-        SessionPlayer player = new SessionPlayer();
-        player.setSessionPlayerId(UUID.randomUUID().toString());
-
-        java.lang.reflect.Field field = SessionPlayer.class.getDeclaredField("redCards");
-        field.setAccessible(true);
-        field.set(player, null);
+        SessionPlayer player = new ObjectMapper().readValue("""
+            {"sessionPlayerId":"p-null-red","redCards":null}
+            """, SessionPlayer.class);
 
         assertEquals(0, player.getRedCards());
     }
 
     @Test
     void nullSuspended_defaultsToFalse() throws Exception {
-        SessionPlayer player = new SessionPlayer();
-        player.setSessionPlayerId(UUID.randomUUID().toString());
-
-        java.lang.reflect.Field field = SessionPlayer.class.getDeclaredField("suspended");
-        field.setAccessible(true);
-        field.set(player, null);
+        SessionPlayer player = new ObjectMapper().readValue("""
+            {"sessionPlayerId":"p-null-suspended","suspended":null}
+            """, SessionPlayer.class);
 
         assertFalse(player.getSuspended());
     }
 
     @Test
     void nullSuspensionRemainingMatches_defaultsToZero() throws Exception {
-        SessionPlayer player = new SessionPlayer();
-        player.setSessionPlayerId(UUID.randomUUID().toString());
-
-        java.lang.reflect.Field field = SessionPlayer.class.getDeclaredField("suspensionRemainingMatches");
-        field.setAccessible(true);
-        field.set(player, null);
+        SessionPlayer player = new ObjectMapper().readValue("""
+            {"sessionPlayerId":"p-null-suspension-remaining","suspensionRemainingMatches":null}
+            """, SessionPlayer.class);
 
         assertEquals(0, player.getSuspensionRemainingMatches());
     }

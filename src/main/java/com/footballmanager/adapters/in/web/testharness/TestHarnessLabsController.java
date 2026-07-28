@@ -2,6 +2,7 @@ package com.footballmanager.adapters.in.web.testharness;
 
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
+import com.footballmanager.domain.port.in.testharness.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -26,55 +27,55 @@ class TestHarnessLabsController {
     private final ControllerHelper controllerHelper;
 
     @PostMapping("/labs/offensive-upgrade/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOffensiveUpgradeLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareOffensiveUpgradeLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::prepareOffensiveUpgradeLab);
     }
 
     @PostMapping("/labs/offensive-upgrade/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOffensiveUpgradeLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreOffensiveUpgradeLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::restoreOffensiveUpgradeLab);
     }
 
     @PostMapping("/labs/defensive-downgrade/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareDefensiveDowngradeLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareDefensiveDowngradeLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::prepareDefensiveDowngradeLab);
     }
 
     @PostMapping("/labs/defensive-downgrade/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreDefensiveDowngradeLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreDefensiveDowngradeLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::restoreDefensiveDowngradeLab);
     }
 
     @PostMapping("/labs/objective-contrast/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareObjectiveContrastLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareObjectiveContrastLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::prepareObjectiveContrastLab);
     }
 
     @PostMapping("/labs/objective-contrast/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreObjectiveContrastLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreObjectiveContrastLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::restoreObjectiveContrastLab);
     }
 
     @PostMapping("/labs/weak-wide-defenders/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakWideDefendersLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareWeakWideDefendersLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::prepareWeakWideDefendersLab);
     }
 
     @PostMapping("/labs/weak-wide-defenders/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakWideDefendersLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreWeakWideDefendersLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::restoreWeakWideDefendersLab);
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-wide-defenders/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakWideDefendersLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareOpponentWeakWideDefendersLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -82,7 +83,7 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-wide-defenders/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakWideDefendersLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreOpponentWeakWideDefendersLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -90,7 +91,7 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-left-defender/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakLeftDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareOpponentWeakLeftDefenderLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -98,7 +99,7 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-left-defender/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakLeftDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreOpponentWeakLeftDefenderLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -106,7 +107,7 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-right-defender/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakRightDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareOpponentWeakRightDefenderLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -114,7 +115,7 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-right-defender/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakRightDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreOpponentWeakRightDefenderLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -122,7 +123,7 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-center-backs/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareOpponentWeakCenterBacksLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareOpponentWeakCenterBacksLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -130,7 +131,7 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/match/{matchId}/labs/opponent-weak-center-backs/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreOpponentWeakCenterBacksLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreOpponentWeakCenterBacksLab(
             @PathVariable String matchId,
             Authentication authentication) {
         return ok(authentication, userId ->
@@ -138,42 +139,42 @@ class TestHarnessLabsController {
     }
 
     @PostMapping("/labs/weak-left-defender/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakLeftDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareWeakLeftDefenderLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::prepareWeakLeftDefenderLab);
     }
 
     @PostMapping("/labs/weak-left-defender/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakLeftDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreWeakLeftDefenderLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::restoreWeakLeftDefenderLab);
     }
 
     @PostMapping("/labs/weak-right-defender/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakRightDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareWeakRightDefenderLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::prepareWeakRightDefenderLab);
     }
 
     @PostMapping("/labs/weak-right-defender/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakRightDefenderLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreWeakRightDefenderLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::restoreWeakRightDefenderLab);
     }
 
     @PostMapping("/labs/weak-center-backs/prepare")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> prepareWeakCenterBacksLab(
+    Mono<ResponseEntity<LabMutationResult>> prepareWeakCenterBacksLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::prepareWeakCenterBacksLab);
     }
 
     @PostMapping("/labs/weak-center-backs/restore")
-    Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> restoreWeakCenterBacksLab(
+    Mono<ResponseEntity<LabMutationResult>> restoreWeakCenterBacksLab(
             Authentication authentication) {
         return ok(authentication, testHarnessUseCase::restoreWeakCenterBacksLab);
     }
 
-    private Mono<ResponseEntity<TestHarnessUseCase.LabMutationResult>> ok(
+    private Mono<ResponseEntity<LabMutationResult>> ok(
             Authentication authentication,
             LabCall call) {
         UUID userId = controllerHelper.getUserId(authentication);
@@ -182,6 +183,6 @@ class TestHarnessLabsController {
 
     @FunctionalInterface
     private interface LabCall {
-        Mono<TestHarnessUseCase.LabMutationResult> execute(UUID userId);
+        Mono<LabMutationResult> execute(UUID userId);
     }
 }

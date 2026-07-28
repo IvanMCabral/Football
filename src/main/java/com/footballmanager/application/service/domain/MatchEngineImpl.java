@@ -68,6 +68,15 @@ public class MatchEngineImpl implements MatchEngine {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
+    public MatchResult simulateWithStrengthSync(
+            Team homeTeam,
+            Team awayTeam,
+            int homeOvr,
+            int awayOvr,
+            long seed) {
+        return performSimulationWithStrength(homeTeam, awayTeam, new Random(seed), homeOvr, awayOvr);
+    }
+
     private MatchResult performSimulation(Team homeTeam, Team awayTeam, Random random) {
         return performSimulation(homeTeam, awayTeam, random, TeamStyle.BALANCED, TeamStyle.BALANCED);
     }

@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 
 import java.util.List;
 
@@ -73,7 +73,7 @@ public final class FormationInferer {
      * @return canonical formation label (one of the 7 supported by the engine),
      *         or {@link #DEFAULT_FORMATION} on any malformed input.
      */
-    public static String infer(List<LineupSlotDTO> slots) {
+    public static String infer(List<LineupSlot> slots) {
         return infer(slots, null);
     }
 
@@ -101,7 +101,7 @@ public final class FormationInferer {
      * @return {@code persistedFormation} when set, otherwise the slot-inferred
      *         label (or {@link #DEFAULT_FORMATION} on malformed input).
      */
-    public static String infer(List<LineupSlotDTO> slots, String persistedFormation) {
+    public static String infer(List<LineupSlot> slots, String persistedFormation) {
         if (persistedFormation != null && !persistedFormation.isBlank()) {
             return persistedFormation;
         }
@@ -114,7 +114,7 @@ public final class FormationInferer {
         int mid = 0;
         int att = 0;
         int total = 0;
-        for (LineupSlotDTO slot : slots) {
+        for (LineupSlot slot : slots) {
             if (slot == null || slot.subdivisionId() == null) continue;
             String cat = categoryFor(slot.subdivisionId());
             if (cat == null) continue;  // unknown — skip (don't count)

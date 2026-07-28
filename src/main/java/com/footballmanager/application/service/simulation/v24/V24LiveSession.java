@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.simulation.v24;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
-import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
+import com.footballmanager.domain.model.valueobject.FormationSlot;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,12 +214,12 @@ public final class V24LiveSession {
         return starters;
     }
 
-    private Map<String, LineupSlotDTO> slotsForSnapshot(boolean home) {
+    private Map<String, LineupSlot> slotsForSnapshot(boolean home) {
         String teamId = home ? effectiveContext.homeTeamId() : effectiveContext.awayTeamId();
-        Map<String, LineupSlotDTO> base = home
+        Map<String, LineupSlot> base = home
                 ? effectiveContext.homeSlotsByPlayerId()
                 : effectiveContext.awaySlotsByPlayerId();
-        Map<String, LineupSlotDTO> slots = new LinkedHashMap<>();
+        Map<String, LineupSlot> slots = new LinkedHashMap<>();
         if (base != null) {
             slots.putAll(base);
         }
@@ -228,7 +228,7 @@ public final class V24LiveSession {
             if (!teamId.equals(sub.teamId()) || sub.effectiveMinute() > currentMinute) {
                 continue;
             }
-            LineupSlotDTO offSlot = slots.remove(sub.playerOffId());
+            LineupSlot offSlot = slots.remove(sub.playerOffId());
             if (offSlot != null) {
                 slots.put(sub.playerOnId(), offSlot);
             }
@@ -297,22 +297,22 @@ public final class V24LiveSession {
         return null;
     }
 
-    private List<FormationSlotDTO> buildLiveSlotsForSnapshot(
+    private List<FormationSlot> buildLiveSlotsForSnapshot(
             List<SessionPlayer> starters,
-            Map<String, LineupSlotDTO> slotsByPlayerId) {
+            Map<String, LineupSlot> slotsByPlayerId) {
         if (starters == null || starters.isEmpty()) {
             return List.of();
         }
-        List<FormationSlotDTO> slots = new ArrayList<>();
+        List<FormationSlot> slots = new ArrayList<>();
         for (int i = 0; i < starters.size(); i++) {
             SessionPlayer player = starters.get(i);
             if (player == null || player.getSessionPlayerId() == null) {
                 continue;
             }
-            LineupSlotDTO liveSlot = slotsByPlayerId != null
+            LineupSlot liveSlot = slotsByPlayerId != null
                     ? slotsByPlayerId.get(player.getSessionPlayerId())
                     : null;
-            slots.add(new FormationSlotDTO(
+            slots.add(new FormationSlot(
                     player.getSessionPlayerId(),
                     player.getPosition(),
                     resolveLiveSlotIndex(liveSlot, i),
@@ -323,7 +323,7 @@ public final class V24LiveSession {
         return slots;
     }
 
-    private Integer resolveLiveSlotIndex(LineupSlotDTO slot, int fallbackIndex) {
+    private Integer resolveLiveSlotIndex(LineupSlot slot, int fallbackIndex) {
         if (slot == null || slot.subdivisionId() == null) {
             return fallbackIndex;
         }

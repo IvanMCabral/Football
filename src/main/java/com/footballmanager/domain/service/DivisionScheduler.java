@@ -3,7 +3,6 @@ package com.footballmanager.domain.service;
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.valueobject.Division;
 import com.footballmanager.domain.model.valueobject.TeamId;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
  * <p>Legacy leagues (not 60 teams, or no division field): falls back to
  * flat round-robin via {@link FixtureGenerator} for backward-compat.
  */
-@Component
 public class DivisionScheduler {
 
     public static final int TEAMS_PER_DIVISION = 20;

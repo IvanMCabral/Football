@@ -7,7 +7,7 @@ import com.footballmanager.application.service.simulation.v24.V24DetailedMatchRe
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchContextFactory;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
@@ -15,7 +15,8 @@ import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase;
-import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.CustomFixture;
+import com.footballmanager.domain.port.in.testharness.*;
+import com.footballmanager.domain.port.in.testharness.CustomFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,10 +25,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -140,30 +141,10 @@ class TestHarnessUseCaseImplTest {
     @Test
     @DisplayName("side mirror synthetic lab reads 5-4-1 low lateral signal as conservative partial, not motor failure")
     void sideMirrorSyntheticLab_readsFiveFourOneLowBlockAsConservativePartial() throws Exception {
-        Method method = TestHarnessUseCaseImpl.class.getDeclaredMethod(
-            "toSyntheticSideMirrorRow",
-            String.class,
-            long.class,
-            int.class,
-            TestHarnessUseCase.FormationMatrixSummaryRow.class,
-            TestHarnessUseCase.FormationMatrixSummaryRow.class);
-        method.setAccessible(true);
-
-        TestHarnessUseCase.FormationMatrixSummaryRow weakLeft = summaryRow(
-            "5-4-1",
-            0.020,
-            0.028,
-            0.65,
-            0.72);
-        TestHarnessUseCase.FormationMatrixSummaryRow weakRight = summaryRow(
-            "5-4-1",
-            0.027,
-            0.020,
-            0.70,
-            0.62);
-
-        TestHarnessUseCase.SideMirrorSyntheticLabRow row =
-            (TestHarnessUseCase.SideMirrorSyntheticLabRow) method.invoke(useCase, "5-4-1", 12345L, 20, weakLeft, weakRight);
+        FormationMatrixSummaryRow weakLeft = summaryRow("5-4-1", 0.020, 0.028, 0.65, 0.72);
+        FormationMatrixSummaryRow weakRight = summaryRow("5-4-1", 0.027, 0.020, 0.70, 0.62);
+        SideMirrorSyntheticLabRow row = TestHarnessSideMirrorReadSupport.toSyntheticSideMirrorRow(
+            "5-4-1", 12345L, 20, weakLeft, weakRight);
 
         assertThat(row.verdict()).isEqualTo("Parcial");
         assertThat(row.read()).contains("5-4-1 bloque bajo");
@@ -173,7 +154,7 @@ class TestHarnessUseCaseImplTest {
     @Test
     @DisplayName("side mirror synthetic lab explains 3-5-2 partial as wingback/seed review")
     void sideMirrorSyntheticLab_explainsThreeFiveTwoPartial() throws Exception {
-        TestHarnessUseCase.SideMirrorSyntheticLabRow row = invokeSyntheticSideMirrorRow(
+        SideMirrorSyntheticLabRow row = invokeSyntheticSideMirrorRow(
             "3-5-2",
             summaryRow("3-5-2", 0.020, 0.060, 0.35, 1.20),
             summaryRow("3-5-2", 0.040, 0.040, 0.75, 0.80));
@@ -186,7 +167,7 @@ class TestHarnessUseCaseImplTest {
     @Test
     @DisplayName("side mirror synthetic lab explains 4-2-2-2 partial as no-natural-wingback asymmetry")
     void sideMirrorSyntheticLab_explainsFourTwoTwoTwoPartial() throws Exception {
-        TestHarnessUseCase.SideMirrorSyntheticLabRow row = invokeSyntheticSideMirrorRow(
+        SideMirrorSyntheticLabRow row = invokeSyntheticSideMirrorRow(
             "4-2-2-2",
             summaryRow("4-2-2-2", 0.130, 0.140, 1.50, 2.20),
             summaryRow("4-2-2-2", 0.160, 0.060, 2.55, 0.75));
@@ -244,22 +225,7 @@ class TestHarnessUseCaseImplTest {
             String slotRole,
             String slotSide,
             String verdict) throws Exception {
-        Class<?> profileClass = Class.forName(
-            "com.footballmanager.application.service.testharness.TestHarnessUseCaseImpl$CuratedMatrixRoleProfile");
-        Method assignmentRead = TestHarnessUseCaseImpl.class.getDeclaredMethod(
-            "assignmentRead",
-            SessionPlayer.class,
-            String.class,
-            String.class,
-            String.class,
-            profileClass,
-            String.class,
-            int.class,
-            int.class);
-        assignmentRead.setAccessible(true);
-
-        return (String) assignmentRead.invoke(
-            useCase,
+        return new TestHarnessDiagnosticAssignmentSupport().assignmentRead(
             player,
             natural,
             slotRole,
@@ -279,7 +245,7 @@ class TestHarnessUseCaseImplTest {
         useCase.runScenarioMatrix(USER_ID, "match-001", 12345L)
             .as(StepVerifier::create)
             .assertNext(rows -> assertThat(rows)
-                .extracting(TestHarnessUseCase.ScenarioMatrixRow::scenario)
+                .extracting(ScenarioMatrixRow::scenario)
                 .contains("base-balanced"))
             .verifyComplete();
 
@@ -317,7 +283,7 @@ class TestHarnessUseCaseImplTest {
     @DisplayName("positionPixelMatrixSummary: 1px near MID/DEF border keeps natural MID as MID")
     void positionPixelMatrixSummary_midDefBorderUsesTransitionBuffer() {
         career.replaceTeamStarting11SubdivisionRaw("user-team-id", Map.of(
-            "u-p3", new LineupSlotDTO("u-p3", "S17-1", 38.85, 66.0)
+            "u-p3", new LineupSlot("u-p3", "S17-1", 38.85, 66.0)
         ));
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
@@ -354,9 +320,9 @@ class TestHarnessUseCaseImplTest {
         nearestRightDef.setPosition("DEF");
 
         career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
-            leftDef.getSessionPlayerId(), new LineupSlotDTO(leftDef.getSessionPlayerId(), "S22-1", 18.0, 78.0),
-            centerLeftDef.getSessionPlayerId(), new LineupSlotDTO(centerLeftDef.getSessionPlayerId(), "S23-1", 42.0, 78.0),
-            nearestRightDef.getSessionPlayerId(), new LineupSlotDTO(nearestRightDef.getSessionPlayerId(), "S23-3", 58.0, 78.0)
+            leftDef.getSessionPlayerId(), new LineupSlot(leftDef.getSessionPlayerId(), "S22-1", 18.0, 78.0),
+            centerLeftDef.getSessionPlayerId(), new LineupSlot(centerLeftDef.getSessionPlayerId(), "S23-1", 42.0, 78.0),
+            nearestRightDef.getSessionPlayerId(), new LineupSlot(nearestRightDef.getSessionPlayerId(), "S23-3", 58.0, 78.0)
         ));
 
         when(careerRepository.findById(USER_ID.toString()))
@@ -384,8 +350,8 @@ class TestHarnessUseCaseImplTest {
         rightSlotPlayer.setPosition("MID");
 
         career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
-            leftSlotPlayer.getSessionPlayerId(), new LineupSlotDTO(leftSlotPlayer.getSessionPlayerId(), "S22-1", 18.0, 78.0),
-            rightSlotPlayer.getSessionPlayerId(), new LineupSlotDTO(rightSlotPlayer.getSessionPlayerId(), "S24-3", 82.0, 78.0)
+            leftSlotPlayer.getSessionPlayerId(), new LineupSlot(leftSlotPlayer.getSessionPlayerId(), "S22-1", 18.0, 78.0),
+            rightSlotPlayer.getSessionPlayerId(), new LineupSlot(rightSlotPlayer.getSessionPlayerId(), "S24-3", 82.0, 78.0)
         ));
 
         when(careerRepository.findById(USER_ID.toString()))
@@ -415,9 +381,9 @@ class TestHarnessUseCaseImplTest {
         rightWingBack.setPosition("MID");
 
         career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
-            loneNaturalDef.getSessionPlayerId(), new LineupSlotDTO(loneNaturalDef.getSessionPlayerId(), "S23-2", 50.0, 78.0),
-            leftWingBack.getSessionPlayerId(), new LineupSlotDTO(leftWingBack.getSessionPlayerId(), "S22-1", 18.0, 78.0),
-            rightWingBack.getSessionPlayerId(), new LineupSlotDTO(rightWingBack.getSessionPlayerId(), "S24-3", 82.0, 78.0)
+            loneNaturalDef.getSessionPlayerId(), new LineupSlot(loneNaturalDef.getSessionPlayerId(), "S23-2", 50.0, 78.0),
+            leftWingBack.getSessionPlayerId(), new LineupSlot(leftWingBack.getSessionPlayerId(), "S22-1", 18.0, 78.0),
+            rightWingBack.getSessionPlayerId(), new LineupSlot(rightWingBack.getSessionPlayerId(), "S24-3", 82.0, 78.0)
         ));
 
         when(careerRepository.findById(USER_ID.toString()))
@@ -474,7 +440,7 @@ class TestHarnessUseCaseImplTest {
 
         career.replaceTeamStarting11SubdivisionRaw("rival-1", Map.of(
             staleRightSlotDef.getSessionPlayerId(),
-            new LineupSlotDTO(staleRightSlotDef.getSessionPlayerId(), "S24-3", 82.0, 78.0)
+            new LineupSlot(staleRightSlotDef.getSessionPlayerId(), "S24-3", 82.0, 78.0)
         ));
 
         when(careerRepository.findById(USER_ID.toString()))
@@ -921,13 +887,13 @@ class TestHarnessUseCaseImplTest {
         return p;
     }
 
-    private TestHarnessUseCase.FormationMatrixSummaryRow summaryRow(
+    private FormationMatrixSummaryRow summaryRow(
             String formation,
             double leftWideXgFor,
             double rightWideXgFor,
             double leftWideShotsFor,
             double rightWideShotsFor) {
-        return new TestHarnessUseCase.FormationMatrixSummaryRow(
+        return new FormationMatrixSummaryRow(
             formation,
             12345L,
             12364L,
@@ -967,20 +933,11 @@ class TestHarnessUseCaseImplTest {
             1.08);
     }
 
-    private TestHarnessUseCase.SideMirrorSyntheticLabRow invokeSyntheticSideMirrorRow(
+    private SideMirrorSyntheticLabRow invokeSyntheticSideMirrorRow(
             String formation,
-            TestHarnessUseCase.FormationMatrixSummaryRow weakLeft,
-            TestHarnessUseCase.FormationMatrixSummaryRow weakRight) throws Exception {
-        Method method = TestHarnessUseCaseImpl.class.getDeclaredMethod(
-            "toSyntheticSideMirrorRow",
-            String.class,
-            long.class,
-            int.class,
-            TestHarnessUseCase.FormationMatrixSummaryRow.class,
-            TestHarnessUseCase.FormationMatrixSummaryRow.class);
-        method.setAccessible(true);
-        return (TestHarnessUseCase.SideMirrorSyntheticLabRow) method.invoke(
-            useCase,
+            FormationMatrixSummaryRow weakLeft,
+            FormationMatrixSummaryRow weakRight) throws Exception {
+        return TestHarnessSideMirrorReadSupport.toSyntheticSideMirrorRow(
             formation,
             12345L,
             20,
@@ -994,40 +951,14 @@ class TestHarnessUseCaseImplTest {
      * / {@code CareerPlayerManager.addSessionPlayer} / {@code assignPlayerToSquad}
      * cleanly without exposing internals, so we call them reflectively.
      */
-    @SuppressWarnings("unchecked")
     private void wireSquad(CareerSave career, String teamId, List<SessionPlayer> players) {
-        try {
-            // Get the teamManager and playerManager via reflection
-            Field tmField = CareerSave.class.getDeclaredField("teamManager");
-            tmField.setAccessible(true);
-            Object teamManager = tmField.get(career);
-
-            Field pmField = CareerSave.class.getDeclaredField("playerManager");
-            pmField.setAccessible(true);
-            Object playerManager = pmField.get(career);
-
-            // Build and register the SessionTeam so career.getSessionTeam(teamId)
-            // and career.getAllSessionTeams() both work.
-            SessionTeam team = new SessionTeam();
-            team.setSessionTeamId(teamId);
-            team.setFormation("4-3-3");
-            java.lang.reflect.Method addSessionTeam =
-                teamManager.getClass().getMethod("addSessionTeam", SessionTeam.class);
-            addSessionTeam.invoke(teamManager, team);
-
-            // Register each player + assign to squad
-            java.lang.reflect.Method addSessionPlayer =
-                playerManager.getClass().getMethod("addSessionPlayer", SessionPlayer.class);
-            java.lang.reflect.Method assign =
-                teamManager.getClass().getMethod(
-                    "assignPlayerToSquad", String.class, String.class);
-
-            for (SessionPlayer p : players) {
-                addSessionPlayer.invoke(playerManager, p);
-                assign.invoke(teamManager, p.getSessionPlayerId(), teamId);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to wire squad via reflection", e);
+        SessionTeam team = new SessionTeam();
+        team.setSessionTeamId(teamId);
+        team.setFormation("4-3-3");
+        career.addSessionTeam(team);
+        for (SessionPlayer player : players) {
+            career.addSessionPlayer(player);
+            career.assignPlayerToTeam(player.getSessionPlayerId(), teamId);
         }
     }
 }

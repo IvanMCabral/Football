@@ -9,6 +9,7 @@ import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
 import com.footballmanager.application.service.simulation.v24.V24MatchTimeline;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchState;
 import com.footballmanager.application.service.simulation.v24.V24PlayerMatchStatsModel;
 import com.footballmanager.domain.model.entity.MatchCommand;
@@ -302,12 +303,36 @@ public class MatchSession {
                 snap.awayStyle(),
                 snap.homeFormation(),
                 snap.awayFormation(),
-                homePlayerRatings,
-                awayPlayerRatings,
+                toDomainRatings(homePlayerRatings),
+                toDomainRatings(awayPlayerRatings),
                 substitutionsRemaining,
                 snap.homeSlots(),
                 snap.awaySlots()
         );
+    }
+
+    private List<PlayerMatchRating> toDomainRatings(List<V24PlayerMatchRatingDto> ratings) {
+        if (ratings == null || ratings.isEmpty()) {
+            return List.of();
+        }
+        return ratings.stream()
+                .map(rating -> new PlayerMatchRating(
+                        rating.playerId(),
+                        rating.playerName(),
+                        rating.teamId(),
+                        rating.position(),
+                        rating.rating(),
+                        rating.goals(),
+                        rating.assists(),
+                        rating.keyPasses(),
+                        rating.shots(),
+                        rating.yellowCards(),
+                        rating.redCards(),
+                        rating.injuries(),
+                        rating.fouls(),
+                        rating.substitutedIn(),
+                        rating.substitutedOut()))
+                .toList();
     }
 
     private UUID parseSnapshotTeamId(String rawTeamId, UUID fallbackTeamId) {

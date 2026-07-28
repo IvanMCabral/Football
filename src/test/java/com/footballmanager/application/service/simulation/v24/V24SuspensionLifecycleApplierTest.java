@@ -511,16 +511,7 @@ class V24SuspensionLifecycleApplierTest {
     }
 
     private void setSuspensionFields(SessionPlayer p, Boolean suspended, Integer remaining) {
-        try {
-            java.lang.reflect.Field suspendedField = SessionPlayer.class.getDeclaredField("suspended");
-            suspendedField.setAccessible(true);
-            suspendedField.set(p, suspended);
-
-            java.lang.reflect.Field remainingField = SessionPlayer.class.getDeclaredField("suspensionRemainingMatches");
-            remainingField.setAccessible(true);
-            remainingField.set(p, remaining);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        p.setSuspended(suspended);
+        p.setSuspensionRemainingMatches(remaining);
     }
 }

@@ -1,9 +1,13 @@
 package com.footballmanager.application.service.infrastructure;
 
-import com.footballmanager.adapters.in.web.auth.dto.*;
 import com.footballmanager.domain.model.aggregate.User;
+import com.footballmanager.domain.port.in.auth.AuthLoginCommand;
+import com.footballmanager.domain.port.in.auth.AuthRefreshCommand;
+import com.footballmanager.domain.port.in.auth.AuthRegisterCommand;
+import com.footballmanager.domain.port.in.auth.AuthTokenResult;
 import com.footballmanager.domain.ports.out.team.TeamRepository;
 import com.footballmanager.domain.ports.out.user.UserRepository;
+import com.footballmanager.domain.port.in.auth.AuthUserInfo;
 import com.footballmanager.domain.port.in.auth.AuthUseCase;
 import com.footballmanager.infrastructure.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -29,22 +33,22 @@ public class AuthUseCaseImpl implements AuthUseCase {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public Mono<JwtTokenResponse> register(RegisterUserRequest request) {
-        return userRepository.findByEmail(request.email())
+    public Mono<AuthTokenResult> register(AuthRegisterCommand command) {
+        return userRepository.findByEmail(command.email())
             .<User>flatMap(user -> Mono.error(new IllegalArgumentException("Email already exists")))
             .switchIfEmpty(Mono.defer(() -> {
-                String encodedPassword = passwordEncoder.encode(request.password());
-                return userRepository.createNew(request.email(), request.username(), encodedPassword);
+                String encodedPassword = passwordEncoder.encode(command.password());
+                return userRepository.createNew(command.email(), command.username(), encodedPassword);
             }))
             .flatMap(user -> generateTokenResponse(user));
     }
 
     @Override
-    public Mono<JwtTokenResponse> login(LoginRequest request) {
-        return userRepository.findByEmail(request.email())
+    public Mono<AuthTokenResult> login(AuthLoginCommand command) {
+        return userRepository.findByEmail(command.email())
             .switchIfEmpty(Mono.defer(() -> Mono.error(new IllegalArgumentException("User not found"))))
             .filterWhen(user -> Mono.fromCallable(() ->
-                passwordEncoder.matches(request.password(), user.getPasswordHash())))
+                passwordEncoder.matches(command.password(), user.getPasswordHash())))
             .switchIfEmpty(Mono.defer(() -> Mono.error(new IllegalArgumentException("Invalid password"))))
             .flatMap(user -> {
                 return generateTokenResponse(user);
@@ -52,18 +56,18 @@ public class AuthUseCaseImpl implements AuthUseCase {
     }
 
     @Override
-    public Mono<JwtTokenResponse> refreshToken(RefreshTokenRequest request) {
-        if (!jwtTokenProvider.validateToken(request.refreshToken())) {
+    public Mono<AuthTokenResult> refreshToken(AuthRefreshCommand command) {
+        if (!jwtTokenProvider.validateToken(command.refreshToken())) {
             return Mono.error(new IllegalArgumentException("Invalid refresh token"));
         }
 
-        String userId = jwtTokenProvider.getUserIdFromToken(request.refreshToken());
-        String role = jwtTokenProvider.getRoleFromToken(request.refreshToken());
+        String userId = jwtTokenProvider.getUserIdFromToken(command.refreshToken());
+        String role = jwtTokenProvider.getRoleFromToken(command.refreshToken());
 
         String newAccessToken = jwtTokenProvider.generateToken(userId, role);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(userId);
 
-        return Mono.just(new JwtTokenResponse(
+        return Mono.just(new AuthTokenResult(
             newAccessToken, newRefreshToken,
             jwtTokenProvider.getExpirationTime(), "Bearer"));
     }
@@ -79,22 +83,23 @@ public class AuthUseCaseImpl implements AuthUseCase {
     }
 
     @Override
-    public Mono<UserInfoResponse> getUserInfo(String userId) {
+    public Mono<AuthUserInfo> getUserInfo(String userId) {
         return userRepository.findById(UUID.fromString(userId))
             .flatMap(user -> {
-                UserInfoResponse info = new UserInfoResponse();
-                info.id = user.getId().getValue().toString();
-                info.email = user.getEmail();
-                info.username = user.getUsername();
-                info.displayName = user.getUsername();
-                info.teamId = user.getTeamId() != null ? user.getTeamId().toString() : null;
-                info.teamName = null;
+                AuthUserInfo info = new AuthUserInfo(
+                        user.getId().getValue().toString(),
+                        user.getEmail(),
+                        user.getUsername(),
+                        user.getUsername(),
+                        user.getTeamId() != null ? user.getTeamId().toString() : null,
+                        null);
 
                 if (user.getTeamId() != null) {
                     return teamRepository.findById(UUID.fromString(userId), user.getTeamId())
                         .map(team -> {
-                            info.teamName = team.getName();
-                            return info;
+                            return new AuthUserInfo(
+                                    info.id(), info.email(), info.username(), info.displayName(),
+                                    info.teamId(), team.getName());
                         })
                         .defaultIfEmpty(info);
                 }
@@ -102,13 +107,13 @@ public class AuthUseCaseImpl implements AuthUseCase {
             });
     }
 
-    private Mono<JwtTokenResponse> generateTokenResponse(User user) {
+    private Mono<AuthTokenResult> generateTokenResponse(User user) {
         return Mono.fromCallable(() -> {
             String accessToken = jwtTokenProvider.generateToken(
                 user.getId().getValue().toString(),
                 user.getRole().name());
             String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId().getValue().toString());
-            return new JwtTokenResponse(accessToken, refreshToken,
+            return new AuthTokenResult(accessToken, refreshToken,
                 jwtTokenProvider.getExpirationTime(), "Bearer");
         });
     }

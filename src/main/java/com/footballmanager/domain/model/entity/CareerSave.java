@@ -1,7 +1,7 @@
 package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.entity.career.*;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerSeasonManager;
@@ -31,23 +31,23 @@ public class CareerSave {
     private Map<String, List<String>> teamStarting11 = new HashMap<>();
     /**
      * MVP1-lineup-cancha-1: subdivisionId por jugador (mapa interno:
-     * teamId → { subdivisionId → LineupSlotDTO }).
+     * teamId → { subdivisionId → LineupSlot }).
      * Paralelo a {@link #teamStarting11} — no lo reemplaza. Si está vacío
      * o ausente para un team, se infiere on-the-fly del role del jugador
      * (backward compat con lineups viejos).
      *
      * {@code Map<String, Map<String, String>>} (subdivisionId → playerId,
      * which lost the front's free-positioning customX/customY) to a
-     * raw-typed Object map that holds {@link LineupSlotDTO} values.
-     * {@code new LineupSlotDTO(playerId, null, null, null)} on read by
+     * raw-typed Object map that holds {@link LineupSlot} values.
+     * {@code new LineupSlot(playerId, null, null, null)} on read by
      * the typed getter {@link #getTeamStarting11SubdivisionSlots()}. The
      * legacy {@code Map<String, String>} setter
      * {@link #setTeamStarting11Subdivision(Map)} is preserved for backward
      *
      * <p>Field declared as {@code Map<String, Map<String, Object>>} so
      * are plain strings) and post-fix saves (inner values are
-     * LineupSlotDTO records) into the same field. Conversion to
-     * LineupSlotDTO happens lazily in the typed getter / on write.
+     * LineupSlot records) into the same field. Conversion to
+     * LineupSlot happens lazily in the typed getter / on write.
      */
     private Map<String, Map<String, Object>> teamStarting11Subdivision = new HashMap<>();
     /**
@@ -103,13 +103,13 @@ public class CareerSave {
      * shapes are normalized to {@code Map<String, Map<String, Object>>}
      * internally.
      */
-    public void setTeamStarting11SubdivisionSlots(Map<String, Map<String, LineupSlotDTO>> slots) {
+    public void setTeamStarting11SubdivisionSlots(Map<String, Map<String, LineupSlot>> slots) {
         Map<String, Map<String, Object>> raw = new HashMap<>();
         if (slots != null) {
-            for (Map.Entry<String, Map<String, LineupSlotDTO>> e : slots.entrySet()) {
+            for (Map.Entry<String, Map<String, LineupSlot>> e : slots.entrySet()) {
                 Map<String, Object> inner = new HashMap<>();
                 if (e.getValue() != null) {
-                    for (Map.Entry<String, LineupSlotDTO> ie : e.getValue().entrySet()) {
+                    for (Map.Entry<String, LineupSlot> ie : e.getValue().entrySet()) {
                         inner.put(ie.getKey(), ie.getValue());
                     }
                 }
@@ -134,7 +134,7 @@ public class CareerSave {
      *              entirely.
      */
     public void replaceTeamStarting11SubdivisionRaw(String teamId,
-                                                     Map<String, LineupSlotDTO> slots) {
+                                                     Map<String, LineupSlot> slots) {
         if (teamStarting11Subdivision == null) {
             teamStarting11Subdivision = new HashMap<>();
         }
@@ -145,7 +145,7 @@ public class CareerSave {
         Map<String, Object> inner = teamStarting11Subdivision.computeIfAbsent(
             teamId, k -> new HashMap<>());
         inner.clear();
-        for (Map.Entry<String, LineupSlotDTO> e : slots.entrySet()) {
+        for (Map.Entry<String, LineupSlot> e : slots.entrySet()) {
             inner.put(e.getKey(), e.getValue());
         }
     }
@@ -163,7 +163,7 @@ public class CareerSave {
     public Map<String, List<String>> getTeamStarting11() { return teamStarting11; }
 
     /**
-     * shape (subdivisionId → playerId). Wraps any LineupSlotDTO values back to
+     * shape (subdivisionId → playerId). Wraps any LineupSlot values back to
      * their {@code playerId} for callers that haven't migrated. Persists raw
      * String values as-is.
      *
@@ -184,7 +184,7 @@ public class CareerSave {
             Map<String, String> inner = new HashMap<>(e.getValue().size());
             for (Map.Entry<String, Object> ie : e.getValue().entrySet()) {
                 Object v = ie.getValue();
-                if (v instanceof LineupSlotDTO slot) {
+                if (v instanceof LineupSlot slot) {
                     inner.put(ie.getKey(), slot.playerId());
                 } else if (v instanceof String s) {
                     inner.put(ie.getKey(), s);
@@ -197,33 +197,33 @@ public class CareerSave {
     }
 
     /**
-     * {@code subdivisionId → LineupSlotDTO} with the front's
+     * {@code subdivisionId → LineupSlot} with the front's
      * {@code customXPercent / customYPercent} preserved.
      *
      * {@code subdivisionId → playerId}) are wrapped to
-     * {@code new LineupSlotDTO(playerId, null, null, null)} so downstream
-     * consumers can rely on the LineupSlotDTO shape uniformly.
+     * {@code new LineupSlot(playerId, null, null, null)} so downstream
+     * consumers can rely on the LineupSlot shape uniformly.
      */
-    public Map<String, Map<String, LineupSlotDTO>> getTeamStarting11SubdivisionSlots() {
+    public Map<String, Map<String, LineupSlot>> getTeamStarting11SubdivisionSlots() {
         if (teamStarting11Subdivision == null) {
             teamStarting11Subdivision = new HashMap<>();
         }
-        Map<String, Map<String, LineupSlotDTO>> typed = new HashMap<>();
+        Map<String, Map<String, LineupSlot>> typed = new HashMap<>();
         for (Map.Entry<String, Map<String, Object>> e : teamStarting11Subdivision.entrySet()) {
             if (e.getValue() == null) {
                 typed.put(e.getKey(), new HashMap<>());
                 continue;
             }
-            Map<String, LineupSlotDTO> inner = new HashMap<>(e.getValue().size());
+            Map<String, LineupSlot> inner = new HashMap<>(e.getValue().size());
             for (Map.Entry<String, Object> ie : e.getValue().entrySet()) {
                 Object v = ie.getValue();
-                if (v instanceof LineupSlotDTO slot) {
+                if (v instanceof LineupSlot slot) {
                     inner.put(ie.getKey(), slot);
                 } else if (v instanceof String playerId) {
-                    // OUTER key, so the wrapped LineupSlotDTO has
+                    // OUTER key, so the wrapped LineupSlot has
                     // subdivisionId=null (the consumer can recover it
                     // from the outer key or the LineupDTO's slots list).
-                    inner.put(ie.getKey(), new LineupSlotDTO(playerId, null, null, null));
+                    inner.put(ie.getKey(), new LineupSlot(playerId, null, null, null));
                 }
                 // Unknown shape: skip (defensive).
             }
@@ -323,7 +323,7 @@ public class CareerSave {
             if (slots == null) continue;
             slots.entrySet().removeIf(e -> {
                 Object v = e.getValue();
-                if (v instanceof LineupSlotDTO slot) {
+                if (v instanceof LineupSlot slot) {
                     return sessionPlayerId.equals(slot.playerId());
                 }
                 if (v instanceof String s) {

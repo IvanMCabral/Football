@@ -1,7 +1,7 @@
 package com.footballmanager.domain.model.entity;
 
-import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
-import com.footballmanager.application.service.simulation.v24.V24PlayerMatchRatingDto;
+import com.footballmanager.domain.model.valueobject.FormationSlot;
+import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
 
@@ -29,7 +29,7 @@ import java.util.UUID;
  * round-trip:
  * <ul>
  *   <li>{@code homePlayerRatings} / {@code awayPlayerRatings} — list of
- *       {@link V24PlayerMatchRatingDto}, one per player in the team (starter
+ *       {@link PlayerMatchRating}, one per player in the team (starter
  *       + bench). Computed by
  *       {@code V24PlayerMatchStatsModel.computeRatings()} in
  *       {@code MatchSession.adaptV24Snapshot()}. Defaults to empty list.</li>
@@ -60,11 +60,11 @@ public record MatchStateSnapshot(
     String awayStyle,
     String homeFormation,
     String awayFormation,
-    List<V24PlayerMatchRatingDto> homePlayerRatings,
-    List<V24PlayerMatchRatingDto> awayPlayerRatings,
+    List<PlayerMatchRating> homePlayerRatings,
+    List<PlayerMatchRating> awayPlayerRatings,
     int substitutionsRemaining,
-    List<FormationSlotDTO> homeSlots,
-    List<FormationSlotDTO> awaySlots
+    List<FormationSlot> homeSlots,
+    List<FormationSlot> awaySlots
 ) implements Serializable {
 
     /**
@@ -152,8 +152,8 @@ public record MatchStateSnapshot(
             String awayStyle,
             String homeFormation,
             String awayFormation,
-            List<V24PlayerMatchRatingDto> homePlayerRatings,
-            List<V24PlayerMatchRatingDto> awayPlayerRatings,
+            List<PlayerMatchRating> homePlayerRatings,
+            List<PlayerMatchRating> awayPlayerRatings,
             int substitutionsRemaining) {
         this(
             matchId, homeTeamId, awayTeamId, currentMinute, status, score,
@@ -232,8 +232,8 @@ public record MatchStateSnapshot(
      * stats + sub counter without touching any other field.
      */
     public MatchStateSnapshot withLiveStats(
-            List<V24PlayerMatchRatingDto> homeRatings,
-            List<V24PlayerMatchRatingDto> awayRatings,
+            List<PlayerMatchRating> homeRatings,
+            List<PlayerMatchRating> awayRatings,
             int subsRemaining) {
         return new MatchStateSnapshot(
             matchId, homeTeamId, awayTeamId,
@@ -261,11 +261,11 @@ public record MatchStateSnapshot(
         private String awayStyle = "BALANCED";
         private String homeFormation = "4-4-2";
         private String awayFormation = "4-4-2";
-        private List<V24PlayerMatchRatingDto> homePlayerRatings = List.of();
-        private List<V24PlayerMatchRatingDto> awayPlayerRatings = List.of();
+        private List<PlayerMatchRating> homePlayerRatings = List.of();
+        private List<PlayerMatchRating> awayPlayerRatings = List.of();
         private int substitutionsRemaining = 5;
-        private List<FormationSlotDTO> homeSlots = List.of();
-        private List<FormationSlotDTO> awaySlots = List.of();
+        private List<FormationSlot> homeSlots = List.of();
+        private List<FormationSlot> awaySlots = List.of();
 
         public Builder matchId(UUID matchId) { this.matchId = matchId; return this; }
         public Builder homeTeamId(UUID homeTeamId) { this.homeTeamId = homeTeamId; return this; }
@@ -282,11 +282,11 @@ public record MatchStateSnapshot(
         public Builder awayStyle(String awayStyle) { this.awayStyle = awayStyle; return this; }
         public Builder homeFormation(String homeFormation) { this.homeFormation = homeFormation; return this; }
         public Builder awayFormation(String awayFormation) { this.awayFormation = awayFormation; return this; }
-        public Builder homePlayerRatings(List<V24PlayerMatchRatingDto> homePlayerRatings) { this.homePlayerRatings = homePlayerRatings; return this; }
-        public Builder awayPlayerRatings(List<V24PlayerMatchRatingDto> awayPlayerRatings) { this.awayPlayerRatings = awayPlayerRatings; return this; }
+        public Builder homePlayerRatings(List<PlayerMatchRating> homePlayerRatings) { this.homePlayerRatings = homePlayerRatings; return this; }
+        public Builder awayPlayerRatings(List<PlayerMatchRating> awayPlayerRatings) { this.awayPlayerRatings = awayPlayerRatings; return this; }
         public Builder substitutionsRemaining(int substitutionsRemaining) { this.substitutionsRemaining = substitutionsRemaining; return this; }
-        public Builder homeSlots(List<FormationSlotDTO> homeSlots) { this.homeSlots = homeSlots; return this; }
-        public Builder awaySlots(List<FormationSlotDTO> awaySlots) { this.awaySlots = awaySlots; return this; }
+        public Builder homeSlots(List<FormationSlot> homeSlots) { this.homeSlots = homeSlots; return this; }
+        public Builder awaySlots(List<FormationSlot> awaySlots) { this.awaySlots = awaySlots; return this; }
 
         public MatchStateSnapshot build() {
             return new MatchStateSnapshot(

@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,7 +52,7 @@ public record FormationEffectiveness(
      * @return populated {@code FormationEffectiveness}.
      */
     public static FormationEffectiveness from(
-            List<LineupSlotDTO> slots,
+            List<LineupSlot> slots,
             Map<String, String> naturalByPlayer) {
         return from(slots, naturalByPlayer, null, List.of(), null, Map.of());
     }
@@ -69,7 +69,7 @@ public record FormationEffectiveness(
      * (callers that don't have formation coords wired in still work).
      */
     public static FormationEffectiveness from(
-            List<LineupSlotDTO> slots,
+            List<LineupSlot> slots,
             Map<String, String> naturalByPlayer,
             String persistedFormation,
             List<PlayerAttrDTO> attrsByPlayer,
@@ -96,7 +96,7 @@ public record FormationEffectiveness(
             // on top of the zone lookup. Otherwise fall back to the
             // values for callers that haven't wired coords).
             Map<String, String> safeNatural = (naturalByPlayer != null) ? naturalByPlayer : Map.of();
-            for (LineupSlotDTO slot : slots) {
+            for (LineupSlot slot : slots) {
                 if (slot == null) continue;
                 if (slot.playerId() == null || slot.subdivisionId() == null) continue;
                 String natural = safeNatural.get(slot.playerId());
@@ -152,7 +152,7 @@ public record FormationEffectiveness(
      * still produce sensible numbers).
      */
     private static TeamRatingsCalculator.TeamRatings computeRatings(
-            List<LineupSlotDTO> slots,
+            List<LineupSlot> slots,
             Map<String, String> naturalByPlayer,
             List<PlayerAttrDTO> attrsByPlayer,
             String formationForRatings,
@@ -170,7 +170,7 @@ public record FormationEffectiveness(
         }
         Map<String, double[]> safeCoords = (coordsBySubdivision != null) ? coordsBySubdivision : Map.of();
         java.util.List<TeamRatingsCalculator.PlayerAttrs> calculatorAttrs = new java.util.ArrayList<>();
-        for (LineupSlotDTO slot : slots) {
+        for (LineupSlot slot : slots) {
             if (slot == null || slot.playerId() == null) continue;
             String natural = (naturalByPlayer != null) ? naturalByPlayer.get(slot.playerId()) : null;
             String slotCat = roleAwareCategoryFor(slot.subdivisionId(), formationForRatings);
@@ -224,7 +224,7 @@ public record FormationEffectiveness(
      *         when no coords can be resolved.
      */
     private static double[] resolveSlotCoords(
-            LineupSlotDTO slot,
+            LineupSlot slot,
             Map<String, double[]> safeCoords,
             String naturalPosition) {
         Double cx = slot.customXPercent();
@@ -262,7 +262,7 @@ public record FormationEffectiveness(
      * around CAM/CDM/variant templates from flipping the whole tactical identity.
      */
     private static boolean isTacticalShapeOverride(
-            LineupSlotDTO slot,
+            LineupSlot slot,
             Map<String, double[]> safeCoords
     ) {
         if (slot == null
@@ -351,7 +351,7 @@ public record FormationEffectiveness(
      * @return populated {@code FormationEffectiveness}.
      */
     public static FormationEffectiveness from(
-            List<LineupSlotDTO> slots,
+            List<LineupSlot> slots,
             Map<String, String> naturalByPlayer,
             String persistedFormation) {
         return from(slots, naturalByPlayer, persistedFormation, List.of(), null, Map.of());

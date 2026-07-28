@@ -21,11 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -88,6 +86,8 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                                                         Integer requestedMinute) {
         return Mono.fromCallable(() -> executeSubstitutionInternal(
                 userId, matchId, teamId, playerOffId, playerOnId, requestedMinute))
+            .flatMap(execution -> appendBaselineSubstitution(matchId, execution.baselineAppend())
+                .thenReturn(execution.result()))
             .doOnSuccess(result -> {
                 if (result.success()) {
                     log.debug("Substitution persisted, {} subs remaining, minute={}",
@@ -118,7 +118,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
      * Unprocessable Entity (with code {@code LINEUP_VALIDATION_ERROR})
      * — NOT 200 OK + {@code success=false}.
      */
-    private SubstitutionResult executeSubstitutionInternal(UUID userId,
+    private SubstitutionExecution executeSubstitutionInternal(UUID userId,
                                                             UUID matchId,
                                                             String teamId,
                                                             String playerOffId,
@@ -203,65 +203,73 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             liveSession.recordManualSubstitution(event);
             session.refreshV24Snapshot();
 
-            // compare endpoint can replay the match with the same sub
-            // sequence. We do this AFTER liveSession.recordManualSubstitution
-            // so the live state is updated first.
-            //
-            // now returns Mono<Void>. We subscribe on a bounded-elastic
-            // scheduler and surface failures as a warn log so the live
-            // sub flow is never blocked by Redis hiccups.
             String careerId = session.getCurrentState() != null
                     ? session.getCurrentState().careerId() : null;
+            BaselineAppendCommand baselineAppend = null;
             if (careerId != null && !careerId.isBlank()) {
-                // Mono<Optional<...>> (the sync version silently aborted under
-                // Reactor parallel scheduling). Use blockOptional on a
-                // bounded-elastic scheduler so the block() runs off the
-                // caller's thread (V24LiveSession.recordManualSubstitution is
-                // called from the same controller flow that hits the
-                // /compare endpoint).
-                Optional<BaselineState> optBaseline = baselineStoragePort
-                        .findByMatchId(careerId, matchId.toString())
-                        .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
-                        .blockOptional(Duration.ofSeconds(5))
-                        .orElse(Optional.empty());
-                if (optBaseline.isPresent()) {
-                    BaselineState updated = optBaseline.get().withAppendedSub(
-                            new AppliedSubstitution(resolvedTeamId, playerOffId, playerOnId, minute));
-                    baselineStoragePort.save(careerId, updated)
-                            .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
-                            .doOnSuccess(v -> log.info(
-                                    "[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
-                                    matchId, minute, updated.subs().size()))
-                            .onErrorResume(baselineEx -> {
-                                // Baseline update failure must NOT fail the
-                                // substitution — the live path is the source
-                                // of truth, baseline is a best-effort compare
-                                // cache.
-                                log.warn("[F6-MATCH-COMPARE] Failed to update baseline for matchId={}: {}",
-                                        matchId, baselineEx.getMessage());
-                                return reactor.core.publisher.Mono.empty();
-                            })
-                            .subscribe();
-                } else {
-                    // No baseline exists (legacy path, or V24 path
-                    // failed to capture it at match start). Not an
-                    // error — the live path still works.
-                    log.debug("[F6-MATCH-COMPARE] No BaselineState found for matchId={}, sub not appended",
-                            matchId);
-                }
+                baselineAppend = new BaselineAppendCommand(
+                        careerId,
+                        resolvedTeamId,
+                        playerOffId,
+                        playerOnId,
+                        minute);
             }
 
             int remaining = engine.substitutionsRemaining(resolvedTeamId);
             log.info("Manual substitution applied: matchId={} teamId={} off={} on={} minute={} substitutionsRemaining={}",
                 matchId, resolvedTeamId, playerOffId, playerOnId, minute, remaining);
 
-            return SubstitutionResult.ok(minute, remaining);
+            return new SubstitutionExecution(SubstitutionResult.ok(minute, remaining), baselineAppend);
         } catch (IllegalArgumentException | IllegalStateException e) {
             // FLAG 1 UX fix: validation failures are NOT thrown to the controller;
             // they're returned as a failure result so the frontend gets a uniform
             // snackbar shape regardless of which validator rejected the request.
-            return SubstitutionResult.failure(e.getMessage());
+            return new SubstitutionExecution(SubstitutionResult.failure(e.getMessage()), null);
         }
+    }
+
+    private Mono<Void> appendBaselineSubstitution(UUID matchId, BaselineAppendCommand command) {
+        if (command == null) {
+            return Mono.empty();
+        }
+        return baselineStoragePort.findByMatchId(command.careerId(), matchId.toString())
+                .flatMap(optionalBaseline -> optionalBaseline
+                        .map(baseline -> {
+                            BaselineState updated = baseline.withAppendedSub(new AppliedSubstitution(
+                                    command.resolvedTeamId(),
+                                    command.playerOffId(),
+                                    command.playerOnId(),
+                                    command.minute()));
+                            return baselineStoragePort.save(command.careerId(), updated)
+                                    .doOnSuccess(v -> log.info(
+                                            "[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
+                                            matchId, command.minute(), updated.subs().size()));
+                        })
+                        .orElseGet(() -> {
+                            log.debug("[F6-MATCH-COMPARE] No BaselineState found for matchId={}, sub not appended",
+                                    matchId);
+                            return Mono.empty();
+                        }))
+                .onErrorResume(baselineEx -> {
+                    log.warn("[F6-MATCH-COMPARE] Failed to update baseline for matchId={}: {}",
+                            matchId, baselineEx.getMessage());
+                    return Mono.empty();
+                });
+    }
+
+    private record SubstitutionExecution(
+            SubstitutionResult result,
+            BaselineAppendCommand baselineAppend
+    ) {
+    }
+
+    private record BaselineAppendCommand(
+            String careerId,
+            String resolvedTeamId,
+            String playerOffId,
+            String playerOnId,
+            int minute
+    ) {
     }
 
     /**

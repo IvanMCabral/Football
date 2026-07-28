@@ -6,7 +6,6 @@ import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,20 +80,12 @@ class V24DetailedMatchEnginePasserTest {
     @Test
     void maxPasser_skipsOffPitchPlayers() throws Exception {
         // Player con PASSER=99 pero off-pitch no debe contar. Creamos
-        // directamente un V24PlayerMatchState off-pitch via fromSessionPlayer
-        // y luego mutate onPitch=false (hay un setter? — V24PlayerMatchState
-        // no expone setter publico para onPitch. Por eso usamos reflection
-        // para forzar el estado).
+        // directamente un V24PlayerMatchState y lo sacamos del campo con la API publica.
         SessionPlayer offPitchPlayer = makePlayer("home_off", 70);
         offPitchPlayer.setSkillLevel(PlayerSkill.PASSER, 99);
         V24PlayerMatchState offState = V24PlayerMatchState.fromSessionPlayer(offPitchPlayer, "home");
 
-        // Forzar onPitch=false via reflection (V24PlayerMatchState no expone
-        // setter publico para onPitch — el helper substituteOff() existe pero
-        // requiere que el player este en startingPlayers).
-        java.lang.reflect.Field onPitchField = V24PlayerMatchState.class.getDeclaredField("onPitch");
-        onPitchField.setAccessible(true);
-        onPitchField.setBoolean(offState, false);
+        offState.substituteOff();
         assertFalse(offState.onPitch(), "Sanity: el player debe estar off-pitch");
 
         List<V24PlayerMatchState> players = new ArrayList<>();
@@ -176,14 +167,8 @@ class V24DetailedMatchEnginePasserTest {
                         + delta + ", baseline=" + baselineHomePoss + ", treatment=" + treatmentHomePoss + ")");
     }
 
-    // ========== Reflection helper ==========
-
-    private int invokeMaxPasser(List<V24PlayerMatchState> players) throws Exception {
-        Method m = V24DetailedMatchEngine.class.getDeclaredMethod(
-                "maxPasserSkill", List.class);
-        m.setAccessible(true);
-        V24DetailedMatchEngine engine = new V24DetailedMatchEngine();
-        return (int) m.invoke(engine, players);
+    private int invokeMaxPasser(List<V24PlayerMatchState> players) {
+        return new V24PlayerSkillService().maxSkill(players, PlayerSkill.PASSER);
     }
 
     // ========== Fixture builders ==========

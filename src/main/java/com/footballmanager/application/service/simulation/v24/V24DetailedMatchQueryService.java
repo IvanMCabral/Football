@@ -2,6 +2,7 @@ package com.footballmanager.application.service.simulation.v24;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -32,9 +33,9 @@ public class V24DetailedMatchQueryService {
      * @return Optional containing the detail if API enabled and found, empty otherwise
      * @throws IllegalArgumentException if careerId or matchId is blank
      */
-    public Optional<V24DetailedMatchData> findDetail(String careerId, String matchId) {
+    public Mono<Optional<V24DetailedMatchData>> findDetail(String careerId, String matchId) {
         if (!apiEnabled) {
-            return Optional.empty();
+            return Mono.just(Optional.empty());
         }
         validateIds(careerId, matchId);
         return storagePort.findByMatchId(careerId, matchId);

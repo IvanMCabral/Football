@@ -1,8 +1,8 @@
 package com.footballmanager.application.service.simulation.v24;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.FormationDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.FormationPositionDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
+import com.footballmanager.application.service.editor.FormationDefinition;
+import com.footballmanager.application.service.editor.FormationPosition;
 import com.footballmanager.application.service.editor.FormationService;
 import com.footballmanager.application.service.domain.TeamStyle;
 import com.footballmanager.domain.model.entity.CareerSave;
@@ -76,9 +76,9 @@ public final class V24MatchContextFactory {
         List<SessionPlayer> homeBench = deriveBench(career, homeTeamId, homeStarters);
         List<SessionPlayer> awayBench = deriveBench(career, awayTeamId, awayStarters);
 
-        Map<String, LineupSlotDTO> homeSlotsByPlayerId =
+        Map<String, LineupSlot> homeSlotsByPlayerId =
                 resolveSlotsByPlayerId(career, homeTeamId, homeFormation, homeStarters);
-        Map<String, LineupSlotDTO> awaySlotsByPlayerId =
+        Map<String, LineupSlot> awaySlotsByPlayerId =
                 resolveSlotsByPlayerId(career, awayTeamId, awayFormation, awayStarters);
 
         return new V24MatchContext(
@@ -240,7 +240,7 @@ public final class V24MatchContextFactory {
     }
 
     private List<SessionPlayer> deriveSmartStartingXIfromSquad(List<SessionPlayer> squad, String formation) {
-        FormationDTO formationDto = formationService.getFormationByName(formation);
+        FormationDefinition formationDto = formationService.getFormationByName(formation);
         if (formationDto == null || formationDto.positions() == null || formationDto.positions().isEmpty()) {
             formationDto = formationService.getFormationByName("4-4-2");
         }
@@ -250,11 +250,11 @@ public final class V24MatchContextFactory {
 
         List<SessionPlayer> remaining = new ArrayList<>(squad);
         List<SessionPlayer> selected = new ArrayList<>();
-        List<FormationPositionDTO> positions = formationDto.positions().stream()
-                .sorted(Comparator.comparing(FormationPositionDTO::index))
+        List<FormationPosition> positions = formationDto.positions().stream()
+                .sorted(Comparator.comparing(FormationPosition::index))
                 .toList();
 
-        for (FormationPositionDTO position : positions) {
+        for (FormationPosition position : positions) {
             if (remaining.isEmpty()) break;
             SessionPlayer best = remaining.stream()
                     .max(Comparator
@@ -270,7 +270,7 @@ public final class V24MatchContextFactory {
         return selected;
     }
 
-    private int fallbackRoleFitScore(SessionPlayer player, FormationPositionDTO position) {
+    private int fallbackRoleFitScore(SessionPlayer player, FormationPosition position) {
         String playerProfile = fallbackPlayerProfile(player);
         String slotProfile = fallbackSlotProfile(position != null ? position.role() : null);
         if (playerProfile.equals(slotProfile)) return 100;
@@ -364,15 +364,15 @@ public final class V24MatchContextFactory {
                 .collect(Collectors.toList());
     }
 
-    private Map<String, LineupSlotDTO> resolveSlotsByPlayerId(
+    private Map<String, LineupSlot> resolveSlotsByPlayerId(
             CareerSave career,
             String teamId,
             String formation,
             List<SessionPlayer> starters) {
         if (career == null || teamId == null || teamId.isBlank()) return Map.of();
-        Map<String, Map<String, LineupSlotDTO>> allSlots = career.getTeamStarting11SubdivisionSlots();
+        Map<String, Map<String, LineupSlot>> allSlots = career.getTeamStarting11SubdivisionSlots();
         if (allSlots == null || allSlots.isEmpty()) return Map.of();
-        Map<String, LineupSlotDTO> teamSlots = allSlots.get(teamId);
+        Map<String, LineupSlot> teamSlots = allSlots.get(teamId);
         if (teamSlots == null || teamSlots.isEmpty()) return Map.of();
         Set<String> starterIds = starters == null
                 ? Set.of()
@@ -382,8 +382,8 @@ public final class V24MatchContextFactory {
                         .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
         if (starterIds.isEmpty()) return Map.of();
 
-        Map<String, LineupSlotDTO> byPlayerId = new LinkedHashMap<>();
-        for (LineupSlotDTO slot : teamSlots.values()) {
+        Map<String, LineupSlot> byPlayerId = new LinkedHashMap<>();
+        for (LineupSlot slot : teamSlots.values()) {
             if (slot == null || slot.playerId() == null || slot.playerId().isBlank()) continue;
             if (!starterIds.contains(slot.playerId())) continue;
             byPlayerId.put(slot.playerId(), enrichWithFormationCoords(slot, formation));
@@ -392,7 +392,7 @@ public final class V24MatchContextFactory {
         return byPlayerId;
     }
 
-    private LineupSlotDTO enrichWithFormationCoords(LineupSlotDTO slot, String formation) {
+    private LineupSlot enrichWithFormationCoords(LineupSlot slot, String formation) {
         if (slot == null || slot.subdivisionId() == null || formation == null || formation.isBlank()) {
             return slot;
         }
@@ -405,10 +405,11 @@ public final class V24MatchContextFactory {
         if (coords == null || coords.length < 2) {
             return slot;
         }
-        return new LineupSlotDTO(
+        return new LineupSlot(
                 slot.playerId(),
                 slot.subdivisionId(),
                 hasManualX ? slot.customXPercent() : coords[0],
                 hasManualY ? slot.customYPercent() : coords[1]);
     }
 }
+

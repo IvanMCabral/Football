@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -95,15 +94,7 @@ class GetCareerStatusUseCaseImplTest {
                     new BigDecimal("100000000"),
                     "4-4-2"
             );
-            // Override the auto-generated sessionTeamId so it matches sessionTeamId
-            // (CareerSave.getSessionTeam looks up by sessionTeamId).
-            try {
-                Field idField = SessionTeam.class.getDeclaredField("sessionTeamId");
-                idField.setAccessible(true);
-                idField.set(sessionTeam, sessionTeamId);
-            } catch (Exception e) {
-                throw new RuntimeException("failed to set sessionTeamId", e);
-            }
+            sessionTeam.setSessionTeamId(sessionTeamId);
             teamManager.addSessionTeam(sessionTeam);
         }
         career.setTeamManager(teamManager);
@@ -142,38 +133,15 @@ class GetCareerStatusUseCaseImplTest {
      * safe against reference mismatches.
      */
     private void simulatePromotion(CareerSave career, String sessionTeamId, Division fromDivision, Division toDivision) {
-        try {
-            Field smField = CareerSave.class.getDeclaredField("seasonManager");
-            smField.setAccessible(true);
-            CareerSeasonManager sm = (CareerSeasonManager) smField.get(career);
-
-            Field dmField = CareerSeasonManager.class.getDeclaredField("divisionManager");
-            dmField.setAccessible(true);
-            Object divisionManager = dmField.get(sm);
-
-            // Resolve live division instances from the divisionManager so we
-            // don't accidentally pass a stale test-scope Division that was never
-            // inserted into the divisions list. Match by divisionNumber, which
-            // is the unique key set at construction time.
-            Field liveDivisionsField = divisionManager.getClass().getDeclaredField("divisions");
-            liveDivisionsField.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            java.util.List<Division> liveDivisions = (java.util.List<Division>) liveDivisionsField.get(divisionManager);
-
-            Division liveFrom = liveDivisions.stream()
-                    .filter(d -> d.getDivisionNumber() == fromDivision.getDivisionNumber())
-                    .findFirst().orElseThrow();
-            Division liveTo = liveDivisions.stream()
-                    .filter(d -> d.getDivisionNumber() == toDivision.getDivisionNumber())
-                    .findFirst().orElseThrow();
-
-            java.lang.reflect.Method moveTeam = divisionManager.getClass().getDeclaredMethod(
-                    "moveTeam", String.class, Division.class, Division.class);
-            moveTeam.setAccessible(true);
-            moveTeam.invoke(divisionManager, sessionTeamId, liveFrom, liveTo);
-        } catch (Exception e) {
-            throw new RuntimeException("simulatePromotion failed", e);
-        }
+        List<Division> liveDivisions = career.getSeasonManager().getDivisions();
+        Division liveFrom = liveDivisions.stream()
+                .filter(d -> d.getDivisionNumber() == fromDivision.getDivisionNumber())
+                .findFirst().orElseThrow();
+        Division liveTo = liveDivisions.stream()
+                .filter(d -> d.getDivisionNumber() == toDivision.getDivisionNumber())
+                .findFirst().orElseThrow();
+        liveFrom.removeTeam(sessionTeamId);
+        liveTo.addTeam(sessionTeamId);
     }
 
     /**
@@ -190,17 +158,7 @@ class GetCareerStatusUseCaseImplTest {
         p.setType(Promotion.PromotionType.PROMOTED);
         p.setFromPosition(1);
 
-        Field smField = CareerSave.class.getDeclaredField("seasonManager");
-        smField.setAccessible(true);
-        CareerSeasonManager sm = (CareerSeasonManager) smField.get(career);
-        var calcField = CareerSeasonManager.class.getDeclaredField("promotionCalculator");
-        calcField.setAccessible(true);
-        Object calcInstance = calcField.get(sm);
-        var promotionsListField = calcInstance.getClass().getDeclaredField("promotionList");
-        promotionsListField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        java.util.List<Promotion> pl = (java.util.List<Promotion>) promotionsListField.get(calcInstance);
-        pl.add(p);
+        career.getSeasonManager().getPromotions().add(p);
     }
 
     @Test

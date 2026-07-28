@@ -16,6 +16,9 @@ target/
 *.err
 logs/
 
+# Local Redis persistence snapshots
+dump.rdb
+
 # Local browser / visual QA artifacts
 .playwright-mcp/
 role-slot-impact-*.png

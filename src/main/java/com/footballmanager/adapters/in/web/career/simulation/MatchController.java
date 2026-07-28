@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -23,15 +24,12 @@ public class MatchController {
      * Pauses a match.
      */
     @PostMapping("/{matchId}/pause")
-    public ResponseEntity<Object> pauseMatch(@PathVariable String matchId) {
+    public Mono<ResponseEntity<Object>> pauseMatch(@PathVariable String matchId) {
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        try {
-            matchManagementService.pauseMatch(null, matchIdUuid).block();
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return matchManagementService.pauseMatch(null, matchIdUuid)
+            .thenReturn(ResponseEntity.ok().build())
+            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage())));
     }
 
     /**
@@ -39,15 +37,12 @@ public class MatchController {
      * Resumes a paused match.
      */
     @PostMapping("/{matchId}/resume")
-    public ResponseEntity<Object> resumeMatch(@PathVariable String matchId) {
+    public Mono<ResponseEntity<Object>> resumeMatch(@PathVariable String matchId) {
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        try {
-            matchManagementService.resumeMatch(null, matchIdUuid).block();
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return matchManagementService.resumeMatch(null, matchIdUuid)
+            .thenReturn(ResponseEntity.ok().build())
+            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage())));
     }
 
     /**
@@ -55,14 +50,11 @@ public class MatchController {
      * Stops a match.
      */
     @PostMapping("/{matchId}/stop")
-    public ResponseEntity<Object> stopMatch(@PathVariable String matchId) {
+    public Mono<ResponseEntity<Object>> stopMatch(@PathVariable String matchId) {
         UUID matchIdUuid = UUID.fromString(matchId);
 
-        try {
-            matchManagementService.stopMatch(null, matchIdUuid).block();
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return matchManagementService.stopMatch(null, matchIdUuid)
+            .thenReturn(ResponseEntity.ok().build())
+            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage())));
     }
 }

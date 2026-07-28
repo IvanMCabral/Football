@@ -1,6 +1,7 @@
 package com.footballmanager.adapters.in.web.career.lineup.editor;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.FieldSubdivisionDTO;
+import com.footballmanager.application.service.editor.FieldSubdivision;
 import com.footballmanager.application.service.editor.FieldSubdivisionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -41,6 +42,22 @@ public class FieldSubdivisionController {
      */
     @GetMapping
     public Mono<List<FieldSubdivisionDTO>> getAllSubdivisions() {
-        return Mono.just(fieldSubdivisionService.getAllSubdivisions());
+        return Mono.just(fieldSubdivisionService.getAllSubdivisions().stream()
+            .map(FieldSubdivisionController::toDto)
+            .toList());
+    }
+
+    private static FieldSubdivisionDTO toDto(FieldSubdivision subdivision) {
+        return new FieldSubdivisionDTO(
+            subdivision.sector(),
+            subdivision.subIndex(),
+            subdivision.isGoalkeeper(),
+            subdivision.left(),
+            subdivision.top(),
+            subdivision.width(),
+            subdivision.height(),
+            subdivision.subdivisionId(),
+            subdivision.zone());
     }
 }
+

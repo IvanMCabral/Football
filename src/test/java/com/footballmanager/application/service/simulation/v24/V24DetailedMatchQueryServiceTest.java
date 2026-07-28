@@ -10,6 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +53,7 @@ class V24DetailedMatchQueryServiceTest {
 
     @Test
     void findDetailReturnsEmptyWhenApiDisabled() {
-        Optional<V24DetailedMatchData> result = queryService.findDetail("career-abc", "match-123");
+        Optional<V24DetailedMatchData> result = queryService.findDetail("career-abc", "match-123").block();
 
         assertTrue(result.isEmpty());
         verifyNoInteractions(storagePort);
@@ -60,9 +62,9 @@ class V24DetailedMatchQueryServiceTest {
     @Test
     void findDetailReturnsDataWhenPresentAndApiEnabled() {
         queryService = new V24DetailedMatchQueryService(storagePort, true);
-        when(storagePort.findByMatchId("career-abc", "match-123")).thenReturn(Optional.of(sampleDetail));
+        when(storagePort.findByMatchId("career-abc", "match-123")).thenReturn(Mono.just(Optional.of(sampleDetail)));
 
-        Optional<V24DetailedMatchData> result = queryService.findDetail("career-abc", "match-123");
+        Optional<V24DetailedMatchData> result = queryService.findDetail("career-abc", "match-123").block();
 
         assertTrue(result.isPresent());
         assertEquals("match-123", result.get().matchId());
@@ -78,9 +80,9 @@ class V24DetailedMatchQueryServiceTest {
     @Test
     void findDetailReturnsEmptyWhenMissingAndApiEnabled() {
         queryService = new V24DetailedMatchQueryService(storagePort, true);
-        when(storagePort.findByMatchId("career-abc", "nonexistent")).thenReturn(Optional.empty());
+        when(storagePort.findByMatchId("career-abc", "nonexistent")).thenReturn(Mono.just(Optional.empty()));
 
-        Optional<V24DetailedMatchData> result = queryService.findDetail("career-abc", "nonexistent");
+        Optional<V24DetailedMatchData> result = queryService.findDetail("career-abc", "nonexistent").block();
 
         assertTrue(result.isEmpty());
     }
@@ -152,11 +154,11 @@ class V24DetailedMatchQueryServiceTest {
                 List.of(), List.of(),
                 "Away win 2-1", "V24", 1, Instant.now(), null, null);
 
-        when(storagePort.findByMatchId("career-abc", "match-123")).thenReturn(Optional.of(sampleDetail));
-        when(storagePort.findByMatchId("career-xyz", "match-123")).thenReturn(Optional.of(careerXDetail));
+        when(storagePort.findByMatchId("career-abc", "match-123")).thenReturn(Mono.just(Optional.of(sampleDetail)));
+        when(storagePort.findByMatchId("career-xyz", "match-123")).thenReturn(Mono.just(Optional.of(careerXDetail)));
 
-        Optional<V24DetailedMatchData> foundAbc = queryService.findDetail("career-abc", "match-123");
-        Optional<V24DetailedMatchData> foundXyz = queryService.findDetail("career-xyz", "match-123");
+        Optional<V24DetailedMatchData> foundAbc = queryService.findDetail("career-abc", "match-123").block();
+        Optional<V24DetailedMatchData> foundXyz = queryService.findDetail("career-xyz", "match-123").block();
 
         assertTrue(foundAbc.isPresent());
         assertTrue(foundXyz.isPresent());

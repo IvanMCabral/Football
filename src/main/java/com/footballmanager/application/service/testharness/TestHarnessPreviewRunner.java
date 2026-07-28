@@ -10,7 +10,7 @@ import com.footballmanager.application.service.simulation.v24.V24ShotLocation;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
-import com.footballmanager.domain.port.in.testharness.TestHarnessUseCase.MatchPreviewSummary;
+import com.footballmanager.domain.port.in.testharness.MatchPreviewSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

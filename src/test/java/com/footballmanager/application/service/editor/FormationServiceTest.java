@@ -1,7 +1,7 @@
 package com.footballmanager.application.service.editor;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.FormationDTO;
-import com.footballmanager.adapters.in.web.career.lineup.dto.FormationPositionDTO;
+import com.footballmanager.application.service.editor.FormationDefinition;
+import com.footballmanager.application.service.editor.FormationPosition;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +45,7 @@ class FormationServiceTest {
             "3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2",
             "4-1-2-3");
         Set<String> actual = new HashSet<>();
-        for (FormationDTO f : service.getAllFormations()) {
+        for (FormationDefinition f : service.getAllFormations()) {
             actual.add(f.name());
         }
         assertEquals(names, actual);
@@ -54,7 +54,7 @@ class FormationServiceTest {
     @Test
     @DisplayName("Cada formación tiene exactamente 11 posiciones (1 GK + 10 outfield)")
     void eachFormationHas11Positions() {
-        for (FormationDTO f : service.getAllFormations()) {
+        for (FormationDefinition f : service.getAllFormations()) {
             assertEquals(11, f.positions().size(),
                 "Formación " + f.name() + " no tiene 11 posiciones");
         }
@@ -63,7 +63,7 @@ class FormationServiceTest {
     @Test
     @DisplayName("Cada formación tiene exactamente 1 GK")
     void eachFormationHasExactly1Gk() {
-        for (FormationDTO f : service.getAllFormations()) {
+        for (FormationDefinition f : service.getAllFormations()) {
             long gkCount = f.positions().stream()
                 .filter(p -> "GK".equals(p.role()))
                 .count();
@@ -75,9 +75,9 @@ class FormationServiceTest {
     @Test
     @DisplayName("subdivisionIds de cada formación son únicos")
     void subdivisionIdsUniqueWithinFormation() {
-        for (FormationDTO f : service.getAllFormations()) {
+        for (FormationDefinition f : service.getAllFormations()) {
             Set<String> ids = new HashSet<>();
-            for (FormationPositionDTO p : f.positions()) {
+            for (FormationPosition p : f.positions()) {
                 assertTrue(ids.add(p.subdivisionId()),
                     "subdivisionId duplicado en " + f.name() + ": " + p.subdivisionId());
             }
@@ -91,8 +91,8 @@ class FormationServiceTest {
         Set<String> validIds = new HashSet<>();
         subdivisionService.getAllSubdivisions().forEach(s -> validIds.add(s.subdivisionId()));
 
-        for (FormationDTO f : service.getAllFormations()) {
-            for (FormationPositionDTO p : f.positions()) {
+        for (FormationDefinition f : service.getAllFormations()) {
+            for (FormationPosition p : f.positions()) {
                 assertTrue(validIds.contains(p.subdivisionId()),
                     "Formación " + f.name() + " referencia subdivisionId inexistente: "
                         + p.subdivisionId());
@@ -103,7 +103,7 @@ class FormationServiceTest {
     @Test
     @DisplayName("Los counts de defenders/midfielders/attackers suman outfieldPlayers")
     void formationMetaSumsToOutfield() {
-        for (FormationDTO f : service.getAllFormations()) {
+        for (FormationDefinition f : service.getAllFormations()) {
             int sum = f.defenders() + f.midfielders() + f.attackers();
             assertEquals(f.outfieldPlayers().intValue(), sum,
                 "Formación " + f.name() + " - defenders+midfielders+attackers != outfieldPlayers");
@@ -113,7 +113,7 @@ class FormationServiceTest {
     @Test
     @DisplayName("Cada formación suma 10 outfield + 1 GK = 11 jugadores")
     void eachFormationSumsTo11Players() {
-        for (FormationDTO f : service.getAllFormations()) {
+        for (FormationDefinition f : service.getAllFormations()) {
             assertEquals(10, f.outfieldPlayers().intValue(),
                 "outfieldPlayers de " + f.name() + " debería ser 10");
             // 11 posiciones totales (10 outfield + 1 GK)
@@ -125,8 +125,8 @@ class FormationServiceTest {
     @Test
     @DisplayName("Coordenadas xPercent/yPercent están en rango válido [0, 100]")
     void coordinatesInValidRange() {
-        for (FormationDTO f : service.getAllFormations()) {
-            for (FormationPositionDTO p : f.positions()) {
+        for (FormationDefinition f : service.getAllFormations()) {
+            for (FormationPosition p : f.positions()) {
                 assertNotNull(p.xPercent());
                 assertNotNull(p.yPercent());
                 assertTrue(p.xPercent() >= 0 && p.xPercent() <= 100,
@@ -174,13 +174,13 @@ class FormationServiceTest {
         // Para cada formación, validar que ningún par de jugadores (excepto GK que es grande)
         // comparte el rectángulo visible derivado de (xPercent, yPercent) ± actionRangePercent/2.
         // El GK ocupa un slot grande separado (subdivisionId GK-1), lo excluimos del check.
-        for (FormationDTO f : service.getAllFormations()) {
-            List<FormationPositionDTO> positions = f.positions();
+        for (FormationDefinition f : service.getAllFormations()) {
+            List<FormationPosition> positions = f.positions();
             for (int i = 0; i < positions.size(); i++) {
-                FormationPositionDTO a = positions.get(i);
+                FormationPosition a = positions.get(i);
                 if ("GK-1".equals(a.subdivisionId())) continue; // GK: slot grande separado
                 for (int j = i + 1; j < positions.size(); j++) {
-                    FormationPositionDTO b = positions.get(j);
+                    FormationPosition b = positions.get(j);
                     if ("GK-1".equals(b.subdivisionId())) continue;
 
                     double axMin = a.xPercent() - a.actionRangePercent() / 2.0;
@@ -212,8 +212,8 @@ class FormationServiceTest {
         // se mantiene porque aunque cambio de cells, sigue habiendo 25 outfield
         // + 1 GK en uso.
         Set<String> actualUsed = new HashSet<>();
-        for (FormationDTO f : service.getAllFormations()) {
-            for (FormationPositionDTO p : f.positions()) {
+        for (FormationDefinition f : service.getAllFormations()) {
+            for (FormationPosition p : f.positions()) {
                 actualUsed.add(p.subdivisionId());
             }
         }
@@ -256,8 +256,8 @@ class FormationServiceTest {
         subdivisionService.getAllSubdivisions().forEach(s -> all.add(s.subdivisionId()));
 
         Set<String> used = new HashSet<>();
-        for (FormationDTO f : service.getAllFormations()) {
-            for (FormationPositionDTO p : f.positions()) {
+        for (FormationDefinition f : service.getAllFormations()) {
+            for (FormationPosition p : f.positions()) {
                 used.add(p.subdivisionId());
             }
         }
@@ -283,21 +283,21 @@ class FormationServiceTest {
         String[] fourBackFormations = {"4-4-2", "4-3-3", "4-2-3-1", "4-1-4-1", "4-2-2-2", "4-1-2-3"};
 
         for (String formationName : threeBackFormations) {
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f, formationName + " no encontrada");
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
             assertTrue(hasS23_2, "3-CB " + formationName + " esperaba S23-2 (CB central col 1 mid)");
         }
         for (String formationName : fiveBackFormations) {
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f, formationName + " no encontrada");
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
             assertTrue(hasS23_2, "5-CB " + formationName + " esperaba S23-2 (CB central col 1 mid)");
         }
         for (String formationName : fourBackFormations) {
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f, formationName + " no encontrada");
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
@@ -313,17 +313,17 @@ class FormationServiceTest {
     @Test
     @DisplayName("3-5-2 wide mids son LWB/RWB (no LM/RM)")
     void formation_3_5_2_usesLwbRwbForWideMids() {
-        FormationDTO f = service.getFormationByName("3-5-2");
+        FormationDefinition f = service.getFormationByName("3-5-2");
         assertNotNull(f);
         // pos #4 (slot S15-1) debe ser LWB
-        FormationPositionDTO leftWide = f.positions().stream()
+        FormationPosition leftWide = f.positions().stream()
             .filter(p -> "S15-1".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("LWB", leftWide.role(),
             "3-5-2 pos #4 (S15-1) esperaba LWB, fue " + leftWide.role());
 
         // pos #8 (slot S18-3) debe ser RWB
-        FormationPositionDTO rightWide = f.positions().stream()
+        FormationPosition rightWide = f.positions().stream()
             .filter(p -> "S18-3".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("RWB", rightWide.role(),
@@ -333,15 +333,15 @@ class FormationServiceTest {
     @Test
     @DisplayName("3-4-3 wide mids son LWB/RWB (no LM/RM)")
     void formation_3_4_3_usesLwbRwbForWideMids() {
-        FormationDTO f = service.getFormationByName("3-4-3");
+        FormationDefinition f = service.getFormationByName("3-4-3");
         assertNotNull(f);
-        FormationPositionDTO leftWide = f.positions().stream()
+        FormationPosition leftWide = f.positions().stream()
             .filter(p -> "S15-1".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("LWB", leftWide.role(),
             "3-4-3 pos #4 (S15-1) esperaba LWB, fue " + leftWide.role());
 
-        FormationPositionDTO rightWide = f.positions().stream()
+        FormationPosition rightWide = f.positions().stream()
             .filter(p -> "S18-3".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("RWB", rightWide.role(),
@@ -351,14 +351,14 @@ class FormationServiceTest {
     @Test
     @DisplayName("4-4-2 wide mids siguen siendo LM/RM (symmetric cells S16-2/S18-2)")
     void formation_4_4_2_wideMidsRemainLmRm() {
-        FormationDTO f = service.getFormationByName("4-4-2");
+        FormationDefinition f = service.getFormationByName("4-4-2");
         assertNotNull(f);
-        FormationPositionDTO leftWide = f.positions().stream()
+        FormationPosition leftWide = f.positions().stream()
             .filter(p -> "S16-2".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("LM", leftWide.role());
 
-        FormationPositionDTO rightWide = f.positions().stream()
+        FormationPosition rightWide = f.positions().stream()
             .filter(p -> "S18-2".equals(p.subdivisionId()))
             .findFirst().orElseThrow();
         assertEquals("RM", rightWide.role());
@@ -381,10 +381,10 @@ class FormationServiceTest {
         for (var entry : expectedRoles.entrySet()) {
             String formationName = entry.getKey();
             List<String> expected = entry.getValue();
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f, formationName + " no encontrada");
             List<String> actual = f.positions().stream()
-                .map(FormationPositionDTO::role)
+                .map(FormationPosition::role)
                 .toList();
             assertEquals(expected, actual,
                 formationName + " roles no coinciden. Esperaba " + expected + " pero fue " + actual);
@@ -408,10 +408,10 @@ class FormationServiceTest {
         for (var entry : expectedRoles.entrySet()) {
             String formationName = entry.getKey();
             List<String> expected = entry.getValue();
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f, formationName + " no encontrada");
             List<String> actual = f.positions().stream()
-                .map(FormationPositionDTO::role)
+                .map(FormationPosition::role)
                 .toList();
             assertEquals(expected, actual,
                 formationName + " roles no coinciden. Esperaba " + expected + " pero fue " + actual);
@@ -423,20 +423,20 @@ class FormationServiceTest {
     void newFormationsHaveUniqueSubdivisionIdsAndValidCoords() {
         String[] newFormations = {"3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2", "4-1-2-3"};
         for (String formationName : newFormations) {
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f, formationName + " no encontrada");
             assertEquals(11, f.positions().size(),
                 formationName + " no tiene 11 posiciones");
 
             // subdivisionIds únicos
             Set<String> ids = new HashSet<>();
-            for (FormationPositionDTO p : f.positions()) {
+            for (FormationPosition p : f.positions()) {
                 assertTrue(ids.add(p.subdivisionId()),
                     formationName + " tiene subdivisionId duplicado: " + p.subdivisionId());
             }
 
             // coords en [0, 100]
-            for (FormationPositionDTO p : f.positions()) {
+            for (FormationPosition p : f.positions()) {
                 assertNotNull(p.xPercent());
                 assertNotNull(p.yPercent());
                 assertTrue(p.xPercent() >= 0 && p.xPercent() <= 100,
@@ -468,21 +468,21 @@ class FormationServiceTest {
         String[] fourBackNew = {"4-2-2-2", "4-1-2-3"};
 
         for (String formationName : threeBackNew) {
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f);
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
             assertTrue(hasS23_2, "3-CB " + formationName + " esperaba S23-2");
         }
         for (String formationName : fiveBackNew) {
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f);
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
             assertTrue(hasS23_2, "5-CB " + formationName + " esperaba S23-2");
         }
         for (String formationName : fourBackNew) {
-            FormationDTO f = service.getFormationByName(formationName);
+            FormationDefinition f = service.getFormationByName(formationName);
             assertNotNull(f);
             boolean hasS23_2 = f.positions().stream()
                 .anyMatch(p -> "S23-2".equals(p.subdivisionId()));
@@ -511,10 +511,10 @@ class FormationServiceTest {
         double yBucket = 2.0;
         double maxCenterDrift = 0.5;
 
-        for (FormationDTO f : service.getAllFormations()) {
+        for (FormationDefinition f : service.getAllFormations()) {
             // Agrupa positions por yPercent bucket.
             Map<Integer, List<Double>> yGroups = new java.util.TreeMap<>();
-            for (FormationPositionDTO p : f.positions()) {
+            for (FormationPosition p : f.positions()) {
                 int bucket = (int) Math.round(p.yPercent() / yBucket);
                 yGroups.computeIfAbsent(bucket, k -> new java.util.ArrayList<>())
                     .add(p.xPercent());
@@ -536,3 +536,4 @@ class FormationServiceTest {
         }
     }
 }
+

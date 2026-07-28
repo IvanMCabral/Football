@@ -127,10 +127,8 @@ public class CareerTeamController {
                 if (userTeamId == null) {
                     return Mono.empty();
                 }
-                return Mono.defer(() -> Mono.justOrEmpty(
-                    teamCommandUseCase.getSessionTeam(userId, userTeamId)
-                        .map(SessionEntityMapper::toDTO)
-                        .block()));
+                return teamCommandUseCase.getSessionTeam(userId, userTeamId)
+                    .map(SessionEntityMapper::toDTO);
             });
     }
 

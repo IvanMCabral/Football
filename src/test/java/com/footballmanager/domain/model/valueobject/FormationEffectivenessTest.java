@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,19 +25,19 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("FormationEffectiveness — V25D47 aggregate (infer + per-player effectiveness)")
 class FormationEffectivenessTest {
 
-    private LineupSlotDTO slot(String playerId, String subdivisionId) {
-        return new LineupSlotDTO(playerId, subdivisionId);
+    private LineupSlot slot(String playerId, String subdivisionId) {
+        return new LineupSlot(playerId, subdivisionId);
     }
 
-    private LineupSlotDTO customSlot(String playerId, String subdivisionId, double x, double y) {
-        return new LineupSlotDTO(playerId, subdivisionId, x, y);
+    private LineupSlot customSlot(String playerId, String subdivisionId, double x, double y) {
+        return new LineupSlot(playerId, subdivisionId, x, y);
     }
 
     @Test
     @DisplayName("from: 4-4-2 lineup with all-natural positions → teamAverage=1.0")
     void from_perfectLineup() {
         // 11 players at their natural positions: 1 GK + 4 DEF + 4 MID + 2 ATT
-        List<LineupSlotDTO> slots = new ArrayList<>();
+        List<LineupSlot> slots = new ArrayList<>();
         slots.add(slot("p1", "GK-1"));                          // GK → GK
         slots.add(slot("p2", "S27-1")); slots.add(slot("p3", "S24-1"));  // 2 DEF
         slots.add(slot("p4", "S21-1")); slots.add(slot("p5", "S19-1"));
@@ -64,7 +64,7 @@ class FormationEffectivenessTest {
     @DisplayName("from: CB in MID slot → effectiveness 0.8, teamAverage reflects penalty")
     void from_cbInMidPenalty() {
         // 1 GK + 4 DEF + 4 MID + 2 ATT, but player p6 is a CB placed in MID slot
-        List<LineupSlotDTO> slots = new ArrayList<>();
+        List<LineupSlot> slots = new ArrayList<>();
         slots.add(slot("p1", "GK-1"));
         slots.add(slot("p2", "S27-1")); slots.add(slot("p3", "S24-1"));
         slots.add(slot("p4", "S21-1")); slots.add(slot("p5", "S19-1"));
@@ -94,7 +94,7 @@ class FormationEffectivenessTest {
     @DisplayName("from: WINGER in MID slot → effectiveness 0.95 (carrilero flexibility)")
     void from_wingerCarrilero() {
         // 11 players but a WINGER in MID slot
-        List<LineupSlotDTO> slots = new ArrayList<>();
+        List<LineupSlot> slots = new ArrayList<>();
         slots.add(slot("p1", "GK-1"));
         slots.add(slot("p2", "S27-1")); slots.add(slot("p3", "S24-1"));
         slots.add(slot("p4", "S21-1")); slots.add(slot("p5", "S19-1"));
@@ -132,7 +132,7 @@ class FormationEffectivenessTest {
     @Test
     @DisplayName("from: null naturalByPlayer → all per-player effectiveness = 1.0 (backward compat)")
     void from_nullNatural() {
-        List<LineupSlotDTO> slots = new ArrayList<>();
+        List<LineupSlot> slots = new ArrayList<>();
         slots.add(slot("p1", "GK-1"));
         slots.add(slot("p2", "S27-1"));
         slots.add(slot("p3", "S24-1"));
@@ -167,7 +167,7 @@ class FormationEffectivenessTest {
     @Test
     @DisplayName("generic positions are not penalized at canonical formation slots")
     void genericPositionsAtCanonicalSlots_noGeometryPenalty() {
-        List<LineupSlotDTO> slots = List.of(
+        List<LineupSlot> slots = List.of(
                 slot("gk", "GK-1"),
                 slot("lb", "S22-2"),
                 slot("lcb", "S23-1"),
@@ -245,7 +245,7 @@ class FormationEffectivenessTest {
     @Test
     @DisplayName("extreme role misuse still carries a strong penalty")
     void extremeRoleMisuse_stillStrongPenalty() {
-        List<LineupSlotDTO> slots = List.of(slot("att", "S22-2"));
+        List<LineupSlot> slots = List.of(slot("att", "S22-2"));
         Map<String, String> natural = Map.of("att", "ATT");
         Map<String, double[]> coords = Map.of("S22-2", new double[]{16.65, 83.0});
 
@@ -259,7 +259,7 @@ class FormationEffectivenessTest {
     @Test
     @DisplayName("back-three wingbacks are evaluated as DEF, not MID")
     void backThreeWingbacks_areDefensiveSlots() {
-        List<LineupSlotDTO> slots = List.of(
+        List<LineupSlot> slots = List.of(
                 slot("lwb", "S15-1"),
                 slot("rwb", "S18-3")
         );
@@ -283,7 +283,7 @@ class FormationEffectivenessTest {
     @Test
     @DisplayName("4-2-3-1 LW/RW advanced slots are evaluated as ATT, not MID")
     void fourTwoThreeOneWideAttackers_areAttackingSlots() {
-        List<LineupSlotDTO> slots = List.of(
+        List<LineupSlot> slots = List.of(
                 slot("lw", "S10-2"),
                 slot("rw", "S12-2")
         );
@@ -311,7 +311,7 @@ class FormationEffectivenessTest {
         // (see front-ciber/.../formation-effectiveness.dto.ts).
         // If the map were keyed by playerId, every front lookup would
         // return undefined and the CSS class / badge would never apply.
-        List<LineupSlotDTO> slots = new ArrayList<>();
+        List<LineupSlot> slots = new ArrayList<>();
         slots.add(slot("p1", "GK-1"));
         slots.add(slot("p2", "S22-1"));
         slots.add(slot("p6", "S15-1")); // CB in MID — penalty

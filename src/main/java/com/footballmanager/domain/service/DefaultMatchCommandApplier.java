@@ -3,7 +3,6 @@ package com.footballmanager.domain.service;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.valueobject.Tactic;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -11,7 +10,6 @@ import java.util.List;
  * Implementación del aplicador de comandos tácticos.
  * Contiene la lógica de negocio para aplicar cambios tácticos durante un partido.
  */
-@Component
 public class DefaultMatchCommandApplier implements MatchCommandApplier {
 
     @Override

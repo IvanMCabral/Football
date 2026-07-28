@@ -4,6 +4,8 @@ import com.footballmanager.application.service.simulation.v24.V24DetailedMatchDa
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngineProvider;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.application.service.simulation.v24.V24MatchEvent;
 import com.footballmanager.application.service.simulation.v24.V24MatchEventType;
@@ -400,23 +402,15 @@ class V24CareerMutationAvailabilityLifecycleIntegrationTest {
 
     private static class FakeStoragePort implements V24DetailedMatchStoragePort {
         @Override
-        public void save(String careerId, V24DetailedMatchData detail) {
-            // no-op
-        }
+        public Mono<Void> save(String careerId, V24DetailedMatchData detail) { return Mono.empty(); }
 
         @Override
-        public java.util.Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId) {
-            return java.util.Optional.empty();
-        }
+        public Mono<java.util.Optional<V24DetailedMatchData>> findByMatchId(String careerId, String matchId) { return Mono.just(java.util.Optional.empty()); }
 
         @Override
-        public List<V24DetailedMatchData> findByCareerId(String careerId) {
-            return List.of();
-        }
+        public Flux<V24DetailedMatchData> findByCareerId(String careerId) { return Flux.empty(); }
 
         @Override
-        public void deleteByCareerId(String careerId) {
-            // no-op
-        }
+        public Mono<Void> deleteByCareerId(String careerId) { return Mono.empty(); }
     }
 }

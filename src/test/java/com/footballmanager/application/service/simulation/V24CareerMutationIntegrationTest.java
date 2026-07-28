@@ -5,6 +5,8 @@ import com.footballmanager.application.service.simulation.v24.V24DetailedMatchDa
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchEngineProvider;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchResult;
 import com.footballmanager.application.service.simulation.v24.V24DetailedMatchStoragePort;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import com.footballmanager.application.service.simulation.v24.V24MatchContext;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.MatchResult;
@@ -2749,44 +2751,30 @@ class V24CareerMutationIntegrationTest {
         V24DetailedMatchData savedDetail = null;
 
         @Override
-        public void save(String careerId, V24DetailedMatchData detail) {
-            this.saveCalled = true;
+        public Mono<Void> save(String careerId, V24DetailedMatchData detail) {this.saveCalled = true;
             this.savedCareerId = careerId;
-            this.savedDetail = detail;
-        }
+            this.savedDetail = detail; return Mono.empty();}
 
         @Override
-        public java.util.Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId) {
-            return java.util.Optional.empty();
-        }
+        public Mono<java.util.Optional<V24DetailedMatchData>> findByMatchId(String careerId, String matchId) { return Mono.just(java.util.Optional.empty()); }
 
         @Override
-        public List<V24DetailedMatchData> findByCareerId(String careerId) {
-            return List.of();
-        }
+        public Flux<V24DetailedMatchData> findByCareerId(String careerId) { return Flux.empty(); }
 
         @Override
-        public void deleteByCareerId(String careerId) {
-        }
+        public Mono<Void> deleteByCareerId(String careerId) { return Mono.empty(); }
     }
     private static class ThrowingStoragePort implements V24DetailedMatchStoragePort {
         @Override
-        public void save(String careerId, V24DetailedMatchData detail) {
-            throw new RuntimeException("Simulated storage failure");
-        }
+        public Mono<Void> save(String careerId, V24DetailedMatchData detail) { return Mono.error(new RuntimeException("Simulated storage failure")); }
 
         @Override
-        public java.util.Optional<V24DetailedMatchData> findByMatchId(String careerId, String matchId) {
-            return java.util.Optional.empty();
-        }
+        public Mono<java.util.Optional<V24DetailedMatchData>> findByMatchId(String careerId, String matchId) { return Mono.just(java.util.Optional.empty()); }
 
         @Override
-        public List<V24DetailedMatchData> findByCareerId(String careerId) {
-            return List.of();
-        }
+        public Flux<V24DetailedMatchData> findByCareerId(String careerId) { return Flux.empty(); }
 
         @Override
-        public void deleteByCareerId(String careerId) {
-        }
+        public Mono<Void> deleteByCareerId(String careerId) { return Mono.empty(); }
     }
 }

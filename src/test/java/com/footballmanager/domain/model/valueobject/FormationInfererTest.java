@@ -1,6 +1,6 @@
 package com.footballmanager.domain.model.valueobject;
 
-import com.footballmanager.adapters.in.web.career.lineup.dto.LineupSlotDTO;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,16 +23,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("FormationInferer — V25D47 formation inference from subdivision slots")
 class FormationInfererTest {
 
-    private LineupSlotDTO slot(String playerId, String subdivisionId) {
-        return new LineupSlotDTO(playerId, subdivisionId);
+    private LineupSlot slot(String playerId, String subdivisionId) {
+        return new LineupSlot(playerId, subdivisionId);
     }
 
     /** Build an 11-slot lineup with the given DEF/MID/ATT counts plus the GK slot. */
-    private List<LineupSlotDTO> lineupWith(int def, int mid, int att) {
+    private List<LineupSlot> lineupWith(int def, int mid, int att) {
         if (def + mid + att != 10) {
             throw new IllegalArgumentException("DEF+MID+ATT must equal 10 (got " + (def + mid + att) + ")");
         }
-        List<LineupSlotDTO> slots = new ArrayList<>(11);
+        List<LineupSlot> slots = new ArrayList<>(11);
 
         // 1 GK
         slots.add(slot("p-gk", "GK-1"));
@@ -104,14 +104,14 @@ class FormationInfererTest {
     @Test
     @DisplayName("infer: 10 slots (missing player) → '4-4-2' graceful degradation")
     void infer_shortSlots() {
-        List<LineupSlotDTO> ten = lineupWith(4, 4, 2).subList(0, 10);
+        List<LineupSlot> ten = lineupWith(4, 4, 2).subList(0, 10);
         assertEquals("4-4-2", FormationInferer.infer(ten));
     }
 
     @Test
     @DisplayName("infer: 12 slots (too many) → '4-4-2' graceful degradation")
     void infer_tooManySlots() {
-        List<LineupSlotDTO> twelve = new ArrayList<>(lineupWith(4, 4, 2));
+        List<LineupSlot> twelve = new ArrayList<>(lineupWith(4, 4, 2));
         twelve.add(slot("p-extra", "S01-1"));
         assertEquals("4-4-2", FormationInferer.infer(twelve));
     }
@@ -120,7 +120,7 @@ class FormationInfererTest {
     @DisplayName("infer: 0 GK (broken lineup) → '4-4-2' graceful degradation")
     void infer_noGk() {
         // 11 outfield slots only, no GK-1
-        List<LineupSlotDTO> noGk = lineupWith(4, 4, 2);
+        List<LineupSlot> noGk = lineupWith(4, 4, 2);
         // Replace the GK slot with an outfield slot (zone ATT)
         noGk.set(0, slot("p-no-gk", "S01-1"));
         assertEquals("4-4-2", FormationInferer.infer(noGk));
@@ -129,7 +129,7 @@ class FormationInfererTest {
     @Test
     @DisplayName("infer: garbage subdivisionId → skipped, may yield default")
     void infer_garbageSubdivisionId() {
-        List<LineupSlotDTO> garbage = new ArrayList<>();
+        List<LineupSlot> garbage = new ArrayList<>();
         garbage.add(slot("p-gk", "GARBAGE-NOT-SECTOR"));
         garbage.add(slot("p1", "XX-1"));
         // Total after filter = 0, no GK → default

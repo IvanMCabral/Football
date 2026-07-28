@@ -345,9 +345,7 @@ class V24EnergyRecoveryLifecycleApplierTest {
 
     private void setEnergyNull(SessionPlayer p) {
         try {
-            java.lang.reflect.Field field = SessionPlayer.class.getDeclaredField("energy");
-            field.setAccessible(true);
-            field.set(p, null);
+            p.setEnergy(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
