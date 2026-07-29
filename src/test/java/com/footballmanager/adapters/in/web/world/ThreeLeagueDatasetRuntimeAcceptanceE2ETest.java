@@ -110,7 +110,7 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
     void importerRollsBackWhenWriteFails() {
         deleteGeneratedDatasetRows();
         jdbcTemplate.update("DELETE FROM players WHERE source_system = 'conflict-fixture'");
-        UUID conflictingPlayerId = deterministicUuid("player:manager-initial:esp:athletic-club:p01");
+        UUID conflictingPlayerId = deterministicUuid("player:public-identity:esp:athletic-club:adama-boiro");
         jdbcTemplate.update("""
             INSERT INTO players (
                 id, source_system, source_id, name, display_name, age, birth_date, position,

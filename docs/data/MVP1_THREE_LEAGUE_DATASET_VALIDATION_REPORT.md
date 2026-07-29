@@ -1,53 +1,38 @@
 # MVP 1 Three-League Dataset Validation Report
 
-## Verdict
+Verdict: APPROVED
 
-`APPROVED WITH ISSUES`.
+Cutoff date: 2026-07-29.
 
-The explicit dataset is structurally valid and runtime-ready. It is fictional, not a validated real roster.
+Validated source dataset:
 
-## Coverage
+- Countries: 3.
+- Leagues: 3.
+- Clubs: 70.
+- Player files: 70.
+- Players: 1680.
+- Players per club: 24.
+- Duplicate external IDs: 0.
+- Invalid special trait counts: 0.
+- Fictitious generated identity patterns: 0.
 
-| Metric | Expected | Status |
-| --- | ---: | --- |
-| Countries | 3 | OK |
-| Leagues | 3 | OK |
-| Clubs | 70 | OK |
-| Players per club | 24 | OK |
-| Players total | 1680 | OK |
-| Special traits per player | 2 | OK |
-| Trait rows | 3360 | OK |
+Source mix:
 
-## Source validation
+- Wikipedia records: 1041.
+- TheSportsDB records: 639.
 
-The source files under `src/main/resources/data/initial/players` include:
+Every player has:
 
-- `externalId`;
-- `fullName`;
-- `displayName`;
-- `dateOfBirth`;
-- `nationalityCode`;
-- `clubExternalId`;
-- `primaryPosition`;
-- `secondaryPositions`;
-- `preferredFoot`;
-- `heightCm`;
-- `shirtNumber`;
-- all numeric gameplay attributes;
-- exactly two explicit `specialAttributes`;
-- provenance;
-- estimated field markers.
+- real public name;
+- display name;
+- club external ID;
+- identity source;
+- identity checked date;
+- normalized MVP tactical position;
+- MANAGER attributes;
+- exactly two special traits.
 
-## Automated evidence
+Focal test evidence:
 
-Focused command:
-
-```bash
-mvn -q -Dtest='ThreeLeagueDatasetImporterTest,ThreeLeagueDatasetRuntimeAcceptanceE2ETest' test
-```
-
-Result after explicit dataset conversion: green, 5 tests, 0 failures, 0 errors, 0 skipped.
-
-## Known issue
-
-The explicit dataset is not a real roster. Real-player source licensing remains unresolved.
+- `ThreeLeagueDatasetImporterTest`: passed.
+- `ThreeLeagueDatasetRuntimeAcceptanceE2ETest`: passed.
