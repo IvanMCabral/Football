@@ -1,0 +1,28 @@
+{
+  "dataset": "MANAGER MVP 1 real player identity dataset",
+  "cutoffDate": "2026-07-29",
+  "identityCheckedAt": "2026-07-29",
+  "scope": {
+    "countries": 3,
+    "leagues": 3,
+    "clubs": 70,
+    "players": 1680,
+    "playersPerClub": 24
+  },
+  "identityPolicy": "Real, publicly recognizable player names are used for MVP identity only. Technical, physical, mental, economic and special-trait data are MANAGER estimates.",
+  "sources": [
+    "TheSportsDB public team/player pages",
+    "Wikipedia public club squad pages",
+    "Individual public player pages when a club table omitted one player needed for MVP roster coverage"
+  ],
+  "distributionRisk": "Accepted by product owner for MVP; not represented as legally guaranteed redistribution.",
+  "excludedData": [
+    "commercial ratings",
+    "market-provider valuations",
+    "salaries",
+    "photos",
+    "badges",
+    "biographies",
+    "protected descriptive text"
+  ]
+}
