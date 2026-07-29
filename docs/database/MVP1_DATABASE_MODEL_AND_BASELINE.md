@@ -275,4 +275,16 @@ Initial validation before changing the baseline:
 - frontend ChromeHeadless tests: 1016 success, 0 failures, 2 skipped;
 - schema backup: created outside the repository.
 
-Final validation results are recorded in the task closure and Git commits.
+Final validation after the clean baseline:
+
+- previous schema and Flyway history backup: `C:\Users\ichu_\AppData\Local\Temp\manager-db-baseline-backup-20260729-123719`;
+- active migration source: only `src/main/resources/db/migration/V1__create_manager_schema.sql`;
+- temporary clean database migration: passed with `V1 | create manager schema`;
+- recreated local `football_manager` database: passed with one Flyway row, `V1 | create manager schema | success=true`;
+- recreated local database table count: 26 public base tables;
+- runtime smoke: passed through register, seed, career creation, lineup confirmation, round start, detailed match fetch and player statistics fetch;
+- backend test compile: passed;
+- backend suite: 2435 tests, 0 failures, 0 errors, 4 skipped;
+- frontend development build: passed;
+- frontend production build: passed;
+- frontend ChromeHeadless tests: 1016 success, 0 failures, 2 skipped.
