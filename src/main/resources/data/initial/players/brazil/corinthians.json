@@ -1,6 +1,6 @@
 [
   {
-    "externalId": "public-identity:bra:corinthians:allan",
+    "externalId": "public-player:allan:1988-10-11:bra",
     "fullName": "Allan",
     "displayName": "Allan",
     "dateOfBirth": "1988-10-11",
@@ -31,28 +31,42 @@
       "identityUrl": "https://www.thesportsdb.com/player/34160930",
       "identitySourceId": "34160930",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34160930",
+    "sourceEntityId": "34160930",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:andre-carrillo",
+    "externalId": "public-player:andre-carrillo:1992-03-14:bra",
     "fullName": "André Carrillo",
     "displayName": "Carrillo",
     "dateOfBirth": "1992-03-14",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 194,
     "shirtNumber": 19,
@@ -66,8 +80,8 @@
     },
     "marketValue": "21537406",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -76,30 +90,39 @@
       "identityUrl": "https://www.thesportsdb.com/player/34146625",
       "identitySourceId": "34146625",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34146625",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34146625",
+    "sourceEntityId": "34146625",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34146625",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:andre-ramalho",
+    "externalId": "public-player:andre-ramalho:2004-06-20:bra",
     "fullName": "André Ramalho",
     "displayName": "Ramalho",
     "dateOfBirth": "2004-06-20",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "LB",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -115,7 +138,7 @@
     "marketValue": "24449411",
     "specialAttributes": [
       "workhorse",
-      "speedster"
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -124,29 +147,40 @@
       "identityUrl": "https://www.thesportsdb.com/player/34160665",
       "identitySourceId": "34160665",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34160665",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34160665",
+    "sourceEntityId": "34160665",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34160665",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:breno-bidon",
+    "externalId": "public-player:breno-bidon:1998-02-25:bra",
     "fullName": "Breno Bidon",
     "displayName": "Bidon",
     "dateOfBirth": "1998-02-25",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "CB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CDM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
@@ -161,8 +195,8 @@
     },
     "marketValue": "21922294",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -171,21 +205,31 @@
       "identityUrl": "https://www.thesportsdb.com/player/34235436",
       "identitySourceId": "34235436",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34235436",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34235436",
+    "sourceEntityId": "34235436",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34235436",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:charles",
+    "externalId": "public-player:charles:1994-01-16:bra",
     "fullName": "Charles",
     "displayName": "Charles",
     "dateOfBirth": "1994-01-16",
@@ -208,8 +252,8 @@
     },
     "marketValue": "21850679",
     "specialAttributes": [
-      "set_piece_specialist",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -218,21 +262,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34200043",
       "identitySourceId": "34200043",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34200043",
+    "sourceEntityId": "34200043",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:fabrizio-angileri",
+    "externalId": "public-player:fabrizio-angileri:1991-07-04:bra",
     "fullName": "Fabrizio Angileri",
     "displayName": "Angileri",
     "dateOfBirth": "1991-07-04",
@@ -255,8 +310,8 @@
     },
     "marketValue": "22089718",
     "specialAttributes": [
-      "set_piece_specialist",
-      "workhorse"
+      "workhorse",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -265,29 +320,40 @@
       "identityUrl": "https://www.thesportsdb.com/player/34175840",
       "identitySourceId": "34175840",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34175840",
+    "sourceEntityId": "34175840",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:gabriel-paulista",
+    "externalId": "public-player:gabriel-paulista:2004-07-02:bra",
     "fullName": "Gabriel Paulista",
     "displayName": "Paulista",
     "dateOfBirth": "2004-07-02",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "RB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RWB",
+      "CM",
       "CB"
     ],
     "preferredFoot": "RIGHT",
@@ -313,30 +379,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34149750",
       "identitySourceId": "34149750",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34149750",
+    "sourceEntityId": "34149750",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:gustavo-henrique",
+    "externalId": "public-player:gustavo-henrique:1989-12-22:bra",
     "fullName": "Gustavo Henrique",
     "displayName": "Henrique",
     "dateOfBirth": "1989-12-22",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 173,
@@ -351,8 +428,8 @@
     },
     "marketValue": "26737214",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -361,30 +438,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34200527",
       "identitySourceId": "34200527",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34200527",
+    "sourceEntityId": "34200527",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:hugo",
+    "externalId": "public-player:hugo:2001-08-08:bra",
     "fullName": "Hugo",
     "displayName": "Hugo",
     "dateOfBirth": "2001-08-08",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "RWB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -400,7 +488,7 @@
     "marketValue": "24580914",
     "specialAttributes": [
       "workhorse",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -409,31 +497,39 @@
       "identityUrl": "https://www.thesportsdb.com/player/34222542",
       "identitySourceId": "34222542",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34222542",
+    "sourceEntityId": "34222542",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:hugo-souza",
+    "externalId": "public-player:hugo-souza:1996-04-25:bra",
     "fullName": "Hugo Souza",
     "displayName": "Souza",
     "dateOfBirth": "1996-04-25",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "CDM",
-    "secondaryPositions": [
-      "CM",
-      "CB"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
     "shirtNumber": 40,
@@ -447,8 +543,8 @@
     },
     "marketValue": "22270965",
     "specialAttributes": [
-      "set_piece_specialist",
-      "press_resistant"
+      "one_on_one_keeper",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -457,30 +553,40 @@
       "identityUrl": "https://www.thesportsdb.com/player/34222468",
       "identitySourceId": "34222468",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34222468",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34222468",
+    "sourceEntityId": "34222468",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34222468",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:hector-hernandez",
+    "externalId": "public-player:hector-hernandez:2005-06-05:bra",
     "fullName": "Héctor Hernández",
     "displayName": "Hernández",
     "dateOfBirth": "2005-06-05",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 172,
@@ -505,30 +611,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34217331",
       "identitySourceId": "34217331",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34217331",
+    "sourceEntityId": "34217331",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:jesse-lingard",
+    "externalId": "public-player:jesse-lingard:1989-04-16:bra",
     "fullName": "Jesse Lingard",
     "displayName": "Lingard",
     "dateOfBirth": "1989-04-16",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -553,30 +670,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34145667",
       "identitySourceId": "34145667",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34145667",
+    "sourceEntityId": "34145667",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:jose-martinez",
+    "externalId": "public-player:jose-martinez:1990-04-01:bra",
     "fullName": "José Martínez",
     "displayName": "Martínez",
     "dateOfBirth": "1990-04-01",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -601,29 +729,39 @@
       "identityUrl": "https://www.thesportsdb.com/player/34196789",
       "identitySourceId": "34196789",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34196789",
+    "sourceEntityId": "34196789",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:joao-pedro",
+    "externalId": "public-player:joao-pedro:1998-04-17:bra",
     "fullName": "João Pedro",
     "displayName": "Pedro",
     "dateOfBirth": "1998-04-17",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "CAM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CM",
       "CF"
     ],
     "preferredFoot": "LEFT",
@@ -640,7 +778,7 @@
     "marketValue": "25746517",
     "specialAttributes": [
       "line_breaker",
-      "set_piece_specialist"
+      "clutch_finisher"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -649,30 +787,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34337061",
       "identitySourceId": "34337061",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34337061",
+    "sourceEntityId": "34337061",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:kaio-cesar",
+    "externalId": "public-player:kaio-cesar:2001-11-23:bra",
     "fullName": "Kaio César",
     "displayName": "César",
     "dateOfBirth": "2001-11-23",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "LM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 170,
@@ -697,30 +846,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34225988",
       "identitySourceId": "34225988",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34225988",
+    "sourceEntityId": "34225988",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:kayke-ferrari",
+    "externalId": "public-player:kayke-ferrari:1995-04-02:bra",
     "fullName": "Kayke Ferrari",
     "displayName": "Ferrari",
     "dateOfBirth": "1995-04-02",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "RM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 172,
@@ -745,30 +905,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34295638",
       "identitySourceId": "34295638",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34295638",
+    "sourceEntityId": "34295638",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:matheus-bidu",
+    "externalId": "public-player:matheus-bidu:1994-10-27:bra",
     "fullName": "Matheus Bidu",
     "displayName": "Bidu",
     "dateOfBirth": "1994-10-27",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "LW",
+    "primaryPosition": "LB",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "LWB",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 177,
@@ -783,8 +954,8 @@
     },
     "marketValue": "23103158",
     "specialAttributes": [
-      "press_resistant",
-      "line_breaker"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -793,21 +964,31 @@
       "identityUrl": "https://www.thesportsdb.com/player/34219063",
       "identitySourceId": "34219063",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34219063",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34219063",
+    "sourceEntityId": "34219063",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34219063",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:matheus-donelli",
+    "externalId": "public-player:matheus-donelli:1989-04-25:bra",
     "fullName": "Matheus Donelli",
     "displayName": "Donelli",
     "dateOfBirth": "1989-04-25",
@@ -832,7 +1013,7 @@
     "marketValue": "24079041",
     "specialAttributes": [
       "set_piece_specialist",
-      "clutch_finisher"
+      "speedster"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -841,21 +1022,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34219106",
       "identitySourceId": "34219106",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34219106",
+    "sourceEntityId": "34219106",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:matheus-pereira",
+    "externalId": "public-player:matheus-pereira:2002-06-19:bra",
     "fullName": "Matheus Pereira",
     "displayName": "Pereira",
     "dateOfBirth": "2002-06-19",
@@ -889,30 +1081,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34216887",
       "identitySourceId": "34216887",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34216887",
+    "sourceEntityId": "34216887",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:matheuzinho",
+    "externalId": "public-player:matheuzinho:2003-10-24:bra",
     "fullName": "Matheuzinho",
     "displayName": "Matheuzinho",
     "dateOfBirth": "2003-10-24",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "RW",
+    "primaryPosition": "RB",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "RWB",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -927,8 +1130,8 @@
     },
     "marketValue": "20969277",
     "specialAttributes": [
-      "press_resistant",
-      "workhorse"
+      "workhorse",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -937,21 +1140,31 @@
       "identityUrl": "https://www.thesportsdb.com/player/34194882",
       "identitySourceId": "34194882",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34194882",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34194882",
+    "sourceEntityId": "34194882",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34194882",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:memphis-depay",
+    "externalId": "public-player:memphis-depay:1993-09-16:bra",
     "fullName": "Memphis Depay",
     "displayName": "Depay",
     "dateOfBirth": "1993-09-16",
@@ -974,8 +1187,8 @@
     },
     "marketValue": "21889289",
     "specialAttributes": [
-      "set_piece_specialist",
-      "clutch_finisher"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -984,21 +1197,31 @@
       "identityUrl": "https://www.thesportsdb.com/player/34163668",
       "identitySourceId": "34163668",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34163668",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34163668",
+    "sourceEntityId": "34163668",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34163668",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:pedro-milans",
+    "externalId": "public-player:pedro-milans:1996-01-03:bra",
     "fullName": "Pedro Milans",
     "displayName": "Milans",
     "dateOfBirth": "1996-01-03",
@@ -1021,8 +1244,8 @@
     },
     "marketValue": "25953626",
     "specialAttributes": [
-      "set_piece_specialist",
-      "clutch_finisher"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1031,30 +1254,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34240727",
       "identitySourceId": "34240727",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34240727",
+    "sourceEntityId": "34240727",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:corinthians:raniele",
+    "externalId": "public-player:raniele:2003-08-08:bra",
     "fullName": "Raniele",
     "displayName": "Raniele",
     "dateOfBirth": "2003-08-08",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "CF",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 186,
@@ -1070,7 +1304,7 @@
     "marketValue": "21908421",
     "specialAttributes": [
       "press_resistant",
-      "aerial_specialist"
+      "set_piece_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1079,28 +1313,39 @@
       "identityUrl": "https://www.thesportsdb.com/player/34219222",
       "identitySourceId": "34219222",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34219222",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34219222",
+    "sourceEntityId": "34219222",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34219222",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:bra:corinthians:rodrigo-garro",
+    "externalId": "public-player:rodrigo-garro:1992-12-11:bra",
     "fullName": "Rodrigo Garro",
     "displayName": "Garro",
     "dateOfBirth": "1992-12-11",
     "nationalityCode": "BRA",
     "clubExternalId": "corinthians",
-    "primaryPosition": "ST",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
+      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -1117,7 +1362,7 @@
     "marketValue": "24137324",
     "specialAttributes": [
       "line_breaker",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1126,17 +1371,27 @@
       "identityUrl": "https://www.thesportsdb.com/player/34218651",
       "identitySourceId": "34218651",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34218651",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34218651",
+    "sourceEntityId": "34218651",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34218651",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   }
 ]

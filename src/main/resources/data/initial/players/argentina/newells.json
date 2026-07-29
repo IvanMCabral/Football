@@ -1,6 +1,6 @@
 [
   {
-    "externalId": "public-identity:arg:newells:alejo-montero",
+    "externalId": "public-player:alejo-montero:1991-09-09:arg",
     "fullName": "Alejo Montero",
     "displayName": "Montero",
     "dateOfBirth": "1991-09-09",
@@ -21,8 +21,8 @@
     },
     "marketValue": "23809636",
     "specialAttributes": [
-      "leader",
-      "aerial_specialist"
+      "aerial_specialist",
+      "one_on_one_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,21 +32,31 @@
       "identitySourceId": "alejo-montero",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "alejo-montero",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:armando-mendez",
+    "externalId": "public-player:armando-mendez:1989-03-14:arg",
     "fullName": "Armando Méndez",
     "displayName": "Méndez",
     "dateOfBirth": "1989-03-14",
@@ -78,30 +88,40 @@
       "identitySourceId": "armando-mendez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "armando-mendez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:bruno-cabrera",
+    "externalId": "public-player:bruno-cabrera:1993-10-17:arg",
     "fullName": "Bruno Cabrera",
     "displayName": "Cabrera",
     "dateOfBirth": "1993-10-17",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "LB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 182,
@@ -117,7 +137,7 @@
     "marketValue": "18301283",
     "specialAttributes": [
       "set_piece_specialist",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -126,28 +146,41 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
       "identitySourceId": "bruno-cabrera",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "bruno-cabrera",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:david-sotelo",
+    "externalId": "public-player:david-sotelo:2000-08-03:arg",
     "fullName": "David Sotelo",
     "displayName": "Sotelo",
     "dateOfBirth": "2000-08-03",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CB",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 172,
@@ -163,7 +196,7 @@
     "marketValue": "20518024",
     "specialAttributes": [
       "workhorse",
-      "speedster"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -173,29 +206,40 @@
       "identitySourceId": "david-sotelo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "david-sotelo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:facundo-guch",
+    "externalId": "public-player:facundo-guch:1995-02-20:arg",
     "fullName": "Facundo Guch",
     "displayName": "Guch",
     "dateOfBirth": "1995-02-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CB",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 172,
@@ -221,29 +265,39 @@
       "identitySourceId": "facundo-guch",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "facundo-guch",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:francisco-scarpeccio",
+    "externalId": "public-player:francisco-scarpeccio:1988-02-01:arg",
     "fullName": "Francisco Scarpeccio",
     "displayName": "Scarpeccio",
     "dateOfBirth": "1988-02-01",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -258,8 +312,8 @@
     },
     "marketValue": "24095565",
     "specialAttributes": [
-      "set_piece_specialist",
-      "aerial_specialist"
+      "aerial_specialist",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -269,30 +323,39 @@
       "identitySourceId": "francisco-scarpeccio",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "francisco-scarpeccio",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:franco-orozco",
+    "externalId": "public-player:franco-orozco:2005-03-12:arg",
     "fullName": "Franco Orozco",
     "displayName": "Orozco",
     "dateOfBirth": "2005-03-12",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "RB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "RWB",
-      "CB"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 169,
@@ -307,8 +370,8 @@
     },
     "marketValue": "22620327",
     "specialAttributes": [
-      "set_piece_specialist",
-      "press_resistant"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -318,30 +381,39 @@
       "identitySourceId": "franco-orozco",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "franco-orozco",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:gabriel-arias",
+    "externalId": "public-player:gabriel-arias:2005-10-01:arg",
     "fullName": "Gabriel Arias",
     "displayName": "Arias",
     "dateOfBirth": "2005-10-01",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 190,
@@ -356,8 +428,8 @@
     },
     "marketValue": "20207834",
     "specialAttributes": [
-      "set_piece_specialist",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -367,30 +439,39 @@
       "identitySourceId": "gabriel-arias",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "gabriel-arias",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:gabriel-risso-patron",
+    "externalId": "public-player:gabriel-risso-patron:2004-10-08:arg",
     "fullName": "Gabriel Risso Patrón",
     "displayName": "Patrón",
     "dateOfBirth": "2004-10-08",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "RWB",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -405,8 +486,8 @@
     },
     "marketValue": "18688089",
     "specialAttributes": [
-      "press_resistant",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -416,30 +497,39 @@
       "identitySourceId": "gabriel-risso-patron",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "gabriel-risso-patron",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:ian-glavinovich",
+    "externalId": "public-player:ian-glavinovich:1990-11-22:arg",
     "fullName": "Ian Glavinovich",
     "displayName": "Glavinovich",
     "dateOfBirth": "1990-11-22",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CDM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CM",
-      "CB"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 177,
@@ -455,7 +545,7 @@
     "marketValue": "19877545",
     "specialAttributes": [
       "workhorse",
-      "set_piece_specialist"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -465,30 +555,39 @@
       "identitySourceId": "ian-glavinovich",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "ian-glavinovich",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:ignacio-ramirez",
+    "externalId": "public-player:ignacio-ramirez:2003-11-04:arg",
     "fullName": "Ignacio Ramírez",
     "displayName": "Ramírez",
     "dateOfBirth": "2003-11-04",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -503,8 +602,8 @@
     },
     "marketValue": "18629139",
     "specialAttributes": [
-      "leader",
-      "press_resistant"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -514,30 +613,40 @@
       "identitySourceId": "ignacio-ramirez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "ignacio-ramirez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:jeronimo-gomez-mattar",
+    "externalId": "public-player:jeronimo-gomez-mattar:2000-08-23:arg",
     "fullName": "Jerónimo Gómez Mattar",
     "displayName": "Mattar",
     "dateOfBirth": "2000-08-23",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 178,
@@ -563,30 +672,39 @@
       "identitySourceId": "jeronimo-gomez-mattar",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "jeronimo-gomez-mattar",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:jeronimo-russo",
+    "externalId": "public-player:jeronimo-russo:1989-02-20:arg",
     "fullName": "Jerónimo Russo",
     "displayName": "Russo",
     "dateOfBirth": "1989-02-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 175,
@@ -601,8 +719,8 @@
     },
     "marketValue": "21977076",
     "specialAttributes": [
-      "set_piece_specialist",
-      "leader"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -612,30 +730,39 @@
       "identitySourceId": "jeronimo-russo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "jeronimo-russo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:josue-reinatti",
+    "externalId": "public-player:josue-reinatti:2001-03-20:arg",
     "fullName": "Josué Reinatti",
     "displayName": "Reinatti",
     "dateOfBirth": "2001-03-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CAM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CM",
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 187,
@@ -650,8 +777,8 @@
     },
     "marketValue": "18625900",
     "specialAttributes": [
-      "press_resistant",
-      "leader"
+      "leader",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -661,30 +788,40 @@
       "identitySourceId": "josue-reinatti",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "josue-reinatti",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:luca-regiardo",
+    "externalId": "public-player:luca-regiardo:1996-08-08:arg",
     "fullName": "Luca Regiardo",
     "displayName": "Regiardo",
     "dateOfBirth": "1996-08-08",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "LM",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 178,
@@ -699,8 +836,8 @@
     },
     "marketValue": "22798703",
     "specialAttributes": [
-      "press_resistant",
-      "leader"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -710,30 +847,39 @@
       "identitySourceId": "luca-regiardo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "luca-regiardo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:lucas-banos",
+    "externalId": "public-player:lucas-banos:1992-04-14:arg",
     "fullName": "Lucas Baños",
     "displayName": "Baños",
     "dateOfBirth": "1992-04-14",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "RM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -749,7 +895,7 @@
     "marketValue": "21455836",
     "specialAttributes": [
       "workhorse",
-      "line_breaker"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -759,30 +905,40 @@
       "identitySourceId": "lucas-banos",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "lucas-banos",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:marcelo-esponda",
+    "externalId": "public-player:marcelo-esponda:1996-11-16:arg",
     "fullName": "Marcelo Esponda",
     "displayName": "Esponda",
     "dateOfBirth": "1996-11-16",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "LW",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 177,
@@ -798,7 +954,7 @@
     "marketValue": "22478635",
     "specialAttributes": [
       "workhorse",
-      "speedster"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -808,30 +964,40 @@
       "identitySourceId": "marcelo-esponda",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "marcelo-esponda",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:martin-luciano",
+    "externalId": "public-player:martin-luciano:2001-10-25:arg",
     "fullName": "Martín Luciano",
     "displayName": "Luciano",
     "dateOfBirth": "2001-10-25",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "RW",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 178,
@@ -857,30 +1023,39 @@
       "identitySourceId": "martin-luciano",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "martin-luciano",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:martin-ortega",
+    "externalId": "public-player:martin-ortega:1988-01-07:arg",
     "fullName": "Martín Ortega",
     "displayName": "Ortega",
     "dateOfBirth": "1988-01-07",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "LW",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
@@ -895,8 +1070,8 @@
     },
     "marketValue": "22283434",
     "specialAttributes": [
-      "speedster",
-      "clutch_finisher"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -906,21 +1081,31 @@
       "identitySourceId": "martin-ortega",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "martin-ortega",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:matias-coccaro",
+    "externalId": "public-player:matias-coccaro:1990-08-05:arg",
     "fullName": "Matías Cóccaro",
     "displayName": "Cóccaro",
     "dateOfBirth": "1990-08-05",
@@ -944,8 +1129,8 @@
     },
     "marketValue": "20150453",
     "specialAttributes": [
-      "clutch_finisher",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -955,29 +1140,40 @@
       "identitySourceId": "matias-coccaro",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "matias-coccaro",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:nicolas-goitea",
+    "externalId": "public-player:nicolas-goitea:1998-10-13:arg",
     "fullName": "Nicolás Goitea",
     "displayName": "Goitea",
     "dateOfBirth": "1998-10-13",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "ST",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CF"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 170,
@@ -1003,29 +1199,39 @@
       "identitySourceId": "nicolas-goitea",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "nicolas-goitea",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:oscar-salomon",
+    "externalId": "public-player:oscar-salomon:1999-07-27:arg",
     "fullName": "Oscar Salomón",
     "displayName": "Salomón",
     "dateOfBirth": "1999-07-27",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "ST",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 191,
@@ -1040,8 +1246,8 @@
     },
     "marketValue": "21382886",
     "specialAttributes": [
-      "clutch_finisher",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1051,30 +1257,40 @@
       "identitySourceId": "oscar-salomon",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "oscar-salomon",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:rodrigo-herrera",
+    "externalId": "public-player:rodrigo-herrera:1992-12-20:arg",
     "fullName": "Rodrigo Herrera",
     "displayName": "Herrera",
     "dateOfBirth": "1992-12-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "CF",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 167,
@@ -1089,8 +1305,8 @@
     },
     "marketValue": "23460228",
     "specialAttributes": [
-      "speedster",
-      "press_resistant"
+      "press_resistant",
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1100,29 +1316,40 @@
       "identitySourceId": "rodrigo-herrera",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "rodrigo-herrera",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:newells:saul-salcedo",
+    "externalId": "public-player:saul-salcedo:2004-07-12:arg",
     "fullName": "Saúl Salcedo",
     "displayName": "Salcedo",
     "dateOfBirth": "2004-07-12",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
-    "primaryPosition": "ST",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CF"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -1148,17 +1375,27 @@
       "identitySourceId": "saul-salcedo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+    "sourceEntityId": "saul-salcedo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

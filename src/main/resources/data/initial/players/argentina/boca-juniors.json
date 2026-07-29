@@ -1,13 +1,15 @@
 [
   {
-    "externalId": "public-identity:arg:boca-juniors:adam-bareiro",
+    "externalId": "public-player:adam-bareiro:1998-06-16:arg",
     "fullName": "Adam Bareiro",
     "displayName": "Bareiro",
     "dateOfBirth": "1998-06-16",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 184,
     "shirtNumber": 28,
@@ -22,7 +24,7 @@
     "marketValue": "22225145",
     "specialAttributes": [
       "aerial_specialist",
-      "one_on_one_keeper"
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,28 +34,41 @@
       "identitySourceId": "adam-bareiro",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "adam-bareiro",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:alan-velasco",
+    "externalId": "public-player:alan-velasco:2004-12-13:arg",
     "fullName": "Alan Velasco",
     "displayName": "Velasco",
     "dateOfBirth": "2004-12-13",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 177,
     "shirtNumber": 20,
@@ -67,8 +82,8 @@
     },
     "marketValue": "22889603",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "press_resistant",
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -78,30 +93,40 @@
       "identitySourceId": "alan-velasco",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "alan-velasco",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:ayrton-costa",
+    "externalId": "public-player:ayrton-costa:1995-07-24:arg",
     "fullName": "Ayrton Costa",
     "displayName": "Costa",
     "dateOfBirth": "1995-07-24",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "LB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 179,
@@ -116,8 +141,8 @@
     },
     "marketValue": "25874741",
     "specialAttributes": [
-      "speedster",
-      "workhorse"
+      "workhorse",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -126,28 +151,41 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Boca_Juniors",
       "identitySourceId": "ayrton-costa",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "ayrton-costa",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:baltazar-blum",
+    "externalId": "public-player:baltazar-blum:1990-03-14:arg",
     "fullName": "Baltazar Blum",
     "displayName": "Blum",
     "dateOfBirth": "1990-03-14",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CDM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 175,
@@ -162,8 +200,8 @@
     },
     "marketValue": "25924767",
     "specialAttributes": [
-      "speedster",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -173,29 +211,40 @@
       "identitySourceId": "baltazar-blum",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "baltazar-blum",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:camilo-rey-domenech",
+    "externalId": "public-player:camilo-rey-domenech:2001-06-17:arg",
     "fullName": "Camilo Rey Domenech",
     "displayName": "Domenech",
     "dateOfBirth": "2001-06-17",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CB",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -210,8 +259,8 @@
     },
     "marketValue": "23326701",
     "specialAttributes": [
-      "speedster",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -221,29 +270,40 @@
       "identitySourceId": "camilo-rey-domenech",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "camilo-rey-domenech",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:carlos-palacios",
+    "externalId": "public-player:carlos-palacios:2005-06-08:arg",
     "fullName": "Carlos Palacios",
     "displayName": "Palacios",
     "dateOfBirth": "2005-06-08",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CB",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -259,7 +319,7 @@
     "marketValue": "24686514",
     "specialAttributes": [
       "press_resistant",
-      "aerial_specialist"
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -269,29 +329,38 @@
       "identitySourceId": "carlos-palacios",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "carlos-palacios",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:dante-gonzalez",
+    "externalId": "public-player:dante-gonzalez:1994-02-01:arg",
     "fullName": "Dante González",
     "displayName": "González",
     "dateOfBirth": "1994-02-01",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "RB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RWB",
+      "CM",
       "CB"
     ],
     "preferredFoot": "LEFT",
@@ -307,8 +376,8 @@
     },
     "marketValue": "22074119",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -318,30 +387,39 @@
       "identitySourceId": "dante-gonzalez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "dante-gonzalez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:dylan-gorosito",
+    "externalId": "public-player:dylan-gorosito:2004-05-02:arg",
     "fullName": "Dylan Gorosito",
     "displayName": "Gorosito",
     "dateOfBirth": "2004-05-02",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 178,
@@ -357,7 +435,7 @@
     "marketValue": "25836810",
     "specialAttributes": [
       "workhorse",
-      "speedster"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -367,31 +445,38 @@
       "identitySourceId": "dylan-gorosito",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "dylan-gorosito",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:facundo-herrera",
+    "externalId": "public-player:facundo-herrera:1999-04-16:arg",
     "fullName": "Facundo Herrera",
     "displayName": "Herrera",
     "dateOfBirth": "1999-04-16",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "RWB",
-    "secondaryPositions": [
-      "RB",
-      "RM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 192,
     "shirtNumber": 42,
@@ -405,8 +490,8 @@
     },
     "marketValue": "23115388",
     "specialAttributes": [
-      "press_resistant",
-      "workhorse"
+      "one_on_one_keeper",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -416,30 +501,39 @@
       "identitySourceId": "facundo-herrera",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER goalkeeper estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#goalkeeper-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "facundo-herrera",
+    "positionSource": "MANAGER goalkeeper estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#goalkeeper-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:fernando-rodriguez",
+    "externalId": "public-player:fernando-rodriguez:1992-03-22:arg",
     "fullName": "Fernando Rodríguez",
     "displayName": "Rodríguez",
     "dateOfBirth": "1992-03-22",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CDM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CM",
-      "CB"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 185,
@@ -454,8 +548,8 @@
     },
     "marketValue": "22575719",
     "specialAttributes": [
-      "set_piece_specialist",
-      "line_breaker"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -465,30 +559,40 @@
       "identitySourceId": "fernando-rodriguez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "fernando-rodriguez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:franco-perez",
+    "externalId": "public-player:franco-perez:2005-06-06:arg",
     "fullName": "Franco Pérez",
     "displayName": "Pérez",
     "dateOfBirth": "2005-06-06",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 177,
@@ -514,30 +618,39 @@
       "identitySourceId": "franco-perez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "franco-perez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:gadiel-paoli",
+    "externalId": "public-player:gadiel-paoli:2002-09-10:arg",
     "fullName": "Gadiel Paoli",
     "displayName": "Paoli",
     "dateOfBirth": "2002-09-10",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
@@ -563,30 +676,39 @@
       "identitySourceId": "gadiel-paoli",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "gadiel-paoli",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:gonzalo-gelini",
+    "externalId": "public-player:gonzalo-gelini:2005-03-14:arg",
     "fullName": "Gonzalo Gelini",
     "displayName": "Gelini",
     "dateOfBirth": "2005-03-14",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 169,
@@ -601,8 +723,8 @@
     },
     "marketValue": "24598651",
     "specialAttributes": [
-      "press_resistant",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -612,30 +734,39 @@
       "identitySourceId": "gonzalo-gelini",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "gonzalo-gelini",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:javier-garcia",
+    "externalId": "public-player:javier-garcia:2000-06-14:arg",
     "fullName": "Javier García",
     "displayName": "García",
     "dateOfBirth": "2000-06-14",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CAM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CM",
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
@@ -651,7 +782,7 @@
     "marketValue": "26327772",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -661,30 +792,40 @@
       "identitySourceId": "javier-garcia",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "javier-garcia",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:joaquin-pineyro",
+    "externalId": "public-player:joaquin-pineyro:1993-12-20:arg",
     "fullName": "Joaquín Piñeyro",
     "displayName": "Piñeyro",
     "dateOfBirth": "1993-12-20",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "LM",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 184,
@@ -700,7 +841,7 @@
     "marketValue": "23809050",
     "specialAttributes": [
       "line_breaker",
-      "workhorse"
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -710,30 +851,40 @@
       "identitySourceId": "joaquin-pineyro",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "joaquin-pineyro",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:joaquin-ruiz",
+    "externalId": "public-player:joaquin-ruiz:1998-07-03:arg",
     "fullName": "Joaquín Ruiz",
     "displayName": "Ruiz",
     "dateOfBirth": "1998-07-03",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "RM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -759,30 +910,40 @@
       "identitySourceId": "joaquin-ruiz",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "joaquin-ruiz",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:juan-cruz-payal",
+    "externalId": "public-player:juan-cruz-payal:1989-12-10:arg",
     "fullName": "Juan Cruz Payal",
     "displayName": "Payal",
     "dateOfBirth": "1989-12-10",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "LW",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -797,8 +958,8 @@
     },
     "marketValue": "23019129",
     "specialAttributes": [
-      "clutch_finisher",
-      "press_resistant"
+      "press_resistant",
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -808,21 +969,31 @@
       "identitySourceId": "juan-cruz-payal",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "juan-cruz-payal",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:juan-pussetto",
+    "externalId": "public-player:juan-pussetto:2003-02-02:arg",
     "fullName": "Juan Pussetto",
     "displayName": "Pussetto",
     "dateOfBirth": "2003-02-02",
@@ -856,20 +1027,32 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Boca_Juniors",
       "identitySourceId": "juan-pussetto",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "juan-pussetto",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:kevin-ferreira",
+    "externalId": "public-player:kevin-ferreira:2005-01-17:arg",
     "fullName": "Kevin Ferreira",
     "displayName": "Ferreira",
     "dateOfBirth": "2005-01-17",
@@ -904,30 +1087,40 @@
       "identitySourceId": "kevin-ferreira",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "kevin-ferreira",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:kevin-zenon",
+    "externalId": "public-player:kevin-zenon:1995-10-26:arg",
     "fullName": "Kevin Zenón",
     "displayName": "Zenón",
     "dateOfBirth": "1995-10-26",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "RW",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -943,7 +1136,7 @@
     "marketValue": "25404088",
     "specialAttributes": [
       "set_piece_specialist",
-      "speedster"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -953,29 +1146,40 @@
       "identitySourceId": "kevin-zenon",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "kevin-zenon",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:lautaro-blanco",
+    "externalId": "public-player:lautaro-blanco:1992-07-22:arg",
     "fullName": "Lautaro Blanco",
     "displayName": "Blanco",
     "dateOfBirth": "1992-07-22",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "ST",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CF"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
@@ -1001,29 +1205,39 @@
       "identitySourceId": "lautaro-blanco",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "lautaro-blanco",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:lautaro-di-lollo",
+    "externalId": "public-player:lautaro-di-lollo:1993-07-05:arg",
     "fullName": "Lautaro Di Lollo",
     "displayName": "Lollo",
     "dateOfBirth": "1993-07-05",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "ST",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 180,
@@ -1038,8 +1252,8 @@
     },
     "marketValue": "22180068",
     "specialAttributes": [
-      "set_piece_specialist",
-      "clutch_finisher"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1049,30 +1263,39 @@
       "identitySourceId": "lautaro-di-lollo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "lautaro-di-lollo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:lautaro-mendieta",
+    "externalId": "public-player:lautaro-mendieta:2002-07-10:arg",
     "fullName": "Lautaro Mendieta",
     "displayName": "Mendieta",
     "dateOfBirth": "2002-07-10",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CF",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 173,
@@ -1087,8 +1310,8 @@
     },
     "marketValue": "22431961",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "speedster",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1098,29 +1321,39 @@
       "identitySourceId": "lautaro-mendieta",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "lautaro-mendieta",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:boca-juniors:leandro-brey",
+    "externalId": "public-player:leandro-brey:2000-03-14:arg",
     "fullName": "Leandro Brey",
     "displayName": "Brey",
     "dateOfBirth": "2000-03-14",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "ST",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
@@ -1135,8 +1368,8 @@
     },
     "marketValue": "24085948",
     "specialAttributes": [
-      "clutch_finisher",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1146,17 +1379,27 @@
       "identitySourceId": "leandro-brey",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
+    "sourceEntityId": "leandro-brey",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

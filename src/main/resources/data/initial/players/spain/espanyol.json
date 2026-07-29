@@ -1,13 +1,16 @@
 [
   {
-    "externalId": "public-identity:esp:espanyol:charles-pickel",
+    "externalId": "public-player:charles-pickel:1991-08-28:esp",
     "fullName": "Charles Pickel",
     "displayName": "Pickel",
     "dateOfBirth": "1991-08-28",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
     "shirtNumber": 18,
@@ -21,8 +24,8 @@
     },
     "marketValue": "22784330",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "sweeper_keeper"
+      "press_resistant",
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,21 +35,31 @@
       "identitySourceId": "charles-pickel",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "charles-pickel",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:clemens-riedel",
+    "externalId": "public-player:clemens-riedel:1995-04-21:esp",
     "fullName": "Clemens Riedel",
     "displayName": "Riedel",
     "dateOfBirth": "1995-04-21",
@@ -78,30 +91,40 @@
       "identitySourceId": "clemens-riedel",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "clemens-riedel",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:edu-exposito",
+    "externalId": "public-player:edu-exposito:1994-04-08:esp",
     "fullName": "Edu Expósito",
     "displayName": "Expósito",
     "dateOfBirth": "1994-04-08",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "LB",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 170,
@@ -117,7 +140,7 @@
     "marketValue": "18856140",
     "specialAttributes": [
       "workhorse",
-      "speedster"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -127,29 +150,39 @@
       "identitySourceId": "edu-exposito",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "edu-exposito",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:javi-puado",
+    "externalId": "public-player:javi-puado:1988-06-21:esp",
     "fullName": "Javi Puado",
     "displayName": "Puado",
     "dateOfBirth": "1988-06-21",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
@@ -164,8 +197,8 @@
     },
     "marketValue": "19941272",
     "specialAttributes": [
-      "set_piece_specialist",
-      "press_resistant"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -175,29 +208,39 @@
       "identitySourceId": "javi-puado",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "javi-puado",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:jofre-carreras",
+    "externalId": "public-player:jofre-carreras:1991-03-18:esp",
     "fullName": "Jofre Carreras",
     "displayName": "Carreras",
     "dateOfBirth": "1991-03-18",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 187,
@@ -212,8 +255,8 @@
     },
     "marketValue": "19092901",
     "specialAttributes": [
-      "press_resistant",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -223,29 +266,39 @@
       "identitySourceId": "jofre-carreras",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "jofre-carreras",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:kike-garcia",
+    "externalId": "public-player:kike-garcia:1993-08-10:esp",
     "fullName": "Kike García",
     "displayName": "García",
     "dateOfBirth": "1993-08-10",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 186,
@@ -261,7 +314,7 @@
     "marketValue": "19861319",
     "specialAttributes": [
       "speedster",
-      "workhorse"
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -271,30 +324,40 @@
       "identitySourceId": "kike-garcia",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "kike-garcia",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:leandro-cabrera",
+    "externalId": "public-player:leandro-cabrera:1997-07-01:esp",
     "fullName": "Leandro Cabrera",
     "displayName": "Cabrera",
     "dateOfBirth": "1997-07-01",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "RB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "RWB",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 168,
@@ -320,30 +383,39 @@
       "identitySourceId": "leandro-cabrera",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "leandro-cabrera",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:marko-dmitrovic",
+    "externalId": "public-player:marko-dmitrovic:1988-08-24:esp",
     "fullName": "Marko Dmitrović",
     "displayName": "Dmitrović",
     "dateOfBirth": "1988-08-24",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -358,8 +430,8 @@
     },
     "marketValue": "19101082",
     "specialAttributes": [
-      "press_resistant",
-      "workhorse"
+      "workhorse",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -369,30 +441,39 @@
       "identitySourceId": "marko-dmitrovic",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "marko-dmitrovic",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:miguel-rubio",
+    "externalId": "public-player:miguel-rubio:1991-10-18:esp",
     "fullName": "Miguel Rubio",
     "displayName": "Rubio",
     "dateOfBirth": "1991-10-18",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "RWB",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
@@ -407,8 +488,8 @@
     },
     "marketValue": "17800664",
     "specialAttributes": [
-      "speedster",
-      "workhorse"
+      "workhorse",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -418,30 +499,40 @@
       "identitySourceId": "miguel-rubio",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "miguel-rubio",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:omar-el-hilali",
+    "externalId": "public-player:omar-el-hilali:1994-09-25:esp",
     "fullName": "Omar El Hilali",
     "displayName": "Hilali",
     "dateOfBirth": "1994-09-25",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CDM",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CM",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 170,
@@ -467,30 +558,39 @@
       "identitySourceId": "omar-el-hilali",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "omar-el-hilali",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:pere-milla",
+    "externalId": "public-player:pere-milla:1995-04-02:esp",
     "fullName": "Pere Milla",
     "displayName": "Milla",
     "dateOfBirth": "1995-04-02",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 187,
@@ -505,8 +605,8 @@
     },
     "marketValue": "19305218",
     "specialAttributes": [
-      "leader",
-      "workhorse"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -516,30 +616,40 @@
       "identitySourceId": "pere-milla",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "pere-milla",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:pol-lozano",
+    "externalId": "public-player:pol-lozano:1989-05-07:esp",
     "fullName": "Pol Lozano",
     "displayName": "Lozano",
     "dateOfBirth": "1989-05-07",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 169,
@@ -565,30 +675,39 @@
       "identitySourceId": "pol-lozano",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "pol-lozano",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:pol-tristan",
+    "externalId": "public-player:pol-tristan:1990-07-21:esp",
     "fullName": "Pol Tristán",
     "displayName": "Tristán",
     "dateOfBirth": "1990-07-21",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -603,8 +722,8 @@
     },
     "marketValue": "20795687",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -614,29 +733,38 @@
       "identitySourceId": "pol-tristan",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "pol-tristan",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:roberto-fernandez",
+    "externalId": "public-player:roberto-fernandez:1991-02-21:esp",
     "fullName": "Roberto Fernández",
     "displayName": "Fernández",
     "dateOfBirth": "1991-02-21",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CAM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -652,8 +780,8 @@
     },
     "marketValue": "23437596",
     "specialAttributes": [
-      "leader",
-      "press_resistant"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -663,30 +791,39 @@
       "identitySourceId": "roberto-fernandez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "roberto-fernandez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:ruben-sanchez",
+    "externalId": "public-player:ruben-sanchez:1998-01-05:esp",
     "fullName": "Rubén Sánchez",
     "displayName": "Sánchez",
     "dateOfBirth": "1998-01-05",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "LM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 187,
@@ -712,30 +849,40 @@
       "identitySourceId": "ruben-sanchez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "ruben-sanchez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:tyrhys-dolan",
+    "externalId": "public-player:tyrhys-dolan:2000-09-25:esp",
     "fullName": "Tyrhys Dolan",
     "displayName": "Dolan",
     "dateOfBirth": "2000-09-25",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "RM",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "RM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
@@ -751,7 +898,7 @@
     "marketValue": "22085884",
     "specialAttributes": [
       "line_breaker",
-      "leader"
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -761,30 +908,40 @@
       "identitySourceId": "tyrhys-dolan",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "tyrhys-dolan",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:urko-gonzalez-de-zarate",
+    "externalId": "public-player:urko-gonzalez-de-zarate:2001-06-28:esp",
     "fullName": "Urko González de Zárate",
     "displayName": "Zárate",
     "dateOfBirth": "2001-06-28",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "LW",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 168,
@@ -810,30 +967,39 @@
       "identitySourceId": "urko-gonzalez-de-zarate",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "urko-gonzalez-de-zarate",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:angel-fortuno",
+    "externalId": "public-player:angel-fortuno:1988-08-24:esp",
     "fullName": "Ángel Fortuño",
     "displayName": "Fortuño",
     "dateOfBirth": "1988-08-24",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "RW",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
@@ -848,8 +1014,8 @@
     },
     "marketValue": "22065050",
     "specialAttributes": [
-      "line_breaker",
-      "workhorse"
+      "workhorse",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -859,21 +1025,31 @@
       "identitySourceId": "angel-fortuno",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "angel-fortuno",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:antoniu-roca",
+    "externalId": "public-player:antoniu-roca:2002-10-03:esp",
     "fullName": "Antoniu Roca",
     "displayName": "Roca",
     "dateOfBirth": "2002-10-03",
@@ -897,8 +1073,8 @@
     },
     "marketValue": "21887134",
     "specialAttributes": [
-      "clutch_finisher",
-      "line_breaker"
+      "line_breaker",
+      "speedster"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -907,21 +1083,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34246500",
       "identitySourceId": "34246500",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34246500",
+    "sourceEntityId": "34246500",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:carlos-romero",
+    "externalId": "public-player:carlos-romero:1988-04-19:esp",
     "fullName": "Carlos Romero",
     "displayName": "Romero",
     "dateOfBirth": "1988-04-19",
@@ -945,8 +1132,8 @@
     },
     "marketValue": "18162930",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -955,21 +1142,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34221674",
       "identitySourceId": "34221674",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34221674",
+    "sourceEntityId": "34221674",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:jose-gragera",
+    "externalId": "public-player:jose-gragera:1996-10-25:esp",
     "fullName": "José Gragera",
     "displayName": "Gragera",
     "dateOfBirth": "1996-10-25",
@@ -1002,21 +1200,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34215781",
       "identitySourceId": "34215781",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34215781",
+    "sourceEntityId": "34215781",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:jose-salinas",
+    "externalId": "public-player:jose-salinas:1995-12-13:esp",
     "fullName": "José Salinas",
     "displayName": "Salinas",
     "dateOfBirth": "1995-12-13",
@@ -1039,8 +1248,8 @@
     },
     "marketValue": "22458468",
     "specialAttributes": [
-      "clutch_finisher",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1049,30 +1258,40 @@
       "identityUrl": "https://www.thesportsdb.com/player/34216906",
       "identitySourceId": "34216906",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34216906",
+    "sourceEntityId": "34216906",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:pablo-ramon",
+    "externalId": "public-player:pablo-ramon:1995-03-18:esp",
     "fullName": "Pablo Ramón",
     "displayName": "Ramón",
     "dateOfBirth": "1995-03-18",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CF",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
@@ -1087,8 +1306,8 @@
     },
     "marketValue": "18829989",
     "specialAttributes": [
-      "leader",
-      "clutch_finisher"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1097,28 +1316,40 @@
       "identityUrl": "https://www.thesportsdb.com/player/34258828",
       "identitySourceId": "34258828",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34258828",
+    "sourceEntityId": "34258828",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:espanyol:gabriel-moscardo",
+    "externalId": "public-player:gabriel-moscardo:2001-02-15:esp",
     "fullName": "Gabriel Moscardo",
     "displayName": "Moscardo",
     "dateOfBirth": "2001-02-15",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "ST",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
+      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -1135,7 +1366,7 @@
     "marketValue": "17589957",
     "specialAttributes": [
       "leader",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1145,18 +1376,28 @@
       "identitySourceId": "gabriel-moscardo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "shirtNumber",
-      "primaryPosition"
-    ]
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+    "sourceEntityId": "gabriel-moscardo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

@@ -1,6 +1,6 @@
 [
   {
-    "externalId": "public-identity:arg:instituto:agustin-bravo",
+    "externalId": "public-player:agustin-bravo:1999-02-11:arg",
     "fullName": "Agustín Bravo",
     "displayName": "Bravo",
     "dateOfBirth": "1999-02-11",
@@ -21,8 +21,8 @@
     },
     "marketValue": "20152984",
     "specialAttributes": [
-      "leader",
-      "aerial_specialist"
+      "aerial_specialist",
+      "one_on_one_keeper"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -31,21 +31,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34288915",
       "identitySourceId": "34288915",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34288915",
+    "sourceEntityId": "34288915",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:alex-luna",
+    "externalId": "public-player:alex-luna:1997-03-19:arg",
     "fullName": "Alex Luna",
     "displayName": "Luna",
     "dateOfBirth": "1997-03-19",
@@ -76,30 +87,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34236905",
       "identitySourceId": "34236905",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34236905",
+    "sourceEntityId": "34236905",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:damian-batallini",
+    "externalId": "public-player:damian-batallini:1991-05-05:arg",
     "fullName": "Damián Batallini",
     "displayName": "Batallini",
     "dateOfBirth": "1991-05-05",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "LB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
@@ -115,7 +137,7 @@
     "marketValue": "18209593",
     "specialAttributes": [
       "press_resistant",
-      "aerial_specialist"
+      "set_piece_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -124,21 +146,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34240533",
       "identitySourceId": "34240533",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34240533",
+    "sourceEntityId": "34240533",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:elias-pereyra",
+    "externalId": "public-player:elias-pereyra:2004-03-08:arg",
     "fullName": "Elías Pereyra",
     "displayName": "Pereyra",
     "dateOfBirth": "2004-03-08",
@@ -161,8 +194,8 @@
     },
     "marketValue": "20738978",
     "specialAttributes": [
-      "set_piece_specialist",
-      "speedster"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -171,21 +204,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34245033",
       "identitySourceId": "34245033",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34245033",
+    "sourceEntityId": "34245033",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:emanuel-beltran",
+    "externalId": "public-player:emanuel-beltran:1997-08-03:arg",
     "fullName": "Emanuel Beltrán",
     "displayName": "Beltrán",
     "dateOfBirth": "1997-08-03",
@@ -208,8 +252,8 @@
     },
     "marketValue": "20908142",
     "specialAttributes": [
-      "speedster",
-      "set_piece_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -218,21 +262,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34224269",
       "identitySourceId": "34224269",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34224269",
+    "sourceEntityId": "34224269",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:facundo-suarez",
+    "externalId": "public-player:facundo-suarez:2004-02-18:arg",
     "fullName": "Facundo Suárez",
     "displayName": "Suárez",
     "dateOfBirth": "2004-02-18",
@@ -265,30 +320,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34241153",
       "identitySourceId": "34241153",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34241153",
+    "sourceEntityId": "34241153",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:fernando-alarcon",
+    "externalId": "public-player:fernando-alarcon:1996-09-04:arg",
     "fullName": "Fernando Alarcón",
     "displayName": "Alarcón",
     "dateOfBirth": "1996-09-04",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "RB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "RWB",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 175,
@@ -303,8 +369,8 @@
     },
     "marketValue": "17533504",
     "specialAttributes": [
-      "speedster",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -313,30 +379,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34218722",
       "identitySourceId": "34218722",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34218722",
+    "sourceEntityId": "34218722",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:franco-diaz",
+    "externalId": "public-player:franco-diaz:1998-02-19:arg",
     "fullName": "Franco Díaz",
     "displayName": "Díaz",
     "dateOfBirth": "1998-02-19",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
@@ -352,7 +429,7 @@
     "marketValue": "20212020",
     "specialAttributes": [
       "press_resistant",
-      "aerial_specialist"
+      "set_piece_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -361,30 +438,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34202753",
       "identitySourceId": "34202753",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34202753",
+    "sourceEntityId": "34202753",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:franco-jara",
+    "externalId": "public-player:franco-jara:1997-01-10:arg",
     "fullName": "Franco Jara",
     "displayName": "Jara",
     "dateOfBirth": "1997-01-10",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "RWB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 175,
@@ -400,7 +488,7 @@
     "marketValue": "17267855",
     "specialAttributes": [
       "workhorse",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -409,30 +497,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34146531",
       "identitySourceId": "34146531",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34146531",
+    "sourceEntityId": "34146531",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:franco-moyano",
+    "externalId": "public-player:franco-moyano:2005-10-07:arg",
     "fullName": "Franco Moyano",
     "displayName": "Moyano",
     "dateOfBirth": "2005-10-07",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "CDM",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CM",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 184,
@@ -457,21 +556,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34218756",
       "identitySourceId": "34218756",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34218756",
+    "sourceEntityId": "34218756",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:gaston-lodico",
+    "externalId": "public-player:gaston-lodico:1997-09-14:arg",
     "fullName": "Gastón Lodico",
     "displayName": "Lodico",
     "dateOfBirth": "1997-09-14",
@@ -505,30 +615,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34198913",
       "identitySourceId": "34198913",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34198913",
+    "sourceEntityId": "34198913",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:hugo-rojas",
+    "externalId": "public-player:hugo-rojas:2000-10-10:arg",
     "fullName": "Hugo Rojas",
     "displayName": "Rojas",
     "dateOfBirth": "2000-10-10",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "CM",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 170,
@@ -553,30 +674,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34280725",
       "identitySourceId": "34280725",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34280725",
+    "sourceEntityId": "34280725",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:jeremias-lazaro",
+    "externalId": "public-player:jeremias-lazaro:1997-12-16:arg",
     "fullName": "Jeremías Lázaro",
     "displayName": "Lázaro",
     "dateOfBirth": "1997-12-16",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -601,29 +733,39 @@
       "identityUrl": "https://www.thesportsdb.com/player/34298321",
       "identitySourceId": "34298321",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34298321",
+    "sourceEntityId": "34298321",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:jonathan-galvan",
+    "externalId": "public-player:jonathan-galvan:1988-02-01:arg",
     "fullName": "Jonathan Galván",
     "displayName": "Galván",
     "dateOfBirth": "1988-02-01",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "CAM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -639,8 +781,8 @@
     },
     "marketValue": "17359723",
     "specialAttributes": [
-      "set_piece_specialist",
-      "workhorse"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -649,30 +791,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34218667",
       "identitySourceId": "34218667",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34218667",
+    "sourceEntityId": "34218667",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:jonas-acevedo",
+    "externalId": "public-player:jonas-acevedo:1989-03-16:arg",
     "fullName": "Jonás Acevedo",
     "displayName": "Acevedo",
     "dateOfBirth": "1989-03-16",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "LM",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 179,
@@ -697,30 +850,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34285816",
       "identitySourceId": "34285816",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34285816",
+    "sourceEntityId": "34285816",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:julio-mosevich",
+    "externalId": "public-player:julio-mosevich:1989-07-08:arg",
     "fullName": "Julio Mosevich",
     "displayName": "Mosevich",
     "dateOfBirth": "1989-07-08",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "RM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -745,21 +909,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34218721",
       "identitySourceId": "34218721",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34218721",
+    "sourceEntityId": "34218721",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:manuel-roffo",
+    "externalId": "public-player:manuel-roffo:1995-04-26:arg",
     "fullName": "Manuel Roffo",
     "displayName": "Roffo",
     "dateOfBirth": "1995-04-26",
@@ -783,8 +958,8 @@
     },
     "marketValue": "19533210",
     "specialAttributes": [
-      "clutch_finisher",
-      "press_resistant"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -793,21 +968,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34231659",
       "identitySourceId": "34231659",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34231659",
+    "sourceEntityId": "34231659",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:matias-fonseca",
+    "externalId": "public-player:matias-fonseca:1993-07-10:arg",
     "fullName": "Matías Fonseca",
     "displayName": "Fonseca",
     "dateOfBirth": "1993-07-10",
@@ -841,21 +1027,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34230272",
       "identitySourceId": "34230272",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34230272",
+    "sourceEntityId": "34230272",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:matias-klimowicz",
+    "externalId": "public-player:matias-klimowicz:2000-07-24:arg",
     "fullName": "Matías Klimowicz",
     "displayName": "Klimowicz",
     "dateOfBirth": "2000-07-24",
@@ -880,7 +1077,7 @@
     "marketValue": "21461964",
     "specialAttributes": [
       "set_piece_specialist",
-      "press_resistant"
+      "speedster"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -889,21 +1086,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34301997",
       "identitySourceId": "34301997",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34301997",
+    "sourceEntityId": "34301997",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:nicolas-guerra",
+    "externalId": "public-player:nicolas-guerra:1990-01-05:arg",
     "fullName": "Nicolás Guerra",
     "displayName": "Guerra",
     "dateOfBirth": "1990-01-05",
@@ -928,7 +1136,7 @@
     "marketValue": "19720269",
     "specialAttributes": [
       "speedster",
-      "clutch_finisher"
+      "line_breaker"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -937,21 +1145,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34198819",
       "identitySourceId": "34198819",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34198819",
+    "sourceEntityId": "34198819",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:stefano-moreyra",
+    "externalId": "public-player:stefano-moreyra:2001-05-08:arg",
     "fullName": "Stéfano Moreyra",
     "displayName": "Moreyra",
     "dateOfBirth": "2001-05-08",
@@ -974,8 +1193,8 @@
     },
     "marketValue": "22335817",
     "specialAttributes": [
-      "clutch_finisher",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -984,21 +1203,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34231639",
       "identitySourceId": "34231639",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34231639",
+    "sourceEntityId": "34231639",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:daniel-oldra",
+    "externalId": "public-player:daniel-oldra:2005-01-14:arg",
     "fullName": "Daniel Oldrá",
     "displayName": "Daniel Oldrá",
     "dateOfBirth": "2005-01-14",
@@ -1021,8 +1251,8 @@
     },
     "marketValue": "17131378",
     "specialAttributes": [
-      "leader",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1031,31 +1261,41 @@
       "identityUrl": "https://www.thesportsdb.com/player/34432961",
       "identitySourceId": "34432961",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
+      "preferredFoot",
       "primaryPosition",
-      "shirtNumber"
-    ]
+      "secondaryPositions",
+      "shirtNumber",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34432961",
+    "sourceEntityId": "34432961",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:diego-sosa",
+    "externalId": "public-player:diego-sosa:2003-02-18:arg",
     "fullName": "Diego Sosa",
     "displayName": "Sosa",
     "dateOfBirth": "2003-02-18",
     "nationalityCode": "ARG",
     "clubExternalId": "instituto",
-    "primaryPosition": "CF",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -1071,7 +1311,7 @@
     "marketValue": "19145164",
     "specialAttributes": [
       "clutch_finisher",
-      "press_resistant"
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1080,22 +1320,33 @@
       "identityUrl": "https://www.thesportsdb.com/player/34240722",
       "identitySourceId": "34240722",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
+      "preferredFoot",
       "primaryPosition",
-      "shirtNumber"
-    ]
+      "secondaryPositions",
+      "shirtNumber",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34240722",
+    "sourceEntityId": "34240722",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:instituto:giuliano-cerato",
+    "externalId": "public-player:giuliano-cerato:1997-09-14:arg",
     "fullName": "Giuliano Cerato",
     "displayName": "Cerato",
     "dateOfBirth": "1997-09-14",
@@ -1118,8 +1369,8 @@
     },
     "marketValue": "21166443",
     "specialAttributes": [
-      "press_resistant",
-      "aerial_specialist"
+      "aerial_specialist",
+      "clutch_finisher"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1128,18 +1379,29 @@
       "identityUrl": "https://www.thesportsdb.com/player/34218841",
       "identitySourceId": "34218841",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
+      "preferredFoot",
       "primaryPosition",
-      "shirtNumber"
-    ]
+      "secondaryPositions",
+      "shirtNumber",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34218841",
+    "sourceEntityId": "34218841",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

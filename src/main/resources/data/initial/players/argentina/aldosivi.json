@@ -1,13 +1,15 @@
 [
   {
-    "externalId": "public-identity:arg:aldosivi:agustin-palavecino",
+    "externalId": "public-player:agustin-palavecino:2002-11-22:arg",
     "fullName": "Agustín Palavecino",
     "displayName": "Palavecino",
     "dateOfBirth": "2002-11-22",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
     "shirtNumber": 11,
@@ -22,7 +24,7 @@
     "marketValue": "21293053",
     "specialAttributes": [
       "aerial_specialist",
-      "leader"
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,28 +34,40 @@
       "identitySourceId": "agustin-palavecino",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "agustin-palavecino",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:alan-sosa",
+    "externalId": "public-player:alan-sosa:2000-05-20:arg",
     "fullName": "Alan Sosa",
     "displayName": "Sosa",
     "dateOfBirth": "2000-05-20",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 167,
     "shirtNumber": 10,
@@ -68,7 +82,7 @@
     "marketValue": "20271626",
     "specialAttributes": [
       "aerial_specialist",
-      "one_on_one_keeper"
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -78,30 +92,39 @@
       "identitySourceId": "alan-sosa",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "alan-sosa",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:alejandro-villarreal",
+    "externalId": "public-player:alejandro-villarreal:1991-03-06:arg",
     "fullName": "Alejandro Villarreal",
     "displayName": "Villarreal",
     "dateOfBirth": "1991-03-06",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "LB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 177,
@@ -127,29 +150,39 @@
       "identitySourceId": "alejandro-villarreal",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "alejandro-villarreal",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:augusto-fernandez",
+    "externalId": "public-player:augusto-fernandez:2003-08-20:arg",
     "fullName": "Augusto Fernández",
     "displayName": "Fernández",
     "dateOfBirth": "2003-08-20",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -165,7 +198,7 @@
     "marketValue": "20329822",
     "specialAttributes": [
       "aerial_specialist",
-      "leader"
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -175,21 +208,31 @@
       "identitySourceId": "augusto-fernandez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "augusto-fernandez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:axel-werner",
+    "externalId": "public-player:axel-werner:1999-12-21:arg",
     "fullName": "Axel Werner",
     "displayName": "Werner",
     "dateOfBirth": "1999-12-21",
@@ -213,7 +256,7 @@
     "marketValue": "17566175",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -223,29 +266,39 @@
       "identitySourceId": "axel-werner",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "axel-werner",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:david-juarez",
+    "externalId": "public-player:david-juarez:2000-11-19:arg",
     "fullName": "David Juárez",
     "displayName": "Juárez",
     "dateOfBirth": "2000-11-19",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 184,
@@ -260,8 +313,8 @@
     },
     "marketValue": "20091319",
     "specialAttributes": [
-      "leader",
-      "workhorse"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -271,30 +324,40 @@
       "identitySourceId": "david-juarez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "david-juarez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:emanuel-iniguez",
+    "externalId": "public-player:emanuel-iniguez:2000-02-12:arg",
     "fullName": "Emanuel Iñiguez",
     "displayName": "Iñiguez",
     "dateOfBirth": "2000-02-12",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "RB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "RWB",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
@@ -309,8 +372,8 @@
     },
     "marketValue": "16244893",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -320,30 +383,40 @@
       "identitySourceId": "emanuel-iniguez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "emanuel-iniguez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:esteban-rolon",
+    "externalId": "public-player:esteban-rolon:1994-09-19:arg",
     "fullName": "Esteban Rolón",
     "displayName": "Rolón",
     "dateOfBirth": "1994-09-19",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 175,
@@ -358,8 +431,8 @@
     },
     "marketValue": "19024446",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -369,30 +442,40 @@
       "identitySourceId": "esteban-rolon",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "esteban-rolon",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:facundo-de-la-vega",
+    "externalId": "public-player:facundo-de-la-vega:2005-09-08:arg",
     "fullName": "Facundo De La Vega",
     "displayName": "Vega",
     "dateOfBirth": "2005-09-08",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "RWB",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "RM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 186,
@@ -418,21 +501,31 @@
       "identitySourceId": "facundo-de-la-vega",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "facundo-de-la-vega",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:federico-gino",
+    "externalId": "public-player:federico-gino:1989-04-03:arg",
     "fullName": "Federico Gino",
     "displayName": "Gino",
     "dateOfBirth": "1989-04-03",
@@ -467,21 +560,31 @@
       "identitySourceId": "federico-gino",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "federico-gino",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:federico-laurelli",
+    "externalId": "public-player:federico-laurelli:2000-02-19:arg",
     "fullName": "Federico Laurelli",
     "displayName": "Laurelli",
     "dateOfBirth": "2000-02-19",
@@ -516,30 +619,39 @@
       "identitySourceId": "federico-laurelli",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "federico-laurelli",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:felipe-anso",
+    "externalId": "public-player:felipe-anso:1995-07-06:arg",
     "fullName": "Felipe Anso",
     "displayName": "Anso",
     "dateOfBirth": "1995-07-06",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 167,
@@ -554,8 +666,8 @@
     },
     "marketValue": "16031311",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -565,21 +677,31 @@
       "identitySourceId": "felipe-anso",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "felipe-anso",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:fernando-roman",
+    "externalId": "public-player:fernando-roman:1994-03-13:arg",
     "fullName": "Fernando Román",
     "displayName": "Román",
     "dateOfBirth": "1994-03-13",
@@ -614,30 +736,40 @@
       "identitySourceId": "fernando-roman",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "fernando-roman",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:franco-leys",
+    "externalId": "public-player:franco-leys:1989-06-26:arg",
     "fullName": "Franco Leys",
     "displayName": "Leys",
     "dateOfBirth": "1989-06-26",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "CAM",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CM",
-      "CF"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 173,
@@ -663,31 +795,38 @@
       "identitySourceId": "franco-leys",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "franco-leys",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:guillermo-enrique",
+    "externalId": "public-player:guillermo-enrique:1998-06-03:arg",
     "fullName": "Guillermo Enrique",
     "displayName": "Enrique",
     "dateOfBirth": "1998-06-03",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "LM",
-    "secondaryPositions": [
-      "LW",
-      "CM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 191,
     "shirtNumber": 2,
@@ -701,8 +840,8 @@
     },
     "marketValue": "20970738",
     "specialAttributes": [
-      "press_resistant",
-      "line_breaker"
+      "one_on_one_keeper",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -712,30 +851,39 @@
       "identitySourceId": "guillermo-enrique",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER goalkeeper estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#goalkeeper-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "guillermo-enrique",
+    "positionSource": "MANAGER goalkeeper estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#goalkeeper-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:ian-acosta",
+    "externalId": "public-player:ian-acosta:1988-11-02:arg",
     "fullName": "Ian Acosta",
     "displayName": "Acosta",
     "dateOfBirth": "1988-11-02",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "RM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 185,
@@ -751,7 +899,7 @@
     "marketValue": "17781161",
     "specialAttributes": [
       "workhorse",
-      "line_breaker"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -761,30 +909,39 @@
       "identitySourceId": "ian-acosta",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "ian-acosta",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:ignacio-chicco",
+    "externalId": "public-player:ignacio-chicco:2000-01-13:arg",
     "fullName": "Ignacio Chicco",
     "displayName": "Chicco",
     "dateOfBirth": "2000-01-13",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "LW",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
@@ -799,8 +956,8 @@
     },
     "marketValue": "20908365",
     "specialAttributes": [
-      "clutch_finisher",
-      "line_breaker"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -810,30 +967,40 @@
       "identitySourceId": "ignacio-chicco",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "ignacio-chicco",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:joaquin-novillo",
+    "externalId": "public-player:joaquin-novillo:2001-12-04:arg",
     "fullName": "Joaquín Novillo",
     "displayName": "Novillo",
     "dateOfBirth": "2001-12-04",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "RW",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 179,
@@ -859,30 +1026,40 @@
       "identitySourceId": "joaquin-novillo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "joaquin-novillo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:joaquin-salinas",
+    "externalId": "public-player:joaquin-salinas:1999-10-14:arg",
     "fullName": "Joaquín Salinas",
     "displayName": "Salinas",
     "dateOfBirth": "1999-10-14",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "LW",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 184,
@@ -897,8 +1074,8 @@
     },
     "marketValue": "19136330",
     "specialAttributes": [
-      "speedster",
-      "workhorse"
+      "workhorse",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -908,21 +1085,31 @@
       "identitySourceId": "joaquin-salinas",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "joaquin-salinas",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:junior-arias",
+    "externalId": "public-player:junior-arias:2005-01-16:arg",
     "fullName": "Junior Arias",
     "displayName": "Arias",
     "dateOfBirth": "2005-01-16",
@@ -946,8 +1133,8 @@
     },
     "marketValue": "17360745",
     "specialAttributes": [
-      "press_resistant",
-      "line_breaker"
+      "line_breaker",
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -957,29 +1144,39 @@
       "identitySourceId": "junior-arias",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "junior-arias",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:kevin-baez",
+    "externalId": "public-player:kevin-baez:1996-02-06:arg",
     "fullName": "Kevin Báez",
     "displayName": "Báez",
     "dateOfBirth": "1996-02-06",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "ST",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 184,
@@ -995,7 +1192,7 @@
     "marketValue": "20997996",
     "specialAttributes": [
       "aerial_specialist",
-      "press_resistant"
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1005,28 +1202,39 @@
       "identitySourceId": "kevin-baez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "kevin-baez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:lautaro-chavez",
+    "externalId": "public-player:lautaro-chavez:2001-11-09:arg",
     "fullName": "Lautaro Chávez",
     "displayName": "Chávez",
     "dateOfBirth": "2001-11-09",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "ST",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
+      "CM",
       "CF"
     ],
     "preferredFoot": "LEFT",
@@ -1053,30 +1261,39 @@
       "identitySourceId": "lautaro-chavez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "lautaro-chavez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:lucas-rodriguez",
+    "externalId": "public-player:lucas-rodriguez:1991-09-14:arg",
     "fullName": "Lucas Rodríguez",
     "displayName": "Rodríguez",
     "dateOfBirth": "1991-09-14",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "CF",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 184,
@@ -1091,8 +1308,8 @@
     },
     "marketValue": "19122764",
     "specialAttributes": [
-      "speedster",
-      "clutch_finisher"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1102,29 +1319,40 @@
       "identitySourceId": "lucas-rodriguez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "lucas-rodriguez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:aldosivi:martin-garcia",
+    "externalId": "public-player:martin-garcia:2004-01-18:arg",
     "fullName": "Martín García",
     "displayName": "García",
     "dateOfBirth": "2004-01-18",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "ST",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CF"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -1150,17 +1378,27 @@
       "identitySourceId": "martin-garcia",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
+    "sourceEntityId": "martin-garcia",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

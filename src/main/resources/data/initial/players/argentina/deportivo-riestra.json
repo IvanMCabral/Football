@@ -1,13 +1,16 @@
 [
   {
-    "externalId": "public-identity:arg:deportivo-riestra:alejo-dramisino",
+    "externalId": "public-player:alejo-dramisino:1991-07-11:arg",
     "fullName": "Alejo Dramisino",
     "displayName": "Dramisino",
     "dateOfBirth": "1991-07-11",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
     "preferredFoot": "LEFT",
     "heightCm": 184,
     "shirtNumber": 29,
@@ -22,7 +25,7 @@
     "marketValue": "16973892",
     "specialAttributes": [
       "leader",
-      "sweeper_keeper"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,28 +35,41 @@
       "identitySourceId": "alejo-dramisino",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "alejo-dramisino",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:alejo-duarte",
+    "externalId": "public-player:alejo-duarte:1991-02-17:arg",
     "fullName": "Alejo Duarte",
     "displayName": "Duarte",
     "dateOfBirth": "1991-02-17",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
     "preferredFoot": "LEFT",
     "heightCm": 180,
     "shirtNumber": 34,
@@ -67,8 +83,8 @@
     },
     "marketValue": "17303660",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -78,30 +94,39 @@
       "identitySourceId": "alejo-duarte",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "alejo-duarte",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:alexander-diaz",
+    "externalId": "public-player:alexander-diaz:1997-07-27:arg",
     "fullName": "Alexander Díaz",
     "displayName": "Díaz",
     "dateOfBirth": "1997-07-27",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "LB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 175,
@@ -116,8 +141,8 @@
     },
     "marketValue": "19605452",
     "specialAttributes": [
-      "press_resistant",
-      "aerial_specialist"
+      "aerial_specialist",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -127,29 +152,39 @@
       "identitySourceId": "alexander-diaz",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "alexander-diaz",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:antony-alonso",
+    "externalId": "public-player:antony-alonso:2005-06-27:arg",
     "fullName": "Antony Alonso",
     "displayName": "Alonso",
     "dateOfBirth": "2005-06-27",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -164,8 +199,8 @@
     },
     "marketValue": "18156245",
     "specialAttributes": [
-      "leader",
-      "press_resistant"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -175,29 +210,40 @@
       "identitySourceId": "antony-alonso",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "antony-alonso",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:benjamin-perez",
+    "externalId": "public-player:benjamin-perez:1996-02-28:arg",
     "fullName": "Benjamín Pérez",
     "displayName": "Pérez",
     "dateOfBirth": "1996-02-28",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CB",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
@@ -223,29 +269,39 @@
       "identitySourceId": "benjamin-perez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "benjamin-perez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:benjamin-rojas",
+    "externalId": "public-player:benjamin-rojas:1990-01-28:arg",
     "fullName": "Benjamín Rojas",
     "displayName": "Rojas",
     "dateOfBirth": "1990-01-28",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 176,
@@ -261,7 +317,7 @@
     "marketValue": "21656382",
     "specialAttributes": [
       "speedster",
-      "press_resistant"
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -271,30 +327,40 @@
       "identitySourceId": "benjamin-rojas",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "benjamin-rojas",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:cristian-paz",
+    "externalId": "public-player:cristian-paz:2000-11-27:arg",
     "fullName": "Cristian Paz",
     "displayName": "Paz",
     "dateOfBirth": "2000-11-27",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "RB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "RWB",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
@@ -320,30 +386,40 @@
       "identitySourceId": "cristian-paz",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "cristian-paz",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:dariel-sanchez",
+    "externalId": "public-player:dariel-sanchez:2002-10-01:arg",
     "fullName": "Dariel Sánchez",
     "displayName": "Sánchez",
     "dateOfBirth": "2002-10-01",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 173,
@@ -359,7 +435,7 @@
     "marketValue": "17533547",
     "specialAttributes": [
       "workhorse",
-      "speedster"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -369,30 +445,40 @@
       "identitySourceId": "dariel-sanchez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "dariel-sanchez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:fabricio-ventresca",
+    "externalId": "public-player:fabricio-ventresca:2004-02-11:arg",
     "fullName": "Fabricio Ventresca",
     "displayName": "Ventresca",
     "dateOfBirth": "2004-02-11",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "RWB",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "RM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
@@ -408,7 +494,7 @@
     "marketValue": "19580085",
     "specialAttributes": [
       "set_piece_specialist",
-      "press_resistant"
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -418,30 +504,40 @@
       "identitySourceId": "fabricio-ventresca",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "fabricio-ventresca",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:facundo-mino",
+    "externalId": "public-player:facundo-mino:1996-05-20:arg",
     "fullName": "Facundo Miño",
     "displayName": "Miño",
     "dateOfBirth": "1996-05-20",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CDM",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CM",
-      "CB"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 182,
@@ -467,30 +563,39 @@
       "identitySourceId": "facundo-mino",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "facundo-mino",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:francisco-de-zuniga",
+    "externalId": "public-player:francisco-de-zuniga:1991-04-20:arg",
     "fullName": "Francisco De Zuñiga",
     "displayName": "Zuñiga",
     "dateOfBirth": "1991-04-20",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 191,
@@ -505,8 +610,8 @@
     },
     "marketValue": "17206184",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -516,30 +621,39 @@
       "identitySourceId": "francisco-de-zuniga",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "francisco-de-zuniga",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:gabriel-obredor",
+    "externalId": "public-player:gabriel-obredor:1991-09-25:arg",
     "fullName": "Gabriel Obredor",
     "displayName": "Obredor",
     "dateOfBirth": "1991-09-25",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 168,
@@ -554,8 +668,8 @@
     },
     "marketValue": "21467081",
     "specialAttributes": [
-      "press_resistant",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -565,30 +679,39 @@
       "identitySourceId": "gabriel-obredor",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "gabriel-obredor",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:gonzalo-flores",
+    "externalId": "public-player:gonzalo-flores:2002-07-03:arg",
     "fullName": "Gonzalo Flores",
     "displayName": "Flores",
     "dateOfBirth": "2002-07-03",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 169,
@@ -603,8 +726,8 @@
     },
     "marketValue": "18056173",
     "specialAttributes": [
-      "press_resistant",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -614,30 +737,39 @@
       "identitySourceId": "gonzalo-flores",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "gonzalo-flores",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:ignacio-arce",
+    "externalId": "public-player:ignacio-arce:1998-06-08:arg",
     "fullName": "Ignacio Arce",
     "displayName": "Arce",
     "dateOfBirth": "1998-06-08",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CAM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CM",
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 193,
@@ -663,31 +795,38 @@
       "identitySourceId": "ignacio-arce",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "ignacio-arce",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:ivan-lopez",
+    "externalId": "public-player:ivan-lopez:1990-11-01:arg",
     "fullName": "Iván López",
     "displayName": "López",
     "dateOfBirth": "1990-11-01",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "LM",
-    "secondaryPositions": [
-      "LW",
-      "CM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 193,
     "shirtNumber": 12,
@@ -701,8 +840,8 @@
     },
     "marketValue": "19533233",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "one_on_one_keeper",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -712,30 +851,40 @@
       "identitySourceId": "ivan-lopez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER goalkeeper estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#goalkeeper-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "ivan-lopez",
+    "positionSource": "MANAGER goalkeeper estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#goalkeeper-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:johnson-nsumoh",
+    "externalId": "public-player:johnson-nsumoh:1994-06-28:arg",
     "fullName": "Johnson Nsumoh",
     "displayName": "Nsumoh",
     "dateOfBirth": "1994-06-28",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "RM",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "RM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 179,
@@ -750,8 +899,8 @@
     },
     "marketValue": "21035063",
     "specialAttributes": [
-      "press_resistant",
-      "leader"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -761,30 +910,40 @@
       "identitySourceId": "johnson-nsumoh",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "johnson-nsumoh",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:jonatan-goitia",
+    "externalId": "public-player:jonatan-goitia:1999-04-01:arg",
     "fullName": "Jonatan Goitía",
     "displayName": "Goitía",
     "dateOfBirth": "1999-04-01",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "LW",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
@@ -800,7 +959,7 @@
     "marketValue": "16426691",
     "specialAttributes": [
       "set_piece_specialist",
-      "clutch_finisher"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -810,21 +969,31 @@
       "identitySourceId": "jonatan-goitia",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "jonatan-goitia",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:jonathan-herrera",
+    "externalId": "public-player:jonathan-herrera:1994-06-11:arg",
     "fullName": "Jonathan Herrera",
     "displayName": "Herrera",
     "dateOfBirth": "1994-06-11",
@@ -849,7 +1018,7 @@
     "marketValue": "20943256",
     "specialAttributes": [
       "set_piece_specialist",
-      "clutch_finisher"
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -858,29 +1027,40 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
       "identitySourceId": "jonathan-herrera",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "jonathan-herrera",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:jorge-luque",
+    "externalId": "public-player:jorge-luque:1988-10-22:arg",
     "fullName": "Jorge Luque",
     "displayName": "Luque",
     "dateOfBirth": "1988-10-22",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "LW",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 185,
@@ -896,7 +1076,7 @@
     "marketValue": "19112522",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -906,21 +1086,31 @@
       "identitySourceId": "jorge-luque",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "jorge-luque",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:jose-maria-ingratti",
+    "externalId": "public-player:jose-maria-ingratti:1990-03-09:arg",
     "fullName": "José María Ingratti",
     "displayName": "Ingratti",
     "dateOfBirth": "1990-03-09",
@@ -955,29 +1145,40 @@
       "identitySourceId": "jose-maria-ingratti",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "jose-maria-ingratti",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:juan-randazzo",
+    "externalId": "public-player:juan-randazzo:1994-01-17:arg",
     "fullName": "Juan Randazzo",
     "displayName": "Randazzo",
     "dateOfBirth": "1994-01-17",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "ST",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CF"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 169,
@@ -993,7 +1194,7 @@
     "marketValue": "18667522",
     "specialAttributes": [
       "line_breaker",
-      "speedster"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1003,29 +1204,39 @@
       "identitySourceId": "juan-randazzo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "juan-randazzo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:justo-rodriguez-ares",
+    "externalId": "public-player:justo-rodriguez-ares:1993-12-14:arg",
     "fullName": "Justo Rodríguez Ares",
     "displayName": "Ares",
     "dateOfBirth": "1993-12-14",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "ST",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 191,
@@ -1041,7 +1252,7 @@
     "marketValue": "16585000",
     "specialAttributes": [
       "aerial_specialist",
-      "speedster"
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1051,30 +1262,39 @@
       "identitySourceId": "justo-rodriguez-ares",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "justo-rodriguez-ares",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:lautaro-cortez",
+    "externalId": "public-player:lautaro-cortez:2003-09-26:arg",
     "fullName": "Lautaro Córtez",
     "displayName": "Córtez",
     "dateOfBirth": "2003-09-26",
     "nationalityCode": "ARG",
     "clubExternalId": "deportivo-riestra",
-    "primaryPosition": "CF",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -1089,8 +1309,8 @@
     },
     "marketValue": "19114657",
     "specialAttributes": [
-      "set_piece_specialist",
-      "clutch_finisher"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1100,21 +1320,31 @@
       "identitySourceId": "lautaro-cortez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "lautaro-cortez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:deportivo-riestra:lautaro-duarte",
+    "externalId": "public-player:lautaro-duarte:1995-10-14:arg",
     "fullName": "Lautaro Duarte",
     "displayName": "Duarte",
     "dateOfBirth": "1995-10-14",
@@ -1137,8 +1367,8 @@
     },
     "marketValue": "18891504",
     "specialAttributes": [
-      "press_resistant",
-      "aerial_specialist"
+      "aerial_specialist",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1147,16 +1377,28 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
       "identitySourceId": "lautaro-duarte",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Deportivo_Riestra",
+    "sourceEntityId": "lautaro-duarte",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

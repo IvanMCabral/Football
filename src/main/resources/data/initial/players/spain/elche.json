@@ -1,13 +1,16 @@
 [
   {
-    "externalId": "public-identity:esp:elche:adam-boayar",
+    "externalId": "public-player:adam-boayar:1997-08-23:esp",
     "fullName": "Adam Boayar",
     "displayName": "Boayar",
     "dateOfBirth": "1997-08-23",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
     "shirtNumber": 32,
@@ -21,8 +24,8 @@
     },
     "marketValue": "17059023",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,21 +35,31 @@
       "identitySourceId": "adam-boayar",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "adam-boayar",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:alejandro-iturbe",
+    "externalId": "public-player:alejandro-iturbe:1992-01-15:esp",
     "fullName": "Alejandro Iturbe",
     "displayName": "Iturbe",
     "dateOfBirth": "1992-01-15",
@@ -68,7 +81,7 @@
     "marketValue": "20194210",
     "specialAttributes": [
       "sweeper_keeper",
-      "leader"
+      "one_on_one_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -77,29 +90,40 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Elche_CF",
       "identitySourceId": "alejandro-iturbe",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "alejandro-iturbe",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:ali-houary",
+    "externalId": "public-player:ali-houary:1993-05-25:esp",
     "fullName": "Ali Houary",
     "displayName": "Houary",
     "dateOfBirth": "1993-05-25",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "LB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 177,
@@ -114,8 +138,8 @@
     },
     "marketValue": "17779974",
     "specialAttributes": [
-      "set_piece_specialist",
-      "leader"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -125,29 +149,39 @@
       "identitySourceId": "ali-houary",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "ali-houary",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:andre-silva",
+    "externalId": "public-player:andre-silva:1992-03-20:esp",
     "fullName": "André Silva",
     "displayName": "Silva",
     "dateOfBirth": "1992-03-20",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -162,8 +196,8 @@
     },
     "marketValue": "21161054",
     "specialAttributes": [
-      "press_resistant",
-      "workhorse"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -173,21 +207,31 @@
       "identitySourceId": "andre-silva",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "andre-silva",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:bambo-diaby",
+    "externalId": "public-player:bambo-diaby:1989-04-25:esp",
     "fullName": "Bambo Diaby",
     "displayName": "Diaby",
     "dateOfBirth": "1989-04-25",
@@ -210,8 +254,8 @@
     },
     "marketValue": "17755923",
     "specialAttributes": [
-      "set_piece_specialist",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -220,28 +264,41 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Elche_CF",
       "identitySourceId": "bambo-diaby",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "bambo-diaby",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:buba-sangare",
+    "externalId": "public-player:buba-sangare:1991-06-09:esp",
     "fullName": "Buba Sangaré",
     "displayName": "Sangaré",
     "dateOfBirth": "1991-06-09",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "CB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CDM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 172,
@@ -257,7 +314,7 @@
     "marketValue": "17812305",
     "specialAttributes": [
       "set_piece_specialist",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -267,29 +324,39 @@
       "identitySourceId": "buba-sangare",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "buba-sangare",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:david-affengruber",
+    "externalId": "public-player:david-affengruber:1994-06-16:esp",
     "fullName": "David Affengruber",
     "displayName": "Affengruber",
     "dateOfBirth": "1994-06-16",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "RB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RWB",
+      "CM",
       "CB"
     ],
     "preferredFoot": "LEFT",
@@ -306,7 +373,7 @@
     "marketValue": "20698679",
     "specialAttributes": [
       "press_resistant",
-      "speedster"
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -316,30 +383,40 @@
       "identitySourceId": "david-affengruber",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "david-affengruber",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:federico-redondo",
+    "externalId": "public-player:federico-redondo:1993-09-19:esp",
     "fullName": "Federico Redondo",
     "displayName": "Redondo",
     "dateOfBirth": "1993-09-19",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
@@ -355,7 +432,7 @@
     "marketValue": "20738589",
     "specialAttributes": [
       "set_piece_specialist",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -365,30 +442,40 @@
       "identitySourceId": "federico-redondo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "federico-redondo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:german-valera",
+    "externalId": "public-player:german-valera:1995-08-11:esp",
     "fullName": "Germán Valera",
     "displayName": "Valera",
     "dateOfBirth": "1995-08-11",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "RWB",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "RM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 178,
@@ -403,8 +490,8 @@
     },
     "marketValue": "22596991",
     "specialAttributes": [
-      "leader",
-      "workhorse"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -414,21 +501,31 @@
       "identitySourceId": "german-valera",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "german-valera",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:gonzalo-villar",
+    "externalId": "public-player:gonzalo-villar:1990-08-07:esp",
     "fullName": "Gonzalo Villar",
     "displayName": "Villar",
     "dateOfBirth": "1990-08-07",
@@ -463,30 +560,40 @@
       "identitySourceId": "gonzalo-villar",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "gonzalo-villar",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:grady-diangana",
+    "externalId": "public-player:grady-diangana:2004-01-20:esp",
     "fullName": "Grady Diangana",
     "displayName": "Diangana",
     "dateOfBirth": "2004-01-20",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "CM",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 173,
@@ -512,30 +619,39 @@
       "identitySourceId": "grady-diangana",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "grady-diangana",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:john-donald",
+    "externalId": "public-player:john-donald:1992-01-14:esp",
     "fullName": "John Donald",
     "displayName": "Donald",
     "dateOfBirth": "1992-01-14",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "CM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 189,
@@ -561,30 +677,40 @@
       "identitySourceId": "john-donald",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "john-donald",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:josan",
+    "externalId": "public-player:josan:1997-07-10:esp",
     "fullName": "Josan",
     "displayName": "Josan",
     "dateOfBirth": "1997-07-10",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "CM",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
@@ -609,28 +735,39 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Elche_CF",
       "identitySourceId": "josan",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "josan",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:lucas-cepeda",
+    "externalId": "public-player:lucas-cepeda:1989-06-21:esp",
     "fullName": "Lucas Cepeda",
     "displayName": "Cepeda",
     "dateOfBirth": "1989-06-21",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "CAM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -646,8 +783,8 @@
     },
     "marketValue": "22216455",
     "specialAttributes": [
-      "workhorse",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -657,30 +794,40 @@
       "identitySourceId": "lucas-cepeda",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "lucas-cepeda",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:marc-aguado",
+    "externalId": "public-player:marc-aguado:2004-04-03:esp",
     "fullName": "Marc Aguado",
     "displayName": "Aguado",
     "dateOfBirth": "2004-04-03",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "LM",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
@@ -695,8 +842,8 @@
     },
     "marketValue": "19175699",
     "specialAttributes": [
-      "workhorse",
-      "leader"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -706,30 +853,40 @@
       "identitySourceId": "marc-aguado",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "marc-aguado",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:martim-neto",
+    "externalId": "public-player:martim-neto:1990-03-12:esp",
     "fullName": "Martim Neto",
     "displayName": "Neto",
     "dateOfBirth": "1990-03-12",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "RM",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -755,30 +912,40 @@
       "identitySourceId": "martim-neto",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "martim-neto",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:matia-barzic",
+    "externalId": "public-player:matia-barzic:1994-07-11:esp",
     "fullName": "Matía Barzic",
     "displayName": "Barzic",
     "dateOfBirth": "1994-07-11",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "LW",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -804,30 +971,39 @@
       "identitySourceId": "matia-barzic",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "matia-barzic",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:matias-dituro",
+    "externalId": "public-player:matias-dituro:1994-11-25:esp",
     "fullName": "Matías Dituro",
     "displayName": "Dituro",
     "dateOfBirth": "1994-11-25",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "RW",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
@@ -843,7 +1019,7 @@
     "marketValue": "20597088",
     "specialAttributes": [
       "workhorse",
-      "clutch_finisher"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -853,30 +1029,39 @@
       "identitySourceId": "matias-dituro",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "matias-dituro",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:pedro-bigas",
+    "externalId": "public-player:pedro-bigas:1995-06-17:esp",
     "fullName": "Pedro Bigas",
     "displayName": "Bigas",
     "dateOfBirth": "1995-06-17",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "LW",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -891,8 +1076,8 @@
     },
     "marketValue": "17840335",
     "specialAttributes": [
-      "line_breaker",
-      "workhorse"
+      "workhorse",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -902,21 +1087,31 @@
       "identitySourceId": "pedro-bigas",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "pedro-bigas",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:tete-morente",
+    "externalId": "public-player:tete-morente:1994-12-08:esp",
     "fullName": "Tete Morente",
     "displayName": "Morente",
     "dateOfBirth": "1994-12-08",
@@ -951,29 +1146,40 @@
       "identitySourceId": "tete-morente",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "tete-morente",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:victor-chust",
+    "externalId": "public-player:victor-chust:2004-09-02:esp",
     "fullName": "Víctor Chust",
     "displayName": "Chust",
     "dateOfBirth": "2004-09-02",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "ST",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CF"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -988,8 +1194,8 @@
     },
     "marketValue": "18644727",
     "specialAttributes": [
-      "clutch_finisher",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -999,29 +1205,40 @@
       "identitySourceId": "victor-chust",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "victor-chust",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:yago-santiago",
+    "externalId": "public-player:yago-santiago:2002-05-02:esp",
     "fullName": "Yago Santiago",
     "displayName": "Santiago",
     "dateOfBirth": "2002-05-02",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "ST",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CF"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -1036,8 +1253,8 @@
     },
     "marketValue": "19053172",
     "specialAttributes": [
-      "speedster",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1047,30 +1264,39 @@
       "identitySourceId": "yago-santiago",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Elche_CF",
+    "sourceEntityId": "yago-santiago",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:john-chetauya",
+    "externalId": "public-player:john-chetauya:1997-12-20:esp",
     "fullName": "John Chetauya",
     "displayName": "Chetauya",
     "dateOfBirth": "1997-12-20",
     "nationalityCode": "ESP",
     "clubExternalId": "elche",
-    "primaryPosition": "CF",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 173,
@@ -1086,7 +1312,7 @@
     "marketValue": "21382059",
     "specialAttributes": [
       "aerial_specialist",
-      "press_resistant"
+      "clutch_finisher"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1095,21 +1321,32 @@
       "identityUrl": "https://www.thesportsdb.com/player/34174105",
       "identitySourceId": "34174105",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34174105",
+    "sourceEntityId": "34174105",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:elche:martim-carvalho-neto",
+    "externalId": "public-player:martim-carvalho-neto:1994-10-13:esp",
     "fullName": "Martim Carvalho Neto",
     "displayName": "Neto",
     "dateOfBirth": "1994-10-13",
@@ -1132,8 +1369,8 @@
     },
     "marketValue": "17268578",
     "specialAttributes": [
-      "press_resistant",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1142,17 +1379,28 @@
       "identityUrl": "https://www.thesportsdb.com/player/34222465",
       "identitySourceId": "34222465",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34222465",
+    "sourceEntityId": "34222465",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

@@ -1,6 +1,6 @@
 [
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:agustin-dominguez",
+    "externalId": "public-player:agustin-dominguez:1991-11-15:arg",
     "fullName": "Agustín Domínguez",
     "displayName": "Domínguez",
     "dateOfBirth": "1991-11-15",
@@ -22,7 +22,7 @@
     "marketValue": "18804522",
     "specialAttributes": [
       "aerial_specialist",
-      "leader"
+      "one_on_one_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,28 +32,40 @@
       "identitySourceId": "agustin-dominguez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "agustin-dominguez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:agustin-rognoni",
+    "externalId": "public-player:agustin-rognoni:1992-12-12:arg",
     "fullName": "Agustín Rognoni",
     "displayName": "Rognoni",
     "dateOfBirth": "1992-12-12",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 175,
     "shirtNumber": 65,
@@ -67,8 +79,8 @@
     },
     "marketValue": "18555999",
     "specialAttributes": [
-      "leader",
-      "aerial_specialist"
+      "aerial_specialist",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -78,21 +90,31 @@
       "identitySourceId": "agustin-rognoni",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "agustin-rognoni",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:alejo-osella",
+    "externalId": "public-player:alejo-osella:2001-05-25:arg",
     "fullName": "Alejo Osella",
     "displayName": "Osella",
     "dateOfBirth": "2001-05-25",
@@ -116,8 +138,8 @@
     },
     "marketValue": "20627683",
     "specialAttributes": [
-      "press_resistant",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -126,28 +148,40 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
       "identitySourceId": "alejo-osella",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "alejo-osella",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:alessandro-riep",
+    "externalId": "public-player:alessandro-riep:1998-07-26:arg",
     "fullName": "Alessandro Riep",
     "displayName": "Riep",
     "dateOfBirth": "1998-07-26",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -162,8 +196,8 @@
     },
     "marketValue": "21335899",
     "specialAttributes": [
-      "workhorse",
-      "speedster"
+      "speedster",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -173,29 +207,40 @@
       "identitySourceId": "alessandro-riep",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "alessandro-riep",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:alex-aguado",
+    "externalId": "public-player:alex-aguado:1998-01-05:arg",
     "fullName": "Alex Aguado",
     "displayName": "Aguado",
     "dateOfBirth": "1998-01-05",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "CB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CDM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 172,
@@ -221,29 +266,40 @@
       "identitySourceId": "alex-aguado",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "alex-aguado",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:alexander-lucero",
+    "externalId": "public-player:alexander-lucero:2000-02-07:arg",
     "fullName": "Alexander Lucero",
     "displayName": "Lucero",
     "dateOfBirth": "2000-02-07",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "CB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CDM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -259,7 +315,7 @@
     "marketValue": "20253105",
     "specialAttributes": [
       "workhorse",
-      "speedster"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -269,29 +325,39 @@
       "identitySourceId": "alexander-lucero",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "alexander-lucero",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:amaro-maya",
+    "externalId": "public-player:amaro-maya:1993-04-24:arg",
     "fullName": "Amaro Maya",
     "displayName": "Maya",
     "dateOfBirth": "1993-04-24",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "RB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RWB",
+      "CM",
       "CB"
     ],
     "preferredFoot": "LEFT",
@@ -308,7 +374,7 @@
     "marketValue": "18824356",
     "specialAttributes": [
       "press_resistant",
-      "aerial_specialist"
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -318,30 +384,40 @@
       "identitySourceId": "amaro-maya",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "amaro-maya",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:axel-leiva",
+    "externalId": "public-player:axel-leiva:2003-09-05:arg",
     "fullName": "Axel Leiva",
     "displayName": "Leiva",
     "dateOfBirth": "2003-09-05",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "LWB",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 172,
@@ -356,8 +432,8 @@
     },
     "marketValue": "16451196",
     "specialAttributes": [
-      "leader",
-      "workhorse"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -367,30 +443,40 @@
       "identitySourceId": "axel-leiva",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "axel-leiva",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:bautista-dadin",
+    "externalId": "public-player:bautista-dadin:2004-03-16:arg",
     "fullName": "Bautista Dadín",
     "displayName": "Dadín",
     "dateOfBirth": "2004-03-16",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "RWB",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "RM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 187,
@@ -406,7 +492,7 @@
     "marketValue": "19738262",
     "specialAttributes": [
       "speedster",
-      "workhorse"
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -416,21 +502,31 @@
       "identitySourceId": "bautista-dadin",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "bautista-dadin",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:benjamin-olivarez",
+    "externalId": "public-player:benjamin-olivarez:1989-02-04:arg",
     "fullName": "Benjamín Olivarez",
     "displayName": "Olivarez",
     "dateOfBirth": "1989-02-04",
@@ -465,21 +561,31 @@
       "identitySourceId": "benjamin-olivarez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "benjamin-olivarez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:diego-crego",
+    "externalId": "public-player:diego-crego:1997-01-03:arg",
     "fullName": "Diego Crego",
     "displayName": "Crego",
     "dateOfBirth": "1997-01-03",
@@ -514,30 +620,39 @@
       "identitySourceId": "diego-crego",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "diego-crego",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:emmanuel-gomez-riga",
+    "externalId": "public-player:emmanuel-gomez-riga:2005-06-12:arg",
     "fullName": "Emmanuel Gómez Riga",
     "displayName": "Riga",
     "dateOfBirth": "2005-06-12",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "CM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 194,
@@ -553,7 +668,7 @@
     "marketValue": "21686146",
     "specialAttributes": [
       "workhorse",
-      "set_piece_specialist"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -563,21 +678,31 @@
       "identitySourceId": "emmanuel-gomez-riga",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "emmanuel-gomez-riga",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:ezequiel-bonifacio",
+    "externalId": "public-player:ezequiel-bonifacio:1996-08-08:arg",
     "fullName": "Ezequiel Bonifacio",
     "displayName": "Bonifacio",
     "dateOfBirth": "1996-08-08",
@@ -612,29 +737,38 @@
       "identitySourceId": "ezequiel-bonifacio",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "ezequiel-bonifacio",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:fabrizio-sartori",
+    "externalId": "public-player:fabrizio-sartori:1996-11-06:arg",
     "fullName": "Fabrizio Sartori",
     "displayName": "Sartori",
     "dateOfBirth": "1996-11-06",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "CAM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -650,8 +784,8 @@
     },
     "marketValue": "20133451",
     "specialAttributes": [
-      "press_resistant",
-      "line_breaker"
+      "line_breaker",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -661,30 +795,40 @@
       "identitySourceId": "fabrizio-sartori",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "fabrizio-sartori",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:facundo-ortiz",
+    "externalId": "public-player:facundo-ortiz:2000-04-26:arg",
     "fullName": "Facundo Ortiz",
     "displayName": "Ortiz",
     "dateOfBirth": "2000-04-26",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "LM",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -699,8 +843,8 @@
     },
     "marketValue": "19742995",
     "specialAttributes": [
-      "leader",
-      "workhorse"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -710,30 +854,39 @@
       "identitySourceId": "facundo-ortiz",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "facundo-ortiz",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:fernando-bravo",
+    "externalId": "public-player:fernando-bravo:2002-11-03:arg",
     "fullName": "Fernando Bravo",
     "displayName": "Bravo",
     "dateOfBirth": "2002-11-03",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "RM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 195,
@@ -748,8 +901,8 @@
     },
     "marketValue": "18254997",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -759,30 +912,40 @@
       "identitySourceId": "fernando-bravo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "fernando-bravo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:gonzalo-rios",
+    "externalId": "public-player:gonzalo-rios:1994-11-19:arg",
     "fullName": "Gonzalo Ríos",
     "displayName": "Ríos",
     "dateOfBirth": "1994-11-19",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "LW",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 176,
@@ -808,30 +971,40 @@
       "identitySourceId": "gonzalo-rios",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "gonzalo-rios",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:ivan-villalba",
+    "externalId": "public-player:ivan-villalba:2000-11-25:arg",
     "fullName": "Iván Villalba",
     "displayName": "Villalba",
     "dateOfBirth": "2000-11-25",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "RW",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 179,
@@ -857,21 +1030,31 @@
       "identitySourceId": "ivan-villalba",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "ivan-villalba",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:joaquin-ibanez",
+    "externalId": "public-player:joaquin-ibanez:2005-06-10:arg",
     "fullName": "Joaquin Ibañez",
     "displayName": "Ibañez",
     "dateOfBirth": "2005-06-10",
@@ -906,30 +1089,40 @@
       "identitySourceId": "joaquin-ibanez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "joaquin-ibanez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:jose-florentin",
+    "externalId": "public-player:jose-florentin:2000-11-06:arg",
     "fullName": "José Florentín",
     "displayName": "Florentín",
     "dateOfBirth": "2000-11-06",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "RW",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 178,
@@ -944,8 +1137,8 @@
     },
     "marketValue": "21120873",
     "specialAttributes": [
-      "speedster",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -955,29 +1148,40 @@
       "identitySourceId": "jose-florentin",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "jose-florentin",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:juan-elordi",
+    "externalId": "public-player:juan-elordi:1993-07-28:arg",
     "fullName": "Juan Elordi",
     "displayName": "Elordi",
     "dateOfBirth": "1993-07-28",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "ST",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CF"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -992,8 +1196,8 @@
     },
     "marketValue": "17509164",
     "specialAttributes": [
-      "speedster",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1003,28 +1207,39 @@
       "identitySourceId": "juan-elordi",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "juan-elordi",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:julian-reyna",
+    "externalId": "public-player:julian-reyna:2000-04-11:arg",
     "fullName": "Julian Reyna",
     "displayName": "Reyna",
     "dateOfBirth": "2000-04-11",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "ST",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
+      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -1041,7 +1256,7 @@
     "marketValue": "20675175",
     "specialAttributes": [
       "press_resistant",
-      "aerial_specialist"
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1051,30 +1266,39 @@
       "identitySourceId": "julian-reyna",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "julian-reyna",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:kevin-pagliaroli",
+    "externalId": "public-player:kevin-pagliaroli:1995-09-01:arg",
     "fullName": "Kevin Pagliaroli",
     "displayName": "Pagliaroli",
     "dateOfBirth": "1995-09-01",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "CF",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 192,
@@ -1090,7 +1314,7 @@
     "marketValue": "16539928",
     "specialAttributes": [
       "leader",
-      "clutch_finisher"
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1100,28 +1324,39 @@
       "identitySourceId": "kevin-pagliaroli",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "kevin-pagliaroli",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:arg:independiente-rivadavia:kevin-vazquez",
+    "externalId": "public-player:kevin-vazquez:2004-08-15:arg",
     "fullName": "Kevin Vázquez",
     "displayName": "Vázquez",
     "dateOfBirth": "2004-08-15",
     "nationalityCode": "ARG",
     "clubExternalId": "independiente-rivadavia",
-    "primaryPosition": "ST",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
+      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -1137,8 +1372,8 @@
     },
     "marketValue": "20991687",
     "specialAttributes": [
-      "aerial_specialist",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1148,17 +1383,27 @@
       "identitySourceId": "kevin-vazquez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Independiente_Rivadavia",
+    "sourceEntityId": "kevin-vazquez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

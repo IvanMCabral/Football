@@ -1,6 +1,6 @@
 [
   {
-    "externalId": "public-identity:bra:athletico-paranaense:alejandro-garcia",
+    "externalId": "public-player:alejandro-garcia:2003-10-19:bra",
     "fullName": "Alejandro García",
     "displayName": "García",
     "dateOfBirth": "2003-10-19",
@@ -22,7 +22,7 @@
     "marketValue": "20226385",
     "specialAttributes": [
       "sweeper_keeper",
-      "leader"
+      "one_on_one_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,21 +32,32 @@
       "identitySourceId": "alejandro-garcia",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionAdjustmentReason": "MANAGER roster balance: source coverage did not expose enough goalkeepers; position estimated for MVP playability."
+      "positionAdjustmentReason": "MANAGER roster balance: source coverage did not expose enough goalkeepers; position estimated for MVP playability.",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "alejandro-garcia",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:arthur-dias",
+    "externalId": "public-player:arthur-dias:2001-02-16:bra",
     "fullName": "Arthur Dias",
     "displayName": "Dias",
     "dateOfBirth": "2001-02-16",
@@ -67,8 +78,8 @@
     },
     "marketValue": "20435025",
     "specialAttributes": [
-      "leader",
-      "aerial_specialist"
+      "aerial_specialist",
+      "one_on_one_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -78,30 +89,40 @@
       "identitySourceId": "arthur-dias",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionAdjustmentReason": "MANAGER roster balance: source coverage did not expose enough goalkeepers; position estimated for MVP playability."
+      "positionAdjustmentReason": "MANAGER roster balance: source coverage did not expose enough goalkeepers; position estimated for MVP playability.",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "arthur-dias",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:bruno-zapelli",
+    "externalId": "public-player:bruno-zapelli:1990-06-09:bra",
     "fullName": "Bruno Zapelli",
     "displayName": "Zapelli",
     "dateOfBirth": "1990-06-09",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "LB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "LWB",
-      "CB"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 173,
@@ -116,8 +137,8 @@
     },
     "marketValue": "23176971",
     "specialAttributes": [
-      "leader",
-      "press_resistant"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -127,29 +148,40 @@
       "identitySourceId": "bruno-zapelli",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "bruno-zapelli",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:carlos-teran",
+    "externalId": "public-player:carlos-teran:1998-01-20:bra",
     "fullName": "Carlos Terán",
     "displayName": "Terán",
     "dateOfBirth": "1998-01-20",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "CB",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CDM"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 177,
@@ -164,8 +196,8 @@
     },
     "marketValue": "21230130",
     "specialAttributes": [
-      "aerial_specialist",
-      "workhorse"
+      "workhorse",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -175,21 +207,31 @@
       "identitySourceId": "carlos-teran",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "carlos-teran",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:claudinho",
+    "externalId": "public-player:claudinho:1998-12-21:bra",
     "fullName": "Claudinho",
     "displayName": "Claudinho",
     "dateOfBirth": "1998-12-21",
@@ -222,28 +264,41 @@
       "identityUrl": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
       "identitySourceId": "claudinho",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "claudinho",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:dantas",
+    "externalId": "public-player:dantas:2001-05-10:bra",
     "fullName": "Dantas",
     "displayName": "Dantas",
     "dateOfBirth": "2001-05-10",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "CB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CDM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 179,
@@ -259,7 +314,7 @@
     "marketValue": "25334198",
     "specialAttributes": [
       "press_resistant",
-      "aerial_specialist"
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -269,29 +324,39 @@
       "identitySourceId": "dantas",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "dantas",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:dudu-kogitzki",
+    "externalId": "public-player:dudu-kogitzki:1990-10-06:bra",
     "fullName": "Dudu Kogitzki",
     "displayName": "Kogitzki",
     "dateOfBirth": "1990-10-06",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "RB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RWB",
+      "CM",
       "CB"
     ],
     "preferredFoot": "LEFT",
@@ -307,8 +372,8 @@
     },
     "marketValue": "20801258",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -318,30 +383,40 @@
       "identitySourceId": "dudu-kogitzki",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "dudu-kogitzki",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:felipe-chiqueti",
+    "externalId": "public-player:felipe-chiqueti:2002-02-07:bra",
     "fullName": "Felipe Chiqueti",
     "displayName": "Chiqueti",
     "dateOfBirth": "2002-02-07",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "LWB",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 168,
@@ -356,8 +431,8 @@
     },
     "marketValue": "20109789",
     "specialAttributes": [
-      "aerial_specialist",
-      "speedster"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -367,30 +442,40 @@
       "identitySourceId": "felipe-chiqueti",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "felipe-chiqueti",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:felipinho",
+    "externalId": "public-player:felipinho:1996-04-15:bra",
     "fullName": "Felipinho",
     "displayName": "Felipinho",
     "dateOfBirth": "1996-04-15",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "RWB",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
@@ -405,8 +490,8 @@
     },
     "marketValue": "20058629",
     "specialAttributes": [
-      "speedster",
-      "aerial_specialist"
+      "press_resistant",
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -416,21 +501,31 @@
       "identitySourceId": "felipinho",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "felipinho",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:gaston-benavidez",
+    "externalId": "public-player:gaston-benavidez:1999-08-11:bra",
     "fullName": "Gastón Benavídez",
     "displayName": "Benavídez",
     "dateOfBirth": "1999-08-11",
@@ -465,30 +560,40 @@
       "identitySourceId": "gaston-benavidez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "gaston-benavidez",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:gilberto-moraes",
+    "externalId": "public-player:gilberto-moraes:2002-06-10:bra",
     "fullName": "Gilberto Moraes",
     "displayName": "Moraes",
     "dateOfBirth": "2002-06-10",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "CM",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 182,
@@ -514,30 +619,39 @@
       "identitySourceId": "gilberto-moraes",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "gilberto-moraes",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:gilberto-dos-santos",
+    "externalId": "public-player:gilberto-dos-santos:1994-12-04:bra",
     "fullName": "Gilberto dos Santos",
     "displayName": "Santos",
     "dateOfBirth": "1994-12-04",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "CM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CDM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 187,
@@ -563,30 +677,39 @@
       "identitySourceId": "gilberto-dos-santos",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "gilberto-dos-santos",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:isaac",
+    "externalId": "public-player:isaac:2004-02-04:bra",
     "fullName": "Isaac",
     "displayName": "Isaac",
     "dateOfBirth": "2004-02-04",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "CM",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 168,
@@ -601,8 +724,8 @@
     },
     "marketValue": "21359368",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -612,30 +735,40 @@
       "identitySourceId": "isaac",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "isaac",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:jadson",
+    "externalId": "public-player:jadson:2002-11-15:bra",
     "fullName": "Jadson",
     "displayName": "Jadson",
     "dateOfBirth": "2002-11-15",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "CAM",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
       "CM",
-      "CF"
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 178,
@@ -661,30 +794,40 @@
       "identitySourceId": "jadson",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "jadson",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:jorge-rivaldo",
+    "externalId": "public-player:jorge-rivaldo:2003-04-06:bra",
     "fullName": "Jorge Rivaldo",
     "displayName": "Rivaldo",
     "dateOfBirth": "2003-04-06",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "LM",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 173,
@@ -699,8 +842,8 @@
     },
     "marketValue": "21696768",
     "specialAttributes": [
-      "workhorse",
-      "line_breaker"
+      "line_breaker",
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -710,30 +853,40 @@
       "identitySourceId": "jorge-rivaldo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "jorge-rivaldo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:joao-cruz",
+    "externalId": "public-player:joao-cruz:1994-06-21:bra",
     "fullName": "João Cruz",
     "displayName": "Cruz",
     "dateOfBirth": "1994-06-21",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "RM",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RW",
-      "CM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 179,
@@ -759,30 +912,40 @@
       "identitySourceId": "joao-cruz",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "joao-cruz",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:juan-felipe-aguirre",
+    "externalId": "public-player:juan-felipe-aguirre:1993-09-02:bra",
     "fullName": "Juan Felipe Aguirre",
     "displayName": "Aguirre",
     "dateOfBirth": "1993-09-02",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "LW",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 183,
@@ -798,7 +961,7 @@
     "marketValue": "23351996",
     "specialAttributes": [
       "press_resistant",
-      "speedster"
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -808,30 +971,40 @@
       "identitySourceId": "juan-felipe-aguirre",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "juan-felipe-aguirre",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:juan-portilla",
+    "externalId": "public-player:juan-portilla:2003-04-07:bra",
     "fullName": "Juan Portilla",
     "displayName": "Portilla",
     "dateOfBirth": "2003-04-07",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "RW",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
-      "RM",
-      "ST"
+      "CM",
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -846,8 +1019,8 @@
     },
     "marketValue": "19696492",
     "specialAttributes": [
-      "clutch_finisher",
-      "workhorse"
+      "workhorse",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -857,21 +1030,31 @@
       "identitySourceId": "juan-portilla",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "juan-portilla",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:kevin-viveros",
+    "externalId": "public-player:kevin-viveros:1998-01-12:bra",
     "fullName": "Kevin Viveros",
     "displayName": "Viveros",
     "dateOfBirth": "1998-01-12",
@@ -896,7 +1079,7 @@
     "marketValue": "23272933",
     "specialAttributes": [
       "set_piece_specialist",
-      "clutch_finisher"
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -906,21 +1089,31 @@
       "identitySourceId": "kevin-viveros",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "kevin-viveros",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:leozinho",
+    "externalId": "public-player:leozinho:1995-07-16:bra",
     "fullName": "Leozinho",
     "displayName": "Leozinho",
     "dateOfBirth": "1995-07-16",
@@ -945,7 +1138,7 @@
     "marketValue": "21087437",
     "specialAttributes": [
       "speedster",
-      "workhorse"
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -955,29 +1148,40 @@
       "identitySourceId": "leozinho",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "leozinho",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:lucas-esquivel",
+    "externalId": "public-player:lucas-esquivel:1988-09-01:bra",
     "fullName": "Lucas Esquivel",
     "displayName": "Esquivel",
     "dateOfBirth": "1988-09-01",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "ST",
+    "primaryPosition": "CM",
     "secondaryPositions": [
-      "CF"
+      "CDM",
+      "CAM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
@@ -992,8 +1196,8 @@
     },
     "marketValue": "23898647",
     "specialAttributes": [
-      "speedster",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1003,28 +1207,39 @@
       "identitySourceId": "lucas-esquivel",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "lucas-esquivel",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:luiz-gustavo",
+    "externalId": "public-player:luiz-gustavo:2000-09-05:bra",
     "fullName": "Luiz Gustavo",
     "displayName": "Gustavo",
     "dateOfBirth": "2000-09-05",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "ST",
+    "primaryPosition": "CAM",
     "secondaryPositions": [
+      "CM",
       "CF"
     ],
     "preferredFoot": "RIGHT",
@@ -1041,7 +1256,7 @@
     "marketValue": "21446207",
     "specialAttributes": [
       "line_breaker",
-      "aerial_specialist"
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1051,30 +1266,39 @@
       "identitySourceId": "luiz-gustavo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "luiz-gustavo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:leo",
+    "externalId": "public-player:leo:1989-10-07:bra",
     "fullName": "Léo",
     "displayName": "Léo",
     "dateOfBirth": "1989-10-07",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "CF",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CAM",
-      "ST"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 190,
@@ -1089,8 +1313,8 @@
     },
     "marketValue": "22823910",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1100,29 +1324,40 @@
       "identitySourceId": "leo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "leo",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:bra:athletico-paranaense:leo-derik",
+    "externalId": "public-player:leo-derik:1988-08-14:bra",
     "fullName": "Léo Derik",
     "displayName": "Derik",
     "dateOfBirth": "1988-08-14",
     "nationalityCode": "BRA",
     "clubExternalId": "athletico-paranaense",
-    "primaryPosition": "ST",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "CF"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 169,
@@ -1148,17 +1383,27 @@
       "identitySourceId": "leo-derik",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Athletico_Paranaense",
+    "sourceEntityId": "leo-derik",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]

@@ -1,28 +1,381 @@
 {
-  "dataset": "MANAGER MVP 1 real player identity dataset",
+  "dataset": "MANAGER MVP 1 real public player identities",
   "cutoffDate": "2026-07-29",
-  "identityCheckedAt": "2026-07-29",
-  "scope": {
-    "countries": 3,
-    "leagues": 3,
-    "clubs": 70,
-    "players": 1680,
-    "playersPerClub": 24
-  },
-  "identityPolicy": "Real, publicly recognizable player names are used for MVP identity only. Technical, physical, mental, economic and special-trait data are MANAGER estimates.",
-  "sources": [
-    "TheSportsDB public team/player pages",
-    "Wikipedia public club squad pages",
-    "Individual public player pages when a club table omitted one player needed for MVP roster coverage"
+  "countries": 3,
+  "leagues": 3,
+  "clubs": 70,
+  "players": 1680,
+  "identityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>; independent from club, shirt number, display name, position and file order",
+  "validationRules": [
+    "UTF-8 names without mojibake or replacement characters",
+    "externalId independent from clubExternalId",
+    "identitySourceRef required",
+    "positionSourceRef required",
+    "positionEstimated explicit",
+    "exactly two special attributes per player",
+    "no duplicate externalId",
+    "no duplicate same name/date/nationality within the same club"
   ],
-  "distributionRisk": "Accepted by product owner for MVP; not represented as legally guaranteed redistribution.",
-  "excludedData": [
-    "commercial ratings",
-    "market-provider valuations",
-    "salaries",
-    "photos",
-    "badges",
-    "biographies",
-    "protected descriptive text"
-  ]
+  "sources": [
+    "Wikipedia public pages",
+    "TheSportsDB public pages/API",
+    "MANAGER estimated attributes and unverifiable positions"
+  ],
+  "files": [
+    {
+      "file": "src/main/resources/data/initial/players/argentina/aldosivi.json",
+      "players": 24,
+      "sha256": "0c5d81f54940139a5ed7907cd1b8f2c4d59b6cb00f3980455e3fb4a3085c0822"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/argentinos-juniors.json",
+      "players": 24,
+      "sha256": "271aa0e1d1e3ca176728ce09ca0e8da22b6f447f88ca9918dbdd8aee61203a06"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/atletico-tucuman.json",
+      "players": 24,
+      "sha256": "2931f44028eb578958fa062136404ffbe952c1567616cda0882896e0eeec1738"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/banfield.json",
+      "players": 24,
+      "sha256": "341246c7f014b96f76decdd6c284936ee7f81ea97be6e065edae2f93a73edcde"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/barracas-central.json",
+      "players": 24,
+      "sha256": "f19f4c5cced35cff9d5b8e7dcfdfe44e5247c88eff386f959b156249e2335d2c"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/belgrano.json",
+      "players": 24,
+      "sha256": "c44cb3c3720a003e67c5d50df2f93512522205adac23c77a28ac5c6217b27fa8"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/boca-juniors.json",
+      "players": 24,
+      "sha256": "307e10ffc0db89fc133d36c1e27537be79faea2927b63e70b790da36b15764f5"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/central-cordoba.json",
+      "players": 24,
+      "sha256": "1db96b79b4dd8e1a32341373be3a62059e06e498356e1ab506f5321131bd10e6"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/defensa-y-justicia.json",
+      "players": 24,
+      "sha256": "96ce05087f8d4df43e93f19fc3c096b742171ce1467e3fbac1e6c4816523b167"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/deportivo-riestra.json",
+      "players": 24,
+      "sha256": "d4a8e5319612c28319743d4a7e5cf67799268f965493db8059ff291f491e7963"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/estudiantes-lp.json",
+      "players": 24,
+      "sha256": "905b52663467ee311c80200c12de14186cbf291541a5ffb55f2365c51dda754e"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/estudiantes-rc.json",
+      "players": 24,
+      "sha256": "04219ac69174dab0c9bf5a5de79f0093ee9176f7da698d3011a61af25241f5f4"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/gimnasia-mendoza.json",
+      "players": 24,
+      "sha256": "7dc3abaead245c945f3f4fce3e8a4d0945af316a093d13c0c66de2879c23e35a"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/godoy-cruz.json",
+      "players": 24,
+      "sha256": "2839c428e8a00c9f571e688d10eaf0de97b27581e3b795af7988516b9d5c0581"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/huracan.json",
+      "players": 24,
+      "sha256": "9781d95079dbdc58fdbbe8f5f4f82323b9769461bfa2b6ea3f8795112ecd9c1d"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/independiente-rivadavia.json",
+      "players": 24,
+      "sha256": "287ced9a06da40a07cc94485dd507326dde7e2881538eb64ca50101727ede7d0"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/independiente.json",
+      "players": 24,
+      "sha256": "f4979d2e43b3228b9865279a05b89df5a74395705cbde47e06730556727f0ff4"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/instituto.json",
+      "players": 24,
+      "sha256": "20441d2bc16fd28171533fa06bbaac74503b9430b99a9c412100c82587f70142"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/lanus.json",
+      "players": 24,
+      "sha256": "0eea70708089117d5a400c5e9a5cc5c373d03ffaba770acb2488427477c97c7f"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/newells.json",
+      "players": 24,
+      "sha256": "0752b8f8300ab899253a075d0ffe9ba463be069b7fb7b8142e78cd44ed299720"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/platense.json",
+      "players": 24,
+      "sha256": "2e9e5e4fcf842f4b06a375ca5137ac5cb0453a7a18a4471663202c94b85e5222"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/racing-club.json",
+      "players": 24,
+      "sha256": "f5923b957b3d5ac12ad68b5f9bf2361213e0a288a082e170c05a8894870d9dd9"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/river-plate.json",
+      "players": 24,
+      "sha256": "a68af02bfb91721cd263ba32ceed6bb77b39daf88a3e357b06016df8c765a990"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/rosario-central.json",
+      "players": 24,
+      "sha256": "517b74b3d5c95fb44875b8f94af43df745e129865cf14caeb922d0cfdd9a6db9"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/san-lorenzo.json",
+      "players": 24,
+      "sha256": "55ee4331561ee9c290285478e7283663d25a40d450ff7616173e7ce9759cc4c6"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/sarmiento.json",
+      "players": 24,
+      "sha256": "7a53899752407cc3515ef7b2697e9445252280c049199df0c4bc487d95bf57e6"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/talleres.json",
+      "players": 24,
+      "sha256": "7687050378d75447916ef6937d731fbcdf9244b93f631dc3aba2784068910b05"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/tigre.json",
+      "players": 24,
+      "sha256": "d1f4f2fc3263cdcb7bf190d4d7adee783b3de805a76fc725a3732d5f6579222a"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/union.json",
+      "players": 24,
+      "sha256": "ace014c99b6550af32a75039f91386d50073095eff655c817c703e3295f17a18"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/argentina/velez.json",
+      "players": 24,
+      "sha256": "13870f677c94727cf473f53ea32fbf3f266769be5815a627a4a3ba8852d7a090"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/athletico-paranaense.json",
+      "players": 24,
+      "sha256": "45da8e2d126d46f3bef3c4ef9bfca27c36ae65ff11b798ea191e8c33bf38d131"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/atletico-mineiro.json",
+      "players": 24,
+      "sha256": "2a31d13a8ccb0f42fe4d965f15c3c2e02548c8ce230951e149be9b07bfd4ac5e"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/bahia.json",
+      "players": 24,
+      "sha256": "f039e7557e1089c32188923e8f267df4f4c14cd981244a3ae5064eadf21dba32"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/botafogo.json",
+      "players": 24,
+      "sha256": "754ebc2ecc5eef3d6f6589543d16b1ec6aea5da6f6fde29c16fe0f2642cd8ae7"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/chapecoense.json",
+      "players": 24,
+      "sha256": "16b50acf5691582660d48b8502bfad9e3648f59c61cb1625ab1f5d4235695c7e"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/corinthians.json",
+      "players": 24,
+      "sha256": "d6f8d17d38e557c91a673dd1a753660250f285bfc8a4b7dcc5bf6ec3bd12d476"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/coritiba.json",
+      "players": 24,
+      "sha256": "d1a21337955df6af1a177e01265d0dad87ee83ab9b407cf2f6114bcee19dfed9"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/cruzeiro.json",
+      "players": 24,
+      "sha256": "1293943a3c13f619b74c26d69601a334155b1f6c0e852a8014baf77a9efa10ac"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/flamengo.json",
+      "players": 24,
+      "sha256": "bfdb086749d146c761c51de5462271e4a286b39d08404b26120212f9a56d12b7"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/fluminense.json",
+      "players": 24,
+      "sha256": "39d75dbdabc7b37c8d79e6cb635792a8213ffa904c14cbfab805873d24095b88"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/gremio.json",
+      "players": 24,
+      "sha256": "27fb82e30d63ec349ff5b1bd11518925f8a23d6f6a36b68f1cf5db8c684d8492"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/internacional.json",
+      "players": 24,
+      "sha256": "c679cd9319bc856ef3cd8a5f8913ef56884d227e2bc1cb3e415764a10735ee3c"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/mirassol.json",
+      "players": 24,
+      "sha256": "439577eb33e500f4ce46741224e2e1e96b98ae98d2ea4d8a26836b061c4ae942"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/palmeiras.json",
+      "players": 24,
+      "sha256": "607106d84424af99c81db5184f10cbf82f28406dc8e7e22a4f37392e5559bea7"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/red-bull-bragantino.json",
+      "players": 24,
+      "sha256": "f060a3880e306994ce9b8d60b6b7bc5bea195dbe9720aee05f0ab26a09748074"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/remo.json",
+      "players": 24,
+      "sha256": "9ee6c044189cfdd94853116c7376915682ca8694da66d6c401460725c2966e5f"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/santos.json",
+      "players": 24,
+      "sha256": "b2103e0a932876c2ede00cb221594ad087046a035565281aec5fe164eb8acad3"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/sao-paulo.json",
+      "players": 24,
+      "sha256": "1dd03dac71727a3eaf4752f0c11de00c5a39e009f855d4c778ec5aba52c4d55a"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/vasco-da-gama.json",
+      "players": 24,
+      "sha256": "d4344b6ec23144fb40d29ab39c95d2d35e480c6acbca010a5a4bee60f7f27e21"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/brazil/vitoria.json",
+      "players": 24,
+      "sha256": "c325a0221246cc4551742db78c4c10e56d4eaf67cbcf8e9557206896551b5e01"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/alaves.json",
+      "players": 24,
+      "sha256": "f5fecfa41095536010a3b858db5f039ddaf571e117fad72197e9142cc244d084"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/athletic-club.json",
+      "players": 24,
+      "sha256": "2caf34fa1b3fc68063613efdec9de8e65ef6d1d40fd2c862020ef79bba1680c9"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/atletico-madrid.json",
+      "players": 24,
+      "sha256": "7686b975a27695df7227e9a695ee4fb93f79568bee761a7f05140021c1093457"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/barcelona.json",
+      "players": 24,
+      "sha256": "6d61671e6995e2acfb42000c31b40d3b9d2500662bf535b567a86ff9ce881b33"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/celta.json",
+      "players": 24,
+      "sha256": "8acae908041e3391e68145430e1f26e5d749d691fd7db2f26a40b248fad4a899"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/elche.json",
+      "players": 24,
+      "sha256": "701ff7b30de12737196641917c338e4b16ff0eba3d9156f09d89991a595fe97f"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/espanyol.json",
+      "players": 24,
+      "sha256": "d5ee22defe2402a32059d5e55fe343120cf31eeb7bcdbae5c952b332bfd3224f"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/getafe.json",
+      "players": 24,
+      "sha256": "c7173b5195f8f644b3b1e30b9598a16586bad9811453dd0639072ea64b11a523"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/girona.json",
+      "players": 24,
+      "sha256": "78d93fad497c03e013f9881857f90714ab2cff4da2f30396315483632f138c87"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/levante.json",
+      "players": 24,
+      "sha256": "15ba6db331c3c7956d000972930da522e93654c97bd2e6f014ce1bda9b9f26ce"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/mallorca.json",
+      "players": 24,
+      "sha256": "5559e2956f6e53e864f07593b22a3662a38da5467919ecff740908c2f3fc8630"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/osasuna.json",
+      "players": 24,
+      "sha256": "89034062af06199b7a9897935dd302c0c99588b7e5adc850592014ce844b0da3"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/rayo-vallecano.json",
+      "players": 24,
+      "sha256": "99cdfa0bc98cb8f3e647d19d080021c3c5a80ebb9414e24010573fe9bbe246bf"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/real-betis.json",
+      "players": 24,
+      "sha256": "4942094843dd7c9bc942e02b65105d2c0389fddb8be7bcc34ba465db6640a7a7"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/real-madrid.json",
+      "players": 24,
+      "sha256": "af8912b2e55c7de33ef77a56d24be934f06af0010e6474c3b5caef2a69e9060a"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/real-oviedo.json",
+      "players": 24,
+      "sha256": "725adefe5219bc97e1d7abf0f8fd6b6b5dd45aa7a1ede5beac9a5f9a969e8a0a"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/real-sociedad.json",
+      "players": 24,
+      "sha256": "8c3e9c627fb96bf256db174512548f5882d45ea5c7dd23dd946f853b90925b3a"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/sevilla.json",
+      "players": 24,
+      "sha256": "98ec5098eee750626493f0e0708dd0045da486c3a041f1d6327248a6f6d36665"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/valencia.json",
+      "players": 24,
+      "sha256": "38ce917eedfbc01e0d4f0ae38be8780f2f4c7d76bdf5ef46ed7f049e6c77967d"
+    },
+    {
+      "file": "src/main/resources/data/initial/players/spain/villarreal.json",
+      "players": 24,
+      "sha256": "da0003b62dde414354f39edae240d4eb3cfd2a8a7342c5f840c3e672ef716309"
+    }
+  ],
+  "positionVerification": {
+    "verified": 80,
+    "estimated": 1600,
+    "reviewFile": "docs/data/MVP1_PLAYER_POSITION_REVIEW.md"
+  }
 }

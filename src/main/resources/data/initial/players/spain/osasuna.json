@@ -1,13 +1,16 @@
 [
   {
-    "externalId": "public-identity:esp:osasuna:abel-bretones",
+    "externalId": "public-player:abel-bretones:1991-12-04:esp",
     "fullName": "Abel Bretones",
     "displayName": "Bretones",
     "dateOfBirth": "1991-12-04",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
     "shirtNumber": 23,
@@ -21,8 +24,8 @@
     },
     "marketValue": "22349003",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -32,28 +35,40 @@
       "identitySourceId": "abel-bretones",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "abel-bretones",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:aimar-oroz",
+    "externalId": "public-player:aimar-oroz:2003-10-22:esp",
     "fullName": "Aimar Oroz",
     "displayName": "Oroz",
     "dateOfBirth": "2003-10-22",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
     "shirtNumber": 10,
@@ -67,8 +82,8 @@
     },
     "marketValue": "23174311",
     "specialAttributes": [
-      "aerial_specialist",
-      "sweeper_keeper"
+      "press_resistant",
+      "set_piece_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -78,31 +93,37 @@
       "identitySourceId": "aimar-oroz",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "aimar-oroz",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:aitor-fern-ndez",
-    "fullName": "Aitor Fern?ndez",
-    "displayName": "Fern?ndez",
+    "externalId": "public-player:aitor-fernandez:1991-07-13:esp",
+    "fullName": "Aitor Fernández",
+    "displayName": "Fernández",
     "dateOfBirth": "1991-07-13",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "LB",
-    "secondaryPositions": [
-      "LWB",
-      "CB"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 192,
     "shirtNumber": 13,
@@ -116,8 +137,8 @@
     },
     "marketValue": "19777128",
     "specialAttributes": [
-      "set_piece_specialist",
-      "press_resistant"
+      "one_on_one_keeper",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -127,24 +148,33 @@
       "identitySourceId": "aitor-fernandez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/Aitor_Fern%C3%A1ndez_(footballer,_born_1991)",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Aitor_Fern%C3%A1ndez_(footballer,_born_1991)",
+    "sourceEntityId": "aitor-fernandez",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/Aitor_Fern%C3%A1ndez_(footballer,_born_1991)",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:aitor-fernandez",
-    "fullName": "Aitor Fernández",
-    "displayName": "Fernández",
-    "dateOfBirth": "1991-07-13",
+    "externalId": "public-player:unai-garcia:1992-09-03:esp",
+    "fullName": "Unai García",
+    "displayName": "García",
+    "dateOfBirth": "1992-09-03",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
     "primaryPosition": "CB",
@@ -153,7 +183,7 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 192,
-    "shirtNumber": 13,
+    "shirtNumber": 4,
     "attributes": {
       "attack": 38,
       "defense": 84,
@@ -164,32 +194,41 @@
     },
     "marketValue": "19777128",
     "specialAttributes": [
-      "speedster",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
     "provenance": {
       "identitySource": "Wikipedia",
-      "identityUrl": "https://en.wikipedia.org/wiki/CA_Osasuna",
-      "identitySourceId": "aitor-fernandez",
+      "identityUrl": "https://en.wikipedia.org/wiki/Unai_Garc%C3%ADa",
+      "identitySourceId": "unai-garcia",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/Unai_Garc%C3%ADa",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/Unai_Garc%C3%ADa",
+    "sourceEntityId": "unai-garcia",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/Unai_Garc%C3%ADa",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:alejandro-catena",
+    "externalId": "public-player:alejandro-catena:1998-02-11:esp",
     "fullName": "Alejandro Catena",
     "displayName": "Catena",
     "dateOfBirth": "1998-02-11",
@@ -212,8 +251,8 @@
     },
     "marketValue": "22743448",
     "specialAttributes": [
-      "speedster",
-      "leader"
+      "leader",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -222,28 +261,39 @@
       "identityUrl": "https://en.wikipedia.org/wiki/CA_Osasuna",
       "identitySourceId": "alejandro-catena",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "alejandro-catena",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:ante-budimir",
+    "externalId": "public-player:ante-budimir:2002-08-08:esp",
     "fullName": "Ante Budimir",
     "displayName": "Budimir",
     "dateOfBirth": "2002-08-08",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "CB",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "CDM"
+      "CF"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 181,
@@ -258,8 +308,8 @@
     },
     "marketValue": "23397807",
     "specialAttributes": [
-      "leader",
-      "aerial_specialist"
+      "aerial_specialist",
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -269,29 +319,38 @@
       "identitySourceId": "ante-budimir",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "ante-budimir",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:asier-osambela",
+    "externalId": "public-player:asier-osambela:2005-07-26:esp",
     "fullName": "Asier Osambela",
     "displayName": "Osambela",
     "dateOfBirth": "2005-07-26",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "RB",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "RWB",
+      "CM",
       "CB"
     ],
     "preferredFoot": "RIGHT",
@@ -307,8 +366,8 @@
     },
     "marketValue": "23592308",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "press_resistant"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -318,30 +377,39 @@
       "identitySourceId": "asier-osambela",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "primaryPosition",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "asier-osambela",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   },
   {
-    "externalId": "public-identity:esp:osasuna:enzo-boyomo",
+    "externalId": "public-player:enzo-boyomo:1997-06-06:esp",
     "fullName": "Enzo Boyomo",
     "displayName": "Boyomo",
     "dateOfBirth": "1997-06-06",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "LWB",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "LB",
-      "LM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 187,
@@ -367,30 +435,39 @@
       "identitySourceId": "enzo-boyomo",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "enzo-boyomo",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:iker-benito",
+    "externalId": "public-player:iker-benito:1995-01-16:esp",
     "fullName": "Iker Benito",
     "displayName": "Benito",
     "dateOfBirth": "1995-01-16",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "RWB",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "RB",
-      "RM"
+      "RM",
+      "ST"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 178,
@@ -405,8 +482,8 @@
     },
     "marketValue": "21693751",
     "specialAttributes": [
-      "press_resistant",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -416,21 +493,30 @@
       "identitySourceId": "iker-benito",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "iker-benito",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:iker-munoz",
+    "externalId": "public-player:iker-munoz:1988-06-18:esp",
     "fullName": "Iker Muñoz",
     "displayName": "Muñoz",
     "dateOfBirth": "1988-06-18",
@@ -465,30 +551,39 @@
       "identitySourceId": "iker-munoz",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "iker-munoz",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:inigo-arguibide",
+    "externalId": "public-player:inigo-arguibide:1998-11-19:esp",
     "fullName": "Iñigo Arguibide",
     "displayName": "Arguibide",
     "dateOfBirth": "1998-11-19",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "CM",
+    "primaryPosition": "RB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "RWB",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
@@ -503,8 +598,8 @@
     },
     "marketValue": "20182237",
     "specialAttributes": [
-      "line_breaker",
-      "leader"
+      "leader",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -514,21 +609,30 @@
       "identitySourceId": "inigo-arguibide",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "inigo-arguibide",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:jon-moncayola",
+    "externalId": "public-player:jon-moncayola:2004-05-21:esp",
     "fullName": "Jon Moncayola",
     "displayName": "Moncayola",
     "dateOfBirth": "2004-05-21",
@@ -563,30 +667,38 @@
       "identitySourceId": "jon-moncayola",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "jon-moncayola",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:jorge-herrando",
+    "externalId": "public-player:jorge-herrando:1998-07-04:esp",
     "fullName": "Jorge Herrando",
     "displayName": "Herrando",
     "dateOfBirth": "1998-07-04",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "CM",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CDM",
-      "CAM"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
@@ -601,8 +713,8 @@
     },
     "marketValue": "23658396",
     "specialAttributes": [
-      "set_piece_specialist",
-      "line_breaker"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -612,30 +724,39 @@
       "identitySourceId": "jorge-herrando",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "jorge-herrando",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:kike-barja",
+    "externalId": "public-player:kike-barja:1998-12-19:esp",
     "fullName": "Kike Barja",
     "displayName": "Barja",
     "dateOfBirth": "1998-12-19",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "CAM",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "CM",
-      "CF"
+      "LM",
+      "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
@@ -651,7 +772,7 @@
     "marketValue": "22658778",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -661,30 +782,39 @@
       "identitySourceId": "kike-barja",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "kike-barja",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:lucas-torro",
+    "externalId": "public-player:lucas-torro:1988-11-04:esp",
     "fullName": "Lucas Torró",
     "displayName": "Torró",
     "dateOfBirth": "1988-11-04",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "LM",
+    "primaryPosition": "CDM",
     "secondaryPositions": [
-      "LW",
-      "CM"
+      "CM",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
@@ -710,29 +840,38 @@
       "identitySourceId": "lucas-torro",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "lucas-torro",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:moi-gomez",
+    "externalId": "public-player:moi-gomez:2005-06-07:esp",
     "fullName": "Moi Gómez",
     "displayName": "Gómez",
     "dateOfBirth": "2005-06-07",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "RM",
+    "primaryPosition": "LM",
     "secondaryPositions": [
-      "RW",
+      "LW",
       "CM"
     ],
     "preferredFoot": "LEFT",
@@ -759,30 +898,38 @@
       "identitySourceId": "moi-gomez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "moi-gomez",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:raul-garcia",
+    "externalId": "public-player:raul-garcia:2001-01-13:esp",
     "fullName": "Raúl García",
     "displayName": "García",
     "dateOfBirth": "2001-01-13",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "LW",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
@@ -798,7 +945,7 @@
     "marketValue": "20684408",
     "specialAttributes": [
       "speedster",
-      "workhorse"
+      "clutch_finisher"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -807,28 +954,39 @@
       "identityUrl": "https://en.wikipedia.org/wiki/CA_Osasuna",
       "identitySourceId": "raul-garcia",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "raul-garcia",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:raul-moro",
+    "externalId": "public-player:raul-moro:1999-09-28:esp",
     "fullName": "Raúl Moro",
     "displayName": "Moro",
     "dateOfBirth": "1999-09-28",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "RW",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "RM",
+      "LM",
       "ST"
     ],
     "preferredFoot": "RIGHT",
@@ -844,8 +1002,8 @@
     },
     "marketValue": "20715878",
     "specialAttributes": [
-      "clutch_finisher",
-      "press_resistant"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -854,28 +1012,39 @@
       "identityUrl": "https://en.wikipedia.org/wiki/CA_Osasuna",
       "identitySourceId": "raul-moro",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
+      "preferredFoot",
+      "secondaryPositions",
       "specialAttributes"
-    ]
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "raul-moro",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:ruben-garcia",
+    "externalId": "public-player:ruben-garcia:1988-03-15:esp",
     "fullName": "Rubén García",
     "displayName": "García",
     "dateOfBirth": "1988-03-15",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "LW",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "LM",
+      "RM",
       "ST"
     ],
     "preferredFoot": "RIGHT",
@@ -891,8 +1060,8 @@
     },
     "marketValue": "23458563",
     "specialAttributes": [
-      "workhorse",
-      "clutch_finisher"
+      "speedster",
+      "line_breaker"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -902,31 +1071,37 @@
       "identitySourceId": "ruben-garcia",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "ruben-garcia",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:sergio-herrera",
+    "externalId": "public-player:sergio-herrera:1999-05-13:esp",
     "fullName": "Sergio Herrera",
     "displayName": "Herrera",
     "dateOfBirth": "1999-05-13",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 185,
     "shirtNumber": 1,
@@ -940,8 +1115,8 @@
     },
     "marketValue": "23553192",
     "specialAttributes": [
-      "workhorse",
-      "line_breaker"
+      "one_on_one_keeper",
+      "aerial_specialist"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -951,29 +1126,39 @@
       "identitySourceId": "sergio-herrera",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "sergio-herrera",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:valentin-rosier",
+    "externalId": "public-player:valentin-rosier:2005-04-05:esp",
     "fullName": "Valentin Rosier",
     "displayName": "Rosier",
     "dateOfBirth": "2005-04-05",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "ST",
+    "primaryPosition": "RB",
     "secondaryPositions": [
-      "CF"
+      "RWB",
+      "CB"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 169,
@@ -988,8 +1173,8 @@
     },
     "marketValue": "18591705",
     "specialAttributes": [
-      "speedster",
-      "set_piece_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -999,29 +1184,38 @@
       "identitySourceId": "valentin-rosier",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "valentin-rosier",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:flavien-enzo-boyomo",
+    "externalId": "public-player:flavien-enzo-boyomo:1996-04-15:esp",
     "fullName": "Flavien Enzo Boyomo",
     "displayName": "Boyomo",
     "dateOfBirth": "1996-04-15",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "ST",
+    "primaryPosition": "CB",
     "secondaryPositions": [
-      "CF"
+      "CDM"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 184,
@@ -1036,8 +1230,8 @@
     },
     "marketValue": "21371341",
     "specialAttributes": [
-      "line_breaker",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1046,29 +1240,39 @@
       "identityUrl": "https://www.thesportsdb.com/player/34216960",
       "identitySourceId": "34216960",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://www.thesportsdb.com/player/34216960",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
-      "primaryPosition"
-    ]
+      "preferredFoot",
+      "secondaryPositions",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34216960",
+    "sourceEntityId": "34216960",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://www.thesportsdb.com/player/34216960",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:jonathan-dubasin",
+    "externalId": "public-player:jonathan-dubasin:1992-04-28:esp",
     "fullName": "Jonathan Dubasin",
     "displayName": "Dubasin",
     "dateOfBirth": "1992-04-28",
     "nationalityCode": "ESP",
     "clubExternalId": "osasuna",
-    "primaryPosition": "CF",
+    "primaryPosition": "RW",
     "secondaryPositions": [
-      "CAM",
+      "RM",
       "ST"
     ],
     "preferredFoot": "RIGHT",
@@ -1085,7 +1289,7 @@
     "marketValue": "18789547",
     "specialAttributes": [
       "line_breaker",
-      "leader"
+      "speedster"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1095,22 +1299,31 @@
       "identitySourceId": "jonathan-dubasin",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29",
-      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+      "positionSource": "Public roster position review",
+      "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+      "positionEstimated": false,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
+      "preferredFoot",
+      "secondaryPositions",
       "shirtNumber",
-      "primaryPosition"
-    ]
+      "specialAttributes"
+    ],
+    "identitySourceName": "Wikipedia",
+    "identitySourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "sourceEntityId": "jonathan-dubasin",
+    "positionSource": "Public roster position review",
+    "positionSourceRef": "https://en.wikipedia.org/wiki/CA_Osasuna",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": false
   },
   {
-    "externalId": "public-identity:esp:osasuna:alessio-lisci",
+    "externalId": "public-player:alessio-lisci:1996-09-27:esp",
     "fullName": "Alessio Lisci",
     "displayName": "Alessio Lisci",
     "dateOfBirth": "1996-09-27",
@@ -1133,8 +1346,8 @@
     },
     "marketValue": "18620209",
     "specialAttributes": [
-      "set_piece_specialist",
-      "leader"
+      "clutch_finisher",
+      "aerial_specialist"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1143,18 +1356,29 @@
       "identityUrl": "https://www.thesportsdb.com/player/34432547",
       "identitySourceId": "34432547",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionSource": "MANAGER position estimate",
+      "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+      "positionEstimated": true,
+      "stableIdentityRule": "public-player:<normalized-name>:<date-of-birth>:<nationality>"
     },
     "estimatedFields": [
-      "dateOfBirth",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
       "attributes",
+      "dateOfBirth",
+      "heightCm",
       "marketValue",
-      "specialAttributes",
+      "preferredFoot",
       "primaryPosition",
-      "shirtNumber"
-    ]
+      "secondaryPositions",
+      "shirtNumber",
+      "specialAttributes"
+    ],
+    "identitySourceName": "TheSportsDB",
+    "identitySourceRef": "https://www.thesportsdb.com/player/34432547",
+    "sourceEntityId": "34432547",
+    "positionSource": "MANAGER position estimate",
+    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
+    "positionCheckedAt": "2026-07-29",
+    "positionEstimated": true
   }
 ]
