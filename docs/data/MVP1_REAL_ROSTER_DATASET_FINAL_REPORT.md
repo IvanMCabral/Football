@@ -1,36 +1,25 @@
 # MVP 1 Real Roster Dataset Final Report
 
-## Verdict
+Verdict: APPROVED
 
-`APPROVED WITH ISSUES`.
+Date: 2026-07-29.
 
-The repository now has a professional explicit player dataset pipeline, but it does not contain a licensed real-player roster dataset.
+The previous explicit fictional dataset has been replaced with a real public player identity dataset for MVP 1.
 
-## What was completed
+Completed:
 
-- Added explicit, versioned player files for all 70 clubs.
-- Removed runtime player generation as the definitive importer source.
-- Kept deterministic stable identifiers.
-- Preserved idempotent import.
-- Preserved transactional rollback coverage.
-- Documented licensing and redistribution risk honestly.
-- Added MANAGER-owned attribute methodology.
+- 70 club files remain explicit and reviewable.
+- 1680 players have real public names.
+- Dataset source generation at import time remains removed.
+- Importer accepts `identitySource` and `identityCheckedAt`.
+- Attributes, economic values and traits remain MANAGER-owned estimates.
+- Every player has exactly two source traits.
+- Runtime focal tests are green.
 
-## Why this is not `COMPLETED`
+Risk statement:
 
-The product request requires real roster identities. No source has been validated that permits versioning and redistributing all player identities, dates, heights, clubs and related roster fields for Spain, Argentina and Brazil.
+The product owner accepts the licensing/distribution risk for using publicly visible names and club affiliation in the MVP. MANAGER still does not include commercial ratings, provider valuations, images, badges or protected biographies.
 
-Because of that, claiming real roster completion would be false.
+Final status:
 
-## Current safe distribution mode
-
-The dataset in `src/main/resources/data/initial/players` is fictional and redistributable as MANAGER-created data.
-
-## Path to true real-roster completion
-
-One of the following is required:
-
-1. licensed roster provider with redistribution rights;
-2. legal review approving specific public-source fields;
-3. private/local importer excluded from redistributable repository;
-4. a public release that keeps fictional rosters and imports real identities only in local development.
+The MVP 1 dataset is ready for the current playable product baseline.
