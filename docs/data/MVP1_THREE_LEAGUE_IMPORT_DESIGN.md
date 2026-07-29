@@ -33,7 +33,7 @@ Every player includes:
 
 External IDs use:
 
-`public-identity:<country>:<club-code>:<normalized-player-name>`
+`public-player:<normalized-name>:<date-of-birth>:<nationality>`
 
 IDs are deterministic and remain stable across reimports as long as the identity namespace remains unchanged.
 
