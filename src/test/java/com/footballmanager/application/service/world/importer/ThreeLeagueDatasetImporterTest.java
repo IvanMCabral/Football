@@ -65,7 +65,7 @@ class ThreeLeagueDatasetImporterTest {
     }
 
     @Test
-    @DisplayName("imports the complete generated dataset and validates exactly two traits per player")
+    @DisplayName("imports the complete explicit dataset and validates exactly two traits per player")
     void importsCompleteDatasetAndValidatesTraits() {
         ThreeLeagueImportReport report = importer.importDataset();
 
@@ -78,8 +78,8 @@ class ThreeLeagueDatasetImporterTest {
 
         assertThat(count("countries", "code IN ('ESP','ARG','BRA')")).isEqualTo(3);
         assertThat(count("leagues", "code IN ('ESP-PRIMERA','ARG-PRIMERA','BRA-SERIE-A')")).isEqualTo(3);
-        assertThat(count("clubs", "source_system = 'manager-mvp1-generated'")).isEqualTo(70);
-        assertThat(count("players", "source_system = 'manager-mvp1-generated'")).isEqualTo(1680);
+        assertThat(count("clubs", "source_system = 'manager-mvp1-explicit'")).isEqualTo(70);
+        assertThat(count("players", "source_system = 'manager-mvp1-explicit'")).isEqualTo(1680);
         assertThat(invalidSpecialAttributePlayerCount()).isZero();
         assertThat(orphanSpecialAttributeCount()).isZero();
     }
@@ -107,7 +107,7 @@ class ThreeLeagueDatasetImporterTest {
                 SELECT psa.id
                 FROM player_special_attributes psa
                 JOIN players p ON p.id = psa.player_id
-                WHERE p.source_system = 'manager-mvp1-generated'
+                WHERE p.source_system = 'manager-mvp1-explicit'
                 LIMIT 1
             )
             """);
@@ -119,10 +119,10 @@ class ThreeLeagueDatasetImporterTest {
 
     private DatasetCounts counts() {
         return new DatasetCounts(
-            count("clubs", "source_system = 'manager-mvp1-generated'"),
-            count("teams", "club_id IN (SELECT id FROM clubs WHERE source_system = 'manager-mvp1-generated')"),
-            count("players", "source_system = 'manager-mvp1-generated'"),
-            count("player_special_attributes", "player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-generated')")
+            count("clubs", "source_system = 'manager-mvp1-explicit'"),
+            count("teams", "club_id IN (SELECT id FROM clubs WHERE source_system = 'manager-mvp1-explicit')"),
+            count("players", "source_system = 'manager-mvp1-explicit'"),
+            count("player_special_attributes", "player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit')")
         );
     }
 
@@ -136,7 +136,7 @@ class ThreeLeagueDatasetImporterTest {
                 SELECT p.id
                 FROM players p
                 LEFT JOIN player_special_attributes psa ON psa.player_id = p.id
-                WHERE p.source_system = 'manager-mvp1-generated'
+                WHERE p.source_system = 'manager-mvp1-explicit'
                 GROUP BY p.id
                 HAVING COUNT(psa.id) <> 2
             ) invalid

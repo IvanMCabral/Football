@@ -106,11 +106,11 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
     }
 
     @Test
-    @DisplayName("rolls back generated data when the transactional import fails")
+    @DisplayName("rolls back explicit dataset data when the transactional import fails")
     void importerRollsBackWhenWriteFails() {
         deleteGeneratedDatasetRows();
         jdbcTemplate.update("DELETE FROM players WHERE source_system = 'conflict-fixture'");
-        UUID conflictingPlayerId = deterministicUuid("player:ESP:athletic-club:1");
+        UUID conflictingPlayerId = deterministicUuid("player:manager-initial:esp:athletic-club:p01");
         jdbcTemplate.update("""
             INSERT INTO players (
                 id, source_system, source_id, name, display_name, age, birth_date, position,
@@ -222,7 +222,7 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
                     SELECT p.id
                     FROM players p
                     LEFT JOIN player_special_attributes psa ON psa.player_id = p.id
-                    WHERE p.source_system = 'manager-mvp1-generated'
+                    WHERE p.source_system = 'manager-mvp1-explicit'
                     GROUP BY p.id
                     HAVING COUNT(psa.id) <> 2
                 ) invalid
@@ -236,32 +236,32 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
     private void deleteGeneratedDatasetRows() {
         jdbcTemplate.update("""
             DELETE FROM player_special_attributes
-            WHERE player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-generated')
+            WHERE player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit')
             """);
         jdbcTemplate.update("""
             DELETE FROM player_secondary_positions
-            WHERE player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-generated')
+            WHERE player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit')
             """);
         jdbcTemplate.update("""
             DELETE FROM team_squad
             WHERE team_id IN (
                 SELECT t.id FROM teams t
                 JOIN clubs c ON c.id = t.club_id
-                WHERE c.source_system = 'manager-mvp1-generated'
+                WHERE c.source_system = 'manager-mvp1-explicit'
             )
-               OR player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-generated')
+               OR player_id IN (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit')
             """);
         jdbcTemplate.update("""
             DELETE FROM league_teams
             WHERE team_id IN (
                 SELECT t.id FROM teams t
                 JOIN clubs c ON c.id = t.club_id
-                WHERE c.source_system = 'manager-mvp1-generated'
+                WHERE c.source_system = 'manager-mvp1-explicit'
             )
             """);
         jdbcTemplate.update("""
             DELETE FROM club_division_memberships
-            WHERE club_id IN (SELECT id FROM clubs WHERE source_system = 'manager-mvp1-generated')
+            WHERE club_id IN (SELECT id FROM clubs WHERE source_system = 'manager-mvp1-explicit')
             """);
         jdbcTemplate.update("""
             DELETE FROM season_competitions
@@ -277,10 +277,10 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
             """);
         jdbcTemplate.update("""
             DELETE FROM teams
-            WHERE club_id IN (SELECT id FROM clubs WHERE source_system = 'manager-mvp1-generated')
+            WHERE club_id IN (SELECT id FROM clubs WHERE source_system = 'manager-mvp1-explicit')
             """);
-        jdbcTemplate.update("DELETE FROM players WHERE source_system = 'manager-mvp1-generated'");
-        jdbcTemplate.update("DELETE FROM clubs WHERE source_system = 'manager-mvp1-generated'");
+        jdbcTemplate.update("DELETE FROM players WHERE source_system = 'manager-mvp1-explicit'");
+        jdbcTemplate.update("DELETE FROM clubs WHERE source_system = 'manager-mvp1-explicit'");
         jdbcTemplate.update("""
             DELETE FROM divisions
             WHERE league_id IN (SELECT id FROM leagues WHERE code IN ('ESP-PRIMERA', 'ARG-PRIMERA', 'BRA-SERIE-A'))
@@ -290,7 +290,7 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
 
     private long countGenerated(String table) {
         Long count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM " + table + " WHERE source_system = 'manager-mvp1-generated'",
+            "SELECT COUNT(*) FROM " + table + " WHERE source_system = 'manager-mvp1-explicit'",
             Long.class);
         return count == null ? 0 : count;
     }
@@ -299,7 +299,7 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
         Long count = jdbcTemplate.queryForObject("""
             SELECT COUNT(*) FROM teams t
             JOIN clubs c ON c.id = t.club_id
-            WHERE c.source_system = 'manager-mvp1-generated'
+            WHERE c.source_system = 'manager-mvp1-explicit'
             """, Long.class);
         return count == null ? 0 : count;
     }
