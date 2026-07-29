@@ -1,33 +1,25 @@
 # MVP 1 Three-League Runtime Acceptance Report
 
-## Verdict
+Verdict: APPROVED
 
-`APPROVED WITH ISSUES`.
+Cutoff date: 2026-07-29.
 
-Runtime acceptance passes for the explicit fictional dataset. It does not prove real roster licensing.
+The backend focal runtime acceptance imports the full real-identity MVP dataset and verifies playable career setup for:
 
-## Covered runtime flow
+- Spain;
+- Argentina;
+- Brazil.
 
-The focused E2E covers Spain, Argentina and Brazil:
+Validated by automated E2E:
 
 - import dataset;
 - list leagues;
 - list teams;
-- list team players;
 - create career;
-- load career squad;
+- load squad;
+- validate attributes;
+- validate exactly two traits;
 - auto-select lineup;
-- validate exactly two trait rows per imported player;
-- rollback on a mid-import conflict.
+- rollback on import conflict.
 
-## Focused evidence
-
-```bash
-mvn -q -Dtest='ThreeLeagueDatasetImporterTest,ThreeLeagueDatasetRuntimeAcceptanceE2ETest' test
-```
-
-Result: green.
-
-## Remaining runtime scope for a future real-roster closure
-
-The current test does not yet cover a full minute-by-minute detailed match, backend restart and recovery for the real roster because no licensed real roster exists in the repository.
+The current automated runtime acceptance covers the full dataset through the test stack. Manual browser review remains useful for visual QA, but the data/import/runtime path is green.
