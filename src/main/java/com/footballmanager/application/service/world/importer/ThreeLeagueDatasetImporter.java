@@ -464,7 +464,8 @@ public class ThreeLeagueDatasetImporter {
         String externalId, String fullName, String displayName, String dateOfBirth, String nationalityCode,
         String clubExternalId, String primaryPosition, List<String> secondaryPositions, String preferredFoot,
         Integer heightCm, Integer shirtNumber, PlayerAttributesRecord attributes, BigDecimal marketValue,
-        List<String> specialAttributes, Map<String, Object> provenance, List<String> estimatedFields
+        List<String> specialAttributes, String identitySource, String identityCheckedAt,
+        Map<String, Object> provenance, List<String> estimatedFields
     ) {}
     public record PlayerAttributesRecord(int attack, int defense, int technique, int speed, int stamina, int mentality) {}
     private record PlayerRecord(
