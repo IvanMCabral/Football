@@ -1,0 +1,12 @@
+[
+  {"code":"clutch_finisher","name":"Clutch finisher","category":"attacking","positions":["ATT","WINGER"],"description":"Late high-pressure finishing.","futureEffect":"Finishing boost on high-leverage shots."},
+  {"code":"press_resistant","name":"Press resistant","category":"technical","positions":["DEF","MID","WINGER","ATT"],"description":"Keeps control under pressure.","futureEffect":"Lower turnover chance under press."},
+  {"code":"aerial_specialist","name":"Aerial specialist","category":"physical","positions":["GK","DEF","ATT"],"description":"Strong aerial duel profile.","futureEffect":"Heading and aerial defense boost."},
+  {"code":"line_breaker","name":"Line breaker","category":"creative","positions":["MID","WINGER","ATT"],"description":"Vertical runs and passes.","futureEffect":"Higher chance of progressive pass/run events."},
+  {"code":"leader","name":"Leader","category":"mental","positions":["GK","DEF","MID","ATT"],"description":"Collective mentality stabilizer.","futureEffect":"Small team mentality stability boost."},
+  {"code":"workhorse","name":"Workhorse","category":"physical","positions":["DEF","MID","WINGER"],"description":"Sustains defensive and pressing work.","futureEffect":"Fatigue and recovery event modifier."},
+  {"code":"speedster","name":"Speedster","category":"physical","positions":["WINGER","ATT","DEF"],"description":"High pace threat.","futureEffect":"Wide progression and counterattack boost."},
+  {"code":"set_piece_specialist","name":"Set piece specialist","category":"technical","positions":["DEF","MID","WINGER","ATT"],"description":"Danger from dead-ball delivery or shots.","futureEffect":"Set-piece xG and assist boost."},
+  {"code":"one_on_one_keeper","name":"One-on-one keeper","category":"goalkeeping","positions":["GK"],"description":"Excels when isolated against attackers.","futureEffect":"Shot-stopping boost on clear chances."},
+  {"code":"sweeper_keeper","name":"Sweeper keeper","category":"goalkeeping","positions":["GK"],"description":"Aggressive keeper positioning behind high lines.","futureEffect":"Reduces through-ball danger, adds risk if mistimed."}
+]
