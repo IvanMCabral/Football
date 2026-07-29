@@ -79,7 +79,7 @@ public abstract class AbstractIntegrationTest {
         databaseClient.sql("DELETE FROM team_squad").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
         databaseClient.sql("DELETE FROM players").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
         databaseClient.sql("DELETE FROM teams").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
-        databaseClient.sql("DELETE FROM leagues_teams").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
+        databaseClient.sql("DELETE FROM league_teams").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
         databaseClient.sql("DELETE FROM leagues").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
     }
 

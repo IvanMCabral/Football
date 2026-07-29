@@ -106,7 +106,7 @@ ALTER TABLE leagues
 CREATE TABLE seasons (
     id SERIAL PRIMARY KEY,
     external_id UUID UNIQUE DEFAULT gen_random_uuid(),
-    year VARCHAR(20) NOT NULL,
+    season_year INTEGER NOT NULL CHECK (season_year BETWEEN 1900 AND 2200),
     league_id UUID NOT NULL REFERENCES leagues(id) ON DELETE CASCADE,
     status VARCHAR(40) NOT NULL DEFAULT 'PENDING',
     starts_at DATE NULL,
@@ -162,7 +162,7 @@ CREATE TABLE players (
     weekly_salary NUMERIC(15, 2) NOT NULL DEFAULT 0 CHECK (weekly_salary >= 0),
     energy INTEGER NOT NULL DEFAULT 100 CHECK (energy BETWEEN 0 AND 100),
     injured BOOLEAN NOT NULL DEFAULT FALSE,
-    height_cm INTEGER NULL CHECK (height_cm IS NULL OR height_cm BETWEEN 150 AND 220),
+    height_cm INTEGER NULL CHECK (height_cm IS NULL OR height_cm BETWEEN 160 AND 210),
     weight_kg INTEGER NULL CHECK (weight_kg IS NULL OR weight_kg BETWEEN 45 AND 130),
     skill_levels_json TEXT NULL,
     contract_status VARCHAR(40) NOT NULL DEFAULT 'ACTIVE',

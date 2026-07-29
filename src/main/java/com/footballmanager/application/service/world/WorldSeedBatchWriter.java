@@ -182,8 +182,7 @@ public class WorldSeedBatchWriter {
             injureds[i] = Boolean.FALSE;
             createdAts[i] = now;
             updatedAts[i] = now;
-            Integer h = wp.getHeightCm();
-            heightCms[i] = h != null ? h : 0;
+            heightCms[i] = wp.getHeightCm();
             skillJsons[i] = serializeSkillLevelsOrNull(wp.getSkillLevels());
         }
 
@@ -256,7 +255,7 @@ public class WorldSeedBatchWriter {
         int written = 0;
         for (WorldPlayer wp : chunk) {
             try {
-                databaseClient.sql("""
+                var spec = databaseClient.sql("""
                     INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
                     VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :mv, :energy, :injured, :createdAt, :updatedAt, :heightCm, :skillLevelsJson)
                     ON CONFLICT (id) DO UPDATE SET
@@ -280,9 +279,13 @@ public class WorldSeedBatchWriter {
                     .bind("energy", 100)
                     .bind("injured", false)
                     .bind("createdAt", now)
-                    .bind("updatedAt", now)
-                    .bind("heightCm", wp.getHeightCm() != null ? wp.getHeightCm() : 0)
-                    .bind("skillLevelsJson", serializeSkillLevelsOrNull(wp.getSkillLevels()))
+                    .bind("updatedAt", now);
+                if (wp.getHeightCm() != null) {
+                    spec = spec.bind("heightCm", wp.getHeightCm());
+                } else {
+                    spec = spec.bindNull("heightCm", Integer.class);
+                }
+                spec.bind("skillLevelsJson", serializeSkillLevelsOrNull(wp.getSkillLevels()))
                     .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
                 written++;
             } catch (Exception e) {
