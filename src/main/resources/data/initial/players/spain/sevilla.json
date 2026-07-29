@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:esp:sevilla:p01",
-    "fullName": "ESP Sevilla Player 1",
-    "displayName": "Sevilla P1",
-    "dateOfBirth": "1995-01-01",
+    "externalId": "public-identity:esp:sevilla:adria-pedrosa",
+    "fullName": "Adrià Pedrosa",
+    "displayName": "Pedrosa",
+    "dateOfBirth": "1989-02-03",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 189,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 71,
-      "defense": 83,
-      "technique": 68,
-      "speed": 75,
-      "stamina": 67,
-      "mentality": 67
+      "attack": 42,
+      "defense": 85,
+      "technique": 54,
+      "speed": 62,
+      "stamina": 71,
+      "mentality": 78
     },
-    "marketValue": 17750000,
+    "marketValue": "20922083",
     "specialAttributes": [
       "one_on_one_keeper",
-      "leader"
+      "sweeper_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "adria-pedrosa",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionAdjustmentReason": "MANAGER roster balance: source coverage did not expose enough goalkeepers; position estimated for MVP playability."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p02",
-    "fullName": "ESP Sevilla Player 2",
-    "displayName": "Sevilla P2",
-    "dateOfBirth": "2002-02-04",
+    "externalId": "public-identity:esp:sevilla:alberto-flores",
+    "fullName": "Alberto Flores",
+    "displayName": "Flores",
+    "dateOfBirth": "1996-10-10",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 190,
+    "shirtNumber": 31,
     "attributes": {
-      "attack": 79,
-      "defense": 91,
-      "technique": 79,
-      "speed": 83,
-      "stamina": 80,
-      "mentality": 82
+      "attack": 37,
+      "defense": 84,
+      "technique": 62,
+      "speed": 62,
+      "stamina": 66,
+      "mentality": 73
     },
-    "marketValue": 19750000,
+    "marketValue": "21594572",
     "specialAttributes": [
-      "sweeper_keeper",
+      "leader",
       "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "alberto-flores",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p03",
-    "fullName": "ESP Sevilla Player 3",
-    "displayName": "Sevilla P3",
-    "dateOfBirth": "1991-03-07",
+    "externalId": "public-identity:esp:sevilla:andres-castrin",
+    "fullName": "Andrés Castrín",
+    "displayName": "Castrín",
+    "dateOfBirth": "1994-04-16",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "LB",
@@ -102,93 +102,45 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 170,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 63,
-      "defense": 79,
-      "technique": 74,
-      "speed": 71,
-      "stamina": 68,
-      "mentality": 72
+      "attack": 56,
+      "defense": 73,
+      "technique": 70,
+      "speed": 76,
+      "stamina": 81,
+      "mentality": 77
     },
-    "marketValue": 17750000,
+    "marketValue": "19911464",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "andres-castrin",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p04",
-    "fullName": "ESP Sevilla Player 4",
-    "displayName": "Sevilla P4",
-    "dateOfBirth": "1998-04-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "sevilla",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 74,
-      "speed": 75,
-      "stamina": 77,
-      "mentality": 74
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:sevilla:p05",
-    "fullName": "ESP Sevilla Player 5",
-    "displayName": "Sevilla P5",
-    "dateOfBirth": "2005-05-13",
+    "externalId": "public-identity:esp:sevilla:arouna-sangante",
+    "fullName": "Arouna Sangante",
+    "displayName": "Sangante",
+    "dateOfBirth": "1996-11-14",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "CB",
@@ -196,93 +148,143 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 176,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 63,
-      "defense": 79,
-      "technique": 73,
-      "speed": 71,
-      "stamina": 69,
-      "mentality": 68
+      "attack": 60,
+      "defense": 81,
+      "technique": 65,
+      "speed": 78,
+      "stamina": 83,
+      "mentality": 77
     },
-    "marketValue": 17750000,
+    "marketValue": "23000348",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "arouna-sangante",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p06",
-    "fullName": "ESP Sevilla Player 6",
-    "displayName": "Sevilla P6",
-    "dateOfBirth": "1994-06-16",
+    "externalId": "public-identity:esp:sevilla:chidera-ejuke",
+    "fullName": "Chidera Ejuke",
+    "displayName": "Ejuke",
+    "dateOfBirth": "1997-01-25",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "CB",
     "secondaryPositions": [
       "CDM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "preferredFoot": "RIGHT",
+    "heightCm": 184,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 71,
-      "defense": 87,
-      "technique": 77,
-      "speed": 79,
-      "stamina": 82,
-      "mentality": 83
+      "attack": 82,
+      "defense": 48,
+      "technique": 85,
+      "speed": 76,
+      "stamina": 76,
+      "mentality": 75
     },
-    "marketValue": 19750000,
+    "marketValue": "21452448",
     "specialAttributes": [
-      "workhorse",
+      "aerial_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "chidera-ejuke",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p07",
-    "fullName": "ESP Sevilla Player 7",
-    "displayName": "Sevilla P7",
-    "dateOfBirth": "2001-07-19",
+    "externalId": "public-identity:esp:sevilla:djibril-sow",
+    "fullName": "Djibril Sow",
+    "displayName": "Sow",
+    "dateOfBirth": "1994-10-09",
+    "nationalityCode": "ESP",
+    "clubExternalId": "sevilla",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 167,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 74,
+      "defense": 56,
+      "technique": 83,
+      "speed": 80,
+      "stamina": 80,
+      "mentality": 70
+    },
+    "marketValue": "20780757",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "djibril-sow",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:sevilla:francis-lociga",
+    "fullName": "Francis Lociga",
+    "displayName": "Lociga",
+    "dateOfBirth": "2003-09-11",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "RB",
@@ -290,47 +292,48 @@
       "RWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "preferredFoot": "LEFT",
+    "heightCm": 172,
+    "shirtNumber": 42,
     "attributes": {
-      "attack": 71,
-      "defense": 87,
-      "technique": 80,
-      "speed": 79,
-      "stamina": 78,
-      "mentality": 81
+      "attack": 83,
+      "defense": 53,
+      "technique": 79,
+      "speed": 87,
+      "stamina": 73,
+      "mentality": 70
     },
-    "marketValue": 19750000,
+    "marketValue": "21595971",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "set_piece_specialist",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "francis-lociga",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p08",
-    "fullName": "ESP Sevilla Player 8",
-    "displayName": "Sevilla P8",
-    "dateOfBirth": "1990-08-22",
+    "externalId": "public-identity:esp:sevilla:gabriel-suazo",
+    "fullName": "Gabriel Suazo",
+    "displayName": "Suazo",
+    "dateOfBirth": "2003-12-18",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "LWB",
@@ -338,47 +341,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 72,
-      "speed": 75,
-      "stamina": 79,
+      "attack": 57,
+      "defense": 78,
+      "technique": 59,
+      "speed": 67,
+      "stamina": 80,
       "mentality": 75
     },
-    "marketValue": 18750000,
+    "marketValue": "23249807",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "gabriel-suazo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p09",
-    "fullName": "ESP Sevilla Player 9",
-    "displayName": "Sevilla P9",
-    "dateOfBirth": "1997-09-25",
+    "externalId": "public-identity:esp:sevilla:ibra-sow",
+    "fullName": "Ibra Sow",
+    "displayName": "Sow",
+    "dateOfBirth": "2004-03-01",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "RWB",
@@ -386,47 +390,48 @@
       "RB",
       "RM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 37,
     "attributes": {
-      "attack": 69,
-      "defense": 85,
-      "technique": 77,
-      "speed": 77,
-      "stamina": 77,
-      "mentality": 75
+      "attack": 89,
+      "defense": 51,
+      "technique": 75,
+      "speed": 75,
+      "stamina": 74,
+      "mentality": 77
     },
-    "marketValue": 19250000,
+    "marketValue": "22876340",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "ibra-sow",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p10",
-    "fullName": "ESP Sevilla Player 10",
-    "displayName": "Sevilla P10",
-    "dateOfBirth": "2004-10-01",
+    "externalId": "public-identity:esp:sevilla:iker-munoz",
+    "fullName": "Iker Muñoz",
+    "displayName": "Muñoz",
+    "dateOfBirth": "1993-07-11",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "CDM",
@@ -434,95 +439,48 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
-    "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 81,
-      "speed": 80,
-      "stamina": 74,
-      "mentality": 74
-    },
-    "marketValue": 19500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:sevilla:p11",
-    "fullName": "ESP Sevilla Player 11",
-    "displayName": "Sevilla P11",
-    "dateOfBirth": "1993-11-04",
-    "nationalityCode": "ESP",
-    "clubExternalId": "sevilla",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 172,
+    "shirtNumber": 34,
     "attributes": {
-      "attack": 81,
-      "defense": 81,
-      "technique": 78,
-      "speed": 81,
-      "stamina": 80,
-      "mentality": 82
+      "attack": 62,
+      "defense": 71,
+      "technique": 69,
+      "speed": 75,
+      "stamina": 84,
+      "mentality": 76
     },
-    "marketValue": 19750000,
+    "marketValue": "24728491",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "iker-munoz",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p12",
-    "fullName": "ESP Sevilla Player 12",
-    "displayName": "Sevilla P12",
-    "dateOfBirth": "2000-12-07",
+    "externalId": "public-identity:esp:sevilla:isaac-romero",
+    "fullName": "Isaac Romero",
+    "displayName": "Romero",
+    "dateOfBirth": "2004-04-17",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "CM",
@@ -531,46 +489,47 @@
       "CAM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
+    "heightCm": 178,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 75,
-      "speed": 75,
-      "stamina": 70,
-      "mentality": 74
+      "attack": 90,
+      "defense": 51,
+      "technique": 77,
+      "speed": 76,
+      "stamina": 73,
+      "mentality": 75
     },
-    "marketValue": 18250000,
+    "marketValue": "24937553",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "isaac-romero",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p13",
-    "fullName": "ESP Sevilla Player 13",
-    "displayName": "Sevilla P13",
-    "dateOfBirth": "1989-01-10",
+    "externalId": "public-identity:esp:sevilla:jesuly",
+    "fullName": "Jesuly",
+    "displayName": "Jesuly",
+    "dateOfBirth": "2002-10-24",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "CM",
@@ -579,46 +538,96 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 177,
+    "shirtNumber": 38,
     "attributes": {
       "attack": 82,
-      "defense": 82,
+      "defense": 49,
       "technique": 78,
-      "speed": 82,
-      "stamina": 82,
-      "mentality": 79
+      "speed": 83,
+      "stamina": 73,
+      "mentality": 70
     },
-    "marketValue": 20000000,
+    "marketValue": "19711404",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "jesuly",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p14",
-    "fullName": "ESP Sevilla Player 14",
-    "displayName": "Sevilla P14",
-    "dateOfBirth": "1996-02-13",
+    "externalId": "public-identity:esp:sevilla:jesus-cruz",
+    "fullName": "Jesús Cruz",
+    "displayName": "Cruz",
+    "dateOfBirth": "1991-04-15",
+    "nationalityCode": "ESP",
+    "clubExternalId": "sevilla",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 29,
+    "attributes": {
+      "attack": 81,
+      "defense": 54,
+      "technique": 85,
+      "speed": 86,
+      "stamina": 78,
+      "mentality": 69
+    },
+    "marketValue": "19153291",
+    "specialAttributes": [
+      "line_breaker",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "jesus-cruz",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:sevilla:jon-guridi",
+    "fullName": "Jon Guridi",
+    "displayName": "Guridi",
+    "dateOfBirth": "1990-06-21",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "CAM",
@@ -627,46 +636,47 @@
       "CF"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "heightCm": 174,
+    "shirtNumber": 18,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 76,
-      "speed": 77,
-      "stamina": 73,
-      "mentality": 72
+      "attack": 63,
+      "defense": 83,
+      "technique": 78,
+      "speed": 73,
+      "stamina": 88,
+      "mentality": 75
     },
-    "marketValue": 18750000,
+    "marketValue": "22812977",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "jon-guridi",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p15",
-    "fullName": "ESP Sevilla Player 15",
-    "displayName": "Sevilla P15",
-    "dateOfBirth": "2003-03-16",
+    "externalId": "public-identity:esp:sevilla:jorge-moreno",
+    "fullName": "Jorge Moreno",
+    "displayName": "Moreno",
+    "dateOfBirth": "2001-11-25",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "LM",
@@ -675,46 +685,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 188,
+    "shirtNumber": 44,
     "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 75,
-      "speed": 80,
-      "stamina": 81,
-      "mentality": 82
+      "attack": 54,
+      "defense": 84,
+      "technique": 66,
+      "speed": 59,
+      "stamina": 75,
+      "mentality": 77
     },
-    "marketValue": 19500000,
+    "marketValue": "23114922",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "leader",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "jorge-moreno",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p16",
-    "fullName": "ESP Sevilla Player 16",
-    "displayName": "Sevilla P16",
-    "dateOfBirth": "1992-04-19",
+    "externalId": "public-identity:esp:sevilla:jose-angel-carmona",
+    "fullName": "José Ángel Carmona",
+    "displayName": "Carmona",
+    "dateOfBirth": "1993-02-28",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "RM",
@@ -723,238 +734,291 @@
       "CM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 173,
+    "heightCm": 179,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 53,
+      "defense": 84,
+      "technique": 64,
+      "speed": 65,
+      "stamina": 80,
+      "mentality": 72
+    },
+    "marketValue": "22555768",
+    "specialAttributes": [
+      "workhorse",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "jose-angel-carmona",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:sevilla:juan-iglesias",
+    "fullName": "Juan Iglesias",
+    "displayName": "Iglesias",
+    "dateOfBirth": "1989-05-06",
+    "nationalityCode": "ESP",
+    "clubExternalId": "sevilla",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 57,
+      "defense": 76,
+      "technique": 65,
+      "speed": 71,
+      "stamina": 82,
+      "mentality": 67
+    },
+    "marketValue": "23678748",
+    "specialAttributes": [
+      "press_resistant",
+      "clutch_finisher"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "juan-iglesias",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:sevilla:juanlu-sanchez",
+    "fullName": "Juanlu Sánchez",
+    "displayName": "Sánchez",
+    "dateOfBirth": "2004-02-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "sevilla",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
     "shirtNumber": 16,
     "attributes": {
       "attack": 74,
-      "defense": 74,
-      "technique": 72,
-      "speed": 74,
-      "stamina": 71,
-      "mentality": 74
+      "defense": 59,
+      "technique": 75,
+      "speed": 82,
+      "stamina": 84,
+      "mentality": 70
     },
-    "marketValue": 18000000,
+    "marketValue": "20948357",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "juanlu-sanchez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p17",
-    "fullName": "ESP Sevilla Player 17",
-    "displayName": "Sevilla P17",
-    "dateOfBirth": "1999-05-22",
+    "externalId": "public-identity:esp:sevilla:kike-salas",
+    "fullName": "Kike Salas",
+    "displayName": "Salas",
+    "dateOfBirth": "1988-03-27",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "LW",
     "secondaryPositions": [
       "LM",
       "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 51,
+      "defense": 78,
+      "technique": 67,
+      "speed": 65,
+      "stamina": 71,
+      "mentality": 75
+    },
+    "marketValue": "19602667",
+    "specialAttributes": [
+      "press_resistant",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "kike-salas",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:sevilla:lucien-agoume",
+    "fullName": "Lucien Agoumé",
+    "displayName": "Agoumé",
+    "dateOfBirth": "1993-10-24",
+    "nationalityCode": "ESP",
+    "clubExternalId": "sevilla",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 185,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 63,
+      "defense": 76,
+      "technique": 69,
+      "speed": 71,
+      "stamina": 89,
+      "mentality": 77
+    },
+    "marketValue": "20058972",
+    "specialAttributes": [
+      "line_breaker",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "lucien-agoume",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:sevilla:manu-bueno",
+    "fullName": "Manu Bueno",
+    "displayName": "Bueno",
+    "dateOfBirth": "1999-03-25",
+    "nationalityCode": "ESP",
+    "clubExternalId": "sevilla",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
-    "shirtNumber": 17,
-    "attributes": {
-      "attack": 77,
-      "defense": 63,
-      "technique": 74,
-      "speed": 79,
-      "stamina": 75,
-      "mentality": 71
-    },
-    "marketValue": 17750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:sevilla:p18",
-    "fullName": "ESP Sevilla Player 18",
-    "displayName": "Sevilla P18",
-    "dateOfBirth": "1988-06-25",
-    "nationalityCode": "ESP",
-    "clubExternalId": "sevilla",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 79,
-      "defense": 65,
-      "technique": 72,
-      "speed": 81,
-      "stamina": 73,
-      "mentality": 71
-    },
-    "marketValue": 18250000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:sevilla:p19",
-    "fullName": "ESP Sevilla Player 19",
-    "displayName": "Sevilla P19",
-    "dateOfBirth": "1995-07-01",
-    "nationalityCode": "ESP",
-    "clubExternalId": "sevilla",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 77,
-      "defense": 63,
-      "technique": 73,
-      "speed": 79,
-      "stamina": 67,
-      "mentality": 67
-    },
-    "marketValue": 17750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:sevilla:p20",
-    "fullName": "ESP Sevilla Player 20",
-    "displayName": "Sevilla P20",
-    "dateOfBirth": "2002-08-04",
-    "nationalityCode": "ESP",
-    "clubExternalId": "sevilla",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
+    "shirtNumber": 28,
     "attributes": {
       "attack": 81,
-      "defense": 67,
-      "technique": 73,
-      "speed": 83,
-      "stamina": 76,
+      "defense": 59,
+      "technique": 88,
+      "speed": 74,
+      "stamina": 78,
       "mentality": 78
     },
-    "marketValue": 18750000,
+    "marketValue": "22512394",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "manu-bueno",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p21",
-    "fullName": "ESP Sevilla Player 21",
-    "displayName": "Sevilla P21",
-    "dateOfBirth": "1991-09-07",
+    "externalId": "public-identity:esp:sevilla:manuel-angel-castillo",
+    "fullName": "Manuel Ángel Castillo",
+    "displayName": "Castillo",
+    "dateOfBirth": "2005-11-02",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "ST",
@@ -962,93 +1026,47 @@
       "CF"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
+    "heightCm": 179,
+    "shirtNumber": 26,
     "attributes": {
-      "attack": 87,
-      "defense": 67,
-      "technique": 80,
-      "speed": 77,
-      "stamina": 76,
-      "mentality": 80
+      "attack": 81,
+      "defense": 52,
+      "technique": 77,
+      "speed": 88,
+      "stamina": 73,
+      "mentality": 70
     },
-    "marketValue": 19750000,
+    "marketValue": "19098502",
     "specialAttributes": [
-      "clutch_finisher",
+      "set_piece_specialist",
       "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "manuel-angel-castillo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p22",
-    "fullName": "ESP Sevilla Player 22",
-    "displayName": "Sevilla P22",
-    "dateOfBirth": "1998-10-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "sevilla",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
-    "attributes": {
-      "attack": 89,
-      "defense": 69,
-      "technique": 78,
-      "speed": 79,
-      "stamina": 83,
-      "mentality": 80
-    },
-    "marketValue": 20250000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:sevilla:p23",
-    "fullName": "ESP Sevilla Player 23",
-    "displayName": "Sevilla P23",
-    "dateOfBirth": "2005-11-13",
+    "externalId": "public-identity:esp:sevilla:marcao",
+    "fullName": "Marcão",
+    "displayName": "Marcão",
+    "dateOfBirth": "2002-11-14",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "CF",
@@ -1057,86 +1075,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
+    "heightCm": 185,
     "shirtNumber": 23,
     "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 75,
-      "speed": 73,
-      "stamina": 73,
+      "attack": 56,
+      "defense": 80,
+      "technique": 64,
+      "speed": 66,
+      "stamina": 78,
       "mentality": 72
     },
-    "marketValue": 18750000,
+    "marketValue": "22434333",
     "specialAttributes": [
       "clutch_finisher",
-      "speedster"
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "marcao",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:sevilla:p24",
-    "fullName": "ESP Sevilla Player 24",
-    "displayName": "Sevilla P24",
-    "dateOfBirth": "1994-12-16",
+    "externalId": "public-identity:esp:sevilla:mario-diaz",
+    "fullName": "Mario Díaz",
+    "displayName": "Díaz",
+    "dateOfBirth": "2005-06-28",
     "nationalityCode": "ESP",
     "clubExternalId": "sevilla",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 175,
+    "shirtNumber": 35,
     "attributes": {
-      "attack": 80,
-      "defense": 60,
-      "technique": 75,
-      "speed": 70,
-      "stamina": 75,
-      "mentality": 76
+      "attack": 72,
+      "defense": 56,
+      "technique": 79,
+      "speed": 83,
+      "stamina": 84,
+      "mentality": 70
     },
-    "marketValue": 18000000,
+    "marketValue": "20420184",
     "specialAttributes": [
-      "aerial_specialist",
+      "line_breaker",
       "clutch_finisher"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Sevilla_FC",
+      "identitySourceId": "mario-diaz",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

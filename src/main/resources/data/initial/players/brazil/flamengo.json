@@ -1,9 +1,9 @@
 [
   {
-    "externalId": "manager-initial:bra:flamengo:p01",
-    "fullName": "BRA Flamengo Player 1",
-    "displayName": "Flamengo P1",
-    "dateOfBirth": "1996-01-01",
+    "externalId": "public-identity:bra:flamengo:agustin-rossi",
+    "fullName": "Agustín Rossi",
+    "displayName": "Rossi",
+    "dateOfBirth": "1994-07-27",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "GK",
@@ -12,88 +12,88 @@
     "heightCm": 187,
     "shirtNumber": 1,
     "attributes": {
-      "attack": 92,
-      "defense": 95,
-      "technique": 89,
-      "speed": 95,
-      "stamina": 88,
-      "mentality": 88
+      "attack": 47,
+      "defense": 90,
+      "technique": 66,
+      "speed": 70,
+      "stamina": 74,
+      "mentality": 84
     },
-    "marketValue": 23000000,
+    "marketValue": "26898672",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
+      "sweeper_keeper",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "agustin-rossi",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p02",
-    "fullName": "BRA Flamengo Player 2",
-    "displayName": "Flamengo P2",
-    "dateOfBirth": "2003-02-04",
+    "externalId": "public-identity:bra:flamengo:alex-sandro",
+    "fullName": "Alex Sandro",
+    "displayName": "Sandro",
+    "dateOfBirth": "1998-05-09",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "heightCm": 190,
+    "shirtNumber": 26,
     "attributes": {
-      "attack": 92,
-      "defense": 95,
-      "technique": 92,
-      "speed": 95,
-      "stamina": 93,
-      "mentality": 95
+      "attack": 51,
+      "defense": 81,
+      "technique": 71,
+      "speed": 65,
+      "stamina": 84,
+      "mentality": 74
     },
-    "marketValue": 23000000,
+    "marketValue": "26600673",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "leader",
+      "one_on_one_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "alex-sandro",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p03",
-    "fullName": "BRA Flamengo Player 3",
-    "displayName": "Flamengo P3",
-    "dateOfBirth": "1992-03-07",
+    "externalId": "public-identity:bra:flamengo:andrew",
+    "fullName": "Andrew",
+    "displayName": "Andrew",
+    "dateOfBirth": "2000-12-23",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "LB",
@@ -102,46 +102,95 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 195,
+    "shirtNumber": 42,
     "attributes": {
-      "attack": 84,
-      "defense": 95,
-      "technique": 95,
-      "speed": 92,
-      "stamina": 89,
-      "mentality": 93
+      "attack": 41,
+      "defense": 92,
+      "technique": 64,
+      "speed": 69,
+      "stamina": 69,
+      "mentality": 82
     },
-    "marketValue": 23000000,
+    "marketValue": "23446403",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "andrew",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p04",
-    "fullName": "BRA Flamengo Player 4",
-    "displayName": "Flamengo P4",
-    "dateOfBirth": "1999-04-10",
+    "externalId": "public-identity:bra:flamengo:ayrton-lucas",
+    "fullName": "Ayrton Lucas",
+    "displayName": "Lucas",
+    "dateOfBirth": "2005-05-03",
+    "nationalityCode": "BRA",
+    "clubExternalId": "flamengo",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 69,
+      "defense": 84,
+      "technique": 75,
+      "speed": 82,
+      "stamina": 81,
+      "mentality": 73
+    },
+    "marketValue": "26714266",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "ayrton-lucas",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:flamengo:bruno-henrique",
+    "fullName": "Bruno Henrique",
+    "displayName": "Henrique",
+    "dateOfBirth": "1994-04-18",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CB",
@@ -150,45 +199,46 @@
     ],
     "preferredFoot": "LEFT",
     "heightCm": 184,
-    "shirtNumber": 4,
+    "shirtNumber": 27,
     "attributes": {
-      "attack": 82,
-      "defense": 95,
-      "technique": 89,
-      "speed": 90,
-      "stamina": 92,
-      "mentality": 89
+      "attack": 92,
+      "defense": 55,
+      "technique": 83,
+      "speed": 78,
+      "stamina": 76,
+      "mentality": 86
     },
-    "marketValue": 22500000,
+    "marketValue": "27465020",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "bruno-henrique",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p05",
-    "fullName": "BRA Flamengo Player 5",
-    "displayName": "Flamengo P5",
-    "dateOfBirth": "1988-05-13",
+    "externalId": "public-identity:bra:flamengo:danilo",
+    "fullName": "Danilo",
+    "displayName": "Danilo",
+    "dateOfBirth": "2004-07-23",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CB",
@@ -196,93 +246,47 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 172,
+    "shirtNumber": 13,
     "attributes": {
-      "attack": 84,
-      "defense": 95,
-      "technique": 94,
-      "speed": 92,
-      "stamina": 90,
-      "mentality": 89
-    },
-    "marketValue": 23000000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:flamengo:p06",
-    "fullName": "BRA Flamengo Player 6",
-    "displayName": "Flamengo P6",
-    "dateOfBirth": "1995-06-16",
-    "nationalityCode": "BRA",
-    "clubExternalId": "flamengo",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
-    "attributes": {
-      "attack": 84,
-      "defense": 95,
-      "technique": 90,
-      "speed": 92,
+      "attack": 67,
+      "defense": 75,
+      "technique": 73,
+      "speed": 88,
       "stamina": 95,
-      "mentality": 95
+      "mentality": 77
     },
-    "marketValue": 23000000,
+    "marketValue": "23029028",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "danilo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p07",
-    "fullName": "BRA Flamengo Player 7",
-    "displayName": "Flamengo P7",
-    "dateOfBirth": "2002-07-19",
+    "externalId": "public-identity:bra:flamengo:dyogo-alves",
+    "fullName": "Dyogo Alves",
+    "displayName": "Alves",
+    "dateOfBirth": "1995-06-06",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "RB",
@@ -291,46 +295,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 184,
+    "shirtNumber": 49,
     "attributes": {
-      "attack": 77,
-      "defense": 93,
-      "technique": 86,
-      "speed": 85,
-      "stamina": 84,
-      "mentality": 87
+      "attack": 47,
+      "defense": 89,
+      "technique": 66,
+      "speed": 63,
+      "stamina": 78,
+      "mentality": 85
     },
-    "marketValue": 21250000,
+    "marketValue": "22609790",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "set_piece_specialist",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "dyogo-alves",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p08",
-    "fullName": "BRA Flamengo Player 8",
-    "displayName": "Flamengo P8",
-    "dateOfBirth": "1991-08-22",
+    "externalId": "public-identity:bra:flamengo:emerson-royal",
+    "fullName": "Emerson Royal",
+    "displayName": "Royal",
+    "dateOfBirth": "1990-07-17",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "LWB",
@@ -338,47 +343,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 80,
-      "defense": 95,
-      "technique": 85,
-      "speed": 88,
-      "stamina": 92,
-      "mentality": 88
+      "attack": 54,
+      "defense": 88,
+      "technique": 69,
+      "speed": 63,
+      "stamina": 77,
+      "mentality": 82
     },
-    "marketValue": 22000000,
+    "marketValue": "24883627",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "emerson-royal",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p09",
-    "fullName": "BRA Flamengo Player 9",
-    "displayName": "Flamengo P9",
-    "dateOfBirth": "1998-09-25",
+    "externalId": "public-identity:bra:flamengo:erick-pulgar",
+    "fullName": "Erick Pulgar",
+    "displayName": "Pulgar",
+    "dateOfBirth": "1988-05-14",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "RWB",
@@ -386,47 +392,48 @@
       "RB",
       "RM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "preferredFoot": "LEFT",
+    "heightCm": 176,
+    "shirtNumber": 5,
     "attributes": {
-      "attack": 78,
-      "defense": 94,
-      "technique": 86,
-      "speed": 86,
-      "stamina": 86,
-      "mentality": 84
+      "attack": 84,
+      "defense": 53,
+      "technique": 85,
+      "speed": 82,
+      "stamina": 83,
+      "mentality": 78
     },
-    "marketValue": 21500000,
+    "marketValue": "23734315",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "erick-pulgar",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p10",
-    "fullName": "BRA Flamengo Player 10",
-    "displayName": "Flamengo P10",
-    "dateOfBirth": "2005-10-01",
+    "externalId": "public-identity:bra:flamengo:everton",
+    "fullName": "Everton",
+    "displayName": "Everton",
+    "dateOfBirth": "1999-04-25",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CDM",
@@ -435,46 +442,47 @@
       "CB"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "heightCm": 175,
+    "shirtNumber": 11,
     "attributes": {
-      "attack": 87,
-      "defense": 87,
-      "technique": 88,
+      "attack": 91,
+      "defense": 50,
+      "technique": 85,
       "speed": 87,
-      "stamina": 81,
-      "mentality": 81
+      "stamina": 76,
+      "mentality": 84
     },
-    "marketValue": 21250000,
+    "marketValue": "28078227",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "workhorse",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "everton",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p11",
-    "fullName": "BRA Flamengo Player 11",
-    "displayName": "Flamengo P11",
-    "dateOfBirth": "1994-11-04",
+    "externalId": "public-identity:bra:flamengo:evertton-araujo",
+    "fullName": "Evertton Araújo",
+    "displayName": "Araújo",
+    "dateOfBirth": "1992-08-13",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CM",
@@ -484,45 +492,46 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
-    "shirtNumber": 11,
+    "shirtNumber": 52,
     "attributes": {
-      "attack": 94,
-      "defense": 94,
-      "technique": 91,
-      "speed": 94,
-      "stamina": 93,
-      "mentality": 95
+      "attack": 77,
+      "defense": 62,
+      "technique": 89,
+      "speed": 85,
+      "stamina": 82,
+      "mentality": 71
     },
-    "marketValue": 23000000,
+    "marketValue": "25153986",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "leader",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "evertton-araujo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p12",
-    "fullName": "BRA Flamengo Player 12",
-    "displayName": "Flamengo P12",
-    "dateOfBirth": "2001-12-07",
+    "externalId": "public-identity:bra:flamengo:giorgian-de-arrascaeta",
+    "fullName": "Giorgian de Arrascaeta",
+    "displayName": "Arrascaeta",
+    "dateOfBirth": "2001-04-18",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CM",
@@ -531,46 +540,47 @@
       "CAM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
+    "heightCm": 167,
+    "shirtNumber": 10,
     "attributes": {
-      "attack": 93,
-      "defense": 93,
-      "technique": 93,
-      "speed": 93,
-      "stamina": 88,
-      "mentality": 92
+      "attack": 76,
+      "defense": 61,
+      "technique": 86,
+      "speed": 84,
+      "stamina": 89,
+      "mentality": 80
     },
-    "marketValue": 22750000,
+    "marketValue": "28069059",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "giorgian-de-arrascaeta",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p13",
-    "fullName": "BRA Flamengo Player 13",
-    "displayName": "Flamengo P13",
-    "dateOfBirth": "1990-01-10",
+    "externalId": "public-identity:bra:flamengo:gonzalo-plata",
+    "fullName": "Gonzalo Plata",
+    "displayName": "Plata",
+    "dateOfBirth": "1991-12-12",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CM",
@@ -579,46 +589,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 178,
+    "shirtNumber": 19,
     "attributes": {
-      "attack": 94,
-      "defense": 94,
-      "technique": 90,
-      "speed": 94,
-      "stamina": 94,
-      "mentality": 91
+      "attack": 89,
+      "defense": 58,
+      "technique": 87,
+      "speed": 89,
+      "stamina": 81,
+      "mentality": 70
     },
-    "marketValue": 23000000,
+    "marketValue": "26760196",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "gonzalo-plata",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p14",
-    "fullName": "BRA Flamengo Player 14",
-    "displayName": "Flamengo P14",
-    "dateOfBirth": "1997-02-13",
+    "externalId": "public-identity:bra:flamengo:guillermo-varela",
+    "fullName": "Guillermo Varela",
+    "displayName": "Varela",
+    "dateOfBirth": "1999-04-08",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CAM",
@@ -626,47 +637,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 91,
-      "defense": 91,
-      "technique": 90,
-      "speed": 91,
-      "stamina": 87,
-      "mentality": 86
+      "attack": 68,
+      "defense": 69,
+      "technique": 71,
+      "speed": 83,
+      "stamina": 85,
+      "mentality": 79
     },
-    "marketValue": 22250000,
+    "marketValue": "23531530",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "guillermo-varela",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p15",
-    "fullName": "BRA Flamengo Player 15",
-    "displayName": "Flamengo P15",
-    "dateOfBirth": "2004-03-16",
+    "externalId": "public-identity:bra:flamengo:jorge-carrascal",
+    "fullName": "Jorge Carrascal",
+    "displayName": "Carrascal",
+    "dateOfBirth": "1995-03-24",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "LM",
@@ -675,46 +687,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
+    "heightCm": 176,
     "shirtNumber": 15,
     "attributes": {
-      "attack": 88,
-      "defense": 88,
+      "attack": 81,
+      "defense": 60,
       "technique": 83,
-      "speed": 88,
-      "stamina": 89,
-      "mentality": 90
+      "speed": 81,
+      "stamina": 79,
+      "mentality": 79
     },
-    "marketValue": 21500000,
+    "marketValue": "25147176",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "jorge-carrascal",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p16",
-    "fullName": "BRA Flamengo Player 16",
-    "displayName": "Flamengo P16",
-    "dateOfBirth": "1993-04-19",
+    "externalId": "public-identity:bra:flamengo:jorginho",
+    "fullName": "Jorginho",
+    "displayName": "Jorginho",
+    "dateOfBirth": "1991-06-09",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "RM",
@@ -722,143 +735,48 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
-    "attributes": {
-      "attack": 94,
-      "defense": 94,
-      "technique": 92,
-      "speed": 94,
-      "stamina": 91,
-      "mentality": 94
-    },
-    "marketValue": 23000000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:flamengo:p17",
-    "fullName": "BRA Flamengo Player 17",
-    "displayName": "Flamengo P17",
-    "dateOfBirth": "2000-05-22",
-    "nationalityCode": "BRA",
-    "clubExternalId": "flamengo",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
+    "heightCm": 184,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 93,
-      "defense": 79,
-      "technique": 90,
-      "speed": 95,
-      "stamina": 91,
-      "mentality": 87
+      "attack": 75,
+      "defense": 78,
+      "technique": 88,
+      "speed": 81,
+      "stamina": 93,
+      "mentality": 81
     },
-    "marketValue": 21750000,
+    "marketValue": "22542635",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "set_piece_specialist",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "jorginho",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p18",
-    "fullName": "BRA Flamengo Player 18",
-    "displayName": "Flamengo P18",
-    "dateOfBirth": "1989-06-25",
-    "nationalityCode": "BRA",
-    "clubExternalId": "flamengo",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 91,
-      "defense": 77,
-      "technique": 84,
-      "speed": 93,
-      "stamina": 85,
-      "mentality": 83
-    },
-    "marketValue": 21250000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:flamengo:p19",
-    "fullName": "BRA Flamengo Player 19",
-    "displayName": "Flamengo P19",
-    "dateOfBirth": "1996-07-01",
+    "externalId": "public-identity:bra:flamengo:joao-victor",
+    "fullName": "João Victor",
+    "displayName": "Victor",
+    "dateOfBirth": "1992-08-10",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "LW",
@@ -868,45 +786,46 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
-    "shirtNumber": 19,
+    "shirtNumber": 61,
     "attributes": {
-      "attack": 94,
-      "defense": 80,
-      "technique": 90,
-      "speed": 95,
-      "stamina": 84,
-      "mentality": 84
+      "attack": 61,
+      "defense": 79,
+      "technique": 77,
+      "speed": 77,
+      "stamina": 89,
+      "mentality": 72
     },
-    "marketValue": 22000000,
+    "marketValue": "23219439",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "clutch_finisher",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "joao-victor",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p20",
-    "fullName": "BRA Flamengo Player 20",
-    "displayName": "Flamengo P20",
-    "dateOfBirth": "2003-08-04",
+    "externalId": "public-identity:bra:flamengo:lorran",
+    "fullName": "Lorran",
+    "displayName": "Lorran",
+    "dateOfBirth": "1992-09-25",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "RW",
@@ -914,141 +833,242 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 99,
     "attributes": {
-      "attack": 91,
-      "defense": 77,
-      "technique": 83,
-      "speed": 93,
-      "stamina": 86,
-      "mentality": 88
+      "attack": 80,
+      "defense": 62,
+      "technique": 82,
+      "speed": 82,
+      "stamina": 90,
+      "mentality": 81
     },
-    "marketValue": 21250000,
+    "marketValue": "22961425",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "lorran",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p21",
-    "fullName": "BRA Flamengo Player 21",
-    "displayName": "Flamengo P21",
-    "dateOfBirth": "1992-09-07",
+    "externalId": "public-identity:bra:flamengo:lucas-paqueta",
+    "fullName": "Lucas Paquetá",
+    "displayName": "Paquetá",
+    "dateOfBirth": "1993-03-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "flamengo",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 76,
+      "defense": 75,
+      "technique": 89,
+      "speed": 81,
+      "stamina": 89,
+      "mentality": 77
+    },
+    "marketValue": "24298719",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "lucas-paqueta",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:flamengo:luiz-araujo",
+    "fullName": "Luiz Araújo",
+    "displayName": "Araújo",
+    "dateOfBirth": "2005-10-17",
+    "nationalityCode": "BRA",
+    "clubExternalId": "flamengo",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 91,
+      "defense": 50,
+      "technique": 82,
+      "speed": 84,
+      "stamina": 85,
+      "mentality": 83
+    },
+    "marketValue": "25482359",
+    "specialAttributes": [
+      "clutch_finisher",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "luiz-araujo",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:flamengo:leo-ortiz",
+    "fullName": "Léo Ortiz",
+    "displayName": "Ortiz",
+    "dateOfBirth": "2003-01-26",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
+    "preferredFoot": "LEFT",
+    "heightCm": 174,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 95,
-      "defense": 80,
-      "technique": 93,
-      "speed": 90,
-      "stamina": 89,
-      "mentality": 93
+      "attack": 70,
+      "defense": 74,
+      "technique": 75,
+      "speed": 85,
+      "stamina": 91,
+      "mentality": 78
     },
-    "marketValue": 23000000,
+    "marketValue": "28259818",
     "specialAttributes": [
       "clutch_finisher",
       "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "leo-ortiz",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p22",
-    "fullName": "BRA Flamengo Player 22",
-    "displayName": "Flamengo P22",
-    "dateOfBirth": "1999-10-10",
+    "externalId": "public-identity:bra:flamengo:leo-pereira",
+    "fullName": "Léo Pereira",
+    "displayName": "Pereira",
+    "dateOfBirth": "2003-05-05",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 95,
-      "defense": 77,
-      "technique": 86,
-      "speed": 87,
-      "stamina": 91,
-      "mentality": 88
+      "attack": 52,
+      "defense": 86,
+      "technique": 71,
+      "speed": 73,
+      "stamina": 81,
+      "mentality": 77
     },
-    "marketValue": 22250000,
+    "marketValue": "28480256",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "leo-pereira",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p23",
-    "fullName": "BRA Flamengo Player 23",
-    "displayName": "Flamengo P23",
-    "dateOfBirth": "1988-11-13",
+    "externalId": "public-identity:bra:flamengo:nicolas-de-la-cruz",
+    "fullName": "Nicolás de la Cruz",
+    "displayName": "Cruz",
+    "dateOfBirth": "1993-04-20",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "CF",
@@ -1057,83 +1077,83 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 174,
+    "shirtNumber": 18,
     "attributes": {
-      "attack": 94,
-      "defense": 74,
-      "technique": 86,
-      "speed": 84,
+      "attack": 85,
+      "defense": 63,
+      "technique": 79,
+      "speed": 90,
       "stamina": 84,
-      "mentality": 83
+      "mentality": 78
     },
-    "marketValue": 21500000,
+    "marketValue": "27327293",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "nicolas-de-la-cruz",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:flamengo:p24",
-    "fullName": "BRA Flamengo Player 24",
-    "displayName": "Flamengo P24",
-    "dateOfBirth": "1995-12-16",
+    "externalId": "public-identity:bra:flamengo:pedro",
+    "fullName": "Pedro",
+    "displayName": "Pedro",
+    "dateOfBirth": "1996-12-23",
     "nationalityCode": "BRA",
     "clubExternalId": "flamengo",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
+    "shirtNumber": 9,
     "attributes": {
-      "attack": 95,
-      "defense": 80,
-      "technique": 95,
-      "speed": 90,
-      "stamina": 95,
-      "mentality": 95
+      "attack": 89,
+      "defense": 50,
+      "technique": 76,
+      "speed": 80,
+      "stamina": 74,
+      "mentality": 75
     },
-    "marketValue": 23000000,
+    "marketValue": "25017043",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "leader",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Flamengo",
+      "identitySourceId": "pedro",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"

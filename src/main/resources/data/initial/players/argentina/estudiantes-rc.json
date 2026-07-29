@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p01",
-    "fullName": "ARG EstudiantesRC Player 1",
-    "displayName": "Estudiantes RC P1",
-    "dateOfBirth": "2002-01-01",
+    "externalId": "public-identity:arg:estudiantes-rc:agustin-lastra",
+    "fullName": "Agustín Lastra",
+    "displayName": "Lastra",
+    "dateOfBirth": "1995-08-04",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 194,
+    "shirtNumber": 43,
     "attributes": {
-      "attack": 62,
-      "defense": 74,
-      "technique": 59,
-      "speed": 66,
-      "stamina": 58,
-      "mentality": 58
+      "attack": 39,
+      "defense": 83,
+      "technique": 52,
+      "speed": 59,
+      "stamina": 64,
+      "mentality": 75
     },
-    "marketValue": 15500000,
+    "marketValue": "21062469",
     "specialAttributes": [
-      "one_on_one_keeper",
+      "aerial_specialist",
       "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "agustin-lastra",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p02",
-    "fullName": "ARG EstudiantesRC Player 2",
-    "displayName": "Estudiantes RC P2",
-    "dateOfBirth": "1991-02-04",
+    "externalId": "public-identity:arg:estudiantes-rc:agustin-morales",
+    "fullName": "Agustín Morales",
+    "displayName": "Morales",
+    "dateOfBirth": "1998-04-23",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 18,
     "attributes": {
-      "attack": 63,
-      "defense": 75,
-      "technique": 63,
-      "speed": 67,
-      "stamina": 64,
-      "mentality": 66
+      "attack": 78,
+      "defense": 41,
+      "technique": 74,
+      "speed": 81,
+      "stamina": 68,
+      "mentality": 64
     },
-    "marketValue": 15750000,
+    "marketValue": "20345779",
     "specialAttributes": [
       "sweeper_keeper",
       "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "agustin-morales",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p03",
-    "fullName": "ARG EstudiantesRC Player 3",
-    "displayName": "Estudiantes RC P3",
-    "dateOfBirth": "1998-03-07",
+    "externalId": "public-identity:arg:estudiantes-rc:alejandro-cabrera",
+    "fullName": "Alejandro Cabrera",
+    "displayName": "Cabrera",
+    "dateOfBirth": "1996-08-09",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "LB",
@@ -103,92 +103,46 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
-    "shirtNumber": 3,
+    "shirtNumber": 5,
     "attributes": {
-      "attack": 53,
-      "defense": 69,
-      "technique": 64,
-      "speed": 61,
-      "stamina": 58,
-      "mentality": 62
+      "attack": 76,
+      "defense": 46,
+      "technique": 82,
+      "speed": 75,
+      "stamina": 73,
+      "mentality": 76
     },
-    "marketValue": 15250000,
+    "marketValue": "20550607",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:estudiantes-rc:p04",
-    "fullName": "ARG EstudiantesRC Player 4",
-    "displayName": "Estudiantes RC P4",
-    "dateOfBirth": "2005-04-10",
-    "nationalityCode": "ARG",
-    "clubExternalId": "estudiantes-rc",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 48,
-      "defense": 64,
-      "technique": 55,
-      "speed": 56,
-      "stamina": 58,
-      "mentality": 55
-    },
-    "marketValue": 14000000,
-    "specialAttributes": [
-      "aerial_specialist",
+      "speedster",
       "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "alejandro-cabrera",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p05",
-    "fullName": "ARG EstudiantesRC Player 5",
-    "displayName": "Estudiantes RC P5",
-    "dateOfBirth": "1994-05-13",
+    "externalId": "public-identity:arg:estudiantes-rc:bautista-pieroni",
+    "fullName": "Bautista Pieroni",
+    "displayName": "Pieroni",
+    "dateOfBirth": "1993-09-28",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CB",
@@ -196,46 +150,95 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 182,
+    "shirtNumber": 47,
     "attributes": {
-      "attack": 50,
+      "attack": 54,
       "defense": 66,
       "technique": 60,
-      "speed": 58,
-      "stamina": 56,
-      "mentality": 55
+      "speed": 69,
+      "stamina": 72,
+      "mentality": 71
     },
-    "marketValue": 14500000,
+    "marketValue": "16408273",
     "specialAttributes": [
       "workhorse",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "bautista-pieroni",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p06",
-    "fullName": "ARG EstudiantesRC Player 6",
-    "displayName": "Estudiantes RC P6",
-    "dateOfBirth": "2001-06-16",
+    "externalId": "public-identity:arg:estudiantes-rc:benjamin-moyano",
+    "fullName": "Benjamín Moyano",
+    "displayName": "Moyano",
+    "dateOfBirth": "2005-10-14",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-rc",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 27,
+    "attributes": {
+      "attack": 84,
+      "defense": 41,
+      "technique": 80,
+      "speed": 75,
+      "stamina": 68,
+      "mentality": 69
+    },
+    "marketValue": "16290367",
+    "specialAttributes": [
+      "aerial_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "benjamin-moyano",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:estudiantes-rc:ezequiel-forclaz",
+    "fullName": "Ezequiel Forclaz",
+    "displayName": "Forclaz",
+    "dateOfBirth": "1992-03-18",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CB",
@@ -243,46 +246,47 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "heightCm": 176,
+    "shirtNumber": 26,
     "attributes": {
-      "attack": 56,
-      "defense": 72,
-      "technique": 62,
-      "speed": 64,
-      "stamina": 67,
-      "mentality": 68
+      "attack": 66,
+      "defense": 54,
+      "technique": 70,
+      "speed": 76,
+      "stamina": 72,
+      "mentality": 62
     },
-    "marketValue": 16000000,
+    "marketValue": "17958477",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "ezequiel-forclaz",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p07",
-    "fullName": "ARG EstudiantesRC Player 7",
-    "displayName": "Estudiantes RC P7",
-    "dateOfBirth": "1990-07-19",
+    "externalId": "public-identity:arg:estudiantes-rc:facundo-cobos",
+    "fullName": "Facundo Cobos",
+    "displayName": "Cobos",
+    "dateOfBirth": "2004-06-08",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "RB",
@@ -290,47 +294,48 @@
       "RWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 28,
     "attributes": {
-      "attack": 58,
-      "defense": 74,
-      "technique": 67,
-      "speed": 66,
-      "stamina": 65,
-      "mentality": 68
+      "attack": 63,
+      "defense": 70,
+      "technique": 71,
+      "speed": 76,
+      "stamina": 76,
+      "mentality": 70
     },
-    "marketValue": 16500000,
+    "marketValue": "18791120",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "facundo-cobos",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p08",
-    "fullName": "ARG EstudiantesRC Player 8",
-    "displayName": "Estudiantes RC P8",
-    "dateOfBirth": "1997-08-22",
+    "externalId": "public-identity:arg:estudiantes-rc:facundo-gallardo",
+    "fullName": "Facundo Gallardo",
+    "displayName": "Gallardo",
+    "dateOfBirth": "2000-01-18",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "LWB",
@@ -338,47 +343,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 35,
     "attributes": {
-      "attack": 50,
-      "defense": 66,
-      "technique": 55,
-      "speed": 58,
-      "stamina": 62,
-      "mentality": 58
+      "attack": 81,
+      "defense": 49,
+      "technique": 77,
+      "speed": 81,
+      "stamina": 78,
+      "mentality": 68
     },
-    "marketValue": 14500000,
+    "marketValue": "18684064",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "facundo-gallardo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p09",
-    "fullName": "ARG EstudiantesRC Player 9",
-    "displayName": "Estudiantes RC P9",
-    "dateOfBirth": "2004-09-25",
+    "externalId": "public-identity:arg:estudiantes-rc:fernando-bersano",
+    "fullName": "Fernando Bersano",
+    "displayName": "Bersano",
+    "dateOfBirth": "1999-09-15",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "RWB",
@@ -387,46 +393,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 188,
+    "shirtNumber": 3,
     "attributes": {
       "attack": 49,
-      "defense": 65,
-      "technique": 57,
-      "speed": 57,
-      "stamina": 57,
-      "mentality": 55
+      "defense": 75,
+      "technique": 61,
+      "speed": 64,
+      "stamina": 67,
+      "mentality": 72
     },
-    "marketValue": 14250000,
+    "marketValue": "17848954",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "fernando-bersano",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p10",
-    "fullName": "ARG EstudiantesRC Player 10",
-    "displayName": "Estudiantes RC P10",
-    "dateOfBirth": "1993-10-01",
+    "externalId": "public-identity:arg:estudiantes-rc:francesco-lo-celso",
+    "fullName": "Francesco Lo Celso",
+    "displayName": "Celso",
+    "dateOfBirth": "1996-03-10",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CDM",
@@ -434,47 +441,48 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 40,
     "attributes": {
-      "attack": 62,
-      "defense": 62,
-      "technique": 63,
-      "speed": 62,
-      "stamina": 56,
-      "mentality": 56
+      "attack": 65,
+      "defense": 70,
+      "technique": 71,
+      "speed": 69,
+      "stamina": 81,
+      "mentality": 73
     },
-    "marketValue": 15000000,
+    "marketValue": "15602125",
     "specialAttributes": [
-      "leader",
+      "line_breaker",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "francesco-lo-celso",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p11",
-    "fullName": "ARG EstudiantesRC Player 11",
-    "displayName": "Estudiantes RC P11",
-    "dateOfBirth": "2000-11-04",
+    "externalId": "public-identity:arg:estudiantes-rc:francisco-galvan",
+    "fullName": "Francisco Galván",
+    "displayName": "Galván",
+    "dateOfBirth": "2002-01-15",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CM",
@@ -483,46 +491,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 182,
+    "shirtNumber": 99,
     "attributes": {
-      "attack": 59,
-      "defense": 59,
-      "technique": 56,
-      "speed": 59,
-      "stamina": 58,
-      "mentality": 60
+      "attack": 84,
+      "defense": 42,
+      "technique": 66,
+      "speed": 76,
+      "stamina": 69,
+      "mentality": 66
     },
-    "marketValue": 14250000,
+    "marketValue": "16258745",
     "specialAttributes": [
-      "line_breaker",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "francisco-galvan",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p12",
-    "fullName": "ARG EstudiantesRC Player 12",
-    "displayName": "Estudiantes RC P12",
-    "dateOfBirth": "1989-12-07",
+    "externalId": "public-identity:arg:estudiantes-rc:francisco-gualtieri",
+    "fullName": "Francisco Gualtieri",
+    "displayName": "Gualtieri",
+    "dateOfBirth": "2005-10-17",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CM",
@@ -530,47 +539,48 @@
       "CDM",
       "CAM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
     "shirtNumber": 12,
     "attributes": {
-      "attack": 66,
-      "defense": 66,
-      "technique": 66,
-      "speed": 66,
-      "stamina": 61,
-      "mentality": 65
+      "attack": 37,
+      "defense": 84,
+      "technique": 52,
+      "speed": 62,
+      "stamina": 65,
+      "mentality": 69
     },
-    "marketValue": 16000000,
+    "marketValue": "19876292",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "line_breaker",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "francisco-gualtieri",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p13",
-    "fullName": "ARG EstudiantesRC Player 13",
-    "displayName": "Estudiantes RC P13",
-    "dateOfBirth": "1996-01-10",
+    "externalId": "public-identity:arg:estudiantes-rc:francisco-romero",
+    "fullName": "Francisco Romero",
+    "displayName": "Romero",
+    "dateOfBirth": "2003-07-27",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CM",
@@ -578,47 +588,46 @@
       "CDM",
       "CAM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 170,
+    "preferredFoot": "LEFT",
+    "heightCm": 183,
     "shirtNumber": 13,
     "attributes": {
-      "attack": 59,
-      "defense": 59,
-      "technique": 55,
-      "speed": 59,
-      "stamina": 59,
-      "mentality": 56
+      "attack": 66,
+      "defense": 63,
+      "technique": 80,
+      "speed": 63,
+      "stamina": 75,
+      "mentality": 69
     },
-    "marketValue": 14250000,
+    "marketValue": "18093291",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "francisco-romero",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p14",
-    "fullName": "ARG EstudiantesRC Player 14",
-    "displayName": "Estudiantes RC P14",
-    "dateOfBirth": "2003-02-13",
+    "externalId": "public-identity:arg:estudiantes-rc:gabriel-alanis",
+    "fullName": "Gabriel Alanís",
+    "displayName": "Alanís",
+    "dateOfBirth": "1992-11-14",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CAM",
@@ -626,47 +635,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 173,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 63,
-      "defense": 63,
-      "technique": 62,
+      "attack": 56,
+      "defense": 76,
+      "technique": 73,
       "speed": 63,
-      "stamina": 59,
-      "mentality": 58
+      "stamina": 84,
+      "mentality": 74
     },
-    "marketValue": 15250000,
+    "marketValue": "17603690",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "workhorse",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "gabriel-alanis",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p15",
-    "fullName": "ARG EstudiantesRC Player 15",
-    "displayName": "Estudiantes RC P15",
-    "dateOfBirth": "1992-03-16",
+    "externalId": "public-identity:arg:estudiantes-rc:gonzalo-maffini",
+    "fullName": "Gonzalo Maffini",
+    "displayName": "Maffini",
+    "dateOfBirth": "1988-11-19",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "LM",
@@ -674,47 +684,48 @@
       "LW",
       "CM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "preferredFoot": "LEFT",
+    "heightCm": 185,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 60,
-      "defense": 60,
-      "technique": 55,
-      "speed": 60,
-      "stamina": 61,
-      "mentality": 62
+      "attack": 50,
+      "defense": 79,
+      "technique": 60,
+      "speed": 63,
+      "stamina": 69,
+      "mentality": 74
     },
-    "marketValue": 14500000,
+    "marketValue": "20767910",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "gonzalo-maffini",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p16",
-    "fullName": "ARG EstudiantesRC Player 16",
-    "displayName": "Estudiantes RC P16",
-    "dateOfBirth": "1999-04-19",
+    "externalId": "public-identity:arg:estudiantes-rc:javier-ferreira",
+    "fullName": "Javier Ferreira",
+    "displayName": "Ferreira",
+    "dateOfBirth": "2001-11-16",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "RM",
@@ -722,143 +733,146 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 9,
     "attributes": {
-      "attack": 64,
-      "defense": 64,
-      "technique": 62,
-      "speed": 64,
-      "stamina": 61,
-      "mentality": 64
+      "attack": 88,
+      "defense": 44,
+      "technique": 67,
+      "speed": 69,
+      "stamina": 69,
+      "mentality": 66
     },
-    "marketValue": 15500000,
+    "marketValue": "20965941",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "javier-ferreira",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p17",
-    "fullName": "ARG EstudiantesRC Player 17",
-    "displayName": "Estudiantes RC P17",
-    "dateOfBirth": "1988-05-22",
+    "externalId": "public-identity:arg:estudiantes-rc:jeremias-ramponi",
+    "fullName": "Jeremías Ramponi",
+    "displayName": "Ramponi",
+    "dateOfBirth": "1988-06-02",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "LW",
     "secondaryPositions": [
       "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 52,
+      "defense": 67,
+      "technique": 65,
+      "speed": 73,
+      "stamina": 74,
+      "mentality": 62
+    },
+    "marketValue": "17416773",
+    "specialAttributes": [
+      "clutch_finisher",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "jeremias-ramponi",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:estudiantes-rc:juan-antonini",
+    "fullName": "Juan Antonini",
+    "displayName": "Antonini",
+    "dateOfBirth": "2005-03-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-rc",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
       "ST"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
-    "shirtNumber": 17,
+    "shirtNumber": 6,
     "attributes": {
-      "attack": 70,
-      "defense": 56,
-      "technique": 67,
-      "speed": 72,
-      "stamina": 68,
+      "attack": 51,
+      "defense": 71,
+      "technique": 68,
+      "speed": 67,
+      "stamina": 81,
       "mentality": 64
     },
-    "marketValue": 16000000,
+    "marketValue": "19393956",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "set_piece_specialist",
+      "clutch_finisher"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "juan-antonini",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p18",
-    "fullName": "ARG EstudiantesRC Player 18",
-    "displayName": "Estudiantes RC P18",
-    "dateOfBirth": "1995-06-25",
-    "nationalityCode": "ARG",
-    "clubExternalId": "estudiantes-rc",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 69,
-      "defense": 55,
-      "technique": 62,
-      "speed": 71,
-      "stamina": 63,
-      "mentality": 61
-    },
-    "marketValue": 15750000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:estudiantes-rc:p19",
-    "fullName": "ARG EstudiantesRC Player 19",
-    "displayName": "Estudiantes RC P19",
-    "dateOfBirth": "2002-07-01",
+    "externalId": "public-identity:arg:estudiantes-rc:lautaro-cepeha",
+    "fullName": "Lautaro Cepeha",
+    "displayName": "Cepeha",
+    "dateOfBirth": "1997-11-06",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "LW",
@@ -867,46 +881,47 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
+    "heightCm": 184,
+    "shirtNumber": 38,
     "attributes": {
-      "attack": 72,
-      "defense": 58,
-      "technique": 68,
-      "speed": 74,
-      "stamina": 62,
-      "mentality": 62
+      "attack": 70,
+      "defense": 62,
+      "technique": 70,
+      "speed": 70,
+      "stamina": 77,
+      "mentality": 76
     },
-    "marketValue": 16500000,
+    "marketValue": "15504354",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "lautaro-cepeha",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p20",
-    "fullName": "ARG EstudiantesRC Player 20",
-    "displayName": "Estudiantes RC P20",
-    "dateOfBirth": "1991-08-04",
+    "externalId": "public-identity:arg:estudiantes-rc:lautaro-herrera",
+    "fullName": "Lautaro Herrera",
+    "displayName": "Herrera",
+    "dateOfBirth": "1999-12-20",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "RW",
@@ -914,47 +929,48 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
+    "preferredFoot": "RIGHT",
+    "heightCm": 191,
+    "shirtNumber": 34,
     "attributes": {
-      "attack": 67,
-      "defense": 53,
-      "technique": 59,
-      "speed": 69,
-      "stamina": 62,
-      "mentality": 64
+      "attack": 37,
+      "defense": 74,
+      "technique": 52,
+      "speed": 55,
+      "stamina": 67,
+      "mentality": 74
     },
-    "marketValue": 15250000,
+    "marketValue": "18605547",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "press_resistant",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "lautaro-herrera",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p21",
-    "fullName": "ARG EstudiantesRC Player 21",
-    "displayName": "Estudiantes RC P21",
-    "dateOfBirth": "1998-09-07",
+    "externalId": "public-identity:arg:estudiantes-rc:lucas-gonzalez",
+    "fullName": "Lucas González",
+    "displayName": "González",
+    "dateOfBirth": "2005-11-12",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "ST",
@@ -962,93 +978,93 @@
       "CF"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
+    "heightCm": 175,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 67,
-      "defense": 47,
-      "technique": 60,
-      "speed": 57,
-      "stamina": 56,
-      "mentality": 60
+      "attack": 80,
+      "defense": 39,
+      "technique": 74,
+      "speed": 72,
+      "stamina": 65,
+      "mentality": 67
     },
-    "marketValue": 14750000,
+    "marketValue": "19458615",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "aerial_specialist",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "lucas-gonzalez",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p22",
-    "fullName": "ARG EstudiantesRC Player 22",
-    "displayName": "Estudiantes RC P22",
-    "dateOfBirth": "2005-10-10",
+    "externalId": "public-identity:arg:estudiantes-rc:martin-garnerone",
+    "fullName": "Martín Garnerone",
+    "displayName": "Garnerone",
+    "dateOfBirth": "1990-02-23",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
+    "preferredFoot": "RIGHT",
+    "heightCm": 166,
+    "shirtNumber": 11,
     "attributes": {
-      "attack": 74,
-      "defense": 54,
-      "technique": 63,
-      "speed": 64,
+      "attack": 79,
+      "defense": 46,
+      "technique": 72,
+      "speed": 80,
       "stamina": 68,
       "mentality": 65
     },
-    "marketValue": 16500000,
+    "marketValue": "17281024",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "clutch_finisher",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "martin-garnerone",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p23",
-    "fullName": "ARG EstudiantesRC Player 23",
-    "displayName": "Estudiantes RC P23",
-    "dateOfBirth": "1994-11-13",
+    "externalId": "public-identity:arg:estudiantes-rc:mateo-bajamich",
+    "fullName": "Mateo Bajamich",
+    "displayName": "Bajamich",
+    "dateOfBirth": "1999-05-09",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "CF",
@@ -1058,85 +1074,87 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 178,
-    "shirtNumber": 23,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 68,
-      "defense": 48,
-      "technique": 60,
-      "speed": 58,
-      "stamina": 58,
-      "mentality": 57
+      "attack": 75,
+      "defense": 40,
+      "technique": 73,
+      "speed": 83,
+      "stamina": 71,
+      "mentality": 60
     },
-    "marketValue": 15000000,
+    "marketValue": "20373954",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "set_piece_specialist",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "mateo-bajamich",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:estudiantes-rc:p24",
-    "fullName": "ARG EstudiantesRC Player 24",
-    "displayName": "Estudiantes RC P24",
-    "dateOfBirth": "2001-12-16",
+    "externalId": "public-identity:arg:estudiantes-rc:mateo-rodriguez",
+    "fullName": "Mateo Rodríguez",
+    "displayName": "Rodríguez",
+    "dateOfBirth": "2005-10-27",
     "nationalityCode": "ARG",
     "clubExternalId": "estudiantes-rc",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
+    "preferredFoot": "RIGHT",
     "heightCm": 179,
-    "shirtNumber": 24,
+    "shirtNumber": 85,
     "attributes": {
-      "attack": 73,
-      "defense": 53,
-      "technique": 68,
-      "speed": 63,
-      "stamina": 68,
-      "mentality": 69
+      "attack": 71,
+      "defense": 56,
+      "technique": 77,
+      "speed": 74,
+      "stamina": 75,
+      "mentality": 66
     },
-    "marketValue": 16250000,
+    "marketValue": "16925244",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "line_breaker",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Estudiantes_de_Rio_Cuarto",
+      "identitySourceId": "mateo-rodriguez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

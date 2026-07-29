@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:bra:internacional:p01",
-    "fullName": "BRA Internacional Player 1",
-    "displayName": "Internacional P1",
-    "dateOfBirth": "2001-01-01",
+    "externalId": "public-identity:bra:internacional:alan-patrick",
+    "fullName": "Alan Patrick",
+    "displayName": "Patrick",
+    "dateOfBirth": "1992-06-22",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 188,
+    "shirtNumber": 10,
     "attributes": {
-      "attack": 77,
-      "defense": 89,
-      "technique": 74,
-      "speed": 81,
-      "stamina": 73,
-      "mentality": 73
+      "attack": 39,
+      "defense": 84,
+      "technique": 56,
+      "speed": 61,
+      "stamina": 67,
+      "mentality": 74
     },
-    "marketValue": 19250000,
+    "marketValue": "21500757",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
+      "leader",
+      "sweeper_keeper"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34163600",
+      "identitySourceId": "34163600",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p02",
-    "fullName": "BRA Internacional Player 2",
-    "displayName": "Internacional P2",
-    "dateOfBirth": "1990-02-04",
+    "externalId": "public-identity:bra:internacional:alan-rodriguez",
+    "fullName": "Alan Rodríguez",
+    "displayName": "Rodríguez",
+    "dateOfBirth": "2000-04-09",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 8,
     "attributes": {
-      "attack": 79,
-      "defense": 91,
-      "technique": 79,
-      "speed": 83,
-      "stamina": 80,
-      "mentality": 82
+      "attack": 36,
+      "defense": 84,
+      "technique": 63,
+      "speed": 69,
+      "stamina": 75,
+      "mentality": 83
     },
-    "marketValue": 19750000,
+    "marketValue": "25593976",
     "specialAttributes": [
       "sweeper_keeper",
       "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218757",
+      "identitySourceId": "34218757",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p03",
-    "fullName": "BRA Internacional Player 3",
-    "displayName": "Internacional P3",
-    "dateOfBirth": "1997-03-07",
+    "externalId": "public-identity:bra:internacional:alexandro-bernabei",
+    "fullName": "Alexandro Bernabéi",
+    "displayName": "Bernabéi",
+    "dateOfBirth": "1991-10-07",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "LB",
@@ -102,46 +102,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 171,
+    "shirtNumber": 26,
     "attributes": {
-      "attack": 69,
-      "defense": 85,
-      "technique": 80,
-      "speed": 77,
-      "stamina": 74,
-      "mentality": 78
+      "attack": 58,
+      "defense": 81,
+      "technique": 74,
+      "speed": 80,
+      "stamina": 83,
+      "mentality": 70
     },
-    "marketValue": 19250000,
+    "marketValue": "23787894",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34215705",
+      "identitySourceId": "34215705",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p04",
-    "fullName": "BRA Internacional Player 4",
-    "displayName": "Internacional P4",
-    "dateOfBirth": "2004-04-10",
+    "externalId": "public-identity:bra:internacional:braian-aguirre",
+    "fullName": "Braian Aguirre",
+    "displayName": "Aguirre",
+    "dateOfBirth": "1998-08-07",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "CB",
@@ -149,46 +149,46 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
+    "heightCm": 185,
+    "shirtNumber": 35,
     "attributes": {
-      "attack": 73,
-      "defense": 89,
-      "technique": 80,
-      "speed": 81,
-      "stamina": 83,
-      "mentality": 80
+      "attack": 55,
+      "defense": 83,
+      "technique": 66,
+      "speed": 60,
+      "stamina": 73,
+      "mentality": 78
     },
-    "marketValue": 20250000,
+    "marketValue": "25488429",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "set_piece_specialist",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218597",
+      "identitySourceId": "34218597",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p05",
-    "fullName": "BRA Internacional Player 5",
-    "displayName": "Internacional P5",
-    "dateOfBirth": "1993-05-13",
+    "externalId": "public-identity:bra:internacional:bruno-gomes",
+    "fullName": "Bruno Gomes",
+    "displayName": "Gomes",
+    "dateOfBirth": "1989-06-14",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "CB",
@@ -196,93 +196,93 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 182,
+    "shirtNumber": 15,
     "attributes": {
-      "attack": 72,
-      "defense": 88,
-      "technique": 82,
-      "speed": 80,
-      "stamina": 78,
-      "mentality": 77
+      "attack": 48,
+      "defense": 82,
+      "technique": 66,
+      "speed": 64,
+      "stamina": 75,
+      "mentality": 74
     },
-    "marketValue": 20000000,
+    "marketValue": "23838494",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34193137",
+      "identitySourceId": "34193137",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p06",
-    "fullName": "BRA Internacional Player 6",
-    "displayName": "Internacional P6",
-    "dateOfBirth": "2000-06-16",
+    "externalId": "public-identity:bra:internacional:bruno-henrique-corsini",
+    "fullName": "Bruno Henrique Corsini",
+    "displayName": "Corsini",
+    "dateOfBirth": "1998-02-08",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "CB",
     "secondaryPositions": [
       "CDM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "preferredFoot": "RIGHT",
+    "heightCm": 184,
+    "shirtNumber": 8,
     "attributes": {
-      "attack": 70,
-      "defense": 86,
-      "technique": 76,
-      "speed": 78,
-      "stamina": 81,
-      "mentality": 82
+      "attack": 53,
+      "defense": 82,
+      "technique": 64,
+      "speed": 61,
+      "stamina": 73,
+      "mentality": 79
     },
-    "marketValue": 19500000,
+    "marketValue": "23864917",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34222551",
+      "identitySourceId": "34222551",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p07",
-    "fullName": "BRA Internacional Player 7",
-    "displayName": "Internacional P7",
-    "dateOfBirth": "1989-07-19",
+    "externalId": "public-identity:bra:internacional:clayton-sampaio",
+    "fullName": "Clayton Sampaio",
+    "displayName": "Sampaio",
+    "dateOfBirth": "1997-12-08",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "RB",
@@ -291,46 +291,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 178,
+    "shirtNumber": 20,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 76,
+      "attack": 66,
+      "defense": 74,
+      "technique": 73,
       "speed": 75,
-      "stamina": 74,
-      "mentality": 77
+      "stamina": 82,
+      "mentality": 74
     },
-    "marketValue": 18750000,
+    "marketValue": "25700187",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "set_piece_specialist",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34346320",
+      "identitySourceId": "34346320",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p08",
-    "fullName": "BRA Internacional Player 8",
-    "displayName": "Internacional P8",
-    "dateOfBirth": "1996-08-22",
+    "externalId": "public-identity:bra:internacional:felix-torres",
+    "fullName": "Félix Torres",
+    "displayName": "Torres",
+    "dateOfBirth": "1993-01-01",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "LWB",
@@ -338,47 +338,47 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 169,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 71,
-      "defense": 87,
+      "attack": 65,
+      "defense": 75,
       "technique": 76,
-      "speed": 79,
-      "stamina": 83,
-      "mentality": 79
+      "speed": 77,
+      "stamina": 82,
+      "mentality": 73
     },
-    "marketValue": 19750000,
+    "marketValue": "24861827",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34202696",
+      "identitySourceId": "34202696",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p09",
-    "fullName": "BRA Internacional Player 9",
-    "displayName": "Internacional P9",
-    "dateOfBirth": "2003-09-25",
+    "externalId": "public-identity:bra:internacional:gabriel-mercado",
+    "fullName": "Gabriel Mercado",
+    "displayName": "Mercado",
+    "dateOfBirth": "1990-07-15",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "RWB",
@@ -386,47 +386,47 @@
       "RB",
       "RM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 25,
     "attributes": {
-      "attack": 72,
-      "defense": 88,
-      "technique": 80,
-      "speed": 80,
-      "stamina": 80,
-      "mentality": 78
+      "attack": 73,
+      "defense": 69,
+      "technique": 72,
+      "speed": 79,
+      "stamina": 92,
+      "mentality": 70
     },
-    "marketValue": 20000000,
+    "marketValue": "21935672",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34161029",
+      "identitySourceId": "34161029",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p10",
-    "fullName": "BRA Internacional Player 10",
-    "displayName": "Internacional P10",
-    "dateOfBirth": "1992-10-01",
+    "externalId": "public-identity:bra:internacional:guillermo-maripan",
+    "fullName": "Guillermo Maripán",
+    "displayName": "Maripán",
+    "dateOfBirth": "1999-01-08",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "CDM",
@@ -434,191 +434,191 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
-    "attributes": {
-      "attack": 76,
-      "defense": 76,
-      "technique": 77,
-      "speed": 76,
-      "stamina": 70,
-      "mentality": 70
-    },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:internacional:p11",
-    "fullName": "BRA Internacional Player 11",
-    "displayName": "Internacional P11",
-    "dateOfBirth": "1999-11-04",
-    "nationalityCode": "BRA",
-    "clubExternalId": "internacional",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
-    "attributes": {
-      "attack": 82,
-      "defense": 82,
-      "technique": 79,
-      "speed": 82,
-      "stamina": 81,
-      "mentality": 83
-    },
-    "marketValue": 20000000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:internacional:p12",
-    "fullName": "BRA Internacional Player 12",
-    "displayName": "Internacional P12",
-    "dateOfBirth": "1988-12-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "internacional",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 84,
-      "defense": 84,
-      "technique": 84,
-      "speed": 84,
-      "stamina": 79,
-      "mentality": 83
-    },
-    "marketValue": 20500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:internacional:p13",
-    "fullName": "BRA Internacional Player 13",
-    "displayName": "Internacional P13",
-    "dateOfBirth": "1995-01-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "internacional",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 170,
+    "heightCm": 187,
     "shirtNumber": 13,
     "attributes": {
-      "attack": 84,
+      "attack": 68,
       "defense": 84,
-      "technique": 80,
-      "speed": 84,
-      "stamina": 84,
+      "technique": 75,
+      "speed": 74,
+      "stamina": 88,
       "mentality": 81
     },
-    "marketValue": 20500000,
+    "marketValue": "25246975",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34161395",
+      "identitySourceId": "34161395",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p14",
-    "fullName": "BRA Internacional Player 14",
-    "displayName": "Internacional P14",
-    "dateOfBirth": "2002-02-13",
+    "externalId": "public-identity:bra:internacional:johan-carbonero",
+    "fullName": "Johan Carbonero",
+    "displayName": "Carbonero",
+    "dateOfBirth": "1999-05-21",
+    "nationalityCode": "BRA",
+    "clubExternalId": "internacional",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 66,
+      "defense": 71,
+      "technique": 83,
+      "speed": 75,
+      "stamina": 86,
+      "mentality": 78
+    },
+    "marketValue": "25172146",
+    "specialAttributes": [
+      "workhorse",
+      "line_breaker"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218829",
+      "identitySourceId": "34218829",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:internacional:juninho",
+    "fullName": "Juninho",
+    "displayName": "Juninho",
+    "dateOfBirth": "1991-01-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "internacional",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 171,
+    "shirtNumber": 73,
+    "attributes": {
+      "attack": 67,
+      "defense": 67,
+      "technique": 77,
+      "speed": 70,
+      "stamina": 81,
+      "mentality": 75
+    },
+    "marketValue": "24274599",
+    "specialAttributes": [
+      "press_resistant",
+      "line_breaker"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34194798",
+      "identitySourceId": "34194798",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:internacional:kayky",
+    "fullName": "Kayky",
+    "displayName": "Kayky",
+    "dateOfBirth": "1989-01-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "internacional",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 37,
+    "attributes": {
+      "attack": 73,
+      "defense": 72,
+      "technique": 80,
+      "speed": 68,
+      "stamina": 86,
+      "mentality": 81
+    },
+    "marketValue": "22459830",
+    "specialAttributes": [
+      "press_resistant",
+      "set_piece_specialist"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34195837",
+      "identitySourceId": "34195837",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:internacional:matheus-bahia",
+    "fullName": "Matheus Bahia",
+    "displayName": "Bahia",
+    "dateOfBirth": "2001-12-21",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "CAM",
@@ -626,47 +626,47 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 79,
     "attributes": {
-      "attack": 86,
-      "defense": 86,
-      "technique": 85,
-      "speed": 86,
-      "stamina": 82,
-      "mentality": 81
+      "attack": 76,
+      "defense": 55,
+      "technique": 90,
+      "speed": 81,
+      "stamina": 80,
+      "mentality": 72
     },
-    "marketValue": 21000000,
+    "marketValue": "25127545",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34194800",
+      "identitySourceId": "34194800",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p15",
-    "fullName": "BRA Internacional Player 15",
-    "displayName": "Internacional P15",
-    "dateOfBirth": "1991-03-16",
+    "externalId": "public-identity:bra:internacional:rafael-santos-borre",
+    "fullName": "Rafael Santos Borré",
+    "displayName": "Borré",
+    "dateOfBirth": "2003-12-18",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "LM",
@@ -674,47 +674,47 @@
       "LW",
       "CM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "preferredFoot": "LEFT",
+    "heightCm": 169,
+    "shirtNumber": 19,
     "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 75,
-      "speed": 80,
-      "stamina": 81,
-      "mentality": 82
+      "attack": 77,
+      "defense": 56,
+      "technique": 84,
+      "speed": 85,
+      "stamina": 87,
+      "mentality": 76
     },
-    "marketValue": 19500000,
+    "marketValue": "21848183",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34174119",
+      "identitySourceId": "34174119",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p16",
-    "fullName": "BRA Internacional Player 16",
-    "displayName": "Internacional P16",
-    "dateOfBirth": "1998-04-19",
+    "externalId": "public-identity:bra:internacional:rodrigo-villagra",
+    "fullName": "Rodrigo Villagra",
+    "displayName": "Villagra",
+    "dateOfBirth": "1988-02-18",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "RM",
@@ -722,47 +722,47 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 81,
-      "defense": 81,
-      "technique": 79,
-      "speed": 81,
-      "stamina": 78,
-      "mentality": 81
+      "attack": 80,
+      "defense": 66,
+      "technique": 78,
+      "speed": 79,
+      "stamina": 87,
+      "mentality": 69
     },
-    "marketValue": 19750000,
+    "marketValue": "20046552",
     "specialAttributes": [
       "leader",
       "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218649",
+      "identitySourceId": "34218649",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p17",
-    "fullName": "BRA Internacional Player 17",
-    "displayName": "Internacional P17",
-    "dateOfBirth": "2005-05-22",
+    "externalId": "public-identity:bra:internacional:sergio-rochet",
+    "fullName": "Sergio Rochet",
+    "displayName": "Rochet",
+    "dateOfBirth": "2001-12-18",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "LW",
@@ -772,45 +772,45 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
-    "shirtNumber": 17,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 85,
-      "defense": 71,
-      "technique": 82,
-      "speed": 87,
-      "stamina": 83,
-      "mentality": 79
+      "attack": 83,
+      "defense": 46,
+      "technique": 80,
+      "speed": 85,
+      "stamina": 75,
+      "mentality": 75
     },
-    "marketValue": 19750000,
+    "marketValue": "20053871",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "workhorse",
+      "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34155702",
+      "identitySourceId": "34155702",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p18",
-    "fullName": "BRA Internacional Player 18",
-    "displayName": "Internacional P18",
-    "dateOfBirth": "1994-06-25",
+    "externalId": "public-identity:bra:internacional:vitinho",
+    "fullName": "Vitinho",
+    "displayName": "Vitinho",
+    "dateOfBirth": "2000-06-23",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "RW",
@@ -819,46 +819,46 @@
       "ST"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
+    "heightCm": 170,
+    "shirtNumber": 28,
     "attributes": {
-      "attack": 88,
-      "defense": 74,
-      "technique": 81,
-      "speed": 90,
-      "stamina": 82,
-      "mentality": 80
+      "attack": 80,
+      "defense": 48,
+      "technique": 78,
+      "speed": 85,
+      "stamina": 79,
+      "mentality": 74
     },
-    "marketValue": 20500000,
+    "marketValue": "19757657",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219134",
+      "identitySourceId": "34219134",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p19",
-    "fullName": "BRA Internacional Player 19",
-    "displayName": "Internacional P19",
-    "dateOfBirth": "2001-07-01",
+    "externalId": "public-identity:bra:internacional:alan-benitez",
+    "fullName": "Alan Benítez",
+    "displayName": "Benítez",
+    "dateOfBirth": "1996-11-07",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "LW",
@@ -867,46 +867,47 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
+    "heightCm": 169,
     "shirtNumber": 19,
     "attributes": {
-      "attack": 84,
-      "defense": 70,
+      "attack": 86,
+      "defense": 53,
       "technique": 80,
-      "speed": 86,
+      "speed": 88,
       "stamina": 74,
-      "mentality": 74
+      "mentality": 70
     },
-    "marketValue": 19500000,
+    "marketValue": "22288289",
     "specialAttributes": [
       "speedster",
-      "line_breaker"
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34200135",
+      "identitySourceId": "34200135",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p20",
-    "fullName": "BRA Internacional Player 20",
-    "displayName": "Internacional P20",
-    "dateOfBirth": "1990-08-04",
+    "externalId": "public-identity:bra:internacional:alerrandro",
+    "fullName": "Alerrandro",
+    "displayName": "Alerrandro",
+    "dateOfBirth": "1990-12-05",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "RW",
@@ -915,93 +916,47 @@
       "ST"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 177,
+    "heightCm": 167,
     "shirtNumber": 20,
     "attributes": {
       "attack": 89,
-      "defense": 75,
-      "technique": 81,
+      "defense": 47,
+      "technique": 85,
       "speed": 91,
-      "stamina": 84,
-      "mentality": 86
+      "stamina": 79,
+      "mentality": 72
     },
-    "marketValue": 20750000,
+    "marketValue": "23666574",
     "specialAttributes": [
-      "workhorse",
+      "speedster",
       "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219653",
+      "identitySourceId": "34219653",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:internacional:p21",
-    "fullName": "BRA Internacional Player 21",
-    "displayName": "Internacional P21",
-    "dateOfBirth": "1997-09-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "internacional",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 90,
-      "defense": 70,
-      "technique": 83,
-      "speed": 80,
-      "stamina": 79,
-      "mentality": 83
-    },
-    "marketValue": 20500000,
-    "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
+      "specialAttributes",
       "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p22",
-    "fullName": "BRA Internacional Player 22",
-    "displayName": "Internacional P22",
-    "dateOfBirth": "2004-10-10",
+    "externalId": "public-identity:bra:internacional:allex-rodrigues-pereira-da-silva",
+    "fullName": "Allex Rodrigues Pereira Da Silva",
+    "displayName": "Silva",
+    "dateOfBirth": "1991-02-01",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "ST",
@@ -1009,46 +964,95 @@
       "CF"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
+    "heightCm": 182,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 92,
-      "defense": 72,
-      "technique": 81,
-      "speed": 82,
-      "stamina": 86,
-      "mentality": 83
+      "attack": 94,
+      "defense": 43,
+      "technique": 78,
+      "speed": 77,
+      "stamina": 71,
+      "mentality": 74
     },
-    "marketValue": 21000000,
+    "marketValue": "20296500",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "speedster",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34436100",
+      "identitySourceId": "34436100",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p23",
-    "fullName": "BRA Internacional Player 23",
-    "displayName": "Internacional P23",
-    "dateOfBirth": "1993-11-13",
+    "externalId": "public-identity:bra:internacional:anthoni",
+    "fullName": "Anthoni",
+    "displayName": "Anthoni",
+    "dateOfBirth": "1991-07-03",
+    "nationalityCode": "BRA",
+    "clubExternalId": "internacional",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 189,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 93,
+      "defense": 50,
+      "technique": 79,
+      "speed": 83,
+      "stamina": 76,
+      "mentality": 72
+    },
+    "marketValue": "25092274",
+    "specialAttributes": [
+      "aerial_specialist",
+      "line_breaker"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34248205",
+      "identitySourceId": "34248205",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:internacional:bruno-tabata",
+    "fullName": "Bruno Tabata",
+    "displayName": "Tabata",
+    "dateOfBirth": "2002-04-19",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "CF",
@@ -1056,87 +1060,89 @@
       "CAM",
       "ST"
     ],
-    "preferredFoot": "RIGHT",
+    "preferredFoot": "LEFT",
     "heightCm": 178,
     "shirtNumber": 23,
     "attributes": {
-      "attack": 88,
-      "defense": 68,
-      "technique": 80,
-      "speed": 78,
-      "stamina": 78,
-      "mentality": 77
+      "attack": 87,
+      "defense": 48,
+      "technique": 85,
+      "speed": 79,
+      "stamina": 75,
+      "mentality": 75
     },
-    "marketValue": 20000000,
+    "marketValue": "21983030",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "leader",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34163353",
+      "identitySourceId": "34163353",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:internacional:p24",
-    "fullName": "BRA Internacional Player 24",
-    "displayName": "Internacional P24",
-    "dateOfBirth": "2000-12-16",
+    "externalId": "public-identity:bra:internacional:ivan-edu",
+    "fullName": "Iván Edu",
+    "displayName": "Edu",
+    "dateOfBirth": "1989-12-15",
     "nationalityCode": "BRA",
     "clubExternalId": "internacional",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
     "shirtNumber": 24,
     "attributes": {
-      "attack": 86,
-      "defense": 66,
-      "technique": 81,
-      "speed": 76,
-      "stamina": 81,
-      "mentality": 82
+      "attack": 87,
+      "defense": 49,
+      "technique": 75,
+      "speed": 81,
+      "stamina": 77,
+      "mentality": 74
     },
-    "marketValue": 19500000,
+    "marketValue": "21544448",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "leader",
+      "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34175173",
+      "identitySourceId": "34175173",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   }
 ]

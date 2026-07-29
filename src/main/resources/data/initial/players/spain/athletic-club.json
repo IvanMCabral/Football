@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:esp:athletic-club:p01",
-    "fullName": "ESP Athletic Player 1",
-    "displayName": "Athletic P1",
-    "dateOfBirth": "2001-01-01",
+    "externalId": "public-identity:esp:athletic-club:adama-boiro",
+    "fullName": "Adama Boiro",
+    "displayName": "Boiro",
+    "dateOfBirth": "1996-04-22",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 188,
+    "shirtNumber": 19,
     "attributes": {
-      "attack": 74,
-      "defense": 86,
-      "technique": 71,
-      "speed": 78,
-      "stamina": 70,
-      "mentality": 70
+      "attack": 42,
+      "defense": 81,
+      "technique": 60,
+      "speed": 66,
+      "stamina": 67,
+      "mentality": 78
     },
-    "marketValue": 18500000,
+    "marketValue": "21118321",
     "specialAttributes": [
       "one_on_one_keeper",
-      "leader"
+      "sweeper_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "adama-boiro",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionAdjustmentReason": "MANAGER roster balance: source coverage did not expose enough goalkeepers; position estimated for MVP playability."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p02",
-    "fullName": "ESP Athletic Player 2",
-    "displayName": "Athletic P2",
-    "dateOfBirth": "1990-02-04",
+    "externalId": "public-identity:esp:athletic-club:aitor-paredes",
+    "fullName": "Aitor Paredes",
+    "displayName": "Paredes",
+    "dateOfBirth": "2002-11-23",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 192,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 76,
-      "defense": 88,
-      "technique": 76,
-      "speed": 80,
-      "stamina": 77,
-      "mentality": 79
+      "attack": 48,
+      "defense": 78,
+      "technique": 60,
+      "speed": 66,
+      "stamina": 76,
+      "mentality": 77
     },
-    "marketValue": 19000000,
+    "marketValue": "23881944",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "aitor-paredes",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p03",
-    "fullName": "ESP Athletic Player 3",
-    "displayName": "Athletic P3",
-    "dateOfBirth": "1997-03-07",
+    "externalId": "public-identity:esp:athletic-club:alejandro-rego",
+    "fullName": "Alejandro Rego",
+    "displayName": "Rego",
+    "dateOfBirth": "2005-01-08",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "LB",
@@ -101,94 +103,142 @@
       "LWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "preferredFoot": "LEFT",
+    "heightCm": 182,
+    "shirtNumber": 30,
     "attributes": {
-      "attack": 73,
-      "defense": 89,
+      "attack": 79,
+      "defense": 50,
       "technique": 84,
-      "speed": 81,
-      "stamina": 78,
-      "mentality": 82
+      "speed": 71,
+      "stamina": 81,
+      "mentality": 72
     },
-    "marketValue": 20250000,
+    "marketValue": "21231172",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "alejandro-rego",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p04",
-    "fullName": "ESP Athletic Player 4",
-    "displayName": "Athletic P4",
-    "dateOfBirth": "2004-04-10",
+    "externalId": "public-identity:esp:athletic-club:andoni-gorosabel",
+    "fullName": "Andoni Gorosabel",
+    "displayName": "Gorosabel",
+    "dateOfBirth": "1989-01-25",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "CB",
     "secondaryPositions": [
       "CDM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
+    "preferredFoot": "RIGHT",
+    "heightCm": 169,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 66,
-      "defense": 82,
-      "technique": 73,
-      "speed": 74,
-      "stamina": 76,
+      "attack": 62,
+      "defense": 71,
+      "technique": 69,
+      "speed": 73,
+      "stamina": 77,
       "mentality": 73
     },
-    "marketValue": 18500000,
+    "marketValue": "24526399",
+    "specialAttributes": [
+      "speedster",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "andoni-gorosabel",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:athletic-club:aymeric-laporte",
+    "fullName": "Aymeric Laporte",
+    "displayName": "Laporte",
+    "dateOfBirth": "1991-09-06",
+    "nationalityCode": "ESP",
+    "clubExternalId": "athletic-club",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 192,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 50,
+      "defense": 87,
+      "technique": 61,
+      "speed": 68,
+      "stamina": 74,
+      "mentality": 72
+    },
+    "marketValue": "21326618",
     "specialAttributes": [
       "aerial_specialist",
       "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "aymeric-laporte",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p05",
-    "fullName": "ESP Athletic Player 5",
-    "displayName": "Athletic P5",
-    "dateOfBirth": "1993-05-13",
+    "externalId": "public-identity:esp:athletic-club:benat-gerenabarrena",
+    "fullName": "Beñat Gerenabarrena",
+    "displayName": "Gerenabarrena",
+    "dateOfBirth": "1994-08-22",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "CB",
@@ -196,93 +246,47 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 173,
+    "shirtNumber": 29,
     "attributes": {
-      "attack": 69,
-      "defense": 85,
-      "technique": 79,
-      "speed": 77,
-      "stamina": 75,
-      "mentality": 74
+      "attack": 71,
+      "defense": 61,
+      "technique": 82,
+      "speed": 79,
+      "stamina": 78,
+      "mentality": 72
     },
-    "marketValue": 19250000,
+    "marketValue": "22640821",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "benat-gerenabarrena",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p06",
-    "fullName": "ESP Athletic Player 6",
-    "displayName": "Athletic P6",
-    "dateOfBirth": "2000-06-16",
-    "nationalityCode": "ESP",
-    "clubExternalId": "athletic-club",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
-    "attributes": {
-      "attack": 75,
-      "defense": 91,
-      "technique": 81,
-      "speed": 83,
-      "stamina": 86,
-      "mentality": 87
-    },
-    "marketValue": 20750000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:athletic-club:p07",
-    "fullName": "ESP Athletic Player 7",
-    "displayName": "Athletic P7",
-    "dateOfBirth": "1989-07-19",
+    "externalId": "public-identity:esp:athletic-club:benat-prados",
+    "fullName": "Beñat Prados",
+    "displayName": "Prados",
+    "dateOfBirth": "1992-12-23",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "RB",
@@ -291,46 +295,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 180,
+    "shirtNumber": 24,
     "attributes": {
-      "attack": 74,
-      "defense": 90,
-      "technique": 83,
-      "speed": 82,
-      "stamina": 81,
-      "mentality": 84
+      "attack": 70,
+      "defense": 73,
+      "technique": 78,
+      "speed": 72,
+      "stamina": 87,
+      "mentality": 80
     },
-    "marketValue": 20500000,
+    "marketValue": "25368322",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "benat-prados",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p08",
-    "fullName": "ESP Athletic Player 8",
-    "displayName": "Athletic P8",
-    "dateOfBirth": "1996-08-22",
+    "externalId": "public-identity:esp:athletic-club:dani-vivian",
+    "fullName": "Dani Vivian",
+    "displayName": "Vivian",
+    "dateOfBirth": "1997-03-16",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "LWB",
@@ -338,47 +343,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 66,
-      "defense": 82,
-      "technique": 71,
-      "speed": 74,
-      "stamina": 78,
-      "mentality": 74
+      "attack": 52,
+      "defense": 80,
+      "technique": 62,
+      "speed": 60,
+      "stamina": 76,
+      "mentality": 71
     },
-    "marketValue": 18500000,
+    "marketValue": "21873290",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "dani-vivian",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p09",
-    "fullName": "ESP Athletic Player 9",
-    "displayName": "Athletic P9",
-    "dateOfBirth": "2003-09-25",
+    "externalId": "public-identity:esp:athletic-club:elijah-gift",
+    "fullName": "Elijah Gift",
+    "displayName": "Gift",
+    "dateOfBirth": "1996-12-17",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "RWB",
@@ -387,46 +393,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 189,
+    "shirtNumber": 34,
     "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 76,
-      "speed": 76,
+      "attack": 91,
+      "defense": 42,
+      "technique": 74,
+      "speed": 75,
       "stamina": 76,
-      "mentality": 74
+      "mentality": 81
     },
-    "marketValue": 19000000,
+    "marketValue": "23877378",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "elijah-gift",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p10",
-    "fullName": "ESP Athletic Player 10",
-    "displayName": "Athletic P10",
-    "dateOfBirth": "1992-10-01",
+    "externalId": "public-identity:esp:athletic-club:gorka-guruzeta",
+    "fullName": "Gorka Guruzeta",
+    "displayName": "Guruzeta",
+    "dateOfBirth": "1989-05-11",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "CDM",
@@ -434,143 +441,48 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
-    "attributes": {
-      "attack": 83,
-      "defense": 83,
-      "technique": 84,
-      "speed": 83,
-      "stamina": 77,
-      "mentality": 77
-    },
-    "marketValue": 20250000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:athletic-club:p11",
-    "fullName": "ESP Athletic Player 11",
-    "displayName": "Athletic P11",
-    "dateOfBirth": "1999-11-04",
-    "nationalityCode": "ESP",
-    "clubExternalId": "athletic-club",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
+    "heightCm": 173,
     "shirtNumber": 11,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 72,
+      "attack": 80,
+      "defense": 47,
+      "technique": 82,
       "speed": 75,
-      "stamina": 74,
-      "mentality": 76
+      "stamina": 76,
+      "mentality": 81
     },
-    "marketValue": 18250000,
+    "marketValue": "22205849",
     "specialAttributes": [
-      "line_breaker",
+      "workhorse",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "gorka-guruzeta",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p12",
-    "fullName": "ESP Athletic Player 12",
-    "displayName": "Athletic P12",
-    "dateOfBirth": "1988-12-07",
-    "nationalityCode": "ESP",
-    "clubExternalId": "athletic-club",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 80,
-      "speed": 80,
-      "stamina": 75,
-      "mentality": 79
-    },
-    "marketValue": 19500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:athletic-club:p13",
-    "fullName": "ESP Athletic Player 13",
-    "displayName": "Athletic P13",
-    "dateOfBirth": "1995-01-10",
+    "externalId": "public-identity:esp:athletic-club:hugo-rincon",
+    "fullName": "Hugo Rincón",
+    "displayName": "Rincón",
+    "dateOfBirth": "1998-11-22",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "CM",
@@ -579,46 +491,145 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 175,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 71,
-      "speed": 75,
-      "stamina": 75,
-      "mentality": 72
+      "attack": 58,
+      "defense": 81,
+      "technique": 72,
+      "speed": 73,
+      "stamina": 81,
+      "mentality": 71
     },
-    "marketValue": 18250000,
+    "marketValue": "23156382",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "hugo-rincon",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p14",
-    "fullName": "ESP Athletic Player 14",
-    "displayName": "Athletic P14",
-    "dateOfBirth": "2002-02-13",
+    "externalId": "public-identity:esp:athletic-club:iker-monreal",
+    "fullName": "Iker Monreal",
+    "displayName": "Monreal",
+    "dateOfBirth": "1988-05-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "athletic-club",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 47,
+    "attributes": {
+      "attack": 53,
+      "defense": 81,
+      "technique": 63,
+      "speed": 62,
+      "stamina": 74,
+      "mentality": 74
+    },
+    "marketValue": "24224286",
+    "specialAttributes": [
+      "workhorse",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "iker-monreal",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:athletic-club:inaki-williams",
+    "fullName": "Iñaki Williams",
+    "displayName": "Williams",
+    "dateOfBirth": "1989-10-26",
+    "nationalityCode": "ESP",
+    "clubExternalId": "athletic-club",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 81,
+      "defense": 48,
+      "technique": 84,
+      "speed": 85,
+      "stamina": 82,
+      "mentality": 71
+    },
+    "marketValue": "24187357",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "inaki-williams",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:athletic-club:inigo-ruiz-de-galarreta",
+    "fullName": "Iñigo Ruiz de Galarreta",
+    "displayName": "Galarreta",
+    "dateOfBirth": "1991-06-24",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "CAM",
@@ -626,47 +637,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 16,
     "attributes": {
-      "attack": 84,
-      "defense": 84,
-      "technique": 83,
-      "speed": 84,
-      "stamina": 80,
-      "mentality": 79
+      "attack": 61,
+      "defense": 81,
+      "technique": 74,
+      "speed": 69,
+      "stamina": 88,
+      "mentality": 78
     },
-    "marketValue": 20500000,
+    "marketValue": "21519199",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "inigo-ruiz-de-galarreta",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p15",
-    "fullName": "ESP Athletic Player 15",
-    "displayName": "Athletic P15",
-    "dateOfBirth": "1991-03-16",
+    "externalId": "public-identity:esp:athletic-club:jesus-areso",
+    "fullName": "Jesús Areso",
+    "displayName": "Areso",
+    "dateOfBirth": "1998-10-02",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "LM",
@@ -675,46 +687,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 180,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 84,
-      "defense": 84,
-      "technique": 79,
-      "speed": 84,
-      "stamina": 85,
-      "mentality": 86
+      "attack": 47,
+      "defense": 79,
+      "technique": 67,
+      "speed": 61,
+      "stamina": 76,
+      "mentality": 71
     },
-    "marketValue": 20500000,
+    "marketValue": "25179088",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "jesus-areso",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p16",
-    "fullName": "ESP Athletic Player 16",
-    "displayName": "Athletic P16",
-    "dateOfBirth": "1998-04-19",
+    "externalId": "public-identity:esp:athletic-club:johaneko-louis-jean",
+    "fullName": "Johaneko Louis-Jean",
+    "displayName": "Louis-Jean",
+    "dateOfBirth": "1988-05-02",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "RM",
@@ -722,333 +735,336 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
-    "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 75,
-      "speed": 77,
-      "stamina": 74,
-      "mentality": 77
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:athletic-club:p17",
-    "fullName": "ESP Athletic Player 17",
-    "displayName": "Athletic P17",
-    "dateOfBirth": "2005-05-22",
-    "nationalityCode": "ESP",
-    "clubExternalId": "athletic-club",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
+    "heightCm": 181,
+    "shirtNumber": 31,
     "attributes": {
-      "attack": 89,
-      "defense": 75,
-      "technique": 86,
-      "speed": 91,
-      "stamina": 87,
-      "mentality": 83
-    },
-    "marketValue": 20750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:athletic-club:p18",
-    "fullName": "ESP Athletic Player 18",
-    "displayName": "Athletic P18",
-    "dateOfBirth": "1994-06-25",
-    "nationalityCode": "ESP",
-    "clubExternalId": "athletic-club",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 87,
-      "defense": 73,
-      "technique": 80,
-      "speed": 89,
-      "stamina": 81,
-      "mentality": 79
-    },
-    "marketValue": 20250000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:athletic-club:p19",
-    "fullName": "ESP Athletic Player 19",
-    "displayName": "Athletic P19",
-    "dateOfBirth": "2001-07-01",
-    "nationalityCode": "ESP",
-    "clubExternalId": "athletic-club",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 86,
-      "defense": 72,
-      "technique": 82,
-      "speed": 88,
+      "attack": 49,
+      "defense": 78,
+      "technique": 59,
+      "speed": 68,
       "stamina": 76,
-      "mentality": 76
+      "mentality": 72
     },
-    "marketValue": 20000000,
+    "marketValue": "25111572",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "line_breaker",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "johaneko-louis-jean",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p20",
-    "fullName": "ESP Athletic Player 20",
-    "displayName": "Athletic P20",
-    "dateOfBirth": "1990-08-04",
+    "externalId": "public-identity:esp:athletic-club:maroan-sannadi",
+    "fullName": "Maroan Sannadi",
+    "displayName": "Sannadi",
+    "dateOfBirth": "1999-05-11",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
-    "primaryPosition": "RW",
+    "primaryPosition": "LW",
     "secondaryPositions": [
-      "RM",
+      "LM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
-    "attributes": {
-      "attack": 88,
-      "defense": 74,
-      "technique": 80,
-      "speed": 90,
-      "stamina": 83,
-      "mentality": 85
-    },
-    "marketValue": 20500000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:athletic-club:p21",
-    "fullName": "ESP Athletic Player 21",
-    "displayName": "Athletic P21",
-    "dateOfBirth": "1997-09-07",
-    "nationalityCode": "ESP",
-    "clubExternalId": "athletic-club",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
+    "heightCm": 180,
     "shirtNumber": 21,
     "attributes": {
-      "attack": 89,
-      "defense": 69,
-      "technique": 82,
-      "speed": 79,
-      "stamina": 78,
-      "mentality": 82
+      "attack": 84,
+      "defense": 51,
+      "technique": 86,
+      "speed": 91,
+      "stamina": 76,
+      "mentality": 73
     },
-    "marketValue": 20250000,
+    "marketValue": "21608050",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "line_breaker",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "maroan-sannadi",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p22",
-    "fullName": "ESP Athletic Player 22",
-    "displayName": "Athletic P22",
-    "dateOfBirth": "2004-10-10",
+    "externalId": "public-identity:esp:athletic-club:mikel-jauregizar",
+    "fullName": "Mikel Jauregizar",
+    "displayName": "Jauregizar",
+    "dateOfBirth": "1991-11-22",
+    "nationalityCode": "ESP",
+    "clubExternalId": "athletic-club",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 74,
+      "defense": 56,
+      "technique": 80,
+      "speed": 83,
+      "stamina": 87,
+      "mentality": 75
+    },
+    "marketValue": "19769398",
+    "specialAttributes": [
+      "line_breaker",
+      "clutch_finisher"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "mikel-jauregizar",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:athletic-club:mikel-santos",
+    "fullName": "Mikel Santos",
+    "displayName": "Santos",
+    "dateOfBirth": "1997-03-02",
+    "nationalityCode": "ESP",
+    "clubExternalId": "athletic-club",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
+    "shirtNumber": 26,
+    "attributes": {
+      "attack": 40,
+      "defense": 89,
+      "technique": 61,
+      "speed": 62,
+      "stamina": 73,
+      "mentality": 82
+    },
+    "marketValue": "24704083",
+    "specialAttributes": [
+      "line_breaker",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "mikel-santos",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:athletic-club:mikel-vesga",
+    "fullName": "Mikel Vesga",
+    "displayName": "Vesga",
+    "dateOfBirth": "2001-08-05",
+    "nationalityCode": "ESP",
+    "clubExternalId": "athletic-club",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 66,
+      "defense": 83,
+      "technique": 75,
+      "speed": 63,
+      "stamina": 88,
+      "mentality": 76
+    },
+    "marketValue": "23554808",
+    "specialAttributes": [
+      "line_breaker",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "mikel-vesga",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:athletic-club:nico-serrano",
+    "fullName": "Nico Serrano",
+    "displayName": "Serrano",
+    "dateOfBirth": "1990-06-28",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
     "shirtNumber": 22,
     "attributes": {
-      "attack": 89,
-      "defense": 69,
-      "technique": 78,
-      "speed": 79,
-      "stamina": 83,
-      "mentality": 80
+      "attack": 91,
+      "defense": 42,
+      "technique": 71,
+      "speed": 82,
+      "stamina": 70,
+      "mentality": 71
     },
-    "marketValue": 20250000,
+    "marketValue": "23882611",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "speedster",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "nico-serrano",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p23",
-    "fullName": "ESP Athletic Player 23",
-    "displayName": "Athletic P23",
-    "dateOfBirth": "1993-11-13",
+    "externalId": "public-identity:esp:athletic-club:nico-williams",
+    "fullName": "Nico Williams",
+    "displayName": "Williams",
+    "dateOfBirth": "2001-01-26",
+    "nationalityCode": "ESP",
+    "clubExternalId": "athletic-club",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 166,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 88,
+      "defense": 48,
+      "technique": 80,
+      "speed": 93,
+      "stamina": 75,
+      "mentality": 68
+    },
+    "marketValue": "24265888",
+    "specialAttributes": [
+      "aerial_specialist",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "nico-williams",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:athletic-club:oihan-sancet",
+    "fullName": "Oihan Sancet",
+    "displayName": "Sancet",
+    "dateOfBirth": "1989-03-26",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "CF",
@@ -1057,86 +1073,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 181,
+    "shirtNumber": 8,
     "attributes": {
-      "attack": 87,
-      "defense": 67,
-      "technique": 79,
-      "speed": 77,
-      "stamina": 77,
+      "attack": 79,
+      "defense": 57,
+      "technique": 75,
+      "speed": 85,
+      "stamina": 78,
       "mentality": 76
     },
-    "marketValue": 19750000,
+    "marketValue": "22127583",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "aerial_specialist",
+      "clutch_finisher"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "oihan-sancet",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:athletic-club:p24",
-    "fullName": "ESP Athletic Player 24",
-    "displayName": "Athletic P24",
-    "dateOfBirth": "2000-12-16",
+    "externalId": "public-identity:esp:athletic-club:peio-canales",
+    "fullName": "Peio Canales",
+    "displayName": "Canales",
+    "dateOfBirth": "1993-08-03",
     "nationalityCode": "ESP",
     "clubExternalId": "athletic-club",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 28,
     "attributes": {
-      "attack": 90,
-      "defense": 70,
-      "technique": 85,
-      "speed": 80,
-      "stamina": 85,
-      "mentality": 86
+      "attack": 77,
+      "defense": 65,
+      "technique": 79,
+      "speed": 77,
+      "stamina": 82,
+      "mentality": 67
     },
-    "marketValue": 20500000,
+    "marketValue": "22721857",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "leader",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Athletic_Bilbao",
+      "identitySourceId": "peio-canales",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

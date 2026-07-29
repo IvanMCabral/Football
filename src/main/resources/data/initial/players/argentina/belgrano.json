@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:arg:belgrano:p01",
-    "fullName": "ARG Belgrano Player 1",
-    "displayName": "Belgrano P1",
-    "dateOfBirth": "1996-01-01",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
-    "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
-    "attributes": {
-      "attack": 74,
-      "defense": 86,
-      "technique": 71,
-      "speed": 78,
-      "stamina": 70,
-      "mentality": 70
-    },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p02",
-    "fullName": "ARG Belgrano Player 2",
-    "displayName": "Belgrano P2",
-    "dateOfBirth": "2003-02-04",
+    "externalId": "public-identity:arg:belgrano:adrian-sporle",
+    "fullName": "Adrián Spörle",
+    "displayName": "Spörle",
+    "dateOfBirth": "1991-01-19",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "heightCm": 185,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 67,
-      "defense": 79,
-      "technique": 67,
-      "speed": 71,
-      "stamina": 68,
+      "attack": 41,
+      "defense": 84,
+      "technique": 58,
+      "speed": 63,
+      "stamina": 66,
       "mentality": 70
     },
-    "marketValue": 16750000,
+    "marketValue": "22204094",
     "specialAttributes": [
       "sweeper_keeper",
-      "aerial_specialist"
+      "one_on_one_keeper"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34173794",
+      "identitySourceId": "34173794",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p03",
-    "fullName": "ARG Belgrano Player 3",
-    "displayName": "Belgrano P3",
-    "dateOfBirth": "1992-03-07",
+    "externalId": "public-identity:arg:belgrano:adrian-sanchez",
+    "fullName": "Adrián Sánchez",
+    "displayName": "Sánchez",
+    "dateOfBirth": "1998-11-24",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 41,
+      "defense": 82,
+      "technique": 61,
+      "speed": 63,
+      "stamina": 70,
+      "mentality": 76
+    },
+    "marketValue": "19595107",
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34231608",
+      "identitySourceId": "34231608",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:agustin-baldi",
+    "fullName": "Agustín Baldi",
+    "displayName": "Baldi",
+    "dateOfBirth": "1997-03-03",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "LB",
@@ -102,93 +102,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 174,
+    "shirtNumber": 45,
     "attributes": {
-      "attack": 66,
-      "defense": 82,
-      "technique": 77,
-      "speed": 74,
-      "stamina": 71,
-      "mentality": 75
+      "attack": 56,
+      "defense": 70,
+      "technique": 68,
+      "speed": 69,
+      "stamina": 83,
+      "mentality": 67
     },
-    "marketValue": 18500000,
+    "marketValue": "21082756",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238065",
+      "identitySourceId": "34238065",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p04",
-    "fullName": "ARG Belgrano Player 4",
-    "displayName": "Belgrano P4",
-    "dateOfBirth": "1999-04-10",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 75,
-      "speed": 76,
-      "stamina": 78,
-      "mentality": 75
-    },
-    "marketValue": 19000000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p05",
-    "fullName": "ARG Belgrano Player 5",
-    "displayName": "Belgrano P5",
-    "dateOfBirth": "1988-05-13",
+    "externalId": "public-identity:arg:belgrano:alcides-benitez",
+    "fullName": "Alcides Benítez",
+    "displayName": "Benítez",
+    "dateOfBirth": "1989-11-17",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "CB",
@@ -196,46 +149,46 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 187,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 78,
-      "speed": 76,
-      "stamina": 74,
-      "mentality": 73
+      "attack": 53,
+      "defense": 80,
+      "technique": 64,
+      "speed": 60,
+      "stamina": 77,
+      "mentality": 68
     },
-    "marketValue": 19000000,
+    "marketValue": "22604036",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34286026",
+      "identitySourceId": "34286026",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p06",
-    "fullName": "ARG Belgrano Player 6",
-    "displayName": "Belgrano P6",
-    "dateOfBirth": "1995-06-16",
+    "externalId": "public-identity:arg:belgrano:alejandro-rebola",
+    "fullName": "Alejandro Rébola",
+    "displayName": "Rébola",
+    "dateOfBirth": "1990-08-06",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "CB",
@@ -246,43 +199,90 @@
     "heightCm": 186,
     "shirtNumber": 6,
     "attributes": {
-      "attack": 62,
-      "defense": 78,
-      "technique": 68,
-      "speed": 70,
-      "stamina": 73,
-      "mentality": 74
+      "attack": 55,
+      "defense": 77,
+      "technique": 64,
+      "speed": 59,
+      "stamina": 72,
+      "mentality": 75
     },
-    "marketValue": 17500000,
+    "marketValue": "23741651",
     "specialAttributes": [
-      "workhorse",
+      "speedster",
       "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218831",
+      "identitySourceId": "34218831",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p07",
-    "fullName": "ARG Belgrano Player 7",
-    "displayName": "Belgrano P7",
-    "dateOfBirth": "2002-07-19",
+    "externalId": "public-identity:arg:belgrano:alvaro-garcia",
+    "fullName": "Alvaro Garcia",
+    "displayName": "Garcia",
+    "dateOfBirth": "1992-07-27",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 56,
+    "attributes": {
+      "attack": 54,
+      "defense": 77,
+      "technique": 57,
+      "speed": 65,
+      "stamina": 70,
+      "mentality": 69
+    },
+    "marketValue": "21305292",
+    "specialAttributes": [
+      "speedster",
+      "set_piece_specialist"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238050",
+      "identitySourceId": "34238050",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:ariel-garcia",
+    "fullName": "Ariel García",
+    "displayName": "García",
+    "dateOfBirth": "1998-09-06",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "RB",
@@ -291,46 +291,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 169,
+    "shirtNumber": 15,
     "attributes": {
-      "attack": 63,
-      "defense": 79,
-      "technique": 72,
-      "speed": 71,
-      "stamina": 70,
-      "mentality": 73
+      "attack": 59,
+      "defense": 76,
+      "technique": 70,
+      "speed": 72,
+      "stamina": 75,
+      "mentality": 69
     },
-    "marketValue": 17750000,
+    "marketValue": "22933848",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218826",
+      "identitySourceId": "34218826",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p08",
-    "fullName": "ARG Belgrano Player 8",
-    "displayName": "Belgrano P8",
-    "dateOfBirth": "1991-08-22",
+    "externalId": "public-identity:arg:belgrano:ariel-rojas",
+    "fullName": "Ariel Rojas",
+    "displayName": "Rojas",
+    "dateOfBirth": "1990-08-11",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "LWB",
@@ -338,47 +338,47 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 60,
-      "defense": 76,
-      "technique": 65,
-      "speed": 68,
-      "stamina": 72,
-      "mentality": 68
+      "attack": 66,
+      "defense": 73,
+      "technique": 66,
+      "speed": 81,
+      "stamina": 81,
+      "mentality": 74
     },
-    "marketValue": 17000000,
+    "marketValue": "21143690",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218659",
+      "identitySourceId": "34218659",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p09",
-    "fullName": "ARG Belgrano Player 9",
-    "displayName": "Belgrano P9",
-    "dateOfBirth": "1998-09-25",
+    "externalId": "public-identity:arg:belgrano:bryan-reyna",
+    "fullName": "Bryan Reyna",
+    "displayName": "Reyna",
+    "dateOfBirth": "1991-05-13",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "RWB",
@@ -387,46 +387,46 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 174,
+    "shirtNumber": 11,
     "attributes": {
-      "attack": 59,
-      "defense": 75,
-      "technique": 67,
-      "speed": 67,
-      "stamina": 67,
-      "mentality": 65
+      "attack": 63,
+      "defense": 71,
+      "technique": 70,
+      "speed": 79,
+      "stamina": 81,
+      "mentality": 69
     },
-    "marketValue": 16750000,
+    "marketValue": "19540616",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238061",
+      "identitySourceId": "34238061",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p10",
-    "fullName": "ARG Belgrano Player 10",
-    "displayName": "Belgrano P10",
-    "dateOfBirth": "2005-10-01",
+    "externalId": "public-identity:arg:belgrano:elias-ayala-bernal",
+    "fullName": "Elías Ayala Bernal",
+    "displayName": "Bernal",
+    "dateOfBirth": "2004-09-06",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "CDM",
@@ -434,191 +434,191 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 44,
     "attributes": {
-      "attack": 70,
+      "attack": 58,
+      "defense": 78,
+      "technique": 73,
+      "speed": 61,
+      "stamina": 78,
+      "mentality": 73
+    },
+    "marketValue": "22289809",
+    "specialAttributes": [
+      "workhorse",
+      "leader"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238064",
+      "identitySourceId": "34238064",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:emiliano-rigoni",
+    "fullName": "Emiliano Rigoni",
+    "displayName": "Rigoni",
+    "dateOfBirth": "1992-07-12",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 77,
+    "attributes": {
+      "attack": 67,
       "defense": 70,
-      "technique": 71,
-      "speed": 70,
-      "stamina": 64,
-      "mentality": 64
-    },
-    "marketValue": 17000000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p11",
-    "fullName": "ARG Belgrano Player 11",
-    "displayName": "Belgrano P11",
-    "dateOfBirth": "1994-11-04",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
-    "attributes": {
-      "attack": 69,
-      "defense": 69,
-      "technique": 66,
-      "speed": 69,
-      "stamina": 68,
-      "mentality": 70
-    },
-    "marketValue": 16750000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p12",
-    "fullName": "ARG Belgrano Player 12",
-    "displayName": "Belgrano P12",
-    "dateOfBirth": "2001-12-07",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 77,
-      "speed": 77,
-      "stamina": 72,
-      "mentality": 76
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p13",
-    "fullName": "ARG Belgrano Player 13",
-    "displayName": "Belgrano P13",
-    "dateOfBirth": "1990-01-10",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
-    "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 71,
+      "technique": 80,
       "speed": 75,
-      "stamina": 75,
+      "stamina": 81,
+      "mentality": 75
+    },
+    "marketValue": "22350324",
+    "specialAttributes": [
+      "workhorse",
+      "line_breaker"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34164233",
+      "identitySourceId": "34164233",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:facundo-quignon",
+    "fullName": "Facundo Quignón",
+    "displayName": "Quignón",
+    "dateOfBirth": "1989-05-17",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 73,
+      "defense": 67,
+      "technique": 74,
+      "speed": 66,
+      "stamina": 84,
+      "mentality": 77
+    },
+    "marketValue": "18635657",
+    "specialAttributes": [
+      "press_resistant",
+      "line_breaker"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34183961",
+      "identitySourceId": "34183961",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:federico-ricca",
+    "fullName": "Federico Ricca",
+    "displayName": "Ricca",
+    "dateOfBirth": "2003-11-27",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 72,
+      "defense": 72,
+      "technique": 82,
+      "speed": 66,
+      "stamina": 79,
       "mentality": 72
     },
-    "marketValue": 18250000,
+    "marketValue": "18901842",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34171317",
+      "identitySourceId": "34171317",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p14",
-    "fullName": "ARG Belgrano Player 14",
-    "displayName": "Belgrano P14",
-    "dateOfBirth": "1997-02-13",
+    "externalId": "public-identity:arg:belgrano:francisco-facello",
+    "fullName": "Francisco Facello",
+    "displayName": "Facello",
+    "dateOfBirth": "2005-04-04",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "CAM",
@@ -626,47 +626,47 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 35,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 76,
-      "speed": 77,
-      "stamina": 73,
-      "mentality": 72
+      "attack": 81,
+      "defense": 53,
+      "technique": 81,
+      "speed": 79,
+      "stamina": 76,
+      "mentality": 73
     },
-    "marketValue": 18750000,
+    "marketValue": "21446212",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "workhorse",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238049",
+      "identitySourceId": "34238049",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p15",
-    "fullName": "ARG Belgrano Player 15",
-    "displayName": "Belgrano P15",
-    "dateOfBirth": "2004-03-16",
+    "externalId": "public-identity:arg:belgrano:francisco-gonzalez-metilli",
+    "fullName": "Francisco González Metilli",
+    "displayName": "Metilli",
+    "dateOfBirth": "1996-05-18",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "LM",
@@ -675,46 +675,46 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 174,
+    "shirtNumber": 24,
     "attributes": {
-      "attack": 78,
-      "defense": 78,
-      "technique": 73,
+      "attack": 71,
+      "defense": 54,
+      "technique": 77,
       "speed": 78,
-      "stamina": 79,
-      "mentality": 80
+      "stamina": 78,
+      "mentality": 69
     },
-    "marketValue": 19000000,
+    "marketValue": "19280867",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218924",
+      "identitySourceId": "34218924",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p16",
-    "fullName": "ARG Belgrano Player 16",
-    "displayName": "Belgrano P16",
-    "dateOfBirth": "1993-04-19",
+    "externalId": "public-identity:arg:belgrano:francisco-razzeto",
+    "fullName": "Francisco Razzeto",
+    "displayName": "Razzeto",
+    "dateOfBirth": "1998-08-02",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "RM",
@@ -722,47 +722,47 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 59,
     "attributes": {
-      "attack": 76,
-      "defense": 76,
-      "technique": 74,
-      "speed": 76,
-      "stamina": 73,
-      "mentality": 76
+      "attack": 79,
+      "defense": 58,
+      "technique": 75,
+      "speed": 79,
+      "stamina": 75,
+      "mentality": 65
     },
-    "marketValue": 18500000,
+    "marketValue": "19784561",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "line_breaker",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238060",
+      "identitySourceId": "34238060",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p17",
-    "fullName": "ARG Belgrano Player 17",
-    "displayName": "Belgrano P17",
-    "dateOfBirth": "2000-05-22",
+    "externalId": "public-identity:arg:belgrano:franco-vazquez",
+    "fullName": "Franco Vazquez",
+    "displayName": "Vazquez",
+    "dateOfBirth": "1988-07-01",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "LW",
@@ -771,190 +771,190 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
-    "attributes": {
-      "attack": 82,
-      "defense": 68,
-      "technique": 79,
-      "speed": 84,
-      "stamina": 80,
-      "mentality": 76
-    },
-    "marketValue": 19000000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p18",
-    "fullName": "ARG Belgrano Player 18",
-    "displayName": "Belgrano P18",
-    "dateOfBirth": "1989-06-25",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 76,
-      "defense": 62,
-      "technique": 69,
-      "speed": 78,
-      "stamina": 70,
-      "mentality": 68
-    },
-    "marketValue": 17500000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p19",
-    "fullName": "ARG Belgrano Player 19",
-    "displayName": "Belgrano P19",
-    "dateOfBirth": "1996-07-01",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 81,
-      "defense": 67,
-      "technique": 77,
-      "speed": 83,
-      "stamina": 71,
-      "mentality": 71
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:belgrano:p20",
-    "fullName": "ARG Belgrano Player 20",
-    "displayName": "Belgrano P20",
-    "dateOfBirth": "2003-08-04",
-    "nationalityCode": "ARG",
-    "clubExternalId": "belgrano",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
     "heightCm": 177,
     "shirtNumber": 20,
     "attributes": {
-      "attack": 82,
-      "defense": 68,
-      "technique": 74,
-      "speed": 84,
-      "stamina": 77,
-      "mentality": 79
+      "attack": 78,
+      "defense": 51,
+      "technique": 78,
+      "speed": 88,
+      "stamina": 81,
+      "mentality": 68
     },
-    "marketValue": 19000000,
+    "marketValue": "19549421",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "line_breaker",
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34148218",
+      "identitySourceId": "34148218",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p21",
-    "fullName": "ARG Belgrano Player 21",
-    "displayName": "Belgrano P21",
-    "dateOfBirth": "1992-09-07",
+    "externalId": "public-identity:arg:belgrano:genaro-bracamonte",
+    "fullName": "Genaro Bracamonte",
+    "displayName": "Bracamonte",
+    "dateOfBirth": "2005-06-24",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 168,
+    "shirtNumber": 30,
+    "attributes": {
+      "attack": 80,
+      "defense": 44,
+      "technique": 75,
+      "speed": 85,
+      "stamina": 74,
+      "mentality": 67
+    },
+    "marketValue": "22739200",
+    "specialAttributes": [
+      "line_breaker",
+      "workhorse"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238086",
+      "identitySourceId": "34238086",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:geronimo-heredia-velazquez",
+    "fullName": "Gerónimo Heredia Velázquez",
+    "displayName": "Velázquez",
+    "dateOfBirth": "2002-11-26",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 168,
+    "shirtNumber": 34,
+    "attributes": {
+      "attack": 82,
+      "defense": 49,
+      "technique": 77,
+      "speed": 82,
+      "stamina": 79,
+      "mentality": 68
+    },
+    "marketValue": "19485913",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "clutch_finisher"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238055",
+      "identitySourceId": "34238055",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:gonzalo-zelarayan",
+    "fullName": "Gonzalo Zelarayán",
+    "displayName": "Zelarayán",
+    "dateOfBirth": "1990-01-23",
+    "nationalityCode": "ARG",
+    "clubExternalId": "belgrano",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 54,
+    "attributes": {
+      "attack": 85,
+      "defense": 49,
+      "technique": 85,
+      "speed": 91,
+      "stamina": 72,
+      "mentality": 67
+    },
+    "marketValue": "18967215",
+    "specialAttributes": [
+      "press_resistant",
+      "line_breaker"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238075",
+      "identitySourceId": "34238075",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:belgrano:ignacio-chicco",
+    "fullName": "Ignacio Chicco",
+    "displayName": "Chicco",
+    "dateOfBirth": "1998-05-20",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "ST",
@@ -962,93 +962,93 @@
       "CF"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
+    "heightCm": 187,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 84,
-      "defense": 64,
-      "technique": 77,
-      "speed": 74,
-      "stamina": 73,
-      "mentality": 77
+      "attack": 86,
+      "defense": 39,
+      "technique": 71,
+      "speed": 78,
+      "stamina": 70,
+      "mentality": 79
     },
-    "marketValue": 19000000,
+    "marketValue": "20814779",
     "specialAttributes": [
-      "clutch_finisher",
+      "leader",
       "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218710",
+      "identitySourceId": "34218710",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p22",
-    "fullName": "ARG Belgrano Player 22",
-    "displayName": "Belgrano P22",
-    "dateOfBirth": "1999-10-10",
+    "externalId": "public-identity:arg:belgrano:jeremias-lucco-piccoli",
+    "fullName": "Jeremías Lucco Píccoli",
+    "displayName": "Píccoli",
+    "dateOfBirth": "1988-11-09",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
+    "preferredFoot": "RIGHT",
+    "heightCm": 184,
+    "shirtNumber": 42,
     "attributes": {
-      "attack": 84,
-      "defense": 64,
-      "technique": 73,
+      "attack": 91,
+      "defense": 45,
+      "technique": 69,
       "speed": 74,
-      "stamina": 78,
-      "mentality": 75
+      "stamina": 75,
+      "mentality": 74
     },
-    "marketValue": 19000000,
+    "marketValue": "23243495",
     "specialAttributes": [
       "aerial_specialist",
       "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238071",
+      "identitySourceId": "34238071",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p23",
-    "fullName": "ARG Belgrano Player 23",
-    "displayName": "Belgrano P23",
-    "dateOfBirth": "1988-11-13",
+    "externalId": "public-identity:arg:belgrano:juan-velazquez",
+    "fullName": "Juan Velazquez",
+    "displayName": "Velazquez",
+    "dateOfBirth": "2003-01-28",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "CF",
@@ -1057,86 +1057,86 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 185,
+    "shirtNumber": 53,
     "attributes": {
-      "attack": 74,
-      "defense": 54,
-      "technique": 66,
-      "speed": 64,
-      "stamina": 64,
-      "mentality": 63
+      "attack": 86,
+      "defense": 46,
+      "technique": 79,
+      "speed": 81,
+      "stamina": 75,
+      "mentality": 78
     },
-    "marketValue": 16500000,
+    "marketValue": "19181982",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "line_breaker",
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34238074",
+      "identitySourceId": "34238074",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:belgrano:p24",
-    "fullName": "ARG Belgrano Player 24",
-    "displayName": "Belgrano P24",
-    "dateOfBirth": "1995-12-16",
+    "externalId": "public-identity:arg:belgrano:julian-mavilla",
+    "fullName": "Julián Mavilla",
+    "displayName": "Mavilla",
+    "dateOfBirth": "1995-10-21",
     "nationalityCode": "ARG",
     "clubExternalId": "belgrano",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 175,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 84,
-      "defense": 64,
-      "technique": 79,
-      "speed": 74,
-      "stamina": 79,
-      "mentality": 80
+      "attack": 81,
+      "defense": 43,
+      "technique": 68,
+      "speed": 78,
+      "stamina": 77,
+      "mentality": 77
     },
-    "marketValue": 19000000,
+    "marketValue": "22910371",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "line_breaker",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34240577",
+      "identitySourceId": "34240577",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

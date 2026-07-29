@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p01",
-    "fullName": "ARG GimnasiaMza Player 1",
-    "displayName": "Gimnasia Mza. P1",
-    "dateOfBirth": "2004-01-01",
+    "externalId": "public-identity:arg:gimnasia-mendoza:agustin-modica",
+    "fullName": "Agustín Módica",
+    "displayName": "Módica",
+    "dateOfBirth": "2004-09-12",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 175,
+    "shirtNumber": 29,
     "attributes": {
-      "attack": 60,
-      "defense": 72,
-      "technique": 57,
-      "speed": 64,
-      "stamina": 56,
-      "mentality": 56
+      "attack": 88,
+      "defense": 44,
+      "technique": 67,
+      "speed": 78,
+      "stamina": 65,
+      "mentality": 66
     },
-    "marketValue": 15000000,
-    "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p02",
-    "fullName": "ARG GimnasiaMza Player 2",
-    "displayName": "Gimnasia Mza. P2",
-    "dateOfBirth": "1993-02-04",
-    "nationalityCode": "ARG",
-    "clubExternalId": "gimnasia-mendoza",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
-    "attributes": {
-      "attack": 57,
-      "defense": 69,
-      "technique": 57,
-      "speed": 61,
-      "stamina": 58,
-      "mentality": 60
-    },
-    "marketValue": 14250000,
+    "marketValue": "17659176",
     "specialAttributes": [
       "sweeper_keeper",
       "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "agustin-modica",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p03",
-    "fullName": "ARG GimnasiaMza Player 3",
-    "displayName": "Gimnasia Mza. P3",
-    "dateOfBirth": "2000-03-07",
+    "externalId": "public-identity:arg:gimnasia-mendoza:blas-armoa",
+    "fullName": "Blas Armoa",
+    "displayName": "Armoa",
+    "dateOfBirth": "1998-11-09",
+    "nationalityCode": "ARG",
+    "clubExternalId": "gimnasia-mendoza",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 167,
+    "shirtNumber": 27,
+    "attributes": {
+      "attack": 83,
+      "defense": 43,
+      "technique": 77,
+      "speed": 80,
+      "stamina": 71,
+      "mentality": 60
+    },
+    "marketValue": "17075087",
+    "specialAttributes": [
+      "leader",
+      "one_on_one_keeper"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "blas-armoa",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:gimnasia-mendoza:brian-andrada",
+    "fullName": "Brian Andrada",
+    "displayName": "Andrada",
+    "dateOfBirth": "1989-01-26",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "LB",
@@ -101,47 +103,48 @@
       "LWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 33,
     "attributes": {
-      "attack": 50,
-      "defense": 66,
-      "technique": 61,
-      "speed": 58,
-      "stamina": 55,
-      "mentality": 59
+      "attack": 75,
+      "defense": 49,
+      "technique": 78,
+      "speed": 85,
+      "stamina": 78,
+      "mentality": 68
     },
-    "marketValue": 14500000,
+    "marketValue": "19651668",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "brian-andrada",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p04",
-    "fullName": "ARG GimnasiaMza Player 4",
-    "displayName": "Gimnasia Mza. P4",
-    "dateOfBirth": "1989-04-10",
+    "externalId": "public-identity:arg:gimnasia-mendoza:cesar-rigamonti",
+    "fullName": "César Rigamonti",
+    "displayName": "Rigamonti",
+    "dateOfBirth": "1991-04-09",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "CB",
@@ -149,140 +152,141 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
+    "heightCm": 188,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 59,
-      "defense": 75,
-      "technique": 66,
-      "speed": 67,
-      "stamina": 69,
-      "mentality": 66
+      "attack": 39,
+      "defense": 80,
+      "technique": 54,
+      "speed": 57,
+      "stamina": 68,
+      "mentality": 70
     },
-    "marketValue": 16750000,
+    "marketValue": "19183637",
+    "specialAttributes": [
+      "speedster",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "cesar-rigamonti",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:gimnasia-mendoza:diego-mondino",
+    "fullName": "Diego Mondino",
+    "displayName": "Mondino",
+    "dateOfBirth": "2001-07-11",
+    "nationalityCode": "ARG",
+    "clubExternalId": "gimnasia-mendoza",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 44,
+      "defense": 72,
+      "technique": 59,
+      "speed": 58,
+      "stamina": 67,
+      "mentality": 71
+    },
+    "marketValue": "20452555",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "diego-mondino",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:gimnasia-mendoza:esteban-fernandez",
+    "fullName": "Esteban Fernández",
+    "displayName": "Fernández",
+    "dateOfBirth": "2005-08-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "gimnasia-mendoza",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 174,
+    "shirtNumber": 30,
+    "attributes": {
+      "attack": 73,
+      "defense": 59,
+      "technique": 73,
+      "speed": 79,
+      "stamina": 74,
+      "mentality": 67
+    },
+    "marketValue": "17329562",
     "specialAttributes": [
       "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p05",
-    "fullName": "ARG GimnasiaMza Player 5",
-    "displayName": "Gimnasia Mza. P5",
-    "dateOfBirth": "1996-05-13",
-    "nationalityCode": "ARG",
-    "clubExternalId": "gimnasia-mendoza",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
-    "attributes": {
-      "attack": 59,
-      "defense": 75,
-      "technique": 69,
-      "speed": 67,
-      "stamina": 65,
-      "mentality": 64
-    },
-    "marketValue": 16750000,
-    "specialAttributes": [
-      "workhorse",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "esteban-fernandez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p06",
-    "fullName": "ARG GimnasiaMza Player 6",
-    "displayName": "Gimnasia Mza. P6",
-    "dateOfBirth": "2003-06-16",
-    "nationalityCode": "ARG",
-    "clubExternalId": "gimnasia-mendoza",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
-    "attributes": {
-      "attack": 50,
-      "defense": 66,
-      "technique": 56,
-      "speed": 58,
-      "stamina": 61,
-      "mentality": 62
-    },
-    "marketValue": 14500000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p07",
-    "fullName": "ARG GimnasiaMza Player 7",
-    "displayName": "Gimnasia Mza. P7",
-    "dateOfBirth": "1992-07-19",
+    "externalId": "public-identity:arg:gimnasia-mendoza:ezequiel-munoz",
+    "fullName": "Ezequiel Muñoz",
+    "displayName": "Muñoz",
+    "dateOfBirth": "1995-07-16",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "RB",
@@ -291,46 +295,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 177,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 49,
-      "defense": 65,
-      "technique": 58,
-      "speed": 57,
-      "stamina": 56,
-      "mentality": 59
+      "attack": 61,
+      "defense": 70,
+      "technique": 71,
+      "speed": 71,
+      "stamina": 77,
+      "mentality": 67
     },
-    "marketValue": 14250000,
+    "marketValue": "16341991",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "ezequiel-munoz",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p08",
-    "fullName": "ARG GimnasiaMza Player 8",
-    "displayName": "Gimnasia Mza. P8",
-    "dateOfBirth": "1999-08-22",
+    "externalId": "public-identity:arg:gimnasia-mendoza:facundo-lencioni",
+    "fullName": "Facundo Lencioni",
+    "displayName": "Lencioni",
+    "dateOfBirth": "1992-06-08",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "LWB",
@@ -338,47 +343,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 168,
+    "shirtNumber": 26,
     "attributes": {
-      "attack": 57,
-      "defense": 73,
-      "technique": 62,
-      "speed": 65,
-      "stamina": 69,
-      "mentality": 65
+      "attack": 80,
+      "defense": 40,
+      "technique": 72,
+      "speed": 79,
+      "stamina": 72,
+      "mentality": 70
     },
-    "marketValue": 16250000,
+    "marketValue": "20333474",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "facundo-lencioni",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p09",
-    "fullName": "ARG GimnasiaMza Player 9",
-    "displayName": "Gimnasia Mza. P9",
-    "dateOfBirth": "1988-09-25",
+    "externalId": "public-identity:arg:gimnasia-mendoza:fermin-antonini",
+    "fullName": "Fermín Antonini",
+    "displayName": "Antonini",
+    "dateOfBirth": "1990-06-10",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "RWB",
@@ -387,46 +393,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 173,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 57,
-      "defense": 73,
-      "technique": 65,
-      "speed": 65,
-      "stamina": 65,
-      "mentality": 63
+      "attack": 79,
+      "defense": 46,
+      "technique": 75,
+      "speed": 66,
+      "stamina": 68,
+      "mentality": 75
     },
-    "marketValue": 16250000,
+    "marketValue": "19769882",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "fermin-antonini",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p10",
-    "fullName": "ARG GimnasiaMza Player 10",
-    "displayName": "Gimnasia Mza. P10",
-    "dateOfBirth": "1995-10-01",
+    "externalId": "public-identity:arg:gimnasia-mendoza:franco-saavedra",
+    "fullName": "Franco Saavedra",
+    "displayName": "Saavedra",
+    "dateOfBirth": "1998-02-02",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "CDM",
@@ -435,46 +442,47 @@
       "CB"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "heightCm": 173,
+    "shirtNumber": 24,
     "attributes": {
-      "attack": 68,
+      "attack": 50,
       "defense": 68,
-      "technique": 69,
-      "speed": 68,
-      "stamina": 62,
-      "mentality": 62
+      "technique": 62,
+      "speed": 70,
+      "stamina": 75,
+      "mentality": 70
     },
-    "marketValue": 16500000,
+    "marketValue": "17129398",
     "specialAttributes": [
-      "leader",
+      "workhorse",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "franco-saavedra",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p11",
-    "fullName": "ARG GimnasiaMza Player 11",
-    "displayName": "Gimnasia Mza. P11",
-    "dateOfBirth": "2002-11-04",
+    "externalId": "public-identity:arg:gimnasia-mendoza:geronimo-patritti",
+    "fullName": "Gerónimo Patritti",
+    "displayName": "Patritti",
+    "dateOfBirth": "1995-05-15",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "CM",
@@ -483,46 +491,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 174,
+    "shirtNumber": 41,
     "attributes": {
-      "attack": 67,
-      "defense": 67,
-      "technique": 64,
-      "speed": 67,
-      "stamina": 66,
-      "mentality": 68
+      "attack": 53,
+      "defense": 70,
+      "technique": 58,
+      "speed": 66,
+      "stamina": 73,
+      "mentality": 66
     },
-    "marketValue": 16250000,
+    "marketValue": "17392082",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "geronimo-patritti",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p12",
-    "fullName": "ARG GimnasiaMza Player 12",
-    "displayName": "Gimnasia Mza. P12",
-    "dateOfBirth": "1991-12-07",
+    "externalId": "public-identity:arg:gimnasia-mendoza:ignacio-sabatini",
+    "fullName": "Ignacio Sabatini",
+    "displayName": "Sabatini",
+    "dateOfBirth": "1998-06-07",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "CM",
@@ -531,46 +540,47 @@
       "CAM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
+    "heightCm": 170,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 66,
-      "defense": 66,
-      "technique": 66,
-      "speed": 66,
-      "stamina": 61,
+      "attack": 82,
+      "defense": 43,
+      "technique": 82,
+      "speed": 80,
+      "stamina": 69,
       "mentality": 65
     },
-    "marketValue": 16000000,
+    "marketValue": "21091953",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "ignacio-sabatini",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p13",
-    "fullName": "ARG GimnasiaMza Player 13",
-    "displayName": "Gimnasia Mza. P13",
-    "dateOfBirth": "1998-01-10",
+    "externalId": "public-identity:arg:gimnasia-mendoza:imanol-gonzalez",
+    "fullName": "Imanol González",
+    "displayName": "González",
+    "dateOfBirth": "1992-11-13",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "CM",
@@ -579,46 +589,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 175,
+    "shirtNumber": 6,
     "attributes": {
-      "attack": 68,
-      "defense": 68,
-      "technique": 64,
-      "speed": 68,
-      "stamina": 68,
-      "mentality": 65
+      "attack": 63,
+      "defense": 60,
+      "technique": 67,
+      "speed": 80,
+      "stamina": 77,
+      "mentality": 66
     },
-    "marketValue": 16500000,
+    "marketValue": "20161590",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "workhorse",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "imanol-gonzalez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p14",
-    "fullName": "ARG GimnasiaMza Player 14",
-    "displayName": "Gimnasia Mza. P14",
-    "dateOfBirth": "2005-02-13",
+    "externalId": "public-identity:arg:gimnasia-mendoza:ismael-cortez",
+    "fullName": "Ismael Cortéz",
+    "displayName": "Cortéz",
+    "dateOfBirth": "1989-01-27",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "CAM",
@@ -626,47 +637,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 175,
+    "shirtNumber": 36,
     "attributes": {
-      "attack": 67,
-      "defense": 67,
-      "technique": 66,
-      "speed": 67,
-      "stamina": 63,
-      "mentality": 62
+      "attack": 68,
+      "defense": 64,
+      "technique": 72,
+      "speed": 78,
+      "stamina": 78,
+      "mentality": 65
     },
-    "marketValue": 16250000,
+    "marketValue": "20176922",
     "specialAttributes": [
-      "leader",
+      "line_breaker",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "ismael-cortez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p15",
-    "fullName": "ARG GimnasiaMza Player 15",
-    "displayName": "Gimnasia Mza. P15",
-    "dateOfBirth": "1994-03-16",
+    "externalId": "public-identity:arg:gimnasia-mendoza:juan-franco",
+    "fullName": "Juan Franco",
+    "displayName": "Franco",
+    "dateOfBirth": "1990-05-12",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "LM",
@@ -675,46 +687,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 185,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 65,
-      "defense": 65,
-      "technique": 60,
-      "speed": 65,
-      "stamina": 66,
-      "mentality": 67
+      "attack": 44,
+      "defense": 76,
+      "technique": 64,
+      "speed": 63,
+      "stamina": 75,
+      "mentality": 72
     },
-    "marketValue": 15750000,
+    "marketValue": "20642916",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "set_piece_specialist",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "juan-franco",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p16",
-    "fullName": "ARG GimnasiaMza Player 16",
-    "displayName": "Gimnasia Mza. P16",
-    "dateOfBirth": "2001-04-19",
+    "externalId": "public-identity:arg:gimnasia-mendoza:juan-pablo-alvarez",
+    "fullName": "Juan Pablo Álvarez",
+    "displayName": "Álvarez",
+    "dateOfBirth": "1988-09-19",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "RM",
@@ -722,143 +735,48 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
-    "attributes": {
-      "attack": 66,
-      "defense": 66,
-      "technique": 64,
-      "speed": 66,
-      "stamina": 63,
-      "mentality": 66
-    },
-    "marketValue": 16000000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p17",
-    "fullName": "ARG GimnasiaMza Player 17",
-    "displayName": "Gimnasia Mza. P17",
-    "dateOfBirth": "1990-05-22",
-    "nationalityCode": "ARG",
-    "clubExternalId": "gimnasia-mendoza",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
-    "attributes": {
-      "attack": 63,
-      "defense": 49,
-      "technique": 60,
-      "speed": 65,
-      "stamina": 61,
-      "mentality": 57
-    },
-    "marketValue": 14250000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p18",
-    "fullName": "ARG GimnasiaMza Player 18",
-    "displayName": "Gimnasia Mza. P18",
-    "dateOfBirth": "1997-06-25",
-    "nationalityCode": "ARG",
-    "clubExternalId": "gimnasia-mendoza",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
+    "heightCm": 189,
     "shirtNumber": 18,
     "attributes": {
-      "attack": 72,
-      "defense": 58,
-      "technique": 65,
-      "speed": 74,
-      "stamina": 66,
-      "mentality": 64
+      "attack": 87,
+      "defense": 42,
+      "technique": 66,
+      "speed": 73,
+      "stamina": 72,
+      "mentality": 68
     },
-    "marketValue": 16500000,
+    "marketValue": "20117774",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "line_breaker",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "juan-pablo-alvarez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p19",
-    "fullName": "ARG GimnasiaMza Player 19",
-    "displayName": "Gimnasia Mza. P19",
-    "dateOfBirth": "2004-07-01",
+    "externalId": "public-identity:arg:gimnasia-mendoza:julian-ceballos",
+    "fullName": "Julián Ceballos",
+    "displayName": "Ceballos",
+    "dateOfBirth": "2000-11-13",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "LW",
@@ -867,46 +785,47 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
+    "heightCm": 179,
     "shirtNumber": 19,
     "attributes": {
-      "attack": 63,
-      "defense": 49,
-      "technique": 59,
-      "speed": 65,
-      "stamina": 53,
-      "mentality": 53
+      "attack": 71,
+      "defense": 50,
+      "technique": 74,
+      "speed": 80,
+      "stamina": 78,
+      "mentality": 66
     },
-    "marketValue": 14250000,
+    "marketValue": "19406756",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "julian-ceballos",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p20",
-    "fullName": "ARG GimnasiaMza Player 20",
-    "displayName": "Gimnasia Mza. P20",
-    "dateOfBirth": "1993-08-04",
+    "externalId": "public-identity:arg:gimnasia-mendoza:julian-moya",
+    "fullName": "Julián Moya",
+    "displayName": "Moya",
+    "dateOfBirth": "2004-05-12",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "RW",
@@ -915,46 +834,143 @@
       "ST"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
+    "heightCm": 178,
+    "shirtNumber": 40,
     "attributes": {
-      "attack": 70,
-      "defense": 56,
-      "technique": 62,
-      "speed": 72,
-      "stamina": 65,
-      "mentality": 67
+      "attack": 83,
+      "defense": 43,
+      "technique": 73,
+      "speed": 85,
+      "stamina": 74,
+      "mentality": 69
     },
-    "marketValue": 16000000,
+    "marketValue": "17701828",
     "specialAttributes": [
-      "workhorse",
+      "press_resistant",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "julian-moya",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p21",
-    "fullName": "ARG GimnasiaMza Player 21",
-    "displayName": "Gimnasia Mza. P21",
-    "dateOfBirth": "2000-09-07",
+    "externalId": "public-identity:arg:gimnasia-mendoza:lautaro-carrera",
+    "fullName": "Lautaro Carrera",
+    "displayName": "Carrera",
+    "dateOfBirth": "1997-04-26",
+    "nationalityCode": "ARG",
+    "clubExternalId": "gimnasia-mendoza",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 189,
+    "shirtNumber": 42,
+    "attributes": {
+      "attack": 50,
+      "defense": 81,
+      "technique": 55,
+      "speed": 55,
+      "stamina": 73,
+      "mentality": 64
+    },
+    "marketValue": "20670012",
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "lautaro-carrera",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:gimnasia-mendoza:lautaro-petruchi",
+    "fullName": "Lautaro Petruchi",
+    "displayName": "Petruchi",
+    "dateOfBirth": "1993-05-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "gimnasia-mendoza",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 187,
+    "shirtNumber": 31,
+    "attributes": {
+      "attack": 39,
+      "defense": 79,
+      "technique": 56,
+      "speed": 60,
+      "stamina": 69,
+      "mentality": 69
+    },
+    "marketValue": "15982747",
+    "specialAttributes": [
+      "line_breaker",
+      "clutch_finisher"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "lautaro-petruchi",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:gimnasia-mendoza:luciano-cingolani",
+    "fullName": "Luciano Cingolani",
+    "displayName": "Cingolani",
+    "dateOfBirth": "2000-03-22",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "ST",
@@ -963,92 +979,92 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
-    "shirtNumber": 21,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 70,
-      "defense": 50,
-      "technique": 63,
-      "speed": 60,
-      "stamina": 59,
-      "mentality": 63
+      "attack": 87,
+      "defense": 46,
+      "technique": 68,
+      "speed": 78,
+      "stamina": 74,
+      "mentality": 72
     },
-    "marketValue": 15500000,
+    "marketValue": "16550132",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "set_piece_specialist",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "luciano-cingolani",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p22",
-    "fullName": "ARG GimnasiaMza Player 22",
-    "displayName": "Gimnasia Mza. P22",
-    "dateOfBirth": "1989-10-10",
+    "externalId": "public-identity:arg:gimnasia-mendoza:luciano-paredes",
+    "fullName": "Luciano Paredes",
+    "displayName": "Paredes",
+    "dateOfBirth": "2002-10-09",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 71,
-      "defense": 51,
-      "technique": 60,
+      "attack": 50,
+      "defense": 78,
+      "technique": 58,
       "speed": 61,
-      "stamina": 65,
-      "mentality": 62
+      "stamina": 66,
+      "mentality": 65
     },
-    "marketValue": 15750000,
+    "marketValue": "21253396",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "luciano-paredes",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p23",
-    "fullName": "ARG GimnasiaMza Player 23",
-    "displayName": "Gimnasia Mza. P23",
-    "dateOfBirth": "1996-11-13",
+    "externalId": "public-identity:arg:gimnasia-mendoza:martin-ubeda",
+    "fullName": "Martín Úbeda",
+    "displayName": "Úbeda",
+    "dateOfBirth": "2000-01-12",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "CF",
@@ -1057,86 +1073,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 167,
+    "shirtNumber": 25,
     "attributes": {
-      "attack": 68,
-      "defense": 48,
-      "technique": 60,
-      "speed": 58,
-      "stamina": 58,
-      "mentality": 57
+      "attack": 67,
+      "defense": 55,
+      "technique": 80,
+      "speed": 80,
+      "stamina": 73,
+      "mentality": 62
     },
-    "marketValue": 15000000,
+    "marketValue": "17296380",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "martin-ubeda",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:gimnasia-mendoza:p24",
-    "fullName": "ARG GimnasiaMza Player 24",
-    "displayName": "Gimnasia Mza. P24",
-    "dateOfBirth": "2003-12-16",
+    "externalId": "public-identity:arg:gimnasia-mendoza:matias-recalde",
+    "fullName": "Matías Recalde",
+    "displayName": "Recalde",
+    "dateOfBirth": "2004-04-04",
     "nationalityCode": "ARG",
     "clubExternalId": "gimnasia-mendoza",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
+    "preferredFoot": "RIGHT",
     "heightCm": 179,
-    "shirtNumber": 24,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 73,
-      "defense": 53,
-      "technique": 68,
-      "speed": 63,
-      "stamina": 68,
-      "mentality": 69
+      "attack": 58,
+      "defense": 71,
+      "technique": 64,
+      "speed": 70,
+      "stamina": 78,
+      "mentality": 71
     },
-    "marketValue": 16250000,
+    "marketValue": "17043079",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gimnasia_y_Esgrima_de_Mendoza",
+      "identitySourceId": "matias-recalde",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

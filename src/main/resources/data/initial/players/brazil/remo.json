@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:bra:remo:p01",
-    "fullName": "BRA Remo Player 1",
-    "displayName": "Remo P1",
-    "dateOfBirth": "1992-01-01",
+    "externalId": "public-identity:bra:remo:diego-hernandez",
+    "fullName": "Diego Hernández",
+    "displayName": "Hernández",
+    "dateOfBirth": "1989-12-27",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 192,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 67,
-      "defense": 79,
-      "technique": 64,
-      "speed": 71,
-      "stamina": 63,
-      "mentality": 63
+      "attack": 35,
+      "defense": 76,
+      "technique": 59,
+      "speed": 65,
+      "stamina": 67,
+      "mentality": 71
     },
-    "marketValue": 16750000,
+    "marketValue": "19745094",
     "specialAttributes": [
-      "one_on_one_keeper",
+      "aerial_specialist",
       "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34232921",
+      "identitySourceId": "34232921",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p02",
-    "fullName": "BRA Remo Player 2",
-    "displayName": "Remo P2",
-    "dateOfBirth": "1999-02-04",
+    "externalId": "public-identity:bra:remo:duplexe-tchamba",
+    "fullName": "Duplexe Tchamba",
+    "displayName": "Tchamba",
+    "dateOfBirth": "1988-07-14",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 191,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 63,
-      "defense": 75,
-      "technique": 63,
-      "speed": 67,
-      "stamina": 64,
-      "mentality": 66
+      "attack": 41,
+      "defense": 84,
+      "technique": 57,
+      "speed": 65,
+      "stamina": 70,
+      "mentality": 70
     },
-    "marketValue": 15750000,
+    "marketValue": "17204061",
     "specialAttributes": [
       "sweeper_keeper",
       "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34193274",
+      "identitySourceId": "34193274",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p03",
-    "fullName": "BRA Remo Player 3",
-    "displayName": "Remo P3",
-    "dateOfBirth": "1988-03-07",
+    "externalId": "public-identity:bra:remo:jose-welison",
+    "fullName": "José Welison",
+    "displayName": "Welison",
+    "dateOfBirth": "1996-06-19",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "LB",
@@ -103,92 +103,45 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
-    "shirtNumber": 3,
+    "shirtNumber": 17,
     "attributes": {
       "attack": 59,
-      "defense": 75,
-      "technique": 70,
-      "speed": 67,
-      "stamina": 64,
-      "mentality": 68
+      "defense": 77,
+      "technique": 68,
+      "speed": 77,
+      "stamina": 74,
+      "mentality": 63
     },
-    "marketValue": 16750000,
+    "marketValue": "17714160",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34194820",
+      "identitySourceId": "34194820",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p04",
-    "fullName": "BRA Remo Player 4",
-    "displayName": "Remo P4",
-    "dateOfBirth": "1995-04-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "remo",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 55,
-      "defense": 71,
-      "technique": 62,
-      "speed": 63,
-      "stamina": 65,
-      "mentality": 62
-    },
-    "marketValue": 15750000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:remo:p05",
-    "fullName": "BRA Remo Player 5",
-    "displayName": "Remo P5",
-    "dateOfBirth": "2002-05-13",
+    "externalId": "public-identity:bra:remo:jaderson",
+    "fullName": "Jáderson",
+    "displayName": "Jáderson",
+    "dateOfBirth": "1994-04-05",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "CB",
@@ -196,93 +149,140 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 178,
+    "shirtNumber": 10,
     "attributes": {
-      "attack": 60,
-      "defense": 76,
-      "technique": 70,
-      "speed": 68,
-      "stamina": 66,
+      "attack": 51,
+      "defense": 83,
+      "technique": 57,
+      "speed": 56,
+      "stamina": 68,
       "mentality": 65
     },
-    "marketValue": 17000000,
+    "marketValue": "19741872",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34433688",
+      "identitySourceId": "34433688",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p06",
-    "fullName": "BRA Remo Player 6",
-    "displayName": "Remo P6",
-    "dateOfBirth": "1991-06-16",
+    "externalId": "public-identity:bra:remo:leo-andrade",
+    "fullName": "Léo Andrade",
+    "displayName": "Andrade",
+    "dateOfBirth": "1992-05-22",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "CB",
     "secondaryPositions": [
       "CDM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 58,
-      "defense": 74,
+      "attack": 52,
+      "defense": 79,
       "technique": 64,
-      "speed": 66,
-      "stamina": 69,
-      "mentality": 70
+      "speed": 58,
+      "stamina": 70,
+      "mentality": 72
     },
-    "marketValue": 16500000,
+    "marketValue": "21129658",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34276907",
+      "identitySourceId": "34276907",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p07",
-    "fullName": "BRA Remo Player 7",
-    "displayName": "Remo P7",
-    "dateOfBirth": "1998-07-19",
+    "externalId": "public-identity:bra:remo:patrick",
+    "fullName": "Patrick",
+    "displayName": "Patrick",
+    "dateOfBirth": "1995-04-23",
+    "nationalityCode": "BRA",
+    "clubExternalId": "remo",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 88,
+    "attributes": {
+      "attack": 51,
+      "defense": 79,
+      "technique": 59,
+      "speed": 56,
+      "stamina": 69,
+      "mentality": 72
+    },
+    "marketValue": "21592425",
+    "specialAttributes": [
+      "press_resistant",
+      "speedster"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34194790",
+      "identitySourceId": "34194790",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:remo:patrick-de-paula",
+    "fullName": "Patrick De Paula",
+    "displayName": "Paula",
+    "dateOfBirth": "1988-12-09",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "RB",
@@ -291,46 +291,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 180,
+    "shirtNumber": 85,
     "attributes": {
-      "attack": 53,
-      "defense": 69,
-      "technique": 62,
-      "speed": 61,
-      "stamina": 60,
-      "mentality": 63
+      "attack": 61,
+      "defense": 68,
+      "technique": 63,
+      "speed": 67,
+      "stamina": 81,
+      "mentality": 64
     },
-    "marketValue": 15250000,
+    "marketValue": "21834944",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34174236",
+      "identitySourceId": "34174236",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p08",
-    "fullName": "BRA Remo Player 8",
-    "displayName": "Remo P8",
-    "dateOfBirth": "2005-08-22",
+    "externalId": "public-identity:bra:remo:victor-cantillo",
+    "fullName": "Víctor Cantillo",
+    "displayName": "Cantillo",
+    "dateOfBirth": "2003-03-21",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "LWB",
@@ -338,47 +338,47 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 52,
+      "attack": 61,
       "defense": 68,
-      "technique": 57,
-      "speed": 60,
-      "stamina": 64,
-      "mentality": 60
+      "technique": 63,
+      "speed": 75,
+      "stamina": 78,
+      "mentality": 67
     },
-    "marketValue": 15000000,
+    "marketValue": "18196704",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219066",
+      "identitySourceId": "34219066",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p09",
-    "fullName": "BRA Remo Player 9",
-    "displayName": "Remo P9",
-    "dateOfBirth": "1994-09-25",
+    "externalId": "public-identity:bra:remo:ze-ivaldo",
+    "fullName": "Zé Ivaldo",
+    "displayName": "Ivaldo",
+    "dateOfBirth": "1989-12-23",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "RWB",
@@ -387,46 +387,46 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 178,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 57,
-      "defense": 73,
-      "technique": 65,
-      "speed": 65,
-      "stamina": 65,
-      "mentality": 63
+      "attack": 62,
+      "defense": 64,
+      "technique": 67,
+      "speed": 71,
+      "stamina": 79,
+      "mentality": 64
     },
-    "marketValue": 16250000,
+    "marketValue": "17648586",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219139",
+      "identitySourceId": "34219139",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p10",
-    "fullName": "BRA Remo Player 10",
-    "displayName": "Remo P10",
-    "dateOfBirth": "2001-10-01",
+    "externalId": "public-identity:bra:remo:alef-manga",
+    "fullName": "Alef Manga",
+    "displayName": "Manga",
+    "dateOfBirth": "2001-02-16",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "CDM",
@@ -434,47 +434,48 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
     "shirtNumber": 10,
     "attributes": {
-      "attack": 68,
-      "defense": 68,
-      "technique": 69,
-      "speed": 68,
-      "stamina": 62,
-      "mentality": 62
+      "attack": 58,
+      "defense": 76,
+      "technique": 71,
+      "speed": 62,
+      "stamina": 76,
+      "mentality": 73
     },
-    "marketValue": 16500000,
+    "marketValue": "21381822",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219680",
+      "identitySourceId": "34219680",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p11",
-    "fullName": "BRA Remo Player 11",
-    "displayName": "Remo P11",
-    "dateOfBirth": "1990-11-04",
+    "externalId": "public-identity:bra:remo:caio-vinicius",
+    "fullName": "Caio Vinícius",
+    "displayName": "Vinícius",
+    "dateOfBirth": "2001-06-18",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "CM",
@@ -483,94 +484,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
+    "heightCm": 184,
     "shirtNumber": 11,
     "attributes": {
-      "attack": 62,
-      "defense": 62,
-      "technique": 59,
-      "speed": 62,
-      "stamina": 61,
-      "mentality": 63
+      "attack": 67,
+      "defense": 71,
+      "technique": 75,
+      "speed": 67,
+      "stamina": 76,
+      "mentality": 73
     },
-    "marketValue": 15000000,
+    "marketValue": "17990535",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34245079",
+      "identitySourceId": "34245079",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:remo:p12",
-    "fullName": "BRA Remo Player 12",
-    "displayName": "Remo P12",
-    "dateOfBirth": "1997-12-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "remo",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 64,
-      "defense": 64,
-      "technique": 64,
-      "speed": 64,
-      "stamina": 59,
-      "mentality": 63
-    },
-    "marketValue": 15500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
+      "specialAttributes",
       "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p13",
-    "fullName": "BRA Remo Player 13",
-    "displayName": "Remo P13",
-    "dateOfBirth": "2004-01-10",
+    "externalId": "public-identity:bra:remo:david-trindade-braga",
+    "fullName": "David Trindade Braga",
+    "displayName": "Braga",
+    "dateOfBirth": "2002-08-10",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "CM",
@@ -579,46 +533,96 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 172,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 65,
-      "defense": 65,
-      "technique": 61,
-      "speed": 65,
-      "stamina": 65,
-      "mentality": 62
+      "attack": 71,
+      "defense": 71,
+      "technique": 72,
+      "speed": 72,
+      "stamina": 81,
+      "mentality": 76
     },
-    "marketValue": 15750000,
+    "marketValue": "20616402",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34435233",
+      "identitySourceId": "34435233",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p14",
-    "fullName": "BRA Remo Player 14",
-    "displayName": "Remo P14",
-    "dateOfBirth": "1993-02-13",
+    "externalId": "public-identity:bra:remo:giovanni-pavani",
+    "fullName": "Giovanni Pavani",
+    "displayName": "Pavani",
+    "dateOfBirth": "1999-03-03",
+    "nationalityCode": "BRA",
+    "clubExternalId": "remo",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 71,
+      "defense": 70,
+      "technique": 76,
+      "speed": 65,
+      "stamina": 78,
+      "mentality": 76
+    },
+    "marketValue": "18862706",
+    "specialAttributes": [
+      "line_breaker",
+      "workhorse"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34346297",
+      "identitySourceId": "34346297",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:remo:ivan-quaresma-da-silva",
+    "fullName": "Ivan Quaresma Da Silva",
+    "displayName": "Silva",
+    "dateOfBirth": "1990-11-11",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "CAM",
@@ -626,47 +630,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
     "shirtNumber": 14,
     "attributes": {
-      "attack": 71,
-      "defense": 71,
-      "technique": 70,
-      "speed": 71,
-      "stamina": 67,
-      "mentality": 66
+      "attack": 80,
+      "defense": 46,
+      "technique": 76,
+      "speed": 76,
+      "stamina": 79,
+      "mentality": 77
     },
-    "marketValue": 17250000,
+    "marketValue": "20031885",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34436200",
+      "identitySourceId": "34436200",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p15",
-    "fullName": "BRA Remo Player 15",
-    "displayName": "Remo P15",
-    "dateOfBirth": "2000-03-16",
+    "externalId": "public-identity:bra:remo:jandir-souza-silva",
+    "fullName": "Jandir Souza Silva",
+    "displayName": "Silva",
+    "dateOfBirth": "1991-05-15",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "LM",
@@ -674,47 +679,48 @@
       "LW",
       "CM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 172,
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
     "shirtNumber": 15,
     "attributes": {
-      "attack": 61,
-      "defense": 61,
-      "technique": 56,
-      "speed": 61,
-      "stamina": 62,
-      "mentality": 63
+      "attack": 70,
+      "defense": 58,
+      "technique": 77,
+      "speed": 73,
+      "stamina": 78,
+      "mentality": 73
     },
-    "marketValue": 14750000,
+    "marketValue": "19392891",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34229614",
+      "identitySourceId": "34229614",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p16",
-    "fullName": "BRA Remo Player 16",
-    "displayName": "Remo P16",
-    "dateOfBirth": "1989-04-19",
+    "externalId": "public-identity:bra:remo:joao-lucas",
+    "fullName": "João Lucas",
+    "displayName": "Lucas",
+    "dateOfBirth": "2003-12-19",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "RM",
@@ -722,47 +728,48 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
     "shirtNumber": 16,
     "attributes": {
-      "attack": 65,
-      "defense": 65,
-      "technique": 63,
-      "speed": 65,
-      "stamina": 62,
-      "mentality": 65
+      "attack": 76,
+      "defense": 54,
+      "technique": 71,
+      "speed": 75,
+      "stamina": 76,
+      "mentality": 66
     },
-    "marketValue": 15750000,
+    "marketValue": "20242384",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34232869",
+      "identitySourceId": "34232869",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p17",
-    "fullName": "BRA Remo Player 17",
-    "displayName": "Remo P17",
-    "dateOfBirth": "1996-05-22",
+    "externalId": "public-identity:bra:remo:joao-pedro",
+    "fullName": "João Pedro",
+    "displayName": "Pedro",
+    "dateOfBirth": "2005-02-15",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "LW",
@@ -771,46 +778,47 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
+    "heightCm": 171,
     "shirtNumber": 17,
     "attributes": {
-      "attack": 68,
-      "defense": 54,
-      "technique": 65,
-      "speed": 70,
-      "stamina": 66,
-      "mentality": 62
+      "attack": 76,
+      "defense": 41,
+      "technique": 75,
+      "speed": 79,
+      "stamina": 73,
+      "mentality": 61
     },
-    "marketValue": 15500000,
+    "marketValue": "20987774",
     "specialAttributes": [
       "speedster",
-      "line_breaker"
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34191552",
+      "identitySourceId": "34191552",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p18",
-    "fullName": "BRA Remo Player 18",
-    "displayName": "Remo P18",
-    "dateOfBirth": "2003-06-25",
+    "externalId": "public-identity:bra:remo:juan-carlos-osorio",
+    "fullName": "Juan Carlos Osorio",
+    "displayName": "Juan Carlos Osorio",
+    "dateOfBirth": "1999-02-10",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "RW",
@@ -818,47 +826,48 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
     "shirtNumber": 18,
     "attributes": {
-      "attack": 68,
-      "defense": 54,
-      "technique": 61,
-      "speed": 70,
-      "stamina": 62,
-      "mentality": 60
+      "attack": 77,
+      "defense": 48,
+      "technique": 73,
+      "speed": 81,
+      "stamina": 73,
+      "mentality": 64
     },
-    "marketValue": 15500000,
+    "marketValue": "17817159",
     "specialAttributes": [
       "workhorse",
-      "set_piece_specialist"
+      "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34433690",
+      "identitySourceId": "34433690",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p19",
-    "fullName": "BRA Remo Player 19",
-    "displayName": "Remo P19",
-    "dateOfBirth": "1992-07-01",
+    "externalId": "public-identity:bra:remo:kayky-almeida",
+    "fullName": "Kayky Almeida",
+    "displayName": "Almeida",
+    "dateOfBirth": "2004-11-07",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "LW",
@@ -867,46 +876,47 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
+    "heightCm": 179,
     "shirtNumber": 19,
     "attributes": {
-      "attack": 72,
-      "defense": 58,
-      "technique": 68,
-      "speed": 74,
-      "stamina": 62,
-      "mentality": 62
+      "attack": 76,
+      "defense": 42,
+      "technique": 74,
+      "speed": 80,
+      "stamina": 73,
+      "mentality": 65
     },
-    "marketValue": 16500000,
+    "marketValue": "18974049",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34433689",
+      "identitySourceId": "34433689",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p20",
-    "fullName": "BRA Remo Player 20",
-    "displayName": "Remo P20",
-    "dateOfBirth": "1999-08-04",
+    "externalId": "public-identity:bra:remo:leonel-picco",
+    "fullName": "Leonel Picco",
+    "displayName": "Picco",
+    "dateOfBirth": "1991-05-06",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "RW",
@@ -914,94 +924,48 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
+    "preferredFoot": "RIGHT",
+    "heightCm": 171,
     "shirtNumber": 20,
     "attributes": {
-      "attack": 66,
-      "defense": 52,
-      "technique": 58,
-      "speed": 68,
-      "stamina": 61,
-      "mentality": 63
+      "attack": 80,
+      "defense": 51,
+      "technique": 83,
+      "speed": 89,
+      "stamina": 75,
+      "mentality": 68
     },
-    "marketValue": 15000000,
+    "marketValue": "19391637",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34236892",
+      "identitySourceId": "34236892",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:remo:p21",
-    "fullName": "BRA Remo Player 21",
-    "displayName": "Remo P21",
-    "dateOfBirth": "1988-09-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "remo",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 67,
-      "defense": 47,
-      "technique": 60,
-      "speed": 57,
-      "stamina": 56,
-      "mentality": 60
-    },
-    "marketValue": 14750000,
-    "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
+      "specialAttributes",
       "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p22",
-    "fullName": "BRA Remo Player 22",
-    "displayName": "Remo P22",
-    "dateOfBirth": "1995-10-10",
+    "externalId": "public-identity:bra:remo:marcelinho",
+    "fullName": "Marcelinho",
+    "displayName": "Marcelinho",
+    "dateOfBirth": "2001-02-11",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "ST",
@@ -1009,46 +973,95 @@
       "CF"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
+    "heightCm": 182,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 74,
-      "defense": 54,
-      "technique": 63,
-      "speed": 64,
-      "stamina": 68,
-      "mentality": 65
+      "attack": 87,
+      "defense": 43,
+      "technique": 74,
+      "speed": 71,
+      "stamina": 73,
+      "mentality": 73
     },
-    "marketValue": 16500000,
+    "marketValue": "21213133",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34346291",
+      "identitySourceId": "34346291",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p23",
-    "fullName": "BRA Remo Player 23",
-    "displayName": "Remo P23",
-    "dateOfBirth": "2002-11-13",
+    "externalId": "public-identity:bra:remo:marcelo-rangel",
+    "fullName": "Marcelo Rangel",
+    "displayName": "Rangel",
+    "dateOfBirth": "1990-09-23",
+    "nationalityCode": "BRA",
+    "clubExternalId": "remo",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 85,
+      "defense": 47,
+      "technique": 71,
+      "speed": 75,
+      "stamina": 71,
+      "mentality": 74
+    },
+    "marketValue": "18473759",
+    "specialAttributes": [
+      "speedster",
+      "press_resistant"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34226002",
+      "identitySourceId": "34226002",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:remo:marllon",
+    "fullName": "Marllon",
+    "displayName": "Marllon",
+    "dateOfBirth": "1989-03-16",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "CF",
@@ -1057,86 +1070,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
+    "heightCm": 185,
     "shirtNumber": 23,
     "attributes": {
-      "attack": 74,
-      "defense": 54,
-      "technique": 66,
-      "speed": 64,
-      "stamina": 64,
-      "mentality": 63
+      "attack": 78,
+      "defense": 42,
+      "technique": 82,
+      "speed": 77,
+      "stamina": 70,
+      "mentality": 76
     },
-    "marketValue": 16500000,
+    "marketValue": "20497262",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219221",
+      "identitySourceId": "34219221",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   },
   {
-    "externalId": "manager-initial:bra:remo:p24",
-    "fullName": "BRA Remo Player 24",
-    "displayName": "Remo P24",
-    "dateOfBirth": "1991-12-16",
+    "externalId": "public-identity:bra:remo:matheus-felipe-santos-nascimento",
+    "fullName": "Matheus Felipe Santos Nascimento",
+    "displayName": "Nascimento",
+    "dateOfBirth": "1992-11-28",
     "nationalityCode": "BRA",
     "clubExternalId": "remo",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
     "shirtNumber": 24,
     "attributes": {
-      "attack": 77,
-      "defense": 57,
+      "attack": 83,
+      "defense": 38,
       "technique": 72,
-      "speed": 67,
-      "stamina": 72,
-      "mentality": 73
+      "speed": 75,
+      "stamina": 65,
+      "mentality": 72
     },
-    "marketValue": 17250000,
+    "marketValue": "19733095",
     "specialAttributes": [
-      "aerial_specialist",
+      "set_piece_specialist",
       "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34437051",
+      "identitySourceId": "34437051",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition",
+      "shirtNumber"
     ]
   }
 ]

@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:bra:gremio:p01",
-    "fullName": "BRA Gremio Player 1",
-    "displayName": "Gremio P1",
-    "dateOfBirth": "1994-01-01",
+    "externalId": "public-identity:bra:gremio:caio-paulista",
+    "fullName": "Caio Paulista",
+    "displayName": "Paulista",
+    "dateOfBirth": "2005-12-26",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 180,
+    "shirtNumber": 38,
     "attributes": {
-      "attack": 79,
-      "defense": 91,
-      "technique": 76,
-      "speed": 83,
-      "stamina": 75,
-      "mentality": 75
+      "attack": 58,
+      "defense": 84,
+      "technique": 67,
+      "speed": 62,
+      "stamina": 72,
+      "mentality": 74
     },
-    "marketValue": 19750000,
+    "marketValue": "21462523",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
+      "leader",
+      "one_on_one_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "caio-paulista",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p02",
-    "fullName": "BRA Gremio Player 2",
-    "displayName": "Gremio P2",
-    "dateOfBirth": "2001-02-04",
+    "externalId": "public-identity:bra:gremio:carlos-vinicius",
+    "fullName": "Carlos Vinícius",
+    "displayName": "Vinícius",
+    "dateOfBirth": "2003-02-25",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 95,
     "attributes": {
-      "attack": 79,
-      "defense": 91,
+      "attack": 90,
+      "defense": 56,
       "technique": 79,
-      "speed": 83,
-      "stamina": 80,
-      "mentality": 82
+      "speed": 91,
+      "stamina": 77,
+      "mentality": 73
     },
-    "marketValue": 19750000,
+    "marketValue": "22274845",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "carlos-vinicius",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p03",
-    "fullName": "BRA Gremio Player 3",
-    "displayName": "Gremio P3",
-    "dateOfBirth": "1990-03-07",
+    "externalId": "public-identity:bra:gremio:cristian-pavon",
+    "fullName": "Cristian Pavon",
+    "displayName": "Pavon",
+    "dateOfBirth": "1999-11-27",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "LB",
@@ -101,141 +103,48 @@
       "LWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
-    "attributes": {
-      "attack": 69,
-      "defense": 85,
-      "technique": 80,
-      "speed": 77,
-      "stamina": 74,
-      "mentality": 78
-    },
-    "marketValue": 19250000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p04",
-    "fullName": "BRA Gremio Player 4",
-    "displayName": "Gremio P4",
-    "dateOfBirth": "1997-04-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
     "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
+    "heightCm": 166,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 74,
-      "speed": 75,
-      "stamina": 77,
-      "mentality": 74
+      "attack": 84,
+      "defense": 56,
+      "technique": 86,
+      "speed": 86,
+      "stamina": 81,
+      "mentality": 71
     },
-    "marketValue": 18750000,
+    "marketValue": "20386574",
     "specialAttributes": [
-      "aerial_specialist",
+      "press_resistant",
       "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "cristian-pavon",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p05",
-    "fullName": "BRA Gremio Player 5",
-    "displayName": "Gremio P5",
-    "dateOfBirth": "2004-05-13",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
-    "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 78,
-      "speed": 76,
-      "stamina": 74,
-      "mentality": 73
-    },
-    "marketValue": 19000000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p06",
-    "fullName": "BRA Gremio Player 6",
-    "displayName": "Gremio P6",
-    "dateOfBirth": "1993-06-16",
+    "externalId": "public-identity:bra:gremio:diego-caito",
+    "fullName": "Diego Caito",
+    "displayName": "Caito",
+    "dateOfBirth": "2000-11-02",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "CB",
@@ -243,46 +152,143 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "heightCm": 172,
+    "shirtNumber": 27,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 73,
-      "speed": 75,
-      "stamina": 78,
-      "mentality": 79
+      "attack": 62,
+      "defense": 75,
+      "technique": 69,
+      "speed": 76,
+      "stamina": 82,
+      "mentality": 75
     },
-    "marketValue": 18750000,
+    "marketValue": "24566236",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "diego-caito",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p07",
-    "fullName": "BRA Gremio Player 7",
-    "displayName": "Gremio P7",
-    "dateOfBirth": "2000-07-19",
+    "externalId": "public-identity:bra:gremio:dodi",
+    "fullName": "Dodi",
+    "displayName": "Dodi",
+    "dateOfBirth": "1996-01-21",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 72,
+      "defense": 62,
+      "technique": 82,
+      "speed": 78,
+      "stamina": 82,
+      "mentality": 76
+    },
+    "marketValue": "21053809",
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "dodi",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:erick-noriega",
+    "fullName": "Erick Noriega",
+    "displayName": "Noriega",
+    "dateOfBirth": "2005-09-28",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 171,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 80,
+      "defense": 63,
+      "technique": 85,
+      "speed": 81,
+      "stamina": 81,
+      "mentality": 73
+    },
+    "marketValue": "22635689",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "erick-noriega",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:fabian-balbuena",
+    "fullName": "Fabián Balbuena",
+    "displayName": "Balbuena",
+    "dateOfBirth": "1998-02-15",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "RB",
@@ -291,46 +297,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 168,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 77,
-      "defense": 93,
-      "technique": 86,
-      "speed": 85,
-      "stamina": 84,
-      "mentality": 87
+      "attack": 73,
+      "defense": 71,
+      "technique": 78,
+      "speed": 81,
+      "stamina": 90,
+      "mentality": 78
     },
-    "marketValue": 21250000,
+    "marketValue": "22577042",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "workhorse",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "fabian-balbuena",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p08",
-    "fullName": "BRA Gremio Player 8",
-    "displayName": "Gremio P8",
-    "dateOfBirth": "1989-08-22",
+    "externalId": "public-identity:bra:gremio:francis-amuzu",
+    "fullName": "Francis Amuzu",
+    "displayName": "Amuzu",
+    "dateOfBirth": "2001-11-18",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "LWB",
@@ -338,47 +345,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 175,
+    "shirtNumber": 9,
     "attributes": {
-      "attack": 72,
-      "defense": 88,
-      "technique": 77,
-      "speed": 80,
-      "stamina": 84,
-      "mentality": 80
+      "attack": 80,
+      "defense": 51,
+      "technique": 82,
+      "speed": 85,
+      "stamina": 74,
+      "mentality": 74
     },
-    "marketValue": 20000000,
+    "marketValue": "21068009",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "francis-amuzu",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p09",
-    "fullName": "BRA Gremio Player 9",
-    "displayName": "Gremio P9",
-    "dateOfBirth": "1996-09-25",
+    "externalId": "public-identity:bra:gremio:gabriel-grando",
+    "fullName": "Gabriel Grando",
+    "displayName": "Grando",
+    "dateOfBirth": "1994-03-13",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "RWB",
@@ -387,46 +395,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 183,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 76,
-      "speed": 76,
-      "stamina": 76,
-      "mentality": 74
+      "attack": 46,
+      "defense": 81,
+      "technique": 61,
+      "speed": 68,
+      "stamina": 73,
+      "mentality": 75
     },
-    "marketValue": 19000000,
+    "marketValue": "22722394",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "gabriel-grando",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p10",
-    "fullName": "BRA Gremio Player 10",
-    "displayName": "Gremio P10",
-    "dateOfBirth": "2003-10-01",
+    "externalId": "public-identity:bra:gremio:gabriel-mec",
+    "fullName": "Gabriel Mec",
+    "displayName": "Mec",
+    "dateOfBirth": "1994-07-17",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "CDM",
@@ -434,191 +443,195 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
-    "attributes": {
-      "attack": 84,
-      "defense": 84,
-      "technique": 85,
-      "speed": 84,
-      "stamina": 78,
-      "mentality": 78
-    },
-    "marketValue": 20500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p11",
-    "fullName": "BRA Gremio Player 11",
-    "displayName": "Gremio P11",
-    "dateOfBirth": "1992-11-04",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 178,
+    "shirtNumber": 37,
     "attributes": {
-      "attack": 84,
-      "defense": 84,
-      "technique": 81,
-      "speed": 84,
-      "stamina": 83,
-      "mentality": 85
-    },
-    "marketValue": 20500000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p12",
-    "fullName": "BRA Gremio Player 12",
-    "displayName": "Gremio P12",
-    "dateOfBirth": "1999-12-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 80,
-      "speed": 80,
-      "stamina": 75,
-      "mentality": 79
-    },
-    "marketValue": 19500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p13",
-    "fullName": "BRA Gremio Player 13",
-    "displayName": "Gremio P13",
-    "dateOfBirth": "1988-01-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
-    "attributes": {
-      "attack": 78,
-      "defense": 78,
-      "technique": 74,
-      "speed": 78,
-      "stamina": 78,
+      "attack": 70,
+      "defense": 66,
+      "technique": 82,
+      "speed": 71,
+      "stamina": 84,
       "mentality": 75
     },
-    "marketValue": 19000000,
+    "marketValue": "20569268",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "gabriel-mec",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p14",
-    "fullName": "BRA Gremio Player 14",
-    "displayName": "Gremio P14",
-    "dateOfBirth": "1995-02-13",
+    "externalId": "public-identity:bra:gremio:gabriel-menegon",
+    "fullName": "Gabriel Menegon",
+    "displayName": "Menegon",
+    "dateOfBirth": "1993-07-03",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 31,
+    "attributes": {
+      "attack": 45,
+      "defense": 89,
+      "technique": 62,
+      "speed": 69,
+      "stamina": 72,
+      "mentality": 82
+    },
+    "marketValue": "23658985",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "gabriel-menegon",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:gustavo-martins",
+    "fullName": "Gustavo Martins",
+    "displayName": "Martins",
+    "dateOfBirth": "1994-06-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 184,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 56,
+      "defense": 80,
+      "technique": 63,
+      "speed": 67,
+      "stamina": 78,
+      "mentality": 80
+    },
+    "marketValue": "24672933",
+    "specialAttributes": [
+      "press_resistant",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "gustavo-martins",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:jose-enamorado",
+    "fullName": "José Enamorado",
+    "displayName": "Enamorado",
+    "dateOfBirth": "1999-03-12",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 171,
+    "shirtNumber": 99,
+    "attributes": {
+      "attack": 83,
+      "defense": 50,
+      "technique": 85,
+      "speed": 90,
+      "stamina": 77,
+      "mentality": 73
+    },
+    "marketValue": "23765324",
+    "specialAttributes": [
+      "press_resistant",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "jose-enamorado",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:jovane-cabral",
+    "fullName": "Jovane Cabral",
+    "displayName": "Cabral",
+    "dateOfBirth": "1994-10-15",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "CAM",
@@ -626,47 +639,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 77,
     "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 79,
-      "speed": 80,
-      "stamina": 76,
-      "mentality": 75
+      "attack": 84,
+      "defense": 46,
+      "technique": 80,
+      "speed": 75,
+      "stamina": 70,
+      "mentality": 73
     },
-    "marketValue": 19500000,
+    "marketValue": "21907941",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "jovane-cabral",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p15",
-    "fullName": "BRA Gremio Player 15",
-    "displayName": "Gremio P15",
-    "dateOfBirth": "2002-03-16",
+    "externalId": "public-identity:bra:gremio:joao-pedro",
+    "fullName": "João Pedro",
+    "displayName": "Pedro",
+    "dateOfBirth": "1988-11-15",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "LM",
@@ -675,46 +689,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 192,
+    "shirtNumber": 18,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 72,
-      "speed": 77,
+      "attack": 55,
+      "defense": 87,
+      "technique": 70,
+      "speed": 65,
       "stamina": 78,
-      "mentality": 79
+      "mentality": 70
     },
-    "marketValue": 18750000,
+    "marketValue": "24545886",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "joao-pedro",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p16",
-    "fullName": "BRA Gremio Player 16",
-    "displayName": "Gremio P16",
-    "dateOfBirth": "1991-04-19",
+    "externalId": "public-identity:bra:gremio:juan-nardoni",
+    "fullName": "Juan Nardoni",
+    "displayName": "Nardoni",
+    "dateOfBirth": "1988-06-18",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "RM",
@@ -723,46 +738,47 @@
       "CM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "heightCm": 172,
+    "shirtNumber": 5,
     "attributes": {
-      "attack": 83,
-      "defense": 83,
-      "technique": 81,
-      "speed": 83,
-      "stamina": 80,
-      "mentality": 83
+      "attack": 69,
+      "defense": 74,
+      "technique": 85,
+      "speed": 77,
+      "stamina": 83,
+      "mentality": 81
     },
-    "marketValue": 20250000,
+    "marketValue": "20105436",
     "specialAttributes": [
       "leader",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "juan-nardoni",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p17",
-    "fullName": "BRA Gremio Player 17",
-    "displayName": "Gremio P17",
-    "dateOfBirth": "1998-05-22",
+    "externalId": "public-identity:bra:gremio:leonel-perez",
+    "fullName": "Leonel Pérez",
+    "displayName": "Pérez",
+    "dateOfBirth": "2005-01-05",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "LW",
@@ -771,284 +787,288 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
+    "heightCm": 171,
+    "shirtNumber": 33,
     "attributes": {
-      "attack": 89,
-      "defense": 75,
-      "technique": 86,
-      "speed": 91,
+      "attack": 74,
+      "defense": 60,
+      "technique": 80,
+      "speed": 82,
+      "stamina": 88,
+      "mentality": 76
+    },
+    "marketValue": "23147595",
+    "specialAttributes": [
+      "speedster",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "leonel-perez",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:luis-eduardo",
+    "fullName": "Luis Eduardo",
+    "displayName": "Eduardo",
+    "dateOfBirth": "1989-12-22",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 43,
+    "attributes": {
+      "attack": 66,
+      "defense": 73,
+      "technique": 73,
+      "speed": 81,
       "stamina": 87,
-      "mentality": 83
+      "mentality": 78
     },
-    "marketValue": 20750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p18",
-    "fullName": "BRA Gremio Player 18",
-    "displayName": "Gremio P18",
-    "dateOfBirth": "2005-06-25",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 83,
-      "defense": 69,
-      "technique": 76,
-      "speed": 85,
-      "stamina": 77,
-      "mentality": 75
-    },
-    "marketValue": 19250000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p19",
-    "fullName": "BRA Gremio Player 19",
-    "displayName": "Gremio P19",
-    "dateOfBirth": "1994-07-01",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 86,
-      "defense": 72,
-      "technique": 82,
-      "speed": 88,
-      "stamina": 76,
-      "mentality": 76
-    },
-    "marketValue": 20000000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p20",
-    "fullName": "BRA Gremio Player 20",
-    "displayName": "Gremio P20",
-    "dateOfBirth": "2001-08-04",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
-    "attributes": {
-      "attack": 89,
-      "defense": 75,
-      "technique": 81,
-      "speed": 91,
-      "stamina": 84,
-      "mentality": 86
-    },
-    "marketValue": 20750000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:gremio:p21",
-    "fullName": "BRA Gremio Player 21",
-    "displayName": "Gremio P21",
-    "dateOfBirth": "1990-09-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "gremio",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 76,
-      "speed": 73,
-      "stamina": 72,
-      "mentality": 76
-    },
-    "marketValue": 18750000,
+    "marketValue": "20628533",
     "specialAttributes": [
       "clutch_finisher",
-      "speedster"
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "luis-eduardo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p22",
-    "fullName": "BRA Gremio Player 22",
-    "displayName": "Gremio P22",
-    "dateOfBirth": "1997-10-10",
+    "externalId": "public-identity:bra:gremio:marcos-rocha",
+    "fullName": "Marcos Rocha",
+    "displayName": "Rocha",
+    "dateOfBirth": "2000-12-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 190,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 51,
+      "defense": 82,
+      "technique": 63,
+      "speed": 60,
+      "stamina": 74,
+      "mentality": 77
+    },
+    "marketValue": "25326452",
+    "specialAttributes": [
+      "clutch_finisher",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "marcos-rocha",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:marlon",
+    "fullName": "Marlon",
+    "displayName": "Marlon",
+    "dateOfBirth": "1991-09-11",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 66,
+      "defense": 67,
+      "technique": 73,
+      "speed": 79,
+      "stamina": 85,
+      "mentality": 75
+    },
+    "marketValue": "24893383",
+    "specialAttributes": [
+      "press_resistant",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "marlon",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:martin-braithwaite",
+    "fullName": "Martin Braithwaite",
+    "displayName": "Braithwaite",
+    "dateOfBirth": "1999-06-20",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
     "shirtNumber": 22,
     "attributes": {
       "attack": 85,
-      "defense": 65,
-      "technique": 74,
-      "speed": 75,
-      "stamina": 79,
-      "mentality": 76
+      "defense": 43,
+      "technique": 77,
+      "speed": 77,
+      "stamina": 70,
+      "mentality": 73
     },
-    "marketValue": 19250000,
+    "marketValue": "22538771",
     "specialAttributes": [
-      "aerial_specialist",
+      "set_piece_specialist",
       "clutch_finisher"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "martin-braithwaite",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p23",
-    "fullName": "BRA Gremio Player 23",
-    "displayName": "Gremio P23",
-    "dateOfBirth": "2004-11-13",
+    "externalId": "public-identity:bra:gremio:matheus-nascimento",
+    "fullName": "Matheus Nascimento",
+    "displayName": "Nascimento",
+    "dateOfBirth": "2002-05-09",
+    "nationalityCode": "BRA",
+    "clubExternalId": "gremio",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 30,
+    "attributes": {
+      "attack": 80,
+      "defense": 51,
+      "technique": 81,
+      "speed": 88,
+      "stamina": 77,
+      "mentality": 71
+    },
+    "marketValue": "20961677",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "matheus-nascimento",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:gremio:mathias-villasanti",
+    "fullName": "Mathías Villasanti",
+    "displayName": "Villasanti",
+    "dateOfBirth": "2002-06-02",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "CF",
@@ -1057,86 +1077,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 173,
+    "shirtNumber": 20,
     "attributes": {
-      "attack": 90,
-      "defense": 70,
-      "technique": 82,
-      "speed": 80,
-      "stamina": 80,
-      "mentality": 79
+      "attack": 78,
+      "defense": 60,
+      "technique": 79,
+      "speed": 81,
+      "stamina": 78,
+      "mentality": 68
     },
-    "marketValue": 20500000,
+    "marketValue": "20478585",
     "specialAttributes": [
-      "clutch_finisher",
+      "aerial_specialist",
       "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "mathias-villasanti",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:gremio:p24",
-    "fullName": "BRA Gremio Player 24",
-    "displayName": "Gremio P24",
-    "dateOfBirth": "1993-12-16",
+    "externalId": "public-identity:bra:gremio:miguel-monsalve",
+    "fullName": "Miguel Monsalve",
+    "displayName": "Monsalve",
+    "dateOfBirth": "1989-04-21",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 11,
     "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 78,
-      "speed": 73,
-      "stamina": 78,
-      "mentality": 79
+      "attack": 80,
+      "defense": 57,
+      "technique": 83,
+      "speed": 88,
+      "stamina": 83,
+      "mentality": 78
     },
-    "marketValue": 18750000,
+    "marketValue": "20039156",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "line_breaker",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Gremio_FBPA",
+      "identitySourceId": "miguel-monsalve",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

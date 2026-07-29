@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:bra:vitoria:p01",
-    "fullName": "BRA Vitoria Player 1",
-    "displayName": "Vitoria P1",
-    "dateOfBirth": "1995-01-01",
-    "nationalityCode": "BRA",
-    "clubExternalId": "vitoria",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
-    "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
-    "attributes": {
-      "attack": 70,
-      "defense": 82,
-      "technique": 67,
-      "speed": 74,
-      "stamina": 66,
-      "mentality": 66
-    },
-    "marketValue": 17500000,
-    "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:vitoria:p02",
-    "fullName": "BRA Vitoria Player 2",
-    "displayName": "Vitoria P2",
-    "dateOfBirth": "2002-02-04",
+    "externalId": "public-identity:bra:vitoria:anderson-pato",
+    "fullName": "Anderson Pato",
+    "displayName": "Pato",
+    "dateOfBirth": "1990-01-07",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "heightCm": 178,
+    "shirtNumber": 28,
     "attributes": {
-      "attack": 64,
-      "defense": 76,
-      "technique": 64,
-      "speed": 68,
-      "stamina": 65,
-      "mentality": 67
+      "attack": 80,
+      "defense": 46,
+      "technique": 76,
+      "speed": 72,
+      "stamina": 74,
+      "mentality": 77
     },
-    "marketValue": 16000000,
+    "marketValue": "22242405",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "anderson-pato",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p03",
-    "fullName": "BRA Vitoria Player 3",
-    "displayName": "Vitoria P3",
-    "dateOfBirth": "1991-03-07",
+    "externalId": "public-identity:bra:vitoria:caca",
+    "fullName": "Cacá",
+    "displayName": "Cacá",
+    "dateOfBirth": "1996-05-24",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vitoria",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 184,
+    "shirtNumber": 25,
+    "attributes": {
+      "attack": 46,
+      "defense": 83,
+      "technique": 65,
+      "speed": 61,
+      "stamina": 76,
+      "mentality": 69
+    },
+    "marketValue": "20713647",
+    "specialAttributes": [
+      "aerial_specialist",
+      "one_on_one_keeper"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "caca",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:vitoria:camutanga",
+    "fullName": "Camutanga",
+    "displayName": "Camutanga",
+    "dateOfBirth": "1999-03-25",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "LB",
@@ -101,94 +103,46 @@
       "LWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
-    "attributes": {
-      "attack": 64,
-      "defense": 80,
-      "technique": 75,
-      "speed": 72,
-      "stamina": 69,
-      "mentality": 73
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:vitoria:p04",
-    "fullName": "BRA Vitoria Player 4",
-    "displayName": "Vitoria P4",
-    "dateOfBirth": "1998-04-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "vitoria",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
     "preferredFoot": "LEFT",
-    "heightCm": 184,
+    "heightCm": 170,
     "shirtNumber": 4,
     "attributes": {
-      "attack": 57,
-      "defense": 73,
-      "technique": 64,
-      "speed": 65,
-      "stamina": 67,
-      "mentality": 64
+      "attack": 58,
+      "defense": 77,
+      "technique": 70,
+      "speed": 76,
+      "stamina": 76,
+      "mentality": 73
     },
-    "marketValue": 16250000,
+    "marketValue": "18689866",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "camutanga",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p05",
-    "fullName": "BRA Vitoria Player 5",
-    "displayName": "Vitoria P5",
-    "dateOfBirth": "2005-05-13",
+    "externalId": "public-identity:bra:vitoria:caique-goncalves",
+    "fullName": "Caíque Gonçalves",
+    "displayName": "Gonçalves",
+    "dateOfBirth": "1995-05-09",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "CB",
@@ -196,93 +150,143 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 182,
+    "shirtNumber": 95,
     "attributes": {
-      "attack": 60,
-      "defense": 76,
-      "technique": 70,
-      "speed": 68,
-      "stamina": 66,
-      "mentality": 65
+      "attack": 66,
+      "defense": 69,
+      "technique": 72,
+      "speed": 65,
+      "stamina": 76,
+      "mentality": 74
     },
-    "marketValue": 17000000,
+    "marketValue": "19359166",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "caique-goncalves",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p06",
-    "fullName": "BRA Vitoria Player 6",
-    "displayName": "Vitoria P6",
-    "dateOfBirth": "1994-06-16",
+    "externalId": "public-identity:bra:vitoria:diego-tarzia",
+    "fullName": "Diego Tarzia",
+    "displayName": "Tarzia",
+    "dateOfBirth": "1992-04-15",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "CB",
     "secondaryPositions": [
       "CDM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 56,
-      "defense": 72,
-      "technique": 62,
-      "speed": 64,
-      "stamina": 67,
-      "mentality": 68
+      "attack": 84,
+      "defense": 48,
+      "technique": 81,
+      "speed": 79,
+      "stamina": 76,
+      "mentality": 76
     },
-    "marketValue": 16000000,
+    "marketValue": "21119713",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "diego-tarzia",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p07",
-    "fullName": "BRA Vitoria Player 7",
-    "displayName": "Vitoria P7",
-    "dateOfBirth": "2001-07-19",
+    "externalId": "public-identity:bra:vitoria:dudu",
+    "fullName": "Dudu",
+    "displayName": "Dudu",
+    "dateOfBirth": "1999-04-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vitoria",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 73,
+      "defense": 60,
+      "technique": 74,
+      "speed": 82,
+      "stamina": 77,
+      "mentality": 68
+    },
+    "marketValue": "18052875",
+    "specialAttributes": [
+      "workhorse",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "dudu",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:vitoria:edenilson",
+    "fullName": "Edenilson",
+    "displayName": "Edenilson",
+    "dateOfBirth": "1999-11-03",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "RB",
@@ -291,46 +295,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 176,
+    "shirtNumber": 26,
     "attributes": {
-      "attack": 58,
-      "defense": 74,
+      "attack": 60,
+      "defense": 71,
       "technique": 67,
-      "speed": 66,
-      "stamina": 65,
-      "mentality": 68
+      "speed": 77,
+      "stamina": 84,
+      "mentality": 74
     },
-    "marketValue": 16500000,
+    "marketValue": "18048582",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "speedster",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "edenilson",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p08",
-    "fullName": "BRA Vitoria Player 8",
-    "displayName": "Vitoria P8",
-    "dateOfBirth": "1990-08-22",
+    "externalId": "public-identity:bra:vitoria:edu-ribeiro",
+    "fullName": "Edu Ribeiro",
+    "displayName": "Ribeiro",
+    "dateOfBirth": "1996-10-10",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "LWB",
@@ -338,47 +343,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
+    "shirtNumber": 43,
     "attributes": {
-      "attack": 60,
-      "defense": 76,
+      "attack": 45,
+      "defense": 74,
       "technique": 65,
-      "speed": 68,
-      "stamina": 72,
-      "mentality": 68
+      "speed": 66,
+      "stamina": 73,
+      "mentality": 76
     },
-    "marketValue": 17000000,
+    "marketValue": "19582056",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "edu-ribeiro",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p09",
-    "fullName": "BRA Vitoria Player 9",
-    "displayName": "Vitoria P9",
-    "dateOfBirth": "1997-09-25",
+    "externalId": "public-identity:bra:vitoria:emanuel-britez",
+    "fullName": "Emanuel Brítez",
+    "displayName": "Brítez",
+    "dateOfBirth": "1988-02-19",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "RWB",
@@ -387,46 +393,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 188,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 57,
-      "defense": 73,
-      "technique": 65,
+      "attack": 49,
+      "defense": 78,
+      "technique": 57,
       "speed": 65,
-      "stamina": 65,
-      "mentality": 63
+      "stamina": 71,
+      "mentality": 66
     },
-    "marketValue": 16250000,
+    "marketValue": "20287792",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "emanuel-britez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p10",
-    "fullName": "BRA Vitoria Player 10",
-    "displayName": "Vitoria P10",
-    "dateOfBirth": "2004-10-01",
+    "externalId": "public-identity:bra:vitoria:emmanuel-martinez",
+    "fullName": "Emmanuel Martínez",
+    "displayName": "Martínez",
+    "dateOfBirth": "1995-11-24",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "CDM",
@@ -435,46 +442,47 @@
       "CB"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "heightCm": 176,
+    "shirtNumber": 6,
     "attributes": {
-      "attack": 68,
+      "attack": 69,
       "defense": 68,
-      "technique": 69,
-      "speed": 68,
-      "stamina": 62,
-      "mentality": 62
+      "technique": 82,
+      "speed": 70,
+      "stamina": 82,
+      "mentality": 77
     },
-    "marketValue": 16500000,
+    "marketValue": "18017217",
     "specialAttributes": [
-      "leader",
+      "workhorse",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "emmanuel-martinez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p11",
-    "fullName": "BRA Vitoria Player 11",
-    "displayName": "Vitoria P11",
-    "dateOfBirth": "1993-11-04",
+    "externalId": "public-identity:bra:vitoria:erick",
+    "fullName": "Erick",
+    "displayName": "Erick",
+    "dateOfBirth": "2003-03-16",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "CM",
@@ -483,94 +491,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 175,
+    "shirtNumber": 33,
     "attributes": {
-      "attack": 67,
-      "defense": 67,
-      "technique": 64,
-      "speed": 67,
-      "stamina": 66,
+      "attack": 90,
+      "defense": 47,
+      "technique": 74,
+      "speed": 79,
+      "stamina": 72,
       "mentality": 68
     },
-    "marketValue": 16250000,
+    "marketValue": "19041059",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "erick",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p12",
-    "fullName": "BRA Vitoria Player 12",
-    "displayName": "Vitoria P12",
-    "dateOfBirth": "2000-12-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "vitoria",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 74,
-      "defense": 74,
-      "technique": 74,
-      "speed": 74,
-      "stamina": 69,
-      "mentality": 73
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:vitoria:p13",
-    "fullName": "BRA Vitoria Player 13",
-    "displayName": "Vitoria P13",
-    "dateOfBirth": "1989-01-10",
+    "externalId": "public-identity:bra:vitoria:fabiano",
+    "fullName": "Fabiano",
+    "displayName": "Fabiano",
+    "dateOfBirth": "1991-06-24",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "CM",
@@ -579,46 +540,96 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 186,
+    "shirtNumber": 70,
     "attributes": {
-      "attack": 66,
-      "defense": 66,
-      "technique": 62,
-      "speed": 66,
-      "stamina": 66,
-      "mentality": 63
+      "attack": 44,
+      "defense": 83,
+      "technique": 57,
+      "speed": 65,
+      "stamina": 74,
+      "mentality": 76
     },
-    "marketValue": 16000000,
+    "marketValue": "22172085",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "workhorse",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "fabiano",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p14",
-    "fullName": "BRA Vitoria Player 14",
-    "displayName": "Vitoria P14",
-    "dateOfBirth": "1996-02-13",
+    "externalId": "public-identity:bra:vitoria:fabri",
+    "fullName": "Fabrí",
+    "displayName": "Fabrí",
+    "dateOfBirth": "1991-07-15",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vitoria",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 168,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 85,
+      "defense": 51,
+      "technique": 77,
+      "speed": 83,
+      "stamina": 70,
+      "mentality": 68
+    },
+    "marketValue": "21485341",
+    "specialAttributes": [
+      "leader",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "fabri",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:vitoria:fintelman",
+    "fullName": "Fintelman",
+    "displayName": "Fintelman",
+    "dateOfBirth": "1991-06-09",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "CAM",
@@ -626,47 +637,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 191,
+    "shirtNumber": 35,
     "attributes": {
-      "attack": 67,
-      "defense": 67,
-      "technique": 66,
-      "speed": 67,
-      "stamina": 63,
-      "mentality": 62
+      "attack": 41,
+      "defense": 78,
+      "technique": 55,
+      "speed": 57,
+      "stamina": 66,
+      "mentality": 77
     },
-    "marketValue": 16250000,
+    "marketValue": "17855083",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "fintelman",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p15",
-    "fullName": "BRA Vitoria Player 15",
-    "displayName": "Vitoria P15",
-    "dateOfBirth": "2003-03-16",
+    "externalId": "public-identity:bra:vitoria:gabriel",
+    "fullName": "Gabriel",
+    "displayName": "Gabriel",
+    "dateOfBirth": "2002-10-19",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "LM",
@@ -674,47 +686,48 @@
       "LW",
       "CM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "preferredFoot": "LEFT",
+    "heightCm": 195,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 72,
-      "defense": 72,
-      "technique": 67,
-      "speed": 72,
-      "stamina": 73,
-      "mentality": 74
+      "attack": 35,
+      "defense": 78,
+      "technique": 60,
+      "speed": 66,
+      "stamina": 67,
+      "mentality": 79
     },
-    "marketValue": 17500000,
+    "marketValue": "20567619",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "gabriel",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p16",
-    "fullName": "BRA Vitoria Player 16",
-    "displayName": "Vitoria P16",
-    "dateOfBirth": "1992-04-19",
+    "externalId": "public-identity:bra:vitoria:gabriel-baralhas",
+    "fullName": "Gabriel Baralhas",
+    "displayName": "Baralhas",
+    "dateOfBirth": "1996-03-25",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "RM",
@@ -722,95 +735,97 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
-    "attributes": {
-      "attack": 67,
-      "defense": 67,
-      "technique": 65,
-      "speed": 67,
-      "stamina": 64,
-      "mentality": 67
-    },
-    "marketValue": 16250000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:vitoria:p17",
-    "fullName": "BRA Vitoria Player 17",
-    "displayName": "Vitoria P17",
-    "dateOfBirth": "1999-05-22",
-    "nationalityCode": "BRA",
-    "clubExternalId": "vitoria",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
-    "shirtNumber": 17,
+    "shirtNumber": 44,
     "attributes": {
-      "attack": 79,
-      "defense": 65,
-      "technique": 76,
-      "speed": 81,
-      "stamina": 77,
-      "mentality": 73
+      "attack": 62,
+      "defense": 67,
+      "technique": 75,
+      "speed": 67,
+      "stamina": 84,
+      "mentality": 76
     },
-    "marketValue": 18250000,
+    "marketValue": "19133482",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "gabriel-baralhas",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p18",
-    "fullName": "BRA Vitoria Player 18",
-    "displayName": "Vitoria P18",
-    "dateOfBirth": "1988-06-25",
+    "externalId": "public-identity:bra:vitoria:jamerson",
+    "fullName": "Jamerson",
+    "displayName": "Jamerson",
+    "dateOfBirth": "2003-12-05",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vitoria",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 180,
+    "shirtNumber": 83,
+    "attributes": {
+      "attack": 58,
+      "defense": 72,
+      "technique": 64,
+      "speed": 68,
+      "stamina": 76,
+      "mentality": 69
+    },
+    "marketValue": "21140470",
+    "specialAttributes": [
+      "workhorse",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "jamerson",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:vitoria:kauan-coutinho",
+    "fullName": "Kauan Coutinho",
+    "displayName": "Coutinho",
+    "dateOfBirth": "1991-03-13",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "RW",
@@ -818,47 +833,48 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
     "shirtNumber": 18,
     "attributes": {
-      "attack": 71,
-      "defense": 57,
-      "technique": 64,
-      "speed": 73,
-      "stamina": 65,
-      "mentality": 63
+      "attack": 53,
+      "defense": 72,
+      "technique": 66,
+      "speed": 72,
+      "stamina": 80,
+      "mentality": 64
     },
-    "marketValue": 16250000,
+    "marketValue": "18070877",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "kauan-coutinho",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p19",
-    "fullName": "BRA Vitoria Player 19",
-    "displayName": "Vitoria P19",
-    "dateOfBirth": "1995-07-01",
+    "externalId": "public-identity:bra:vitoria:luan-candido",
+    "fullName": "Luan Cândido",
+    "displayName": "Cândido",
+    "dateOfBirth": "1991-10-10",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "LW",
@@ -867,46 +883,47 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
+    "heightCm": 182,
+    "shirtNumber": 36,
     "attributes": {
-      "attack": 80,
-      "defense": 66,
-      "technique": 76,
-      "speed": 82,
-      "stamina": 70,
+      "attack": 45,
+      "defense": 74,
+      "technique": 56,
+      "speed": 56,
+      "stamina": 74,
       "mentality": 70
     },
-    "marketValue": 18500000,
+    "marketValue": "22837119",
     "specialAttributes": [
       "speedster",
-      "line_breaker"
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "luan-candido",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p20",
-    "fullName": "BRA Vitoria Player 20",
-    "displayName": "Vitoria P20",
-    "dateOfBirth": "2002-08-04",
+    "externalId": "public-identity:bra:vitoria:lucas-arcanjo",
+    "fullName": "Lucas Arcanjo",
+    "displayName": "Arcanjo",
+    "dateOfBirth": "1989-09-08",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "RW",
@@ -914,47 +931,94 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 79,
-      "defense": 65,
-      "technique": 71,
-      "speed": 81,
-      "stamina": 74,
-      "mentality": 76
+      "attack": 35,
+      "defense": 76,
+      "technique": 58,
+      "speed": 56,
+      "stamina": 63,
+      "mentality": 69
     },
-    "marketValue": 18250000,
+    "marketValue": "17277191",
     "specialAttributes": [
       "workhorse",
-      "set_piece_specialist"
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "lucas-arcanjo",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:vitoria:marinho",
+    "fullName": "Marinho",
+    "displayName": "Marinho",
+    "dateOfBirth": "1995-02-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vitoria",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 80,
+      "defense": 46,
+      "technique": 75,
+      "speed": 73,
+      "stamina": 76,
+      "mentality": 73
+    },
+    "marketValue": "19016158",
+    "specialAttributes": [
+      "line_breaker",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "marinho",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p21",
-    "fullName": "BRA Vitoria Player 21",
-    "displayName": "Vitoria P21",
-    "dateOfBirth": "1991-09-07",
+    "externalId": "public-identity:bra:vitoria:mateusinho",
+    "fullName": "Mateusinho",
+    "displayName": "Mateusinho",
+    "dateOfBirth": "1988-06-17",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "ST",
@@ -962,93 +1026,47 @@
       "CF"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
+    "heightCm": 187,
+    "shirtNumber": 98,
     "attributes": {
-      "attack": 77,
-      "defense": 57,
-      "technique": 70,
-      "speed": 67,
-      "stamina": 66,
-      "mentality": 70
+      "attack": 49,
+      "defense": 81,
+      "technique": 65,
+      "speed": 58,
+      "stamina": 69,
+      "mentality": 73
     },
-    "marketValue": 17250000,
+    "marketValue": "19255055",
     "specialAttributes": [
-      "clutch_finisher",
+      "set_piece_specialist",
       "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "mateusinho",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p22",
-    "fullName": "BRA Vitoria Player 22",
-    "displayName": "Vitoria P22",
-    "dateOfBirth": "1998-10-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "vitoria",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
-    "attributes": {
-      "attack": 72,
-      "defense": 52,
-      "technique": 61,
-      "speed": 62,
-      "stamina": 66,
-      "mentality": 63
-    },
-    "marketValue": 16000000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:vitoria:p23",
-    "fullName": "BRA Vitoria Player 23",
-    "displayName": "Vitoria P23",
-    "dateOfBirth": "2005-11-13",
+    "externalId": "public-identity:bra:vitoria:matheuzinho",
+    "fullName": "Matheuzinho",
+    "displayName": "Matheuzinho",
+    "dateOfBirth": "1996-01-24",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "CF",
@@ -1057,86 +1075,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 168,
+    "shirtNumber": 10,
     "attributes": {
-      "attack": 80,
-      "defense": 60,
-      "technique": 72,
-      "speed": 70,
-      "stamina": 70,
-      "mentality": 69
+      "attack": 71,
+      "defense": 53,
+      "technique": 73,
+      "speed": 74,
+      "stamina": 79,
+      "mentality": 66
     },
-    "marketValue": 18000000,
+    "marketValue": "22701375",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "leader",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "matheuzinho",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:vitoria:p24",
-    "fullName": "BRA Vitoria Player 24",
-    "displayName": "Vitoria P24",
-    "dateOfBirth": "1994-12-16",
+    "externalId": "public-identity:bra:vitoria:nathan-mendes",
+    "fullName": "Nathan Mendes",
+    "displayName": "Mendes",
+    "dateOfBirth": "2004-01-02",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 173,
+    "shirtNumber": 45,
     "attributes": {
-      "attack": 73,
-      "defense": 53,
-      "technique": 68,
-      "speed": 63,
-      "stamina": 68,
-      "mentality": 69
+      "attack": 53,
+      "defense": 77,
+      "technique": 62,
+      "speed": 71,
+      "stamina": 84,
+      "mentality": 72
     },
-    "marketValue": 16250000,
+    "marketValue": "20081833",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "set_piece_specialist",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
+      "identitySourceId": "nathan-mendes",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

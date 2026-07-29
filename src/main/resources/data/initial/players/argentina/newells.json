@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:arg:newells:p01",
-    "fullName": "ARG Newells Player 1",
-    "displayName": "Newell's P1",
-    "dateOfBirth": "1995-01-01",
+    "externalId": "public-identity:arg:newells:alejo-montero",
+    "fullName": "Alejo Montero",
+    "displayName": "Montero",
+    "dateOfBirth": "1991-09-09",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 190,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 49,
+      "defense": 77,
+      "technique": 63,
+      "speed": 68,
+      "stamina": 76,
+      "mentality": 71
+    },
+    "marketValue": "23809636",
+    "specialAttributes": [
+      "leader",
+      "aerial_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "alejo-montero",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:armando-mendez",
+    "fullName": "Armando Méndez",
+    "displayName": "Méndez",
+    "dateOfBirth": "1989-03-14",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 187,
-    "shirtNumber": 1,
+    "shirtNumber": 14,
     "attributes": {
-      "attack": 72,
-      "defense": 84,
-      "technique": 69,
-      "speed": 76,
-      "stamina": 68,
-      "mentality": 68
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p02",
-    "fullName": "ARG Newells Player 2",
-    "displayName": "Newell's P2",
-    "dateOfBirth": "2002-02-04",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
-    "attributes": {
-      "attack": 75,
-      "defense": 87,
-      "technique": 75,
-      "speed": 79,
-      "stamina": 76,
+      "attack": 46,
+      "defense": 77,
+      "technique": 67,
+      "speed": 61,
+      "stamina": 80,
       "mentality": 78
     },
-    "marketValue": 18750000,
+    "marketValue": "22614363",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "one_on_one_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "armando-mendez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p03",
-    "fullName": "ARG Newells Player 3",
-    "displayName": "Newell's P3",
-    "dateOfBirth": "1991-03-07",
+    "externalId": "public-identity:arg:newells:bruno-cabrera",
+    "fullName": "Bruno Cabrera",
+    "displayName": "Cabrera",
+    "dateOfBirth": "1993-10-17",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "LB",
@@ -101,47 +103,94 @@
       "LWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "preferredFoot": "LEFT",
+    "heightCm": 182,
+    "shirtNumber": 25,
     "attributes": {
-      "attack": 65,
-      "defense": 81,
-      "technique": 76,
-      "speed": 73,
-      "stamina": 70,
-      "mentality": 74
+      "attack": 59,
+      "defense": 80,
+      "technique": 67,
+      "speed": 70,
+      "stamina": 80,
+      "mentality": 69
     },
-    "marketValue": 18250000,
+    "marketValue": "18301283",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "bruno-cabrera",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p04",
-    "fullName": "ARG Newells Player 4",
-    "displayName": "Newell's P4",
-    "dateOfBirth": "1998-04-10",
+    "externalId": "public-identity:arg:newells:david-sotelo",
+    "fullName": "David Sotelo",
+    "displayName": "Sotelo",
+    "dateOfBirth": "2000-08-03",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 73,
+      "defense": 73,
+      "technique": 77,
+      "speed": 71,
+      "stamina": 88,
+      "mentality": 78
+    },
+    "marketValue": "20518024",
+    "specialAttributes": [
+      "workhorse",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "david-sotelo",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:facundo-guch",
+    "fullName": "Facundo Guch",
+    "displayName": "Guch",
+    "dateOfBirth": "1995-02-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "CB",
@@ -149,140 +198,95 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
+    "heightCm": 172,
+    "shirtNumber": 20,
     "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 75,
-      "speed": 76,
+      "attack": 77,
+      "defense": 64,
+      "technique": 84,
+      "speed": 84,
+      "stamina": 81,
+      "mentality": 68
+    },
+    "marketValue": "19993917",
+    "specialAttributes": [
+      "workhorse",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "facundo-guch",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:francisco-scarpeccio",
+    "fullName": "Francisco Scarpeccio",
+    "displayName": "Scarpeccio",
+    "dateOfBirth": "1988-02-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 36,
+    "attributes": {
+      "attack": 86,
+      "defense": 40,
+      "technique": 70,
+      "speed": 75,
       "stamina": 78,
       "mentality": 75
     },
-    "marketValue": 19000000,
+    "marketValue": "24095565",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "set_piece_specialist",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "francisco-scarpeccio",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p05",
-    "fullName": "ARG Newells Player 5",
-    "displayName": "Newell's P5",
-    "dateOfBirth": "2005-05-13",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
-    "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 77,
-      "speed": 75,
-      "stamina": 73,
-      "mentality": 72
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p06",
-    "fullName": "ARG Newells Player 6",
-    "displayName": "Newell's P6",
-    "dateOfBirth": "1994-06-16",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
-    "attributes": {
-      "attack": 62,
-      "defense": 78,
-      "technique": 68,
-      "speed": 70,
-      "stamina": 73,
-      "mentality": 74
-    },
-    "marketValue": 17500000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p07",
-    "fullName": "ARG Newells Player 7",
-    "displayName": "Newell's P7",
-    "dateOfBirth": "2001-07-19",
+    "externalId": "public-identity:arg:newells:franco-orozco",
+    "fullName": "Franco Orozco",
+    "displayName": "Orozco",
+    "dateOfBirth": "2005-03-12",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "RB",
@@ -291,46 +295,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
+    "heightCm": 169,
     "shirtNumber": 7,
     "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 77,
-      "speed": 76,
-      "stamina": 75,
-      "mentality": 78
+      "attack": 86,
+      "defense": 49,
+      "technique": 79,
+      "speed": 87,
+      "stamina": 80,
+      "mentality": 66
     },
-    "marketValue": 19000000,
+    "marketValue": "22620327",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "set_piece_specialist",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "franco-orozco",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p08",
-    "fullName": "ARG Newells Player 8",
-    "displayName": "Newell's P8",
-    "dateOfBirth": "1990-08-22",
+    "externalId": "public-identity:arg:newells:gabriel-arias",
+    "fullName": "Gabriel Arias",
+    "displayName": "Arias",
+    "dateOfBirth": "2005-10-01",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "LWB",
@@ -339,46 +344,47 @@
       "LM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "heightCm": 190,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 69,
-      "defense": 85,
-      "technique": 74,
-      "speed": 77,
-      "stamina": 81,
+      "attack": 41,
+      "defense": 83,
+      "technique": 56,
+      "speed": 65,
+      "stamina": 71,
       "mentality": 77
     },
-    "marketValue": 19250000,
+    "marketValue": "20207834",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "gabriel-arias",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p09",
-    "fullName": "ARG Newells Player 9",
-    "displayName": "Newell's P9",
-    "dateOfBirth": "1997-09-25",
+    "externalId": "public-identity:arg:newells:gabriel-risso-patron",
+    "fullName": "Gabriel Risso Patrón",
+    "displayName": "Patrón",
+    "dateOfBirth": "2004-10-08",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "RWB",
@@ -387,46 +393,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 183,
+    "shirtNumber": 24,
     "attributes": {
-      "attack": 60,
-      "defense": 76,
-      "technique": 68,
-      "speed": 68,
-      "stamina": 68,
-      "mentality": 66
+      "attack": 50,
+      "defense": 82,
+      "technique": 61,
+      "speed": 59,
+      "stamina": 70,
+      "mentality": 73
     },
-    "marketValue": 17000000,
+    "marketValue": "18688089",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "gabriel-risso-patron",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p10",
-    "fullName": "ARG Newells Player 10",
-    "displayName": "Newell's P10",
-    "dateOfBirth": "2004-10-01",
+    "externalId": "public-identity:arg:newells:ian-glavinovich",
+    "fullName": "Ian Glavinovich",
+    "displayName": "Glavinovich",
+    "dateOfBirth": "1990-11-22",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "CDM",
@@ -435,46 +442,47 @@
       "CB"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "heightCm": 177,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 79,
-      "defense": 79,
-      "technique": 80,
-      "speed": 79,
-      "stamina": 73,
-      "mentality": 73
+      "attack": 57,
+      "defense": 80,
+      "technique": 71,
+      "speed": 71,
+      "stamina": 83,
+      "mentality": 71
     },
-    "marketValue": 19250000,
+    "marketValue": "19877545",
     "specialAttributes": [
-      "leader",
+      "workhorse",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "ian-glavinovich",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p11",
-    "fullName": "ARG Newells Player 11",
-    "displayName": "Newell's P11",
-    "dateOfBirth": "1993-11-04",
+    "externalId": "public-identity:arg:newells:ignacio-ramirez",
+    "fullName": "Ignacio Ramírez",
+    "displayName": "Ramírez",
+    "dateOfBirth": "2003-11-04",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "CM",
@@ -483,46 +491,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 176,
+    "shirtNumber": 99,
     "attributes": {
-      "attack": 71,
-      "defense": 71,
-      "technique": 68,
-      "speed": 71,
-      "stamina": 70,
-      "mentality": 72
+      "attack": 82,
+      "defense": 44,
+      "technique": 72,
+      "speed": 76,
+      "stamina": 78,
+      "mentality": 79
     },
-    "marketValue": 17250000,
+    "marketValue": "18629139",
     "specialAttributes": [
-      "line_breaker",
+      "leader",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "ignacio-ramirez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p12",
-    "fullName": "ARG Newells Player 12",
-    "displayName": "Newell's P12",
-    "dateOfBirth": "2000-12-07",
+    "externalId": "public-identity:arg:newells:jeronimo-gomez-mattar",
+    "fullName": "Jerónimo Gómez Mattar",
+    "displayName": "Mattar",
+    "dateOfBirth": "2000-08-23",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "CM",
@@ -531,46 +540,47 @@
       "CAM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
+    "heightCm": 178,
+    "shirtNumber": 19,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 75,
-      "speed": 75,
-      "stamina": 70,
-      "mentality": 74
+      "attack": 71,
+      "defense": 56,
+      "technique": 77,
+      "speed": 76,
+      "stamina": 81,
+      "mentality": 70
     },
-    "marketValue": 18250000,
+    "marketValue": "18831900",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "jeronimo-gomez-mattar",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p13",
-    "fullName": "ARG Newells Player 13",
-    "displayName": "Newell's P13",
-    "dateOfBirth": "1989-01-10",
+    "externalId": "public-identity:arg:newells:jeronimo-russo",
+    "fullName": "Jerónimo Russo",
+    "displayName": "Russo",
+    "dateOfBirth": "1989-02-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "CM",
@@ -579,46 +589,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 175,
+    "shirtNumber": 28,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 73,
-      "speed": 77,
-      "stamina": 77,
-      "mentality": 74
+      "attack": 87,
+      "defense": 47,
+      "technique": 83,
+      "speed": 89,
+      "stamina": 75,
+      "mentality": 67
     },
-    "marketValue": 18750000,
+    "marketValue": "21977076",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "set_piece_specialist",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "jeronimo-russo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p14",
-    "fullName": "ARG Newells Player 14",
-    "displayName": "Newell's P14",
-    "dateOfBirth": "1996-02-13",
+    "externalId": "public-identity:arg:newells:josue-reinatti",
+    "fullName": "Josué Reinatti",
+    "displayName": "Reinatti",
+    "dateOfBirth": "2001-03-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "CAM",
@@ -626,47 +637,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 30,
     "attributes": {
-      "attack": 70,
-      "defense": 70,
-      "technique": 69,
-      "speed": 70,
-      "stamina": 66,
-      "mentality": 65
+      "attack": 41,
+      "defense": 84,
+      "technique": 61,
+      "speed": 65,
+      "stamina": 67,
+      "mentality": 72
     },
-    "marketValue": 17000000,
+    "marketValue": "18625900",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "josue-reinatti",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p15",
-    "fullName": "ARG Newells Player 15",
-    "displayName": "Newell's P15",
-    "dateOfBirth": "2003-03-16",
+    "externalId": "public-identity:arg:newells:luca-regiardo",
+    "fullName": "Luca Regiardo",
+    "displayName": "Regiardo",
+    "dateOfBirth": "1996-08-08",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "LM",
@@ -675,46 +687,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 178,
+    "shirtNumber": 5,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 72,
-      "speed": 77,
-      "stamina": 78,
-      "mentality": 79
+      "attack": 81,
+      "defense": 54,
+      "technique": 84,
+      "speed": 76,
+      "stamina": 74,
+      "mentality": 71
     },
-    "marketValue": 18750000,
+    "marketValue": "22798703",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "luca-regiardo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p16",
-    "fullName": "ARG Newells Player 16",
-    "displayName": "Newell's P16",
-    "dateOfBirth": "1992-04-19",
+    "externalId": "public-identity:arg:newells:lucas-banos",
+    "fullName": "Lucas Baños",
+    "displayName": "Baños",
+    "dateOfBirth": "1992-04-14",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "RM",
@@ -722,333 +735,340 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 37,
     "attributes": {
-      "attack": 76,
+      "attack": 50,
+      "defense": 83,
+      "technique": 65,
+      "speed": 65,
+      "stamina": 77,
+      "mentality": 71
+    },
+    "marketValue": "21455836",
+    "specialAttributes": [
+      "workhorse",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "lucas-banos",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:marcelo-esponda",
+    "fullName": "Marcelo Esponda",
+    "displayName": "Esponda",
+    "dateOfBirth": "1996-11-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 29,
+    "attributes": {
+      "attack": 70,
+      "defense": 55,
+      "technique": 82,
+      "speed": 79,
+      "stamina": 84,
+      "mentality": 71
+    },
+    "marketValue": "22478635",
+    "specialAttributes": [
+      "workhorse",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "marcelo-esponda",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:martin-luciano",
+    "fullName": "Martín Luciano",
+    "displayName": "Luciano",
+    "dateOfBirth": "2001-10-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 178,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 59,
+      "defense": 73,
+      "technique": 70,
+      "speed": 77,
+      "stamina": 81,
+      "mentality": 73
+    },
+    "marketValue": "23146407",
+    "specialAttributes": [
+      "line_breaker",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "martin-luciano",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:martin-ortega",
+    "fullName": "Martín Ortega",
+    "displayName": "Ortega",
+    "dateOfBirth": "1988-01-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 189,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 50,
+      "defense": 80,
+      "technique": 68,
+      "speed": 64,
+      "stamina": 70,
+      "mentality": 73
+    },
+    "marketValue": "22283434",
+    "specialAttributes": [
+      "speedster",
+      "clutch_finisher"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "martin-ortega",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:matias-coccaro",
+    "fullName": "Matías Cóccaro",
+    "displayName": "Cóccaro",
+    "dateOfBirth": "1990-08-05",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 84,
+      "defense": 46,
+      "technique": 85,
+      "speed": 81,
+      "stamina": 71,
+      "mentality": 74
+    },
+    "marketValue": "20150453",
+    "specialAttributes": [
+      "clutch_finisher",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "matias-coccaro",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:nicolas-goitea",
+    "fullName": "Nicolás Goitea",
+    "displayName": "Goitea",
+    "dateOfBirth": "1998-10-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 63,
+      "defense": 66,
+      "technique": 70,
+      "speed": 81,
+      "stamina": 83,
+      "mentality": 67
+    },
+    "marketValue": "21768088",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "nicolas-goitea",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:newells:oscar-salomon",
+    "fullName": "Oscar Salomón",
+    "displayName": "Salomón",
+    "dateOfBirth": "1999-07-27",
+    "nationalityCode": "ARG",
+    "clubExternalId": "newells",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 191,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 51,
       "defense": 76,
-      "technique": 74,
-      "speed": 76,
+      "technique": 58,
+      "speed": 63,
       "stamina": 73,
       "mentality": 76
     },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p17",
-    "fullName": "ARG Newells Player 17",
-    "displayName": "Newell's P17",
-    "dateOfBirth": "1999-05-22",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
-    "attributes": {
-      "attack": 81,
-      "defense": 67,
-      "technique": 78,
-      "speed": 83,
-      "stamina": 79,
-      "mentality": 75
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p18",
-    "fullName": "ARG Newells Player 18",
-    "displayName": "Newell's P18",
-    "dateOfBirth": "1988-06-25",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 77,
-      "defense": 63,
-      "technique": 70,
-      "speed": 79,
-      "stamina": 71,
-      "mentality": 69
-    },
-    "marketValue": 17750000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p19",
-    "fullName": "ARG Newells Player 19",
-    "displayName": "Newell's P19",
-    "dateOfBirth": "1995-07-01",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 79,
-      "defense": 65,
-      "technique": 75,
-      "speed": 81,
-      "stamina": 69,
-      "mentality": 69
-    },
-    "marketValue": 18250000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p20",
-    "fullName": "ARG Newells Player 20",
-    "displayName": "Newell's P20",
-    "dateOfBirth": "2002-08-04",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
-    "attributes": {
-      "attack": 79,
-      "defense": 65,
-      "technique": 71,
-      "speed": 81,
-      "stamina": 74,
-      "mentality": 76
-    },
-    "marketValue": 18250000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p21",
-    "fullName": "ARG Newells Player 21",
-    "displayName": "Newell's P21",
-    "dateOfBirth": "1991-09-07",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 76,
-      "defense": 56,
-      "technique": 69,
-      "speed": 66,
-      "stamina": 65,
-      "mentality": 69
-    },
-    "marketValue": 17000000,
+    "marketValue": "21382886",
     "specialAttributes": [
       "clutch_finisher",
-      "speedster"
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "oscar-salomon",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p22",
-    "fullName": "ARG Newells Player 22",
-    "displayName": "Newell's P22",
-    "dateOfBirth": "1998-10-10",
-    "nationalityCode": "ARG",
-    "clubExternalId": "newells",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
-    "attributes": {
-      "attack": 85,
-      "defense": 65,
-      "technique": 74,
-      "speed": 75,
-      "stamina": 79,
-      "mentality": 76
-    },
-    "marketValue": 19250000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:newells:p23",
-    "fullName": "ARG Newells Player 23",
-    "displayName": "Newell's P23",
-    "dateOfBirth": "2005-11-13",
+    "externalId": "public-identity:arg:newells:rodrigo-herrera",
+    "fullName": "Rodrigo Herrera",
+    "displayName": "Herrera",
+    "dateOfBirth": "1992-12-20",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "CF",
@@ -1057,86 +1077,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 167,
+    "shirtNumber": 26,
     "attributes": {
-      "attack": 77,
-      "defense": 57,
-      "technique": 69,
-      "speed": 67,
-      "stamina": 67,
-      "mentality": 66
+      "attack": 76,
+      "defense": 61,
+      "technique": 74,
+      "speed": 76,
+      "stamina": 80,
+      "mentality": 73
     },
-    "marketValue": 17250000,
+    "marketValue": "23460228",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "speedster",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "rodrigo-herrera",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:newells:p24",
-    "fullName": "ARG Newells Player 24",
-    "displayName": "Newell's P24",
-    "dateOfBirth": "1994-12-16",
+    "externalId": "public-identity:arg:newells:saul-salcedo",
+    "fullName": "Saúl Salcedo",
+    "displayName": "Salcedo",
+    "dateOfBirth": "2004-07-12",
     "nationalityCode": "ARG",
     "clubExternalId": "newells",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 15,
     "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 78,
-      "speed": 73,
-      "stamina": 78,
-      "mentality": 79
+      "attack": 58,
+      "defense": 74,
+      "technique": 69,
+      "speed": 72,
+      "stamina": 77,
+      "mentality": 71
     },
-    "marketValue": 18750000,
+    "marketValue": "20099999",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "leader",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Newell%27s_Old_Boys",
+      "identitySourceId": "saul-salcedo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

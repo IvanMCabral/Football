@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:bra:bahia:p01",
-    "fullName": "BRA Bahia Player 1",
-    "displayName": "Bahia P1",
-    "dateOfBirth": "1993-01-01",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
-    "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
-    "attributes": {
-      "attack": 77,
-      "defense": 89,
-      "technique": 74,
-      "speed": 81,
-      "stamina": 73,
-      "mentality": 73
-    },
-    "marketValue": 19250000,
-    "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p02",
-    "fullName": "BRA Bahia Player 2",
-    "displayName": "Bahia P2",
-    "dateOfBirth": "2000-02-04",
+    "externalId": "public-identity:bra:bahia:ademir",
+    "fullName": "Ademir",
+    "displayName": "Ademir",
+    "dateOfBirth": "1996-02-27",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "heightCm": 189,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 71,
-      "defense": 83,
-      "technique": 71,
-      "speed": 75,
-      "stamina": 72,
-      "mentality": 74
+      "attack": 39,
+      "defense": 86,
+      "technique": 57,
+      "speed": 66,
+      "stamina": 66,
+      "mentality": 75
     },
-    "marketValue": 17750000,
+    "marketValue": "19859779",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219170",
+      "identitySourceId": "34219170",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p03",
-    "fullName": "BRA Bahia Player 3",
-    "displayName": "Bahia P3",
-    "dateOfBirth": "1989-03-07",
+    "externalId": "public-identity:bra:bahia:caio-alexandre",
+    "fullName": "Caio Alexandre",
+    "displayName": "Alexandre",
+    "dateOfBirth": "2002-10-03",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 35,
+      "defense": 80,
+      "technique": 58,
+      "speed": 66,
+      "stamina": 70,
+      "mentality": 71
+    },
+    "marketValue": "24635403",
+    "specialAttributes": [
+      "sweeper_keeper",
+      "leader"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34181058",
+      "identitySourceId": "34181058",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:cristian-olivera",
+    "fullName": "Cristian Olivera",
+    "displayName": "Olivera",
+    "dateOfBirth": "1990-02-14",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "LB",
@@ -102,93 +102,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 177,
+    "shirtNumber": 99,
     "attributes": {
-      "attack": 64,
+      "attack": 58,
       "defense": 80,
-      "technique": 75,
-      "speed": 72,
-      "stamina": 69,
-      "mentality": 73
+      "technique": 67,
+      "speed": 76,
+      "stamina": 86,
+      "mentality": 75
     },
-    "marketValue": 18000000,
+    "marketValue": "19205874",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34172471",
+      "identitySourceId": "34172471",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p04",
-    "fullName": "BRA Bahia Player 4",
-    "displayName": "Bahia P4",
-    "dateOfBirth": "1996-04-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 71,
-      "defense": 87,
-      "technique": 78,
-      "speed": 79,
-      "stamina": 81,
-      "mentality": 78
-    },
-    "marketValue": 19750000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p05",
-    "fullName": "BRA Bahia Player 5",
-    "displayName": "Bahia P5",
-    "dateOfBirth": "2003-05-13",
+    "externalId": "public-identity:bra:bahia:danilo-fernandes",
+    "fullName": "Danilo Fernandes",
+    "displayName": "Fernandes",
+    "dateOfBirth": "1994-06-20",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "CB",
@@ -197,45 +150,92 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 185,
-    "shirtNumber": 5,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 64,
-      "defense": 80,
-      "technique": 74,
-      "speed": 72,
-      "stamina": 70,
-      "mentality": 69
+      "attack": 51,
+      "defense": 86,
+      "technique": 63,
+      "speed": 62,
+      "stamina": 73,
+      "mentality": 73
     },
-    "marketValue": 18000000,
+    "marketValue": "20534209",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34245220",
+      "identitySourceId": "34245220",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p06",
-    "fullName": "BRA Bahia Player 6",
-    "displayName": "Bahia P6",
-    "dateOfBirth": "1992-06-16",
+    "externalId": "public-identity:bra:bahia:david-duarte",
+    "fullName": "David Duarte",
+    "displayName": "Duarte",
+    "dateOfBirth": "1999-10-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 192,
+    "shirtNumber": 33,
+    "attributes": {
+      "attack": 46,
+      "defense": 78,
+      "technique": 62,
+      "speed": 68,
+      "stamina": 72,
+      "mentality": 72
+    },
+    "marketValue": "22427168",
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219167",
+      "identitySourceId": "34219167",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:erick",
+    "fullName": "Erick",
+    "displayName": "Erick",
+    "dateOfBirth": "1998-03-01",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "CB",
@@ -243,46 +243,46 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "heightCm": 185,
+    "shirtNumber": 14,
     "attributes": {
-      "attack": 68,
-      "defense": 84,
-      "technique": 74,
-      "speed": 76,
-      "stamina": 79,
-      "mentality": 80
+      "attack": 49,
+      "defense": 83,
+      "technique": 65,
+      "speed": 65,
+      "stamina": 75,
+      "mentality": 78
     },
-    "marketValue": 19000000,
+    "marketValue": "20617091",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34193027",
+      "identitySourceId": "34193027",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p07",
-    "fullName": "BRA Bahia Player 7",
-    "displayName": "Bahia P7",
-    "dateOfBirth": "1999-07-19",
+    "externalId": "public-identity:bra:bahia:erick-pulga",
+    "fullName": "Erick Pulga",
+    "displayName": "Pulga",
+    "dateOfBirth": "2005-05-02",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "RB",
@@ -291,46 +291,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 177,
+    "shirtNumber": 16,
     "attributes": {
-      "attack": 69,
-      "defense": 85,
-      "technique": 78,
-      "speed": 77,
-      "stamina": 76,
-      "mentality": 79
+      "attack": 62,
+      "defense": 76,
+      "technique": 66,
+      "speed": 71,
+      "stamina": 83,
+      "mentality": 69
     },
-    "marketValue": 19250000,
+    "marketValue": "21772146",
     "specialAttributes": [
-      "aerial_specialist",
+      "set_piece_specialist",
       "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34233274",
+      "identitySourceId": "34233274",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p08",
-    "fullName": "BRA Bahia Player 8",
-    "displayName": "Bahia P8",
-    "dateOfBirth": "1988-08-22",
+    "externalId": "public-identity:bra:bahia:fredi-lippert",
+    "fullName": "Fredi Lippert",
+    "displayName": "Lippert",
+    "dateOfBirth": "1998-12-03",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "LWB",
@@ -338,47 +338,47 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 175,
+    "shirtNumber": 83,
     "attributes": {
-      "attack": 64,
-      "defense": 80,
-      "technique": 69,
-      "speed": 72,
-      "stamina": 76,
-      "mentality": 72
+      "attack": 72,
+      "defense": 66,
+      "technique": 73,
+      "speed": 84,
+      "stamina": 86,
+      "mentality": 75
     },
-    "marketValue": 18000000,
+    "marketValue": "19786042",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34336787",
+      "identitySourceId": "34336787",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p09",
-    "fullName": "BRA Bahia Player 9",
-    "displayName": "Bahia P9",
-    "dateOfBirth": "1995-09-25",
+    "externalId": "public-identity:bra:bahia:gabriel-xavier",
+    "fullName": "Gabriel Xavier",
+    "displayName": "Xavier",
+    "dateOfBirth": "2002-11-01",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "RWB",
@@ -387,46 +387,46 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 172,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 70,
-      "defense": 86,
-      "technique": 78,
-      "speed": 78,
-      "stamina": 78,
-      "mentality": 76
+      "attack": 67,
+      "defense": 74,
+      "technique": 67,
+      "speed": 75,
+      "stamina": 89,
+      "mentality": 75
     },
-    "marketValue": 19500000,
+    "marketValue": "22412798",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219166",
+      "identitySourceId": "34219166",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p10",
-    "fullName": "BRA Bahia Player 10",
-    "displayName": "Bahia P10",
-    "dateOfBirth": "2002-10-01",
+    "externalId": "public-identity:bra:bahia:iago",
+    "fullName": "Iago",
+    "displayName": "Iago",
+    "dateOfBirth": "1989-04-19",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "CDM",
@@ -435,46 +435,46 @@
       "CB"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "heightCm": 175,
+    "shirtNumber": 25,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 76,
-      "speed": 75,
-      "stamina": 69,
-      "mentality": 69
+      "attack": 63,
+      "defense": 72,
+      "technique": 72,
+      "speed": 62,
+      "stamina": 78,
+      "mentality": 77
     },
-    "marketValue": 18250000,
+    "marketValue": "22098818",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34169125",
+      "identitySourceId": "34169125",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p11",
-    "fullName": "BRA Bahia Player 11",
-    "displayName": "Bahia P11",
-    "dateOfBirth": "1991-11-04",
+    "externalId": "public-identity:bra:bahia:jean-lucas",
+    "fullName": "Jean Lucas",
+    "displayName": "Lucas",
+    "dateOfBirth": "1990-06-05",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "CM",
@@ -483,46 +483,94 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 178,
+    "shirtNumber": 6,
     "attributes": {
-      "attack": 82,
-      "defense": 82,
-      "technique": 79,
-      "speed": 82,
-      "stamina": 81,
-      "mentality": 83
+      "attack": 73,
+      "defense": 67,
+      "technique": 81,
+      "speed": 75,
+      "stamina": 79,
+      "mentality": 80
     },
-    "marketValue": 20000000,
+    "marketValue": "21876986",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34176218",
+      "identitySourceId": "34176218",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p12",
-    "fullName": "BRA Bahia Player 12",
-    "displayName": "Bahia P12",
-    "dateOfBirth": "1998-12-07",
+    "externalId": "public-identity:bra:bahia:joao-paulo",
+    "fullName": "João Paulo",
+    "displayName": "Paulo",
+    "dateOfBirth": "1988-01-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 175,
+    "shirtNumber": 34,
+    "attributes": {
+      "attack": 66,
+      "defense": 73,
+      "technique": 80,
+      "speed": 70,
+      "stamina": 79,
+      "mentality": 76
+    },
+    "marketValue": "24001073",
+    "specialAttributes": [
+      "press_resistant",
+      "set_piece_specialist"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34175853",
+      "identitySourceId": "34175853",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:kanu",
+    "fullName": "Kanu",
+    "displayName": "Kanu",
+    "dateOfBirth": "2002-12-24",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "CM",
@@ -531,94 +579,46 @@
       "CAM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
+    "heightCm": 184,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 80,
-      "speed": 80,
-      "stamina": 75,
-      "mentality": 79
+      "attack": 68,
+      "defense": 67,
+      "technique": 82,
+      "speed": 72,
+      "stamina": 80,
+      "mentality": 73
     },
-    "marketValue": 19500000,
+    "marketValue": "20841916",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219647",
+      "identitySourceId": "34219647",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p13",
-    "fullName": "BRA Bahia Player 13",
-    "displayName": "Bahia P13",
-    "dateOfBirth": "2005-01-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
-    "attributes": {
-      "attack": 81,
-      "defense": 81,
-      "technique": 77,
-      "speed": 81,
-      "stamina": 81,
-      "mentality": 78
-    },
-    "marketValue": 19750000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p14",
-    "fullName": "BRA Bahia Player 14",
-    "displayName": "Bahia P14",
-    "dateOfBirth": "1994-02-13",
+    "externalId": "public-identity:bra:bahia:luciano-juba",
+    "fullName": "Luciano Juba",
+    "displayName": "Juba",
+    "dateOfBirth": "2001-08-25",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "CAM",
@@ -627,46 +627,46 @@
       "CF"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "heightCm": 176,
+    "shirtNumber": 46,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 76,
+      "attack": 78,
+      "defense": 56,
+      "technique": 80,
       "speed": 77,
-      "stamina": 73,
+      "stamina": 78,
       "mentality": 72
     },
-    "marketValue": 18750000,
+    "marketValue": "22316060",
     "specialAttributes": [
-      "leader",
+      "line_breaker",
       "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34222525",
+      "identitySourceId": "34222525",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p15",
-    "fullName": "BRA Bahia Player 15",
-    "displayName": "Bahia P15",
-    "dateOfBirth": "2001-03-16",
+    "externalId": "public-identity:bra:bahia:marcos-victor",
+    "fullName": "Marcos Victor",
+    "displayName": "Victor",
+    "dateOfBirth": "1990-03-28",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "LM",
@@ -675,46 +675,46 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 180,
+    "shirtNumber": 44,
     "attributes": {
-      "attack": 78,
-      "defense": 78,
-      "technique": 73,
-      "speed": 78,
-      "stamina": 79,
-      "mentality": 80
+      "attack": 79,
+      "defense": 57,
+      "technique": 74,
+      "speed": 76,
+      "stamina": 80,
+      "mentality": 73
     },
-    "marketValue": 19000000,
+    "marketValue": "22498837",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34245219",
+      "identitySourceId": "34245219",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p16",
-    "fullName": "BRA Bahia Player 16",
-    "displayName": "Bahia P16",
-    "dateOfBirth": "1990-04-19",
+    "externalId": "public-identity:bra:bahia:mateo-sanabria-doracio",
+    "fullName": "Mateo Sanabria Doracio",
+    "displayName": "Doracio",
+    "dateOfBirth": "1993-03-07",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "RM",
@@ -722,333 +722,333 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
-    "attributes": {
-      "attack": 81,
-      "defense": 81,
-      "technique": 79,
-      "speed": 81,
-      "stamina": 78,
-      "mentality": 81
-    },
-    "marketValue": 19750000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p17",
-    "fullName": "BRA Bahia Player 17",
-    "displayName": "Bahia P17",
-    "dateOfBirth": "1997-05-22",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
+    "heightCm": 170,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 81,
-      "defense": 67,
-      "technique": 78,
-      "speed": 83,
-      "stamina": 79,
-      "mentality": 75
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p18",
-    "fullName": "BRA Bahia Player 18",
-    "displayName": "Bahia P18",
-    "dateOfBirth": "2004-06-25",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 80,
-      "defense": 66,
-      "technique": 73,
-      "speed": 82,
-      "stamina": 74,
-      "mentality": 72
-    },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p19",
-    "fullName": "BRA Bahia Player 19",
-    "displayName": "Bahia P19",
-    "dateOfBirth": "1993-07-01",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 82,
-      "defense": 68,
-      "technique": 78,
-      "speed": 84,
-      "stamina": 72,
-      "mentality": 72
-    },
-    "marketValue": 19000000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p20",
-    "fullName": "BRA Bahia Player 20",
-    "displayName": "Bahia P20",
-    "dateOfBirth": "2000-08-04",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
-    "attributes": {
-      "attack": 78,
+      "attack": 76,
       "defense": 64,
-      "technique": 70,
-      "speed": 80,
-      "stamina": 73,
-      "mentality": 75
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p21",
-    "fullName": "BRA Bahia Player 21",
-    "displayName": "Bahia P21",
-    "dateOfBirth": "1989-09-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 79,
-      "defense": 59,
-      "technique": 72,
-      "speed": 69,
-      "stamina": 68,
-      "mentality": 72
-    },
-    "marketValue": 17750000,
-    "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:bahia:p22",
-    "fullName": "BRA Bahia Player 22",
-    "displayName": "Bahia P22",
-    "dateOfBirth": "1996-10-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "bahia",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
-    "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 72,
-      "speed": 73,
-      "stamina": 77,
+      "technique": 78,
+      "speed": 79,
+      "stamina": 86,
       "mentality": 74
     },
-    "marketValue": 18750000,
+    "marketValue": "21177632",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "workhorse",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34236918",
+      "identitySourceId": "34236918",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p23",
-    "fullName": "BRA Bahia Player 23",
-    "displayName": "Bahia P23",
-    "dateOfBirth": "2003-11-13",
+    "externalId": "public-identity:bra:bahia:michel-araujo",
+    "fullName": "Michel Araújo",
+    "displayName": "Araújo",
+    "dateOfBirth": "1996-06-06",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 168,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 82,
+      "defense": 52,
+      "technique": 86,
+      "speed": 92,
+      "stamina": 81,
+      "mentality": 74
+    },
+    "marketValue": "22251918",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "workhorse"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219111",
+      "identitySourceId": "34219111",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:nicolas-acevedo",
+    "fullName": "Nicolás Acevedo",
+    "displayName": "Acevedo",
+    "dateOfBirth": "1997-06-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 169,
+    "shirtNumber": 26,
+    "attributes": {
+      "attack": 83,
+      "defense": 46,
+      "technique": 84,
+      "speed": 85,
+      "stamina": 77,
+      "mentality": 70
+    },
+    "marketValue": "19011112",
+    "specialAttributes": [
+      "clutch_finisher",
+      "press_resistant"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34181107",
+      "identitySourceId": "34181107",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:rezende",
+    "fullName": "Rezende",
+    "displayName": "Rezende",
+    "dateOfBirth": "1990-08-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 81,
+      "defense": 44,
+      "technique": 76,
+      "speed": 82,
+      "stamina": 72,
+      "mentality": 68
+    },
+    "marketValue": "22178306",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "speedster"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219648",
+      "identitySourceId": "34219648",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:rodrigo-nestor",
+    "fullName": "Rodrigo Nestor",
+    "displayName": "Nestor",
+    "dateOfBirth": "2002-09-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 81,
+      "defense": 51,
+      "technique": 78,
+      "speed": 85,
+      "stamina": 77,
+      "mentality": 71
+    },
+    "marketValue": "22466231",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "line_breaker"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34285951",
+      "identitySourceId": "34285951",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:roman-gomez",
+    "fullName": "Román Gómez",
+    "displayName": "Gómez",
+    "dateOfBirth": "1992-10-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 180,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 83,
+      "defense": 42,
+      "technique": 72,
+      "speed": 78,
+      "stamina": 77,
+      "mentality": 72
+    },
+    "marketValue": "19504920",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "leader"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34298901",
+      "identitySourceId": "34298901",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:ronaldo",
+    "fullName": "Ronaldo",
+    "displayName": "Ronaldo",
+    "dateOfBirth": "2003-09-19",
+    "nationalityCode": "BRA",
+    "clubExternalId": "bahia",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 96,
+    "attributes": {
+      "attack": 91,
+      "defense": 50,
+      "technique": 76,
+      "speed": 79,
+      "stamina": 77,
+      "mentality": 79
+    },
+    "marketValue": "21702201",
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34232891",
+      "identitySourceId": "34232891",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:bahia:santiago-ramos-mingo",
+    "fullName": "Santiago Ramos Mingo",
+    "displayName": "Mingo",
+    "dateOfBirth": "1990-10-23",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "CF",
@@ -1057,86 +1057,86 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 184,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 84,
-      "defense": 64,
-      "technique": 76,
+      "attack": 78,
+      "defense": 48,
+      "technique": 77,
       "speed": 74,
-      "stamina": 74,
-      "mentality": 73
+      "stamina": 79,
+      "mentality": 80
     },
-    "marketValue": 19000000,
+    "marketValue": "20155096",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "leader",
+      "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34218805",
+      "identitySourceId": "34218805",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:bahia:p24",
-    "fullName": "BRA Bahia Player 24",
-    "displayName": "Bahia P24",
-    "dateOfBirth": "1992-12-16",
+    "externalId": "public-identity:bra:bahia:willian-jose",
+    "fullName": "Willian José",
+    "displayName": "José",
+    "dateOfBirth": "1999-12-14",
     "nationalityCode": "BRA",
     "clubExternalId": "bahia",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 189,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 81,
-      "defense": 61,
-      "technique": 76,
-      "speed": 71,
-      "stamina": 76,
-      "mentality": 77
+      "attack": 91,
+      "defense": 48,
+      "technique": 69,
+      "speed": 79,
+      "stamina": 73,
+      "mentality": 76
     },
-    "marketValue": 18250000,
+    "marketValue": "20100141",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "set_piece_specialist",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34161385",
+      "identitySourceId": "34161385",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

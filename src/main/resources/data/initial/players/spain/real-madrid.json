@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:esp:real-madrid:p01",
-    "fullName": "ESP RealMadrid Player 1",
-    "displayName": "Real Madrid P1",
-    "dateOfBirth": "1999-01-01",
+    "externalId": "public-identity:esp:real-madrid:andriy-lunin",
+    "fullName": "Andriy Lunin",
+    "displayName": "Lunin",
+    "dateOfBirth": "1993-11-05",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 184,
+    "shirtNumber": 13,
     "attributes": {
-      "attack": 92,
-      "defense": 95,
-      "technique": 89,
-      "speed": 95,
-      "stamina": 88,
-      "mentality": 88
+      "attack": 44,
+      "defense": 92,
+      "technique": 66,
+      "speed": 72,
+      "stamina": 71,
+      "mentality": 84
     },
-    "marketValue": 23000000,
+    "marketValue": "26510825",
     "specialAttributes": [
       "one_on_one_keeper",
-      "leader"
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "andriy-lunin",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p02",
-    "fullName": "ESP RealMadrid Player 2",
-    "displayName": "Real Madrid P2",
-    "dateOfBirth": "1988-02-04",
+    "externalId": "public-identity:esp:real-madrid:antonio-rudiger",
+    "fullName": "Antonio Rüdiger",
+    "displayName": "Rüdiger",
+    "dateOfBirth": "1991-10-05",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 190,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 87,
-      "defense": 95,
-      "technique": 87,
-      "speed": 91,
-      "stamina": 88,
-      "mentality": 90
+      "attack": 54,
+      "defense": 90,
+      "technique": 74,
+      "speed": 75,
+      "stamina": 81,
+      "mentality": 85
     },
-    "marketValue": 21750000,
+    "marketValue": "26718432",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "leader",
+      "sweeper_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "antonio-rudiger",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p03",
-    "fullName": "ESP RealMadrid Player 3",
-    "displayName": "Real Madrid P3",
-    "dateOfBirth": "1995-03-07",
+    "externalId": "public-identity:esp:real-madrid:arda-guler",
+    "fullName": "Arda Güler",
+    "displayName": "Güler",
+    "dateOfBirth": "1991-10-23",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "LB",
@@ -102,46 +102,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 170,
+    "shirtNumber": 15,
     "attributes": {
       "attack": 83,
-      "defense": 95,
-      "technique": 94,
-      "speed": 91,
-      "stamina": 88,
-      "mentality": 92
+      "defense": 62,
+      "technique": 87,
+      "speed": 77,
+      "stamina": 81,
+      "mentality": 82
     },
-    "marketValue": 22750000,
+    "marketValue": "28285653",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "arda-guler",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p04",
-    "fullName": "ESP RealMadrid Player 4",
-    "displayName": "Real Madrid P4",
-    "dateOfBirth": "2002-04-10",
+    "externalId": "public-identity:esp:real-madrid:aurelien-tchouameni",
+    "fullName": "Aurélien Tchouaméni",
+    "displayName": "Tchouaméni",
+    "dateOfBirth": "1993-06-06",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "CB",
@@ -149,93 +150,47 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
+    "heightCm": 177,
+    "shirtNumber": 14,
     "attributes": {
-      "attack": 80,
-      "defense": 95,
-      "technique": 87,
-      "speed": 88,
-      "stamina": 90,
-      "mentality": 87
+      "attack": 81,
+      "defense": 73,
+      "technique": 86,
+      "speed": 77,
+      "stamina": 88,
+      "mentality": 82
     },
-    "marketValue": 22000000,
+    "marketValue": "26917867",
     "specialAttributes": [
       "aerial_specialist",
       "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "aurelien-tchouameni",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p05",
-    "fullName": "ESP RealMadrid Player 5",
-    "displayName": "Real Madrid P5",
-    "dateOfBirth": "1991-05-13",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
-    "attributes": {
-      "attack": 84,
-      "defense": 95,
-      "technique": 94,
-      "speed": 92,
-      "stamina": 90,
-      "mentality": 89
-    },
-    "marketValue": 23000000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p06",
-    "fullName": "ESP RealMadrid Player 6",
-    "displayName": "Real Madrid P6",
-    "dateOfBirth": "1998-06-16",
+    "externalId": "public-identity:esp:real-madrid:brahim-diaz",
+    "fullName": "Brahim Díaz",
+    "displayName": "Díaz",
+    "dateOfBirth": "1988-07-20",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "CB",
@@ -243,46 +198,95 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "heightCm": 185,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 83,
-      "defense": 95,
-      "technique": 89,
-      "speed": 91,
-      "stamina": 94,
-      "mentality": 95
+      "attack": 90,
+      "defense": 57,
+      "technique": 87,
+      "speed": 79,
+      "stamina": 79,
+      "mentality": 80
     },
-    "marketValue": 22750000,
+    "marketValue": "27067861",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "brahim-diaz",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p07",
-    "fullName": "ESP RealMadrid Player 7",
-    "displayName": "Real Madrid P7",
-    "dateOfBirth": "2005-07-19",
+    "externalId": "public-identity:esp:real-madrid:dean-huijsen",
+    "fullName": "Dean Huijsen",
+    "displayName": "Huijsen",
+    "dateOfBirth": "1996-03-01",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 178,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 77,
+      "defense": 77,
+      "technique": 73,
+      "speed": 82,
+      "stamina": 92,
+      "mentality": 80
+    },
+    "marketValue": "25629624",
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "dean-huijsen",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:eduardo-camavinga",
+    "fullName": "Eduardo Camavinga",
+    "displayName": "Camavinga",
+    "dateOfBirth": "1993-11-18",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "RB",
@@ -291,46 +295,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 173,
+    "shirtNumber": 6,
     "attributes": {
-      "attack": 84,
-      "defense": 95,
-      "technique": 93,
-      "speed": 92,
-      "stamina": 91,
-      "mentality": 94
+      "attack": 75,
+      "defense": 77,
+      "technique": 81,
+      "speed": 78,
+      "stamina": 85,
+      "mentality": 88
     },
-    "marketValue": 23000000,
+    "marketValue": "25269879",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "eduardo-camavinga",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p08",
-    "fullName": "ESP RealMadrid Player 8",
-    "displayName": "Real Madrid P8",
-    "dateOfBirth": "1994-08-22",
+    "externalId": "public-identity:esp:real-madrid:federico-valverde",
+    "fullName": "Federico Valverde",
+    "displayName": "Valverde",
+    "dateOfBirth": "1998-04-09",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "LWB",
@@ -338,47 +343,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
     "shirtNumber": 8,
     "attributes": {
-      "attack": 84,
-      "defense": 95,
-      "technique": 89,
-      "speed": 92,
-      "stamina": 95,
-      "mentality": 92
+      "attack": 65,
+      "defense": 82,
+      "technique": 76,
+      "speed": 71,
+      "stamina": 92,
+      "mentality": 79
     },
-    "marketValue": 23000000,
+    "marketValue": "29293239",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "federico-valverde",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p09",
-    "fullName": "ESP RealMadrid Player 9",
-    "displayName": "Real Madrid P9",
-    "dateOfBirth": "2001-09-25",
+    "externalId": "public-identity:esp:real-madrid:ferland-mendy",
+    "fullName": "Ferland Mendy",
+    "displayName": "Mendy",
+    "dateOfBirth": "1994-02-02",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "RWB",
@@ -387,46 +393,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 183,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 82,
-      "defense": 95,
-      "technique": 90,
-      "speed": 90,
-      "stamina": 90,
-      "mentality": 88
+      "attack": 53,
+      "defense": 85,
+      "technique": 70,
+      "speed": 65,
+      "stamina": 77,
+      "mentality": 84
     },
-    "marketValue": 22500000,
+    "marketValue": "29296683",
     "specialAttributes": [
-      "workhorse",
+      "speedster",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "ferland-mendy",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p10",
-    "fullName": "ESP RealMadrid Player 10",
-    "displayName": "Real Madrid P10",
-    "dateOfBirth": "1990-10-01",
+    "externalId": "public-identity:esp:real-madrid:franco-mastantuono",
+    "fullName": "Franco Mastantuono",
+    "displayName": "Mastantuono",
+    "dateOfBirth": "1994-01-13",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "CDM",
@@ -434,191 +441,195 @@
       "CM",
       "CB"
     ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 175,
+    "shirtNumber": 30,
+    "attributes": {
+      "attack": 89,
+      "defense": 54,
+      "technique": 86,
+      "speed": 82,
+      "stamina": 87,
+      "mentality": 88
+    },
+    "marketValue": "28906577",
+    "specialAttributes": [
+      "line_breaker",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "franco-mastantuono",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:gonzalo-garcia",
+    "fullName": "Gonzalo García",
+    "displayName": "García",
+    "dateOfBirth": "1993-09-24",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
+    "heightCm": 182,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 95,
+      "defense": 55,
+      "technique": 82,
+      "speed": 79,
+      "stamina": 76,
+      "mentality": 78
+    },
+    "marketValue": "28055110",
+    "specialAttributes": [
+      "workhorse",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "gonzalo-garcia",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:jude-bellingham",
+    "fullName": "Jude Bellingham",
+    "displayName": "Bellingham",
+    "dateOfBirth": "1996-07-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 77,
+      "defense": 62,
+      "technique": 90,
+      "speed": 92,
+      "stamina": 93,
+      "mentality": 83
+    },
+    "marketValue": "25404118",
+    "specialAttributes": [
+      "line_breaker",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "jude-bellingham",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:kylian-mbappe",
+    "fullName": "Kylian Mbappé",
+    "displayName": "Mbappé",
+    "dateOfBirth": "1997-11-11",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 178,
     "shirtNumber": 10,
     "attributes": {
-      "attack": 91,
-      "defense": 91,
+      "attack": 86,
+      "defense": 58,
       "technique": 92,
-      "speed": 91,
-      "stamina": 85,
-      "mentality": 85
-    },
-    "marketValue": 22250000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p11",
-    "fullName": "ESP RealMadrid Player 11",
-    "displayName": "Real Madrid P11",
-    "dateOfBirth": "1997-11-04",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
-    "attributes": {
-      "attack": 88,
-      "defense": 88,
-      "technique": 85,
-      "speed": 88,
+      "speed": 92,
       "stamina": 87,
-      "mentality": 89
+      "mentality": 80
     },
-    "marketValue": 21500000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p12",
-    "fullName": "ESP RealMadrid Player 12",
-    "displayName": "Real Madrid P12",
-    "dateOfBirth": "2004-12-07",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 94,
-      "defense": 94,
-      "technique": 94,
-      "speed": 94,
-      "stamina": 89,
-      "mentality": 93
-    },
-    "marketValue": 23000000,
+    "marketValue": "24744985",
     "specialAttributes": [
       "leader",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "kylian-mbappe",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p13",
-    "fullName": "ESP RealMadrid Player 13",
-    "displayName": "Real Madrid P13",
-    "dateOfBirth": "1993-01-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
-    "attributes": {
-      "attack": 88,
-      "defense": 88,
-      "technique": 84,
-      "speed": 88,
-      "stamina": 88,
-      "mentality": 85
-    },
-    "marketValue": 21500000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p14",
-    "fullName": "ESP RealMadrid Player 14",
-    "displayName": "Real Madrid P14",
-    "dateOfBirth": "2000-02-13",
+    "externalId": "public-identity:esp:real-madrid:raul-asencio",
+    "fullName": "Raúl Asencio",
+    "displayName": "Asencio",
+    "dateOfBirth": "2002-10-14",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "CAM",
@@ -626,47 +637,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 94,
-      "defense": 94,
-      "technique": 93,
-      "speed": 94,
-      "stamina": 90,
-      "mentality": 89
+      "attack": 76,
+      "defense": 80,
+      "technique": 75,
+      "speed": 90,
+      "stamina": 95,
+      "mentality": 78
     },
-    "marketValue": 23000000,
+    "marketValue": "23668271",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "line_breaker",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "raul-asencio",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p15",
-    "fullName": "ESP RealMadrid Player 15",
-    "displayName": "Real Madrid P15",
-    "dateOfBirth": "1989-03-16",
+    "externalId": "public-identity:esp:real-madrid:rodrygo",
+    "fullName": "Rodrygo",
+    "displayName": "Rodrygo",
+    "dateOfBirth": "1988-05-21",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "LM",
@@ -675,46 +687,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 183,
+    "shirtNumber": 11,
     "attributes": {
-      "attack": 88,
-      "defense": 88,
-      "technique": 83,
-      "speed": 88,
-      "stamina": 89,
-      "mentality": 90
+      "attack": 89,
+      "defense": 59,
+      "technique": 92,
+      "speed": 89,
+      "stamina": 85,
+      "mentality": 89
     },
-    "marketValue": 21500000,
+    "marketValue": "25754064",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "rodrygo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p16",
-    "fullName": "ESP RealMadrid Player 16",
-    "displayName": "Real Madrid P16",
-    "dateOfBirth": "1996-04-19",
+    "externalId": "public-identity:esp:real-madrid:thibaut-courtois",
+    "fullName": "Thibaut Courtois",
+    "displayName": "Courtois",
+    "dateOfBirth": "1995-12-21",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "RM",
@@ -722,191 +735,97 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
-    "attributes": {
-      "attack": 94,
-      "defense": 94,
-      "technique": 92,
-      "speed": 94,
-      "stamina": 91,
-      "mentality": 94
-    },
-    "marketValue": 23000000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p17",
-    "fullName": "ESP RealMadrid Player 17",
-    "displayName": "Real Madrid P17",
-    "dateOfBirth": "2003-05-22",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
+    "heightCm": 195,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 95,
-      "defense": 81,
-      "technique": 92,
-      "speed": 95,
-      "stamina": 93,
-      "mentality": 89
-    },
-    "marketValue": 22250000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p18",
-    "fullName": "ESP RealMadrid Player 18",
-    "displayName": "Real Madrid P18",
-    "dateOfBirth": "1992-06-25",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 93,
-      "defense": 79,
-      "technique": 86,
-      "speed": 95,
-      "stamina": 87,
-      "mentality": 85
-    },
-    "marketValue": 21750000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p19",
-    "fullName": "ESP RealMadrid Player 19",
-    "displayName": "Real Madrid P19",
-    "dateOfBirth": "1999-07-01",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 95,
-      "defense": 84,
-      "technique": 94,
-      "speed": 95,
-      "stamina": 88,
+      "attack": 42,
+      "defense": 85,
+      "technique": 65,
+      "speed": 72,
+      "stamina": 77,
       "mentality": 88
     },
-    "marketValue": 23000000,
+    "marketValue": "25111256",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "thibaut-courtois",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p20",
-    "fullName": "ESP RealMadrid Player 20",
-    "displayName": "Real Madrid P20",
-    "dateOfBirth": "1988-08-04",
+    "externalId": "public-identity:esp:real-madrid:trent-alexander-arnold",
+    "fullName": "Trent Alexander-Arnold",
+    "displayName": "Alexander-Arnold",
+    "dateOfBirth": "2000-01-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 68,
+      "defense": 83,
+      "technique": 76,
+      "speed": 79,
+      "stamina": 83,
+      "mentality": 74
+    },
+    "marketValue": "28834725",
+    "specialAttributes": [
+      "clutch_finisher",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "trent-alexander-arnold",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:vinicius-junior",
+    "fullName": "Vinícius Júnior",
+    "displayName": "Júnior",
+    "dateOfBirth": "1989-03-05",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "RW",
@@ -914,47 +833,191 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
+    "preferredFoot": "RIGHT",
+    "heightCm": 166,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 95,
-      "defense": 84,
-      "technique": 90,
+      "attack": 88,
+      "defense": 54,
+      "technique": 84,
       "speed": 95,
-      "stamina": 93,
-      "mentality": 95
+      "stamina": 89,
+      "mentality": 81
     },
-    "marketValue": 23000000,
+    "marketValue": "28409593",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "vinicius-junior",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p21",
-    "fullName": "ESP RealMadrid Player 21",
-    "displayName": "Real Madrid P21",
-    "dateOfBirth": "1995-09-07",
+    "externalId": "public-identity:esp:real-madrid:alvaro-carreras",
+    "fullName": "Álvaro Carreras",
+    "displayName": "Carreras",
+    "dateOfBirth": "1988-01-12",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 59,
+      "defense": 83,
+      "technique": 67,
+      "speed": 65,
+      "stamina": 77,
+      "mentality": 84
+    },
+    "marketValue": "29078362",
+    "specialAttributes": [
+      "speedster",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "alvaro-carreras",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:eder-militao",
+    "fullName": "Éder Militão",
+    "displayName": "Militão",
+    "dateOfBirth": "1998-02-05",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 76,
+      "defense": 74,
+      "technique": 74,
+      "speed": 88,
+      "stamina": 92,
+      "mentality": 75
+    },
+    "marketValue": "29311111",
+    "specialAttributes": [
+      "press_resistant",
+      "clutch_finisher"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "eder-militao",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:gonzalo",
+    "fullName": "Gonzalo",
+    "displayName": "Gonzalo",
+    "dateOfBirth": "2003-03-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 95,
+      "defense": 47,
+      "technique": 81,
+      "speed": 81,
+      "stamina": 79,
+      "mentality": 77
+    },
+    "marketValue": "24486918",
+    "specialAttributes": [
+      "line_breaker",
+      "clutch_finisher"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34279637",
+      "identitySourceId": "34279637",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:real-madrid:bernardo-silva",
+    "fullName": "Bernardo Silva",
+    "displayName": "Silva",
+    "dateOfBirth": "2004-03-15",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "ST",
@@ -963,92 +1026,47 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 95,
-      "defense": 77,
-      "technique": 90,
-      "speed": 87,
-      "stamina": 86,
-      "mentality": 90
-    },
-    "marketValue": 22250000,
-    "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:real-madrid:p22",
-    "fullName": "ESP RealMadrid Player 22",
-    "displayName": "Real Madrid P22",
-    "dateOfBirth": "2002-10-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "real-madrid",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
     "shirtNumber": 22,
     "attributes": {
-      "attack": 95,
-      "defense": 80,
-      "technique": 89,
-      "speed": 90,
-      "stamina": 94,
-      "mentality": 91
+      "attack": 74,
+      "defense": 78,
+      "technique": 81,
+      "speed": 82,
+      "stamina": 91,
+      "mentality": 86
     },
-    "marketValue": 23000000,
+    "marketValue": "24835405",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "speedster",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "bernardo-silva",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "shirtNumber",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p23",
-    "fullName": "ESP RealMadrid Player 23",
-    "displayName": "Real Madrid P23",
-    "dateOfBirth": "1991-11-13",
+    "externalId": "public-identity:esp:real-madrid:denzel-dumfries",
+    "fullName": "Denzel Dumfries",
+    "displayName": "Dumfries",
+    "dateOfBirth": "2000-06-09",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "CF",
@@ -1057,86 +1075,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
+    "heightCm": 179,
     "shirtNumber": 23,
     "attributes": {
-      "attack": 95,
-      "defense": 80,
-      "technique": 92,
-      "speed": 90,
-      "stamina": 90,
-      "mentality": 89
+      "attack": 59,
+      "defense": 90,
+      "technique": 71,
+      "speed": 72,
+      "stamina": 86,
+      "mentality": 76
     },
-    "marketValue": 23000000,
+    "marketValue": "23988273",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "denzel-dumfries",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "shirtNumber",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:real-madrid:p24",
-    "fullName": "ESP RealMadrid Player 24",
-    "displayName": "Real Madrid P24",
-    "dateOfBirth": "1998-12-16",
+    "externalId": "public-identity:esp:real-madrid:endrick",
+    "fullName": "Endrick",
+    "displayName": "Endrick",
+    "dateOfBirth": "1989-05-10",
     "nationalityCode": "ESP",
     "clubExternalId": "real-madrid",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
     "shirtNumber": 24,
     "attributes": {
       "attack": 95,
-      "defense": 80,
-      "technique": 95,
-      "speed": 90,
-      "stamina": 95,
-      "mentality": 95
+      "defense": 57,
+      "technique": 83,
+      "speed": 88,
+      "stamina": 81,
+      "mentality": 80
     },
-    "marketValue": 23000000,
+    "marketValue": "24254302",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "leader",
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Real_Madrid",
+      "identitySourceId": "endrick",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "shirtNumber"
     ]
   }
 ]

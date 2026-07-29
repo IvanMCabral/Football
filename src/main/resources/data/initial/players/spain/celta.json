@@ -1,99 +1,99 @@
 [
   {
-    "externalId": "manager-initial:esp:celta:p01",
-    "fullName": "ESP Celta Player 1",
-    "displayName": "Celta P1",
-    "dateOfBirth": "1993-01-01",
+    "externalId": "public-identity:esp:celta:aleix-febas",
+    "fullName": "Aleix Febas",
+    "displayName": "Febas",
+    "dateOfBirth": "1989-09-20",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 192,
+    "shirtNumber": 14,
     "attributes": {
-      "attack": 71,
-      "defense": 83,
-      "technique": 68,
-      "speed": 75,
-      "stamina": 67,
-      "mentality": 67
+      "attack": 36,
+      "defense": 78,
+      "technique": 60,
+      "speed": 67,
+      "stamina": 69,
+      "mentality": 79
     },
-    "marketValue": 17750000,
+    "marketValue": "19094911",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
+      "leader",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34175155",
+      "identitySourceId": "34175155",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p02",
-    "fullName": "ESP Celta Player 2",
-    "displayName": "Celta P2",
-    "dateOfBirth": "2000-02-04",
+    "externalId": "public-identity:esp:celta:borja-iglesias",
+    "fullName": "Borja Iglesias",
+    "displayName": "Iglesias",
+    "dateOfBirth": "1992-07-08",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 68,
-      "defense": 80,
-      "technique": 68,
-      "speed": 72,
-      "stamina": 69,
-      "mentality": 71
+      "attack": 38,
+      "defense": 87,
+      "technique": 55,
+      "speed": 66,
+      "stamina": 73,
+      "mentality": 79
     },
-    "marketValue": 17000000,
+    "marketValue": "23784078",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34149265",
+      "identitySourceId": "34149265",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p03",
-    "fullName": "ESP Celta Player 3",
-    "displayName": "Celta P3",
-    "dateOfBirth": "1989-03-07",
+    "externalId": "public-identity:esp:celta:carl-starfelt",
+    "fullName": "Carl Starfelt",
+    "displayName": "Starfelt",
+    "dateOfBirth": "1988-09-05",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "LB",
@@ -102,93 +102,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 175,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 65,
-      "defense": 81,
-      "technique": 76,
-      "speed": 73,
-      "stamina": 70,
-      "mentality": 74
+      "attack": 59,
+      "defense": 69,
+      "technique": 61,
+      "speed": 74,
+      "stamina": 83,
+      "mentality": 72
     },
-    "marketValue": 18250000,
+    "marketValue": "21128687",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34178200",
+      "identitySourceId": "34178200",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p04",
-    "fullName": "ESP Celta Player 4",
-    "displayName": "Celta P4",
-    "dateOfBirth": "1996-04-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "celta",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 64,
-      "defense": 80,
-      "technique": 71,
-      "speed": 72,
-      "stamina": 74,
-      "mentality": 71
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:celta:p05",
-    "fullName": "ESP Celta Player 5",
-    "displayName": "Celta P5",
-    "dateOfBirth": "2003-05-13",
+    "externalId": "public-identity:esp:celta:carlos-dominguez",
+    "fullName": "Carlos Domínguez",
+    "displayName": "Domínguez",
+    "dateOfBirth": "1988-07-08",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "CB",
@@ -196,46 +149,93 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 190,
+    "shirtNumber": 24,
     "attributes": {
-      "attack": 62,
-      "defense": 78,
-      "technique": 72,
-      "speed": 70,
-      "stamina": 68,
+      "attack": 52,
+      "defense": 84,
+      "technique": 65,
+      "speed": 64,
+      "stamina": 69,
       "mentality": 67
     },
-    "marketValue": 17500000,
+    "marketValue": "19649759",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34179993",
+      "identitySourceId": "34179993",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p06",
-    "fullName": "ESP Celta Player 6",
-    "displayName": "Celta P6",
-    "dateOfBirth": "1992-06-16",
+    "externalId": "public-identity:esp:celta:damian-rodriguez",
+    "fullName": "Damián Rodríguez",
+    "displayName": "Rodríguez",
+    "dateOfBirth": "1997-10-08",
+    "nationalityCode": "ESP",
+    "clubExternalId": "celta",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 53,
+      "defense": 76,
+      "technique": 61,
+      "speed": 65,
+      "stamina": 79,
+      "mentality": 76
+    },
+    "marketValue": "23636611",
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34234906",
+      "identitySourceId": "34234906",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:celta:fer-lopez",
+    "fullName": "Fer López",
+    "displayName": "López",
+    "dateOfBirth": "1988-01-08",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "CB",
@@ -243,46 +243,46 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "heightCm": 183,
+    "shirtNumber": 8,
     "attributes": {
-      "attack": 59,
-      "defense": 75,
+      "attack": 52,
+      "defense": 78,
       "technique": 65,
-      "speed": 67,
-      "stamina": 70,
-      "mentality": 71
+      "speed": 59,
+      "stamina": 77,
+      "mentality": 70
     },
-    "marketValue": 16750000,
+    "marketValue": "22372120",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34251229",
+      "identitySourceId": "34251229",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p07",
-    "fullName": "ESP Celta Player 7",
-    "displayName": "Celta P7",
-    "dateOfBirth": "1999-07-19",
+    "externalId": "public-identity:esp:celta:ferran-jutgla",
+    "fullName": "Ferran Jutglà",
+    "displayName": "Jutglà",
+    "dateOfBirth": "2002-09-24",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "RB",
@@ -291,46 +291,46 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 180,
+    "shirtNumber": 9,
     "attributes": {
-      "attack": 64,
-      "defense": 80,
-      "technique": 73,
-      "speed": 72,
-      "stamina": 71,
-      "mentality": 74
+      "attack": 57,
+      "defense": 70,
+      "technique": 65,
+      "speed": 69,
+      "stamina": 80,
+      "mentality": 71
     },
-    "marketValue": 18000000,
+    "marketValue": "21574747",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "set_piece_specialist",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34195254",
+      "identitySourceId": "34195254",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p08",
-    "fullName": "ESP Celta Player 8",
-    "displayName": "Celta P8",
-    "dateOfBirth": "1988-08-22",
+    "externalId": "public-identity:esp:celta:franco-cervi",
+    "fullName": "Franco Cervi",
+    "displayName": "Cervi",
+    "dateOfBirth": "1989-12-17",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "LWB",
@@ -338,47 +338,47 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 11,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 72,
-      "speed": 75,
-      "stamina": 79,
-      "mentality": 75
+      "attack": 71,
+      "defense": 68,
+      "technique": 71,
+      "speed": 77,
+      "stamina": 89,
+      "mentality": 66
     },
-    "marketValue": 18750000,
+    "marketValue": "20277503",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "set_piece_specialist",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34162494",
+      "identitySourceId": "34162494",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p09",
-    "fullName": "ESP Celta Player 9",
-    "displayName": "Celta P9",
-    "dateOfBirth": "1995-09-25",
+    "externalId": "public-identity:esp:celta:hugo-sotelo",
+    "fullName": "Hugo Sotelo",
+    "displayName": "Sotelo",
+    "dateOfBirth": "1996-11-25",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "RWB",
@@ -387,46 +387,46 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 180,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 75,
+      "attack": 63,
+      "defense": 72,
+      "technique": 66,
       "speed": 75,
-      "stamina": 75,
-      "mentality": 73
+      "stamina": 83,
+      "mentality": 66
     },
-    "marketValue": 18750000,
+    "marketValue": "22717056",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34220120",
+      "identitySourceId": "34220120",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p10",
-    "fullName": "ESP Celta Player 10",
-    "displayName": "Celta P10",
-    "dateOfBirth": "2002-10-01",
+    "externalId": "public-identity:esp:celta:hugo-alvarez",
+    "fullName": "Hugo Álvarez",
+    "displayName": "Álvarez",
+    "dateOfBirth": "2000-04-09",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "CDM",
@@ -434,47 +434,95 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 60,
+      "defense": 73,
+      "technique": 67,
+      "speed": 61,
+      "stamina": 83,
+      "mentality": 73
+    },
+    "marketValue": "19372764",
+    "specialAttributes": [
+      "press_resistant",
+      "set_piece_specialist"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34227049",
+      "identitySourceId": "34227049",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:celta:iago-aspas",
+    "fullName": "Iago Aspas",
+    "displayName": "Aspas",
+    "dateOfBirth": "2001-12-27",
+    "nationalityCode": "ESP",
+    "clubExternalId": "celta",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
     "shirtNumber": 10,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 76,
-      "speed": 75,
-      "stamina": 69,
-      "mentality": 69
+      "attack": 67,
+      "defense": 71,
+      "technique": 82,
+      "speed": 68,
+      "stamina": 82,
+      "mentality": 73
     },
-    "marketValue": 18250000,
+    "marketValue": "19230303",
     "specialAttributes": [
-      "leader",
+      "workhorse",
       "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34145920",
+      "identitySourceId": "34145920",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p11",
-    "fullName": "ESP Celta Player 11",
-    "displayName": "Celta P11",
-    "dateOfBirth": "1991-11-04",
+    "externalId": "public-identity:esp:celta:ilaix-moriba",
+    "fullName": "Ilaix Moriba",
+    "displayName": "Moriba",
+    "dateOfBirth": "1995-03-17",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "CM",
@@ -483,94 +531,46 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 184,
+    "shirtNumber": 6,
     "attributes": {
-      "attack": 76,
-      "defense": 76,
-      "technique": 73,
-      "speed": 76,
-      "stamina": 75,
-      "mentality": 77
-    },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:celta:p12",
-    "fullName": "ESP Celta Player 12",
-    "displayName": "Celta P12",
-    "dateOfBirth": "1998-12-07",
-    "nationalityCode": "ESP",
-    "clubExternalId": "celta",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 72,
-      "defense": 72,
-      "technique": 72,
-      "speed": 72,
-      "stamina": 67,
+      "attack": 70,
+      "defense": 65,
+      "technique": 78,
+      "speed": 73,
+      "stamina": 80,
       "mentality": 71
     },
-    "marketValue": 17500000,
+    "marketValue": "21824173",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34176355",
+      "identitySourceId": "34176355",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p13",
-    "fullName": "ESP Celta Player 13",
-    "displayName": "Celta P13",
-    "dateOfBirth": "2005-01-10",
+    "externalId": "public-identity:esp:celta:ionut-radu",
+    "fullName": "Ionuț Radu",
+    "displayName": "Radu",
+    "dateOfBirth": "1992-03-06",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "CM",
@@ -579,46 +579,46 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
+    "heightCm": 184,
     "shirtNumber": 13,
     "attributes": {
-      "attack": 73,
-      "defense": 73,
-      "technique": 69,
+      "attack": 70,
+      "defense": 69,
+      "technique": 82,
       "speed": 73,
-      "stamina": 73,
-      "mentality": 70
+      "stamina": 86,
+      "mentality": 72
     },
-    "marketValue": 17750000,
+    "marketValue": "20560743",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34164251",
+      "identitySourceId": "34164251",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p14",
-    "fullName": "ESP Celta Player 14",
-    "displayName": "Celta P14",
-    "dateOfBirth": "1994-02-13",
+    "externalId": "public-identity:esp:celta:ivan-villar",
+    "fullName": "Iván Villar",
+    "displayName": "Villar",
+    "dateOfBirth": "1993-04-25",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "CAM",
@@ -626,47 +626,47 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 74,
+      "attack": 82,
+      "defense": 55,
+      "technique": 86,
       "speed": 75,
-      "stamina": 71,
-      "mentality": 70
+      "stamina": 73,
+      "mentality": 72
     },
-    "marketValue": 18250000,
+    "marketValue": "19594676",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "workhorse"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34162025",
+      "identitySourceId": "34162025",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p15",
-    "fullName": "ESP Celta Player 15",
-    "displayName": "Celta P15",
-    "dateOfBirth": "2001-03-16",
+    "externalId": "public-identity:esp:celta:javi-rodriguez",
+    "fullName": "Javi Rodríguez",
+    "displayName": "Rodríguez",
+    "dateOfBirth": "1996-09-07",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "LM",
@@ -674,47 +674,47 @@
       "LW",
       "CM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 71,
-      "defense": 71,
-      "technique": 66,
-      "speed": 71,
-      "stamina": 72,
-      "mentality": 73
+      "attack": 74,
+      "defense": 57,
+      "technique": 77,
+      "speed": 82,
+      "stamina": 80,
+      "mentality": 68
     },
-    "marketValue": 17250000,
+    "marketValue": "23296257",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "leader",
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34247297",
+      "identitySourceId": "34247297",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p16",
-    "fullName": "ESP Celta Player 16",
-    "displayName": "Celta P16",
-    "dateOfBirth": "1990-04-19",
+    "externalId": "public-identity:esp:celta:javi-rueda",
+    "fullName": "Javi Rueda",
+    "displayName": "Rueda",
+    "dateOfBirth": "1991-05-12",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "RM",
@@ -722,191 +722,95 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 171,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 73,
-      "speed": 75,
-      "stamina": 72,
-      "mentality": 75
+      "attack": 78,
+      "defense": 55,
+      "technique": 77,
+      "speed": 85,
+      "stamina": 76,
+      "mentality": 74
     },
-    "marketValue": 18250000,
+    "marketValue": "22405917",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34246499",
+      "identitySourceId": "34246499",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p17",
-    "fullName": "ESP Celta Player 17",
-    "displayName": "Celta P17",
-    "dateOfBirth": "1997-05-22",
+    "externalId": "public-identity:esp:celta:manu-fernandez",
+    "fullName": "Manu Fernández",
+    "displayName": "Fernández",
+    "dateOfBirth": "2000-05-14",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "LW",
     "secondaryPositions": [
       "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
-    "attributes": {
-      "attack": 83,
-      "defense": 69,
-      "technique": 80,
-      "speed": 85,
-      "stamina": 81,
-      "mentality": 77
-    },
-    "marketValue": 19250000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:celta:p18",
-    "fullName": "ESP Celta Player 18",
-    "displayName": "Celta P18",
-    "dateOfBirth": "2004-06-25",
-    "nationalityCode": "ESP",
-    "clubExternalId": "celta",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
       "ST"
     ],
     "preferredFoot": "LEFT",
     "heightCm": 175,
-    "shirtNumber": 18,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 80,
-      "defense": 66,
-      "technique": 73,
-      "speed": 82,
-      "stamina": 74,
-      "mentality": 72
+      "attack": 87,
+      "defense": 45,
+      "technique": 78,
+      "speed": 86,
+      "stamina": 73,
+      "mentality": 67
     },
-    "marketValue": 18500000,
+    "marketValue": "19803229",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "speedster"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34251217",
+      "identitySourceId": "34251217",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p19",
-    "fullName": "ESP Celta Player 19",
-    "displayName": "Celta P19",
-    "dateOfBirth": "1993-07-01",
-    "nationalityCode": "ESP",
-    "clubExternalId": "celta",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 81,
-      "defense": 67,
-      "technique": 77,
-      "speed": 83,
-      "stamina": 71,
-      "mentality": 71
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:celta:p20",
-    "fullName": "ESP Celta Player 20",
-    "displayName": "Celta P20",
-    "dateOfBirth": "2000-08-04",
+    "externalId": "public-identity:esp:celta:manu-sanchez",
+    "fullName": "Manu Sánchez",
+    "displayName": "Sánchez",
+    "dateOfBirth": "1996-02-08",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "RW",
@@ -914,47 +818,143 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 74,
-      "defense": 60,
-      "technique": 66,
-      "speed": 76,
-      "stamina": 69,
-      "mentality": 71
+      "attack": 82,
+      "defense": 46,
+      "technique": 76,
+      "speed": 85,
+      "stamina": 74,
+      "mentality": 64
     },
-    "marketValue": 17000000,
+    "marketValue": "22984334",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "speedster",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34172760",
+      "identitySourceId": "34172760",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p21",
-    "fullName": "ESP Celta Player 21",
-    "displayName": "Celta P21",
-    "dateOfBirth": "1989-09-07",
+    "externalId": "public-identity:esp:celta:marc-vidal",
+    "fullName": "Marc Vidal",
+    "displayName": "Vidal",
+    "dateOfBirth": "2000-02-15",
+    "nationalityCode": "ESP",
+    "clubExternalId": "celta",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 166,
+    "shirtNumber": 25,
+    "attributes": {
+      "attack": 86,
+      "defense": 52,
+      "technique": 84,
+      "speed": 84,
+      "stamina": 74,
+      "mentality": 70
+    },
+    "marketValue": "19773841",
+    "specialAttributes": [
+      "workhorse",
+      "speedster"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34199777",
+      "identitySourceId": "34199777",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:celta:marcos-alonso",
+    "fullName": "Marcos Alonso",
+    "displayName": "Alonso",
+    "dateOfBirth": "1998-07-20",
+    "nationalityCode": "ESP",
+    "clubExternalId": "celta",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 87,
+      "defense": 44,
+      "technique": 83,
+      "speed": 90,
+      "stamina": 74,
+      "mentality": 64
+    },
+    "marketValue": "20657659",
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34148475",
+      "identitySourceId": "34148475",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:celta:matias-vecino",
+    "fullName": "Matias Vecino",
+    "displayName": "Vecino",
+    "dateOfBirth": "2002-04-26",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "ST",
@@ -962,93 +962,93 @@
       "CF"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
+    "heightCm": 181,
+    "shirtNumber": 5,
     "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 76,
-      "speed": 73,
-      "stamina": 72,
-      "mentality": 76
+      "attack": 86,
+      "defense": 42,
+      "technique": 75,
+      "speed": 74,
+      "stamina": 74,
+      "mentality": 75
     },
-    "marketValue": 18750000,
+    "marketValue": "20605030",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "press_resistant",
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34148034",
+      "identitySourceId": "34148034",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p22",
-    "fullName": "ESP Celta Player 22",
-    "displayName": "Celta P22",
-    "dateOfBirth": "1996-10-10",
+    "externalId": "public-identity:esp:celta:miguel-roman",
+    "fullName": "Miguel Román",
+    "displayName": "Román",
+    "dateOfBirth": "1999-04-13",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
+    "preferredFoot": "RIGHT",
+    "heightCm": 189,
+    "shirtNumber": 16,
     "attributes": {
-      "attack": 79,
-      "defense": 59,
+      "attack": 87,
+      "defense": 39,
       "technique": 68,
-      "speed": 69,
-      "stamina": 73,
+      "speed": 76,
+      "stamina": 77,
       "mentality": 70
     },
-    "marketValue": 17750000,
+    "marketValue": "20324543",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34251225",
+      "identitySourceId": "34251225",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p23",
-    "fullName": "ESP Celta Player 23",
-    "displayName": "Celta P23",
-    "dateOfBirth": "2003-11-13",
+    "externalId": "public-identity:esp:celta:mihailo-ristic",
+    "fullName": "Mihailo Ristić",
+    "displayName": "Ristić",
+    "dateOfBirth": "1996-01-03",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "CF",
@@ -1056,87 +1056,87 @@
       "CAM",
       "ST"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 85,
-      "defense": 65,
+      "attack": 81,
+      "defense": 43,
       "technique": 77,
-      "speed": 75,
-      "stamina": 75,
-      "mentality": 74
+      "speed": 76,
+      "stamina": 73,
+      "mentality": 75
     },
-    "marketValue": 19250000,
+    "marketValue": "18155702",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "leader",
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34173512",
+      "identitySourceId": "34173512",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:celta:p24",
-    "fullName": "ESP Celta Player 24",
-    "displayName": "Celta P24",
-    "dateOfBirth": "1992-12-16",
+    "externalId": "public-identity:esp:celta:pablo-duran",
+    "fullName": "Pablo Durán",
+    "displayName": "Durán",
+    "dateOfBirth": "1999-03-10",
     "nationalityCode": "ESP",
     "clubExternalId": "celta",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 188,
+    "shirtNumber": 18,
     "attributes": {
-      "attack": 75,
-      "defense": 55,
-      "technique": 70,
-      "speed": 65,
-      "stamina": 70,
-      "mentality": 71
+      "attack": 88,
+      "defense": 49,
+      "technique": 72,
+      "speed": 71,
+      "stamina": 73,
+      "mentality": 79
     },
-    "marketValue": 16750000,
+    "marketValue": "23096123",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "speedster",
+      "aerial_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34247298",
+      "identitySourceId": "34247298",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

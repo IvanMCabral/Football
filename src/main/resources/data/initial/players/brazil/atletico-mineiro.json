@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p01",
-    "fullName": "BRA AtleticoMG Player 1",
-    "displayName": "Atletico-MG P1",
-    "dateOfBirth": "2004-01-01",
+    "externalId": "public-identity:bra:atletico-mineiro:alan-franco",
+    "fullName": "Alan Franco",
+    "displayName": "Franco",
+    "dateOfBirth": "1994-08-28",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 182,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 83,
-      "defense": 95,
-      "technique": 80,
-      "speed": 87,
-      "stamina": 79,
-      "mentality": 79
+      "attack": 71,
+      "defense": 71,
+      "technique": 87,
+      "speed": 77,
+      "stamina": 90,
+      "mentality": 78
     },
-    "marketValue": 20750000,
-    "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:atletico-mineiro:p02",
-    "fullName": "BRA AtleticoMG Player 2",
-    "displayName": "Atletico-MG P2",
-    "dateOfBirth": "1993-02-04",
-    "nationalityCode": "BRA",
-    "clubExternalId": "atletico-mineiro",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
-    "attributes": {
-      "attack": 84,
-      "defense": 95,
-      "technique": 84,
-      "speed": 88,
-      "stamina": 85,
-      "mentality": 87
-    },
-    "marketValue": 21000000,
+    "marketValue": "20851587",
     "specialAttributes": [
       "sweeper_keeper",
       "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "alan-franco",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p03",
-    "fullName": "BRA AtleticoMG Player 3",
-    "displayName": "Atletico-MG P3",
-    "dateOfBirth": "2000-03-07",
+    "externalId": "public-identity:bra:atletico-mineiro:alan-minda",
+    "fullName": "Alan Minda",
+    "displayName": "Minda",
+    "dateOfBirth": "2001-09-14",
+    "nationalityCode": "BRA",
+    "clubExternalId": "atletico-mineiro",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 27,
+    "attributes": {
+      "attack": 89,
+      "defense": 54,
+      "technique": 89,
+      "speed": 87,
+      "stamina": 78,
+      "mentality": 75
+    },
+    "marketValue": "21720128",
+    "specialAttributes": [
+      "sweeper_keeper",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "alan-minda",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:atletico-mineiro:alexsander",
+    "fullName": "Alexsander",
+    "displayName": "Alexsander",
+    "dateOfBirth": "2002-12-28",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "LB",
@@ -102,93 +104,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 173,
+    "shirtNumber": 5,
     "attributes": {
-      "attack": 72,
-      "defense": 88,
-      "technique": 83,
+      "attack": 82,
+      "defense": 54,
+      "technique": 88,
       "speed": 80,
       "stamina": 77,
-      "mentality": 81
+      "mentality": 80
     },
-    "marketValue": 20000000,
+    "marketValue": "22071876",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "alexsander",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p04",
-    "fullName": "BRA AtleticoMG Player 4",
-    "displayName": "Atletico-MG P4",
-    "dateOfBirth": "1989-04-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "atletico-mineiro",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 78,
-      "defense": 94,
-      "technique": 85,
-      "speed": 86,
-      "stamina": 88,
-      "mentality": 85
-    },
-    "marketValue": 21500000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:atletico-mineiro:p05",
-    "fullName": "BRA AtleticoMG Player 5",
-    "displayName": "Atletico-MG P5",
-    "dateOfBirth": "1996-05-13",
+    "externalId": "public-identity:bra:atletico-mineiro:bernard",
+    "fullName": "Bernard",
+    "displayName": "Bernard",
+    "dateOfBirth": "2005-10-13",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "CB",
@@ -196,93 +152,143 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 183,
+    "shirtNumber": 11,
     "attributes": {
-      "attack": 70,
-      "defense": 86,
-      "technique": 80,
-      "speed": 78,
-      "stamina": 76,
-      "mentality": 75
+      "attack": 74,
+      "defense": 74,
+      "technique": 86,
+      "speed": 77,
+      "stamina": 82,
+      "mentality": 84
     },
-    "marketValue": 19500000,
+    "marketValue": "22453080",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "bernard",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p06",
-    "fullName": "BRA AtleticoMG Player 6",
-    "displayName": "Atletico-MG P6",
-    "dateOfBirth": "2003-06-16",
+    "externalId": "public-identity:bra:atletico-mineiro:caua-soares",
+    "fullName": "Cauã Soares",
+    "displayName": "Soares",
+    "dateOfBirth": "2005-08-18",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "CB",
     "secondaryPositions": [
       "CDM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 29,
     "attributes": {
-      "attack": 75,
-      "defense": 91,
-      "technique": 81,
-      "speed": 83,
-      "stamina": 86,
-      "mentality": 87
+      "attack": 82,
+      "defense": 54,
+      "technique": 89,
+      "speed": 80,
+      "stamina": 75,
+      "mentality": 84
     },
-    "marketValue": 20750000,
+    "marketValue": "23309192",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "caua-soares",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p07",
-    "fullName": "BRA AtleticoMG Player 7",
-    "displayName": "Atletico-MG P7",
-    "dateOfBirth": "1992-07-19",
+    "externalId": "public-identity:bra:atletico-mineiro:dudu",
+    "fullName": "Dudu",
+    "displayName": "Dudu",
+    "dateOfBirth": "2001-05-14",
+    "nationalityCode": "BRA",
+    "clubExternalId": "atletico-mineiro",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 92,
+    "attributes": {
+      "attack": 95,
+      "defense": 45,
+      "technique": 74,
+      "speed": 75,
+      "stamina": 71,
+      "mentality": 74
+    },
+    "marketValue": "20740646",
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "dudu",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:atletico-mineiro:everson",
+    "fullName": "Everson",
+    "displayName": "Everson",
+    "dateOfBirth": "1998-01-25",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "RB",
@@ -291,46 +297,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 188,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 78,
-      "defense": 94,
-      "technique": 87,
-      "speed": 86,
-      "stamina": 85,
-      "mentality": 88
+      "attack": 44,
+      "defense": 83,
+      "technique": 64,
+      "speed": 71,
+      "stamina": 75,
+      "mentality": 77
     },
-    "marketValue": 21500000,
+    "marketValue": "21480113",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "workhorse",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "everson",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p08",
-    "fullName": "BRA AtleticoMG Player 8",
-    "displayName": "Atletico-MG P8",
-    "dateOfBirth": "1999-08-22",
+    "externalId": "public-identity:bra:atletico-mineiro:gabriel-delfim",
+    "fullName": "Gabriel Delfim",
+    "displayName": "Delfim",
+    "dateOfBirth": "2001-04-06",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "LWB",
@@ -338,47 +345,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 192,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 76,
-      "defense": 92,
-      "technique": 81,
-      "speed": 84,
-      "stamina": 88,
-      "mentality": 84
+      "attack": 42,
+      "defense": 88,
+      "technique": 60,
+      "speed": 64,
+      "stamina": 75,
+      "mentality": 81
     },
-    "marketValue": 21000000,
+    "marketValue": "21797503",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "gabriel-delfim",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p09",
-    "fullName": "BRA AtleticoMG Player 9",
-    "displayName": "Atletico-MG P9",
-    "dateOfBirth": "1988-09-25",
+    "externalId": "public-identity:bra:atletico-mineiro:gustavo-scarpa",
+    "fullName": "Gustavo Scarpa",
+    "displayName": "Scarpa",
+    "dateOfBirth": "2002-05-08",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "RWB",
@@ -387,46 +395,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 173,
+    "shirtNumber": 10,
     "attributes": {
-      "attack": 76,
-      "defense": 92,
-      "technique": 84,
-      "speed": 84,
-      "stamina": 84,
-      "mentality": 82
+      "attack": 77,
+      "defense": 56,
+      "technique": 85,
+      "speed": 81,
+      "stamina": 76,
+      "mentality": 81
     },
-    "marketValue": 21000000,
+    "marketValue": "24097415",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "gustavo-scarpa",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p10",
-    "fullName": "BRA AtleticoMG Player 10",
-    "displayName": "Atletico-MG P10",
-    "dateOfBirth": "1995-10-01",
+    "externalId": "public-identity:bra:atletico-mineiro:igor-gomes",
+    "fullName": "Igor Gomes",
+    "displayName": "Gomes",
+    "dateOfBirth": "1993-10-02",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "CDM",
@@ -435,46 +444,47 @@
       "CB"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "heightCm": 180,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 89,
-      "defense": 89,
-      "technique": 90,
-      "speed": 89,
-      "stamina": 83,
-      "mentality": 83
+      "attack": 72,
+      "defense": 75,
+      "technique": 86,
+      "speed": 77,
+      "stamina": 88,
+      "mentality": 85
     },
-    "marketValue": 21750000,
+    "marketValue": "23206413",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "igor-gomes",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p11",
-    "fullName": "BRA AtleticoMG Player 11",
-    "displayName": "Atletico-MG P11",
-    "dateOfBirth": "2002-11-04",
+    "externalId": "public-identity:bra:atletico-mineiro:ivan-roman",
+    "fullName": "Iván Román",
+    "displayName": "Román",
+    "dateOfBirth": "1999-09-20",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "CM",
@@ -483,94 +493,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 171,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 83,
-      "defense": 83,
-      "technique": 80,
-      "speed": 83,
-      "stamina": 82,
-      "mentality": 84
+      "attack": 61,
+      "defense": 77,
+      "technique": 69,
+      "speed": 77,
+      "stamina": 79,
+      "mentality": 74
     },
-    "marketValue": 20250000,
+    "marketValue": "26127415",
     "specialAttributes": [
-      "line_breaker",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "ivan-roman",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p12",
-    "fullName": "BRA AtleticoMG Player 12",
-    "displayName": "Atletico-MG P12",
-    "dateOfBirth": "1991-12-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "atletico-mineiro",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 85,
-      "defense": 85,
-      "technique": 85,
-      "speed": 85,
-      "stamina": 80,
-      "mentality": 84
-    },
-    "marketValue": 20750000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:atletico-mineiro:p13",
-    "fullName": "BRA AtleticoMG Player 13",
-    "displayName": "Atletico-MG P13",
-    "dateOfBirth": "1998-01-10",
+    "externalId": "public-identity:bra:atletico-mineiro:kaua-pascini",
+    "fullName": "Kauã Pascini",
+    "displayName": "Pascini",
+    "dateOfBirth": "1992-01-28",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "CM",
@@ -579,46 +542,96 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
+    "heightCm": 179,
+    "shirtNumber": 36,
+    "attributes": {
+      "attack": 51,
+      "defense": 79,
+      "technique": 70,
+      "speed": 63,
+      "stamina": 80,
+      "mentality": 74
+    },
+    "marketValue": "22112858",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "kaua-pascini",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:atletico-mineiro:lyanco",
+    "fullName": "Lyanco",
+    "displayName": "Lyanco",
+    "dateOfBirth": "2001-09-15",
+    "nationalityCode": "BRA",
+    "clubExternalId": "atletico-mineiro",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
     "shirtNumber": 13,
     "attributes": {
-      "attack": 84,
-      "defense": 84,
-      "technique": 80,
-      "speed": 84,
-      "stamina": 84,
-      "mentality": 81
+      "attack": 69,
+      "defense": 67,
+      "technique": 74,
+      "speed": 77,
+      "stamina": 92,
+      "mentality": 78
     },
-    "marketValue": 20500000,
+    "marketValue": "26109697",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "lyanco",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p14",
-    "fullName": "BRA AtleticoMG Player 14",
-    "displayName": "Atletico-MG P14",
-    "dateOfBirth": "2005-02-13",
+    "externalId": "public-identity:bra:atletico-mineiro:leo-duarte",
+    "fullName": "Léo Duarte",
+    "displayName": "Duarte",
+    "dateOfBirth": "2001-02-01",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "CAM",
@@ -628,45 +641,46 @@
     ],
     "preferredFoot": "LEFT",
     "heightCm": 171,
-    "shirtNumber": 14,
+    "shirtNumber": 15,
     "attributes": {
-      "attack": 82,
-      "defense": 82,
-      "technique": 81,
-      "speed": 82,
-      "stamina": 78,
-      "mentality": 77
+      "attack": 68,
+      "defense": 67,
+      "technique": 70,
+      "speed": 79,
+      "stamina": 86,
+      "mentality": 73
     },
-    "marketValue": 20000000,
+    "marketValue": "24919751",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "leo-duarte",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p15",
-    "fullName": "BRA AtleticoMG Player 15",
-    "displayName": "Atletico-MG P15",
-    "dateOfBirth": "1994-03-16",
+    "externalId": "public-identity:bra:atletico-mineiro:mamady-cisse",
+    "fullName": "Mamady Cissé",
+    "displayName": "Cissé",
+    "dateOfBirth": "1994-03-26",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "LM",
@@ -675,46 +689,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 182,
+    "shirtNumber": 39,
     "attributes": {
       "attack": 86,
-      "defense": 86,
-      "technique": 81,
-      "speed": 86,
-      "stamina": 87,
-      "mentality": 88
+      "defense": 54,
+      "technique": 88,
+      "speed": 73,
+      "stamina": 77,
+      "mentality": 82
     },
-    "marketValue": 21000000,
+    "marketValue": "21643217",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "mamady-cisse",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p16",
-    "fullName": "BRA AtleticoMG Player 16",
-    "displayName": "Atletico-MG P16",
-    "dateOfBirth": "2001-04-19",
+    "externalId": "public-identity:bra:atletico-mineiro:mateo-cassierra",
+    "fullName": "Mateo Cassierra",
+    "displayName": "Cassierra",
+    "dateOfBirth": "1993-04-07",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "RM",
@@ -723,46 +738,47 @@
       "CM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "heightCm": 176,
+    "shirtNumber": 9,
     "attributes": {
-      "attack": 80,
-      "defense": 80,
-      "technique": 78,
-      "speed": 80,
-      "stamina": 77,
-      "mentality": 80
+      "attack": 91,
+      "defense": 47,
+      "technique": 81,
+      "speed": 81,
+      "stamina": 78,
+      "mentality": 82
     },
-    "marketValue": 19500000,
+    "marketValue": "22100684",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "mateo-cassierra",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p17",
-    "fullName": "BRA AtleticoMG Player 17",
-    "displayName": "Atletico-MG P17",
-    "dateOfBirth": "1990-05-22",
+    "externalId": "public-identity:bra:atletico-mineiro:maycon",
+    "fullName": "Maycon",
+    "displayName": "Maycon",
+    "dateOfBirth": "1993-03-18",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "LW",
@@ -771,46 +787,145 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
+    "heightCm": 173,
+    "shirtNumber": 8,
     "attributes": {
-      "attack": 86,
-      "defense": 72,
-      "technique": 83,
-      "speed": 88,
+      "attack": 75,
+      "defense": 62,
+      "technique": 87,
+      "speed": 83,
+      "stamina": 89,
+      "mentality": 73
+    },
+    "marketValue": "21808978",
+    "specialAttributes": [
+      "line_breaker",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "maycon",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:atletico-mineiro:natanael",
+    "fullName": "Natanael",
+    "displayName": "Natanael",
+    "dateOfBirth": "1999-06-27",
+    "nationalityCode": "BRA",
+    "clubExternalId": "atletico-mineiro",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 173,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 60,
+      "defense": 80,
+      "technique": 68,
+      "speed": 77,
+      "stamina": 80,
+      "mentality": 73
+    },
+    "marketValue": "22757157",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "natanael",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:atletico-mineiro:patrick",
+    "fullName": "Patrick",
+    "displayName": "Patrick",
+    "dateOfBirth": "1997-10-06",
+    "nationalityCode": "BRA",
+    "clubExternalId": "atletico-mineiro",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 77,
+      "defense": 68,
+      "technique": 78,
+      "speed": 77,
       "stamina": 84,
       "mentality": 80
     },
-    "marketValue": 20000000,
+    "marketValue": "22675118",
     "specialAttributes": [
-      "speedster",
+      "set_piece_specialist",
       "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "patrick",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p18",
-    "fullName": "BRA AtleticoMG Player 18",
-    "displayName": "Atletico-MG P18",
-    "dateOfBirth": "1997-06-25",
+    "externalId": "public-identity:bra:atletico-mineiro:pedro-cobra",
+    "fullName": "Pedro Cobra",
+    "displayName": "Cobra",
+    "dateOfBirth": "1996-07-26",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "RW",
@@ -818,237 +933,144 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
+    "preferredFoot": "RIGHT",
+    "heightCm": 191,
+    "shirtNumber": 46,
     "attributes": {
-      "attack": 83,
-      "defense": 69,
-      "technique": 76,
-      "speed": 85,
-      "stamina": 77,
-      "mentality": 75
+      "attack": 37,
+      "defense": 90,
+      "technique": 63,
+      "speed": 63,
+      "stamina": 76,
+      "mentality": 84
     },
-    "marketValue": 19250000,
+    "marketValue": "25597254",
     "specialAttributes": [
-      "workhorse",
+      "line_breaker",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "pedro-cobra",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p19",
-    "fullName": "BRA AtleticoMG Player 19",
-    "displayName": "Atletico-MG P19",
-    "dateOfBirth": "2004-07-01",
+    "externalId": "public-identity:bra:atletico-mineiro:reinier",
+    "fullName": "Reinier",
+    "displayName": "Reinier",
+    "dateOfBirth": "1991-05-09",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
-    "primaryPosition": "LW",
+    "primaryPosition": "ST",
     "secondaryPositions": [
-      "LM",
-      "ST"
+      "CF"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
+    "heightCm": 170,
     "shirtNumber": 19,
     "attributes": {
-      "attack": 92,
-      "defense": 78,
-      "technique": 88,
-      "speed": 94,
-      "stamina": 82,
-      "mentality": 82
-    },
-    "marketValue": 21500000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:atletico-mineiro:p20",
-    "fullName": "BRA AtleticoMG Player 20",
-    "displayName": "Atletico-MG P20",
-    "dateOfBirth": "1993-08-04",
-    "nationalityCode": "BRA",
-    "clubExternalId": "atletico-mineiro",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
-    "attributes": {
-      "attack": 93,
-      "defense": 79,
-      "technique": 85,
-      "speed": 95,
-      "stamina": 88,
-      "mentality": 90
-    },
-    "marketValue": 21750000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:atletico-mineiro:p21",
-    "fullName": "BRA AtleticoMG Player 21",
-    "displayName": "Atletico-MG P21",
-    "dateOfBirth": "2000-09-07",
-    "nationalityCode": "BRA",
-    "clubExternalId": "atletico-mineiro",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 94,
-      "defense": 74,
-      "technique": 87,
-      "speed": 84,
-      "stamina": 83,
-      "mentality": 87
-    },
-    "marketValue": 21500000,
-    "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:bra:atletico-mineiro:p22",
-    "fullName": "BRA AtleticoMG Player 22",
-    "displayName": "Atletico-MG P22",
-    "dateOfBirth": "1989-10-10",
-    "nationalityCode": "BRA",
-    "clubExternalId": "atletico-mineiro",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
-    "attributes": {
-      "attack": 92,
-      "defense": 72,
-      "technique": 81,
-      "speed": 82,
-      "stamina": 86,
+      "attack": 85,
+      "defense": 57,
+      "technique": 84,
+      "speed": 77,
+      "stamina": 78,
       "mentality": 83
     },
-    "marketValue": 21000000,
+    "marketValue": "20967255",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "line_breaker",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "reinier",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p23",
-    "fullName": "BRA AtleticoMG Player 23",
-    "displayName": "Atletico-MG P23",
-    "dateOfBirth": "1996-11-13",
+    "externalId": "public-identity:bra:atletico-mineiro:renan-lodi",
+    "fullName": "Renan Lodi",
+    "displayName": "Lodi",
+    "dateOfBirth": "1996-02-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "atletico-mineiro",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 189,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 59,
+      "defense": 87,
+      "technique": 68,
+      "speed": 71,
+      "stamina": 83,
+      "mentality": 77
+    },
+    "marketValue": "25351899",
+    "specialAttributes": [
+      "press_resistant",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "renan-lodi",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:bra:atletico-mineiro:robert",
+    "fullName": "Robert",
+    "displayName": "Robert",
+    "dateOfBirth": "1997-05-27",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "CF",
@@ -1057,86 +1079,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 190,
+    "shirtNumber": 31,
     "attributes": {
-      "attack": 87,
-      "defense": 67,
-      "technique": 79,
-      "speed": 77,
-      "stamina": 77,
-      "mentality": 76
+      "attack": 44,
+      "defense": 86,
+      "technique": 57,
+      "speed": 69,
+      "stamina": 68,
+      "mentality": 83
     },
-    "marketValue": 19750000,
+    "marketValue": "26214444",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "aerial_specialist",
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "robert",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:bra:atletico-mineiro:p24",
-    "fullName": "BRA AtleticoMG Player 24",
-    "displayName": "Atletico-MG P24",
-    "dateOfBirth": "2003-12-16",
+    "externalId": "public-identity:bra:atletico-mineiro:ruan-tressoldi",
+    "fullName": "Ruan Tressoldi",
+    "displayName": "Tressoldi",
+    "dateOfBirth": "1992-01-19",
     "nationalityCode": "BRA",
     "clubExternalId": "atletico-mineiro",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 95,
-      "defense": 75,
-      "technique": 90,
-      "speed": 85,
-      "stamina": 90,
-      "mentality": 91
+      "attack": 63,
+      "defense": 82,
+      "technique": 71,
+      "speed": 77,
+      "stamina": 82,
+      "mentality": 73
     },
-    "marketValue": 21750000,
+    "marketValue": "23839759",
     "specialAttributes": [
-      "aerial_specialist",
+      "press_resistant",
       "clutch_finisher"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Atletico_Mineiro",
+      "identitySourceId": "ruan-tressoldi",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

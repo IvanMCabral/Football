@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:esp:mallorca:p01",
-    "fullName": "ESP Mallorca Player 1",
-    "displayName": "Mallorca P1",
-    "dateOfBirth": "1996-01-01",
+    "externalId": "public-identity:esp:mallorca:abdon-prats",
+    "fullName": "Abdón Prats",
+    "displayName": "Prats",
+    "dateOfBirth": "1995-08-27",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 179,
+    "shirtNumber": 9,
     "attributes": {
-      "attack": 69,
-      "defense": 81,
-      "technique": 66,
-      "speed": 73,
-      "stamina": 65,
-      "mentality": 65
+      "attack": 84,
+      "defense": 47,
+      "technique": 73,
+      "speed": 71,
+      "stamina": 76,
+      "mentality": 74
     },
-    "marketValue": 17250000,
+    "marketValue": "23212592",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
+      "leader",
+      "one_on_one_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "abdon-prats",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p02",
-    "fullName": "ESP Mallorca Player 2",
-    "displayName": "Mallorca P2",
-    "dateOfBirth": "2003-02-04",
+    "externalId": "public-identity:esp:mallorca:antonio-raillo",
+    "fullName": "Antonio Raíllo",
+    "displayName": "Raíllo",
+    "dateOfBirth": "1996-01-02",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 76,
-      "defense": 88,
-      "technique": 76,
-      "speed": 80,
-      "stamina": 77,
-      "mentality": 79
+      "attack": 49,
+      "defense": 76,
+      "technique": 65,
+      "speed": 64,
+      "stamina": 79,
+      "mentality": 71
     },
-    "marketValue": 19000000,
+    "marketValue": "23063904",
     "specialAttributes": [
       "sweeper_keeper",
       "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "antonio-raillo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p03",
-    "fullName": "ESP Mallorca Player 3",
-    "displayName": "Mallorca P3",
-    "dateOfBirth": "1992-03-07",
+    "externalId": "public-identity:esp:mallorca:antonio-sanchez",
+    "fullName": "Antonio Sánchez",
+    "displayName": "Sánchez",
+    "dateOfBirth": "1997-11-07",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "LB",
@@ -101,188 +103,192 @@
       "LWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
-    "attributes": {
-      "attack": 63,
-      "defense": 79,
-      "technique": 74,
-      "speed": 71,
-      "stamina": 68,
-      "mentality": 72
-    },
-    "marketValue": 17750000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p04",
-    "fullName": "ESP Mallorca Player 4",
-    "displayName": "Mallorca P4",
-    "dateOfBirth": "1999-04-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
     "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 61,
-      "defense": 77,
-      "technique": 68,
-      "speed": 69,
-      "stamina": 71,
-      "mentality": 68
-    },
-    "marketValue": 17250000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p05",
-    "fullName": "ESP Mallorca Player 5",
-    "displayName": "Mallorca P5",
-    "dateOfBirth": "1988-05-13",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
-    "attributes": {
-      "attack": 61,
-      "defense": 77,
-      "technique": 71,
-      "speed": 69,
-      "stamina": 67,
-      "mentality": 66
-    },
-    "marketValue": 17250000,
-    "specialAttributes": [
-      "workhorse",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p06",
-    "fullName": "ESP Mallorca Player 6",
-    "displayName": "Mallorca P6",
-    "dateOfBirth": "1995-06-16",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
+    "heightCm": 175,
     "shirtNumber": 6,
     "attributes": {
-      "attack": 59,
-      "defense": 75,
-      "technique": 65,
-      "speed": 67,
-      "stamina": 70,
-      "mentality": 71
+      "attack": 73,
+      "defense": 48,
+      "technique": 78,
+      "speed": 70,
+      "stamina": 78,
+      "mentality": 72
     },
-    "marketValue": 16750000,
+    "marketValue": "23014539",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "antonio-sanchez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p07",
-    "fullName": "ESP Mallorca Player 7",
-    "displayName": "Mallorca P7",
-    "dateOfBirth": "2002-07-19",
+    "externalId": "public-identity:esp:mallorca:david-lopez",
+    "fullName": "David López",
+    "displayName": "López",
+    "dateOfBirth": "1993-09-09",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 27,
+    "attributes": {
+      "attack": 55,
+      "defense": 72,
+      "technique": 65,
+      "speed": 69,
+      "stamina": 83,
+      "mentality": 75
+    },
+    "marketValue": "18893448",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "david-lopez",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:ivan-cuellar",
+    "fullName": "Iván Cuéllar",
+    "displayName": "Cuéllar",
+    "dateOfBirth": "1989-09-26",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 25,
+    "attributes": {
+      "attack": 35,
+      "defense": 79,
+      "technique": 61,
+      "speed": 62,
+      "stamina": 73,
+      "mentality": 74
+    },
+    "marketValue": "22826639",
+    "specialAttributes": [
+      "workhorse",
+      "leader"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "ivan-cuellar",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:jan-salas",
+    "fullName": "Jan Salas",
+    "displayName": "Salas",
+    "dateOfBirth": "1998-07-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 168,
+    "shirtNumber": 41,
+    "attributes": {
+      "attack": 74,
+      "defense": 63,
+      "technique": 83,
+      "speed": 80,
+      "stamina": 77,
+      "mentality": 74
+    },
+    "marketValue": "18278392",
+    "specialAttributes": [
+      "aerial_specialist",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "jan-salas",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:jan-virgili",
+    "fullName": "Jan Virgili",
+    "displayName": "Virgili",
+    "dateOfBirth": "2003-06-24",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "RB",
@@ -291,46 +297,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 173,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 76,
-      "speed": 75,
-      "stamina": 74,
-      "mentality": 77
+      "attack": 86,
+      "defense": 44,
+      "technique": 75,
+      "speed": 83,
+      "stamina": 78,
+      "mentality": 68
     },
-    "marketValue": 18750000,
+    "marketValue": "18362572",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "workhorse",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "jan-virgili",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p08",
-    "fullName": "ESP Mallorca Player 8",
-    "displayName": "Mallorca P8",
-    "dateOfBirth": "1991-08-22",
+    "externalId": "public-identity:esp:mallorca:johan-mojica",
+    "fullName": "Johan Mojica",
+    "displayName": "Mojica",
+    "dateOfBirth": "1995-12-03",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "LWB",
@@ -338,47 +345,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 58,
-      "defense": 74,
-      "technique": 63,
-      "speed": 66,
-      "stamina": 70,
-      "mentality": 66
+      "attack": 52,
+      "defense": 84,
+      "technique": 67,
+      "speed": 58,
+      "stamina": 73,
+      "mentality": 70
     },
-    "marketValue": 16500000,
+    "marketValue": "20166533",
     "specialAttributes": [
-      "workhorse",
+      "speedster",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "johan-mojica",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p09",
-    "fullName": "ESP Mallorca Player 9",
-    "displayName": "Mallorca P9",
-    "dateOfBirth": "1998-09-25",
+    "externalId": "public-identity:esp:mallorca:lucas-bergstrom",
+    "fullName": "Lucas Bergström",
+    "displayName": "Bergström",
+    "dateOfBirth": "1993-08-28",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "RWB",
@@ -387,46 +395,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 188,
+    "shirtNumber": 13,
     "attributes": {
-      "attack": 63,
-      "defense": 79,
-      "technique": 71,
-      "speed": 71,
-      "stamina": 71,
-      "mentality": 69
+      "attack": 35,
+      "defense": 86,
+      "technique": 54,
+      "speed": 59,
+      "stamina": 66,
+      "mentality": 70
     },
-    "marketValue": 17750000,
+    "marketValue": "20656322",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "lucas-bergstrom",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p10",
-    "fullName": "ESP Mallorca Player 10",
-    "displayName": "Mallorca P10",
-    "dateOfBirth": "2005-10-01",
+    "externalId": "public-identity:esp:mallorca:manu-morlanes",
+    "fullName": "Manu Morlanes",
+    "displayName": "Morlanes",
+    "dateOfBirth": "1999-05-02",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "CDM",
@@ -434,47 +443,48 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 8,
     "attributes": {
-      "attack": 71,
-      "defense": 71,
-      "technique": 72,
-      "speed": 71,
-      "stamina": 65,
-      "mentality": 65
+      "attack": 72,
+      "defense": 64,
+      "technique": 75,
+      "speed": 68,
+      "stamina": 80,
+      "mentality": 81
     },
-    "marketValue": 17250000,
+    "marketValue": "19719618",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "manu-morlanes",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p11",
-    "fullName": "ESP Mallorca Player 11",
-    "displayName": "Mallorca P11",
-    "dateOfBirth": "1994-11-04",
+    "externalId": "public-identity:esp:mallorca:marc-domenech",
+    "fullName": "Marc Domènech",
+    "displayName": "Domènech",
+    "dateOfBirth": "2005-12-19",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "CM",
@@ -483,46 +493,47 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 182,
+    "shirtNumber": 30,
     "attributes": {
-      "attack": 78,
-      "defense": 78,
-      "technique": 75,
-      "speed": 78,
-      "stamina": 77,
-      "mentality": 79
+      "attack": 81,
+      "defense": 41,
+      "technique": 76,
+      "speed": 73,
+      "stamina": 75,
+      "mentality": 72
     },
-    "marketValue": 19000000,
+    "marketValue": "19837881",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "marc-domenech",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p12",
-    "fullName": "ESP Mallorca Player 12",
-    "displayName": "Mallorca P12",
-    "dateOfBirth": "2001-12-07",
+    "externalId": "public-identity:esp:mallorca:martin-valjent",
+    "fullName": "Martin Valjent",
+    "displayName": "Valjent",
+    "dateOfBirth": "1993-03-21",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "CM",
@@ -530,47 +541,48 @@
       "CDM",
       "CAM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 24,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 77,
-      "speed": 77,
-      "stamina": 72,
+      "attack": 46,
+      "defense": 75,
+      "technique": 58,
+      "speed": 59,
+      "stamina": 78,
       "mentality": 76
     },
-    "marketValue": 18750000,
+    "marketValue": "19630114",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "martin-valjent",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p13",
-    "fullName": "ESP Mallorca Player 13",
-    "displayName": "Mallorca P13",
-    "dateOfBirth": "1990-01-10",
+    "externalId": "public-identity:esp:mallorca:mateu-morey",
+    "fullName": "Mateu Morey",
+    "displayName": "Morey",
+    "dateOfBirth": "1997-10-01",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "CM",
@@ -578,47 +590,48 @@
       "CDM",
       "CAM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 71,
-      "defense": 71,
-      "technique": 67,
-      "speed": 71,
-      "stamina": 71,
-      "mentality": 68
+      "attack": 66,
+      "defense": 73,
+      "technique": 66,
+      "speed": 80,
+      "stamina": 85,
+      "mentality": 74
     },
-    "marketValue": 17250000,
+    "marketValue": "20495559",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "set_piece_specialist",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "mateu-morey",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p14",
-    "fullName": "ESP Mallorca Player 14",
-    "displayName": "Mallorca P14",
-    "dateOfBirth": "1997-02-13",
+    "externalId": "public-identity:esp:mallorca:pablo-torre",
+    "fullName": "Pablo Torre",
+    "displayName": "Torre",
+    "dateOfBirth": "2003-12-04",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "CAM",
@@ -626,47 +639,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 20,
     "attributes": {
-      "attack": 68,
-      "defense": 68,
-      "technique": 67,
-      "speed": 68,
-      "stamina": 64,
-      "mentality": 63
+      "attack": 65,
+      "defense": 77,
+      "technique": 71,
+      "speed": 65,
+      "stamina": 81,
+      "mentality": 74
     },
-    "marketValue": 16500000,
+    "marketValue": "23310120",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "set_piece_specialist",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "pablo-torre",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p15",
-    "fullName": "ESP Mallorca Player 15",
-    "displayName": "Mallorca P15",
-    "dateOfBirth": "2004-03-16",
+    "externalId": "public-identity:esp:mallorca:samu-costa",
+    "fullName": "Samú Costa",
+    "displayName": "Costa",
+    "dateOfBirth": "2004-01-13",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "LM",
@@ -675,46 +689,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "heightCm": 182,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 72,
-      "speed": 77,
-      "stamina": 78,
-      "mentality": 79
+      "attack": 82,
+      "defense": 55,
+      "technique": 79,
+      "speed": 76,
+      "stamina": 77,
+      "mentality": 71
     },
-    "marketValue": 18750000,
+    "marketValue": "18783826",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "samu-costa",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p16",
-    "fullName": "ESP Mallorca Player 16",
-    "displayName": "Mallorca P16",
-    "dateOfBirth": "1993-04-19",
+    "externalId": "public-identity:esp:mallorca:sergi-darder",
+    "fullName": "Sergi Darder",
+    "displayName": "Darder",
+    "dateOfBirth": "1991-10-08",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "RM",
@@ -722,333 +737,334 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 10,
     "attributes": {
-      "attack": 71,
-      "defense": 71,
-      "technique": 69,
-      "speed": 71,
-      "stamina": 68,
-      "mentality": 71
+      "attack": 67,
+      "defense": 66,
+      "technique": 77,
+      "speed": 68,
+      "stamina": 81,
+      "mentality": 74
     },
-    "marketValue": 17250000,
+    "marketValue": "19312369",
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "sergi-darder",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:toni-lato",
+    "fullName": "Toni Lato",
+    "displayName": "Lato",
+    "dateOfBirth": "2002-09-02",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 177,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 58,
+      "defense": 71,
+      "technique": 70,
+      "speed": 71,
+      "stamina": 78,
+      "mentality": 70
+    },
+    "marketValue": "20558004",
+    "specialAttributes": [
+      "workhorse",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "toni-lato",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:zito-luvumbo",
+    "fullName": "Zito Luvumbo",
+    "displayName": "Luvumbo",
+    "dateOfBirth": "1991-05-12",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 86,
+      "defense": 44,
+      "technique": 84,
+      "speed": 82,
+      "stamina": 71,
+      "mentality": 68
+    },
+    "marketValue": "21865465",
+    "specialAttributes": [
+      "speedster",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Mallorca",
+      "identitySourceId": "zito-luvumbo",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:javi-llabres",
+    "fullName": "Javi Llabrés",
+    "displayName": "Llabrés",
+    "dateOfBirth": "2002-02-05",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 86,
+      "defense": 48,
+      "technique": 83,
+      "speed": 90,
+      "stamina": 72,
+      "mentality": 65
+    },
+    "marketValue": "19203686",
+    "specialAttributes": [
+      "clutch_finisher",
+      "set_piece_specialist"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34220316",
+      "identitySourceId": "34220316",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:leo-roman",
+    "fullName": "Leo Román",
+    "displayName": "Román",
+    "dateOfBirth": "1999-03-08",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 171,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 81,
+      "defense": 47,
+      "technique": 76,
+      "speed": 83,
+      "stamina": 71,
+      "mentality": 65
+    },
+    "marketValue": "20557213",
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34219341",
+      "identitySourceId": "34219341",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:marash-kumbulla",
+    "fullName": "Marash Kumbulla",
+    "displayName": "Kumbulla",
+    "dateOfBirth": "1988-05-28",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 89,
+      "defense": 45,
+      "technique": 73,
+      "speed": 81,
+      "stamina": 68,
+      "mentality": 77
+    },
+    "marketValue": "19933232",
+    "specialAttributes": [
+      "clutch_finisher",
+      "set_piece_specialist"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34169565",
+      "identitySourceId": "34169565",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:mallorca:mateo-joseph",
+    "fullName": "Mateo Joseph",
+    "displayName": "Joseph",
+    "dateOfBirth": "2005-08-22",
+    "nationalityCode": "ESP",
+    "clubExternalId": "mallorca",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 89,
+      "defense": 40,
+      "technique": 69,
+      "speed": 79,
+      "stamina": 77,
+      "mentality": 79
+    },
+    "marketValue": "21676038",
     "specialAttributes": [
       "leader",
       "set_piece_specialist"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34222393",
+      "identitySourceId": "34222393",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p17",
-    "fullName": "ESP Mallorca Player 17",
-    "displayName": "Mallorca P17",
-    "dateOfBirth": "2000-05-22",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
-    "attributes": {
-      "attack": 76,
-      "defense": 62,
-      "technique": 73,
-      "speed": 78,
-      "stamina": 74,
-      "mentality": 70
-    },
-    "marketValue": 17500000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p18",
-    "fullName": "ESP Mallorca Player 18",
-    "displayName": "Mallorca P18",
-    "dateOfBirth": "1989-06-25",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 80,
-      "defense": 66,
-      "technique": 73,
-      "speed": 82,
-      "stamina": 74,
-      "mentality": 72
-    },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p19",
-    "fullName": "ESP Mallorca Player 19",
-    "displayName": "Mallorca P19",
-    "dateOfBirth": "1996-07-01",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 80,
-      "defense": 66,
-      "technique": 76,
-      "speed": 82,
-      "stamina": 70,
-      "mentality": 70
-    },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p20",
-    "fullName": "ESP Mallorca Player 20",
-    "displayName": "Mallorca P20",
-    "dateOfBirth": "2003-08-04",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
-    "attributes": {
-      "attack": 82,
-      "defense": 68,
-      "technique": 74,
-      "speed": 84,
-      "stamina": 77,
-      "mentality": 79
-    },
-    "marketValue": 19000000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p21",
-    "fullName": "ESP Mallorca Player 21",
-    "displayName": "Mallorca P21",
-    "dateOfBirth": "1992-09-07",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 77,
-      "defense": 57,
-      "technique": 70,
-      "speed": 67,
-      "stamina": 66,
-      "mentality": 70
-    },
-    "marketValue": 17250000,
-    "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p22",
-    "fullName": "ESP Mallorca Player 22",
-    "displayName": "Mallorca P22",
-    "dateOfBirth": "1999-10-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "mallorca",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
-    "attributes": {
-      "attack": 78,
-      "defense": 58,
-      "technique": 67,
-      "speed": 68,
-      "stamina": 72,
-      "mentality": 69
-    },
-    "marketValue": 17500000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:mallorca:p23",
-    "fullName": "ESP Mallorca Player 23",
-    "displayName": "Mallorca P23",
-    "dateOfBirth": "1988-11-13",
+    "externalId": "public-identity:esp:mallorca:omar-mascarell",
+    "fullName": "Omar Mascarell",
+    "displayName": "Mascarell",
+    "dateOfBirth": "1989-12-26",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "CF",
@@ -1056,47 +1072,47 @@
       "CAM",
       "ST"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "preferredFoot": "LEFT",
+    "heightCm": 185,
+    "shirtNumber": 5,
     "attributes": {
-      "attack": 81,
-      "defense": 61,
-      "technique": 73,
-      "speed": 71,
-      "stamina": 71,
-      "mentality": 70
+      "attack": 78,
+      "defense": 47,
+      "technique": 76,
+      "speed": 79,
+      "stamina": 70,
+      "mentality": 71
     },
-    "marketValue": 18250000,
+    "marketValue": "22591938",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "set_piece_specialist",
+      "leader"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34146302",
+      "identitySourceId": "34146302",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:mallorca:p24",
-    "fullName": "ESP Mallorca Player 24",
-    "displayName": "Mallorca P24",
-    "dateOfBirth": "1995-12-16",
+    "externalId": "public-identity:esp:mallorca:pablo-maffeo",
+    "fullName": "Pablo Maffeo",
+    "displayName": "Maffeo",
+    "dateOfBirth": "1989-12-12",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
     "primaryPosition": "ST",
@@ -1104,39 +1120,39 @@
       "CF"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "heightCm": 177,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 78,
+      "attack": 85,
+      "defense": 47,
+      "technique": 76,
       "speed": 73,
-      "stamina": 78,
-      "mentality": 79
+      "stamina": 70,
+      "mentality": 72
     },
-    "marketValue": 18750000,
+    "marketValue": "23356602",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "speedster",
+      "press_resistant"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34161328",
+      "identitySourceId": "34161328",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

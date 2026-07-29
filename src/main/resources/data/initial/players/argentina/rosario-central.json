@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:arg:rosario-central:p01",
-    "fullName": "ARG RosarioCentral Player 1",
-    "displayName": "Rosario Central P1",
-    "dateOfBirth": "2003-01-01",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "GK",
-    "secondaryPositions": [],
-    "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
-    "attributes": {
-      "attack": 76,
-      "defense": 88,
-      "technique": 73,
-      "speed": 80,
-      "stamina": 72,
-      "mentality": 72
-    },
-    "marketValue": 19000000,
-    "specialAttributes": [
-      "one_on_one_keeper",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p02",
-    "fullName": "ARG RosarioCentral Player 2",
-    "displayName": "Rosario Central P2",
-    "dateOfBirth": "1992-02-04",
+    "externalId": "public-identity:arg:rosario-central:agustin-sandez",
+    "fullName": "Agustín Sández",
+    "displayName": "Sández",
+    "dateOfBirth": "1990-02-11",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 2,
+    "heightCm": 183,
+    "shirtNumber": 3,
     "attributes": {
-      "attack": 75,
-      "defense": 87,
-      "technique": 75,
-      "speed": 79,
-      "stamina": 76,
-      "mentality": 78
+      "attack": 47,
+      "defense": 82,
+      "technique": 61,
+      "speed": 68,
+      "stamina": 74,
+      "mentality": 74
     },
-    "marketValue": 18750000,
+    "marketValue": "20984353",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "leader",
+      "one_on_one_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "agustin-sandez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p03",
-    "fullName": "ARG RosarioCentral Player 3",
-    "displayName": "Rosario Central P3",
-    "dateOfBirth": "1999-03-07",
+    "externalId": "public-identity:arg:rosario-central:alejo-veliz",
+    "fullName": "Alejo Véliz",
+    "displayName": "Véliz",
+    "dateOfBirth": "1990-12-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 84,
+      "defense": 51,
+      "technique": 81,
+      "speed": 89,
+      "stamina": 73,
+      "mentality": 65
+    },
+    "marketValue": "19586646",
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "aerial_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "alejo-veliz",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:alexis-soto",
+    "fullName": "Alexis Soto",
+    "displayName": "Soto",
+    "dateOfBirth": "1989-02-19",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "LB",
@@ -103,92 +105,44 @@
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
-    "shirtNumber": 3,
+    "shirtNumber": 33,
     "attributes": {
-      "attack": 66,
-      "defense": 82,
-      "technique": 77,
-      "speed": 74,
-      "stamina": 71,
-      "mentality": 75
+      "attack": 65,
+      "defense": 73,
+      "technique": 71,
+      "speed": 81,
+      "stamina": 86,
+      "mentality": 72
     },
-    "marketValue": 18500000,
+    "marketValue": "24581904",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "alexis-soto",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
       "specialAttributes"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p04",
-    "fullName": "ARG RosarioCentral Player 4",
-    "displayName": "Rosario Central P4",
-    "dateOfBirth": "1988-04-10",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 66,
-      "defense": 82,
-      "technique": 73,
-      "speed": 74,
-      "stamina": 76,
-      "mentality": 73
-    },
-    "marketValue": 18500000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p05",
-    "fullName": "ARG RosarioCentral Player 5",
-    "displayName": "Rosario Central P5",
-    "dateOfBirth": "1995-05-13",
+    "externalId": "public-identity:arg:rosario-central:asael-oviedo",
+    "fullName": "Asael Oviedo",
+    "displayName": "Oviedo",
+    "dateOfBirth": "1995-05-25",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "CB",
@@ -196,93 +150,143 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 183,
+    "shirtNumber": 14,
     "attributes": {
-      "attack": 69,
-      "defense": 85,
-      "technique": 79,
-      "speed": 77,
-      "stamina": 75,
-      "mentality": 74
+      "attack": 56,
+      "defense": 78,
+      "technique": 69,
+      "speed": 73,
+      "stamina": 84,
+      "mentality": 77
     },
-    "marketValue": 19250000,
+    "marketValue": "22800949",
     "specialAttributes": [
-      "workhorse",
+      "aerial_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "asael-oviedo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p06",
-    "fullName": "ARG RosarioCentral Player 6",
-    "displayName": "Rosario Central P6",
-    "dateOfBirth": "2002-06-16",
+    "externalId": "public-identity:arg:rosario-central:bautista-cantero",
+    "fullName": "Bautista Cantero",
+    "displayName": "Cantero",
+    "dateOfBirth": "1992-03-07",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "CB",
     "secondaryPositions": [
       "CDM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 40,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 73,
-      "speed": 75,
-      "stamina": 78,
-      "mentality": 79
+      "attack": 80,
+      "defense": 60,
+      "technique": 78,
+      "speed": 84,
+      "stamina": 86,
+      "mentality": 75
     },
-    "marketValue": 18750000,
+    "marketValue": "22278232",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "bautista-cantero",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p07",
-    "fullName": "ARG RosarioCentral Player 7",
-    "displayName": "Rosario Central P7",
-    "dateOfBirth": "1991-07-19",
+    "externalId": "public-identity:arg:rosario-central:carlos-quintana",
+    "fullName": "Carlos Quintana",
+    "displayName": "Quintana",
+    "dateOfBirth": "2002-12-18",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 179,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 64,
+      "defense": 66,
+      "technique": 72,
+      "speed": 83,
+      "stamina": 88,
+      "mentality": 74
+    },
+    "marketValue": "20068680",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "carlos-quintana",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:conan-ledesma",
+    "fullName": "Conan Ledesma",
+    "displayName": "Ledesma",
+    "dateOfBirth": "1995-03-01",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "RB",
@@ -291,46 +295,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "heightCm": 189,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 65,
-      "defense": 81,
-      "technique": 74,
-      "speed": 73,
-      "stamina": 72,
-      "mentality": 75
+      "attack": 35,
+      "defense": 85,
+      "technique": 61,
+      "speed": 63,
+      "stamina": 65,
+      "mentality": 78
     },
-    "marketValue": 18250000,
+    "marketValue": "19691164",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "leader",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "conan-ledesma",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p08",
-    "fullName": "ARG RosarioCentral Player 8",
-    "displayName": "Rosario Central P8",
-    "dateOfBirth": "1998-08-22",
+    "externalId": "public-identity:arg:rosario-central:damian-fernandez",
+    "fullName": "Damián Fernández",
+    "displayName": "Fernández",
+    "dateOfBirth": "1989-11-08",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "LWB",
@@ -339,46 +344,47 @@
       "LM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "heightCm": 187,
+    "shirtNumber": 38,
     "attributes": {
-      "attack": 73,
-      "defense": 89,
-      "technique": 78,
-      "speed": 81,
-      "stamina": 85,
-      "mentality": 81
+      "attack": 45,
+      "defense": 88,
+      "technique": 64,
+      "speed": 61,
+      "stamina": 69,
+      "mentality": 80
     },
-    "marketValue": 20250000,
+    "marketValue": "19035355",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "aerial_specialist",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "damian-fernandez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p09",
-    "fullName": "ARG RosarioCentral Player 9",
-    "displayName": "Rosario Central P9",
-    "dateOfBirth": "2005-09-25",
+    "externalId": "public-identity:arg:rosario-central:elias-veron",
+    "fullName": "Elías Verón",
+    "displayName": "Verón",
+    "dateOfBirth": "1991-07-06",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "RWB",
@@ -387,46 +393,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 190,
+    "shirtNumber": 42,
     "attributes": {
-      "attack": 73,
-      "defense": 89,
-      "technique": 81,
-      "speed": 81,
-      "stamina": 81,
-      "mentality": 79
+      "attack": 50,
+      "defense": 81,
+      "technique": 66,
+      "speed": 62,
+      "stamina": 79,
+      "mentality": 70
     },
-    "marketValue": 20250000,
+    "marketValue": "20291889",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "elias-veron",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p10",
-    "fullName": "ARG RosarioCentral Player 10",
-    "displayName": "Rosario Central P10",
-    "dateOfBirth": "1994-10-01",
+    "externalId": "public-identity:arg:rosario-central:emanuel-coronel",
+    "fullName": "Emanuel Coronel",
+    "displayName": "Coronel",
+    "dateOfBirth": "1998-10-28",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "CDM",
@@ -434,143 +441,48 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
-    "attributes": {
-      "attack": 83,
-      "defense": 83,
-      "technique": 84,
-      "speed": 83,
-      "stamina": 77,
-      "mentality": 77
-    },
-    "marketValue": 20250000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p11",
-    "fullName": "ARG RosarioCentral Player 11",
-    "displayName": "Rosario Central P11",
-    "dateOfBirth": "2001-11-04",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
     "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
+    "heightCm": 173,
+    "shirtNumber": 32,
     "attributes": {
-      "attack": 81,
-      "defense": 81,
-      "technique": 78,
-      "speed": 81,
-      "stamina": 80,
-      "mentality": 82
+      "attack": 61,
+      "defense": 74,
+      "technique": 67,
+      "speed": 72,
+      "stamina": 82,
+      "mentality": 75
     },
-    "marketValue": 19750000,
+    "marketValue": "24175836",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p12",
-    "fullName": "ARG RosarioCentral Player 12",
-    "displayName": "Rosario Central P12",
-    "dateOfBirth": "1990-12-07",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 74,
-      "defense": 74,
-      "technique": 74,
-      "speed": 74,
-      "stamina": 69,
-      "mentality": 73
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "leader",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "emanuel-coronel",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p13",
-    "fullName": "ARG RosarioCentral Player 13",
-    "displayName": "Rosario Central P13",
-    "dateOfBirth": "1997-01-10",
+    "externalId": "public-identity:arg:rosario-central:enzo-copetti",
+    "fullName": "Enzo Copetti",
+    "displayName": "Copetti",
+    "dateOfBirth": "1989-05-04",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "CM",
@@ -579,46 +491,145 @@
       "CAM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 170,
-    "shirtNumber": 13,
+    "heightCm": 182,
+    "shirtNumber": 22,
     "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 73,
-      "speed": 77,
-      "stamina": 77,
+      "attack": 88,
+      "defense": 43,
+      "technique": 77,
+      "speed": 80,
+      "stamina": 78,
+      "mentality": 79
+    },
+    "marketValue": "22688078",
+    "specialAttributes": [
+      "press_resistant",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "enzo-copetti",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:enzo-gimenez",
+    "fullName": "Enzo Giménez",
+    "displayName": "Giménez",
+    "dateOfBirth": "1989-09-20",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 56,
+      "defense": 83,
+      "technique": 68,
+      "speed": 69,
+      "stamina": 79,
       "mentality": 74
     },
-    "marketValue": 18750000,
+    "marketValue": "19110501",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "enzo-gimenez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p14",
-    "fullName": "ARG RosarioCentral Player 14",
-    "displayName": "Rosario Central P14",
-    "dateOfBirth": "2004-02-13",
+    "externalId": "public-identity:arg:rosario-central:ezequiel-zapata",
+    "fullName": "Ezequiel Zapata",
+    "displayName": "Zapata",
+    "dateOfBirth": "1993-11-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 195,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 41,
+      "defense": 86,
+      "technique": 55,
+      "speed": 67,
+      "stamina": 66,
+      "mentality": 76
+    },
+    "marketValue": "21968527",
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "ezequiel-zapata",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:fabricio-oviedo",
+    "fullName": "Fabricio Oviedo",
+    "displayName": "Oviedo",
+    "dateOfBirth": "1991-07-28",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "CAM",
@@ -626,47 +637,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 39,
     "attributes": {
-      "attack": 74,
-      "defense": 74,
-      "technique": 73,
-      "speed": 74,
+      "attack": 93,
+      "defense": 42,
+      "technique": 70,
+      "speed": 82,
       "stamina": 70,
-      "mentality": 69
+      "mentality": 75
     },
-    "marketValue": 18000000,
+    "marketValue": "23439056",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "fabricio-oviedo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p15",
-    "fullName": "ARG RosarioCentral Player 15",
-    "displayName": "Rosario Central P15",
-    "dateOfBirth": "1993-03-16",
+    "externalId": "public-identity:arg:rosario-central:facundo-mallo",
+    "fullName": "Facundo Mallo",
+    "displayName": "Mallo",
+    "dateOfBirth": "2003-01-26",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "LM",
@@ -675,46 +687,47 @@
       "CM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 172,
+    "heightCm": 179,
     "shirtNumber": 15,
     "attributes": {
-      "attack": 73,
-      "defense": 73,
-      "technique": 68,
-      "speed": 73,
-      "stamina": 74,
-      "mentality": 75
+      "attack": 51,
+      "defense": 81,
+      "technique": 59,
+      "speed": 60,
+      "stamina": 76,
+      "mentality": 69
     },
-    "marketValue": 17750000,
+    "marketValue": "19497987",
     "specialAttributes": [
       "line_breaker",
-      "press_resistant"
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "facundo-mallo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p16",
-    "fullName": "ARG RosarioCentral Player 16",
-    "displayName": "Rosario Central P16",
-    "dateOfBirth": "2000-04-19",
+    "externalId": "public-identity:arg:rosario-central:federico-navarro",
+    "fullName": "Federico Navarro",
+    "displayName": "Navarro",
+    "dateOfBirth": "1993-03-06",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "RM",
@@ -722,333 +735,340 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 31,
     "attributes": {
-      "attack": 83,
-      "defense": 83,
-      "technique": 81,
-      "speed": 83,
-      "stamina": 80,
-      "mentality": 83
+      "attack": 66,
+      "defense": 69,
+      "technique": 85,
+      "speed": 75,
+      "stamina": 82,
+      "mentality": 74
     },
-    "marketValue": 20250000,
+    "marketValue": "22847366",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "federico-navarro",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p17",
-    "fullName": "ARG RosarioCentral Player 17",
-    "displayName": "Rosario Central P17",
-    "dateOfBirth": "1989-05-22",
+    "externalId": "public-identity:arg:rosario-central:franco-castorani",
+    "fullName": "Franco Castorani",
+    "displayName": "Castorani",
+    "dateOfBirth": "1989-06-15",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "LW",
     "secondaryPositions": [
       "LM",
       "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 52,
+    "attributes": {
+      "attack": 62,
+      "defense": 71,
+      "technique": 68,
+      "speed": 78,
+      "stamina": 87,
+      "mentality": 68
+    },
+    "marketValue": "20218213",
+    "specialAttributes": [
+      "set_piece_specialist",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "franco-castorani",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:franco-ibarra",
+    "fullName": "Franco Ibarra",
+    "displayName": "Ibarra",
+    "dateOfBirth": "1988-02-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 169,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 75,
+      "defense": 63,
+      "technique": 81,
+      "speed": 86,
+      "stamina": 82,
+      "mentality": 73
+    },
+    "marketValue": "23884417",
+    "specialAttributes": [
+      "press_resistant",
+      "line_breaker"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "franco-ibarra",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:gaspar-duarte",
+    "fullName": "Gaspar Duarte",
+    "displayName": "Duarte",
+    "dateOfBirth": "2004-12-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
+    "shirtNumber": 27,
+    "attributes": {
+      "attack": 86,
+      "defense": 41,
+      "technique": 77,
+      "speed": 79,
+      "stamina": 73,
+      "mentality": 81
+    },
+    "marketValue": "22849397",
+    "specialAttributes": [
+      "line_breaker",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "gaspar-duarte",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:gaston-avila",
+    "fullName": "Gastón Ávila",
+    "displayName": "Ávila",
+    "dateOfBirth": "1992-01-15",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 65,
+      "defense": 73,
+      "technique": 68,
+      "speed": 83,
+      "stamina": 88,
+      "mentality": 72
+    },
+    "marketValue": "24760981",
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "gaston-avila",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:giovanni-cantizano",
+    "fullName": "Giovanni Cantizano",
+    "displayName": "Cantizano",
+    "dateOfBirth": "2000-01-18",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 26,
+    "attributes": {
+      "attack": 77,
+      "defense": 56,
+      "technique": 81,
+      "speed": 76,
+      "stamina": 80,
+      "mentality": 78
+    },
+    "marketValue": "22521879",
+    "specialAttributes": [
+      "press_resistant",
+      "speedster"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "giovanni-cantizano",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:arg:rosario-central:ignacio-moreno",
+    "fullName": "Ignacio Moreno",
+    "displayName": "Moreno",
+    "dateOfBirth": "1995-08-24",
+    "nationalityCode": "ARG",
+    "clubExternalId": "rosario-central",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
     ],
     "preferredFoot": "RIGHT",
     "heightCm": 174,
     "shirtNumber": 17,
     "attributes": {
-      "attack": 79,
-      "defense": 65,
-      "technique": 76,
-      "speed": 81,
-      "stamina": 77,
-      "mentality": 73
-    },
-    "marketValue": 18250000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p18",
-    "fullName": "ARG RosarioCentral Player 18",
-    "displayName": "Rosario Central P18",
-    "dateOfBirth": "1996-06-25",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
-    "attributes": {
-      "attack": 78,
-      "defense": 64,
-      "technique": 71,
-      "speed": 80,
-      "stamina": 72,
-      "mentality": 70
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p19",
-    "fullName": "ARG RosarioCentral Player 19",
-    "displayName": "Rosario Central P19",
-    "dateOfBirth": "2003-07-01",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "LW",
-    "secondaryPositions": [
-      "LM",
-      "ST"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 78,
-      "defense": 64,
-      "technique": 74,
-      "speed": 80,
-      "stamina": 68,
-      "mentality": 68
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p20",
-    "fullName": "ARG RosarioCentral Player 20",
-    "displayName": "Rosario Central P20",
-    "dateOfBirth": "1992-08-04",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 20,
-    "attributes": {
       "attack": 84,
-      "defense": 70,
-      "technique": 76,
-      "speed": 86,
-      "stamina": 79,
-      "mentality": 81
+      "defense": 52,
+      "technique": 84,
+      "speed": 90,
+      "stamina": 80,
+      "mentality": 65
     },
-    "marketValue": 19500000,
+    "marketValue": "21216740",
     "specialAttributes": [
-      "workhorse",
+      "line_breaker",
       "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "ignacio-moreno",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p21",
-    "fullName": "ARG RosarioCentral Player 21",
-    "displayName": "Rosario Central P21",
-    "dateOfBirth": "1999-09-07",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
-    "attributes": {
-      "attack": 79,
-      "defense": 59,
-      "technique": 72,
-      "speed": 69,
-      "stamina": 68,
-      "mentality": 72
-    },
-    "marketValue": 17750000,
-    "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p22",
-    "fullName": "ARG RosarioCentral Player 22",
-    "displayName": "Rosario Central P22",
-    "dateOfBirth": "1988-10-10",
-    "nationalityCode": "ARG",
-    "clubExternalId": "rosario-central",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 177,
-    "shirtNumber": 22,
-    "attributes": {
-      "attack": 80,
-      "defense": 60,
-      "technique": 69,
-      "speed": 70,
-      "stamina": 74,
-      "mentality": 71
-    },
-    "marketValue": 18000000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:arg:rosario-central:p23",
-    "fullName": "ARG RosarioCentral Player 23",
-    "displayName": "Rosario Central P23",
-    "dateOfBirth": "1995-11-13",
+    "externalId": "public-identity:arg:rosario-central:ignacio-ovando",
+    "fullName": "Ignacio Ovando",
+    "displayName": "Ovando",
+    "dateOfBirth": "2005-08-09",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "CF",
@@ -1056,87 +1076,89 @@
       "CAM",
       "ST"
     ],
-    "preferredFoot": "RIGHT",
+    "preferredFoot": "LEFT",
     "heightCm": 178,
-    "shirtNumber": 23,
+    "shirtNumber": 46,
     "attributes": {
-      "attack": 80,
-      "defense": 60,
-      "technique": 72,
-      "speed": 70,
-      "stamina": 70,
-      "mentality": 69
+      "attack": 48,
+      "defense": 81,
+      "technique": 62,
+      "speed": 63,
+      "stamina": 72,
+      "mentality": 74
     },
-    "marketValue": 18000000,
+    "marketValue": "24316855",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "aerial_specialist",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "ignacio-ovando",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:arg:rosario-central:p24",
-    "fullName": "ARG RosarioCentral Player 24",
-    "displayName": "Rosario Central P24",
-    "dateOfBirth": "2002-12-16",
+    "externalId": "public-identity:arg:rosario-central:joaquin-espina",
+    "fullName": "Joaquín Espina",
+    "displayName": "Espina",
+    "dateOfBirth": "2003-10-11",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 24,
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 50,
     "attributes": {
-      "attack": 83,
-      "defense": 63,
+      "attack": 76,
+      "defense": 58,
       "technique": 78,
-      "speed": 73,
-      "stamina": 78,
-      "mentality": 79
+      "speed": 82,
+      "stamina": 84,
+      "mentality": 73
     },
-    "marketValue": 18750000,
+    "marketValue": "22705188",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "press_resistant",
+      "line_breaker"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/Rosario_Central",
+      "identitySourceId": "joaquin-espina",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   }
 ]

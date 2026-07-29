@@ -1,99 +1,101 @@
 [
   {
-    "externalId": "manager-initial:esp:espanyol:p01",
-    "fullName": "ESP Espanyol Player 1",
-    "displayName": "Espanyol P1",
-    "dateOfBirth": "1996-01-01",
+    "externalId": "public-identity:esp:espanyol:charles-pickel",
+    "fullName": "Charles Pickel",
+    "displayName": "Pickel",
+    "dateOfBirth": "1991-08-28",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "GK",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 1,
+    "heightCm": 181,
+    "shirtNumber": 18,
     "attributes": {
       "attack": 65,
-      "defense": 77,
-      "technique": 62,
-      "speed": 69,
-      "stamina": 61,
-      "mentality": 61
+      "defense": 63,
+      "technique": 81,
+      "speed": 74,
+      "stamina": 87,
+      "mentality": 75
     },
-    "marketValue": 16250000,
+    "marketValue": "22784330",
     "specialAttributes": [
       "one_on_one_keeper",
-      "leader"
+      "sweeper_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "charles-pickel",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p02",
-    "fullName": "ESP Espanyol Player 2",
-    "displayName": "Espanyol P2",
-    "dateOfBirth": "2003-02-04",
+    "externalId": "public-identity:esp:espanyol:clemens-riedel",
+    "fullName": "Clemens Riedel",
+    "displayName": "Riedel",
+    "dateOfBirth": "1995-04-21",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "GK",
     "secondaryPositions": [],
-    "preferredFoot": "LEFT",
+    "preferredFoot": "RIGHT",
     "heightCm": 188,
-    "shirtNumber": 2,
+    "shirtNumber": 38,
     "attributes": {
-      "attack": 73,
-      "defense": 85,
-      "technique": 73,
-      "speed": 77,
-      "stamina": 74,
-      "mentality": 76
+      "attack": 51,
+      "defense": 82,
+      "technique": 63,
+      "speed": 67,
+      "stamina": 70,
+      "mentality": 72
     },
-    "marketValue": 18250000,
+    "marketValue": "23095606",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "clemens-riedel",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p03",
-    "fullName": "ESP Espanyol Player 3",
-    "displayName": "Espanyol P3",
-    "dateOfBirth": "1992-03-07",
+    "externalId": "public-identity:esp:espanyol:edu-exposito",
+    "fullName": "Edu Expósito",
+    "displayName": "Expósito",
+    "dateOfBirth": "1994-04-08",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "LB",
@@ -102,93 +104,47 @@
       "CB"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 183,
-    "shirtNumber": 3,
+    "heightCm": 170,
+    "shirtNumber": 8,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 78,
-      "speed": 75,
-      "stamina": 72,
+      "attack": 77,
+      "defense": 53,
+      "technique": 80,
+      "speed": 79,
+      "stamina": 77,
       "mentality": 76
     },
-    "marketValue": 18750000,
+    "marketValue": "18856140",
     "specialAttributes": [
       "workhorse",
-      "press_resistant"
+      "speedster"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "edu-exposito",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p04",
-    "fullName": "ESP Espanyol Player 4",
-    "displayName": "Espanyol P4",
-    "dateOfBirth": "1999-04-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "espanyol",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 184,
-    "shirtNumber": 4,
-    "attributes": {
-      "attack": 57,
-      "defense": 73,
-      "technique": 64,
-      "speed": 65,
-      "stamina": 67,
-      "mentality": 64
-    },
-    "marketValue": 16250000,
-    "specialAttributes": [
-      "aerial_specialist",
-      "leader"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:espanyol:p05",
-    "fullName": "ESP Espanyol Player 5",
-    "displayName": "Espanyol P5",
-    "dateOfBirth": "1988-05-13",
+    "externalId": "public-identity:esp:espanyol:javi-puado",
+    "fullName": "Javi Puado",
+    "displayName": "Puado",
+    "dateOfBirth": "1988-06-21",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "CB",
@@ -196,46 +152,47 @@
       "CDM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 185,
-    "shirtNumber": 5,
+    "heightCm": 188,
+    "shirtNumber": 7,
     "attributes": {
-      "attack": 66,
-      "defense": 82,
-      "technique": 76,
+      "attack": 87,
+      "defense": 48,
+      "technique": 73,
       "speed": 74,
-      "stamina": 72,
-      "mentality": 71
+      "stamina": 68,
+      "mentality": 73
     },
-    "marketValue": 18500000,
+    "marketValue": "19941272",
     "specialAttributes": [
-      "workhorse",
+      "set_piece_specialist",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "javi-puado",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p06",
-    "fullName": "ESP Espanyol Player 6",
-    "displayName": "Espanyol P6",
-    "dateOfBirth": "1995-06-16",
+    "externalId": "public-identity:esp:espanyol:jofre-carreras",
+    "fullName": "Jofre Carreras",
+    "displayName": "Carreras",
+    "dateOfBirth": "1991-03-18",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "CB",
@@ -243,46 +200,95 @@
       "CDM"
     ],
     "preferredFoot": "LEFT",
-    "heightCm": 186,
-    "shirtNumber": 6,
+    "heightCm": 187,
+    "shirtNumber": 17,
     "attributes": {
-      "attack": 59,
-      "defense": 75,
-      "technique": 65,
-      "speed": 67,
-      "stamina": 70,
+      "attack": 79,
+      "defense": 47,
+      "technique": 83,
+      "speed": 72,
+      "stamina": 76,
       "mentality": 71
     },
-    "marketValue": 16750000,
+    "marketValue": "19092901",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "jofre-carreras",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p07",
-    "fullName": "ESP Espanyol Player 7",
-    "displayName": "Espanyol P7",
-    "dateOfBirth": "2002-07-19",
+    "externalId": "public-identity:esp:espanyol:kike-garcia",
+    "fullName": "Kike García",
+    "displayName": "García",
+    "dateOfBirth": "1993-08-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "espanyol",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 186,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 82,
+      "defense": 39,
+      "technique": 75,
+      "speed": 80,
+      "stamina": 73,
+      "mentality": 75
+    },
+    "marketValue": "19861319",
+    "specialAttributes": [
+      "speedster",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "kike-garcia",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:espanyol:leandro-cabrera",
+    "fullName": "Leandro Cabrera",
+    "displayName": "Cabrera",
+    "dateOfBirth": "1997-07-01",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "RB",
@@ -290,47 +296,48 @@
       "RWB",
       "CB"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 187,
-    "shirtNumber": 7,
+    "preferredFoot": "LEFT",
+    "heightCm": 168,
+    "shirtNumber": 6,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 76,
-      "speed": 75,
-      "stamina": 74,
-      "mentality": 77
+      "attack": 69,
+      "defense": 65,
+      "technique": 66,
+      "speed": 82,
+      "stamina": 82,
+      "mentality": 69
     },
-    "marketValue": 18750000,
+    "marketValue": "22632747",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "press_resistant",
+      "set_piece_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "leandro-cabrera",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p08",
-    "fullName": "ESP Espanyol Player 8",
-    "displayName": "Espanyol P8",
-    "dateOfBirth": "1991-08-22",
+    "externalId": "public-identity:esp:espanyol:marko-dmitrovic",
+    "fullName": "Marko Dmitrović",
+    "displayName": "Dmitrović",
+    "dateOfBirth": "1988-08-24",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "LWB",
@@ -338,47 +345,48 @@
       "LB",
       "LM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 188,
-    "shirtNumber": 8,
+    "preferredFoot": "RIGHT",
+    "heightCm": 182,
+    "shirtNumber": 13,
     "attributes": {
-      "attack": 67,
-      "defense": 83,
-      "technique": 72,
-      "speed": 75,
-      "stamina": 79,
-      "mentality": 75
+      "attack": 35,
+      "defense": 86,
+      "technique": 59,
+      "speed": 61,
+      "stamina": 73,
+      "mentality": 74
     },
-    "marketValue": 18750000,
+    "marketValue": "19101082",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "marko-dmitrovic",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p09",
-    "fullName": "ESP Espanyol Player 9",
-    "displayName": "Espanyol P9",
-    "dateOfBirth": "1998-09-25",
+    "externalId": "public-identity:esp:espanyol:miguel-rubio",
+    "fullName": "Miguel Rubio",
+    "displayName": "Rubio",
+    "dateOfBirth": "1991-10-18",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "RWB",
@@ -387,46 +395,47 @@
       "RM"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 181,
-    "shirtNumber": 9,
+    "heightCm": 189,
+    "shirtNumber": 15,
     "attributes": {
-      "attack": 57,
-      "defense": 73,
-      "technique": 65,
-      "speed": 65,
-      "stamina": 65,
-      "mentality": 63
+      "attack": 48,
+      "defense": 75,
+      "technique": 59,
+      "speed": 62,
+      "stamina": 71,
+      "mentality": 76
     },
-    "marketValue": 16250000,
+    "marketValue": "17800664",
     "specialAttributes": [
-      "workhorse",
-      "press_resistant"
+      "speedster",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "miguel-rubio",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p10",
-    "fullName": "ESP Espanyol Player 10",
-    "displayName": "Espanyol P10",
-    "dateOfBirth": "2005-10-01",
+    "externalId": "public-identity:esp:espanyol:omar-el-hilali",
+    "fullName": "Omar El Hilali",
+    "displayName": "Hilali",
+    "dateOfBirth": "1994-09-25",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "CDM",
@@ -434,191 +443,195 @@
       "CM",
       "CB"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
-    "shirtNumber": 10,
-    "attributes": {
-      "attack": 67,
-      "defense": 67,
-      "technique": 68,
-      "speed": 67,
-      "stamina": 61,
-      "mentality": 61
-    },
-    "marketValue": 16250000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:espanyol:p11",
-    "fullName": "ESP Espanyol Player 11",
-    "displayName": "Espanyol P11",
-    "dateOfBirth": "1994-11-04",
-    "nationalityCode": "ESP",
-    "clubExternalId": "espanyol",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 180,
-    "shirtNumber": 11,
-    "attributes": {
-      "attack": 72,
-      "defense": 72,
-      "technique": 69,
-      "speed": 72,
-      "stamina": 71,
-      "mentality": 73
-    },
-    "marketValue": 17500000,
-    "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:espanyol:p12",
-    "fullName": "ESP Espanyol Player 12",
-    "displayName": "Espanyol P12",
-    "dateOfBirth": "2001-12-07",
-    "nationalityCode": "ESP",
-    "clubExternalId": "espanyol",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
-    "preferredFoot": "LEFT",
-    "heightCm": 181,
-    "shirtNumber": 12,
-    "attributes": {
-      "attack": 77,
-      "defense": 77,
-      "technique": 77,
-      "speed": 77,
-      "stamina": 72,
-      "mentality": 76
-    },
-    "marketValue": 18750000,
-    "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:espanyol:p13",
-    "fullName": "ESP Espanyol Player 13",
-    "displayName": "Espanyol P13",
-    "dateOfBirth": "1990-01-10",
-    "nationalityCode": "ESP",
-    "clubExternalId": "espanyol",
-    "primaryPosition": "CM",
-    "secondaryPositions": [
-      "CDM",
-      "CAM"
-    ],
     "preferredFoot": "RIGHT",
     "heightCm": 170,
-    "shirtNumber": 13,
+    "shirtNumber": 23,
     "attributes": {
-      "attack": 75,
-      "defense": 75,
-      "technique": 71,
-      "speed": 75,
-      "stamina": 75,
+      "attack": 59,
+      "defense": 78,
+      "technique": 64,
+      "speed": 74,
+      "stamina": 79,
+      "mentality": 69
+    },
+    "marketValue": "22962318",
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "omar-el-hilali",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:espanyol:pere-milla",
+    "fullName": "Pere Milla",
+    "displayName": "Milla",
+    "dateOfBirth": "1995-04-02",
+    "nationalityCode": "ESP",
+    "clubExternalId": "espanyol",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 187,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 87,
+      "defense": 39,
+      "technique": 67,
+      "speed": 79,
+      "stamina": 73,
       "mentality": 72
     },
-    "marketValue": 18250000,
+    "marketValue": "19305218",
+    "specialAttributes": [
+      "leader",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "pere-milla",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:espanyol:pol-lozano",
+    "fullName": "Pol Lozano",
+    "displayName": "Lozano",
+    "dateOfBirth": "1989-05-07",
+    "nationalityCode": "ESP",
+    "clubExternalId": "espanyol",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 169,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 77,
+      "defense": 58,
+      "technique": 76,
+      "speed": 80,
+      "stamina": 85,
+      "mentality": 67
+    },
+    "marketValue": "23242975",
+    "specialAttributes": [
+      "line_breaker",
+      "workhorse"
+    ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "pol-lozano",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:espanyol:pol-tristan",
+    "fullName": "Pol Tristán",
+    "displayName": "Tristán",
+    "dateOfBirth": "1990-07-21",
+    "nationalityCode": "ESP",
+    "clubExternalId": "espanyol",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 30,
+    "attributes": {
+      "attack": 39,
+      "defense": 81,
+      "technique": 54,
+      "speed": 62,
+      "stamina": 63,
+      "mentality": 70
+    },
+    "marketValue": "20795687",
     "specialAttributes": [
       "line_breaker",
       "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "pol-tristan",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p14",
-    "fullName": "ESP Espanyol Player 14",
-    "displayName": "Espanyol P14",
-    "dateOfBirth": "1997-02-13",
+    "externalId": "public-identity:esp:espanyol:roberto-fernandez",
+    "fullName": "Roberto Fernández",
+    "displayName": "Fernández",
+    "dateOfBirth": "1991-02-21",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "CAM",
@@ -626,47 +639,48 @@
       "CM",
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 171,
-    "shirtNumber": 14,
+    "preferredFoot": "RIGHT",
+    "heightCm": 189,
+    "shirtNumber": 9,
     "attributes": {
-      "attack": 74,
-      "defense": 74,
-      "technique": 73,
-      "speed": 74,
-      "stamina": 70,
-      "mentality": 69
+      "attack": 88,
+      "defense": 49,
+      "technique": 75,
+      "speed": 81,
+      "stamina": 69,
+      "mentality": 74
     },
-    "marketValue": 18000000,
+    "marketValue": "23437596",
     "specialAttributes": [
       "leader",
-      "set_piece_specialist"
+      "press_resistant"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "roberto-fernandez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p15",
-    "fullName": "ESP Espanyol Player 15",
-    "displayName": "Espanyol P15",
-    "dateOfBirth": "2004-03-16",
+    "externalId": "public-identity:esp:espanyol:ruben-sanchez",
+    "fullName": "Rubén Sánchez",
+    "displayName": "Sánchez",
+    "dateOfBirth": "1998-01-05",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "LM",
@@ -674,47 +688,48 @@
       "LW",
       "CM"
     ],
-    "preferredFoot": "RIGHT",
-    "heightCm": 172,
-    "shirtNumber": 15,
+    "preferredFoot": "LEFT",
+    "heightCm": 187,
+    "shirtNumber": 2,
     "attributes": {
-      "attack": 67,
-      "defense": 67,
-      "technique": 62,
-      "speed": 67,
-      "stamina": 68,
-      "mentality": 69
+      "attack": 45,
+      "defense": 79,
+      "technique": 57,
+      "speed": 65,
+      "stamina": 76,
+      "mentality": 74
     },
-    "marketValue": 16250000,
+    "marketValue": "17644229",
     "specialAttributes": [
-      "line_breaker",
-      "press_resistant"
+      "workhorse",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "ruben-sanchez",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p16",
-    "fullName": "ESP Espanyol Player 16",
-    "displayName": "Espanyol P16",
-    "dateOfBirth": "1993-04-19",
+    "externalId": "public-identity:esp:espanyol:tyrhys-dolan",
+    "fullName": "Tyrhys Dolan",
+    "displayName": "Dolan",
+    "dateOfBirth": "2000-09-25",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "RM",
@@ -722,47 +737,48 @@
       "RW",
       "CM"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 173,
-    "shirtNumber": 16,
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 24,
     "attributes": {
-      "attack": 73,
-      "defense": 73,
-      "technique": 71,
-      "speed": 73,
-      "stamina": 70,
+      "attack": 88,
+      "defense": 46,
+      "technique": 70,
+      "speed": 79,
+      "stamina": 77,
       "mentality": 73
     },
-    "marketValue": 17750000,
+    "marketValue": "22085884",
     "specialAttributes": [
-      "leader",
-      "set_piece_specialist"
+      "line_breaker",
+      "leader"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "tyrhys-dolan",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p17",
-    "fullName": "ESP Espanyol Player 17",
-    "displayName": "Espanyol P17",
-    "dateOfBirth": "2000-05-22",
+    "externalId": "public-identity:esp:espanyol:urko-gonzalez-de-zarate",
+    "fullName": "Urko González de Zárate",
+    "displayName": "Zárate",
+    "dateOfBirth": "2001-06-28",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "LW",
@@ -771,46 +787,47 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 174,
-    "shirtNumber": 17,
+    "heightCm": 168,
+    "shirtNumber": 4,
     "attributes": {
-      "attack": 81,
-      "defense": 67,
+      "attack": 72,
+      "defense": 60,
       "technique": 78,
-      "speed": 83,
-      "stamina": 79,
-      "mentality": 75
+      "speed": 77,
+      "stamina": 75,
+      "mentality": 74
     },
-    "marketValue": 18750000,
+    "marketValue": "17635903",
     "specialAttributes": [
-      "speedster",
-      "line_breaker"
+      "press_resistant",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "urko-gonzalez-de-zarate",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p18",
-    "fullName": "ESP Espanyol Player 18",
-    "displayName": "Espanyol P18",
-    "dateOfBirth": "1989-06-25",
+    "externalId": "public-identity:esp:espanyol:angel-fortuno",
+    "fullName": "Ángel Fortuño",
+    "displayName": "Fortuño",
+    "dateOfBirth": "1988-08-24",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "RW",
@@ -818,47 +835,48 @@
       "RM",
       "ST"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 175,
-    "shirtNumber": 18,
+    "preferredFoot": "RIGHT",
+    "heightCm": 189,
+    "shirtNumber": 1,
     "attributes": {
-      "attack": 71,
-      "defense": 57,
-      "technique": 64,
-      "speed": 73,
-      "stamina": 65,
-      "mentality": 63
+      "attack": 37,
+      "defense": 84,
+      "technique": 62,
+      "speed": 65,
+      "stamina": 73,
+      "mentality": 79
     },
-    "marketValue": 16250000,
+    "marketValue": "22065050",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "line_breaker",
+      "workhorse"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "angel-fortuno",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p19",
-    "fullName": "ESP Espanyol Player 19",
-    "displayName": "Espanyol P19",
-    "dateOfBirth": "1996-07-01",
+    "externalId": "public-identity:esp:espanyol:antoniu-roca",
+    "fullName": "Antoniu Roca",
+    "displayName": "Roca",
+    "dateOfBirth": "2002-10-03",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "LW",
@@ -867,94 +885,94 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 19,
-    "attributes": {
-      "attack": 71,
-      "defense": 57,
-      "technique": 67,
-      "speed": 73,
-      "stamina": 61,
-      "mentality": 61
-    },
-    "marketValue": 16250000,
-    "specialAttributes": [
-      "speedster",
-      "line_breaker"
-    ],
-    "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
-      "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
-    },
-    "estimatedFields": [
-      "fullName",
-      "displayName",
-      "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
-      "secondaryPositions",
-      "preferredFoot",
-      "heightCm",
-      "shirtNumber",
-      "attributes",
-      "marketValue",
-      "specialAttributes"
-    ]
-  },
-  {
-    "externalId": "manager-initial:esp:espanyol:p20",
-    "fullName": "ESP Espanyol Player 20",
-    "displayName": "Espanyol P20",
-    "dateOfBirth": "2003-08-04",
-    "nationalityCode": "ESP",
-    "clubExternalId": "espanyol",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
-    "preferredFoot": "LEFT",
     "heightCm": 177,
     "shirtNumber": 20,
     "attributes": {
-      "attack": 75,
-      "defense": 61,
-      "technique": 67,
-      "speed": 77,
-      "stamina": 70,
-      "mentality": 72
+      "attack": 82,
+      "defense": 47,
+      "technique": 75,
+      "speed": 86,
+      "stamina": 74,
+      "mentality": 63
     },
-    "marketValue": 17250000,
+    "marketValue": "21887134",
     "specialAttributes": [
-      "workhorse",
-      "set_piece_specialist"
+      "clutch_finisher",
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34246500",
+      "identitySourceId": "34246500",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p21",
-    "fullName": "ESP Espanyol Player 21",
-    "displayName": "Espanyol P21",
-    "dateOfBirth": "1992-09-07",
+    "externalId": "public-identity:esp:espanyol:carlos-romero",
+    "fullName": "Carlos Romero",
+    "displayName": "Romero",
+    "dateOfBirth": "1988-04-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "espanyol",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 77,
+      "defense": 45,
+      "technique": 76,
+      "speed": 89,
+      "stamina": 73,
+      "mentality": 64
+    },
+    "marketValue": "18162930",
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
+    "provenance": {
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34221674",
+      "identitySourceId": "34221674",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "dateOfBirth",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "attributes",
+      "marketValue",
+      "specialAttributes",
+      "primaryPosition"
+    ]
+  },
+  {
+    "externalId": "public-identity:esp:espanyol:jose-gragera",
+    "fullName": "José Gragera",
+    "displayName": "Gragera",
+    "dateOfBirth": "1996-10-25",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "ST",
@@ -962,93 +980,93 @@
       "CF"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 176,
-    "shirtNumber": 21,
+    "heightCm": 175,
+    "shirtNumber": 16,
     "attributes": {
-      "attack": 73,
-      "defense": 53,
-      "technique": 66,
-      "speed": 63,
-      "stamina": 62,
-      "mentality": 66
+      "attack": 89,
+      "defense": 49,
+      "technique": 76,
+      "speed": 73,
+      "stamina": 68,
+      "mentality": 77
     },
-    "marketValue": 16250000,
+    "marketValue": "18482864",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "speedster",
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34215781",
+      "identitySourceId": "34215781",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p22",
-    "fullName": "ESP Espanyol Player 22",
-    "displayName": "Espanyol P22",
-    "dateOfBirth": "1999-10-10",
+    "externalId": "public-identity:esp:espanyol:jose-salinas",
+    "fullName": "José Salinas",
+    "displayName": "Salinas",
+    "dateOfBirth": "1995-12-13",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
+    "preferredFoot": "RIGHT",
     "heightCm": 177,
-    "shirtNumber": 22,
+    "shirtNumber": 12,
     "attributes": {
-      "attack": 83,
-      "defense": 63,
-      "technique": 72,
-      "speed": 73,
-      "stamina": 77,
-      "mentality": 74
+      "attack": 88,
+      "defense": 39,
+      "technique": 71,
+      "speed": 79,
+      "stamina": 76,
+      "mentality": 72
     },
-    "marketValue": 18750000,
+    "marketValue": "22458468",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "clutch_finisher",
+      "line_breaker"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34216906",
+      "identitySourceId": "34216906",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p23",
-    "fullName": "ESP Espanyol Player 23",
-    "displayName": "Espanyol P23",
-    "dateOfBirth": "1988-11-13",
+    "externalId": "public-identity:esp:espanyol:pablo-ramon",
+    "fullName": "Pablo Ramón",
+    "displayName": "Ramón",
+    "dateOfBirth": "1995-03-18",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "CF",
@@ -1057,86 +1075,88 @@
       "ST"
     ],
     "preferredFoot": "RIGHT",
-    "heightCm": 178,
-    "shirtNumber": 23,
+    "heightCm": 181,
+    "shirtNumber": 21,
     "attributes": {
-      "attack": 78,
-      "defense": 58,
-      "technique": 70,
-      "speed": 68,
-      "stamina": 68,
-      "mentality": 67
+      "attack": 77,
+      "defense": 47,
+      "technique": 81,
+      "speed": 74,
+      "stamina": 73,
+      "mentality": 74
     },
-    "marketValue": 17500000,
+    "marketValue": "18829989",
     "specialAttributes": [
-      "clutch_finisher",
-      "speedster"
+      "leader",
+      "clutch_finisher"
     ],
+    "identitySource": "TheSportsDB",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "TheSportsDB",
+      "identityUrl": "https://www.thesportsdb.com/player/34258828",
+      "identitySourceId": "34258828",
       "attributeSource": "MANAGER_METHODOLOGY",
       "cutoffDate": "2026-07-29"
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "primaryPosition"
     ]
   },
   {
-    "externalId": "manager-initial:esp:espanyol:p24",
-    "fullName": "ESP Espanyol Player 24",
-    "displayName": "Espanyol P24",
-    "dateOfBirth": "1995-12-16",
+    "externalId": "public-identity:esp:espanyol:gabriel-moscardo",
+    "fullName": "Gabriel Moscardo",
+    "displayName": "Moscardo",
+    "dateOfBirth": "2001-02-15",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
     "primaryPosition": "ST",
     "secondaryPositions": [
       "CF"
     ],
-    "preferredFoot": "LEFT",
-    "heightCm": 179,
+    "preferredFoot": "RIGHT",
+    "heightCm": 167,
     "shirtNumber": 24,
     "attributes": {
-      "attack": 77,
-      "defense": 57,
-      "technique": 72,
-      "speed": 67,
-      "stamina": 72,
-      "mentality": 73
+      "attack": 73,
+      "defense": 59,
+      "technique": 83,
+      "speed": 80,
+      "stamina": 77,
+      "mentality": 68
     },
-    "marketValue": 17250000,
+    "marketValue": "17589957",
     "specialAttributes": [
-      "aerial_specialist",
-      "clutch_finisher"
+      "leader",
+      "aerial_specialist"
     ],
+    "identitySource": "Wikipedia",
+    "identityCheckedAt": "2026-07-29",
     "provenance": {
-      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "identitySource": "Wikipedia",
+      "identityUrl": "https://en.wikipedia.org/wiki/RCD_Espanyol",
+      "identitySourceId": "gabriel-moscardo",
       "attributeSource": "MANAGER_METHODOLOGY",
-      "cutoffDate": "2026-07-29"
+      "cutoffDate": "2026-07-29",
+      "positionNormalization": "MANAGER tactical normalization from public roster identity to MVP playable squad balance."
     },
     "estimatedFields": [
-      "fullName",
-      "displayName",
       "dateOfBirth",
-      "nationalityCode",
-      "primaryPosition",
       "secondaryPositions",
       "preferredFoot",
       "heightCm",
-      "shirtNumber",
       "attributes",
       "marketValue",
-      "specialAttributes"
+      "specialAttributes",
+      "shirtNumber",
+      "primaryPosition"
     ]
   }
 ]
