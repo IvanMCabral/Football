@@ -129,6 +129,8 @@ Initial trait catalog candidates:
 
 The importer may expand the catalog only through reviewed additions.
 
+The import flow must validate the two trait codes before inserting player rows. `PlayerSpecialAttributeSelectionValidator` rejects zero, one, more than two, duplicates, blanks and unknown codes. PostgreSQL then enforces FK integrity, unique `(player_id, special_attribute_id)`, unique `(player_id, slot)` and slot values `1` and `2`.
+
 ## Data quality
 
 Minimum quality gates:
@@ -139,6 +141,7 @@ Minimum quality gates:
 - 100% players with primary position;
 - 100% players with six numeric attributes in range;
 - 100% players with exactly two special attributes;
+- 100% players with height either known in the valid `160..210` range or explicitly nullable while the row is still non-final/transitional;
 - no duplicate player source ids;
 - no duplicate club source ids;
 - no orphan squad rows.
@@ -173,6 +176,7 @@ The importer must support:
 - changed shirt numbers;
 - changed attributes;
 - validation report before commit.
+- a single transaction or staging/import status that prevents partial final datasets when player special attributes are invalid.
 
 ## Acceptance criteria
 

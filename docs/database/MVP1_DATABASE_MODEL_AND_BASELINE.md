@@ -1,4 +1,4 @@
-# MVP 1 Database Model and Clean Flyway Baseline
+﻿# MVP 1 Database Model and Clean Flyway Baseline
 
 ## 1. MVP 1 objectives
 
@@ -145,7 +145,7 @@ MVP 1 dataset players must have exactly two special attributes. PostgreSQL enfor
 - one trait per slot;
 - valid foreign keys to player and catalog.
 
-PostgreSQL cannot express "exactly two rows per player" with a simple check constraint across rows, so fixture/import validation must verify it after load. The database enforces the building blocks that make the rule reliable.
+PostgreSQL cannot express "exactly two rows per player" with a simple check constraint across rows, so fixture/import validation must verify it before writing the final dataset. `PlayerSpecialAttributeSelectionValidator` enforces exactly two existing, different catalog codes before an importer writes rows. The database enforces the building blocks that make the rule reliable.
 
 Initial allowed trait examples for fixtures:
 
@@ -165,7 +165,7 @@ Key constraints:
 - Unique team/player squad relation.
 - Player numeric attributes constrained to `1..99`.
 - Player energy constrained to `0..100`.
-- Height constrained to a football-realistic nullable range.
+- Height constrained to a football-realistic nullable range: `160..210`; unknown height is `NULL`, never `0`.
 - Match round positive when present.
 - Possession and shot counters constrained to valid non-negative ranges.
 - Special attribute slots constrained to `1..2`.
@@ -234,11 +234,41 @@ The baseline supports:
 - league/division membership by season;
 - validation of exactly two special attributes per imported player.
 
+Current table connection matrix:
+
+| Table | Current consumer | State | Action |
+| --- | --- | --- | --- |
+| `countries` | V1 FKs, future importer | Structural catalog | Keep; required for three-league import quality gates. |
+| `leagues` | league repositories, world seed, career setup | Active | Keep and continue normalizing country/season links. |
+| `divisions` | V1 FKs, future importer | Structural catalog | Keep; required for league pyramids and promotion/relegation data. |
+| `stadiums` | future club import | Structural catalog | Keep as optional club identity data; no runtime dependency yet. |
+| `clubs` | `teams.club_id`, future importer | Structural catalog | Keep; current runtime still uses `teams`. |
+| `teams` | active repositories, seed, career runtime | Active | Keep as application-facing team table. |
+| `seasons` | `SeasonEntity`, standings/statistics FKs | Active baseline contract | Keep; canonical year column is `season_year`. |
+| `season_competitions` | future importer | Structural relation | Keep; needed to attach league/division competitions to a season. |
+| `club_division_memberships` | future importer | Structural relation | Keep; required for clubs by division/season. |
+| `players` | active repositories, seed, engine/catalog bootstrap | Active | Keep; height unknown is `NULL`, valid height is `160..210`. |
+| `player_secondary_positions` | future importer | Structural relation | Keep; required by three-league player data. |
+| `player_attribute_catalog` | baseline catalog, contract tests | Structural catalog | Keep; documents the six numeric player attributes. |
+| `special_attributes` | baseline catalog, dataset validator | Active catalog | Keep; catalog codes are validated before import. |
+| `player_special_attributes` | dataset validator + DB constraints | Active relation for imports | Keep; exactly-two rule is application validation plus DB FK/unique/slot constraints. |
+| `team_squad` | active seed/career roster relation | Active | Keep. |
+| `league_teams` | active league/team relation | Active | Keep. |
+| `games` | active career entry persistence | Active | Keep. |
+| `matches` | active fixture/result persistence | Active | Keep. |
+| `match_events` | basic persisted match events | Active/basic | Keep; richer detail remains in Redis for this MVP. |
+| `standings` | standings persistence | Active/basic | Keep; duplicate win/draw/loss aliases remain a documented cleanup risk. |
+| `contracts` | future player/team contract import | Structural relation | Keep; needed for MVP transfer/economy growth. |
+| `transfers` | future transfer workflow | Structural relation | Keep; free-agent transfers need later design. |
+| `player_match_statistics` | player stats API growth | Structural/statistics | Keep; supports future durable match stats. |
+| `player_season_statistics` | player stats API growth | Structural/statistics | Keep; supports future durable season stats. |
+
 ## 13. Risks
 
 - Current application code still primarily reads `teams`, `players`, `league_teams`, `matches`, `standings`, `users` and `games`.
 - Normalized MVP 1 catalog tables are ready for the next dataset/import phase but not all are consumed yet.
 - `skill_levels_json` remains until the detailed engine skill map is fully relational or the compact JSON shape is intentionally kept.
+- Free-agent transfer semantics are not fully modeled yet because `transfers.from_team_id` and `to_team_id` are currently required.
 
 ## 14. Validation commands
 
@@ -288,3 +318,12 @@ Final validation after the clean baseline:
 - frontend development build: passed;
 - frontend production build: passed;
 - frontend ChromeHeadless tests: 1016 success, 0 failures, 2 skipped.
+
+Post-audit remediation:
+
+- `TournamentEntity` was removed because it was an unused persistent entity pointing to a nonexistent `tournament` table. Runtime tournament state remains Redis/domain state, not a PostgreSQL table.
+- `SeasonEntity` now maps the single canonical `seasons.season_year` integer column; `seasons.year` no longer exists.
+- `height_cm` now uses one policy across Java and SQL: nullable when unknown, valid only from `160` to `210`.
+- The seed writer no longer inserts `height_cm = 0`; absent height is bound as SQL `NULL`.
+- `PlayerSpecialAttributeSelectionValidator` enforces exactly two existing, different catalog codes before final dataset import writes player traits.
+- `Mvp1DatabaseBaselineContractTest` now runs Flyway against a temporary real PostgreSQL database and validates metadata, FK/unique/check constraints, valid inserts, invalid rejections, season round-trip and special-attribute rules.
