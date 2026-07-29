@@ -1,0 +1,5 @@
+[
+  {"code":"ESP-PRIMERA","name":"Spanish Primera Division","countryCode":"ESP","tier":1,"teamCount":20,"seasonYear":2026,"format":"double_round_robin"},
+  {"code":"ARG-PRIMERA","name":"Argentine Primera Division","countryCode":"ARG","tier":1,"teamCount":30,"seasonYear":2026,"format":"two_groups_apertura_clausura_reference"},
+  {"code":"BRA-SERIE-A","name":"Brazilian Serie A","countryCode":"BRA","tier":1,"teamCount":20,"seasonYear":2026,"format":"double_round_robin"}
+]

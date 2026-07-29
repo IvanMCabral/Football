@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:bra:palmeiras:p01",
+    "fullName": "BRA Palmeiras Player 1",
+    "displayName": "Palmeiras P1",
+    "dateOfBirth": "1997-01-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 89,
+      "defense": 95,
+      "technique": 86,
+      "speed": 93,
+      "stamina": 85,
+      "mentality": 85
+    },
+    "marketValue": 22250000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p02",
+    "fullName": "BRA Palmeiras Player 2",
+    "displayName": "Palmeiras P2",
+    "dateOfBirth": "2004-02-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 85,
+      "defense": 95,
+      "technique": 85,
+      "speed": 89,
+      "stamina": 86,
+      "mentality": 88
+    },
+    "marketValue": 21250000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p03",
+    "fullName": "BRA Palmeiras Player 3",
+    "displayName": "Palmeiras P3",
+    "dateOfBirth": "1993-03-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 83,
+      "defense": 95,
+      "technique": 94,
+      "speed": 91,
+      "stamina": 88,
+      "mentality": 92
+    },
+    "marketValue": 22750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p04",
+    "fullName": "BRA Palmeiras Player 4",
+    "displayName": "Palmeiras P4",
+    "dateOfBirth": "2000-04-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 77,
+      "defense": 93,
+      "technique": 84,
+      "speed": 85,
+      "stamina": 87,
+      "mentality": 84
+    },
+    "marketValue": 21250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p05",
+    "fullName": "BRA Palmeiras Player 5",
+    "displayName": "Palmeiras P5",
+    "dateOfBirth": "1989-05-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 83,
+      "defense": 95,
+      "technique": 93,
+      "speed": 91,
+      "stamina": 89,
+      "mentality": 88
+    },
+    "marketValue": 22750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p06",
+    "fullName": "BRA Palmeiras Player 6",
+    "displayName": "Palmeiras P6",
+    "dateOfBirth": "1996-06-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 80,
+      "defense": 95,
+      "technique": 86,
+      "speed": 88,
+      "stamina": 91,
+      "mentality": 92
+    },
+    "marketValue": 22000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p07",
+    "fullName": "BRA Palmeiras Player 7",
+    "displayName": "Palmeiras P7",
+    "dateOfBirth": "2003-07-19",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 80,
+      "defense": 95,
+      "technique": 89,
+      "speed": 88,
+      "stamina": 87,
+      "mentality": 90
+    },
+    "marketValue": 22000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p08",
+    "fullName": "BRA Palmeiras Player 8",
+    "displayName": "Palmeiras P8",
+    "dateOfBirth": "1992-08-22",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 76,
+      "defense": 92,
+      "technique": 81,
+      "speed": 84,
+      "stamina": 88,
+      "mentality": 84
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p09",
+    "fullName": "BRA Palmeiras Player 9",
+    "displayName": "Palmeiras P9",
+    "dateOfBirth": "1999-09-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 76,
+      "defense": 92,
+      "technique": 84,
+      "speed": 84,
+      "stamina": 84,
+      "mentality": 82
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p10",
+    "fullName": "BRA Palmeiras Player 10",
+    "displayName": "Palmeiras P10",
+    "dateOfBirth": "1988-10-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 89,
+      "defense": 89,
+      "technique": 90,
+      "speed": 89,
+      "stamina": 83,
+      "mentality": 83
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p11",
+    "fullName": "BRA Palmeiras Player 11",
+    "displayName": "Palmeiras P11",
+    "dateOfBirth": "1995-11-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 86,
+      "defense": 86,
+      "technique": 83,
+      "speed": 86,
+      "stamina": 85,
+      "mentality": 87
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p12",
+    "fullName": "BRA Palmeiras Player 12",
+    "displayName": "Palmeiras P12",
+    "dateOfBirth": "2002-12-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 87,
+      "defense": 87,
+      "technique": 87,
+      "speed": 87,
+      "stamina": 82,
+      "mentality": 86
+    },
+    "marketValue": 21250000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p13",
+    "fullName": "BRA Palmeiras Player 13",
+    "displayName": "Palmeiras P13",
+    "dateOfBirth": "1991-01-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 92,
+      "defense": 92,
+      "technique": 88,
+      "speed": 92,
+      "stamina": 92,
+      "mentality": 89
+    },
+    "marketValue": 22500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p14",
+    "fullName": "BRA Palmeiras Player 14",
+    "displayName": "Palmeiras P14",
+    "dateOfBirth": "1998-02-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 85,
+      "defense": 85,
+      "technique": 84,
+      "speed": 85,
+      "stamina": 81,
+      "mentality": 80
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p15",
+    "fullName": "BRA Palmeiras Player 15",
+    "displayName": "Palmeiras P15",
+    "dateOfBirth": "2005-03-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 91,
+      "defense": 91,
+      "technique": 86,
+      "speed": 91,
+      "stamina": 92,
+      "mentality": 93
+    },
+    "marketValue": 22250000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p16",
+    "fullName": "BRA Palmeiras Player 16",
+    "displayName": "Palmeiras P16",
+    "dateOfBirth": "1994-04-19",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 90,
+      "defense": 90,
+      "technique": 88,
+      "speed": 90,
+      "stamina": 87,
+      "mentality": 90
+    },
+    "marketValue": 22000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p17",
+    "fullName": "BRA Palmeiras Player 17",
+    "displayName": "Palmeiras P17",
+    "dateOfBirth": "2001-05-22",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 93,
+      "defense": 79,
+      "technique": 90,
+      "speed": 95,
+      "stamina": 91,
+      "mentality": 87
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p18",
+    "fullName": "BRA Palmeiras Player 18",
+    "displayName": "Palmeiras P18",
+    "dateOfBirth": "1990-06-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 95,
+      "defense": 82,
+      "technique": 89,
+      "speed": 95,
+      "stamina": 90,
+      "mentality": 88
+    },
+    "marketValue": 22500000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p19",
+    "fullName": "BRA Palmeiras Player 19",
+    "displayName": "Palmeiras P19",
+    "dateOfBirth": "1997-07-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 91,
+      "defense": 77,
+      "technique": 87,
+      "speed": 93,
+      "stamina": 81,
+      "mentality": 81
+    },
+    "marketValue": 21250000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p20",
+    "fullName": "BRA Palmeiras Player 20",
+    "displayName": "Palmeiras P20",
+    "dateOfBirth": "2004-08-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 95,
+      "defense": 81,
+      "technique": 87,
+      "speed": 95,
+      "stamina": 90,
+      "mentality": 92
+    },
+    "marketValue": 22250000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p21",
+    "fullName": "BRA Palmeiras Player 21",
+    "displayName": "Palmeiras P21",
+    "dateOfBirth": "1993-09-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 95,
+      "defense": 75,
+      "technique": 88,
+      "speed": 85,
+      "stamina": 84,
+      "mentality": 88
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p22",
+    "fullName": "BRA Palmeiras Player 22",
+    "displayName": "Palmeiras P22",
+    "dateOfBirth": "2000-10-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 95,
+      "defense": 79,
+      "technique": 88,
+      "speed": 89,
+      "stamina": 93,
+      "mentality": 90
+    },
+    "marketValue": 22750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p23",
+    "fullName": "BRA Palmeiras Player 23",
+    "displayName": "Palmeiras P23",
+    "dateOfBirth": "1989-11-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 92,
+      "defense": 72,
+      "technique": 84,
+      "speed": 82,
+      "stamina": 82,
+      "mentality": 81
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:palmeiras:p24",
+    "fullName": "BRA Palmeiras Player 24",
+    "displayName": "Palmeiras P24",
+    "dateOfBirth": "1996-12-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "palmeiras",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 95,
+      "defense": 76,
+      "technique": 91,
+      "speed": 86,
+      "stamina": 91,
+      "mentality": 92
+    },
+    "marketValue": 22000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p01",
+    "fullName": "ARG IndRivadavia Player 1",
+    "displayName": "Ind. Rivadavia P1",
+    "dateOfBirth": "1993-01-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 60,
+      "defense": 72,
+      "technique": 57,
+      "speed": 64,
+      "stamina": 56,
+      "mentality": 56
+    },
+    "marketValue": 15000000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p02",
+    "fullName": "ARG IndRivadavia Player 2",
+    "displayName": "Ind. Rivadavia P2",
+    "dateOfBirth": "2000-02-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 65,
+      "defense": 77,
+      "technique": 65,
+      "speed": 69,
+      "stamina": 66,
+      "mentality": 68
+    },
+    "marketValue": 16250000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p03",
+    "fullName": "ARG IndRivadavia Player 3",
+    "displayName": "Ind. Rivadavia P3",
+    "dateOfBirth": "1989-03-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 57,
+      "defense": 73,
+      "technique": 68,
+      "speed": 65,
+      "stamina": 62,
+      "mentality": 66
+    },
+    "marketValue": 16250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p04",
+    "fullName": "ARG IndRivadavia Player 4",
+    "displayName": "Ind. Rivadavia P4",
+    "dateOfBirth": "1996-04-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 52,
+      "defense": 68,
+      "technique": 59,
+      "speed": 60,
+      "stamina": 62,
+      "mentality": 59
+    },
+    "marketValue": 15000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p05",
+    "fullName": "ARG IndRivadavia Player 5",
+    "displayName": "Ind. Rivadavia P5",
+    "dateOfBirth": "2003-05-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 55,
+      "defense": 71,
+      "technique": 65,
+      "speed": 63,
+      "stamina": 61,
+      "mentality": 60
+    },
+    "marketValue": 15750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p06",
+    "fullName": "ARG IndRivadavia Player 6",
+    "displayName": "Ind. Rivadavia P6",
+    "dateOfBirth": "1992-06-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 59,
+      "defense": 75,
+      "technique": 65,
+      "speed": 67,
+      "stamina": 70,
+      "mentality": 71
+    },
+    "marketValue": 16750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p07",
+    "fullName": "ARG IndRivadavia Player 7",
+    "displayName": "Ind. Rivadavia P7",
+    "dateOfBirth": "1999-07-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 61,
+      "defense": 77,
+      "technique": 70,
+      "speed": 69,
+      "stamina": 68,
+      "mentality": 71
+    },
+    "marketValue": 17250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p08",
+    "fullName": "ARG IndRivadavia Player 8",
+    "displayName": "Ind. Rivadavia P8",
+    "dateOfBirth": "1988-08-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 56,
+      "defense": 72,
+      "technique": 61,
+      "speed": 64,
+      "stamina": 68,
+      "mentality": 64
+    },
+    "marketValue": 16000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p09",
+    "fullName": "ARG IndRivadavia Player 9",
+    "displayName": "Ind. Rivadavia P9",
+    "dateOfBirth": "1995-09-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 57,
+      "defense": 73,
+      "technique": 65,
+      "speed": 65,
+      "stamina": 65,
+      "mentality": 63
+    },
+    "marketValue": 16250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p10",
+    "fullName": "ARG IndRivadavia Player 10",
+    "displayName": "Ind. Rivadavia P10",
+    "dateOfBirth": "2002-10-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 68,
+      "defense": 68,
+      "technique": 69,
+      "speed": 68,
+      "stamina": 62,
+      "mentality": 62
+    },
+    "marketValue": 16500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p11",
+    "fullName": "ARG IndRivadavia Player 11",
+    "displayName": "Ind. Rivadavia P11",
+    "dateOfBirth": "1991-11-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 69,
+      "defense": 69,
+      "technique": 66,
+      "speed": 69,
+      "stamina": 68,
+      "mentality": 70
+    },
+    "marketValue": 16750000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p12",
+    "fullName": "ARG IndRivadavia Player 12",
+    "displayName": "Ind. Rivadavia P12",
+    "dateOfBirth": "1998-12-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 62,
+      "defense": 62,
+      "technique": 62,
+      "speed": 62,
+      "stamina": 57,
+      "mentality": 61
+    },
+    "marketValue": 15000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p13",
+    "fullName": "ARG IndRivadavia Player 13",
+    "displayName": "Ind. Rivadavia P13",
+    "dateOfBirth": "2005-01-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 62,
+      "defense": 62,
+      "technique": 58,
+      "speed": 62,
+      "stamina": 62,
+      "mentality": 59
+    },
+    "marketValue": 15000000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p14",
+    "fullName": "ARG IndRivadavia Player 14",
+    "displayName": "Ind. Rivadavia P14",
+    "dateOfBirth": "1994-02-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 68,
+      "defense": 68,
+      "technique": 67,
+      "speed": 68,
+      "stamina": 64,
+      "mentality": 63
+    },
+    "marketValue": 16500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p15",
+    "fullName": "ARG IndRivadavia Player 15",
+    "displayName": "Ind. Rivadavia P15",
+    "dateOfBirth": "2001-03-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 72,
+      "defense": 72,
+      "technique": 67,
+      "speed": 72,
+      "stamina": 73,
+      "mentality": 74
+    },
+    "marketValue": 17500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p16",
+    "fullName": "ARG IndRivadavia Player 16",
+    "displayName": "Ind. Rivadavia P16",
+    "dateOfBirth": "1990-04-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 65,
+      "defense": 65,
+      "technique": 63,
+      "speed": 65,
+      "stamina": 62,
+      "mentality": 65
+    },
+    "marketValue": 15750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p17",
+    "fullName": "ARG IndRivadavia Player 17",
+    "displayName": "Ind. Rivadavia P17",
+    "dateOfBirth": "1997-05-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 70,
+      "defense": 56,
+      "technique": 67,
+      "speed": 72,
+      "stamina": 68,
+      "mentality": 64
+    },
+    "marketValue": 16000000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p18",
+    "fullName": "ARG IndRivadavia Player 18",
+    "displayName": "Ind. Rivadavia P18",
+    "dateOfBirth": "2004-06-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 76,
+      "defense": 62,
+      "technique": 69,
+      "speed": 78,
+      "stamina": 70,
+      "mentality": 68
+    },
+    "marketValue": 17500000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p19",
+    "fullName": "ARG IndRivadavia Player 19",
+    "displayName": "Ind. Rivadavia P19",
+    "dateOfBirth": "1993-07-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 70,
+      "defense": 56,
+      "technique": 66,
+      "speed": 72,
+      "stamina": 60,
+      "mentality": 60
+    },
+    "marketValue": 16000000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p20",
+    "fullName": "ARG IndRivadavia Player 20",
+    "displayName": "Ind. Rivadavia P20",
+    "dateOfBirth": "2000-08-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 74,
+      "defense": 60,
+      "technique": 66,
+      "speed": 76,
+      "stamina": 69,
+      "mentality": 71
+    },
+    "marketValue": 17000000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p21",
+    "fullName": "ARG IndRivadavia Player 21",
+    "displayName": "Ind. Rivadavia P21",
+    "dateOfBirth": "1989-09-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 69,
+      "defense": 49,
+      "technique": 62,
+      "speed": 59,
+      "stamina": 58,
+      "mentality": 62
+    },
+    "marketValue": 15250000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p22",
+    "fullName": "ARG IndRivadavia Player 22",
+    "displayName": "Ind. Rivadavia P22",
+    "dateOfBirth": "1996-10-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 71,
+      "defense": 51,
+      "technique": 60,
+      "speed": 61,
+      "stamina": 65,
+      "mentality": 62
+    },
+    "marketValue": 15750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p23",
+    "fullName": "ARG IndRivadavia Player 23",
+    "displayName": "Ind. Rivadavia P23",
+    "dateOfBirth": "2003-11-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 71,
+      "defense": 51,
+      "technique": 63,
+      "speed": 61,
+      "stamina": 61,
+      "mentality": 60
+    },
+    "marketValue": 15750000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:independiente-rivadavia:p24",
+    "fullName": "ARG IndRivadavia Player 24",
+    "displayName": "Ind. Rivadavia P24",
+    "dateOfBirth": "1992-12-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "independiente-rivadavia",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 73,
+      "defense": 53,
+      "technique": 68,
+      "speed": 63,
+      "stamina": 68,
+      "mentality": 69
+    },
+    "marketValue": 16250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

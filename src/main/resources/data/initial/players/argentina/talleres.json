@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:arg:talleres:p01",
+    "fullName": "ARG Talleres Player 1",
+    "displayName": "Talleres P1",
+    "dateOfBirth": "1996-01-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 77,
+      "defense": 89,
+      "technique": 74,
+      "speed": 81,
+      "stamina": 73,
+      "mentality": 73
+    },
+    "marketValue": 19250000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p02",
+    "fullName": "ARG Talleres Player 2",
+    "displayName": "Talleres P2",
+    "dateOfBirth": "2003-02-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 78,
+      "defense": 90,
+      "technique": 78,
+      "speed": 82,
+      "stamina": 79,
+      "mentality": 81
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p03",
+    "fullName": "ARG Talleres Player 3",
+    "displayName": "Talleres P3",
+    "dateOfBirth": "1992-03-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 71,
+      "defense": 87,
+      "technique": 82,
+      "speed": 79,
+      "stamina": 76,
+      "mentality": 80
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p04",
+    "fullName": "ARG Talleres Player 4",
+    "displayName": "Talleres P4",
+    "dateOfBirth": "1999-04-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 62,
+      "defense": 78,
+      "technique": 69,
+      "speed": 70,
+      "stamina": 72,
+      "mentality": 69
+    },
+    "marketValue": 17500000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p05",
+    "fullName": "ARG Talleres Player 5",
+    "displayName": "Talleres P5",
+    "dateOfBirth": "1988-05-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 67,
+      "defense": 83,
+      "technique": 77,
+      "speed": 75,
+      "stamina": 73,
+      "mentality": 72
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p06",
+    "fullName": "ARG Talleres Player 6",
+    "displayName": "Talleres P6",
+    "dateOfBirth": "1995-06-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 71,
+      "defense": 87,
+      "technique": 77,
+      "speed": 79,
+      "stamina": 82,
+      "mentality": 83
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p07",
+    "fullName": "ARG Talleres Player 7",
+    "displayName": "Talleres P7",
+    "dateOfBirth": "2002-07-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 67,
+      "defense": 83,
+      "technique": 76,
+      "speed": 75,
+      "stamina": 74,
+      "mentality": 77
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p08",
+    "fullName": "ARG Talleres Player 8",
+    "displayName": "Talleres P8",
+    "dateOfBirth": "1991-08-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 71,
+      "defense": 87,
+      "technique": 76,
+      "speed": 79,
+      "stamina": 83,
+      "mentality": 79
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p09",
+    "fullName": "ARG Talleres Player 9",
+    "displayName": "Talleres P9",
+    "dateOfBirth": "1998-09-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 66,
+      "defense": 82,
+      "technique": 74,
+      "speed": 74,
+      "stamina": 74,
+      "mentality": 72
+    },
+    "marketValue": 18500000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p10",
+    "fullName": "ARG Talleres Player 10",
+    "displayName": "Talleres P10",
+    "dateOfBirth": "2005-10-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 78,
+      "defense": 78,
+      "technique": 79,
+      "speed": 78,
+      "stamina": 72,
+      "mentality": 72
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p11",
+    "fullName": "ARG Talleres Player 11",
+    "displayName": "Talleres P11",
+    "dateOfBirth": "1994-11-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 81,
+      "defense": 81,
+      "technique": 78,
+      "speed": 81,
+      "stamina": 80,
+      "mentality": 82
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p12",
+    "fullName": "ARG Talleres Player 12",
+    "displayName": "Talleres P12",
+    "dateOfBirth": "2001-12-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 79,
+      "defense": 79,
+      "technique": 79,
+      "speed": 79,
+      "stamina": 74,
+      "mentality": 78
+    },
+    "marketValue": 19250000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p13",
+    "fullName": "ARG Talleres Player 13",
+    "displayName": "Talleres P13",
+    "dateOfBirth": "1990-01-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 78,
+      "defense": 78,
+      "technique": 74,
+      "speed": 78,
+      "stamina": 78,
+      "mentality": 75
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p14",
+    "fullName": "ARG Talleres Player 14",
+    "displayName": "Talleres P14",
+    "dateOfBirth": "1997-02-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 76,
+      "defense": 76,
+      "technique": 75,
+      "speed": 76,
+      "stamina": 72,
+      "mentality": 71
+    },
+    "marketValue": 18500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p15",
+    "fullName": "ARG Talleres Player 15",
+    "displayName": "Talleres P15",
+    "dateOfBirth": "2004-03-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 78,
+      "defense": 78,
+      "technique": 73,
+      "speed": 78,
+      "stamina": 79,
+      "mentality": 80
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p16",
+    "fullName": "ARG Talleres Player 16",
+    "displayName": "Talleres P16",
+    "dateOfBirth": "1993-04-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 81,
+      "defense": 81,
+      "technique": 79,
+      "speed": 81,
+      "stamina": 78,
+      "mentality": 81
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p17",
+    "fullName": "ARG Talleres Player 17",
+    "displayName": "Talleres P17",
+    "dateOfBirth": "2000-05-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 85,
+      "defense": 71,
+      "technique": 82,
+      "speed": 87,
+      "stamina": 83,
+      "mentality": 79
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p18",
+    "fullName": "ARG Talleres Player 18",
+    "displayName": "Talleres P18",
+    "dateOfBirth": "1989-06-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 86,
+      "defense": 72,
+      "technique": 79,
+      "speed": 88,
+      "stamina": 80,
+      "mentality": 78
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p19",
+    "fullName": "ARG Talleres Player 19",
+    "displayName": "Talleres P19",
+    "dateOfBirth": "1996-07-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 76,
+      "defense": 62,
+      "technique": 72,
+      "speed": 78,
+      "stamina": 66,
+      "mentality": 66
+    },
+    "marketValue": 17500000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p20",
+    "fullName": "ARG Talleres Player 20",
+    "displayName": "Talleres P20",
+    "dateOfBirth": "2003-08-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 79,
+      "defense": 65,
+      "technique": 71,
+      "speed": 81,
+      "stamina": 74,
+      "mentality": 76
+    },
+    "marketValue": 18250000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p21",
+    "fullName": "ARG Talleres Player 21",
+    "displayName": "Talleres P21",
+    "dateOfBirth": "1992-09-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 79,
+      "defense": 59,
+      "technique": 72,
+      "speed": 69,
+      "stamina": 68,
+      "mentality": 72
+    },
+    "marketValue": 17750000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p22",
+    "fullName": "ARG Talleres Player 22",
+    "displayName": "Talleres P22",
+    "dateOfBirth": "1999-10-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 79,
+      "defense": 59,
+      "technique": 68,
+      "speed": 69,
+      "stamina": 73,
+      "mentality": 70
+    },
+    "marketValue": 17750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p23",
+    "fullName": "ARG Talleres Player 23",
+    "displayName": "Talleres P23",
+    "dateOfBirth": "1988-11-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 86,
+      "defense": 66,
+      "technique": 78,
+      "speed": 76,
+      "stamina": 76,
+      "mentality": 75
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:talleres:p24",
+    "fullName": "ARG Talleres Player 24",
+    "displayName": "Talleres P24",
+    "dateOfBirth": "1995-12-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "talleres",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 83,
+      "defense": 63,
+      "technique": 78,
+      "speed": 73,
+      "stamina": 78,
+      "mentality": 79
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

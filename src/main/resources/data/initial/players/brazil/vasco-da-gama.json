@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p01",
+    "fullName": "BRA Vasco Player 1",
+    "displayName": "Vasco P1",
+    "dateOfBirth": "2001-01-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 73,
+      "defense": 85,
+      "technique": 70,
+      "speed": 77,
+      "stamina": 69,
+      "mentality": 69
+    },
+    "marketValue": 18250000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p02",
+    "fullName": "BRA Vasco Player 2",
+    "displayName": "Vasco P2",
+    "dateOfBirth": "1990-02-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 80,
+      "defense": 92,
+      "technique": 80,
+      "speed": 84,
+      "stamina": 81,
+      "mentality": 83
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p03",
+    "fullName": "BRA Vasco Player 3",
+    "displayName": "Vasco P3",
+    "dateOfBirth": "1997-03-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 74,
+      "defense": 90,
+      "technique": 85,
+      "speed": 82,
+      "stamina": 79,
+      "mentality": 83
+    },
+    "marketValue": 20500000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p04",
+    "fullName": "BRA Vasco Player 4",
+    "displayName": "Vasco P4",
+    "dateOfBirth": "2004-04-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 65,
+      "defense": 81,
+      "technique": 72,
+      "speed": 73,
+      "stamina": 75,
+      "mentality": 72
+    },
+    "marketValue": 18250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p05",
+    "fullName": "BRA Vasco Player 5",
+    "displayName": "Vasco P5",
+    "dateOfBirth": "1993-05-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 67,
+      "defense": 83,
+      "technique": 77,
+      "speed": 75,
+      "stamina": 73,
+      "mentality": 72
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p06",
+    "fullName": "BRA Vasco Player 6",
+    "displayName": "Vasco P6",
+    "dateOfBirth": "2000-06-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 73,
+      "defense": 89,
+      "technique": 79,
+      "speed": 81,
+      "stamina": 84,
+      "mentality": 85
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p07",
+    "fullName": "BRA Vasco Player 7",
+    "displayName": "Vasco P7",
+    "dateOfBirth": "1989-07-19",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 68,
+      "defense": 84,
+      "technique": 77,
+      "speed": 76,
+      "stamina": 75,
+      "mentality": 78
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p08",
+    "fullName": "BRA Vasco Player 8",
+    "displayName": "Vasco P8",
+    "dateOfBirth": "1996-08-22",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 73,
+      "defense": 89,
+      "technique": 78,
+      "speed": 81,
+      "stamina": 85,
+      "mentality": 81
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p09",
+    "fullName": "BRA Vasco Player 9",
+    "displayName": "Vasco P9",
+    "dateOfBirth": "2003-09-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 67,
+      "defense": 83,
+      "technique": 75,
+      "speed": 75,
+      "stamina": 75,
+      "mentality": 73
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p10",
+    "fullName": "BRA Vasco Player 10",
+    "displayName": "Vasco P10",
+    "dateOfBirth": "1992-10-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 75,
+      "defense": 75,
+      "technique": 76,
+      "speed": 75,
+      "stamina": 69,
+      "mentality": 69
+    },
+    "marketValue": 18250000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p11",
+    "fullName": "BRA Vasco Player 11",
+    "displayName": "Vasco P11",
+    "dateOfBirth": "1999-11-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 76,
+      "defense": 76,
+      "technique": 73,
+      "speed": 76,
+      "stamina": 75,
+      "mentality": 77
+    },
+    "marketValue": 18500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p12",
+    "fullName": "BRA Vasco Player 12",
+    "displayName": "Vasco P12",
+    "dateOfBirth": "1988-12-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 77,
+      "defense": 77,
+      "technique": 77,
+      "speed": 77,
+      "stamina": 72,
+      "mentality": 76
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p13",
+    "fullName": "BRA Vasco Player 13",
+    "displayName": "Vasco P13",
+    "dateOfBirth": "1995-01-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 76,
+      "defense": 76,
+      "technique": 72,
+      "speed": 76,
+      "stamina": 76,
+      "mentality": 73
+    },
+    "marketValue": 18500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p14",
+    "fullName": "BRA Vasco Player 14",
+    "displayName": "Vasco P14",
+    "dateOfBirth": "2002-02-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 83,
+      "defense": 83,
+      "technique": 82,
+      "speed": 83,
+      "stamina": 79,
+      "mentality": 78
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p15",
+    "fullName": "BRA Vasco Player 15",
+    "displayName": "Vasco P15",
+    "dateOfBirth": "1991-03-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 81,
+      "defense": 81,
+      "technique": 76,
+      "speed": 81,
+      "stamina": 82,
+      "mentality": 83
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p16",
+    "fullName": "BRA Vasco Player 16",
+    "displayName": "Vasco P16",
+    "dateOfBirth": "1998-04-19",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 84,
+      "defense": 84,
+      "technique": 82,
+      "speed": 84,
+      "stamina": 81,
+      "mentality": 84
+    },
+    "marketValue": 20500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p17",
+    "fullName": "BRA Vasco Player 17",
+    "displayName": "Vasco P17",
+    "dateOfBirth": "2005-05-22",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 82,
+      "defense": 68,
+      "technique": 79,
+      "speed": 84,
+      "stamina": 80,
+      "mentality": 76
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p18",
+    "fullName": "BRA Vasco Player 18",
+    "displayName": "Vasco P18",
+    "dateOfBirth": "1994-06-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 83,
+      "defense": 69,
+      "technique": 76,
+      "speed": 85,
+      "stamina": 77,
+      "mentality": 75
+    },
+    "marketValue": 19250000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p19",
+    "fullName": "BRA Vasco Player 19",
+    "displayName": "Vasco P19",
+    "dateOfBirth": "2001-07-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 89,
+      "defense": 75,
+      "technique": 85,
+      "speed": 91,
+      "stamina": 79,
+      "mentality": 79
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p20",
+    "fullName": "BRA Vasco Player 20",
+    "displayName": "Vasco P20",
+    "dateOfBirth": "1990-08-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 84,
+      "defense": 70,
+      "technique": 76,
+      "speed": 86,
+      "stamina": 79,
+      "mentality": 81
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p21",
+    "fullName": "BRA Vasco Player 21",
+    "displayName": "Vasco P21",
+    "dateOfBirth": "1997-09-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 88,
+      "defense": 68,
+      "technique": 81,
+      "speed": 78,
+      "stamina": 77,
+      "mentality": 81
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p22",
+    "fullName": "BRA Vasco Player 22",
+    "displayName": "Vasco P22",
+    "dateOfBirth": "2004-10-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 83,
+      "defense": 63,
+      "technique": 72,
+      "speed": 73,
+      "stamina": 77,
+      "mentality": 74
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p23",
+    "fullName": "BRA Vasco Player 23",
+    "displayName": "Vasco P23",
+    "dateOfBirth": "1993-11-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 85,
+      "defense": 65,
+      "technique": 77,
+      "speed": 75,
+      "stamina": 75,
+      "mentality": 74
+    },
+    "marketValue": 19250000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:vasco-da-gama:p24",
+    "fullName": "BRA Vasco Player 24",
+    "displayName": "Vasco P24",
+    "dateOfBirth": "2000-12-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "vasco-da-gama",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 89,
+      "defense": 69,
+      "technique": 84,
+      "speed": 79,
+      "stamina": 84,
+      "mentality": 85
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p01",
+    "fullName": "ARG Estudiantes Player 1",
+    "displayName": "Estudiantes P1",
+    "dateOfBirth": "2002-01-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 75,
+      "defense": 87,
+      "technique": 72,
+      "speed": 79,
+      "stamina": 71,
+      "mentality": 71
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p02",
+    "fullName": "ARG Estudiantes Player 2",
+    "displayName": "Estudiantes P2",
+    "dateOfBirth": "1991-02-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 80,
+      "defense": 92,
+      "technique": 80,
+      "speed": 84,
+      "stamina": 81,
+      "mentality": 83
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p03",
+    "fullName": "ARG Estudiantes Player 3",
+    "displayName": "Estudiantes P3",
+    "dateOfBirth": "1998-03-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 70,
+      "defense": 86,
+      "technique": 81,
+      "speed": 78,
+      "stamina": 75,
+      "mentality": 79
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p04",
+    "fullName": "ARG Estudiantes Player 4",
+    "displayName": "Estudiantes P4",
+    "dateOfBirth": "2005-04-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 68,
+      "defense": 84,
+      "technique": 75,
+      "speed": 76,
+      "stamina": 78,
+      "mentality": 75
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p05",
+    "fullName": "ARG Estudiantes Player 5",
+    "displayName": "Estudiantes P5",
+    "dateOfBirth": "1994-05-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 73,
+      "defense": 89,
+      "technique": 83,
+      "speed": 81,
+      "stamina": 79,
+      "mentality": 78
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p06",
+    "fullName": "ARG Estudiantes Player 6",
+    "displayName": "Estudiantes P6",
+    "dateOfBirth": "2001-06-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 74,
+      "defense": 90,
+      "technique": 80,
+      "speed": 82,
+      "stamina": 85,
+      "mentality": 86
+    },
+    "marketValue": 20500000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p07",
+    "fullName": "ARG Estudiantes Player 7",
+    "displayName": "Estudiantes P7",
+    "dateOfBirth": "1990-07-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 68,
+      "defense": 84,
+      "technique": 77,
+      "speed": 76,
+      "stamina": 75,
+      "mentality": 78
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p08",
+    "fullName": "ARG Estudiantes Player 8",
+    "displayName": "Estudiantes P8",
+    "dateOfBirth": "1997-08-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 69,
+      "defense": 85,
+      "technique": 74,
+      "speed": 77,
+      "stamina": 81,
+      "mentality": 77
+    },
+    "marketValue": 19250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p09",
+    "fullName": "ARG Estudiantes Player 9",
+    "displayName": "Estudiantes P9",
+    "dateOfBirth": "2004-09-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 75,
+      "defense": 91,
+      "technique": 83,
+      "speed": 83,
+      "stamina": 83,
+      "mentality": 81
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p10",
+    "fullName": "ARG Estudiantes Player 10",
+    "displayName": "Estudiantes P10",
+    "dateOfBirth": "1993-10-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 78,
+      "defense": 78,
+      "technique": 79,
+      "speed": 78,
+      "stamina": 72,
+      "mentality": 72
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p11",
+    "fullName": "ARG Estudiantes Player 11",
+    "displayName": "Estudiantes P11",
+    "dateOfBirth": "2000-11-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 84,
+      "defense": 84,
+      "technique": 81,
+      "speed": 84,
+      "stamina": 83,
+      "mentality": 85
+    },
+    "marketValue": 20500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p12",
+    "fullName": "ARG Estudiantes Player 12",
+    "displayName": "Estudiantes P12",
+    "dateOfBirth": "1989-12-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 77,
+      "defense": 77,
+      "technique": 77,
+      "speed": 77,
+      "stamina": 72,
+      "mentality": 76
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p13",
+    "fullName": "ARG Estudiantes Player 13",
+    "displayName": "Estudiantes P13",
+    "dateOfBirth": "1996-01-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 84,
+      "defense": 84,
+      "technique": 80,
+      "speed": 84,
+      "stamina": 84,
+      "mentality": 81
+    },
+    "marketValue": 20500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p14",
+    "fullName": "ARG Estudiantes Player 14",
+    "displayName": "Estudiantes P14",
+    "dateOfBirth": "2003-02-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 77,
+      "defense": 77,
+      "technique": 76,
+      "speed": 77,
+      "stamina": 73,
+      "mentality": 72
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p15",
+    "fullName": "ARG Estudiantes Player 15",
+    "displayName": "Estudiantes P15",
+    "dateOfBirth": "1992-03-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 81,
+      "defense": 81,
+      "technique": 76,
+      "speed": 81,
+      "stamina": 82,
+      "mentality": 83
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p16",
+    "fullName": "ARG Estudiantes Player 16",
+    "displayName": "Estudiantes P16",
+    "dateOfBirth": "1999-04-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 75,
+      "defense": 75,
+      "technique": 73,
+      "speed": 75,
+      "stamina": 72,
+      "mentality": 75
+    },
+    "marketValue": 18250000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p17",
+    "fullName": "ARG Estudiantes Player 17",
+    "displayName": "Estudiantes P17",
+    "dateOfBirth": "1988-05-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 79,
+      "defense": 65,
+      "technique": 76,
+      "speed": 81,
+      "stamina": 77,
+      "mentality": 73
+    },
+    "marketValue": 18250000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p18",
+    "fullName": "ARG Estudiantes Player 18",
+    "displayName": "Estudiantes P18",
+    "dateOfBirth": "1995-06-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 81,
+      "defense": 67,
+      "technique": 74,
+      "speed": 83,
+      "stamina": 75,
+      "mentality": 73
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p19",
+    "fullName": "ARG Estudiantes Player 19",
+    "displayName": "Estudiantes P19",
+    "dateOfBirth": "2002-07-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 81,
+      "defense": 67,
+      "technique": 77,
+      "speed": 83,
+      "stamina": 71,
+      "mentality": 71
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p20",
+    "fullName": "ARG Estudiantes Player 20",
+    "displayName": "Estudiantes P20",
+    "dateOfBirth": "1991-08-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 84,
+      "defense": 70,
+      "technique": 76,
+      "speed": 86,
+      "stamina": 79,
+      "mentality": 81
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p21",
+    "fullName": "ARG Estudiantes Player 21",
+    "displayName": "Estudiantes P21",
+    "dateOfBirth": "1998-09-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 83,
+      "defense": 63,
+      "technique": 76,
+      "speed": 73,
+      "stamina": 72,
+      "mentality": 76
+    },
+    "marketValue": 18750000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p22",
+    "fullName": "ARG Estudiantes Player 22",
+    "displayName": "Estudiantes P22",
+    "dateOfBirth": "2005-10-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 88,
+      "defense": 68,
+      "technique": 77,
+      "speed": 78,
+      "stamina": 82,
+      "mentality": 79
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p23",
+    "fullName": "ARG Estudiantes Player 23",
+    "displayName": "Estudiantes P23",
+    "dateOfBirth": "1994-11-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 86,
+      "defense": 66,
+      "technique": 78,
+      "speed": 76,
+      "stamina": 76,
+      "mentality": 75
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:estudiantes-lp:p24",
+    "fullName": "ARG Estudiantes Player 24",
+    "displayName": "Estudiantes P24",
+    "dateOfBirth": "2001-12-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "estudiantes-lp",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 89,
+      "defense": 69,
+      "technique": 84,
+      "speed": 79,
+      "stamina": 84,
+      "mentality": 85
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

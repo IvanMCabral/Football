@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p01",
+    "fullName": "ESP RealSociedad Player 1",
+    "displayName": "Real Sociedad P1",
+    "dateOfBirth": "2001-01-01",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 79,
+      "defense": 91,
+      "technique": 76,
+      "speed": 83,
+      "stamina": 75,
+      "mentality": 75
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p02",
+    "fullName": "ESP RealSociedad Player 2",
+    "displayName": "Real Sociedad P2",
+    "dateOfBirth": "1990-02-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 81,
+      "defense": 93,
+      "technique": 81,
+      "speed": 85,
+      "stamina": 82,
+      "mentality": 84
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p03",
+    "fullName": "ESP RealSociedad Player 3",
+    "displayName": "Real Sociedad P3",
+    "dateOfBirth": "1997-03-07",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 75,
+      "defense": 91,
+      "technique": 86,
+      "speed": 83,
+      "stamina": 80,
+      "mentality": 84
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p04",
+    "fullName": "ESP RealSociedad Player 4",
+    "displayName": "Real Sociedad P4",
+    "dateOfBirth": "2004-04-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 71,
+      "defense": 87,
+      "technique": 78,
+      "speed": 79,
+      "stamina": 81,
+      "mentality": 78
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p05",
+    "fullName": "ESP RealSociedad Player 5",
+    "displayName": "Real Sociedad P5",
+    "dateOfBirth": "1993-05-13",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 76,
+      "defense": 92,
+      "technique": 86,
+      "speed": 84,
+      "stamina": 82,
+      "mentality": 81
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p06",
+    "fullName": "ESP RealSociedad Player 6",
+    "displayName": "Real Sociedad P6",
+    "dateOfBirth": "2000-06-16",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 76,
+      "defense": 92,
+      "technique": 82,
+      "speed": 84,
+      "stamina": 87,
+      "mentality": 88
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p07",
+    "fullName": "ESP RealSociedad Player 7",
+    "displayName": "Real Sociedad P7",
+    "dateOfBirth": "1989-07-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 70,
+      "defense": 86,
+      "technique": 79,
+      "speed": 78,
+      "stamina": 77,
+      "mentality": 80
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p08",
+    "fullName": "ESP RealSociedad Player 8",
+    "displayName": "Real Sociedad P8",
+    "dateOfBirth": "1996-08-22",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 76,
+      "defense": 92,
+      "technique": 81,
+      "speed": 84,
+      "stamina": 88,
+      "mentality": 84
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p09",
+    "fullName": "ESP RealSociedad Player 9",
+    "displayName": "Real Sociedad P9",
+    "dateOfBirth": "2003-09-25",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 77,
+      "defense": 93,
+      "technique": 85,
+      "speed": 85,
+      "stamina": 85,
+      "mentality": 83
+    },
+    "marketValue": 21250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p10",
+    "fullName": "ESP RealSociedad Player 10",
+    "displayName": "Real Sociedad P10",
+    "dateOfBirth": "1992-10-01",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 78,
+      "defense": 78,
+      "technique": 79,
+      "speed": 78,
+      "stamina": 72,
+      "mentality": 72
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p11",
+    "fullName": "ESP RealSociedad Player 11",
+    "displayName": "Real Sociedad P11",
+    "dateOfBirth": "1999-11-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 88,
+      "defense": 88,
+      "technique": 85,
+      "speed": 88,
+      "stamina": 87,
+      "mentality": 89
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p12",
+    "fullName": "ESP RealSociedad Player 12",
+    "displayName": "Real Sociedad P12",
+    "dateOfBirth": "1988-12-07",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 78,
+      "defense": 78,
+      "technique": 78,
+      "speed": 78,
+      "stamina": 73,
+      "mentality": 77
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p13",
+    "fullName": "ESP RealSociedad Player 13",
+    "displayName": "Real Sociedad P13",
+    "dateOfBirth": "1995-01-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 84,
+      "defense": 84,
+      "technique": 80,
+      "speed": 84,
+      "stamina": 84,
+      "mentality": 81
+    },
+    "marketValue": 20500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p14",
+    "fullName": "ESP RealSociedad Player 14",
+    "displayName": "Real Sociedad P14",
+    "dateOfBirth": "2002-02-13",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 88,
+      "defense": 88,
+      "technique": 87,
+      "speed": 88,
+      "stamina": 84,
+      "mentality": 83
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p15",
+    "fullName": "ESP RealSociedad Player 15",
+    "displayName": "Real Sociedad P15",
+    "dateOfBirth": "1991-03-16",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 80,
+      "defense": 80,
+      "technique": 75,
+      "speed": 80,
+      "stamina": 81,
+      "mentality": 82
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p16",
+    "fullName": "ESP RealSociedad Player 16",
+    "displayName": "Real Sociedad P16",
+    "dateOfBirth": "1998-04-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 88,
+      "defense": 88,
+      "technique": 86,
+      "speed": 88,
+      "stamina": 85,
+      "mentality": 88
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p17",
+    "fullName": "ESP RealSociedad Player 17",
+    "displayName": "Real Sociedad P17",
+    "dateOfBirth": "2005-05-22",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 87,
+      "defense": 73,
+      "technique": 84,
+      "speed": 89,
+      "stamina": 85,
+      "mentality": 81
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p18",
+    "fullName": "ESP RealSociedad Player 18",
+    "displayName": "Real Sociedad P18",
+    "dateOfBirth": "1994-06-25",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 84,
+      "defense": 70,
+      "technique": 77,
+      "speed": 86,
+      "stamina": 78,
+      "mentality": 76
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p19",
+    "fullName": "ESP RealSociedad Player 19",
+    "displayName": "Real Sociedad P19",
+    "dateOfBirth": "2001-07-01",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 86,
+      "defense": 72,
+      "technique": 82,
+      "speed": 88,
+      "stamina": 76,
+      "mentality": 76
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p20",
+    "fullName": "ESP RealSociedad Player 20",
+    "displayName": "Real Sociedad P20",
+    "dateOfBirth": "1990-08-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 86,
+      "defense": 72,
+      "technique": 78,
+      "speed": 88,
+      "stamina": 81,
+      "mentality": 83
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p21",
+    "fullName": "ESP RealSociedad Player 21",
+    "displayName": "Real Sociedad P21",
+    "dateOfBirth": "1997-09-07",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 91,
+      "defense": 71,
+      "technique": 84,
+      "speed": 81,
+      "stamina": 80,
+      "mentality": 84
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p22",
+    "fullName": "ESP RealSociedad Player 22",
+    "displayName": "Real Sociedad P22",
+    "dateOfBirth": "2004-10-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 94,
+      "defense": 74,
+      "technique": 83,
+      "speed": 84,
+      "stamina": 88,
+      "mentality": 85
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p23",
+    "fullName": "ESP RealSociedad Player 23",
+    "displayName": "Real Sociedad P23",
+    "dateOfBirth": "1993-11-13",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 87,
+      "defense": 67,
+      "technique": 79,
+      "speed": 77,
+      "stamina": 77,
+      "mentality": 76
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-sociedad:p24",
+    "fullName": "ESP RealSociedad Player 24",
+    "displayName": "Real Sociedad P24",
+    "dateOfBirth": "2000-12-16",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-sociedad",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 84,
+      "defense": 64,
+      "technique": 79,
+      "speed": 74,
+      "stamina": 79,
+      "mentality": 80
+    },
+    "marketValue": 19000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {"code":"atletico-mineiro","name":"Atletico Mineiro","shortName":"Atletico-MG","city":"Belo Horizonte","reputation":82},
+  {"code":"athletico-paranaense","name":"Athletico Paranaense","shortName":"Athletico-PR","city":"Curitiba","reputation":78},
+  {"code":"bahia","name":"Bahia","shortName":"Bahia","city":"Salvador","reputation":75},
+  {"code":"botafogo","name":"Botafogo","shortName":"Botafogo","city":"Rio de Janeiro","reputation":82},
+  {"code":"chapecoense","name":"Chapecoense","shortName":"Chapecoense","city":"Chapeco","reputation":65},
+  {"code":"corinthians","name":"Corinthians","shortName":"Corinthians","city":"Sao Paulo","reputation":83},
+  {"code":"coritiba","name":"Coritiba SAF","shortName":"Coritiba","city":"Curitiba","reputation":68},
+  {"code":"cruzeiro","name":"Cruzeiro","shortName":"Cruzeiro","city":"Belo Horizonte","reputation":81},
+  {"code":"flamengo","name":"Flamengo","shortName":"Flamengo","city":"Rio de Janeiro","reputation":90},
+  {"code":"fluminense","name":"Fluminense","shortName":"Fluminense","city":"Rio de Janeiro","reputation":82},
+  {"code":"gremio","name":"Gremio","shortName":"Gremio","city":"Porto Alegre","reputation":80},
+  {"code":"internacional","name":"Internacional","shortName":"Internacional","city":"Porto Alegre","reputation":79},
+  {"code":"mirassol","name":"Mirassol","shortName":"Mirassol","city":"Mirassol","reputation":68},
+  {"code":"palmeiras","name":"Palmeiras","shortName":"Palmeiras","city":"Sao Paulo","reputation":88},
+  {"code":"red-bull-bragantino","name":"Red Bull Bragantino","shortName":"Bragantino","city":"Braganca Paulista","reputation":74},
+  {"code":"remo","name":"Remo","shortName":"Remo","city":"Belem","reputation":64},
+  {"code":"santos","name":"Santos","shortName":"Santos","city":"Santos","reputation":78},
+  {"code":"sao-paulo","name":"Sao Paulo","shortName":"Sao Paulo","city":"Sao Paulo","reputation":84},
+  {"code":"vasco-da-gama","name":"Vasco da Gama","shortName":"Vasco","city":"Rio de Janeiro","reputation":78},
+  {"code":"vitoria","name":"Vitoria","shortName":"Vitoria","city":"Salvador","reputation":69}
+]

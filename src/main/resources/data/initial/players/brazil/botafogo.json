@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:bra:botafogo:p01",
+    "fullName": "BRA Botafogo Player 1",
+    "displayName": "Botafogo P1",
+    "dateOfBirth": "1996-01-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 77,
+      "defense": 89,
+      "technique": 74,
+      "speed": 81,
+      "stamina": 73,
+      "mentality": 73
+    },
+    "marketValue": 19250000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p02",
+    "fullName": "BRA Botafogo Player 2",
+    "displayName": "Botafogo P2",
+    "dateOfBirth": "2003-02-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 81,
+      "defense": 93,
+      "technique": 81,
+      "speed": 85,
+      "stamina": 82,
+      "mentality": 84
+    },
+    "marketValue": 20250000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p03",
+    "fullName": "BRA Botafogo Player 3",
+    "displayName": "Botafogo P3",
+    "dateOfBirth": "1992-03-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 72,
+      "defense": 88,
+      "technique": 83,
+      "speed": 80,
+      "stamina": 77,
+      "mentality": 81
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p04",
+    "fullName": "BRA Botafogo Player 4",
+    "displayName": "Botafogo P4",
+    "dateOfBirth": "1999-04-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 79,
+      "defense": 95,
+      "technique": 86,
+      "speed": 87,
+      "stamina": 89,
+      "mentality": 86
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p05",
+    "fullName": "BRA Botafogo Player 5",
+    "displayName": "Botafogo P5",
+    "dateOfBirth": "1988-05-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 79,
+      "defense": 95,
+      "technique": 89,
+      "speed": 87,
+      "stamina": 85,
+      "mentality": 84
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p06",
+    "fullName": "BRA Botafogo Player 6",
+    "displayName": "Botafogo P6",
+    "dateOfBirth": "1995-06-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 71,
+      "defense": 87,
+      "technique": 77,
+      "speed": 79,
+      "stamina": 82,
+      "mentality": 83
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p07",
+    "fullName": "BRA Botafogo Player 7",
+    "displayName": "Botafogo P7",
+    "dateOfBirth": "2002-07-19",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 76,
+      "defense": 92,
+      "technique": 85,
+      "speed": 84,
+      "stamina": 83,
+      "mentality": 86
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p08",
+    "fullName": "BRA Botafogo Player 8",
+    "displayName": "Botafogo P8",
+    "dateOfBirth": "1991-08-22",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 69,
+      "defense": 85,
+      "technique": 74,
+      "speed": 77,
+      "stamina": 81,
+      "mentality": 77
+    },
+    "marketValue": 19250000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p09",
+    "fullName": "BRA Botafogo Player 9",
+    "displayName": "Botafogo P9",
+    "dateOfBirth": "1998-09-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 75,
+      "defense": 91,
+      "technique": 83,
+      "speed": 83,
+      "stamina": 83,
+      "mentality": 81
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p10",
+    "fullName": "BRA Botafogo Player 10",
+    "displayName": "Botafogo P10",
+    "dateOfBirth": "2005-10-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 88,
+      "defense": 88,
+      "technique": 89,
+      "speed": 88,
+      "stamina": 82,
+      "mentality": 82
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p11",
+    "fullName": "BRA Botafogo Player 11",
+    "displayName": "Botafogo P11",
+    "dateOfBirth": "1994-11-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 82,
+      "defense": 82,
+      "technique": 79,
+      "speed": 82,
+      "stamina": 81,
+      "mentality": 83
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p12",
+    "fullName": "BRA Botafogo Player 12",
+    "displayName": "Botafogo P12",
+    "dateOfBirth": "2001-12-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 85,
+      "defense": 85,
+      "technique": 85,
+      "speed": 85,
+      "stamina": 80,
+      "mentality": 84
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p13",
+    "fullName": "BRA Botafogo Player 13",
+    "displayName": "Botafogo P13",
+    "dateOfBirth": "1990-01-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 82,
+      "defense": 82,
+      "technique": 78,
+      "speed": 82,
+      "stamina": 82,
+      "mentality": 79
+    },
+    "marketValue": 20000000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p14",
+    "fullName": "BRA Botafogo Player 14",
+    "displayName": "Botafogo P14",
+    "dateOfBirth": "1997-02-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 89,
+      "defense": 89,
+      "technique": 88,
+      "speed": 89,
+      "stamina": 85,
+      "mentality": 84
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p15",
+    "fullName": "BRA Botafogo Player 15",
+    "displayName": "Botafogo P15",
+    "dateOfBirth": "2004-03-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 84,
+      "defense": 84,
+      "technique": 79,
+      "speed": 84,
+      "stamina": 85,
+      "mentality": 86
+    },
+    "marketValue": 20500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p16",
+    "fullName": "BRA Botafogo Player 16",
+    "displayName": "Botafogo P16",
+    "dateOfBirth": "1993-04-19",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 81,
+      "defense": 81,
+      "technique": 79,
+      "speed": 81,
+      "stamina": 78,
+      "mentality": 81
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p17",
+    "fullName": "BRA Botafogo Player 17",
+    "displayName": "Botafogo P17",
+    "dateOfBirth": "2000-05-22",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 90,
+      "defense": 76,
+      "technique": 87,
+      "speed": 92,
+      "stamina": 88,
+      "mentality": 84
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p18",
+    "fullName": "BRA Botafogo Player 18",
+    "displayName": "Botafogo P18",
+    "dateOfBirth": "1989-06-25",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 92,
+      "defense": 78,
+      "technique": 85,
+      "speed": 94,
+      "stamina": 86,
+      "mentality": 84
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p19",
+    "fullName": "BRA Botafogo Player 19",
+    "displayName": "Botafogo P19",
+    "dateOfBirth": "1996-07-01",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 85,
+      "defense": 71,
+      "technique": 81,
+      "speed": 87,
+      "stamina": 75,
+      "mentality": 75
+    },
+    "marketValue": 19750000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p20",
+    "fullName": "BRA Botafogo Player 20",
+    "displayName": "Botafogo P20",
+    "dateOfBirth": "2003-08-04",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 89,
+      "defense": 75,
+      "technique": 81,
+      "speed": 91,
+      "stamina": 84,
+      "mentality": 86
+    },
+    "marketValue": 20750000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p21",
+    "fullName": "BRA Botafogo Player 21",
+    "displayName": "Botafogo P21",
+    "dateOfBirth": "1992-09-07",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 92,
+      "defense": 72,
+      "technique": 85,
+      "speed": 82,
+      "stamina": 81,
+      "mentality": 85
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p22",
+    "fullName": "BRA Botafogo Player 22",
+    "displayName": "Botafogo P22",
+    "dateOfBirth": "1999-10-10",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 86,
+      "defense": 66,
+      "technique": 75,
+      "speed": 76,
+      "stamina": 80,
+      "mentality": 77
+    },
+    "marketValue": 19500000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p23",
+    "fullName": "BRA Botafogo Player 23",
+    "displayName": "Botafogo P23",
+    "dateOfBirth": "1988-11-13",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 92,
+      "defense": 72,
+      "technique": 84,
+      "speed": 82,
+      "stamina": 82,
+      "mentality": 81
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:bra:botafogo:p24",
+    "fullName": "BRA Botafogo Player 24",
+    "displayName": "Botafogo P24",
+    "dateOfBirth": "1995-12-16",
+    "nationalityCode": "BRA",
+    "clubExternalId": "botafogo",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 92,
+      "defense": 72,
+      "technique": 87,
+      "speed": 82,
+      "stamina": 87,
+      "mentality": 88
+    },
+    "marketValue": 21000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

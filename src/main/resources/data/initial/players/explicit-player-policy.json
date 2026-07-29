@@ -1,0 +1,7 @@
+{
+  "type": "explicit-fictional-roster-dataset",
+  "playersPerClub": 24,
+  "redistribution": "safe for repository because identities are fictional and attributes are MANAGER-created",
+  "realRosterStatus": "not satisfied; real-player identities require a licensed source or legal review before versioning",
+  "cutoffDate": "2026-07-29"
+}

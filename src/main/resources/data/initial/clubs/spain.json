@@ -1,0 +1,22 @@
+[
+  {"code":"athletic-club","name":"Athletic Club","shortName":"Athletic","city":"Bilbao","reputation":78},
+  {"code":"atletico-madrid","name":"Atletico de Madrid","shortName":"Atletico","city":"Madrid","reputation":86},
+  {"code":"osasuna","name":"CA Osasuna","shortName":"Osasuna","city":"Pamplona","reputation":72},
+  {"code":"celta","name":"Celta","shortName":"Celta","city":"Vigo","reputation":72},
+  {"code":"alaves","name":"Deportivo Alaves","shortName":"Alaves","city":"Vitoria-Gasteiz","reputation":69},
+  {"code":"elche","name":"Elche CF","shortName":"Elche","city":"Elche","reputation":67},
+  {"code":"barcelona","name":"FC Barcelona","shortName":"Barcelona","city":"Barcelona","reputation":92},
+  {"code":"getafe","name":"Getafe CF","shortName":"Getafe","city":"Getafe","reputation":70},
+  {"code":"levante","name":"Levante UD","shortName":"Levante","city":"Valencia","reputation":68},
+  {"code":"mallorca","name":"RCD Mallorca","shortName":"Mallorca","city":"Palma","reputation":71},
+  {"code":"espanyol","name":"RCD Espanyol de Barcelona","shortName":"Espanyol","city":"Barcelona","reputation":70},
+  {"code":"rayo-vallecano","name":"Rayo Vallecano","shortName":"Rayo","city":"Madrid","reputation":71},
+  {"code":"real-betis","name":"Real Betis","shortName":"Betis","city":"Seville","reputation":79},
+  {"code":"real-madrid","name":"Real Madrid","shortName":"Real Madrid","city":"Madrid","reputation":94},
+  {"code":"real-oviedo","name":"Real Oviedo","shortName":"Oviedo","city":"Oviedo","reputation":66},
+  {"code":"real-sociedad","name":"Real Sociedad","shortName":"Real Sociedad","city":"San Sebastian","reputation":81},
+  {"code":"sevilla","name":"Sevilla FC","shortName":"Sevilla","city":"Seville","reputation":76},
+  {"code":"valencia","name":"Valencia CF","shortName":"Valencia","city":"Valencia","reputation":77},
+  {"code":"villarreal","name":"Villarreal CF","shortName":"Villarreal","city":"Villarreal","reputation":80},
+  {"code":"girona","name":"Girona FC","shortName":"Girona","city":"Girona","reputation":76}
+]

@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:esp:real-madrid:p01",
+    "fullName": "ESP RealMadrid Player 1",
+    "displayName": "Real Madrid P1",
+    "dateOfBirth": "1999-01-01",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 92,
+      "defense": 95,
+      "technique": 89,
+      "speed": 95,
+      "stamina": 88,
+      "mentality": 88
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p02",
+    "fullName": "ESP RealMadrid Player 2",
+    "displayName": "Real Madrid P2",
+    "dateOfBirth": "1988-02-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 87,
+      "defense": 95,
+      "technique": 87,
+      "speed": 91,
+      "stamina": 88,
+      "mentality": 90
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p03",
+    "fullName": "ESP RealMadrid Player 3",
+    "displayName": "Real Madrid P3",
+    "dateOfBirth": "1995-03-07",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 83,
+      "defense": 95,
+      "technique": 94,
+      "speed": 91,
+      "stamina": 88,
+      "mentality": 92
+    },
+    "marketValue": 22750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p04",
+    "fullName": "ESP RealMadrid Player 4",
+    "displayName": "Real Madrid P4",
+    "dateOfBirth": "2002-04-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 80,
+      "defense": 95,
+      "technique": 87,
+      "speed": 88,
+      "stamina": 90,
+      "mentality": 87
+    },
+    "marketValue": 22000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p05",
+    "fullName": "ESP RealMadrid Player 5",
+    "displayName": "Real Madrid P5",
+    "dateOfBirth": "1991-05-13",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 84,
+      "defense": 95,
+      "technique": 94,
+      "speed": 92,
+      "stamina": 90,
+      "mentality": 89
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p06",
+    "fullName": "ESP RealMadrid Player 6",
+    "displayName": "Real Madrid P6",
+    "dateOfBirth": "1998-06-16",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 83,
+      "defense": 95,
+      "technique": 89,
+      "speed": 91,
+      "stamina": 94,
+      "mentality": 95
+    },
+    "marketValue": 22750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p07",
+    "fullName": "ESP RealMadrid Player 7",
+    "displayName": "Real Madrid P7",
+    "dateOfBirth": "2005-07-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 84,
+      "defense": 95,
+      "technique": 93,
+      "speed": 92,
+      "stamina": 91,
+      "mentality": 94
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p08",
+    "fullName": "ESP RealMadrid Player 8",
+    "displayName": "Real Madrid P8",
+    "dateOfBirth": "1994-08-22",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 84,
+      "defense": 95,
+      "technique": 89,
+      "speed": 92,
+      "stamina": 95,
+      "mentality": 92
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p09",
+    "fullName": "ESP RealMadrid Player 9",
+    "displayName": "Real Madrid P9",
+    "dateOfBirth": "2001-09-25",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 82,
+      "defense": 95,
+      "technique": 90,
+      "speed": 90,
+      "stamina": 90,
+      "mentality": 88
+    },
+    "marketValue": 22500000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p10",
+    "fullName": "ESP RealMadrid Player 10",
+    "displayName": "Real Madrid P10",
+    "dateOfBirth": "1990-10-01",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 91,
+      "defense": 91,
+      "technique": 92,
+      "speed": 91,
+      "stamina": 85,
+      "mentality": 85
+    },
+    "marketValue": 22250000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p11",
+    "fullName": "ESP RealMadrid Player 11",
+    "displayName": "Real Madrid P11",
+    "dateOfBirth": "1997-11-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 88,
+      "defense": 88,
+      "technique": 85,
+      "speed": 88,
+      "stamina": 87,
+      "mentality": 89
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p12",
+    "fullName": "ESP RealMadrid Player 12",
+    "displayName": "Real Madrid P12",
+    "dateOfBirth": "2004-12-07",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 94,
+      "defense": 94,
+      "technique": 94,
+      "speed": 94,
+      "stamina": 89,
+      "mentality": 93
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p13",
+    "fullName": "ESP RealMadrid Player 13",
+    "displayName": "Real Madrid P13",
+    "dateOfBirth": "1993-01-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 88,
+      "defense": 88,
+      "technique": 84,
+      "speed": 88,
+      "stamina": 88,
+      "mentality": 85
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p14",
+    "fullName": "ESP RealMadrid Player 14",
+    "displayName": "Real Madrid P14",
+    "dateOfBirth": "2000-02-13",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 94,
+      "defense": 94,
+      "technique": 93,
+      "speed": 94,
+      "stamina": 90,
+      "mentality": 89
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p15",
+    "fullName": "ESP RealMadrid Player 15",
+    "displayName": "Real Madrid P15",
+    "dateOfBirth": "1989-03-16",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 88,
+      "defense": 88,
+      "technique": 83,
+      "speed": 88,
+      "stamina": 89,
+      "mentality": 90
+    },
+    "marketValue": 21500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p16",
+    "fullName": "ESP RealMadrid Player 16",
+    "displayName": "Real Madrid P16",
+    "dateOfBirth": "1996-04-19",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 94,
+      "defense": 94,
+      "technique": 92,
+      "speed": 94,
+      "stamina": 91,
+      "mentality": 94
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p17",
+    "fullName": "ESP RealMadrid Player 17",
+    "displayName": "Real Madrid P17",
+    "dateOfBirth": "2003-05-22",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 95,
+      "defense": 81,
+      "technique": 92,
+      "speed": 95,
+      "stamina": 93,
+      "mentality": 89
+    },
+    "marketValue": 22250000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p18",
+    "fullName": "ESP RealMadrid Player 18",
+    "displayName": "Real Madrid P18",
+    "dateOfBirth": "1992-06-25",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 93,
+      "defense": 79,
+      "technique": 86,
+      "speed": 95,
+      "stamina": 87,
+      "mentality": 85
+    },
+    "marketValue": 21750000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p19",
+    "fullName": "ESP RealMadrid Player 19",
+    "displayName": "Real Madrid P19",
+    "dateOfBirth": "1999-07-01",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 95,
+      "defense": 84,
+      "technique": 94,
+      "speed": 95,
+      "stamina": 88,
+      "mentality": 88
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p20",
+    "fullName": "ESP RealMadrid Player 20",
+    "displayName": "Real Madrid P20",
+    "dateOfBirth": "1988-08-04",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 95,
+      "defense": 84,
+      "technique": 90,
+      "speed": 95,
+      "stamina": 93,
+      "mentality": 95
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p21",
+    "fullName": "ESP RealMadrid Player 21",
+    "displayName": "Real Madrid P21",
+    "dateOfBirth": "1995-09-07",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 95,
+      "defense": 77,
+      "technique": 90,
+      "speed": 87,
+      "stamina": 86,
+      "mentality": 90
+    },
+    "marketValue": 22250000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p22",
+    "fullName": "ESP RealMadrid Player 22",
+    "displayName": "Real Madrid P22",
+    "dateOfBirth": "2002-10-10",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 95,
+      "defense": 80,
+      "technique": 89,
+      "speed": 90,
+      "stamina": 94,
+      "mentality": 91
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p23",
+    "fullName": "ESP RealMadrid Player 23",
+    "displayName": "Real Madrid P23",
+    "dateOfBirth": "1991-11-13",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 95,
+      "defense": 80,
+      "technique": 92,
+      "speed": 90,
+      "stamina": 90,
+      "mentality": 89
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:esp:real-madrid:p24",
+    "fullName": "ESP RealMadrid Player 24",
+    "displayName": "Real Madrid P24",
+    "dateOfBirth": "1998-12-16",
+    "nationalityCode": "ESP",
+    "clubExternalId": "real-madrid",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 95,
+      "defense": 80,
+      "technique": 95,
+      "speed": 90,
+      "stamina": 95,
+      "mentality": 95
+    },
+    "marketValue": 23000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]

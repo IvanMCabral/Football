@@ -1,0 +1,1142 @@
+[
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p01",
+    "fullName": "ARG CentralCordoba Player 1",
+    "displayName": "Central Cordoba P1",
+    "dateOfBirth": "2003-01-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 1,
+    "attributes": {
+      "attack": 68,
+      "defense": 80,
+      "technique": 65,
+      "speed": 72,
+      "stamina": 64,
+      "mentality": 64
+    },
+    "marketValue": 17000000,
+    "specialAttributes": [
+      "one_on_one_keeper",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p02",
+    "fullName": "ARG CentralCordoba Player 2",
+    "displayName": "Central Cordoba P2",
+    "dateOfBirth": "1992-02-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 2,
+    "attributes": {
+      "attack": 67,
+      "defense": 79,
+      "technique": 67,
+      "speed": 71,
+      "stamina": 68,
+      "mentality": 70
+    },
+    "marketValue": 16750000,
+    "specialAttributes": [
+      "sweeper_keeper",
+      "aerial_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p03",
+    "fullName": "ARG CentralCordoba Player 3",
+    "displayName": "Central Cordoba P3",
+    "dateOfBirth": "1999-03-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "LB",
+    "secondaryPositions": [
+      "LWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 183,
+    "shirtNumber": 3,
+    "attributes": {
+      "attack": 59,
+      "defense": 75,
+      "technique": 70,
+      "speed": 67,
+      "stamina": 64,
+      "mentality": 68
+    },
+    "marketValue": 16750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p04",
+    "fullName": "ARG CentralCordoba Player 4",
+    "displayName": "Central Cordoba P4",
+    "dateOfBirth": "1988-04-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 184,
+    "shirtNumber": 4,
+    "attributes": {
+      "attack": 57,
+      "defense": 73,
+      "technique": 64,
+      "speed": 65,
+      "stamina": 67,
+      "mentality": 64
+    },
+    "marketValue": 16250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p05",
+    "fullName": "ARG CentralCordoba Player 5",
+    "displayName": "Central Cordoba P5",
+    "dateOfBirth": "1995-05-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 185,
+    "shirtNumber": 5,
+    "attributes": {
+      "attack": 60,
+      "defense": 76,
+      "technique": 70,
+      "speed": 68,
+      "stamina": 66,
+      "mentality": 65
+    },
+    "marketValue": 17000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p06",
+    "fullName": "ARG CentralCordoba Player 6",
+    "displayName": "Central Cordoba P6",
+    "dateOfBirth": "2002-06-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CB",
+    "secondaryPositions": [
+      "CDM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 186,
+    "shirtNumber": 6,
+    "attributes": {
+      "attack": 63,
+      "defense": 79,
+      "technique": 69,
+      "speed": 71,
+      "stamina": 74,
+      "mentality": 75
+    },
+    "marketValue": 17750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p07",
+    "fullName": "ARG CentralCordoba Player 7",
+    "displayName": "Central Cordoba P7",
+    "dateOfBirth": "1991-07-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "RB",
+    "secondaryPositions": [
+      "RWB",
+      "CB"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 187,
+    "shirtNumber": 7,
+    "attributes": {
+      "attack": 57,
+      "defense": 73,
+      "technique": 66,
+      "speed": 65,
+      "stamina": 64,
+      "mentality": 67
+    },
+    "marketValue": 16250000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "leader"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p08",
+    "fullName": "ARG CentralCordoba Player 8",
+    "displayName": "Central Cordoba P8",
+    "dateOfBirth": "1998-08-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "LWB",
+    "secondaryPositions": [
+      "LB",
+      "LM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 188,
+    "shirtNumber": 8,
+    "attributes": {
+      "attack": 56,
+      "defense": 72,
+      "technique": 61,
+      "speed": 64,
+      "stamina": 68,
+      "mentality": 64
+    },
+    "marketValue": 16000000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p09",
+    "fullName": "ARG CentralCordoba Player 9",
+    "displayName": "Central Cordoba P9",
+    "dateOfBirth": "2005-09-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "RWB",
+    "secondaryPositions": [
+      "RB",
+      "RM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 181,
+    "shirtNumber": 9,
+    "attributes": {
+      "attack": 63,
+      "defense": 79,
+      "technique": 71,
+      "speed": 71,
+      "stamina": 71,
+      "mentality": 69
+    },
+    "marketValue": 17750000,
+    "specialAttributes": [
+      "workhorse",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p10",
+    "fullName": "ARG CentralCordoba Player 10",
+    "displayName": "Central Cordoba P10",
+    "dateOfBirth": "1994-10-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CDM",
+    "secondaryPositions": [
+      "CM",
+      "CB"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 10,
+    "attributes": {
+      "attack": 64,
+      "defense": 64,
+      "technique": 65,
+      "speed": 64,
+      "stamina": 58,
+      "mentality": 58
+    },
+    "marketValue": 15500000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p11",
+    "fullName": "ARG CentralCordoba Player 11",
+    "displayName": "Central Cordoba P11",
+    "dateOfBirth": "2001-11-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 180,
+    "shirtNumber": 11,
+    "attributes": {
+      "attack": 64,
+      "defense": 64,
+      "technique": 61,
+      "speed": 64,
+      "stamina": 63,
+      "mentality": 65
+    },
+    "marketValue": 15500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p12",
+    "fullName": "ARG CentralCordoba Player 12",
+    "displayName": "Central Cordoba P12",
+    "dateOfBirth": "1990-12-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 181,
+    "shirtNumber": 12,
+    "attributes": {
+      "attack": 71,
+      "defense": 71,
+      "technique": 71,
+      "speed": 71,
+      "stamina": 66,
+      "mentality": 70
+    },
+    "marketValue": 17250000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p13",
+    "fullName": "ARG CentralCordoba Player 13",
+    "displayName": "Central Cordoba P13",
+    "dateOfBirth": "1997-01-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CM",
+    "secondaryPositions": [
+      "CDM",
+      "CAM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 170,
+    "shirtNumber": 13,
+    "attributes": {
+      "attack": 69,
+      "defense": 69,
+      "technique": 65,
+      "speed": 69,
+      "stamina": 69,
+      "mentality": 66
+    },
+    "marketValue": 16750000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p14",
+    "fullName": "ARG CentralCordoba Player 14",
+    "displayName": "Central Cordoba P14",
+    "dateOfBirth": "2004-02-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CAM",
+    "secondaryPositions": [
+      "CM",
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 171,
+    "shirtNumber": 14,
+    "attributes": {
+      "attack": 70,
+      "defense": 70,
+      "technique": 69,
+      "speed": 70,
+      "stamina": 66,
+      "mentality": 65
+    },
+    "marketValue": 17000000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p15",
+    "fullName": "ARG CentralCordoba Player 15",
+    "displayName": "Central Cordoba P15",
+    "dateOfBirth": "1993-03-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "LM",
+    "secondaryPositions": [
+      "LW",
+      "CM"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 172,
+    "shirtNumber": 15,
+    "attributes": {
+      "attack": 72,
+      "defense": 72,
+      "technique": 67,
+      "speed": 72,
+      "stamina": 73,
+      "mentality": 74
+    },
+    "marketValue": 17500000,
+    "specialAttributes": [
+      "line_breaker",
+      "press_resistant"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p16",
+    "fullName": "ARG CentralCordoba Player 16",
+    "displayName": "Central Cordoba P16",
+    "dateOfBirth": "2000-04-19",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "RM",
+    "secondaryPositions": [
+      "RW",
+      "CM"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 173,
+    "shirtNumber": 16,
+    "attributes": {
+      "attack": 69,
+      "defense": 69,
+      "technique": 67,
+      "speed": 69,
+      "stamina": 66,
+      "mentality": 69
+    },
+    "marketValue": 16750000,
+    "specialAttributes": [
+      "leader",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p17",
+    "fullName": "ARG CentralCordoba Player 17",
+    "displayName": "Central Cordoba P17",
+    "dateOfBirth": "1989-05-22",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 174,
+    "shirtNumber": 17,
+    "attributes": {
+      "attack": 71,
+      "defense": 57,
+      "technique": 68,
+      "speed": 73,
+      "stamina": 69,
+      "mentality": 65
+    },
+    "marketValue": 16250000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p18",
+    "fullName": "ARG CentralCordoba Player 18",
+    "displayName": "Central Cordoba P18",
+    "dateOfBirth": "1996-06-25",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 175,
+    "shirtNumber": 18,
+    "attributes": {
+      "attack": 70,
+      "defense": 56,
+      "technique": 63,
+      "speed": 72,
+      "stamina": 64,
+      "mentality": 62
+    },
+    "marketValue": 16000000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p19",
+    "fullName": "ARG CentralCordoba Player 19",
+    "displayName": "Central Cordoba P19",
+    "dateOfBirth": "2003-07-01",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "LW",
+    "secondaryPositions": [
+      "LM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 19,
+    "attributes": {
+      "attack": 73,
+      "defense": 59,
+      "technique": 69,
+      "speed": 75,
+      "stamina": 63,
+      "mentality": 63
+    },
+    "marketValue": 16750000,
+    "specialAttributes": [
+      "speedster",
+      "line_breaker"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p20",
+    "fullName": "ARG CentralCordoba Player 20",
+    "displayName": "Central Cordoba P20",
+    "dateOfBirth": "1992-08-04",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "RW",
+    "secondaryPositions": [
+      "RM",
+      "ST"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 20,
+    "attributes": {
+      "attack": 68,
+      "defense": 54,
+      "technique": 60,
+      "speed": 70,
+      "stamina": 63,
+      "mentality": 65
+    },
+    "marketValue": 15500000,
+    "specialAttributes": [
+      "workhorse",
+      "set_piece_specialist"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p21",
+    "fullName": "ARG CentralCordoba Player 21",
+    "displayName": "Central Cordoba P21",
+    "dateOfBirth": "1999-09-07",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 176,
+    "shirtNumber": 21,
+    "attributes": {
+      "attack": 77,
+      "defense": 57,
+      "technique": 70,
+      "speed": 67,
+      "stamina": 66,
+      "mentality": 70
+    },
+    "marketValue": 17250000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p22",
+    "fullName": "ARG CentralCordoba Player 22",
+    "displayName": "Central Cordoba P22",
+    "dateOfBirth": "1988-10-10",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 177,
+    "shirtNumber": 22,
+    "attributes": {
+      "attack": 78,
+      "defense": 58,
+      "technique": 67,
+      "speed": 68,
+      "stamina": 72,
+      "mentality": 69
+    },
+    "marketValue": 17500000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p23",
+    "fullName": "ARG CentralCordoba Player 23",
+    "displayName": "Central Cordoba P23",
+    "dateOfBirth": "1995-11-13",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "CF",
+    "secondaryPositions": [
+      "CAM",
+      "ST"
+    ],
+    "preferredFoot": "RIGHT",
+    "heightCm": 178,
+    "shirtNumber": 23,
+    "attributes": {
+      "attack": 76,
+      "defense": 56,
+      "technique": 68,
+      "speed": 66,
+      "stamina": 66,
+      "mentality": 65
+    },
+    "marketValue": 17000000,
+    "specialAttributes": [
+      "clutch_finisher",
+      "speedster"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  },
+  {
+    "externalId": "manager-initial:arg:central-cordoba:p24",
+    "fullName": "ARG CentralCordoba Player 24",
+    "displayName": "Central Cordoba P24",
+    "dateOfBirth": "2002-12-16",
+    "nationalityCode": "ARG",
+    "clubExternalId": "central-cordoba",
+    "primaryPosition": "ST",
+    "secondaryPositions": [
+      "CF"
+    ],
+    "preferredFoot": "LEFT",
+    "heightCm": 179,
+    "shirtNumber": 24,
+    "attributes": {
+      "attack": 72,
+      "defense": 52,
+      "technique": 67,
+      "speed": 62,
+      "stamina": 67,
+      "mentality": 68
+    },
+    "marketValue": 16000000,
+    "specialAttributes": [
+      "aerial_specialist",
+      "clutch_finisher"
+    ],
+    "provenance": {
+      "identitySource": "MANAGER_FICTIONAL_EXPLICIT_DATASET",
+      "attributeSource": "MANAGER_METHODOLOGY",
+      "cutoffDate": "2026-07-29"
+    },
+    "estimatedFields": [
+      "fullName",
+      "displayName",
+      "dateOfBirth",
+      "nationalityCode",
+      "primaryPosition",
+      "secondaryPositions",
+      "preferredFoot",
+      "heightCm",
+      "shirtNumber",
+      "attributes",
+      "marketValue",
+      "specialAttributes"
+    ]
+  }
+]
