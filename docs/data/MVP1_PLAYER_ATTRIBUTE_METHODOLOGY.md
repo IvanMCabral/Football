@@ -39,7 +39,7 @@ Public sources sometimes expose only broad positions or omit positions for sever
 - 4 WINGER;
 - 4 ATT.
 
-When a tactical role is normalized, `estimatedFields` includes `primaryPosition` and the record provenance explains the MANAGER tactical normalization.
+When a public position is unavailable, `positionEstimated=true` and `positionSourceRef` points to the MANAGER methodology instead of presenting the value as source-verified.
 
 ## Special traits
 

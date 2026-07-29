@@ -1,6 +1,6 @@
 # MVP 1 Real Player Dataset Acceptance Report
 
-Verdict: APPROVED
+Verdict: APPROVED AFTER REMEDIATION
 
 Date: 2026-07-29.
 
