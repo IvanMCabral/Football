@@ -91,7 +91,7 @@ public class ThreeLeagueDatasetImporter {
             validateGlobal();
             return new ThreeLeagueImportReport(
                 countries.size(), leagues.size(), clubs, teams, players, traitRows,
-                List.of("Player identities are explicit MANAGER fictional dataset entries, not official rosters."));
+                List.of("Player identities are explicit public-identity records with MANAGER-estimated attributes."));
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read MVP 1 dataset resources", e);
         }
@@ -156,6 +156,7 @@ public class ThreeLeagueDatasetImporter {
         }
         Map<String, Long> byPosition = new HashMap<>();
         for (PlayerRecord player : squad) {
+            validatePlayerIdentity(league, club, player);
             byPosition.merge(positionGroup(player.primaryPosition()), 1L, Long::sum);
             if (player.heightCm() < 160 || player.heightCm() > 210) {
                 throw new IllegalArgumentException("Invalid height for " + player.fullName());
@@ -178,10 +179,51 @@ public class ThreeLeagueDatasetImporter {
                 }
             }
         }
-        if (byPosition.getOrDefault("GK", 0L) < 2 || byPosition.getOrDefault("DEF", 0L) < 7
-            || byPosition.getOrDefault("MID", 0L) < 7 || byPosition.getOrDefault("WINGER", 0L) < 4
-            || byPosition.getOrDefault("ATT", 0L) < 4) {
-            throw new IllegalArgumentException("Squad balance failed for " + league.code() + "/" + club.code());
+        if (byPosition.getOrDefault("GK", 0L) < 1) {
+            throw new IllegalArgumentException("Squad has no goalkeeper for " + league.code() + "/" + club.code());
+        }
+        long outfieldPlayers = squad.size() - byPosition.getOrDefault("GK", 0L);
+        if (outfieldPlayers < 10) {
+            throw new IllegalArgumentException("Squad has fewer than ten outfield players for " + league.code() + "/" + club.code());
+        }
+    }
+
+    private void validatePlayerIdentity(LeagueRecord league, ClubRecord club, PlayerRecord player) {
+        String context = league.code() + "/" + club.code() + "/" + player.fullName();
+        requireCleanText(player.fullName(), "fullName", context);
+        requireCleanText(player.displayName(), "displayName", context);
+        if (player.externalId() == null || !player.externalId().startsWith("public-player:")) {
+            throw new IllegalArgumentException("Invalid transfer-stable externalId for " + context);
+        }
+        if (player.externalId().contains(":" + club.code() + ":")
+            || player.externalId().startsWith("public-identity:")) {
+            throw new IllegalArgumentException("Club-dependent externalId for " + context + ": " + player.externalId());
+        }
+        requireCleanText(player.identitySourceName(), "identitySourceName", context);
+        requireConcreteSource(player.identitySourceRef(), "identitySourceRef", context);
+        requireConcreteSource(player.positionSourceRef(), "positionSourceRef", context);
+        if (player.positionCheckedAt() == null || player.positionCheckedAt().isBlank()) {
+            throw new IllegalArgumentException("Missing positionCheckedAt for " + context);
+        }
+        positionGroup(player.primaryPosition());
+    }
+
+    private static void requireCleanText(String value, String field, String context) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Missing " + field + " for " + context);
+        }
+        if (value.contains("\uFFFD") || value.contains("?") || value.contains("Ã")
+            || value.contains("â€") || value.contains("â†") || value.contains("â")) {
+            throw new IllegalArgumentException("Corrupt text in " + field + " for " + context + ": " + value);
+        }
+    }
+
+    private static void requireConcreteSource(String value, String field, String context) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Missing " + field + " for " + context);
+        }
+        if (!value.startsWith("http://") && !value.startsWith("https://") && !value.startsWith("docs/")) {
+            throw new IllegalArgumentException("Non-reconstructable " + field + " for " + context + ": " + value);
         }
     }
 
@@ -331,6 +373,7 @@ public class ThreeLeagueDatasetImporter {
                 throw new IllegalArgumentException(
                     source.externalId() + " references unexpected club " + source.clubExternalId());
             }
+            validatePlayerSource(league, club, source);
             PlayerAttributesRecord attributes = source.attributes();
             players.add(new PlayerRecord(
                 deterministicUuid("player:" + source.externalId()),
@@ -353,9 +396,30 @@ public class ThreeLeagueDatasetImporter {
                 attributes.stamina(),
                 attributes.mentality(),
                 source.marketValue(),
-                source.specialAttributes()));
+                source.specialAttributes(),
+                source.identitySourceName(),
+                source.identitySourceRef(),
+                source.positionSourceRef(),
+                source.positionCheckedAt(),
+                source.positionEstimated()));
         }
         return players;
+    }
+
+    private void validatePlayerSource(LeagueRecord league, ClubRecord club, PlayerSourceRecord source) {
+        String context = league.code() + "/" + club.code() + "/" + source.fullName();
+        requireCleanText(source.fullName(), "fullName", context);
+        requireCleanText(source.displayName(), "displayName", context);
+        requireConcreteSource(source.identitySourceRef(), "identitySourceRef", context);
+        requireConcreteSource(source.positionSourceRef(), "positionSourceRef", context);
+        if (source.externalId() == null || !source.externalId().startsWith("public-player:")) {
+            throw new IllegalArgumentException("Invalid transfer-stable externalId for " + context);
+        }
+        if (source.externalId().startsWith("public-identity:")
+            || source.externalId().contains(":" + club.code() + ":")) {
+            throw new IllegalArgumentException("Club-dependent externalId for " + context + ": " + source.externalId());
+        }
+        positionGroup(source.primaryPosition());
     }
 
     private void upsertPlayer(PlayerRecord player, UUID countryId) {
@@ -465,6 +529,8 @@ public class ThreeLeagueDatasetImporter {
         String clubExternalId, String primaryPosition, List<String> secondaryPositions, String preferredFoot,
         Integer heightCm, Integer shirtNumber, PlayerAttributesRecord attributes, BigDecimal marketValue,
         List<String> specialAttributes, String identitySource, String identityCheckedAt,
+        String identitySourceName, String identitySourceRef, String sourceEntityId,
+        String positionSource, String positionSourceRef, String positionCheckedAt, Boolean positionEstimated,
         Map<String, Object> provenance, List<String> estimatedFields
     ) {}
     public record PlayerAttributesRecord(int attack, int defense, int technique, int speed, int stamina, int mentality) {}
@@ -472,6 +538,8 @@ public class ThreeLeagueDatasetImporter {
         UUID id, UUID teamId, String sourceSystem, String externalId, String fullName, String displayName,
         LocalDate birthDate, String nationalityCode, String primaryPosition, List<String> secondaryPositions,
         String preferredFoot, int shirtNumber, int heightCm, int attack, int defense, int technique,
-        int speed, int stamina, int mentality, BigDecimal marketValue, List<String> specialAttributes
+        int speed, int stamina, int mentality, BigDecimal marketValue, List<String> specialAttributes,
+        String identitySourceName, String identitySourceRef, String positionSourceRef,
+        String positionCheckedAt, Boolean positionEstimated
     ) {}
 }
