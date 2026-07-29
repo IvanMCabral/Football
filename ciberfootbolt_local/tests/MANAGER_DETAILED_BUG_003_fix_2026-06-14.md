@@ -1,4 +1,4 @@
-# V24D8-BUG-003 — Fix: Squad queda vacío post-career/start
+# DetailedSprint8-BUG-003 — Fix: Squad queda vacío post-career/start
 
 **Fecha:** 2026-06-14
 **Branch:** master

@@ -3,7 +3,7 @@
 **Sprint:** V25D54-C15 (Formations reality fix)
 **Branch:** `V25D54-BACK-FORMATIONS-REALITY`
 **Tag (post-merge):** `release-V25D54-BACK`
-**Scope:** back services (FormationService + Formation enum + V24FormationParser).
+**Scope:** back services (FormationService + Formation enum + DetailedFormationParser).
 **Status:** Implementation complete. 12 formations expuestas, role labels correctos.
 
 > Supersedes the C14 audit doc (`docs/field-map.md` pre-C15). The C14
@@ -20,7 +20,7 @@
 - **P1 added:** 4 formations nuevas (3-5-2-CDM, 5-4-1, 3-4-1-2, 4-2-2-2) — todas feature requests de Iván.
 - **P2 added:** variante 4-3-3-1 con pivote CDM (mantiene 4-3-3 flat para compat).
 - Cobertura del grid sigue en **31.7%** (26/82) — las 5 formations nuevas reutilizan los mismos subdivisionIds, no agregan nuevos slots al grid.
-- Engine V24 ahora entiende las 5 formations nuevas via `V24FormationParser` (casos explícitos + fallback numérico).
+- Engine Detailed ahora entiende las 5 formations nuevas via `DetailedFormationParser` (casos explícitos + fallback numérico).
 - Front `formation-modal` todavía muestra labels genéricos (DF/MD/AT) — el fix P3.2 está en otro sprint (branch front).
 
 ---
@@ -295,7 +295,7 @@ Cada formación expone 11 posiciones (1 GK + 10 outfield) con subdivisionId, rol
 
 ### 3.1 P0 — Role labels correctos en back-three (DONE)
 
-**Problema C14:** 3-5-2 y 3-4-3 etiquetaban wide mids como `LM`/`RM` cuando en realidad juegan como wing-backs (`LWB`/`RWB`). El engine V24 los trataba correctamente (wingers=0) pero el label visual mentía al usuario.
+**Problema C14:** 3-5-2 y 3-4-3 etiquetaban wide mids como `LM`/`RM` cuando en realidad juegan como wing-backs (`LWB`/`RWB`). El engine Detailed los trataba correctamente (wingers=0) pero el label visual mentía al usuario.
 
 **Fix C15:**
 - 3-5-2 pos #4: `LM` → `LWB` (slot S15-1)
@@ -331,9 +331,9 @@ Coordenadas (x/y/subdivisionId/actionRange) **NO cambian** — sólo el role lab
 |---|---|---|
 | **P2** | 4-3-3-1 | 4 DEF + 1 CDM (S17-2, anchor) + 2 CM (S13-2/S15-2, wide) + LW/ST/RW (S04-1/S05-2/S06-3) |
 
-Mantiene 4-3-3 flat intacto. La notación "4-3-3-1" significa 4-3-3 con un 1 (CDM) en el medio — el engine V24 la trata como 4-3-3-like (4 DEF + 3 MID + 2 WING + 1 ST) porque el pivote CDM no cambia el shape forward.
+Mantiene 4-3-3 flat intacto. La notación "4-3-3-1" significa 4-3-3 con un 1 (CDM) en el medio — el engine Detailed la trata como 4-3-3-like (4 DEF + 3 MID + 2 WING + 1 ST) porque el pivote CDM no cambia el shape forward.
 
-### 3.4 V24FormationParser — Engine recognition (DONE)
+### 3.4 DetailedFormationParser — Engine recognition (DONE)
 
 El parser engine-side se extendió con casos explícitos:
 
@@ -345,7 +345,7 @@ El parser engine-side se extendió con casos explícitos:
 | `4-2-2-2` | `parseThreeDashes` totalMid=4 | (4, 4, 0, 0, 2) |
 | `4-3-3-1` | `parseThreeDashes` 4-3-3-like | (4, 3, 0, 2, 1) — wingers=2 como 4-3-3 |
 
-**Tests agregados** (`V24FormationParserTest`):
+**Tests agregados** (`DetailedFormationParserTest`):
 - `parses_3_5_2_CDM`, `parses_3_4_1_2_christmas_tree`, `parses_4_2_2_2_narrow_diamond`, `parses_4_3_3_1_with_pivot`
 - `outfieldPlayersIsTen` extendido para cubrir las 5 nuevas (todas suman 10)
 
@@ -384,7 +384,7 @@ C15 agrega los siguientes tests (todos pasan):
 6. `newFormationsHaveUniqueSubdivisionIdsAndValidCoords` — integrity check (11 unique IDs, coords en [0,100], 1 GK, meta cuadrada).
 7. `s23TwoIsUsedByNewFormations` — control (las 5 nuevas usan S23-2 como CB central).
 
-### `V24FormationParserTest` (C15 nuevos)
+### `DetailedFormationParserTest` (C15 nuevos)
 1. `parses_3_5_2_CDM` — engine recognition (3 DEF + 5 MID + 2 ST).
 2. `parses_3_4_1_2_christmas_tree` — engine recognition (3 DEF + 5 MID + 2 ST, mid fold).
 3. `parses_4_2_2_2_narrow_diamond` — engine recognition (4 DEF + 4 MID + 2 ST, mid fold).
@@ -403,10 +403,10 @@ C15 agrega los siguientes tests (todos pasan):
 - Back: `src/main/java/com/footballmanager/application/service/editor/FieldSubdivisionService.java`
 - Back: `src/main/java/com/footballmanager/application/service/editor/FormationService.java`
 - Back: `src/main/java/com/footballmanager/domain/model/valueobject/Formation.java` (enum 12 formations)
-- Back: `src/main/java/com/footballmanager/application/service/simulation/v24/V24FormationParser.java`
+- Back: `src/main/java/com/footballmanager/application/service/simulation/detailed/DetailedFormationParser.java`
 - Back: `src/main/java/com/footballmanager/domain/model/valueobject/PositionEffectivenessCalculator.java`
 - Tests: `src/test/java/com/footballmanager/application/service/editor/FormationServiceTest.java`
-- Tests: `src/test/java/com/footballmanager/application/service/simulation/v24/V24FormationParserTest.java`
+- Tests: `src/test/java/com/footballmanager/application/service/simulation/detailed/DetailedFormationParserTest.java`
 - Front: `front-ciber/.../components/squad-editor-modal/squad-editor-modal.component.ts` (pre-match, consume subdivisionIds)
 - Front: `front-ciber/.../features/games/components/formation-modal/formation-modal.component.ts` (live-match, no consume subdivisionIds) — fix P3.2 en branch front separado
 - DTO: `FieldSubdivisionDTO.java`, `FormationDTO.java`, `FormationPositionDTO.java`

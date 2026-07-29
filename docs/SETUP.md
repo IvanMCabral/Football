@@ -1,6 +1,6 @@
 # Setup - MANAGER (football manager)
 
-## Environment Variables (V24D12-D)
+## Environment Variables (DetailedSprint12-D)
 
 El proyecto requiere 18 env vars. Ver `.env.example` para la lista completa con valores dummy.
 
@@ -25,9 +25,9 @@ NO se commitean credenciales reales. Las env vars se setean en:
 - K8s: `envFrom: secretRef: { name: manager-secrets }`
 - AWS Secrets Manager / Vault / etc.
 
-### Rotacion de credenciales (V24D12-D)
+### Rotacion de credenciales (DetailedSprint12-D)
 
-Las credenciales fueron rotadas el 2026-06-15 (V24D12-D) tras detectarse que el archivo `.env` estaba trackeado en el repo sin estar en `.gitignore`. Procedimiento de rotacion:
+Las credenciales fueron rotadas el 2026-06-15 (DetailedSprint12-D) tras detectarse que el archivo `.env` estaba trackeado en el repo sin estar en `.gitignore`. Procedimiento de rotacion:
 
 1. PostgreSQL: `ALTER USER manager_user WITH PASSWORD "NUEVO_PASS";` (RDS console o `psql`).
 2. Redis: `redis-cli CONFIG SET requirepass "NUEVO_PASS";` + `CONFIG GET requirepass`.

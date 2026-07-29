@@ -2,8 +2,8 @@
 # Exporta DB_PASSWORD y REDIS_PASSWORD explicitamente; NO quema credenciales en el repo.
 #
 # Por que existe:
-#   - La test DB (football_manager_test) se rota junto con la dev DB (V24D12-D-6).
-#   - Redis DB 15 (test) require password desde la rotacion de V24D12-D.
+#   - La test DB (football_manager_test) se rota junto con la dev DB (DetailedSprint12-D-6).
+#   - Redis DB 15 (test) require password desde la rotacion de DetailedSprint12-D.
 #   - application-test.yml tiene defaults vacios (DB_PASSWORD / REDIS_PASSWORD)
 #     a proposito para forzar este setup.
 #   - Sin REDIS_PASSWORD, los 19 test classes E2E fallan con

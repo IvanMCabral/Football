@@ -6,7 +6,7 @@ Date: 2026-07-28
 
 COMPLETED.
 
-The frontend no longer uses residual `V23/V24` naming for current detailed-match components, selectors, models, services, harness imports, or visible product text. The only remaining version literals are isolated in a compatibility model for backend contract values that must still be read unchanged.
+The frontend no longer uses residual `Classic/Detailed` naming for current detailed-match components, selectors, models, services, harness imports, or visible product text. The only remaining version literals are isolated in a compatibility model for backend contract values that must still be read unchanged.
 
 ## 1. Baseline
 
@@ -27,31 +27,31 @@ Frontend baseline:
 Initial `src/app` inventory found residual references in:
 
 - route lazy-loading for the detailed match page;
-- `v24-match-detail-page` filenames, selector, class, template and styles;
-- `V24LivePlayerRating`;
+- `detailed-match-detail-page` filenames, selector, class, template and styles;
+- `DetailedLivePlayerRating`;
 - substitution modal rating types;
 - test harness embedded detail page imports/template;
-- visible detail-page text such as `V24 Engine` and `detalle V24`;
+- visible detail-page text such as `Detailed Engine` and `detalle Detailed`;
 - player season stats empty-state text;
 - comments in match detail/compare models and services;
-- historical test fixtures named `InJURED_V23_LEGACY`;
-- backend compatibility values: `engineVersion: "V24"` and `dataSource: "V24_DETAIL"`.
+- historical test fixtures named `InJURED_Classic_LEGACY`;
+- backend compatibility values: `engineType: "Detailed"` and `dataSource: "DETAILED_PLAYER_STATS"`.
 
 ## 3. Components renamed
 
 Renamed current detailed match page artifacts:
 
-- `v24-match-detail-page.component.ts` → `detailed-match-page.component.ts`
-- `v24-match-detail-page.component.html` → `detailed-match-page.component.html`
-- `v24-match-detail-page.component.scss` → `detailed-match-page.component.scss`
-- `v24-match-detail-page.component.spec.ts` → `detailed-match-page.component.spec.ts`
+- `detailed-match-detail-page.component.ts` → `detailed-match-page.component.ts`
+- `detailed-match-detail-page.component.html` → `detailed-match-page.component.html`
+- `detailed-match-detail-page.component.scss` → `detailed-match-page.component.scss`
+- `detailed-match-detail-page.component.spec.ts` → `detailed-match-page.component.spec.ts`
 
 Updated names:
 
-- `V24MatchDetailPageComponent` → `DetailedMatchPageComponent`
-- selector `app-v24-match-detail-page` → `app-detailed-match-page`
-- wrapper CSS class `v24-match-detail-page` → `detailed-match-page`
-- engine badge CSS `badge-v24` → `badge-detailed-engine`
+- `DetailedMatchDetailPageComponent` → `DetailedMatchPageComponent`
+- selector `app-detailed-match-detail-page` → `app-detailed-match-page`
+- wrapper CSS class `detailed-match-detail-page` → `detailed-match-page`
+- engine badge CSS `badge-detailed` → `badge-detailed-engine`
 
 Updated consumers:
 
@@ -66,7 +66,7 @@ No alias with the old component name was kept.
 
 Renamed current frontend type:
 
-- `V24LivePlayerRating` → `LivePlayerRating`
+- `DetailedLivePlayerRating` → `LivePlayerRating`
 
 Updated consumers:
 
@@ -82,20 +82,20 @@ No JSON field names were changed.
 
 Visible/product-facing text was changed from technical version naming to product language:
 
-- `V24 Engine` → `Motor de partido detallado`
+- `Detailed Engine` → `Motor de partido detallado`
 - unavailable detail reason now says the match was played before detailed match storage, without exposing implementation version names;
 - player season stats empty state now refers to detailed match data/recording;
 - shot-map empty state now refers to detailed tracking;
 - compare fallback text now refers to the current detailed-match route, not a versioned route.
 
-Final visible text smoke verified that the detailed match route did not show `V23`, `V24`, `v23`, or `v24`.
+Final visible text smoke verified that the detailed match route did not show `Classic`, `Detailed`, `classic`, or `detailed`.
 
 ## 6. Compatibility preserved
 
 Backend contract values remain readable and unchanged:
 
-- `engineVersion: "V24"`
-- `dataSource: "V24_DETAIL"`
+- `engineType: "Detailed"`
+- `dataSource: "DETAILED_PLAYER_STATS"`
 
 They are isolated in:
 
@@ -113,13 +113,13 @@ Specs use those constants instead of scattering version literals through current
 Final search:
 
 ```text
-rg -n "V23|V24|v23|v24" src/app
+rg -n "Classic|Detailed|classic|detailed" src/app
 ```
 
 Remaining references:
 
-- `DETAILED_MATCH_ENGINE_VERSION = 'V24'`
-- `PLAYER_STATS_DETAILED_DATA_SOURCE = 'V24_DETAIL'`
+- `DETAILED_MATCH_ENGINE_VERSION = 'Detailed'`
+- `PLAYER_STATS_DETAILED_DATA_SOURCE = 'DETAILED_PLAYER_STATS'`
 
 Classification:
 
@@ -190,7 +190,7 @@ Verified:
 - route `/careers/:careerId/matches/:matchId/detail` loaded;
 - renamed detailed page chunk loaded without 404;
 - detail page rendered score, xG, possession, events/linea de tiempo and detailed-engine badge;
-- browser-visible page text did not include `V23/V24/v23/v24`;
+- browser-visible page text did not include `Classic/Detailed/classic/detailed`;
 - no relevant network loading failures were reported by the smoke.
 
 ## 11. Risks

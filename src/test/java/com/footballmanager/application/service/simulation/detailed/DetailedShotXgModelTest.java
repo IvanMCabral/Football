@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24B: Shot xG model tests.
+ * DetailedB: Shot xG model tests.
  * style modifier affects xG, goal resolution correlates with xG.
  *
  * (formation-specific xG modifier pipeline). All calls pass
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * non-formation multipliers in isolation. Formation effects are
  * covered by {@code ShotXgCalculatorFormationModifierTest}.
  */
-class V24ShotXgModelTest {
+class DetailedShotXgModelTest {
 
     // when null/blank, so we explicitly pass "4-4-2" to keep test semantics stable.
     private static final String BASELINE_FORMATION = "4-4-2";

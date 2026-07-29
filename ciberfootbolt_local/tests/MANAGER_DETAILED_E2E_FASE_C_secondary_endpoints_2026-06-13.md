@@ -1,15 +1,15 @@
-﻿# V24D7 — FASE C: Reporte de cobertura E2E de endpoints secundarios
+# DetailedSprint7 — FASE C: Reporte de cobertura E2E de endpoints secundarios
 
 **Fecha:** 2026-06-13 22:48 ART
 **Branch:** master
 **Commit:** aa39ecf (codigo) sobre 2f14534 (reporte FASE B)
-**Tag objetivo:** V24D7FaseC (no pusheado, queda local hasta validacion final)
+**Tag objetivo:** DetailedSprint7FaseC (no pusheado, queda local hasta validacion final)
 
 ---
 
 ## 1. Alcance cumplido
 
-FASE C del plan V24D7 (P0: HTTP/E2E tests — endpoints secundarios).
+FASE C del plan DetailedSprint7 (P0: HTTP/E2E tests — endpoints secundarios).
 
 ### Entregables
 
@@ -59,7 +59,7 @@ Los endpoints de `CareerViewController` (GET /fixtures, /standings, /palmares, e
 
 ### 2.5 Controllers NO cubiertos en FASE C (y por que)
 
-- **MatchController / RoundController / V24DetailedMatchController:** requieren state en Redis (match played, current round, lineup confirmado). Setup costoso, mejor para FASE D o un PR dedicado.
+- **MatchController / RoundController / DetailedSprintetailedMatchController:** requieren state en Redis (match played, current round, lineup confirmado). Setup costoso, mejor para FASE D o un PR dedicado.
 - **PlayerSeasonStatsController:** requiere match played en Redis. Idem.
 - **CareerAdminController / CareerDebugController:** endpoints de admin/debug, no en el scope del usuario final.
 - **CareerEventController / LeagueTeamCommandController / LeagueController:** no prioritarios en P0.
@@ -108,45 +108,45 @@ Los endpoints de `CareerViewController` (GET /fixtures, /standings, /palmares, e
 
 ---
 
-## 5. Resumen acumulado V24D7 (FASE A + B + C)
+## 5. Resumen acumulado DetailedSprint7 (FASE A + B + C)
 
 ```
 [INFO] Tests run: 921, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
-| Metrica | V24D6U6 (pre-V24D7) | V24D7FaseA | V24D7FaseB | V24D7FaseC | Total |
+| Metrica | DetailedSprint6U6 (pre-DetailedSprint7) | DetailedSprint7FaseA | DetailedSprint7FaseB | DetailedSprint7FaseC | Total |
 |---|---:|---:|---:|---:|---:|
 | Tests | 869 | 874 (+5) | 904 (+30) | 921 (+17) | **+52** |
 | Skipped | 1 | 0 | 0 | 0 | -1 |
 | Failures | 0 | 0 | 0 | 0 | 0 |
 | E2E test classes | 0 (1 @Disabled) | 1 (smoke) | 5 | 5 | **11** |
 
-**E2E coverage incrementada de 0% a ~17%** de los controllers del proyecto (11/65 controllers cubiertos con HTTP tests reales, 1 controller re-habilitado de V24D6T).
+**E2E coverage incrementada de 0% a ~17%** de los controllers del proyecto (11/65 controllers cubiertos con HTTP tests reales, 1 controller re-habilitado de DetailedSprint6T).
 
 ---
 
 ## 6. Proximos pasos (FASE D — outline)
 
-1. **Reporte final consolidado:** `MANAGER_V24D7_final_2026-06-13.md` con todas las metricas y resumen ejecutivo.
-2. **Tag V24D7:** `git tag -a V24D7 -m "..." HEAD~0` (local, sin push).
+1. **Reporte final consolidado:** `MANAGER_DetailedSprint7_final_2026-06-13.md` con todas las metricas y resumen ejecutivo.
+2. **Tag DetailedSprint7:** `git tag -a DetailedSprint7 -m "..." HEAD~0` (local, sin push).
 3. **Opcional:** CareerFlowE2ETest expansion con match played en Redis (requiere setup de match fixture + lineup pre-existente).
-4. **Opcional:** PlayerSeasonStatsController + V24DetailedMatchController E2E (requiere match played en Redis).
+4. **Opcional:** PlayerSeasonStatsController + DetailedSprintetailedMatchController E2E (requiere match played en Redis).
 
 ---
 
-## 7. Criterios de exito del plan V24D7 — estado parcial
+## 7. Criterios de exito del plan DetailedSprint7 — estado parcial
 
 - [x] FASE A: setup de test infrastructure (commit 5ca041b)
 - [x] FASE B: tests E2E flow principal (commit ab55faa)
 - [x] FASE C: tests E2E endpoints secundarios (commit aa39ecf)
-- [ ] FASE D: reporte final y tag V24D7
+- [ ] FASE D: reporte final y tag DetailedSprint7
 - [x] 869+N tests pasan → **921 actual (+52)**
 - [x] mvn test limpio
 - [ ] npx tsc + ng build (no hubo cambios frontend)
 - [ ] Reporte final escrito (este es el de FASE C, falta el final consolidado)
-- [x] Working tree limpio (cambios V24D7 commiteados)
+- [x] Working tree limpio (cambios DetailedSprint7 commiteados)
 
 ---
 
-*Reporte FASE C V24D7. Commit: aa39ecf. Branch: master.*
+*Reporte FASE C DetailedSprint7. Commit: aa39ecf. Branch: master.*

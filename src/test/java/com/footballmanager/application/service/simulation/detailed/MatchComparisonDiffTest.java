@@ -141,7 +141,7 @@ class MatchComparisonDiffTest {
                 homeGoals, awayGoals, homeXg, awayXg,
                 homeShots, awayShots, homePossession, 100 - homePossession,
                 List.of(), List.of(),
-                "Test", "V24", 1, Instant.now(), null, null);
+                "Test", "DETAILED_MATCH", 1, Instant.now(), null, null);
     }
 
     private DetailedMatchData sampleDataWithEvents(List<DetailedMatchEventDto> events) {
@@ -152,6 +152,6 @@ class MatchComparisonDiffTest {
                 0, 0, 0.0, 0.0,
                 0, 0, 50, 50,
                 events, List.of(),
-                "Test", "V24", 1, Instant.now(), null, null);
+                "Test", "DETAILED_MATCH", 1, Instant.now(), null, null);
     }
 }

@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>Located in package {@code com.footballmanager.application.service.simulation}
  * to access the package-private 12-arg {@link LeagueSimulator} constructor.
  */
-class V24LivePathEndOfRoundLifecycleIntegrationTest {
+class DetailedLivePathEndOfRoundLifecycleIntegrationTest {
 
     private static final String HOME = "11111111-1111-1111-1111-111111111111";
     private static final String AWAY = "22222222-2222-2222-2222-222222222222";
@@ -334,10 +334,10 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
                 "remaining must be 0 even when in participatedPlayerIds");
     }
 
-    // for testability) and asserts a suspended player appearing in the V24 timeline
+    // for testability) and asserts a suspended player appearing in the Detailed timeline
     // does NOT end up in tracking.participatedPlayerIds. End-to-end decrement
     // behavior is covered by preExistingSuspendedInParticipatedPlayerIds_decrementFires
-    // and V24CareerMutationIntegrationTest.preExistingSuspendedPlayerInStartingXI_decrementFires.
+    // and DetailedCareerMutationIntegrationTest.preExistingSuspendedPlayerInStartingXI_decrementFires.
 
     @Test
     void applyLiveMatchCareerMutations_excludesSuspendedFromParticipated() {
@@ -352,7 +352,7 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
         sp.setSuspended(true);
         sp.setSuspensionRemainingMatches(1);
 
-        // Build a V24 timeline where BOTH players appear (e.g. they are in the
+        // Build a Detailed timeline where BOTH players appear (e.g. they are in the
         // starting XI). The live mutations method should accumulate both event
         // IDs into participatedPlayerIds — but the suspended one must be excluded.
         MatchTimeline timeline = new MatchTimeline();
@@ -376,7 +376,7 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
         // Call the package-private method directly.
         simulator.applyLiveMatchCareerMutations(career, detailedResult, tracking);
 
-        // (even though they appear in the V24 timeline as a goal scorer).
+        // (even though they appear in the Detailed timeline as a goal scorer).
         assertFalse(tracking.participatedPlayerIds.contains(suspId),
             "suspended player must be excluded from participatedPlayerIds "
             + "(they are not actually on the pitch even if they appear in the XI)");
@@ -389,7 +389,7 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
 
     private static CareerSave newCareer() {
         CareerSave save = new CareerSave();
-        save.getData().setCareerId("test_v24d6r2_" + UUID.randomUUID());
+        save.getData().setCareerId("test_detailedd6r2_" + UUID.randomUUID());
         CareerTeamManager tm = new CareerTeamManager();
         CareerPlayerManager pm = new CareerPlayerManager();
         for (String tid : List.of(HOME, AWAY)) {
@@ -425,7 +425,7 @@ class V24LivePathEndOfRoundLifecycleIntegrationTest {
                 new FakeMatchSimulator(),
                 null,
                 false,                 // useclassic
-                true,                  // useV24
+                true,                  // useDetailed
                 false,                 // persistDetail
                 new FakeStoragePort(),
                 mutateCareerState,

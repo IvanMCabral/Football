@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class V24ShotOutcomeCalibrationTest {
+class DetailedShotOutcomeCalibrationTest {
 
     @Test
     @DisplayName("shot-on-target probability grows with xG")

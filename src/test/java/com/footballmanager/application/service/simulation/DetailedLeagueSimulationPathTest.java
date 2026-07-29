@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Validates flag precedence, context building, result mapping,
  * fallback behavior, and no Redis persistence.
  */
-class V24LeagueSimulationPathTest {
+class DetailedLeagueSimulationPathTest {
 
     private static final String HOME1 = UUID.randomUUID().toString();
     private static final String AWAY1 = UUID.randomUUID().toString();
@@ -50,17 +50,17 @@ class V24LeagueSimulationPathTest {
 
         simulator.simulateLeagueRound(career, 1);
 
-        assertTrue(fakeSim.simulateQuickCalled, "Default path should be used when V24 flag is false");
+        assertTrue(fakeSim.simulateQuickCalled, "Default path should be used when Detailed flag is false");
         MatchFixture fixture = career.getTournamentState().getFixtures().get(0);
         assertNotNull(fixture.getResult());
         assertEquals(50, fixture.getResult().homePossession);
         assertEquals(50, fixture.getResult().awayPossession);
     }
 
-    // ========== Test 2: classic flag still uses classic path when V24 flag is false ==========
+    // ========== Test 2: classic flag still uses classic path when Detailed flag is false ==========
 
     @Test
-    void v23FlagStillUsesclassicPathWhenV24FlagFalse() {
+    void classicFlagStillUsesclassicPathWhenDetailedFlagFalse() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         MatchEngineImpl realEngine = new MatchEngineImpl();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, realEngine, true, false);
@@ -79,10 +79,10 @@ class V24LeagueSimulationPathTest {
         assertEquals(100, totalPoss, "classic possession should sum to 100");
     }
 
-    // ========== Test 3: V24 flag uses detailed match engine path ==========
+    // ========== Test 3: Detailed flag uses detailed match engine path ==========
 
     @Test
-    void v24FlagUsesV24DetailedEnginePath() {
+    void detailedFlagUsesDetailedSprintetailedEnginePath() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true);
 
@@ -93,7 +93,7 @@ class V24LeagueSimulationPathTest {
 
         simulator.simulateLeagueRound(career, 1);
 
-        assertFalse(fakeSim.simulateQuickCalled, "Default path should NOT be used when V24 flag is true");
+        assertFalse(fakeSim.simulateQuickCalled, "Default path should NOT be used when Detailed flag is true");
         MatchFixture fixture = career.getTournamentState().getFixtures().get(0);
         assertNotNull(fixture.getResult(), "Result should be recorded via detailed match engine");
     }
@@ -136,7 +136,7 @@ class V24LeagueSimulationPathTest {
     // ========== Test 5: detailed match path does NOT persist detail ==========
 
     @Test
-    void v24PathDoesNotPersistDetail() {
+    void detailedPathDoesNotPersistDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true);
 
@@ -155,7 +155,7 @@ class V24LeagueSimulationPathTest {
     // ========== Test 6: detailed match context build failure falls back to existing path ==========
 
     @Test
-    void v24ContextBuildFailureFallsBackToExistingPath() {
+    void detailedContextBuildFailureFallsBackToExistingPath() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true);
 
@@ -195,7 +195,7 @@ class V24LeagueSimulationPathTest {
     // ========== Test 7: detailed match context build failure does not fail the round ==========
 
     @Test
-    void v24ContextBuildFailureDoesNotFailRound() {
+    void detailedContextBuildFailureDoesNotFailRound() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true);
 
@@ -227,10 +227,10 @@ class V24LeagueSimulationPathTest {
         assertDoesNotThrow(() -> simulator.simulateLeagueRound(career, 1));
     }
 
-    // ========== Test 8: V24 flag defaults to false ==========
+    // ========== Test 8: Detailed flag defaults to false ==========
 
     @Test
-    void v24FlagDefaultFalse() {
+    void detailedFlagDefaultFalse() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim);
 
@@ -290,7 +290,7 @@ class V24LeagueSimulationPathTest {
     // ========== Test 11: detailed match path completes all fixtures in round ==========
 
     @Test
-    void v24PathCompletesAllFixturesInRound() {
+    void detailedPathCompletesAllFixturesInRound() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true);
 

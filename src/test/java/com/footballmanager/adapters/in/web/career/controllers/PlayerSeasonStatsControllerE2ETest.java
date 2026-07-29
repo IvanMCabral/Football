@@ -38,9 +38,9 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  *   <li>GET player-stats without auth — 401 UNAUTHORIZED</li>
  *   <li>GET player-stats?limit=0 — 400 with {@code error} containing "limit"</li>
  *   <li>GET player-stats?sortBy=invalid — 400 with {@code error} containing "sortBy"</li>
- *   <li>GET player-stats (all-players, no V24 data) — 200 with empty array + message</li>
+ *   <li>GET player-stats (all-players, no Detailed data) — 200 with empty array + message</li>
  *   <li>GET player-stats with pagination + sort — 200 with proper structure</li>
- *   <li>GET players/{id}/stats (single-player, no V24 data) — 404 (controller returns 404 on empty playerStats)</li>
+ *   <li>GET players/{id}/stats (single-player, no Detailed data) — 404 (controller returns 404 on empty playerStats)</li>
  * </ul>
  */
 @SpringBootTest(
@@ -129,9 +129,9 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("GET /api/v1/careers/{random}/.../player-stats — 200 with empty list and message (no detailed match detail in Redis)")
-    void getAllPlayerStats_noV24Data_returns200WithEmptyList() {
+    void getAllPlayerStats_noDetailedSprintata_returns200WithEmptyList() {
         String userId = uniqueUserId();
-        String careerId = UUID.randomUUID().toString(); // careerId random — sin V24 data
+        String careerId = UUID.randomUUID().toString(); // careerId random — sin Detailed data
 
         webTestClient.mutateWith(mockUser(userId))
             .get().uri(uriBuilder -> uriBuilder
@@ -175,7 +175,7 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
                 org.junit.jupiter.api.Assertions.assertNotNull(json.get("careerId"));
                 org.junit.jupiter.api.Assertions.assertNotNull(json.get("season"));
                 org.junit.jupiter.api.Assertions.assertTrue(json.get("playerStats").isArray());
-                // Sin V24 data, playerStats está vacío.
+                // Sin Detailed data, playerStats está vacío.
                 org.junit.jupiter.api.Assertions.assertEquals(0, json.get("playerStats").size());
                 // totalGoals/Assists/Appearances deben ser 0 (no null) per builder.
                 org.junit.jupiter.api.Assertions.assertEquals(0, json.get("totalGoals").asInt());
@@ -185,8 +185,8 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/careers/.../players/{playerId}/stats — 404 when no V24 data (controller returns 404 on empty playerStats)")
-    void getSinglePlayerStats_noV24Data_returns404() {
+    @DisplayName("GET /api/v1/careers/.../players/{playerId}/stats — 404 when no Detailed data (controller returns 404 on empty playerStats)")
+    void getSinglePlayerStats_noDetailedSprintata_returns404() {
         String userId = uniqueUserId();
         String careerId = UUID.randomUUID().toString();
         String playerId = UUID.randomUUID().toString();

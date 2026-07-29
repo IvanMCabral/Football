@@ -186,7 +186,7 @@ class LeagueSimulatorTest {
     // ========== Test 4: classic path is deterministic for same fixture ==========
 
     @Test
-    void v23PathIsDeterministicForSameFixture() {
+    void classicPathIsDeterministicForSameFixture() {
         MatchEngineImpl realEngine = new MatchEngineImpl();
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, realEngine, true);

@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 11. substitutes marked correctly (subIn/subOut)
  * 12. player field values (name, position, teamId) match SessionPlayer
  */
-class V24PlayerRatingsPersistenceTest {
+class DetailedPlayerRatingsPersistenceTest {
 
     private final PlayerRatingsAssembler assembler = new PlayerRatingsAssembler();
 

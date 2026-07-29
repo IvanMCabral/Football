@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
- * {@link V24ModelTuningDiagnosticTest}) by running FIVE scenarios that
+ * {@link DetailedModelTuningDiagnosticTest}) by running FIVE scenarios that
  * reflect the C27 + C28 tasks:
  *
  * <ol>

@@ -70,7 +70,7 @@ class DetailedMatchControllerIntegrationTest {
                         ev(80, "GOAL", AWAY, 0.15)
                 ),
                 List.of(),
-                "Home win 2-1", "V24", 1, Instant.now(), null, null);
+                "Home win 2-1", "DETAILED_MATCH", 1, Instant.now(), null, null);
     }
 
     // ============== /detail ==============
@@ -288,7 +288,7 @@ class DetailedMatchControllerIntegrationTest {
                         ev(40, "GOAL", HOME, 0.25)
                 ),
                 List.of(),
-                "match", "V24", 1, Instant.now(), null, null);
+                "match", "DETAILED_MATCH", 1, Instant.now(), null, null);
         when(queryService.isApiEnabled()).thenReturn(true);
         when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(d)));
 
@@ -332,7 +332,7 @@ class DetailedMatchControllerIntegrationTest {
                 0, 0, 0.0, 0.0,
                 0, 0, 50, 50,
                 List.of(), List.of(),
-                "no events", "V24", 1, Instant.now(), null, null);
+                "no events", "DETAILED_MATCH", 1, Instant.now(), null, null);
         when(queryService.isApiEnabled()).thenReturn(true);
         when(queryService.findDetail(CAREER_ID, MATCH_ID)).thenReturn(Mono.just(Optional.of(d)));
 

@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 /**
  *
- * <p>Bug: {@link TestHarnessUseCaseImpl#executeReplayMatch} ran the real V24
+ * <p>Bug: {@link TestHarnessUseCaseImpl#executeReplayMatch} ran the real Detailed
  * possession, shots, and goals per match â€” but then built the
  * {@link MatchFixture.MatchResultData} with hardcoded {@code 0, 0, 0, 0} for
  * possession + shots. The replayed fixture thus returned
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
  * {@code MatchResultData} reflects the engine's possession / shots.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TestHarnessUseCaseImpl â€” replayMatch forwards V24 possession + shots")
+@DisplayName("TestHarnessUseCaseImpl â€” replayMatch forwards Detailed possession + shots")
 class TestHarnessReplayPossessionV25D37F4Test {
 
     private static final UUID USER_ID =
@@ -101,7 +101,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
 
     @Test
     @DisplayName("replayMatch forwards detailed match engine possession + shots (NOT zeros)")
-    void replayMatch_forwardsV24PossessionAndShots() {
+    void replayMatch_forwardsDetailedPossessionAndShots() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
         when(careerRepository.save(any(CareerSave.class)))
@@ -130,7 +130,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
             .as("replayed awayPossession must come from detailed match engine, not the old 0 stub")
             .isBetween(0, 100);
         assertThat(result.getHomePossession() + result.getAwayPossession())
-            .as("homePossession + awayPossession must sum to 100 (V24 returns percentages)")
+            .as("homePossession + awayPossession must sum to 100 (Detailed returns percentages)")
             .isEqualTo(100);
 
         // Shots: engine produces non-negative shot counts. The old code hardcoded

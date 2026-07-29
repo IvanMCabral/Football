@@ -134,7 +134,7 @@ class ShotXgCalculatorTacklerTest {
     void tackler90_onSetPieceTypes_doesNotApply() {
         // TACKLER gated por OPEN_PLAY — no aplica en CORNER ni CROSS.
         // (El engine actualmente no modela PENALTY como eventSubType separado
-        // — un penal se trata como OPEN_PLAY por convencion del V24 model.
+        // — un penal se trata como OPEN_PLAY por convencion del Detailed model.
         // En el futuro si se agrega PENALTY, el gating debe revisarse.)
         ShotXgCalculator calc = new ShotXgCalculator();
         for (ShotEventType eventType : new ShotEventType[] {

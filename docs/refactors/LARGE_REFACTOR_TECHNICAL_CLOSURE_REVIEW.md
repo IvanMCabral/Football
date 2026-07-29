@@ -1,4 +1,4 @@
-# V24 large refactor technical closure review
+# Detailed large refactor technical closure review
 
 Date: 2026-07-28
 
@@ -14,10 +14,10 @@ Verdict: APPROVED
   - Surefire reports: 258
 - Compile validation: `mvn -q -DskipTests test-compile`
 - Focused validations executed and green:
-  - V24 detailed match storage/query/stats/comparison
+  - Detailed detailed match storage/query/stats/comparison
   - test harness and round controller
   - match simulation orchestrator
-  - V24 live mutation path
+  - Detailed live mutation path
   - end-of-tournament aggregation
 
 ## Closure findings
@@ -28,7 +28,7 @@ Application/domain ports no longer depend on web controller DTOs for auth, lineu
 
 ### WebFlux
 
-Incorrect controller-level manual subscriptions were removed from the live round path. V24 detailed match storage is now reactive end-to-end, including Redis adapter, query services, stats controller, detail controller, comparison service, replay, and reset flows.
+Incorrect controller-level manual subscriptions were removed from the live round path. Detailed detailed match storage is now reactive end-to-end, including Redis adapter, query services, stats controller, detail controller, comparison service, replay, and reset flows.
 
 Remaining blocking usages are classified:
 
@@ -48,7 +48,7 @@ Final standings are rebuilt from completed fixtures before champion/promotion ca
 
 ### God classes and cohesion
 
-No production Java file remains above 501 lines, and large V24/test-harness responsibilities have been split into cohesive services and value records rather than generic helper dumps. Remaining high-400-line classes are bounded coordinators or compatibility surfaces with focused responsibilities and green behavioral coverage.
+No production Java file remains above 501 lines, and large Detailed/test-harness responsibilities have been split into cohesive services and value records rather than generic helper dumps. Remaining high-400-line classes are bounded coordinators or compatibility surfaces with focused responsibilities and green behavioral coverage.
 
 ## Final verdict
 

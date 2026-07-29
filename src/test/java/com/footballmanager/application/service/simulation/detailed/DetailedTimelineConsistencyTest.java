@@ -13,11 +13,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24B: Timeline consistency tests.
+ * DetailedB: Timeline consistency tests.
  * Verifies: goals = goalEvents count, shots >= goals, possession sums to ~100,
  * xG sum matches shots, events ordered by minute.
  */
-class V24TimelineConsistencyTest {
+class DetailedTimelineConsistencyTest {
 
     @Test
     void goalCountMatchesGoalEvents() {

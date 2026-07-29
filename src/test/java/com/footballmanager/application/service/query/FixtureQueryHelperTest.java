@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *       is queried outside a career context, e.g. ad-hoc helper callers)</li>
  * </ul>
  */
-@DisplayName("FixtureQueryHelper — V24D24.2 deriveRoundId (roundId determinism)")
+@DisplayName("FixtureQueryHelper — DetailedSprint24.2 deriveRoundId (roundId determinism)")
 class FixtureQueryHelperTest {
 
     private static final String CAREER_A = "career-abc-123";

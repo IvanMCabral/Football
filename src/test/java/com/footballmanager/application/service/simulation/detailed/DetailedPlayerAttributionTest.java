@@ -13,12 +13,12 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24B: Player attribution tests.
+ * DetailedB: Player attribution tests.
  * Verifies: no synthetic labels in playerId/name fields,
  * real player IDs from SessionPlayer are used in all events,
  * assist player is different from shooter.
  */
-class V24PlayerAttributionTest {
+class DetailedPlayerAttributionTest {
 
     @Test
     void noSyntheticPlayerIdsInEvents() {

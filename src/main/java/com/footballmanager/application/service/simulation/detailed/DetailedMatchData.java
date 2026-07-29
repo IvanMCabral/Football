@@ -15,7 +15,7 @@ import java.util.Objects;
  * {@code career:{careerId}:match-detail:{matchId}}
  *
  * <p>schemaVersion: 1 — for future migrations.
- * engineVersion: "detailed match" — identifies the engine that produced this data.
+ * engineType: "detailed match" — identifies the engine that produced this data.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
         getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
@@ -43,7 +43,7 @@ public final class DetailedMatchData {
     private final List<DetailedMatchEventDto> timeline;
     private final List<PlayerMatchRatingDto> playerRatings;
     private final String summary;
-    private final String engineVersion;
+    private final String engineType;
     private final int schemaVersion;
     private final Instant createdAt;
     // con null (Jackson rellena con null al agregar @JsonProperty). UI muestra
@@ -75,7 +75,7 @@ public final class DetailedMatchData {
             List<DetailedMatchEventDto> timeline,
             List<PlayerMatchRatingDto> playerRatings,
             String summary,
-            String engineVersion,
+            String engineType,
             int schemaVersion,
             Instant createdAt,
             String homeFormation,
@@ -83,7 +83,7 @@ public final class DetailedMatchData {
         this(matchId, careerId, seasonNumber, round, homeTeamId, awayTeamId,
                 homeTeamName, awayTeamName, homeGoals, awayGoals, homeXg, awayXg,
                 homeShots, awayShots, homePossession, awayPossession,
-                timeline, playerRatings, summary, engineVersion, schemaVersion, createdAt,
+                timeline, playerRatings, summary, engineType, schemaVersion, createdAt,
                 homeFormation, awayFormation, List.of(), List.of(), List.of(), List.of());
     }
 
@@ -108,7 +108,7 @@ public final class DetailedMatchData {
             @JsonProperty("timeline") List<DetailedMatchEventDto> timeline,
             @JsonProperty("playerRatings") List<PlayerMatchRatingDto> playerRatings,
             @JsonProperty("summary") String summary,
-            @JsonProperty("engineVersion") String engineVersion,
+            @JsonProperty("engineType") String engineType,
             @JsonProperty("schemaVersion") int schemaVersion,
             @JsonProperty("createdAt") Instant createdAt,
             @JsonProperty("homeFormation") String homeFormation,
@@ -151,7 +151,7 @@ public final class DetailedMatchData {
         this.timeline = (timeline != null) ? Collections.unmodifiableList(new ArrayList<>(timeline)) : Collections.emptyList();
         this.playerRatings = (playerRatings != null) ? Collections.unmodifiableList(new ArrayList<>(playerRatings)) : Collections.emptyList();
         this.summary = (summary != null) ? summary : "";
-        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24;
+        this.engineType = (engineType != null) ? engineType : DetailedMatchDiscriminators.DETAILED_MATCH_ENGINE_TYPE;
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
         // Jackson rellena con null al deserializar JSON sin los campos.
@@ -265,7 +265,7 @@ public final class DetailedMatchData {
                 eventDtos,
                 playerRatings,
                 result.summary(),
-                PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24,
+                DetailedMatchDiscriminators.DETAILED_MATCH_ENGINE_TYPE,
                 1,
                 Instant.now(),
                 homeFormation,
@@ -296,7 +296,7 @@ public final class DetailedMatchData {
     @JsonProperty("timeline") public List<DetailedMatchEventDto> timeline() { return timeline; }
     @JsonProperty("playerRatings") public List<PlayerMatchRatingDto> playerRatings() { return playerRatings; }
     @JsonProperty("summary") public String summary() { return summary; }
-    @JsonProperty("engineVersion") public String engineVersion() { return engineVersion; }
+    @JsonProperty("engineType") public String engineType() { return engineType; }
     @JsonProperty("schemaVersion") public int schemaVersion() { return schemaVersion; }
     @JsonProperty("createdAt") public Instant createdAt() { return createdAt; }
     // change deserialize con null. La UI muestra "—".
@@ -325,7 +325,7 @@ public final class DetailedMatchData {
                 && Objects.equals(timeline, that.timeline)
                 && Objects.equals(playerRatings, that.playerRatings)
                 && Objects.equals(summary, that.summary)
-                && Objects.equals(engineVersion, that.engineVersion)
+                && Objects.equals(engineType, that.engineType)
                 && schemaVersion == that.schemaVersion
                 && Objects.equals(createdAt, that.createdAt)
                 && Objects.equals(homeFormation, that.homeFormation)
@@ -341,7 +341,7 @@ public final class DetailedMatchData {
         return Objects.hash(matchId, careerId, seasonNumber, round, homeTeamId, awayTeamId,
                 homeGoals, awayGoals, homeXg, awayXg, homeShots, awayShots,
                 homePossession, awayPossession, timeline, playerRatings, summary,
-                engineVersion, schemaVersion, createdAt, homeFormation, awayFormation,
+                engineType, schemaVersion, createdAt, homeFormation, awayFormation,
                 homeStartingPlayers, homeBenchPlayers, awayStartingPlayers, awayBenchPlayers);
     }
 

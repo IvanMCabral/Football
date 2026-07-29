@@ -14,7 +14,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * V24A3: Adapter test — maps only 6 aggregate fields, discards timeline/xG/summary.
+ * DetailedA3: Adapter test — maps only 6 aggregate fields, discards timeline/xG/summary.
  */
 class DetailedMatchResultAdapterTest {
 

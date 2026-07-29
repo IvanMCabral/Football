@@ -149,7 +149,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/games/{id} — 200 with body (regression for V24D12.2 deserialization fix)")
+    @DisplayName("GET /api/v1/games/{id} — 200 with body (regression for DetailedSprint12.2 deserialization fix)")
     void getGameById_existingGame_returns200() {
         String userId = SEED_USER_ID;
         String teamId = seedTeamId(userId);
@@ -280,7 +280,7 @@ class GameControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/games without auth — 401 (SecurityConfig rule V24D12-1)")
+    @DisplayName("POST /api/v1/games without auth — 401 (SecurityConfig rule DetailedSprint12-1)")
     void createGame_unauthenticated_returns401() {
         // Hardcoded UUIDs — controller returns 401 before parsing the body
         // (line 41-43 of GameController), so the teamId/leagueId values are irrelevant.

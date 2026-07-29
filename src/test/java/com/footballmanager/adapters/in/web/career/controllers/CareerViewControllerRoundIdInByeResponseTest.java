@@ -50,7 +50,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("CareerViewController — V24D24.2 roundId hydration in /fixtures/round-with-bye")
+@DisplayName("CareerViewController — DetailedSprint24.2 roundId hydration in /fixtures/round-with-bye")
 class CareerViewControllerRoundIdInByeResponseTest extends AbstractIntegrationTest {
 
     private static final String SEED_USER_ID =

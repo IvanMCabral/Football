@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * All tests use seeded simulation for reproducibility.
  * No production code changes — purely validation infrastructure.
  */
-class classicSimulationQualityGateTest {
+class ClassicSimulationQualityGateTest {
 
     private static final long SEED = 42L;
 

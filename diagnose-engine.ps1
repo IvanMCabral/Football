@@ -14,12 +14,12 @@ $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
 $tests = @(
-    "V24ModelTuningDiagnosticTest",
+    "DetailedModelTuningDiagnosticTest",
     "V27GoalBalanceBaselineDiagnosticTest",
     "V33CalibrationDiagnosticTest",
-    "V24FormationGoalDiversityE2ETest",
-    "V24DetailedMatchEngineSpeedsterTest",
-    "V24ShotXgCalculatorShooterTest"
+    "DetailedFormationGoalDiversityE2ETest",
+    "DetailedSprintetailedMatchEngineSpeedsterTest",
+    "DetailedShotXgCalculatorShooterTest"
 ) -join ","
 
 Write-Host "[diagnose-engine] Corriendo diagnosticos de motor..."

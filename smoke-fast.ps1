@@ -15,16 +15,16 @@ Set-Location $PSScriptRoot
 
 $tests = @(
     "FormationServiceTest",
-    "V24FormationParserTest",
-    "V24DetailedMatchEngineFormationTest",
-    "V24LiveSessionTickIncrementalTest",
-    "V24LiveSessionTest",
-    "V24SubstitutionEngineTest",
-    "V24LiveSessionEventFilterTest",
+    "DetailedFormationParserTest",
+    "DetailedSprintetailedMatchEngineFormationTest",
+    "DetailedLiveSessionTickIncrementalTest",
+    "DetailedLiveSessionTest",
+    "DetailedSubstitutionEngineTest",
+    "DetailedLiveSessionEventFilterTest",
     "CachingRandomWrapperTest",
-    "V24DetailedMatchEngineRandomOverloadTest",
+    "DetailedSprintetailedMatchEngineRandomOverloadTest",
     "C55_7_5_FullEndOfTournamentFlowTest",
-    "V24FormationGoalDiversityE2ETest"
+    "DetailedFormationGoalDiversityE2ETest"
 ) -join ","
 
 Write-Host "[smoke-fast] Validando version jugable..."

@@ -1,22 +1,22 @@
-﻿# V24D7 — FASE B: Reporte de cobertura E2E real
+# DetailedSprint7 — FASE B: Reporte de cobertura E2E real
 
 **Fecha:** 2026-06-13 22:20 ART
 **Branch:** master
 **Commits:** ab55faa (codigo) sobre e5c58f0 (reporte FASE A)
-**Tag objetivo:** V24D7FaseB (no pusheado, queda local hasta validacion final)
+**Tag objetivo:** DetailedSprint7FaseB (no pusheado, queda local hasta validacion final)
 
 ---
 
 ## 1. Alcance cumplido
 
-FASE B del plan V24D7 (P0: HTTP/E2E tests — cobertura E2E real con ``@WebFluxTest`` + ``@MockBean``).
+FASE B del plan DetailedSprint7 (P0: HTTP/E2E tests — cobertura E2E real con ``@WebFluxTest`` + ``@MockBean``).
 
 ### Entregables
 
 | Archivo | Líneas | Tests | Propósito |
 |---|---:|---:|---|
 | ``pom.xml`` (modificado) | +10 | - | Agrega ``spring-security-test 6.2.1`` (BOM Spring Boot 3.2.1) |
-| ``LineupControllerE2ETest.java`` (re-habilitado) | 378 | 12 | Re-habilita el test pinned ``@Disabled`` desde V24D6T con cobertura HTTP real |
+| ``LineupControllerE2ETest.java`` (re-habilitado) | 378 | 12 | Re-habilita el test pinned ``@Disabled`` desde DetailedSprint6T con cobertura HTTP real |
 | ``AuthControllerE2ETest.java`` (nuevo) | 168 | 6 | Cobertura E2E del flow de auth: register, login, JWT, /me |
 | ``WorldQueryControllerE2ETest.java`` (nuevo) | 122 | 5 | Cobertura E2E de queries del mundo: leagues, teams, players, free-players |
 | ``CareerFlowE2ETest.java`` (nuevo) | 88 | 2 | Smoke-level coverage del flow de career (start, reset, get) |
@@ -28,7 +28,7 @@ FASE B del plan V24D7 (P0: HTTP/E2E tests — cobertura E2E real con ``@WebFluxT
 
 - ``src/main/resources/application.yaml`` — sin cambios
 - ``src/main/resources/application-local.yml`` — sin cambios
-- ``src/main/resources/application-v24-mutations.yml`` — sin cambios
+- ``src/main/resources/application-detailed-mutations.yml`` — sin cambios
 - Codigo de produccion (controllers, services, domain) — sin cambios
 - ``.env`` — sin cambios (sigue con secretos en plaintext, fuera de scope)
 
@@ -53,7 +53,7 @@ El controller resuelve el ``userId`` desde ``Authentication.getName()``. Sin sec
 
 Para los endpoints en ``permitAll`` (todos los de ``/api/v1/career/...``, ``/api/v1/auth/...``, ``/api/v1/world/...`` per SecurityConfig), ``mockUser`` funciona aunque no haya token. Para endpoints con ``@authenticated()`` (como ``/api/v1/dashboard/**``), los tests futuros necesitaran JWT real o ``mockJwt()``.
 
-### 2.3 Re-habilitacion del placeholder V24D6T
+### 2.3 Re-habilitacion del placeholder DetailedSprint6T
 
 El ``LineupControllerE2ETest`` original (1 test placeholder) documentaba el gap exacto y proponia re-habilitarlo. La re-habilitacion cubre ahora 12 escenarios reales:
 
@@ -72,7 +72,7 @@ El ``LineupControllerE2ETest`` original (1 test placeholder) documentaba el gap 
 | ``GET /current`` | empty lineup | 200 + formation + players=[] + confirmed=false |
 | ``GET /current`` | full 11-player lineup | 200 + 11 players |
 
-El placeholder original (``@Disabled("V24D6T gap...")``) se elimino.
+El placeholder original (``@Disabled("DetailedSprint6T gap...")``) se elimino.
 
 ---
 
@@ -124,7 +124,7 @@ El placeholder original (``@Disabled("V24D6T gap...")``) se elimino.
 ## 5. Lo que NO se hizo en FASE B (y por que)
 
 - **MatchController E2E tests:** el flow start-career -> play-match -> match-detail es complejo (requiere career persistido + lineup + Redis state). El ``CareerFlowE2ETest`` cubre el smoke level. Profundizar requiere más setup, queda para FASE C o una iteracion posterior.
-- **V24DetailedMatchControllerE2ETest:** el plan V24D7 lo menciona pero requiere un match pre-jugado en Redis, lo cual es setup pesado. Se omite en esta fase por costo/beneficio.
+- **DetailedSprintetailedMatchControllerE2ETest:** el plan DetailedSprint7 lo menciona pero requiere un match pre-jugado en Redis, lo cual es setup pesado. Se omite en esta fase por costo/beneficio.
 - **Mutations edge cases (P1b del plan):** fuera de scope de FASE B (que es P0).
 - **Coverage report (``mvn jacoco``):** no se genero reporte numerico. La suite actual es smoke-level + integration-level; la cobertura E2E real es la métrica de valor, no line coverage.
 - **TestContainers:** no aplica (no hay Docker en este ambiente).
@@ -142,18 +142,18 @@ El placeholder original (``@Disabled("V24D6T gap...")``) se elimino.
 
 ---
 
-## 7. Criterios de exito del plan V24D7 — estado parcial
+## 7. Criterios de exito del plan DetailedSprint7 — estado parcial
 
 - [x] FASE A: setup de test infrastructure (commit 5ca041b)
 - [x] FASE B: tests E2E flow principal (commit ab55faa)
 - [ ] FASE C: tests E2E endpoints secundarios
-- [ ] FASE D: reporte final y tag V24D7
+- [ ] FASE D: reporte final y tag DetailedSprint7
 - [x] 869+N tests pasan → **904 actual**
 - [x] mvn test limpio
 - [ ] npx tsc + ng build (no hubo cambios frontend)
 - [ ] Reporte final escrito (este es el de FASE B, falta el final consolidado)
-- [ ] Working tree limpio (cambios FASE A+B commiteados, quedan untracked de sesiones previas que NO son de V24D7)
+- [ ] Working tree limpio (cambios FASE A+B commiteados, quedan untracked de sesiones previas que NO son de DetailedSprint7)
 
 ---
 
-*Reporte FASE B V24D7. Commit: ab55faa. Branch: master.*
+*Reporte FASE B DetailedSprint7. Commit: ab55faa. Branch: master.*

@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *   <li>Regression: user-division-only fixtures still resolve to real names (not UUIDs).</li>
  * </ul>
  */
-@DisplayName("UserDivisionFixtureQueryService — V24D24.3 cross-division team names")
+@DisplayName("UserDivisionFixtureQueryService — DetailedSprint24.3 cross-division team names")
 class UserDivisionFixtureQueryServiceTest {
 
     private static final String USER_TEAM = "user-team-uuid-001";
@@ -180,10 +180,10 @@ class UserDivisionFixtureQueryServiceTest {
 
         assertEquals(DIV_B_TEAM_1_NAME, crossMatch.homeTeamName(),
                 "Cross-division homeTeamId must resolve to real name (NOT UUID). "
-              + "Before V24D24.3-FIX this was: " + DIV_B_TEAM_1);
+              + "Before DetailedSprint24.3-FIX this was: " + DIV_B_TEAM_1);
         assertEquals(DIV_B_TEAM_2_NAME, crossMatch.awayTeamName(),
                 "Cross-division awayTeamId must resolve to real name (NOT UUID). "
-              + "Before V24D24.3-FIX this was: " + DIV_B_TEAM_2);
+              + "Before DetailedSprint24.3-FIX this was: " + DIV_B_TEAM_2);
     }
 
     @Test

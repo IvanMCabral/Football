@@ -111,7 +111,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
 
     @Test
     @DisplayName("replayMatch: persists new DetailedMatchData to storage port")
-    void replayMatch_persistsV24DetailToStoragePort() {
+    void replayMatch_persistsDetailedSprintetailToStoragePort() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
         when(careerRepository.save(any(CareerSave.class)))
@@ -149,9 +149,9 @@ class TestHarnessReplayPersistsDetailE2ETest {
         assertThat(savedDetail.careerId())
             .as("saved detail.careerId must match the careerId used in the Redis key")
             .isEqualTo(savedCareerId);
-        assertThat(savedDetail.engineVersion())
-            .as("engineVersion must be V24 (the engine that produced this data)")
-            .isEqualTo("V24");
+        assertThat(savedDetail.engineType())
+            .as("engineType must be Detailed (the engine that produced this data)")
+            .isEqualTo("DETAILED_MATCH");
         assertThat(savedDetail.schemaVersion())
             .as("schemaVersion must be 1")
             .isEqualTo(1);

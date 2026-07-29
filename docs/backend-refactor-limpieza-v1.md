@@ -1,4 +1,4 @@
-﻿# Backend refactor y limpieza - primera pasada jugable
+# Backend refactor y limpieza - primera pasada jugable
 
 Fecha: 2026-07-27
 Repo: `D:\ProyectosOpenCode\MANAGER`
@@ -17,12 +17,12 @@ Dejar el backend más limpio para sostener el MVP jugable sin cambiar comportami
 - Se creó `TestHarnessPreviewRunner` para sacar del use case la simulación multi-seed de preview.
 - Se corrigió la inyección de `TestHarnessUseCaseImpl` marcando el constructor principal con `@Autowired`, porque al mantener un constructor de compatibilidad para tests Spring podía intentar instanciar sin constructor por defecto.
 
-### Motor V24 / live
+### Motor Detailed / live
 
-- `V24ShotXgCalculator` delega multiplicadores de skills en `V24ShotSkillMultipliers`.
-- `V24LiveSession` quedó debajo de 500 líneas después de quitar documentación vieja incrustada.
-- `V24MatchContext` y `V24MatchContextFactory` quedaron debajo de 500 líneas después de limpiar documentación de parche.
-- `V24DetailedMatchEngine` bajó de 2780 a 1741 líneas quitando ruido, pero sigue siendo God Class real.
+- `DetailedShotXgCalculator` delega multiplicadores de skills en `DetailedShotSkillMultipliers`.
+- `DetailedLiveSession` quedó debajo de 500 líneas después de quitar documentación vieja incrustada.
+- `DetailedMatchContext` y `DetailedMatchContextFactory` quedaron debajo de 500 líneas después de limpiar documentación de parche.
+- `DetailedSprintetailedMatchEngine` bajó de 2780 a 1741 líneas quitando ruido, pero sigue siendo God Class real.
 
 ### Ratings/formaciones
 
@@ -40,8 +40,8 @@ Verdes:
 
 - Compilación backend desde limpio: `mvn -q clean test-compile`
 - Controllers/round engine: `GameControllerV25D79Test`, `GameControllerE2ETest`, `RoundEngine*Test`, `RoundEngineV25D87SseWireupTest`, `RoundEngineSchedulerSurvivesExceptionTest`
-- Harness/live: `TestHarnessUseCaseImplTest`, `TestHarnessFormationMatrixSlotAssignmentTest`, `TestHarnessController*Test`, `V24LiveSession*Test`, `V24SubstitutionEngineTest`
-- Motor/lineup/formaciones: `V24DetailedMatchEngine*Test`, `V24ShotXgCalculator*Test`, `V24MatchContext*Test`, `LeagueSimulator*Test`, `Lineup*Test`, `Formation*Test`
+- Harness/live: `TestHarnessUseCaseImplTest`, `TestHarnessFormationMatrixSlotAssignmentTest`, `TestHarnessController*Test`, `DetailedLiveSession*Test`, `DetailedSubstitutionEngineTest`
+- Motor/lineup/formaciones: `DetailedSprintetailedMatchEngine*Test`, `DetailedShotXgCalculator*Test`, `DetailedMatchContext*Test`, `LeagueSimulator*Test`, `Lineup*Test`, `Formation*Test`
 
 ## Estado de clases grandes después de esta pasada
 
@@ -50,9 +50,9 @@ Todavía requieren refactor real por módulos:
 | Clase | Líneas aprox. | Estado |
 |---|---:|---|
 | `TestHarnessUseCaseImpl` | 6270 | God Class principal. Mezcla labs, matrices, escenarios, swaps, pixels y helpers. Próximo corte recomendado. |
-| `V24DetailedMatchEngine` | 1741 | God Class de motor. Hay que separar posesión, generación de chances, resolución de tiros/eventos y agregación estadística. |
+| `DetailedSprintetailedMatchEngine` | 1741 | God Class de motor. Hay que separar posesión, generación de chances, resolución de tiros/eventos y agregación estadística. |
 | `LineupCommandUseCaseImpl` | 1188 | Mezcla selección automática, selección manual, slots, warnings y armado DTO. Conviene separar asignador de slots y builder DTO. |
-| `LeagueSimulator` | 871 | Orquestador de ronda con persistencia, V23/V24 fallback, detalle y mutaciones. Conviene separar persistencia de detalle y mutaciones. |
+| `LeagueSimulator` | 871 | Orquestador de ronda con persistencia, Classic/Detailed fallback, detalle y mutaciones. Conviene separar persistencia de detalle y mutaciones. |
 | `TestHarnessUseCase` | 757 | Interfaz/contrato enorme por records del harness. Conviene mover records DTO del harness a archivos propios. |
 
 ## Próximo paso recomendado
@@ -69,7 +69,7 @@ No tocar todavía lesiones/stamina nueva. Antes conviene cerrar limpieza backend
    - `LineupSlotAssignmentService`
    - `LineupDtoAssembler`
    - `LineupValidationService`
-3. Extraer `V24DetailedMatchEngine`:
+3. Extraer `DetailedSprintetailedMatchEngine`:
    - posesión/canal ofensivo
    - creación de chances
    - resolución de tiros/xG/eventos
@@ -96,7 +96,7 @@ Se reviso codigo productivo con foco en limpieza real, no solo compilacion.
 Verde:
 
 - `mvn -q -DskipTests test-compile`
-- Suite enfocada: motor V24, xG, context, harness, lineup, formaciones, game controller y round engine.
+- Suite enfocada: motor Detailed, xG, context, harness, lineup, formaciones, game controller y round engine.
 
 ### Estado honesto clean code
 
@@ -105,7 +105,7 @@ El backend esta mas limpio y jugable, pero todavia no esta 100% clean code por t
 | Clase | Problema real |
 |---|---|
 | `TestHarnessUseCaseImpl` | Es el mayor problema: muchas familias de harness en una sola clase. |
-| `V24DetailedMatchEngine` | No tiene metodos gigantes, pero concentra demasiadas reglas de partido. |
+| `DetailedSprintetailedMatchEngine` | No tiene metodos gigantes, pero concentra demasiadas reglas de partido. |
 | `LineupCommandUseCaseImpl` | Mezcla seleccion, slots, warnings y DTOs. |
 | `LeagueSimulator` | Orquesta ronda, persistencia, fallback y mutaciones. |
 | `TestHarnessUseCase` | Contrato enorme con demasiados records anidados. |

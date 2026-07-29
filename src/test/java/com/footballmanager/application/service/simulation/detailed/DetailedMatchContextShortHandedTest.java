@@ -35,7 +35,7 @@ class MatchContextShortHandedTest {
     // ========== T1: MatchContext accepts 7 players ==========
 
     @Test
-    void v24MatchContext_accepts7Players() {
+    void detailedMatchContext_accepts7Players() {
         MatchContext ctx = makeContext(7, 11);
         assertEquals(7, ctx.homeStartingPlayers().size());
         assertEquals(11, ctx.awayStartingPlayers().size());
@@ -44,7 +44,7 @@ class MatchContextShortHandedTest {
     // ========== T2: MatchContext rejects 6 players ==========
 
     @Test
-    void v24MatchContext_rejects6Players() {
+    void detailedMatchContext_rejects6Players() {
         List<SessionPlayer> homeStart = makePlayers("home", 6, 75);
         List<SessionPlayer> awayStart = makePlayers("away", 11, 75);
         SessionTeam homeTeam = makeTeam("home", "Home FC");
@@ -65,7 +65,7 @@ class MatchContextShortHandedTest {
     // ========== T3: MatchContext rejects 12 players ==========
 
     @Test
-    void v24MatchContext_rejects12Players() {
+    void detailedMatchContext_rejects12Players() {
         List<SessionPlayer> homeStart = makePlayers("home", 12, 75);
         List<SessionPlayer> awayStart = makePlayers("away", 11, 75);
         SessionTeam homeTeam = makeTeam("home", "Home FC");
@@ -85,7 +85,7 @@ class MatchContextShortHandedTest {
 
     @ParameterizedTest
     @ValueSource(ints = {7, 8, 9, 10})
-    void v24MatchContextFactory_usesShortHandedStarting11(int homeCount) {
+    void detailedMatchContextFactory_usesShortHandedStarting11(int homeCount) {
         CareerSave career = makeCareerWithStartingXiCount("c-" + homeCount, "home", "away",
                 makePlayers("h", 15, 75), makePlayers("a", 15, 70),
                 homeCount, 11);
@@ -100,7 +100,7 @@ class MatchContextShortHandedTest {
     }
 
     @Test
-    void v24Engine_shortHanded_doesNotCrash() {
+    void detailedEngine_shortHanded_doesNotCrash() {
         // Build a 7v11 context. Run simulate to ensure no
         // IndexOutOfBounds / div-by-0 / NPE.
         List<SessionPlayer> homeStart = makePlayers("home", 7, 75);
@@ -123,7 +123,7 @@ class MatchContextShortHandedTest {
     // ========== T6: TeamMatchState accepts short-handed starting list ==========
 
     @Test
-    void v24TeamMatchState_acceptsShortHandedStarting() {
+    void detailedTeamMatchState_acceptsShortHandedStarting() {
         SessionTeam homeTeam = makeTeam("home", "Home FC");
         List<SessionPlayer> homeStart = makePlayers("home", 7, 75);
         List<SessionPlayer> homeBench = makePlayers("home-bench", 5, 75);
@@ -133,7 +133,7 @@ class MatchContextShortHandedTest {
     }
 
     @Test
-    void v24TeamMatchState_rejects6Starting() {
+    void detailedTeamMatchState_rejects6Starting() {
         SessionTeam homeTeam = makeTeam("home", "Home FC");
         List<SessionPlayer> homeStart = makePlayers("home", 6, 75);
         List<SessionPlayer> homeBench = makePlayers("home-bench", 5, 75);
@@ -142,7 +142,7 @@ class MatchContextShortHandedTest {
     }
 
     @Test
-    void v24TeamMatchState_rejects12Starting() {
+    void detailedTeamMatchState_rejects12Starting() {
         SessionTeam homeTeam = makeTeam("home", "Home FC");
         List<SessionPlayer> homeStart = makePlayers("home", 12, 75);
         List<SessionPlayer> homeBench = makePlayers("home-bench", 0, 75);

@@ -34,7 +34,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
  * <p>Each test is hermetic: {@link AbstractIntegrationTest#cleanRedis()} flushes
  * Redis DB 15 before every test. The DB is left intact (seeded LaLiga data).
  */
-@DisplayName("V24D7 FASE A — Smoke E2E (test infrastructure)")
+@DisplayName("DetailedSprint7 FASE A — Smoke E2E (test infrastructure)")
 class SmokeE2ETest extends AbstractIntegrationTest {
 
     @Autowired

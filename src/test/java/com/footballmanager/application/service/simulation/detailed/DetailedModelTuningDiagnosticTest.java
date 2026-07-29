@@ -37,11 +37,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>Usage:
  * <pre>
- *   mvn test -Dtest=V24ModelTuningDiagnosticTest
+ *   mvn test -Dtest=DetailedModelTuningDiagnosticTest
  *   # prints the full histogram to stdout (via printHistogram)
  * </pre>
  */
-class V24ModelTuningDiagnosticTest {
+class DetailedModelTuningDiagnosticTest {
 
     private static final int N_SIMULATIONS = 1000;
     private static final int HOME_OVR = 75;
@@ -133,7 +133,7 @@ class V24ModelTuningDiagnosticTest {
                                 double avgHomeShots, double avgAwayShots,
                                 double avgHomeXg, double avgAwayXg) {
         System.out.println("============================================================");
-        System.out.println("V24D6U4-RE MODEL TUNING DIAGNOSTIC — N=" + n + " (BALANCED × BALANCED)");
+        System.out.println("DetailedSprint6U4-RE MODEL TUNING DIAGNOSTIC — N=" + n + " (BALANCED × BALANCED)");
         System.out.println("============================================================");
 
         // Per-team distribution

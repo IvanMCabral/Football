@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       <td>Adjust shooterQuality weighting from 60/40 to 80/20 or 90/10 (reduce form impact)</td></tr>
  *   <tr><td>~3.5% (matches V31d/V31b/V31c diagnostic)</td>
  *       <td>Form is NOT the multiplier — continue hunting</td>
- *       <td>Search PlayerMatchStatsModel, V24ContextFactory.build, LiveSession, LeagueSimulator</td></tr>
+ *       <td>Search PlayerMatchStatsModel, DetailedContextFactory.build, LiveSession, LeagueSimulator</td></tr>
  * </table>
  *
  * <p><b>Test setup:</b> Same as V31d (12 synthetic teams, random 50-90 attrs, NO skills,
@@ -129,7 +129,7 @@ class V31eFormValidationDiagnosticTest {
             System.out.println("  >>> H_form REJECTED: V31e ≈ V31d (form=50) within 2pp.");
             System.out.println("      Form is NOT the multiplier. Continue hunting in:");
             System.out.println("      - PlayerMatchStatsModel (per-match player ratings)");
-            System.out.println("      - V24ContextFactory.build (per-match context setup)");
+            System.out.println("      - DetailedContextFactory.build (per-match context setup)");
             System.out.println("      - LiveSession (live session wrapping)");
             System.out.println("      - LeagueSimulator (round-level simulation)");
         } else {

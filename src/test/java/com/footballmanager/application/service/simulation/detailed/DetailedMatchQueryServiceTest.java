@@ -48,7 +48,7 @@ class DetailedMatchQueryServiceTest {
                 2, 1, 1.8, 0.9,
                 12, 8, 55, 45,
                 timeline, ratings,
-                "Home win 2-1", "V24", 1, Instant.now(), null, null);
+                "Home win 2-1", "DETAILED_MATCH", 1, Instant.now(), null, null);
     }
 
     @Test
@@ -152,7 +152,7 @@ class DetailedMatchQueryServiceTest {
                 1, 2, 0.5, 1.4,
                 6, 14, 35, 65,
                 List.of(), List.of(),
-                "Away win 2-1", "V24", 1, Instant.now(), null, null);
+                "Away win 2-1", "DETAILED_MATCH", 1, Instant.now(), null, null);
 
         when(storagePort.findByMatchId("career-abc", "match-123")).thenReturn(Mono.just(Optional.of(sampleDetail)));
         when(storagePort.findByMatchId("career-xyz", "match-123")).thenReturn(Mono.just(Optional.of(careerXDetail)));

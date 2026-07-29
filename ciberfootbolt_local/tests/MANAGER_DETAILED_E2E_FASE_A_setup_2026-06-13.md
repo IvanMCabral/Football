@@ -1,15 +1,15 @@
-﻿# V24D7 — FASE A: Reporte de setup de test infrastructure
+# DetailedSprint7 — FASE A: Reporte de setup de test infrastructure
 
 **Fecha:** 2026-06-13 21:50 ART
 **Branch:** master
 **Commit:** 5ca041b
-**Tag objetivo:** V24D7FaseA (no pusheado, queda local hasta validación final)
+**Tag objetivo:** DetailedSprint7FaseA (no pusheado, queda local hasta validación final)
 
 ---
 
 ## 1. Alcance cumplido
 
-FASE A del plan V24D7 (P0: HTTP/E2E tests — setup de test infrastructure).
+FASE A del plan DetailedSprint7 (P0: HTTP/E2E tests — setup de test infrastructure).
 El objetivo era dejar la base lista para que FASE B y C escriban cobertura E2E real.
 
 ### Entregables
@@ -27,7 +27,7 @@ El objetivo era dejar la base lista para que FASE B y C escriban cobertura E2E r
 
 - `src/main/resources/application.yaml` — sin cambios
 - `src/main/resources/application-local.yml` — sin cambios
-- `src/main/resources/application-v24-mutations.yml` — sin cambios
+- `src/main/resources/application-detailed-mutations.yml` — sin cambios
 - `pom.xml` — sin cambios (no agregamos dependencias nuevas)
 - Ningún archivo de producción — sin cambios
 
@@ -96,7 +96,7 @@ pg_dump -U postgres -h localhost -d football_manager --no-owner --no-privileges 
 [INFO] BUILD SUCCESS
 ```
 
-| Métrica | Antes (V24D6U6) | Después (V24D7FaseA) | Delta |
+| Métrica | Antes (DetailedSprint6U6) | Después (DetailedSprint7FaseA) | Delta |
 |---|---:|---:|---:|
 | Tests totales | 869 | 874 | +5 |
 | Failures | 0 | 0 | 0 |
@@ -140,12 +140,12 @@ pg_dump -U postgres -h localhost -d football_manager --no-owner --no-privileges 
 
 ---
 
-## 7. Criterios de éxito del plan V24D7 — estado parcial
+## 7. Criterios de éxito del plan DetailedSprint7 — estado parcial
 
 - [x] FASE A: setup de test infrastructure
 - [ ] FASE B: tests E2E flow principal
 - [ ] FASE C: tests E2E endpoints secundarios
-- [ ] FASE D: reporte final y tag V24D7
+- [ ] FASE D: reporte final y tag DetailedSprint7
 - [ ] 869+N tests pasan → **874 actual**
 - [x] mvn test limpio
 - [ ] npx tsc + ng build (no hubo cambios frontend)
@@ -154,4 +154,4 @@ pg_dump -U postgres -h localhost -d football_manager --no-owner --no-privileges 
 
 ---
 
-*Reporte FASE A V24D7. Commit: 5ca041b. Branch: master.*
+*Reporte FASE A DetailedSprint7. Commit: 5ca041b. Branch: master.*

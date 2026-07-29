@@ -1,4 +1,4 @@
-# V24D8-BUG-004 Fix Report: Squad Placeholders After Career Creation
+# DetailedSprint8-BUG-004 Fix Report: Squad Placeholders After Career Creation
 
 ## Bug Description
 After calling `POST /api/v1/world/seed-la-liga` followed by `POST /api/v1/career/start`,
@@ -147,7 +147,7 @@ BUILD SUCCESS
 ---
 
 ## Related: BUG-003 (already fixed)
-**V24D8-BUG-003** (`careerCreation_withFreshUser_hasValidUserSessionTeamId`) was fixed
+**DetailedSprint8-BUG-003** (`careerCreation_withFreshUser_hasValidUserSessionTeamId`) was fixed
 separately and committed in `8c72871`. BUG-003 blocked career start (null userSessionTeamId).
 Both BUG-003 and BUG-004 are pushed together.
 
@@ -155,6 +155,6 @@ Both BUG-003 and BUG-004 are pushed together.
 
 ## Fix Verified
 Date: 2026-06-14
-Backend: Spring Boot (local,v24-mutations profile)
+Backend: Spring Boot (local,detailed-mutations profile)
 PostgreSQL: ciberfootbolt_local
 Redis: flushed before each test

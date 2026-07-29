@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  * scenario.
  *
  * <p>Production runtime has 30 matches × detailed match simulation per tick. If any
- * single {@code engine.advanceTick()} throws (e.g., a V24 corner case),
+ * single {@code engine.advanceTick()} throws (e.g., a Detailed corner case),
  * the exception propagates out of {@code RoundEngine.executeTick()}.
  * {@link java.util.concurrent.ScheduledExecutorService#scheduleAtFixedRate}
  * suppresses future task executions after the first observed exception,
@@ -66,7 +66,7 @@ class RoundEngineSchedulerSurvivesExceptionTest {
             "test-career", "test-user"
         ));
         org.mockito.Mockito.doAnswer(inv -> {
-            throw new RuntimeException("[V25D87.1-RUNTIME-TEST] simulated V24 failure");
+            throw new RuntimeException("[V25D87.1-RUNTIME-TEST] simulated Detailed failure");
         }).when(match0).advanceTick();
 
         // match #1: runs fine, increments a counter on each tick

@@ -70,7 +70,7 @@ import static org.mockito.Mockito.when;
  * but without HTTP/auth/profile overhead.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("DetailedFormationIgnoredE2E â€” setFormation + replay flow (sprint V24D22)")
+@DisplayName("DetailedFormationIgnoredE2E â€” setFormation + replay flow (sprint DetailedSprint22)")
 class DetailedFormationIgnoredE2ETest {
 
     private static final UUID USER_ID =

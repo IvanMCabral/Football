@@ -13,7 +13,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * legacy "HOME"/"AWAY" sentinel strings. Persisted V24_DETAIL data is
+ * legacy "HOME"/"AWAY" sentinel strings. Persisted DETAILED_PLAYER_STATS data is
  * consumed by the detailed match detail page, and the UI/UX contract is:
  * - teamId is a sessionTeamId UUID that matches MatchContext.homeTeamId()
  *   or .awayTeamId()
@@ -27,7 +27,7 @@ class DetailedMatchEngineTeamIdTest {
 
     @Test
     void timelineEventTeamIdsAreRealUuidsNotHomeAway() {
-        MatchContext ctx = buildContext("match-v24d6o-fix-1", HOME_UUID, AWAY_UUID);
+        MatchContext ctx = buildContext("match-detailedd6o-fix-1", HOME_UUID, AWAY_UUID);
         DetailedMatchEngine engine = new DetailedMatchEngine();
         DetailedMatchResult result = engine.simulate(ctx, 42L);
 
@@ -50,12 +50,12 @@ class DetailedMatchEngineTeamIdTest {
 
     @Test
     void allHomeEventsMapToHomeUuid() {
-        MatchContext ctx = buildContext("match-v24d6o-fix-2", HOME_UUID, AWAY_UUID);
+        MatchContext ctx = buildContext("match-detailedd6o-fix-2", HOME_UUID, AWAY_UUID);
         DetailedMatchEngine engine = new DetailedMatchEngine();
         DetailedMatchResult result = engine.simulate(ctx, 7L);
 
         // Every event's teamId must be exactly one of the two UUIDs from context.
-        // This is the readback contract that LiveSession and V24MatchDetailPage
+        // This is the readback contract that LiveSession and DetailedMatchDetailPage
         // rely on. With the legacy sentinel, this would be impossible to enforce.
         for (DetailedMatchEvent e : result.timeline().events()) {
             assertTrue(
@@ -72,7 +72,7 @@ class DetailedMatchEngineTeamIdTest {
         // count (because attemptSubstitution increments under the team's
         // sessionTeamId). After the fix, the check and the increment are
         // keyed by the same UUID, so the 5-per-team limit actually fires.
-        MatchContext ctx = buildContext("match-v24d6o-fix-3", HOME_UUID, AWAY_UUID);
+        MatchContext ctx = buildContext("match-detailedd6o-fix-3", HOME_UUID, AWAY_UUID);
         DetailedMatchEngine engine = new DetailedMatchEngine();
         DetailedMatchResult result = engine.simulate(ctx, 13L);
 
@@ -103,7 +103,7 @@ class DetailedMatchEngineTeamIdTest {
      */
     @Test
     void homeShotsPlusAwayShotsEqualsTimelineShotCount() {
-        MatchContext ctx = buildContext("match-v24d6o-shots-1", HOME_UUID, AWAY_UUID);
+        MatchContext ctx = buildContext("match-detailedd6o-shots-1", HOME_UUID, AWAY_UUID);
         DetailedMatchEngine engine = new DetailedMatchEngine();
 
         // Try several seeds until both teams have at least one goal.

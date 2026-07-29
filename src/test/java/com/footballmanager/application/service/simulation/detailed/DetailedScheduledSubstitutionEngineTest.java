@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * This directly tests "the sub altered which player was on the pitch" which
  * is the F2.5 deferred-sub contract.
  */
-class V24ScheduledSubstitutionEngineTest {
+class DetailedScheduledSubstitutionEngineTest {
 
     private static final long SEED = 42L;
 

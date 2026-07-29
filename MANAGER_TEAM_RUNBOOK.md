@@ -345,23 +345,23 @@ GO / NO-GO
 
 ## 7. Tags cerrados (para referencia)
 
-- **V24D7** — E2E HTTP coverage 36% (9 controllers, 11 test classes).
-- **V24D8-BUG-002/003/004** — 3 bugs cerrados (seed placeholders, squad vacio, squad muestra placeholders).
-- **V24D9** — BUG-001 Register redirect (login auto post-register). Commits `6a2896c` back + `cbab590c` front.
-- **V24D10** — BUG-002 /matches + BUG-003 /games/{id}. Commits `d2f52e7` back + `511f19b` + `1ed9b94` front.
+- **DetailedSprint7** — E2E HTTP coverage 36% (9 controllers, 11 test classes).
+- **DetailedSprint8-BUG-002/003/004** — 3 bugs cerrados (seed placeholders, squad vacio, squad muestra placeholders).
+- **DetailedSprint9** — BUG-001 Register redirect (login auto post-register). Commits `6a2896c` back + `cbab590c` front.
+- **DetailedSprint10** — BUG-002 /matches + BUG-003 /games/{id}. Commits `d2f52e7` back + `511f19b` + `1ed9b94` front.
 
 ## 8. Tags en curso
 
-_(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-6 — `application-local.yml` gitignored reemplazó completamente el `.env` legacy. Ver NEXT.md § "OBSOLETO — V24D12-D-5". El próximo tag es P1a — Match detail UI polish.)_
+_(Sin tags en curso al 2026-06-16. DetailedSprint12-D-5 fue marcado OBSOLETO por DetailedSprint12-D-6 — `application-local.yml` gitignored reemplazó completamente el `.env` legacy. Ver NEXT.md § "OBSOLETO — DetailedSprint12-D-5". El próximo tag es P1a — Match detail UI polish.)_
 
-## 9. Cola de trabajo (de NEXT.md, antes de V24D9)
+## 9. Cola de trabajo (de NEXT.md, antes de DetailedSprint9)
 
 - **P1a:** Match detail UI polish (85% listo).
 - **P1b:** Career mutations edge cases (90% listo).
 - **P2a:** Classic-engine backlog: TeamOverallCalculator M3.
 - **P2b:** Classic-engine backlog: TeamStyle user-configurable M3.
-- **Deuda tecnica:** E2E coverage 36%→80% (V24D7+2 pendiente). `.env` con credenciales en plaintext RESUELTO en V24D12-D (4 commits, hash `ee27111`, pusheado a origin/master 2026-06-15 14:50).
-- **Incidente:** SENIOR pusheo V24D8-BUG-004 sin autorizacion (regla #1 violada). Conversacion pendiente.
+- **Deuda tecnica:** E2E coverage 36%→80% (DetailedSprint7+2 pendiente). `.env` con credenciales en plaintext RESUELTO en DetailedSprint12-D (4 commits, hash `ee27111`, pusheado a origin/master 2026-06-15 14:50).
+- **Incidente:** SENIOR pusheo DetailedSprint8-BUG-004 sin autorizacion (regla #1 violada). Conversacion pendiente.
 
 ---
 
@@ -382,7 +382,7 @@ _(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-
 ### 10.5 Gotcha: `GameController` tiene 9 metodos con NPE latente
 - **Detalle:** `String userIdStr = authentication != null ? authentication.getName() : null; UUID.fromString(userIdStr);` — NPE si userIdStr es null.
 - **Por que pasa:** `SecurityConfig.java:77-91` tiene `permitAll()` para `/api/v1/games/**`.
-- **Fix recomendado:** audit completo (Opcion B de MANAGER), en V24D10.5.
+- **Fix recomendado:** audit completo (Opcion B de MANAGER), en DetailedSprint10.5.
 
 ### 10.6 Gotcha: `mvn spring-boot:run` en foreground traba a las IAs
 - **Workaround:** siempre `Start-Process -NoNewWindow` + redirect + polling desde afuera.
@@ -433,16 +433,16 @@ _(Sin tags en curso al 2026-06-16. V24D12-D-5 fue marcado OBSOLETO por V24D12-D-
 - **Problema:** El Browser MCP (Chromium-1208 via `mavis browser tool` o Playwright directo) acumula memoria RAM durante sesiones largas de polling SSE. Despues de ~25-30 min de un smoke que hace `page.waitForSelector` o polling periodico contra `/api/v1/match-engine/round/{roundId}/live`, el browser se cuelga o devuelve timeouts.
 - **Sintoma:** `Browser MCP tool call timeout` o respuestas vacias del browser. RAM del proceso `chrome.exe` supera 1.5 GB.
 - **Confirmado:** No es bug del proyecto (backend SSE funciona correcto via `curl`). Es el MCP el que pierde el event loop o se queda sin memoria.
-- **Workaround (V24D15-CLEANUP):** durante smokes de REVISOR que polleen SSE por mas de 20 min, **refrescar el browser MCP cada 20-25 min** cerrando y reabriendo el tab, o usar `--max-duration 25m` en el scope del smoke. Si el smoke es < 20 min (la mayoria), no es necesario.
+- **Workaround (DetailedSprint15-CLEANUP):** durante smokes de REVISOR que polleen SSE por mas de 20 min, **refrescar el browser MCP cada 20-25 min** cerrando y reabriendo el tab, o usar `--max-duration 25m` en el scope del smoke. Si el smoke es < 20 min (la mayoria), no es necesario.
 - **Aplicar a:** REVISOR (smokes visuales). Manager/Senior no usan Browser MCP directamente.
-- **TODO futuro (out of scope V24D15-CLEANUP):** investigar si es bug conocido de Playwright 1.49 o del MCP wrapper de mavis. De momento, workaround operativo.
+- **TODO futuro (out of scope DetailedSprint15-CLEANUP):** investigar si es bug conocido de Playwright 1.49 o del MCP wrapper de mavis. De momento, workaround operativo.
 - **Por que:** Ivan decidio 2026-06-15 14:43 que el no confirma ni ejecuta la rotacion de credenciales (Postgres `ALTER USER`, Redis `CONFIG SET requirepass`, JWT `openssl rand -base64 64`). La rotacion queda como responsabilidad de Mavis root, que la puede delegar a MANAGER (analisis) o SENIOR (ejecucion) segun el caso. Los valores reales NUNCA se transmiten por chat (canal inseguro). Script copy-paste ready en `docs/rotar-credenciales.md` (repo, trackeado) o en `workspace/rotar-credenciales.md` (workspace de agentes, no trackeado).
-- **Cuando aplica:** cada vez que se commitea algo que referencia credenciales reales (`.env`, configs de infra, secrets en codigo), o como parte de un fix de seguridad (tipo V24D12-D).
+- **Cuando aplica:** cada vez que se commitea algo que referencia credenciales reales (`.env`, configs de infra, secrets en codigo), o como parte de un fix de seguridad (tipo DetailedSprint12-D).
 - **Workflow sugerido:** MANAGER redacta el procedimiento de rotacion → Mavis lo revisa → SENIOR o Mavis lo ejecutan en infra → Ivan autoriza el push final → smoke REVISOR valida.
 
 ---
 
-## 10b. V24D20-TESTHARNESS — harness de smoke comparativo (2026-06-20)
+## 10b. DetailedSprint20-TESTHARNESS — harness de smoke comparativo (2026-06-20)
 
 **Para quién:** REVISOR (corre smokes Bloque A/B) + Iván (verifica empíricamente si formación/random afecta resultado).
 
@@ -515,7 +515,7 @@ Para forzar seed runtime: editar `application-local.yml` y reiniciar el back. NO
 
 ### Out-of-scope (NO se hace)
 
-- Modificar V24MatchEngine (sagrado).
+- Modificar DetailedMatchEngine (sagrado).
 - UI nueva (es API-only, REVISOR usa curl/HTTP).
 - Persistir datos de test en prod (todo gateado por `@Profile`).
 - Endpoint runtime para cambiar seed (sprint siguiente si REVISOR lo pide).
@@ -531,7 +531,7 @@ El flow completo (createCustom + setFormation + replaceFixtures + simulate 4 ron
 
 ---
 
-## 10c. V24D20-SANDBOX-V2-MVP — 4 bug fixes + endpoint replay (2026-06-20)
+## 10c. DetailedSprint20-SANDBOX-V2-MVP — 4 bug fixes + endpoint replay (2026-06-20)
 
 **Para quién:** REVISOR (corre smokes que necesitan formación propagada, A3-404 trace, xG no outlier) + Iván (verifica empíricamente los 4 bugs del sprint).
 
@@ -543,10 +543,10 @@ El flow completo (createCustom + setFormation + replaceFixtures + simulate 4 ron
 |---|---|---|---|
 | **#1 FORMATION_NOT_PROPAGATED** | `TestHarnessUseCaseImpl` save() no invalidaba `CareerSessionService.careerCache` — el engine veía la formación VIEJA | Inyectar `careerSessionService.invalidateCache(career.getUserId())` después de cada `careerRepository.save()` en executeReplaceFixtures / executeResetInjuries / executeSetFormation | 4 unit tests nuevos en `TestHarnessUseCaseImplTest` (red→green) |
 | **#2 TOTALROUNDS_NOT_PERSISTED** | `setTotalRounds` era la 2da llamada en `executeReplaceFixtures` — vulnerable a side-effects futuros | Reorder: `setTotalRounds` es la ÚLTIMA escritura (post-initializeStandings) | 1 unit test nuevo `replaceFixtures_totalRoundsEqualsFixtureCount` |
-| **#3 V24_DETAIL_404_A3** | Sin traces; hipótesis = careerId/matchId mismatch en algún path | Trace logs en save/find/callsite (RoundController + V24DetailedMatchRedisAdapter) | 1 unit test nuevo `threeMatchesInSameCareer_allFindable` (3 fixtures, all findable) |
+| **#3 DETAILED_PLAYER_STATS_404_A3** | Sin traces; hipótesis = careerId/matchId mismatch en algún path | Trace logs en save/find/callsite (RoundController + DetailedSprintetailedMatchRedisAdapter) | 1 unit test nuevo `threeMatchesInSameCareer_allFindable` (3 fixtures, all findable) |
 | **#4 XG_GOALS_DIVERGENCE_A1** | Threshold `xg/0.60` permite 100% conversion para xG≥0.60; outliers posibles con shots de high-xG | Instrumentation: `static AtomicInteger goalAdditions` + warn en divergence (counter vs GOAL events) + warn en outlier 5x | 1 unit test nuevo `noMatchHasGoalsGreaterThan5xXg` (10 matches, no outlier) |
 
-**CLEANUP TODO (sprint futuro):** eliminar el counter `goalAdditions` y los warns de divergence/outlier cuando BUG #4 se confirme fixed. Tag: `V24D20-SANDBOX-V2-MVP-CLEANUP`.
+**CLEANUP TODO (sprint futuro):** eliminar el counter `goalAdditions` y los warns de divergence/outlier cuando BUG #4 se confirme fixed. Tag: `DetailedSprint20-SANDBOX-V2-MVP-CLEANUP`.
 
 ### Endpoint nuevo
 
@@ -565,7 +565,7 @@ curl -X POST http://localhost:8080/api/v1/test-harness/career/match/match-001/re
 
 El replay:
 1. Resetea el fixture a PENDING (era COMPLETED).
-2. Re-simula via `V24DetailedMatchEngine` con el seed (caller-provided o auto).
+2. Re-simula via `DetailedSprintetailedMatchEngine` con el seed (caller-provided o auto).
 3. Persiste el nuevo resultado + actualiza standings.
 4. Limpia el detalle de partido viejo en Redis (best-effort).
 5. Save + invalidar cache (mismo pattern que los otros endpoints).
@@ -596,8 +596,8 @@ diff pre.json post.json
 ### Tests automatizados
 
 - `TestHarnessUseCaseImplTest` — 18 unit tests (Mockito + real detailed engine). 4 nuevos BUG #1 + 1 nuevo BUG #2 + 4 nuevos replayMatch.
-- `V24DetailedMatchRedisAdapterTest` — 17 tests. 1 nuevo BUG #3 regression guard.
-- `V24DetailedMatchEngineDeterminismTest` — 2 tests. 1 nuevo BUG #4 outlier check.
+- `DetailedSprintetailedMatchRedisAdapterTest` — 17 tests. 1 nuevo BUG #3 regression guard.
+- `DetailedSprintetailedMatchEngineDeterminismTest` — 2 tests. 1 nuevo BUG #4 outlier check.
 - `TestHarnessControllerE2ETest` — 8 E2E tests (HTTP wiring intacto).
 
 ### Profile gating
@@ -633,10 +633,10 @@ mavis cron delete mavis <name>
 
 ### 11.1 Correr `mvn test` (cheat sheet E2E)
 
-**Regla:** desde V24D12-D (rotacion de credenciales, 2026-06-15), `mvn test` requiere **AMBAS** env vars exportadas antes de invocarse. Sin ellas, los 19 test classes E2E fallan con `NOAUTH Authentication required` en `AbstractIntegrationTest.cleanRedis:61` (línea 64 original con `.block()`).
+**Regla:** desde DetailedSprint12-D (rotacion de credenciales, 2026-06-15), `mvn test` requiere **AMBAS** env vars exportadas antes de invocarse. Sin ellas, los 19 test classes E2E fallan con `NOAUTH Authentication required` en `AbstractIntegrationTest.cleanRedis:61` (línea 64 original con `.block()`).
 
-- `DB_PASSWORD` — la test DB `football_manager_test` requiere la password rotada de V24D12-D-6 (`Mgr2026Rot!Secure#`).
-- `REDIS_PASSWORD` — Redis DB 15 (test) requiere la password rotada de V24D12-D (`MgrRedis2026!Rotate#Secure`).
+- `DB_PASSWORD` — la test DB `football_manager_test` requiere la password rotada de DetailedSprint12-D-6 (`Mgr2026Rot!Secure#`).
+- `REDIS_PASSWORD` — Redis DB 15 (test) requiere la password rotada de DetailedSprint12-D (`MgrRedis2026!Rotate#Secure`).
 
 **Forma recomendada** (idempotente, ambos tests):
 

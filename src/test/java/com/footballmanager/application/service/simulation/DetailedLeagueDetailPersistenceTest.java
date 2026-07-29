@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
  * persistDetail=true and detailed match simulation succeeds.
  * Tests that save failure does not fail the round.
  */
-class V24LeagueDetailPersistenceTest {
+class DetailedLeagueDetailPersistenceTest {
 
     private static final String HOME1 = UUID.randomUUID().toString();
     private static final String AWAY1 = UUID.randomUUID().toString();
@@ -158,22 +158,22 @@ class V24LeagueDetailPersistenceTest {
                 "Fixture should still have result after fallback");
     }
 
-    // ========== Test 6: persistDetail true without V24 flag does not save ==========
+    // ========== Test 6: persistDetail true without Detailed flag does not save ==========
 
     @Test
-    void persistDetailTrueWithoutV24FlagDoesNotSaveDetail() {
+    void persistDetailTrueWithoutDetailedFlagDoesNotSaveDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false, true, fakeStorage);
 
         CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
         career.setTournamentState(makeTournamentState(
-                makeFixture("match-v24-off", HOME1, AWAY1, 1)
+                makeFixture("match-detailed-off", HOME1, AWAY1, 1)
         ));
 
         simulator.simulateLeagueRound(career, 1);
 
-        assertFalse(fakeStorage.saveCalled, "save should NOT be called when V24 flag is false");
+        assertFalse(fakeStorage.saveCalled, "save should NOT be called when Detailed flag is false");
         assertTrue(fakeSim.simulateQuickCalled, "Default path should be used");
     }
 

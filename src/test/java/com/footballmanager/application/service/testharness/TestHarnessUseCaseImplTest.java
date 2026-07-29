@@ -101,7 +101,7 @@ class TestHarnessUseCaseImplTest {
         career.setUserSessionTeamId("user-team-id");
 
         // Add 11 players to the user team â€” first 3 have injury/suspension
-        // flags to test resetInjuries, the rest are healthy. The V24
+        // flags to test resetInjuries, the rest are healthy. The Detailed
         // engine requires MIN_AVAILABLE_PLAYERS=7 in the starting list,
         // so we need 11 total to match the engine's expectation.
         List<SessionPlayer> userPlayers = new java.util.ArrayList<>();

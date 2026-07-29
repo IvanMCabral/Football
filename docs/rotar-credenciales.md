@@ -1,6 +1,6 @@
 # Rotacion de credenciales - MANAGER (football manager)
 
-Ejecutar este procedimiento cuando se roten credenciales en infra o como parte del fix de seguridad V24D12-D.
+Ejecutar este procedimiento cuando se roten credenciales en infra o como parte del fix de seguridad DetailedSprint12-D.
 
 Pasos: 1) generar nuevos valores, 2) rotar en infra, 3) setear env vars nuevas, 4) reiniciar stack, 5) smoke.
 

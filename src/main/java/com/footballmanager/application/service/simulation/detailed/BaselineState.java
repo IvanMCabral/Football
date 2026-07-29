@@ -28,7 +28,7 @@ import java.util.Objects;
  * </ul>
  *
  * <p>schemaVersion: 1 — bumping requires a migration path.
- * engineVersion: "detailed match" — identifies the engine that produced this baseline.
+ * engineType: "detailed match" — identifies the engine that produced this baseline.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE,
         getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
@@ -42,7 +42,7 @@ public final class BaselineState {
     private final long seed;
     private final MatchContext initialContext;
     private final List<AppliedSubstitution> subs;
-    private final String engineVersion;
+    private final String engineType;
     private final int schemaVersion;
     private final Instant createdAt;
 
@@ -53,7 +53,7 @@ public final class BaselineState {
             @JsonProperty("seed") long seed,
             @JsonProperty("initialContext") MatchContext initialContext,
             @JsonProperty("subs") List<AppliedSubstitution> subs,
-            @JsonProperty("engineVersion") String engineVersion,
+            @JsonProperty("engineType") String engineType,
             @JsonProperty("schemaVersion") int schemaVersion,
             @JsonProperty("createdAt") Instant createdAt) {
         if (careerId == null || careerId.isBlank()) {
@@ -76,7 +76,7 @@ public final class BaselineState {
         this.subs = (subs != null)
                 ? Collections.unmodifiableList(new ArrayList<>(subs))
                 : Collections.emptyList();
-        this.engineVersion = (engineVersion != null) ? engineVersion : PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24;
+        this.engineType = (engineType != null) ? engineType : DetailedMatchDiscriminators.DETAILED_MATCH_ENGINE_TYPE;
         this.schemaVersion = schemaVersion;
         this.createdAt = (createdAt != null) ? createdAt : Instant.now();
     }
@@ -95,7 +95,7 @@ public final class BaselineState {
                 seed,
                 initialContext,
                 Collections.emptyList(),
-                PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24,
+                DetailedMatchDiscriminators.DETAILED_MATCH_ENGINE_TYPE,
                 1,
                 Instant.now());
     }
@@ -119,7 +119,7 @@ public final class BaselineState {
         next.add(sub);
         return new BaselineState(
                 careerId, matchId, seed, initialContext, next,
-                engineVersion, schemaVersion, createdAt);
+                engineType, schemaVersion, createdAt);
     }
 
     // Getters
@@ -128,7 +128,7 @@ public final class BaselineState {
     @JsonProperty("seed") public long seed() { return seed; }
     @JsonProperty("initialContext") public MatchContext initialContext() { return initialContext; }
     @JsonProperty("subs") public List<AppliedSubstitution> subs() { return subs; }
-    @JsonProperty("engineVersion") public String engineVersion() { return engineVersion; }
+    @JsonProperty("engineType") public String engineType() { return engineType; }
     @JsonProperty("schemaVersion") public int schemaVersion() { return schemaVersion; }
     @JsonProperty("createdAt") public Instant createdAt() { return createdAt; }
 
@@ -142,14 +142,14 @@ public final class BaselineState {
                 && Objects.equals(matchId, that.matchId)
                 && Objects.equals(initialContext, that.initialContext)
                 && Objects.equals(subs, that.subs)
-                && Objects.equals(engineVersion, that.engineVersion)
+                && Objects.equals(engineType, that.engineType)
                 && Objects.equals(createdAt, that.createdAt);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(careerId, matchId, seed, initialContext, subs,
-                engineVersion, schemaVersion, createdAt);
+                engineType, schemaVersion, createdAt);
     }
 
     @Override

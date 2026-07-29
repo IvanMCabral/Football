@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
  * rest is hand-built to keep the test deterministic and avoid Spring context.
  */
 @ExtendWith(MockitoExtension.class)
-class V24ManualSelectLineupAvailabilityBlockingTest {
+class DetailedManualSelectLineupAvailabilityBlockingTest {
 
     private static final String USER_ID = "00000000-0000-0000-0000-000000000001";
     private static final String TEAM_ID = "team-manual-001";

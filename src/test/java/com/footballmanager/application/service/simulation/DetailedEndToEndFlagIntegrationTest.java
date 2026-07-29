@@ -32,13 +32,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * - expose-detail-api (read API flag, no simulation effect)
  *
  * <p>Also validates:
- * - Flag precedence: V24 > classic > default
+ * - Flag precedence: Detailed > classic > default
  * - No MatchFixture schema mutation
  * - No CareerSave/SessionPlayer/SessionTeam mutation
  * - Best-effort persistence (save failure does not fail round)
  * - Context build failure falls back and skips persistence
  */
-class V24EndToEndFlagIntegrationTest {
+class DetailedEndToEndFlagIntegrationTest {
 
     private static final String HOME1 = UUID.randomUUID().toString();
     private static final String AWAY1 = UUID.randomUUID().toString();
@@ -54,14 +54,14 @@ class V24EndToEndFlagIntegrationTest {
     // ========== Test 1: allFlagsFalse uses default path ==========
 
     /**
-     * When all V24 flags are false, LeagueSimulator uses existing default path.
+     * When all Detailed flags are false, LeagueSimulator uses existing default path.
      * Default path calls DefaultMatchSimulator.simulateQuick() directly.
      */
     @Test
     void allFlagsFalseUsesDefaultPath() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // useClassicEngine=false, useV24=false, persistDetail=false, storagePort=null
+        // useClassicEngine=false, useDetailed=false, persistDetail=false, storagePort=null
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false, false, fakeStorage);
 
         CareerSave career = makeCareer(HOME1, AWAY1, HOME1, AWAY1, 11, 11);
@@ -77,26 +77,26 @@ class V24EndToEndFlagIntegrationTest {
                 "Fixture result should be written");
     }
 
-    // ========== Test 2: v24EnabledPersistDisabled produces aggregate only ==========
+    // ========== Test 2: detailedEnabledPersistDisabled produces aggregate only ==========
 
     /**
      * detailed match path active, persistence disabled: aggregate result written to fixture,
      * no storagePort.save() call. Validates detailed match path without persistence side-effect.
      */
     @Test
-    void v24EnabledPersistDisabledProducesAggregateOnly() {
+    void detailedEnabledPersistDisabledProducesAggregateOnly() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, false, fakeStorage);
 
         CareerSave career = makeCareer(HOME2, AWAY2, HOME2, AWAY2, 11, 11);
         career.setTournamentState(makeTournamentState(
-                makeFixture("e2e-v24-no-persist", HOME2, AWAY2, 1)
+                makeFixture("e2e-detailed-no-persist", HOME2, AWAY2, 1)
         ));
 
         simulator.simulateLeagueRound(career, 1);
 
-        assertFalse(fakeSim.simulateQuickCalled, "Default path should NOT be used when V24 flag is true");
+        assertFalse(fakeSim.simulateQuickCalled, "Default path should NOT be used when Detailed flag is true");
         assertFalse(fakeStorage.saveCalled, "save should NOT be called when persistDetail=false");
         assertNotNull(career.getTournamentState().getFixtures().get(0).getResult(),
                 "Aggregate fixture result should be written");
@@ -106,41 +106,41 @@ class V24EndToEndFlagIntegrationTest {
                 "detailed match path possession should sum to 100");
     }
 
-    // ========== Test 3: v24EnabledPersistEnabled saves detail ==========
+    // ========== Test 3: detailedEnabledPersistEnabled saves detail ==========
 
     /**
      * detailed match path + persistence enabled: storagePort.save(...) called once per successful detailed match.
      */
     @Test
-    void v24EnabledPersistEnabledSavesDetail() {
+    void detailedEnabledPersistEnabledSavesDetail() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, fakeStorage);
 
         CareerSave career = makeCareer(HOME3, AWAY3, HOME3, AWAY3, 11, 11);
         career.setTournamentState(makeTournamentState(
-                makeFixture("e2e-v24-persist", HOME3, AWAY3, 1)
+                makeFixture("e2e-detailed-persist", HOME3, AWAY3, 1)
         ));
 
         simulator.simulateLeagueRound(career, 1);
 
         assertFalse(fakeSim.simulateQuickCalled, "detailed match path should be used");
-        assertTrue(fakeStorage.saveCalled, "save SHOULD be called when persistDetail=true and V24 succeeds");
+        assertTrue(fakeStorage.saveCalled, "save SHOULD be called when persistDetail=true and Detailed succeeds");
         assertNotNull(fakeStorage.savedDetail, "saved detail should not be null");
-        assertEquals("e2e-v24-persist", fakeStorage.savedDetail.matchId(),
+        assertEquals("e2e-detailed-persist", fakeStorage.savedDetail.matchId(),
                 "matchId should be set from fixture");
         assertNotNull(fakeStorage.savedCareerId, "careerId should be set");
         assertNotNull(career.getTournamentState().getFixtures().get(0).getResult(),
                 "Aggregate fixture result should be written");
     }
 
-    // ========== Test 4: v24DisabledPersistEnabled does not persist ==========
+    // ========== Test 4: detailedDisabledPersistEnabled does not persist ==========
 
     /**
      * persist-detail alone does nothing when detailed match engine is not enabled.
      */
     @Test
-    void v24DisabledPersistEnabledDoesNotPersist() {
+    void detailedDisabledPersistEnabledDoesNotPersist() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, false, true, fakeStorage);
@@ -154,7 +154,7 @@ class V24EndToEndFlagIntegrationTest {
 
         assertTrue(fakeSim.simulateQuickCalled, "Default path should be used");
         assertFalse(fakeStorage.saveCalled,
-                "save should NOT be called when V24 flag is false even if persistDetail=true");
+                "save should NOT be called when Detailed flag is false even if persistDetail=true");
         assertNotNull(career.getTournamentState().getFixtures().get(0).getResult());
     }
 
@@ -162,7 +162,7 @@ class V24EndToEndFlagIntegrationTest {
 
     /**
      * expose-detail-api controls read-side only. It has no simulation effect.
-     * When V24 is disabled, the read flag cannot trigger simulation or persistence.
+     * When Detailed is disabled, the read flag cannot trigger simulation or persistence.
      */
     @Test
     void exposeDetailApiEnabledDoesNotTriggerSimulationOrPersistence() {
@@ -180,7 +180,7 @@ class V24EndToEndFlagIntegrationTest {
 
         assertTrue(fakeSim.simulateQuickCalled, "Default path should be used");
         assertFalse(fakeStorage.saveCalled,
-                "no persistence when V24 and persistDetail are both false");
+                "no persistence when Detailed and persistDetail are both false");
         assertNotNull(career.getTournamentState().getFixtures().get(0).getResult());
     }
 
@@ -212,7 +212,7 @@ class V24EndToEndFlagIntegrationTest {
                 "Round should complete");
     }
 
-    // ========== Test 7: v24 context failure falls back and does not persist ==========
+    // ========== Test 7: detailed context failure falls back and does not persist ==========
 
     /**
      * Context build failure (missing starting XI) triggers fallback to default path.
@@ -220,7 +220,7 @@ class V24EndToEndFlagIntegrationTest {
      * Round completes successfully.
      */
     @Test
-    void v24ContextFailureFallsBackAndDoesNotPersist() {
+    void detailedContextFailureFallsBackAndDoesNotPersist() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, fakeStorage);
@@ -277,14 +277,14 @@ class V24EndToEndFlagIntegrationTest {
                 "Fixture result should be written even when save fails");
     }
 
-    // ========== Test 9: v24 takes precedence over v23 when both enabled ==========
+    // ========== Test 9: detailed takes precedence over classic when both enabled ==========
 
     /**
-     * Flag precedence: V24 > classic > default.
+     * Flag precedence: Detailed > classic > default.
      * classic engine path is not used.
      */
     @Test
-    void v24TakesPrecedenceOverclassicWhenBothEnabled() {
+    void detailedTakesPrecedenceOverclassicWhenBothEnabled() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         MatchEngineImpl realEngine = new MatchEngineImpl();
         FakeStoragePort fakeStorage = new FakeStoragePort();
@@ -307,7 +307,7 @@ class V24EndToEndFlagIntegrationTest {
     // ========== Test 10: default flags remain safe ==========
 
     /**
-     * No-arg LeagueSimulator constructor: all V24 flags default to false.
+     * No-arg LeagueSimulator constructor: all Detailed flags default to false.
      * Ensures default instantiation is safe — existing behavior preserved.
      */
     @Test
@@ -362,7 +362,7 @@ class V24EndToEndFlagIntegrationTest {
                 "Possession should sum to 100 in detailed match path");
     }
 
-    // ========== Test 12: no career state mutation after v24 simulation ==========
+    // ========== Test 12: no career state mutation after detailed simulation ==========
 
     /**
      * detailed match simulation does not mutate CareerSave schema, SessionPlayer energy/injury/form,
@@ -370,7 +370,7 @@ class V24EndToEndFlagIntegrationTest {
      * Snapshot before and after; assert unchanged.
      */
     @Test
-    void noCareerStateMutationAfterV24Simulation() {
+    void noCareerStateMutationAfterDetailedSimulation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(fakeSim, null, false, true, true, fakeStorage);

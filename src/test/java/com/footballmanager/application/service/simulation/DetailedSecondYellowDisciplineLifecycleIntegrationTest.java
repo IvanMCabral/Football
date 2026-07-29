@@ -39,13 +39,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * yellowCards=2).
  *
  * <p>No Mockito, no random seed — fully deterministic. Uses a
- * {@link DeterministicV24Engine} that returns a controlled timeline.
+ * {@link DeterministicDetailedEngine} that returns a controlled timeline.
  *
  * <p>Located in package {@code com.footballmanager.application.service.simulation}
  * to access the package-private 12-arg {@link LeagueSimulator} constructor that
  * accepts a deterministic detailed match engine provider.
  */
-class V24SecondYellowDisciplineLifecycleIntegrationTest {
+class DetailedSecondYellowDisciplineLifecycleIntegrationTest {
 
     private static final String HOME = "11111111-1111-1111-1111-111111111111";
     private static final String AWAY = "22222222-2222-2222-2222-222222222222";
@@ -99,7 +99,7 @@ class V24SecondYellowDisciplineLifecycleIntegrationTest {
                 /* persistFatigue   */ false,
                 /* persistDiscipline*/ true,
                 /* persistForm      */ false,
-                new DeterministicV24Engine(deterministicResult));
+                new DeterministicDetailedEngine(deterministicResult));
 
         CareerSave career = makeCareerWithSinglePlayer(HOME, AWAY, HOME, AWAY, PLAYER_ID);
 
@@ -148,7 +148,7 @@ class V24SecondYellowDisciplineLifecycleIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 new FakeMatchSimulator(), null, false, true, false, new FakeStoragePort(),
                 true, false, false, true, false,
-                new DeterministicV24Engine(deterministicResult));
+                new DeterministicDetailedEngine(deterministicResult));
 
         CareerSave career = makeCareerWithSinglePlayer(HOME, AWAY, HOME, AWAY, PLAYER_ID);
 
@@ -245,10 +245,10 @@ class V24SecondYellowDisciplineLifecycleIntegrationTest {
 
     // ========== Fakes (no Mockito) ==========
 
-    private static class DeterministicV24Engine implements DetailedMatchEngineProvider {
+    private static class DeterministicDetailedEngine implements DetailedMatchEngineProvider {
         private final DetailedMatchResult result;
 
-        DeterministicV24Engine(DetailedMatchResult result) {
+        DeterministicDetailedEngine(DetailedMatchResult result) {
             this.result = result;
         }
 

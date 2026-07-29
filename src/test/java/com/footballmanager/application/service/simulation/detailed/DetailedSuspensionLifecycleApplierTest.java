@@ -296,7 +296,7 @@ class SuspensionLifecycleApplierTest {
     }
 
     @Test
-    void participatedSuspendedPlayer_decrementedV24D6T2() {
+    void participatedSuspendedPlayer_decrementedDetailedSprint6T2() {
         // participated in the round even if their ID appears in participatedPlayerIds
         // (e.g. they were in the starting XI but did not play because of their
         // suspension). The suspension decrement MUST still fire in that case
@@ -469,7 +469,7 @@ class SuspensionLifecycleApplierTest {
                 career, 1, fx,
                 set("p1", "p2", "p3", "p4"),
                 set("p3"),  // newly suspended this round
-                set("p2"),  // participated (V24D6T2: artifact for suspended player)
+                set("p2"),  // participated (DetailedSprint6T2: artifact for suspended player)
                 pol);
 
         assertEquals(2, result);

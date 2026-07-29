@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>Tests mutation behavior across different flag combinations and detailed match path states.
  * All mutation flags default to false — mutation never occurs without explicit enablement.
  */
-class V24CareerMutationIntegrationTest {
+class DetailedCareerMutationIntegrationTest {
 
     private static final String HOME1 = UUID.randomUUID().toString();
     private static final String AWAY1 = UUID.randomUUID().toString();
@@ -142,10 +142,10 @@ class V24CareerMutationIntegrationTest {
         assertFalse(p.getInjured(), "Player should NOT be injured when mutation flags are false");
     }
 
-    // ========== Test 6: V24 disabled + mutation flags true → no mutation ==========
+    // ========== Test 6: Detailed disabled + mutation flags true → no mutation ==========
 
     @Test
-    void V24DisabledWithMutationFlags_noMutation() {
+    void DetailedSprintisabledWithMutationFlags_noMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(
@@ -160,7 +160,7 @@ class V24CareerMutationIntegrationTest {
         assertTrue(fakeSim.simulateQuickCalled, "Default path should be used");
         SessionPlayer p = career.getSessionPlayer(
                 career.getTeamStarting11().get(HOME1).get(0));
-        assertFalse(p.getInjured(), "Player should NOT be injured when V24 is disabled");
+        assertFalse(p.getInjured(), "Player should NOT be injured when Detailed is disabled");
     }
 
     // ========== Test 7: default path does not trigger mutation ==========
@@ -169,7 +169,7 @@ class V24CareerMutationIntegrationTest {
     void classicPath_doesNotTriggerMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
-        // Default path (no classic, no V24), mutation flags true
+        // Default path (no classic, no Detailed), mutation flags true
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, false, false, fakeStorage,
                 true, true, false, false, false);
@@ -206,7 +206,7 @@ class V24CareerMutationIntegrationTest {
     // ========== Test 9: detailed match path + mutation flags → round completes successfully ==========
 
     @Test
-    void mutationAfterV24Success_only() {
+    void mutationAfterDetailedSuccess_only() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(
@@ -268,7 +268,7 @@ class V24CareerMutationIntegrationTest {
 
         simulator.simulateLeagueRound(career, 1);
 
-        assertEquals(originalEnergy, p.getEnergy(), "Energy should not change in V24D6B3");
+        assertEquals(originalEnergy, p.getEnergy(), "Energy should not change in DetailedSprint6B3");
     }
 
     // ========== Test 12: no cards/form change ==========
@@ -289,7 +289,7 @@ class V24CareerMutationIntegrationTest {
 
         simulator.simulateLeagueRound(career, 1);
 
-        assertEquals(originalForm, p.getForm(), "Form should not change in V24D6B3");
+        assertEquals(originalForm, p.getForm(), "Form should not change in DetailedSprint6B3");
     }
 
     // ========== Test 13: already injured player not overwritten ==========
@@ -384,10 +384,10 @@ class V24CareerMutationIntegrationTest {
         assertFalse(p.getInjured(), "No injuries when persistInjuries is false");
     }
 
-    // ========== Test 17: V24 disabled + fatigue flags true → no energy mutation ==========
+    // ========== Test 17: Detailed disabled + fatigue flags true → no energy mutation ==========
 
     @Test
-    void V24Disabled_withFatigueFlags_noMutation() {
+    void DetailedSprintisabled_withFatigueFlags_noMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(
@@ -403,7 +403,7 @@ class V24CareerMutationIntegrationTest {
         simulator.simulateLeagueRound(career, 1);
 
         assertTrue(fakeSim.simulateQuickCalled, "Default path should be used");
-        assertEquals(100, p.getEnergy(), "No energy change when V24 is disabled");
+        assertEquals(100, p.getEnergy(), "No energy change when Detailed is disabled");
     }
 
     // ========== Test 18: expose-detail-api=true alone does not reduce energy ==========
@@ -499,7 +499,7 @@ class V24CareerMutationIntegrationTest {
 
         simulator.simulateLeagueRound(career, 1);
 
-        assertEquals(originalForm, p.getForm(), "Form should not change in V24D6C3");
+        assertEquals(originalForm, p.getForm(), "Form should not change in DetailedSprint6C3");
     }
 
     @Test
@@ -602,7 +602,7 @@ class V24CareerMutationIntegrationTest {
     }
 
     @Test
-    void v24DisabledWithDisciplineFlags_noMutation() {
+    void detailedDisabledWithDisciplineFlags_noMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         LeagueSimulator simulator = new LeagueSimulator(
@@ -647,10 +647,10 @@ class V24CareerMutationIntegrationTest {
      * Deterministic detailed match engine for lifecycle testing.
      * No randomness — tests control every event.
      */
-    private static class DeterministicV24Engine implements DetailedMatchEngineProvider {
+    private static class DeterministicDetailedEngine implements DetailedMatchEngineProvider {
         private final DetailedMatchResult result;
 
-        DeterministicV24Engine(DetailedMatchResult result) {
+        DeterministicDetailedEngine(DetailedMatchResult result) {
             this.result = result;
         }
 
@@ -683,7 +683,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "suspended_p1", 1, true);
@@ -718,7 +718,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "suspended_p1", 2, true);
@@ -751,7 +751,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // participated=true → suspended player is in starting XI
         CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
@@ -796,7 +796,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "suspended_p1", 1, true);
@@ -837,7 +837,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "both_p1", 1, true);
@@ -871,7 +871,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, false, false, // discipline=false
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "suspended_p1", 1, true);
@@ -905,7 +905,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 false, false, false, true, false, // mutateCareerState=false
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithSuspension(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "suspended_p1", 1, true);
@@ -919,11 +919,11 @@ class V24CareerMutationIntegrationTest {
     }
 
     /**
-     * V24 disabled, falls back to default engine.
+     * Detailed disabled, falls back to default engine.
      * Expect: suspended state unchanged.
      */
     @Test
-    void v24Disabled_noLifecycleChange() {
+    void detailedDisabled_noLifecycleChange() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -939,7 +939,7 @@ class V24CareerMutationIntegrationTest {
         simulator.simulateLeagueRound(career, 1);
 
         SessionPlayer p = career.getSessionPlayer("suspended_p1");
-        assertTrue(p.getSuspended(), "No lifecycle when V24 is disabled");
+        assertTrue(p.getSuspended(), "No lifecycle when Detailed is disabled");
         assertEquals(1, p.getSuspensionRemainingMatches(), "Remaining should not change");
     }
 
@@ -975,7 +975,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, false, // discipline=true
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // Player p1 starts with yellowCards=4 (threshold will fire on YELLOW_CARD → 5)
         CareerSave career = makeCareerWithYellowCards(HOME1, AWAY1, HOME1, AWAY1,
@@ -1026,7 +1026,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // Player A: yellowCards=4 (threshold fires), Player B: no pre-suspension
         CareerSave career = makeCareerWithYellowCardsAndRedPlayer(HOME1, AWAY1, HOME1, AWAY1,
@@ -1076,7 +1076,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithYellowCards(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "p1", 4);
@@ -1091,11 +1091,11 @@ class V24CareerMutationIntegrationTest {
     }
 
     /**
-     * Test 5b: v24Disabled_noThresholdEffect
+     * Test 5b: detailedDisabled_noThresholdEffect
      *
      */
     @Test
-    void v24Disabled_noThresholdEffect() {
+    void detailedDisabled_noThresholdEffect() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -1118,7 +1118,7 @@ class V24CareerMutationIntegrationTest {
     /**
      * Test 1: persistFormEnabled_appliesFormMutation
      *
-     * V24 enabled, master on, persist-form=true.
+     * Detailed enabled, master on, persist-form=true.
      * Deterministic timeline: player p1-form scores GOAL at minute 30.
      * Expected: rating 6.8 → delta +1 → form 50→51.
      */
@@ -1142,11 +1142,11 @@ class V24CareerMutationIntegrationTest {
                 .summary("Deterministic: goal for form test")
                 .build();
 
-        // V24 on, master on, persistForm on, all others off
+        // Detailed on, master on, persistForm on, all others off
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, false, true,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithFormPlayer(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "p1-form", 50);
@@ -1164,7 +1164,7 @@ class V24CareerMutationIntegrationTest {
     /**
      * Test 2: persistFormRequiresMasterGate
      *
-     * V24 enabled, master=false, persist-form=true.
+     * Detailed enabled, master=false, persist-form=true.
      * Expected: form remains 50, no mutation.
      */
     @Test
@@ -1191,7 +1191,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 false, false, false, false, true,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithFormPlayer(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "p1-form", 50);
@@ -1206,7 +1206,7 @@ class V24CareerMutationIntegrationTest {
     /**
      * Test 3: persistFormSpecificFlagFalse_noFormMutation
      *
-     * V24 enabled, master=true, persist-form=false.
+     * Detailed enabled, master=true, persist-form=false.
      * Expected: form remains 50.
      */
     @Test
@@ -1233,7 +1233,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithFormPlayer(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "p1-form", 50);
@@ -1246,12 +1246,12 @@ class V24CareerMutationIntegrationTest {
     }
 
     /**
-     * Test 4: v24DisabledWithFormFlags_noMutation
+     * Test 4: detailedDisabledWithFormFlags_noMutation
      *
      * Expected: classic path used, no form mutation.
      */
     @Test
-    void v24DisabledWithFormFlags_noMutation() {
+    void detailedDisabledWithFormFlags_noMutation() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -1274,7 +1274,7 @@ class V24CareerMutationIntegrationTest {
     /**
      * Test 5: formPlusDisciplineTogether_bothUpdated
      *
-     * V24 enabled, master on, persist-discipline+persist-form both true.
+     * Detailed enabled, master on, persist-discipline+persist-form both true.
      * Deterministic: p1-form gets YELLOW_CARD (not threshold), p2-form gets GOAL.
      * p1-form: yellowCards=0 + YELLOW → yellowCards=1, form 6.0→0 → form 50
      * p2-form: GOAL → rating 6.8 → delta +1 → form 50→51
@@ -1309,7 +1309,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, true, true,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithFormAndDisciplinePlayers(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "p1-form", 50, "p2-form", 50);
@@ -1347,7 +1347,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, true, false, false, false, // injuries=true
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "injured_p1", 2, false); // not in starting XI
@@ -1380,7 +1380,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, true, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "injured_p1", 1, false);
@@ -1421,7 +1421,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, true, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // injured_p1 NOT pre-injured (injured=false initially)
         CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
@@ -1457,7 +1457,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, true, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // injured_p1 is on AWAY1 (has fixture), but player_id_who_has_no_fixture is on "no-team"
         // → AWAY1 has fixture (ri4), but "no-team" does not → no decrement
@@ -1491,7 +1491,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, true, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // participated=true → injured_p1 is in starting XI
         CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
@@ -1525,7 +1525,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "injured_p1", 1, false);
@@ -1558,7 +1558,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 false, true, false, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithInjury(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "injured_p1", 1, false);
@@ -1571,7 +1571,7 @@ class V24CareerMutationIntegrationTest {
         assertEquals(1, p.getInjuryRemainingMatches(), "Remaining should not change");
     }
     @Test
-    void injuryRecovery_v24Disabled_noOp() {
+    void injuryRecovery_detailedDisabled_noOp() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -1593,7 +1593,7 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test A: non-participating player recovers +8 energy.
-     * persistFatigue=true, master=true, V24 enabled.
+     * persistFatigue=true, master=true, Detailed enabled.
      * Player is in HOME1 squad but NOT in starting XI → not participated.
      * Expected: energy 70 → 78.
      */
@@ -1613,7 +1613,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, true, false, false, // fatigue=true
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "energy_p1", 70);
@@ -1627,7 +1627,7 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test B: participating player drains to 88 (no recovery added).
-     * persistFatigue=true, master=true, V24 enabled.
+     * persistFatigue=true, master=true, Detailed enabled.
      * Player is in starting XI with energy=100. detailed match engine produces a GOAL event
      * so the player participates and energy drains to 88.
      * Energy recovery should NOT add +8 on top.
@@ -1657,7 +1657,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, true, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // p_HOME1_0 is in starting XI with energy=100; detailed match engine drains to 88 via GOAL event
         CareerSave career = makeCareerWithEnergyPlayerInStartingXI(HOME1, AWAY1, HOME1, AWAY1,
@@ -1674,7 +1674,7 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test C: energy recovery caps at 100.
-     * persistFatigue=true, master=true, V24 enabled.
+     * persistFatigue=true, master=true, Detailed enabled.
      * Non-participating player with energy=95.
      * Expected: energy → 100 (capped), not 103.
      */
@@ -1694,7 +1694,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, true, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "energy_p1", 95);
@@ -1730,7 +1730,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, true, false, false,
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithNoFixtureTeamPlayer(HOME1, AWAY1, noFixtureTeamId,
                 "energy_p1", 70);
@@ -1744,7 +1744,7 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test E: persistFatigue=false → no energy recovery.
-     * persistFatigue=false, master=true, V24 enabled.
+     * persistFatigue=false, master=true, Detailed enabled.
      * Non-participating player energy=70.
      * Expected: energy stays 70.
      */
@@ -1764,7 +1764,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, false, false, false, false, // fatigue=false
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "energy_p1", 70);
@@ -1778,7 +1778,7 @@ class V24CareerMutationIntegrationTest {
 
     /**
      * Test F: mutateCareerState=false → no energy recovery.
-     * master=false, persistFatigue=true, V24 enabled.
+     * master=false, persistFatigue=true, Detailed enabled.
      * Non-participating player energy=70.
      * Expected: energy stays 70.
      */
@@ -1798,7 +1798,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 false, false, true, false, false, // master=false, fatigue=true
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         CareerSave career = makeCareerWithEnergyPlayer(HOME1, AWAY1, HOME1, AWAY1,
                 11, 11, "energy_p1", 70);
@@ -1811,12 +1811,12 @@ class V24CareerMutationIntegrationTest {
     }
 
     /**
-     * Test G: V24 disabled → no energy recovery.
+     * Test G: Detailed disabled → no energy recovery.
      * detailed match path not used → tracking.detailedRoundProcessed=false → no recovery.
      * Expected: energy stays 70.
      */
     @Test
-    void energyRecovery_v24Disabled_noOp() {
+    void energyRecovery_detailedDisabled_noOp() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -1832,7 +1832,7 @@ class V24CareerMutationIntegrationTest {
         simulator.simulateLeagueRound(career, 1);
 
         SessionPlayer p = career.getSessionPlayer("energy_p1");
-        assertEquals(70, p.getEnergy(), "No recovery when V24 is disabled");
+        assertEquals(70, p.getEnergy(), "No recovery when Detailed is disabled");
     }
 
     /**
@@ -1856,7 +1856,7 @@ class V24CareerMutationIntegrationTest {
         LeagueSimulator simulator = new LeagueSimulator(
                 fakeSim, null, false, true, false, fakeStorage,
                 true, true, true, false, false, // injuries=true, fatigue=true
-                new DeterministicV24Engine(fakeResult));
+                new DeterministicDetailedEngine(fakeResult));
 
         // injured_p1 is in HOME1 squad but NOT in starting XI (participated=false)
         CareerSave career = makeCareerWithInjuryAndEnergy(HOME1, AWAY1, HOME1, AWAY1,

@@ -1,4 +1,4 @@
-# V24 Engine — Goal Rate Distribution & Calibration Status
+# Detailed Engine — Goal Rate Distribution & Calibration Status
 
 **Date:** 2026-06-29
 **Author:** SENIOR-football (C42 cleanup)
@@ -8,7 +8,7 @@
 
 ## 1. Why this doc exists
 
-C42 cleanup final included a caveat: **the V24 engine's goal rate is significantly
+C42 cleanup final included a caveat: **the Detailed engine's goal rate is significantly
 below the expected ~2.7 goals/team/match** (per Iván's brief). Three sprints
 (C27 matchIntensity, C31 statsAmp reduction, C33 V33a cap+statsAmp restore) have
 already attempted to bring it into band. This doc captures the current state
@@ -17,7 +17,7 @@ and lays out the gap to the target so Iván can decide whether to push for
 closer to real LaLiga numbers or accept the current distribution as the
 "gameplay design choice."
 
-**Out of scope:** the engine itself, `V24ShotXgCalculator.java`, the formation
+**Out of scope:** the engine itself, `DetailedShotXgCalculator.java`, the formation
 modifier coefficients, the matchIntensity multiplier. None of those files
 are touched by C42.
 
@@ -27,7 +27,7 @@ are touched by C42.
 
 The most recent calibration is **V33a** (Sprint C33, commit `0e3f397 fix(engine)
 V25D71-C33 V33a: relax cap ratio 2.0→2.5 + restore statsAmp 0.012→0.025`).
-It set `V24ShotXgCalculator` to:
+It set `DetailedShotXgCalculator` to:
 - `formationModRatio` cap: 2.5 (was 2.0 in C31, was 2.5+ in pre-C31)
 - `statsAmp` coefficient: 0.025 (was 0.012 in C31, was 0.025 pre-C31)
 
@@ -63,7 +63,7 @@ intermediosAvg             ∈ [1.85, 2.25]  // V33a reference 2.047
 desigualesHomeWinPct       ∈ [70, 80]%      // V33a reference 75.5%
 ```
 
-Anyone editing `V24ShotXgCalculator.java` (lines 382, 538, 586) will trip
+Anyone editing `DetailedShotXgCalculator.java` (lines 382, 538, 586) will trip
 the regression test if they accidentally move the calibration.
 
 ---
@@ -117,7 +117,7 @@ specific total). The C27 target was [1.5, 4.5] total.
 
 ### 4b. Where the gap lives in the code
 
-`V24ShotXgCalculator.java` has three relevant coefficients that
+`DetailedShotXgCalculator.java` has three relevant coefficients that
 together produce the current distribution:
 
 1. **Line 382 — `formationModRatio` cap** (currently 2.5):
@@ -189,7 +189,7 @@ re-create the C31 over-correction cycle.
 
 ## 6. References
 
-- `V24ShotXgCalculator.java` (lines 382, 538, 586 — the three knobs)
+- `DetailedShotXgCalculator.java` (lines 382, 538, 586 — the three knobs)
 - `V33CalibrationDiagnosticTest.java` (regression band guards)
 - `V27GoalBalanceBaselineDiagnosticTest.java` (pre-C27/C31/C33 baseline
   numbers + Iván's C27/C28 target bands)

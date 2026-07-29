@@ -558,7 +558,7 @@ class CareerMutationServiceTest {
     }
 
     @Test
-    void disciplineAndFormFlags_doNotTriggerMutationInV24D6C2() {
+    void disciplineAndFormFlags_doNotTriggerMutationInDetailedSprint6C2() {
         CareerSave career = careerWithPlayer("p1");
         career.getSessionPlayer("p1").setEnergy(100);
         DetailedMatchResult res = result(goalEvent("p1", 30));

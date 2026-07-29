@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
  * threshold in the B1 test, or whether Fase 4 re-tuning is needed.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("V24D23-A diagnostic â€” per-formation xG/shots across seeds (evidence for B3 escalation)")
+@DisplayName("DetailedSprint23-A diagnostic â€” per-formation xG/shots across seeds (evidence for B3 escalation)")
 class DetailedFormationShotLocationDiagnostic {
 
     private static final UUID USER_ID =
@@ -72,7 +72,7 @@ class DetailedFormationShotLocationDiagnostic {
         long[] seeds = { 1L, 7L, 19L, 42L, 73L, 137L };
 
         System.out.println();
-        System.out.println("=== V24D23-A DIAGNOSTIC â€” per-formation xG/shots by seed ===");
+        System.out.println("=== DetailedSprint23-A DIAGNOSTIC â€” per-formation xG/shots by seed ===");
         System.out.printf("%-6s %-8s %-9s %-9s %-7s %-7s%n",
             "seed", "formation", "homeXg", "awayXg", "homeSh", "awaySh");
         System.out.println("-------------------------------------------------------");

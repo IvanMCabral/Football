@@ -31,7 +31,7 @@ class TimelineSnapshotBuilderTest {
                 0, 0, 0.0, 0.0,
                 0, 0, 50, 50,
                 events, List.of(),
-                "snapshot", "V24", 1, Instant.now(), null, null);
+                "snapshot", "DETAILED_MATCH", 1, Instant.now(), null, null);
     }
 
     @Test

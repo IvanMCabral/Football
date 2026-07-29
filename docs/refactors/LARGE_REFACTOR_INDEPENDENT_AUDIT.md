@@ -1,4 +1,4 @@
-# V24 Large Refactor Independent Audit
+# Detailed Large Refactor Independent Audit
 
 ## Verdict
 
@@ -11,7 +11,7 @@ APPROVED
 ## Evidence summary
 
 - `mvn -q -DskipTests test-compile`: passed.
-- `mvn -q "-Dtest=*V24*,*Lineup*,*Harness*,*Lifecycle*,*Discipline*,*League*,*Controller*" test -DfailIfNoTests=false`: passed.
+- `mvn -q "-Dtest=*Detailed*,*Lineup*,*Harness*,*Lifecycle*,*Discipline*,*League*,*Controller*" test -DfailIfNoTests=false`: passed.
 - `mvn -q test`: passed.
 - Final Surefire aggregation: `tests=2433 failures=0 errors=0 skipped=4 reports=258`.
 
@@ -68,7 +68,7 @@ Reflection was removed from the audited lifecycle/discipline/simulation/harness 
 Audit command for scoped tests:
 
 ```text
-rg -n "setAccessible\(|getDeclaredMethod|getDeclaredField|\.invoke\(" src/test/java/com/footballmanager/application/service/simulation src/test/java/com/footballmanager/application/service/simulation/v24 src/test/java/com/footballmanager/adapters/in/web/testharness src/test/java/com/footballmanager/domain/model/entity/SessionPlayerDisciplineFieldsTest.java src/test/java/com/footballmanager/application/service/career/GetCareerStatusUseCaseImplTest.java
+rg -n "setAccessible\(|getDeclaredMethod|getDeclaredField|\.invoke\(" src/test/java/com/footballmanager/application/service/simulation src/test/java/com/footballmanager/application/service/simulation/detailed src/test/java/com/footballmanager/adapters/in/web/testharness src/test/java/com/footballmanager/domain/model/entity/SessionPlayerDisciplineFieldsTest.java src/test/java/com/footballmanager/application/service/career/GetCareerStatusUseCaseImplTest.java
 ```
 
 Result: no matches.
@@ -82,7 +82,7 @@ No production Java file exceeds 500 lines after the refactor. The largest classe
 - `LineupDtoAssembler` (~480): assembles lineup view data at the application boundary; does not own persistence, controller, or engine behavior.
 - `TestHarnessScenarioRunner` (~474): harness scenario orchestration; helpers contain mutation/diagnostic specifics.
 - `TestHarnessLineupDiagnosticService` (~466): diagnostic report use case; isolated from production gameplay path.
-- `LiveSession` (~433): live-session aggregate for mutable match state/replay; detailed simulation remains in V24 engine/services.
+- `LiveSession` (~433): live-session aggregate for mutable match state/replay; detailed simulation remains in Detailed engine/services.
 - `TacticalChangeService` (~425): tactical command service; DTO mapping has been extracted to controllers and application result records.
 
 No remaining class is considered a god class for this MVP refactor scope.
@@ -99,7 +99,7 @@ No remaining class is considered a god class for this MVP refactor scope.
 | Validation | Result |
 |---|---:|
 | Compile/test-compile | Passed |
-| Focused V24/lineup/harness/lifecycle/discipline/league/controller tests | Passed |
+| Focused Detailed/lineup/harness/lifecycle/discipline/league/controller tests | Passed |
 | Full suite | Passed |
 | Surefire total | 2433 tests |
 | Failures | 0 |

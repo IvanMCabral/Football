@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>No Mockito, no random seed — fully deterministic. The fake storage port
  * records saves without touching Redis.
  */
-class V24LivePathCareerMutationIntegrationTest {
+class DetailedLivePathCareerMutationIntegrationTest {
 
     private static final String HOME = "11111111-1111-1111-1111-111111111111";
     private static final String AWAY = "22222222-2222-2222-2222-222222222222";

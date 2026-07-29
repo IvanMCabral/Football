@@ -509,7 +509,7 @@ class LiveSessionTest {
      * through the replay path.
      *
      * <p>If this test fails post-refactor, the replay mechanism is not
-     * consuming doubles in a deterministic order — a regression of the V24
+     * consuming doubles in a deterministic order — a regression of the Detailed
      * determinism guarantee.
      */
     @Test

@@ -45,9 +45,9 @@ Backend:
   - `SubdivisionEffectivenessCalculatorTest`
   - `TeamRatingsCalculatorWithinZoneTest`
   - `TeamChemistryCalculatorTest`
-  - `V24FormationParserTest`
-  - `V24SubstitutionEngineTest`
-  - `V24LiveSessionTest`
+  - `DetailedFormationParserTest`
+  - `DetailedSubstitutionEngineTest`
+  - `DetailedLiveSessionTest`
 
 Frontend:
 

@@ -22,7 +22,7 @@ class DetailedMatchDataTest {
                 55, 45,
                 List.of(), List.of(),
                 "Home win 2-1",
-                "V24", 1, Instant.now(), null, null);
+                "DETAILED_MATCH", 1, Instant.now(), null, null);
 
         assertEquals("match-123", detail.matchId());
         assertEquals("career-abc", detail.careerId());
@@ -41,7 +41,7 @@ class DetailedMatchDataTest {
         assertEquals(55, detail.homePossession());
         assertEquals(45, detail.awayPossession());
         assertEquals("Home win 2-1", detail.summary());
-        assertEquals("V24", detail.engineVersion());
+        assertEquals("DETAILED_MATCH", detail.engineType());
         assertEquals(1, detail.schemaVersion());
     }
 
@@ -57,7 +57,7 @@ class DetailedMatchDataTest {
                 List.of(), List.of(),
                 "summary", null, 0, null, null, null);
 
-        assertEquals("V24", detail.engineVersion());
+        assertEquals("DETAILED_MATCH", detail.engineType());
         assertEquals(0, detail.schemaVersion());
         assertNotNull(detail.createdAt());
     }
@@ -71,7 +71,7 @@ class DetailedMatchDataTest {
         var detail = new DetailedMatchData(
                 "m", "c", null, null, "h", "a", "H", "A",
                 0, 0, 0, 0, 0, 0, 0, 0,
-                original, List.of(), "", "V24", 1, Instant.now(), null, null);
+                original, List.of(), "", "DETAILED_MATCH", 1, Instant.now(), null, null);
 
         // Original list modifications do not affect stored copy
         original.add(new DetailedMatchEventDto(20, "SHOT", "home", "p2", "P2", null, null, 0.1, "", null));
@@ -90,7 +90,7 @@ class DetailedMatchDataTest {
         var detail = new DetailedMatchData(
                 "m", "c", null, null, "h", "a", "H", "A",
                 0, 0, 0, 0, 0, 0, 0, 0,
-                List.of(), original, "", "V24", 1, Instant.now(), null, null);
+                List.of(), original, "", "DETAILED_MATCH", 1, Instant.now(), null, null);
 
         // Original list modifications do not affect stored copy
         original.add(new PlayerMatchRatingDto("p2", "P2", "t", "DEF", 6.0, 0, 0, 0, 0, 0, 0, 0, 0, false, false));
@@ -178,7 +178,7 @@ class DetailedMatchDataTest {
         assertEquals(58, detail.homePossession());
         assertEquals(42, detail.awayPossession());
         assertEquals("Home dominant", detail.summary());
-        assertEquals("V24", detail.engineVersion());
+        assertEquals("DETAILED_MATCH", detail.engineType());
         assertEquals(1, detail.schemaVersion());
     }
 
@@ -205,7 +205,7 @@ class DetailedMatchDataTest {
         assertEquals("p1", goal.playerId());
         assertEquals("p2", goal.relatedPlayerId());
         assertEquals(0.35, goal.xg(), 0.001);
-        assertNull(goal.shotCoordinate()); // V24D3C not implemented
+        assertNull(goal.shotCoordinate()); // DetailedSprint3C not implemented
 
         DetailedMatchEventDto yc = detail.timeline().get(1);
         assertEquals(33, yc.minute());
@@ -270,7 +270,7 @@ class DetailedMatchDataTest {
         var detail = new DetailedMatchData(
                 "m", "c", 1, 1, "h", "a", "H", "A",
                 0, 0, 0.0, 0.0, 0, 0, 50, 50,
-                List.of(), List.of(), "", "V24", 1, Instant.now(),
+                List.of(), List.of(), "", "DETAILED_MATCH", 1, Instant.now(),
                 "  ", null);
 
         assertNull(detail.homeFormation());
@@ -333,7 +333,7 @@ class DetailedMatchDataTest {
                   "timeline": [],
                   "playerRatings": [],
                   "summary": "old",
-                  "engineVersion": "V24",
+                  "engineType": "DETAILED_MATCH",
                   "schemaVersion": 1,
                   "createdAt": "2026-06-20T10:00:00Z"
                 }
@@ -354,7 +354,7 @@ class DetailedMatchDataTest {
         var detail = new DetailedMatchData(
                 "m-rt", "c-rt", 1, 1, "h", "a", "H", "A",
                 1, 0, 0.5, 0.3, 5, 3, 55, 45,
-                List.of(), List.of(), "rt", "V24", 1, Instant.parse("2026-06-20T10:00:00Z"),
+                List.of(), List.of(), "rt", "DETAILED_MATCH", 1, Instant.parse("2026-06-20T10:00:00Z"),
                 "4-3-3", "4-4-2"
         );
 

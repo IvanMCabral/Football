@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * All events must have minute between 1 and 90, sorted ascending.
  */
-class V24TimelineOrderingTest {
+class DetailedTimelineOrderingTest {
 
     @Test
     void eventsAreOrderedAndWithinMatchMinutes() {

@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class MatchContextSerializationTest {
 
     @Test
-    void v24MatchContext_roundTripsThroughJson_preservesAllFields() throws Exception {
+    void detailedMatchContext_roundTripsThroughJson_preservesAllFields() throws Exception {
         // Build a minimal-but-realistic MatchContext (mirrors LiveSessionTest.buildContext()).
         SessionTeam homeTeam = SessionTeam.custom("home-team-id", "Home FC", "ARG",
                 BigDecimal.valueOf(1_000_000L), "4-3-3");
@@ -66,7 +66,7 @@ class MatchContextSerializationTest {
     }
 
     @Test
-    void v24MatchContext_roundTripsWithManualSubs_preservesSubList() throws Exception {
+    void detailedMatchContext_roundTripsWithManualSubs_preservesSubList() throws Exception {
         SessionTeam homeTeam = SessionTeam.custom("home-id", "Home", "ARG",
                 BigDecimal.valueOf(1_000_000L), "4-3-3");
         SessionTeam awayTeam = SessionTeam.custom("away-id", "Away", "BRA",
@@ -102,7 +102,7 @@ class MatchContextSerializationTest {
     }
 
     @Test
-    void v24MatchContext_legacy13ArgConstructor_stillWorks() {
+    void detailedMatchContext_legacy13ArgConstructor_stillWorks() {
         // Sanity check: existing 13-arg constructor still compiles and runs
         // (used by 32+ test fixtures and the production wire).
         SessionTeam homeTeam = SessionTeam.custom("home-id", "Home", "ARG",

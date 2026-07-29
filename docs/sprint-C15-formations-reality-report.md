@@ -6,13 +6,13 @@
 **Tag:** `release-V25D54-BACK`
 **Commits (2, separados por concern):**
 - `f06c550` P0 — fix(formations): correct role labels for 3-5-2/3-4-3 wide mids (LM→LWB, RM→RWB)
-- `d6042af` P1+P2 — feat(formations): 5 formations nuevas + V24 parser recognition + golden tests
+- `d6042af` P1+P2 — feat(formations): 5 formations nuevas + Detailed parser recognition + golden tests
 
 ---
 
 ## TL;DR
 
-Back-end del Sprint C15 cerrado. 12 formations expuestas (7 originales + 5 nuevas), role labels correctos para back-three con wing-backs, engine V24 reconoce las 5 formations nuevas. **0 fallos, 0 regresiones**, 19 tests nuevos en suites específicas (más los golden tests que se actualizaron de 7→12 formations). mvn test full suite: 2067 tests, 0 failures, 127 errors (todos Redis baseline — no relacionado).
+Back-end del Sprint C15 cerrado. 12 formations expuestas (7 originales + 5 nuevas), role labels correctos para back-three con wing-backs, engine Detailed reconoce las 5 formations nuevas. **0 fallos, 0 regresiones**, 19 tests nuevos en suites específicas (más los golden tests que se actualizaron de 7→12 formations). mvn test full suite: 2067 tests, 0 failures, 127 errors (todos Redis baseline — no relacionado).
 
 ---
 
@@ -20,7 +20,7 @@ Back-end del Sprint C15 cerrado. 12 formations expuestas (7 originales + 5 nueva
 
 ### P0 — Role labels correctos en back-three (commit f06c550)
 
-**Problema (audit C14):** 3-5-2 y 3-4-3 etiquetaban sus wide mids como `LM`/`RM` cuando en realidad juegan como wing-backs. Engine V24 los trataba correctamente (wingers=0) pero el label visual mentía.
+**Problema (audit C14):** 3-5-2 y 3-4-3 etiquetaban sus wide mids como `LM`/`RM` cuando en realidad juegan como wing-backs. Engine Detailed los trataba correctamente (wingers=0) pero el label visual mentía.
 
 **Fix:**
 - `FormationService.java` (líneas 119-143, 221-245):
@@ -56,7 +56,7 @@ Back-end del Sprint C15 cerrado. 12 formations expuestas (7 originales + 5 nueva
 **Cambios en código:**
 - `Formation.java` enum: +5 entries (cada una cumple invariant `def + mid + att = 10`)
 - `FormationService.buildFormations()`: 5 nuevos bloques con coords validadas (no overlap, [0,100], S23-2 como CB central en todas)
-- `V24FormationParser`: 5 casos explícitos para engine recognition (ver P1+P2 detalle abajo)
+- `DetailedFormationParser`: 5 casos explícitos para engine recognition (ver P1+P2 detalle abajo)
 
 ### P2 — Variante 4-3-3-1 con pivote CDM (commit d6042af)
 
@@ -64,7 +64,7 @@ Back-end del Sprint C15 cerrado. 12 formations expuestas (7 originales + 5 nueva
 
 **Fix:**
 - `4-3-3-1` (4 DEF + 1 CDM + 2 CM + 3 ATT) agregado como variant nueva, manteniendo `4-3-3` flat intacto (compat total).
-- Engine V24 la trata como 4-3-3-like (4 DEF + 3 MID + 2 WING + 1 ST) porque el pivote CDM no cambia el shape forward.
+- Engine Detailed la trata como 4-3-3-like (4 DEF + 3 MID + 2 WING + 1 ST) porque el pivote CDM no cambia el shape forward.
 
 **Layout:**
 - 4 DEF (S22-1, S22-2, S23-2, S24-3)
@@ -74,9 +74,9 @@ Back-end del Sprint C15 cerrado. 12 formations expuestas (7 originales + 5 nueva
 
 ---
 
-### V24FormationParser — Engine recognition (commit d6042af)
+### DetailedFormationParser — Engine recognition (commit d6042af)
 
-**Cambio crítico**: parser extendido con casos explícitos para las 5 formations nuevas. Engine V24 ahora las entiende.
+**Cambio crítico**: parser extendido con casos explícitos para las 5 formations nuevas. Engine Detailed ahora las entiende.
 
 | Formation | Método | Estructura retornada |
 |---|---|---|
@@ -88,7 +88,7 @@ Back-end del Sprint C15 cerrado. 12 formations expuestas (7 originales + 5 nueva
 
 **Bug fix encontrado durante testing**: `3-5-2-CDM` contiene letras, entonces `Integer.parseInt("CDM")` tira NumberFormatException ANTES de llegar al `if` específico. Solución: special-case `3-5-2-CDM` ANTES de intentar parsear los ints.
 
-**Tests (4 nuevos en `V24FormationParserTest`):**
+**Tests (4 nuevos en `DetailedFormationParserTest`):**
 - `parses_3_5_2_CDM` — engine recognition (3 DEF + 5 MID + 2 ST)
 - `parses_3_4_1_2_christmas_tree` — engine recognition (3 DEF + 5 MID + 2 ST, mid fold)
 - `parses_4_2_2_2_narrow_diamond` — engine recognition (4 DEF + 4 MID + 2 ST, mid fold)
@@ -147,10 +147,10 @@ Total unique subdivisionIds usados sigue siendo 26. Los fixes son de **shape lab
 ```
 docs/field-map.md                                  | 442 +++++++++------------ (regenerado)
 src/main/java/com/footballmanager/application/service/editor/FormationService.java           | 174 ++++++-
-src/main/java/com/footballmanager/application/service/simulation/v24/V24FormationParser.java | 43 ++-
+src/main/java/com/footballmanager/application/service/simulation/detailed/DetailedFormationParser.java | 43 ++-
 src/main/java/com/footballmanager/domain/model/valueobject/Formation.java                    | 7 + (5 entries)
 src/test/java/com/footballmanager/application/service/editor/FormationServiceTest.java       | 217 ++++++++-
-src/test/java/com/footballmanager/application/service/simulation/v24/V24FormationParserTest.java | 71 ++++
+src/test/java/com/footballmanager/application/service/simulation/detailed/DetailedFormationParserTest.java | 71 ++++
 ```
 
 Total: 6 files, 599 insertions, 280 deletions (commit d6042af includes the field-map.md regen)
@@ -163,9 +163,9 @@ Total: 6 files, 599 insertions, 280 deletions (commit d6042af includes the field
 
 2. **Por qué "3-5-2-CDM" y no "3-5-2-1"**: el task acepta ambos. Elegí "-CDM" porque es más explícito (vs "-1" que es ambiguo: ¿1 CDM? ¿1 forward?). Engine parser usa string match así que el nombre es indiferente al engine.
 
-3. **Por qué 4-3-3-1 como entry separada (no flag de 4-3-3)**: el task pregunta explícitamente "¿mantener 4-3-3 flat y agregar 4-3-3-1 como variant nueva? Sí". Mantener ambas como entries independientes es más limpio (dropdown muestra ambas, FormationInferer las cuenta por separado, engine V24 las trata con la misma estructura pero las puede distinguir por nombre si necesita).
+3. **Por qué 4-3-3-1 como entry separada (no flag de 4-3-3)**: el task pregunta explícitamente "¿mantener 4-3-3 flat y agregar 4-3-3-1 como variant nueva? Sí". Mantener ambas como entries independientes es más limpio (dropdown muestra ambas, FormationInferer las cuenta por separado, engine Detailed las trata con la misma estructura pero las puede distinguir por nombre si necesita).
 
-4. **V24FormationParser `3-5-2-CDM` special-case**: el parser intenta `Integer.parseInt(parts[3])` que tira NumberFormatException antes de llegar al `if` específico. Solución: check del string ANTES del try-catch de int parsing. Es feo pero funciona y está documentado en el Javadoc.
+4. **DetailedFormationParser `3-5-2-CDM` special-case**: el parser intenta `Integer.parseInt(parts[3])` que tira NumberFormatException antes de llegar al `if` específico. Solución: check del string ANTES del try-catch de int parsing. Es feo pero funciona y está documentado en el Javadoc.
 
 5. **Cobertura del grid NO cambia**: confirmado por los golden tests C14 (gridCoverageIsTwentySixUniqueSubdivisionIds, gridGapIsFiftySixUnusedSubdivisionIds) que pasan sin tocar. Las 5 formations nuevas reusan slots ya cubiertos.
 
@@ -187,10 +187,10 @@ Total: 6 files, 599 insertions, 280 deletions (commit d6042af includes the field
 
 - Code:
   - `src/main/java/com/footballmanager/application/service/editor/FormationService.java`
-  - `src/main/java/com/footballmanager/application/service/simulation/v24/V24FormationParser.java`
+  - `src/main/java/com/footballmanager/application/service/simulation/detailed/DetailedFormationParser.java`
   - `src/main/java/com/footballmanager/domain/model/valueobject/Formation.java`
 - Tests:
   - `src/test/java/com/footballmanager/application/service/editor/FormationServiceTest.java`
-  - `src/test/java/com/footballmanager/application/service/simulation/v24/V24FormationParserTest.java`
+  - `src/test/java/com/footballmanager/application/service/simulation/detailed/DetailedFormationParserTest.java`
 - Doc: `docs/field-map.md` (regenerado)
 - Predecessor: `docs/field-map.md` (C14 audit, superseded)

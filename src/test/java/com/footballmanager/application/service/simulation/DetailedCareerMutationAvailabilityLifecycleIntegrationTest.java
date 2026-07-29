@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>Located in package {@code com.footballmanager.application.service.simulation}
  * to access the package-private 12-arg {@link LeagueSimulator} constructor.
  */
-class V24CareerMutationAvailabilityLifecycleIntegrationTest {
+class DetailedCareerMutationAvailabilityLifecycleIntegrationTest {
 
     private static final String HOME = "11111111-1111-1111-1111-111111111111";
     private static final String AWAY = "22222222-2222-2222-2222-222222222222";
@@ -54,7 +54,7 @@ class V24CareerMutationAvailabilityLifecycleIntegrationTest {
      * player does not participate, and after the round suspension is cleared.
      *
      * <p>This combines two scenarios that exist separately in
-     * {@code V24CareerMutationIntegrationTest} into a single end-to-end
+     * {@code DetailedCareerMutationIntegrationTest} into a single end-to-end
      * sequence to catch any regression that breaks the round→round transition.
      */
     @Test

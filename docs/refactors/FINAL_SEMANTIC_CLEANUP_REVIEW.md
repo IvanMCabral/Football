@@ -17,16 +17,16 @@ Production fields, parameters and local variables with versioned names were rena
 
 | Previous name | Current name |
 | --- | --- |
-| `TestHarnessUseCaseImpl.v24StoragePort` | `detailedMatchStoragePort` |
-| `TestHarnessReplayService.v24StoragePort` | `detailedMatchStoragePort` |
-| `TestHarnessFormationMatrixService.v24StoragePort` | `detailedMatchStoragePort` |
-| `TestHarnessAdminCommandService.v24StoragePort` | `detailedMatchStoragePort` |
-| `MatchControllerReactive.v24DetailedMatchQueryService` | `detailedMatchQueryService` |
-| `RoundController.v24Event` | `detailedEvent` |
-| `RoundController.v24Type` | `detailedEventType` |
-| `MatchSession.v24Type` | `detailedEventType` |
-| `LiveMatchEventConverter.v24Type` | `detailedEventType` |
-| `LiveMatchEventConverter.v24Event` | `detailedEvent` |
+| `TestHarnessUseCaseImpl.detailedStoragePort` | `detailedMatchStoragePort` |
+| `TestHarnessReplayService.detailedStoragePort` | `detailedMatchStoragePort` |
+| `TestHarnessFormationMatrixService.detailedStoragePort` | `detailedMatchStoragePort` |
+| `TestHarnessAdminCommandService.detailedStoragePort` | `detailedMatchStoragePort` |
+| `MatchControllerReactive.detailedDetailedMatchQueryService` | `detailedMatchQueryService` |
+| `RoundController.detailedEvent` | `detailedEvent` |
+| `RoundController.detailedType` | `detailedEventType` |
+| `MatchSession.detailedType` | `detailedEventType` |
+| `LiveMatchEventConverter.detailedType` | `detailedEventType` |
+| `LiveMatchEventConverter.detailedEvent` | `detailedEvent` |
 
 Related tests and mocks were updated to use the same observable domain names. No compatibility aliases with old field names were kept.
 
@@ -51,9 +51,9 @@ Legacy versioned properties are accepted only in configuration boundary classes 
 
 | Legacy alias | Current property | Boundary |
 | --- | --- | --- |
-| `app.simulation.league.use-v23-engine` | `app.simulation.league.use-classic-engine` | `SimulationConfig` |
-| `app.simulation.league.use-v24-detailed-engine` | `app.simulation.league.detailed-enabled` | `SimulationConfig` |
-| `app.simulation.v24.*` | `app.simulation.detailed.*` | `SimulationConfig`, `DetailedSimulationConfig` |
+| `app.simulation.league.use-classic-engine` | `app.simulation.league.use-classic-engine` | `SimulationConfig` |
+| `app.simulation.league.detailed-enabled` | `app.simulation.league.detailed-enabled` | `SimulationConfig` |
+| `app.simulation.detailed.*` | `app.simulation.detailed.*` | `SimulationConfig`, `DetailedSimulationConfig` |
 
 When a legacy alias is used and the current property is absent, the configuration class logs a warning. Current properties take priority. These aliases are isolated from the simulator core and can be removed after deployment configs have migrated.
 
@@ -61,18 +61,18 @@ When a legacy alias is used and the current property is absent, the configuratio
 
 The active mutation profile was renamed from version terminology to functional terminology:
 
-- `application-v24-mutations.yml` -> `application-career-mutations.yml`
-- profile name `v24-mutations` -> `career-mutations`
+- `application-detailed-mutations.yml` -> `application-career-mutations.yml`
+- profile name `detailed-mutations` -> `career-mutations`
 
 Operational documentation was updated to reference `local,career-mutations`.
 
 ## 6. Persisted compatibility
 
-The stored value `engineVersion = "V24"` remains only as a persisted Redis/JSON discriminator for existing detailed match and baseline snapshots.
+The stored value `engineType = "Detailed"` remains only as a persisted Redis/JSON discriminator for existing detailed match and baseline snapshots.
 
 It is isolated in:
 
-- `PersistedEngineVersions.PERSISTED_ENGINE_VERSION_V24`
+- `PersistedEngineVersions.PERSISTED_ENGINE_VERSION_Detailed`
 
 Consumers:
 
@@ -82,7 +82,7 @@ Consumers:
 
 Retirement condition: this value can be removed only after old Redis/JSON snapshots either expire, are migrated, or are no longer supported.
 
-## 7. Final production V23/V24 inventory
+## 7. Final production Classic/Detailed inventory
 
 Final search scope:
 
@@ -93,13 +93,13 @@ Classified remaining production references:
 
 | File | Reference | Classification |
 | --- | --- | --- |
-| `SimulationConfig.java` | `app.simulation.league.use-v23-engine` | Deprecated config alias only |
-| `SimulationConfig.java` | `app.simulation.league.use-v24-detailed-engine` | Deprecated config alias only |
-| `SimulationConfig.java` | `app.simulation.v24.*` | Deprecated config alias only |
-| `DetailedSimulationConfig.java` | `app.simulation.v24.*` | Deprecated config alias only |
-| `PersistedEngineVersions.java` | `PERSISTED_ENGINE_VERSION_V24 = "V24"` | Persisted compatibility discriminator |
+| `SimulationConfig.java` | `app.simulation.league.use-classic-engine` | Deprecated config alias only |
+| `SimulationConfig.java` | `app.simulation.league.detailed-enabled` | Deprecated config alias only |
+| `SimulationConfig.java` | `app.simulation.detailed.*` | Deprecated config alias only |
+| `DetailedSimulationConfig.java` | `app.simulation.detailed.*` | Deprecated config alias only |
+| `PersistedEngineVersions.java` | `PERSISTED_ENGINE_VERSION_Detailed = "Detailed"` | Persisted compatibility discriminator |
 
-No unclassified production V23/V24 references remain. Seed data entries such as `Goiania B`/`Goiânia B` are football data, not version references.
+No unclassified production Classic/Detailed references remain. Seed data entries such as `Goiania B`/`Goiânia B` are football data, not version references.
 
 ## 8. Encoding
 

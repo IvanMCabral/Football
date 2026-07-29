@@ -12,17 +12,17 @@ This plan was refreshed after the naming consolidation pass. The detailed match 
 | --- | --- | --- |
 | Detailed match engine | Consolidated from versioned naming to `simulation.detailed` and `DetailedMatch*` names. | Main package is `com.footballmanager.application.service.simulation.detailed`; active controller/storage/engine names are `DetailedMatchController`, `DetailedMatchRedisAdapter`, `DetailedMatchEngine`, `DetailedMatchStoragePort`. |
 | Live and round services | Removed versioned service names. | `LiveMatchLifecycleService`, `LiveMatchMutationService`, `RoundLifecycleService`, `RoundMutationTracking`. |
-| Formation parser | Removed internal `V24Formation` name. | Parser exposes `FormationParser.FormationShape`. |
+| Formation parser | Removed internal `DetailedFormation` name. | Parser exposes `FormationParser.FormationShape`. |
 | Classic engine path | Kept as active fallback, renamed internally to classic language. | `LeagueSimulator` uses `useClassicLeagueEngine` and `simulateWithClassicEngine`; old property remains as an alias. |
-| Config compatibility | New detailed/classic property names added while old versioned keys remain accepted. | `app.simulation.league.detailed-enabled` aliases `app.simulation.league.use-v24-detailed-engine`; `app.simulation.detailed.*` aliases `app.simulation.v24.*`. |
-| Persistence compatibility | Existing stored `engineVersion: "V24"` is intentionally preserved. | `DetailedMatchData` and `BaselineState` keep the persisted value to read already-stored match detail and baseline snapshots. |
-| Test packages | Detailed-engine tests moved off the `simulation/v24` path. | Tests now live under `src/test/java/com/footballmanager/application/service/simulation/detailed`. |
+| Config compatibility | New detailed/classic property names added while old versioned keys remain accepted. | `app.simulation.league.detailed-enabled` aliases `app.simulation.league.detailed-enabled`; `app.simulation.detailed.*` aliases `app.simulation.detailed.*`. |
+| Persistence compatibility | Existing stored `engineType: "Detailed"` is intentionally preserved. | `DetailedMatchData` and `BaselineState` keep the persisted value to read already-stored match detail and baseline snapshots. |
+| Test packages | Detailed-engine tests moved off the `simulation/detailed` path. | Tests now live under `src/test/java/com/footballmanager/application/service/simulation/detailed`. |
 
 ## Remaining allowed version references
 
-- Persisted data value `engineVersion = "V24"` remains for save/Redis compatibility.
-- Legacy property aliases containing `v24` / `v23` remain so existing local and deployment configuration keeps working.
-- Historical test display names or old regression ticket labels may still mention V24/V23 when they identify a past bug. They are not production architecture names.
+- Persisted data value `engineType = "Detailed"` remains for save/Redis compatibility.
+- Legacy property aliases containing `detailed` / `classic` remain so existing local and deployment configuration keeps working.
+- Historical test display names or old regression ticket labels may still mention Detailed/Classic when they identify a past bug. They are not production architecture names.
 
 ## Naming rules going forward
 

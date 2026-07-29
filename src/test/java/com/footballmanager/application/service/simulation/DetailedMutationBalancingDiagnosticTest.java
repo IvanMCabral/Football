@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>ALL mutation flags are enabled in both paths.
  * Neither path tunes constants — measurement only.
  */
-class V24MutationBalancingDiagnosticTest {
+class DetailedMutationBalancingDiagnosticTest {
 
     private static final String HOME = UUID.randomUUID().toString();
     private static final String AWAY = UUID.randomUUID().toString();
@@ -137,7 +137,7 @@ class V24MutationBalancingDiagnosticTest {
         double maxEnergy = computeMaxEnergy(career);
 
         System.out.println("\n========================================");
-        System.out.println("V24D6K2 SYNTHETIC SANITY DIAGNOSTIC");
+        System.out.println("DetailedSprint6K2 SYNTHETIC SANITY DIAGNOSTIC");
         System.out.println("========================================");
         System.out.println("NOTE: This diagnostic uses a minimal");
         System.out.println("deterministic provider. Events are NOT");
@@ -184,7 +184,7 @@ class V24MutationBalancingDiagnosticTest {
     }
 
     // ========================================================================
-    // PATH 2A: REAL V24 ENGINE DIAGNOSTIC — FIXED XI STRESS TEST
+    // PATH 2A: REAL Detailed ENGINE DIAGNOSTIC — FIXED XI STRESS TEST
     // ========================================================================
 
     /**
@@ -197,7 +197,7 @@ class V24MutationBalancingDiagnosticTest {
      * Compare with rotationAware diagnostic to see how rotation helps.
      */
     @Test
-    void diagnostic_realV24Engine_fixedXIStress() {
+    void diagnostic_realDetailedEngine_fixedXIStress() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -334,7 +334,7 @@ class V24MutationBalancingDiagnosticTest {
 
         // ===== PRINT FIXED XI STRESS REPORT =====
         System.out.println("\n========================================");
-        System.out.println("V24D6K4 FIXED XI STRESS DIAGNOSTIC");
+        System.out.println("DetailedSprint6K4 FIXED XI STRESS DIAGNOSTIC");
         System.out.println("========================================");
         System.out.println("WARNING: This diagnostic uses a FIXED");
         System.out.println("starting XI with NO rotation. This is");
@@ -429,7 +429,7 @@ class V24MutationBalancingDiagnosticTest {
     }
 
     // ========================================================================
-    // PATH 2B: REAL V24 ENGINE DIAGNOSTIC — ROTATION-AWARE (PRIMARY)
+    // PATH 2B: REAL Detailed ENGINE DIAGNOSTIC — ROTATION-AWARE (PRIMARY)
     // ========================================================================
 
     /**
@@ -444,7 +444,7 @@ class V24MutationBalancingDiagnosticTest {
      * Compare with fixedXI stress test to see rotation effect.
      */
     @Test
-    void diagnostic_realV24Engine_rotationAware_baselineMetricsForReview() {
+    void diagnostic_realDetailedEngine_rotationAware_baselineMetricsForReview() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
 
@@ -618,7 +618,7 @@ class V24MutationBalancingDiagnosticTest {
 
         // ===== PRINT ROTATION-AWARE REPORT =====
         System.out.println("\n========================================");
-        System.out.println("V24D6K4 ROTATION-AWARE DIAGNOSTIC");
+        System.out.println("DetailedSprint6K4 ROTATION-AWARE DIAGNOSTIC");
         System.out.println("========================================");
         System.out.println("Engine: DetailedMatchEngine (production)");
         System.out.printf(Locale.US, "Matches simulated: 50%n");
@@ -978,7 +978,7 @@ class V24MutationBalancingDiagnosticTest {
      * - Realistic fixture density (each team plays ~30 matches)
      */
     @Test
-    void diagnostic_seasonShaped_realV24Engine_baselineMetricsForReview() {
+    void diagnostic_seasonShaped_realDetailedEngine_baselineMetricsForReview() {
         FakeMatchSimulator fakeSim = new FakeMatchSimulator();
         FakeStoragePort fakeStorage = new FakeStoragePort();
         DetailedMatchEngine realEngine = new DetailedMatchEngine();
@@ -1190,7 +1190,7 @@ class V24MutationBalancingDiagnosticTest {
 
         // ---- PRINT SEASON-SHAPED REPORT ----
         System.out.println("\n========================================");
-        System.out.println("V24D6K6 SEASON-SHAPED REAL V24 ENGINE DIAGNOSTIC");
+        System.out.println("DetailedSprint6K6 SEASON-SHAPED REAL Detailed ENGINE DIAGNOSTIC");
         System.out.println("========================================");
         System.out.println("Engine: DetailedMatchEngine (production)");
         System.out.printf(Locale.US, "Teams: %d%n", ctx.teamIds().size());
@@ -1265,7 +1265,7 @@ class V24MutationBalancingDiagnosticTest {
             System.out.println("Injuries per team: " + String.format(Locale.US, "%.1f", leagueAvgInjuriesPerTeam) + " (target 3-12).");
             System.out.println("Max unavailable: " + maxUnavailableAnyTeam + " (target <= 8).");
             System.out.println("Energy R20: " + String.format(Locale.US, "%.1f", leagueAvgEnergyRound20) + " (target >= 35).");
-            System.out.println("No tuning recommended. V24 constants are within acceptable ranges.");
+            System.out.println("No tuning recommended. Detailed constants are within acceptable ranges.");
             System.out.println("Recommendation: proceed with detailed match engineD6K7 status update, do NOT tune constants.");
         } else {
             System.out.println("Season-shaped diagnostic shows concerning values:");
@@ -1277,7 +1277,7 @@ class V24MutationBalancingDiagnosticTest {
                 System.out.println("  - Energy R20: " + String.format(Locale.US, "%.1f", leagueAvgEnergyRound20) + " BELOW target >= 35");
             if (!noSaturation)
                 System.out.println("  - Form saturation detected: min=" + leagueMinFormEnd + " max=" + leagueMaxFormEnd);
-            System.out.println("Recommendation: V24D6K7 should consider conservative tuning for the above areas.");
+            System.out.println("Recommendation: DetailedSprint6K7 should consider conservative tuning for the above areas.");
         }
         System.out.println("========================================\n");
 

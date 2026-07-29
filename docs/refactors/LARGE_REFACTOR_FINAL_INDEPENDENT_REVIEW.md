@@ -1,4 +1,4 @@
-# V24 Large Refactor Final Independent Review
+# Detailed Large Refactor Final Independent Review
 
 ## Verdict
 
@@ -10,7 +10,7 @@ APPROVED WITH ISSUES
 
 ## Scope
 
-This review independently verifies the previous `APPROVED` claim in `docs/refactors/V24_LARGE_REFACTOR_INDEPENDENT_AUDIT.md` against the current working tree.
+This review independently verifies the previous `APPROVED` claim in `docs/refactors/Detailed_LARGE_REFACTOR_INDEPENDENT_AUDIT.md` against the current working tree.
 
 The review did not modify production code, tests, configuration, or the previous audit report. This file is the only new audit artifact created by this pass.
 
@@ -34,7 +34,7 @@ Evidence:
 - `git status --short` shows many untracked files, including:
   - `docs/refactors/`
   - `dump.rdb`
-  - many newly extracted production classes under `application/service/lineup`, `application/service/simulation/v24`, `application/service/testharness`, and domain ports/value objects.
+  - many newly extracted production classes under `application/service/lineup`, `application/service/simulation/detailed`, `application/service/testharness`, and domain ports/value objects.
 
 Conclusion:
 
@@ -179,7 +179,7 @@ Assessment:
 
 - No production Java file exceeds 500 lines.
 - The biggest pre-refactor god classes were significantly reduced.
-- Complexity was not merely line-cut in the largest old files; many cohesive V24 engine, lineup, and harness components were extracted.
+- Complexity was not merely line-cut in the largest old files; many cohesive Detailed engine, lineup, and harness components were extracted.
 - However, some coordinators still remain broad:
   - `LineupDtoAssembler` mixes view assembly, slot resolution, chemistry/effectiveness aggregation, and warning assembly.
   - `TestHarnessScenarioRunner` and diagnostic/lab services coordinate many test-harness concerns.
@@ -195,20 +195,20 @@ Conclusion:
 
 Command executed:
 
-- `rg -n "\b(V24|V23|Legacy|MVP|compat|Impl|Helper|Utils)\b" src/main/java/com/footballmanager`
+- `rg -n "\b(Detailed|Classic|Legacy|MVP|compat|Impl|Helper|Utils)\b" src/main/java/com/footballmanager`
 
 Findings:
 
-- `V24` remains widespread in the active detailed/live match engine, match detail storage, stats, harness, controllers, and log messages.
-- `V23` remains in the legacy/default match engine path and comments around the older Poisson engine.
+- `Detailed` remains widespread in the active detailed/live match engine, match detail storage, stats, harness, controllers, and log messages.
+- `Classic` remains in the legacy/default match engine path and comments around the older Poisson engine.
 - `Legacy`, `backward compat`, and `MVP` remain in comments and some API descriptions.
 - `Impl` remains common in application services and use-case implementations.
 - `Helper` remains in several areas, including lineup, fixture query, and test harness support.
 
 Conclusion:
 
-- V23 and V24 still coexist functionally.
-- V24 is no longer only a temporary experiment; it is part of the main detailed/live path.
+- Classic and Detailed still coexist functionally.
+- Detailed is no longer only a temporary experiment; it is part of the main detailed/live path.
 - Professional cleanup should eventually rename active concepts from version labels to domain names such as `DetailedMatchEngine`, `LiveMatchSession`, `DetailedMatchStorage`, and keep version labels only where true compatibility/version selection is required.
 
 ## Previous report validation
@@ -257,7 +257,7 @@ None found that currently prevent compilation, test execution, or basic architec
 
 ## Minor findings
 
-1. `V24`, `V23`, `Legacy`, `MVP`, `compat`, `Impl`, and `Helper` naming remains common.
+1. `Detailed`, `Classic`, `Legacy`, `MVP`, `compat`, `Impl`, and `Helper` naming remains common.
 2. Some comments still describe technical migration or compatibility phases rather than stable domain language.
 3. `dump.rdb` is untracked and should be reviewed before staging.
 4. The PowerShell profile emits a repeated alias warning during commands; it does not affect Maven/Git results, but it adds noise to audit logs.
@@ -277,9 +277,9 @@ This update appends the final closure corrections requested after the previous
 - `TeamStyle`, `LineupRules`, `MatchQualityComputer`, and
   `SessionTeamRankingPolicy` now live in domain packages because they are
   football/tactical rules, not application-layer coordination.
-- `MatchFinishedResult` no longer imports V24 application result classes. It
+- `MatchFinishedResult` no longer imports Detailed application result classes. It
   carries an optional detailed payload as an opaque domain-side value; the web
-  adapter performs the V24-specific cast at the boundary.
+  adapter performs the Detailed-specific cast at the boundary.
 - `ReactiveLifecycleExecutor` is documented and encapsulated as the single
   intentional lifecycle fire-and-forget boundary. It now owns subscription,
   logging, error swallowing for non-critical lifecycle side effects, in-flight

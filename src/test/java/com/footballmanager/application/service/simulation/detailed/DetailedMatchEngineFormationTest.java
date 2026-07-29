@@ -2114,7 +2114,7 @@ class DetailedMatchEngineFormationTest {
     // asserts: (a) the simulation completes without exception, (b) cumulative
     // home xG falls in the (0, 5) range. These guard against the parser /
     // formationOffensiveModifier / shot-selection paths throwing on formation
-    // labels that V24 didn't historically recognize.
+    // labels that Detailed didn't historically recognize.
     //
     // Seed is deterministic (42L) so any future regression on the formation
     // path shows up as a baseline-shift in this assertion, not as flakiness.

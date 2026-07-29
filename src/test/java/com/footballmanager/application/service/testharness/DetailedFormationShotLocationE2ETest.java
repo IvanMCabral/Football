@@ -90,7 +90,7 @@ import static org.mockito.Mockito.when;
  * but without HTTP/auth/profile overhead.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("DetailedFormationShotLocationE2E â€” formation drives shot location distribution (sprint V24D23-A)")
+@DisplayName("DetailedFormationShotLocationE2E â€” formation drives shot location distribution (sprint DetailedSprint23-A)")
 class DetailedFormationShotLocationE2ETest {
 
     private static final UUID USER_ID =

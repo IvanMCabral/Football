@@ -43,7 +43,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("CareerSquadPopulation — E2E coverage for V24D8-BUG-001")
+@DisplayName("CareerSquadPopulation — E2E coverage for DetailedSprint8-BUG-001")
 class CareerSquadPopulationE2ETest extends AbstractIntegrationTest {
 
     private static final UUID SEED_USER_ID =
