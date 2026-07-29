@@ -2,6 +2,7 @@ package com.footballmanager.infrastructure.persistence.entity;
 
 import com.footballmanager.domain.model.aggregate.League;
 import com.footballmanager.domain.model.valueobject.LeagueId;
+import com.footballmanager.domain.model.valueobject.LeagueStatus;
 import com.footballmanager.domain.model.valueobject.TeamId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,8 +56,18 @@ public class LeagueEntity {
             updatedAt,
             0, // No seasonId in DB
             winnerTeamId,
-            status != null ? com.footballmanager.domain.model.valueobject.LeagueStatus.valueOf(status) : null
+            toLeagueStatus(status)
         );
+    }
+
+    private LeagueStatus toLeagueStatus(String status) {
+        if (status == null) {
+            return null;
+        }
+        if ("ACTIVE".equals(status)) {
+            return LeagueStatus.CREATED;
+        }
+        return LeagueStatus.valueOf(status);
     }
 }
 

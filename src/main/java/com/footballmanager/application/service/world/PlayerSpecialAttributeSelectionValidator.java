@@ -2,6 +2,7 @@ package com.footballmanager.application.service.world;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
@@ -59,7 +60,7 @@ public final class PlayerSpecialAttributeSelectionValidator {
 
     public record ValidatedSelection(Collection<String> codes) {
         public ValidatedSelection {
-            codes = Set.copyOf(codes);
+            codes = List.copyOf(codes);
         }
     }
 }

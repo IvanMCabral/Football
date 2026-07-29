@@ -25,6 +25,7 @@ public class WorldTeamPostgresWriter {
         int skipped = 0;
         int errors = 0;
         Instant now = Instant.now();
+        ensureLeague(leagueId, teams, now, logPrefix);
         UUID syntheticManagerId = ensureSyntheticManager(leagueId, logPrefix);
 
         for (WorldTeam team : teams) {
@@ -66,6 +67,60 @@ public class WorldTeamPostgresWriter {
 
         log.info("{} postgres teams upsert: total={}, upserted={}, skipped={}, errors={}",
                 logPrefix, teams.size(), upserted, skipped, errors);
+    }
+
+    private void ensureLeague(UUID leagueId, List<WorldTeam> teams, Instant now, String logPrefix) {
+        if (leagueId == null) {
+            return;
+        }
+        String country = teams.stream()
+            .map(WorldTeam::getCountry)
+            .filter(value -> value != null && !value.isBlank())
+            .findFirst()
+            .orElse("");
+        String code = leagueCode(leagueId, logPrefix);
+        String name = leagueName(code);
+        int teamCount = Math.max(teams.size(), 1);
+        try {
+            databaseClient.sql("""
+                INSERT INTO leagues (id, code, name, country, tier, team_count, status, created_at, updated_at)
+                VALUES (:id, :code, :name, :country, 1, :teamCount, 'CREATED', :createdAt, :updatedAt)
+                ON CONFLICT (id) DO UPDATE SET
+                    code = EXCLUDED.code,
+                    name = EXCLUDED.name,
+                    country = EXCLUDED.country,
+                    team_count = GREATEST(leagues.team_count, EXCLUDED.team_count),
+                    status = EXCLUDED.status,
+                    updated_at = EXCLUDED.updated_at
+                """)
+                .bind("id", leagueId)
+                .bind("code", code)
+                .bind("name", name)
+                .bind("country", country)
+                .bind("teamCount", teamCount)
+                .bind("createdAt", now)
+                .bind("updatedAt", now)
+                .fetch()
+                .rowsUpdated()
+                .block(BLOCK_TIMEOUT);
+        } catch (Exception e) {
+            log.error("{} league upsert failed for {}: {}", logPrefix, leagueId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private String leagueCode(UUID leagueId, String logPrefix) {
+        if (logPrefix != null && logPrefix.contains("LA-LIGA")) {
+            return "laliga";
+        }
+        return "seed-" + leagueId.toString().substring(0, 8);
+    }
+
+    private String leagueName(String code) {
+        if ("laliga".equals(code)) {
+            return "La Liga";
+        }
+        return "Seed League " + code.substring("seed-".length());
     }
 
     private UUID ensureSyntheticManager(UUID leagueId, String logPrefix) {
