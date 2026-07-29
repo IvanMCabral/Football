@@ -1,6 +1,6 @@
 # MVP 1 Three-League Dataset Validation Report
 
-Verdict: APPROVED
+Verdict: APPROVED AFTER REMEDIATION
 
 Cutoff date: 2026-07-29.
 
