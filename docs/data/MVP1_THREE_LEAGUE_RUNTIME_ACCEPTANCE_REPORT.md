@@ -1,6 +1,6 @@
 # MVP 1 Three-League Runtime Acceptance Report
 
-Verdict: APPROVED
+Verdict: APPROVED FOR CURRENT AUTOMATED RUNTIME COVERAGE
 
 Cutoff date: 2026-07-29.
 
