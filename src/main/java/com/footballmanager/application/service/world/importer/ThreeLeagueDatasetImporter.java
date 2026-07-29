@@ -20,16 +20,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ThreeLeagueDatasetImporter {
 
-    private static final String SOURCE = "manager-mvp1-generated";
+    private static final String SOURCE = "manager-mvp1-explicit";
     private static final UUID SYSTEM_USER_ID = deterministicUuid("system-user:mvp1-import");
     private static final int PLAYERS_PER_CLUB = 24;
-    private static final List<String> POSITIONS = List.of(
-        "GK", "GK",
-        "LB", "CB", "CB", "CB", "RB", "LWB", "RWB",
-        "CDM", "CM", "CM", "CM", "CAM", "LM", "RM",
-        "LW", "RW", "LW", "RW",
-        "ST", "ST", "CF", "ST"
-    );
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
@@ -39,14 +32,14 @@ public class ThreeLeagueDatasetImporter {
     @Transactional(transactionManager = "threeLeagueImportTransactionManager")
     public ThreeLeagueImportReport importDataset() {
         try {
-            List<CountryRecord> countries = read("data/mvp1/countries.json", new TypeReference<>() {});
-            List<LeagueRecord> leagues = read("data/mvp1/leagues.json", new TypeReference<>() {});
+            List<CountryRecord> countries = read("data/initial/countries.json", new TypeReference<>() {});
+            List<LeagueRecord> leagues = read("data/initial/leagues.json", new TypeReference<>() {});
             List<SpecialAttributeRecord> specialAttributes =
-                read("data/mvp1/catalogs/special-attributes.json", new TypeReference<>() {});
+                read("data/initial/catalogs/special-attributes.json", new TypeReference<>() {});
             Map<String, List<ClubRecord>> clubsByCountry = Map.of(
-                "ESP", read("data/mvp1/clubs/spain.json", new TypeReference<>() {}),
-                "ARG", read("data/mvp1/clubs/argentina.json", new TypeReference<>() {}),
-                "BRA", read("data/mvp1/clubs/brazil.json", new TypeReference<>() {})
+                "ESP", read("data/initial/clubs/spain.json", new TypeReference<>() {}),
+                "ARG", read("data/initial/clubs/argentina.json", new TypeReference<>() {}),
+                "BRA", read("data/initial/clubs/brazil.json", new TypeReference<>() {})
             );
 
             validateInput(countries, leagues, clubsByCountry, specialAttributes);
@@ -61,6 +54,7 @@ public class ThreeLeagueDatasetImporter {
             int teams = 0;
             int players = 0;
             int traitRows = 0;
+            Set<String> playerExternalIds = new HashSet<>();
 
             for (LeagueRecord league : leagues) {
                 List<ClubRecord> leagueClubs = clubsByCountry.get(league.countryCode());
@@ -78,9 +72,12 @@ public class ThreeLeagueDatasetImporter {
                     clubs++;
                     teams++;
 
-                    List<PlayerRecord> squad = generatedSquad(league, club, teamId);
+                    List<PlayerRecord> squad = readExplicitSquad(league, club, teamId);
                     validateSquad(league, club, squad, specialAttributesByCode);
                     for (PlayerRecord player : squad) {
+                        if (!playerExternalIds.add(player.externalId())) {
+                            throw new IllegalArgumentException("Duplicate player externalId: " + player.externalId());
+                        }
                         upsertPlayer(player, countryIds.get(player.nationalityCode()));
                         upsertTeamSquad(teamId, player.id());
                         upsertSecondaryPositions(player);
@@ -94,7 +91,7 @@ public class ThreeLeagueDatasetImporter {
             validateGlobal();
             return new ThreeLeagueImportReport(
                 countries.size(), leagues.size(), clubs, teams, players, traitRows,
-                List.of("Player names and ratings are deterministic generated MVP data, not official rosters."));
+                List.of("Player identities are explicit MANAGER fictional dataset entries, not official rosters."));
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read MVP 1 dataset resources", e);
         }
@@ -269,7 +266,8 @@ public class ThreeLeagueDatasetImporter {
         jdbcTemplate.update("""
             INSERT INTO clubs (id, source_system, source_id, country_id, name, short_name, reputation, budget)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT (source_system, source_id) DO UPDATE SET
+            ON CONFLICT (id) DO UPDATE SET
+                source_system = EXCLUDED.source_system, source_id = EXCLUDED.source_id,
                 country_id = EXCLUDED.country_id, name = EXCLUDED.name, short_name = EXCLUDED.short_name,
                 reputation = EXCLUDED.reputation, budget = EXCLUDED.budget, updated_at = NOW()
             """, clubId, SOURCE, club.code(), countryId, club.name(), club.shortName(), club.reputation(),
@@ -317,29 +315,45 @@ public class ThreeLeagueDatasetImporter {
         return ids;
     }
 
-    private List<PlayerRecord> generatedSquad(LeagueRecord league, ClubRecord club, UUID teamId) {
+    private List<PlayerRecord> readExplicitSquad(LeagueRecord league, ClubRecord club, UUID teamId) throws IOException {
+        String countryPath = switch (league.countryCode()) {
+            case "ESP" -> "spain";
+            case "ARG" -> "argentina";
+            case "BRA" -> "brazil";
+            default -> throw new IllegalArgumentException("Unsupported country for explicit squad: " + league.countryCode());
+        };
+        List<PlayerSourceRecord> sourcePlayers = read(
+            "data/initial/players/" + countryPath + "/" + club.code() + ".json",
+            new TypeReference<>() {});
         List<PlayerRecord> players = new ArrayList<>();
-        int base = Math.max(58, Math.min(90, club.reputation()));
-        for (int i = 0; i < PLAYERS_PER_CLUB; i++) {
-            String position = POSITIONS.get(i);
-            UUID id = deterministicUuid("player:" + league.countryCode() + ":" + club.code() + ":" + (i + 1));
-            int variance = Math.floorMod(Objects.hash(club.code(), i), 11) - 5;
-            int quality = clamp(base + variance, 45, 92);
-            int attack = byPosition(position, quality, 8, -8, 2, 6, 0);
-            int defense = byPosition(position, quality, -12, 8, 2, -8, 12);
-            int technique = clamp(quality + Math.floorMod(i * 3, 7) - 3, 40, 95);
-            int speed = byPosition(position, quality, -2, 0, 2, 8, 4);
-            int stamina = clamp(quality + Math.floorMod(i * 5, 9) - 4, 40, 95);
-            int mentality = clamp(quality + Math.floorMod(i * 7, 9) - 4, 40, 95);
-            List<String> traits = traitsFor(position, i);
+        for (PlayerSourceRecord source : sourcePlayers) {
+            if (!club.code().equals(source.clubExternalId())) {
+                throw new IllegalArgumentException(
+                    source.externalId() + " references unexpected club " + source.clubExternalId());
+            }
+            PlayerAttributesRecord attributes = source.attributes();
             players.add(new PlayerRecord(
-                id, teamId, SOURCE, club.code() + "-p" + (i + 1),
-                generatedName(league.countryCode(), club.shortName(), i + 1),
-                generatedDisplayName(club.shortName(), i + 1),
-                LocalDate.of(1988 + Math.floorMod(i * 7 + club.code().length(), 18), 1 + Math.floorMod(i, 12), 1 + Math.floorMod(i * 3, 27)),
-                league.countryCode(), position, secondaryPositions(position), i % 2 == 0 ? "RIGHT" : "LEFT",
-                i + 1, heightFor(position, i), attack, defense, technique, speed, stamina, mentality,
-                BigDecimal.valueOf(Math.max(500_000, quality * 250_000L)), traits));
+                deterministicUuid("player:" + source.externalId()),
+                teamId,
+                SOURCE,
+                source.externalId(),
+                source.fullName(),
+                source.displayName(),
+                LocalDate.parse(source.dateOfBirth()),
+                source.nationalityCode(),
+                source.primaryPosition(),
+                source.secondaryPositions() == null ? List.of() : source.secondaryPositions(),
+                source.preferredFoot(),
+                source.shirtNumber() == null ? 0 : source.shirtNumber(),
+                source.heightCm(),
+                attributes.attack(),
+                attributes.defense(),
+                attributes.technique(),
+                attributes.speed(),
+                attributes.stamina(),
+                attributes.mentality(),
+                source.marketValue(),
+                source.specialAttributes()));
         }
         return players;
     }
@@ -431,71 +445,6 @@ public class ThreeLeagueDatasetImporter {
         }
     }
 
-    private static int byPosition(String position, int quality, int att, int def, int mid, int wing, int gk) {
-        int delta = switch (positionGroup(position)) {
-            case "GK" -> gk;
-            case "DEF" -> def;
-            case "MID" -> mid;
-            case "WINGER" -> wing;
-            case "ATT" -> att;
-            default -> 0;
-        };
-        return clamp(quality + delta, 35, 95);
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private static int heightFor(String position, int index) {
-        return switch (positionGroup(position)) {
-            case "GK" -> 187 + Math.floorMod(index, 7);
-            case "DEF" -> 181 + Math.floorMod(index, 8);
-            case "ATT" -> 176 + Math.floorMod(index, 10);
-            default -> 170 + Math.floorMod(index, 12);
-        };
-    }
-
-    private static String generatedName(String countryCode, String club, int number) {
-        return countryCode + " " + club.replaceAll("[^A-Za-z]", "") + " Player " + number;
-    }
-
-    private static String generatedDisplayName(String club, int number) {
-        return club + " P" + number;
-    }
-
-    private static List<String> secondaryPositions(String position) {
-        return switch (position) {
-            case "GK" -> List.of();
-            case "LB" -> List.of("LWB", "CB");
-            case "CB" -> List.of("CDM");
-            case "RB" -> List.of("RWB", "CB");
-            case "LWB" -> List.of("LB", "LM");
-            case "RWB" -> List.of("RB", "RM");
-            case "CDM" -> List.of("CM", "CB");
-            case "CM" -> List.of("CDM", "CAM");
-            case "CAM" -> List.of("CM", "CF");
-            case "LM" -> List.of("LW", "CM");
-            case "RM" -> List.of("RW", "CM");
-            case "LW" -> List.of("LM", "ST");
-            case "RW" -> List.of("RM", "ST");
-            case "CF" -> List.of("CAM", "ST");
-            case "ST" -> List.of("CF");
-            default -> List.of();
-        };
-    }
-
-    private static List<String> traitsFor(String position, int index) {
-        return switch (positionGroup(position)) {
-            case "GK" -> index % 2 == 0 ? List.of("one_on_one_keeper", "leader") : List.of("sweeper_keeper", "aerial_specialist");
-            case "DEF" -> index % 3 == 0 ? List.of("aerial_specialist", "leader") : List.of("workhorse", "press_resistant");
-            case "MID" -> index % 2 == 0 ? List.of("line_breaker", "press_resistant") : List.of("leader", "set_piece_specialist");
-            case "WINGER" -> index % 2 == 0 ? List.of("speedster", "line_breaker") : List.of("workhorse", "set_piece_specialist");
-            case "ATT" -> index % 2 == 0 ? List.of("clutch_finisher", "speedster") : List.of("aerial_specialist", "clutch_finisher");
-            default -> List.of("leader", "workhorse");
-        };
-    }
-
     private static String positionGroup(String position) {
         return switch (position) {
             case "GK" -> "GK";
@@ -511,6 +460,13 @@ public class ThreeLeagueDatasetImporter {
     public record LeagueRecord(String code, String name, String countryCode, int tier, int teamCount, int seasonYear, String format) {}
     public record ClubRecord(String code, String name, String shortName, String city, int reputation) {}
     public record SpecialAttributeRecord(String code, String name, String category, List<String> positions, String description, String futureEffect) {}
+    public record PlayerSourceRecord(
+        String externalId, String fullName, String displayName, String dateOfBirth, String nationalityCode,
+        String clubExternalId, String primaryPosition, List<String> secondaryPositions, String preferredFoot,
+        Integer heightCm, Integer shirtNumber, PlayerAttributesRecord attributes, BigDecimal marketValue,
+        List<String> specialAttributes, Map<String, Object> provenance, List<String> estimatedFields
+    ) {}
+    public record PlayerAttributesRecord(int attack, int defense, int technique, int speed, int stamina, int mentality) {}
     private record PlayerRecord(
         UUID id, UUID teamId, String sourceSystem, String externalId, String fullName, String displayName,
         LocalDate birthDate, String nationalityCode, String primaryPosition, List<String> secondaryPositions,
