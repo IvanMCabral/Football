@@ -518,4 +518,3 @@ public class ThreeLeagueDatasetImporter {
         int speed, int stamina, int mentality, BigDecimal marketValue, List<String> specialAttributes
     ) {}
 }
-
