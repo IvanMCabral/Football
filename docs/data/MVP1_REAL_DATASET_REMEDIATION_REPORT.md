@@ -25,5 +25,5 @@ Verdict: APPROVED
 - Import command executed against `football_manager`:
   `mvn -q spring-boot:run "-Dspring-boot.run.arguments=--app.world.import.three-league=true --spring.main.web-application-type=none"`.
 - Imported counts: 3 countries, 3 leagues, 70 clubs, 70 teams, 1680 players, 3360 player traits.
-- Integrity checks: 0 invalid trait counts, 0 orphan traits, 0 duplicate `external_id`, 0 old fictional/generated identities, 0 corrupt name markers, 0 club-dependent player IDs.
+- Integrity checks: 0 invalid trait counts, 0 orphan traits, 0 duplicate `source_id`, 0 old fictional/generated identities, 0 corrupt name markers, 0 club-dependent player IDs.
 - Runtime smoke: backend and frontend started from the runbook stack; Spain, Argentina and Brazil loaded through public APIs; a real career was created, auto-select saved 11 players and 11 slots, fixtures and standings loaded, a live round persisted a detailed match, and the detailed match endpoint returned the played match.
