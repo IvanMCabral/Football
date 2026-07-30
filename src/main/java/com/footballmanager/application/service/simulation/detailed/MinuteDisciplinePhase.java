@@ -1,10 +1,12 @@
 package com.footballmanager.application.service.simulation.detailed;
 
 final class MinuteDisciplinePhase {
-    private final DetailedMatchMinuteSupport support;
+    private final MinutePlayerStatePolicies playerStatePolicies;
+    private final MinuteEventPolicies eventPolicies;
 
-    MinuteDisciplinePhase(DetailedMatchMinuteSupport support) {
-        this.support = support;
+    MinuteDisciplinePhase(MinutePlayerStatePolicies playerStatePolicies, MinuteEventPolicies eventPolicies) {
+        this.playerStatePolicies = playerStatePolicies;
+        this.eventPolicies = eventPolicies;
     }
 
     void apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
@@ -15,7 +17,8 @@ final class MinuteDisciplinePhase {
         }
         PlayerMatchState f = potentialFouler.get();
         boolean defending = !possession.homeHasPossession();
-        if (support.disciplineModel.shouldCommitFoul(f, possession.possessor().style(), defending, minuteContext.random())) {
+        if (playerStatePolicies.disciplineModel().shouldCommitFoul(
+                f, possession.possessor().style(), defending, minuteContext.random())) {
             minuteContext.timeline().addEvent(new DetailedMatchEvent(
                     minuteContext.minute(),
                     DetailedMatchEventType.FOUL,
@@ -26,10 +29,11 @@ final class MinuteDisciplinePhase {
                     0.0,
                     f.name() + " committed a foul"
             ));
-            support.fatigueModel.applyDrain(f, 5);
-            if (support.disciplineModel.shouldReceiveYellow(f, possession.possessor().style(), minuteContext.random())
+            playerStatePolicies.fatigueModel().applyDrain(f, 5);
+            if (playerStatePolicies.disciplineModel().shouldReceiveYellow(
+                    f, possession.possessor().style(), minuteContext.random())
                     && !f.redCard()) {
-                support.cardEventService.applyYellowCardAndMaybeSecondYellowRed(
+                eventPolicies.cardEventService().applyYellowCardAndMaybeSecondYellowRed(
                         f, minuteContext.timeline(), minuteContext.minute(), possession.teamRole());
             }
         }
@@ -40,6 +44,6 @@ final class MinuteDisciplinePhase {
             MatchTimeline timeline,
             int minute,
             String teamRole) {
-        support.cardEventService.applyYellowCardAndMaybeSecondYellowRed(player, timeline, minute, teamRole);
+        eventPolicies.cardEventService().applyYellowCardAndMaybeSecondYellowRed(player, timeline, minute, teamRole);
     }
 }

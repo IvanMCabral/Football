@@ -9,31 +9,31 @@ final class MinuteTacticalStatePhase {
     private static final double HOME_POSSESSION_ADVANTAGE = 1.035;
     private static final double AWAY_POSSESSION_FRICTION = 0.985;
 
-    private final DetailedMatchMinuteSupport support;
+    private final MinuteTacticalPolicies tacticalPolicies;
 
-    MinuteTacticalStatePhase(DetailedMatchMinuteSupport support) {
-        this.support = support;
+    MinuteTacticalStatePhase(MinuteTacticalPolicies tacticalPolicies) {
+        this.tacticalPolicies = tacticalPolicies;
     }
 
     MinuteTacticalState resolve(MinuteSimulationContext minuteContext) {
         int minute = minuteContext.minute();
-        int homeMaxPasser = support.playerSkillService.maxSkill(
+        int homeMaxPasser = tacticalPolicies.playerSkillService().maxSkill(
                 minuteContext.homeState().startingPlayers(), PlayerSkill.PASSER);
-        int awayMaxPasser = support.playerSkillService.maxSkill(
+        int awayMaxPasser = tacticalPolicies.playerSkillService().maxSkill(
                 minuteContext.awayState().startingPlayers(), PlayerSkill.PASSER);
-        Map<String, LineupSlot> homeEffectiveSlots = support.effectiveSlotService.effectiveSlotsForMinute(
+        Map<String, LineupSlot> homeEffectiveSlots = tacticalPolicies.effectiveSlotService().effectiveSlotsForMinute(
                 minuteContext.matchContext().homeSlotsByPlayerId(),
                 minuteContext.matchContext().manualSubstitutions(),
                 minuteContext.matchContext().homeTeamId(),
                 minute);
-        Map<String, LineupSlot> awayEffectiveSlots = support.effectiveSlotService.effectiveSlotsForMinute(
+        Map<String, LineupSlot> awayEffectiveSlots = tacticalPolicies.effectiveSlotService().effectiveSlotsForMinute(
                 minuteContext.matchContext().awaySlotsByPlayerId(),
                 minuteContext.matchContext().manualSubstitutions(),
                 minuteContext.matchContext().awayTeamId(),
                 minute);
-        TacticalShapeProfile homeShape = support.tacticalShapeService.tacticalShapeProfile(
+        TacticalShapeProfile homeShape = tacticalPolicies.tacticalShapeService().tacticalShapeProfile(
                 minuteContext.homeState(), minuteContext.matchContext().homeFormation(), homeEffectiveSlots);
-        TacticalShapeProfile awayShape = support.tacticalShapeService.tacticalShapeProfile(
+        TacticalShapeProfile awayShape = tacticalPolicies.tacticalShapeService().tacticalShapeProfile(
                 minuteContext.awayState(), minuteContext.matchContext().awayFormation(), awayEffectiveSlots);
         double homePossAdj = minuteContext.homePossBase() * (1.0 + homeMaxPasser / 300.0)
                 * homeShape.possessionMultiplier()
@@ -50,6 +50,6 @@ final class MinuteTacticalStatePhase {
             TeamMatchState team,
             String formation,
             Map<String, LineupSlot> slotsByPlayerId) {
-        return support.tacticalShapeService.tacticalShapeProfile(team, formation, slotsByPlayerId);
+        return tacticalPolicies.tacticalShapeService().tacticalShapeProfile(team, formation, slotsByPlayerId);
     }
 }

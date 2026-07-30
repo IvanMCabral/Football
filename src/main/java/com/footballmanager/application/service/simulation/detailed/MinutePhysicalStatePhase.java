@@ -3,10 +3,10 @@ package com.footballmanager.application.service.simulation.detailed;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 
 final class MinutePhysicalStatePhase {
-    private final DetailedMatchMinuteSupport support;
+    private final MinutePlayerStatePolicies playerStatePolicies;
 
-    MinutePhysicalStatePhase(DetailedMatchMinuteSupport support) {
-        this.support = support;
+    MinutePhysicalStatePhase(MinutePlayerStatePolicies playerStatePolicies) {
+        this.playerStatePolicies = playerStatePolicies;
     }
 
     void apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
@@ -14,7 +14,8 @@ final class MinutePhysicalStatePhase {
                 possession.possessor().startingPlayers(), possession.formation());
         if (potentialInjured.isPresent()) {
             PlayerMatchState p = potentialInjured.get();
-            if (support.injuryModel.shouldInjure(p, possession.possessor().style(), false, minuteContext.random())) {
+            if (playerStatePolicies.injuryModel().shouldInjure(
+                    p, possession.possessor().style(), false, minuteContext.random())) {
                 p.injure();
                 minuteContext.timeline().addEvent(new DetailedMatchEvent(
                         minuteContext.minute(),

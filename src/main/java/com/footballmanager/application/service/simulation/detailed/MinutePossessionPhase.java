@@ -1,10 +1,10 @@
 package com.footballmanager.application.service.simulation.detailed;
 
 final class MinutePossessionPhase {
-    private final DetailedMatchMinuteSupport support;
+    private final MinutePlayerStatePolicies playerStatePolicies;
 
-    MinutePossessionPhase(DetailedMatchMinuteSupport support) {
-        this.support = support;
+    MinutePossessionPhase(MinutePlayerStatePolicies playerStatePolicies) {
+        this.playerStatePolicies = playerStatePolicies;
     }
 
     MinutePossessionState apply(MinuteSimulationContext minuteContext, MinuteTacticalState tacticalState) {
@@ -33,10 +33,10 @@ final class MinutePossessionPhase {
     }
 
     private void applyMinuteDrain(TeamMatchState team, com.footballmanager.domain.model.valueobject.TeamStyle style) {
-        int baseDrain = support.fatigueModel.baseDrainPerMinute(style);
+        int baseDrain = playerStatePolicies.fatigueModel().baseDrainPerMinute(style);
         for (PlayerMatchState p : team.startingPlayers()) {
             if (p.onPitch() && !p.injured() && !p.redCard()) {
-                support.fatigueModel.applyDrain(p, baseDrain);
+                playerStatePolicies.fatigueModel().applyDrain(p, baseDrain);
             }
         }
     }

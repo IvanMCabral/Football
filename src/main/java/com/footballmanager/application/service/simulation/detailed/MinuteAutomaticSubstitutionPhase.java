@@ -1,26 +1,28 @@
 package com.footballmanager.application.service.simulation.detailed;
 
 final class MinuteAutomaticSubstitutionPhase {
-    private final DetailedMatchMinuteSupport support;
+    private final MinuteSubstitutionPolicies substitutionPolicies;
 
-    MinuteAutomaticSubstitutionPhase(DetailedMatchMinuteSupport support) {
-        this.support = support;
+    MinuteAutomaticSubstitutionPhase(MinuteSubstitutionPolicies substitutionPolicies) {
+        this.substitutionPolicies = substitutionPolicies;
     }
 
     void apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
         int minute = minuteContext.minute();
         if (minute >= 60
                 && !minuteContext.homeState().startingPlayers().isEmpty()
-                && support.substitutionEngine.hasSubstitutionsRemaining(minuteContext.matchContext().homeTeamId())
+                && substitutionPolicies.automaticSubstitutionEngine()
+                .hasSubstitutionsRemaining(minuteContext.matchContext().homeTeamId())
                 && !possession.homeHasPossession()) {
-            support.substitutionEngine.attemptSubstitution(minuteContext.homeState(), minute)
+            substitutionPolicies.automaticSubstitutionEngine().attemptSubstitution(minuteContext.homeState(), minute)
                     .ifPresent(e -> minuteContext.timeline().addEvent(e));
         }
         if (minute >= 60
                 && !minuteContext.awayState().startingPlayers().isEmpty()
-                && support.substitutionEngine.hasSubstitutionsRemaining(minuteContext.matchContext().awayTeamId())
+                && substitutionPolicies.automaticSubstitutionEngine()
+                .hasSubstitutionsRemaining(minuteContext.matchContext().awayTeamId())
                 && possession.homeHasPossession()) {
-            support.substitutionEngine.attemptSubstitution(minuteContext.awayState(), minute)
+            substitutionPolicies.automaticSubstitutionEngine().attemptSubstitution(minuteContext.awayState(), minute)
                     .ifPresent(e -> minuteContext.timeline().addEvent(e));
         }
     }

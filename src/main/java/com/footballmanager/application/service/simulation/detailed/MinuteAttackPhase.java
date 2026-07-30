@@ -3,10 +3,17 @@ package com.footballmanager.application.service.simulation.detailed;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 
 final class MinuteAttackPhase {
-    private final DetailedMatchMinuteSupport support;
+    private final MinuteTacticalPolicies tacticalPolicies;
+    private final MinuteEventPolicies eventPolicies;
+    private final MinutePlayerStatePolicies playerStatePolicies;
 
-    MinuteAttackPhase(DetailedMatchMinuteSupport support) {
-        this.support = support;
+    MinuteAttackPhase(
+            MinuteTacticalPolicies tacticalPolicies,
+            MinuteEventPolicies eventPolicies,
+            MinutePlayerStatePolicies playerStatePolicies) {
+        this.tacticalPolicies = tacticalPolicies;
+        this.eventPolicies = eventPolicies;
+        this.playerStatePolicies = playerStatePolicies;
     }
 
     MinuteAttackState apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
@@ -24,39 +31,39 @@ final class MinuteAttackPhase {
                 keySpeedster = p.getSkillLevel(PlayerSkill.SPEEDSTER);
             }
         }
-        double aggregateAttack = support.attackContributionService.aggregateAttackerStat(
+        double aggregateAttack = tacticalPolicies.attackContributionService().aggregateAttackerStat(
                 possession.possessor().startingPlayers(), possession.possessorSlots());
         int teamAttackInfluence = (int) Math.round((keyAttack * 0.40) + (aggregateAttack * 0.60));
-        double opponentDefenderStat = support.defenseChannelService.aggregateDefenderStat(
+        double opponentDefenderStat = tacticalPolicies.defenseChannelService().aggregateDefenderStat(
                 possession.opponent().startingPlayers(), possession.opponentSlots());
-        double possessorCollectiveStat = support.attackContributionService.aggregateCollectiveStat(
+        double possessorCollectiveStat = tacticalPolicies.attackContributionService().aggregateCollectiveStat(
                 possession.possessor().startingPlayers(), possession.possessorSlots());
-        double opponentCollectiveStat = support.attackContributionService.aggregateCollectiveStat(
+        double opponentCollectiveStat = tacticalPolicies.attackContributionService().aggregateCollectiveStat(
                 possession.opponent().startingPlayers(), possession.opponentSlots());
-        double chanceProbability = support.matchProbabilityService.chanceProbability(
+        double chanceProbability = tacticalPolicies.matchProbabilityService().chanceProbability(
                 possession.possessor().style(),
                 minuteContext.minute(),
                 teamAttackInfluence,
                 keySpeed,
                 keyDribbler,
                 keySpeedster)
-                * support.matchProbabilityService.professionalShotTempoMultiplier()
+                * tacticalPolicies.matchProbabilityService().professionalShotTempoMultiplier()
                 * Math.sqrt((1.0 + minuteContext.matchIntensity()) / 2.0)
                 * possession.possessorShape().attackVolumeMultiplier()
                 * possession.opponentShape().defensiveResistanceMultiplier()
-                * support.defenseChannelService.defenderRosterChanceVolumeMultiplier(opponentDefenderStat)
-                * support.attackContributionService.scheduledSubAttackVolumeMultiplier(
+                * tacticalPolicies.defenseChannelService().defenderRosterChanceVolumeMultiplier(opponentDefenderStat)
+                * tacticalPolicies.attackContributionService().scheduledSubAttackVolumeMultiplier(
                         possession.possessor(),
                         minuteContext.matchContext().manualSubstitutions(),
                         possession.possessor().teamId(),
                         minuteContext.minute())
-                * support.matchProbabilityService.collectiveQualityChanceVolumeMultiplier(
+                * tacticalPolicies.matchProbabilityService().collectiveQualityChanceVolumeMultiplier(
                         possessorCollectiveStat, opponentCollectiveStat)
-                * support.matchProbabilityService.defensiveStyleChanceVolumeMultiplier(possession.opponent().style())
-                * support.matchProbabilityService.homeFieldChanceVolumeMultiplier(possession.homeHasPossession())
+                * tacticalPolicies.matchProbabilityService().defensiveStyleChanceVolumeMultiplier(possession.opponent().style())
+                * tacticalPolicies.matchProbabilityService().homeFieldChanceVolumeMultiplier(possession.homeHasPossession())
                 * channelMismatchMultiplier(possession.possessorShape(), possession.opponentShape());
         if (minuteContext.random().nextDouble() < chanceProbability) {
-            support.shotAttemptService.attemptShot(
+            eventPolicies.shotAttemptService().attemptShot(
                     possession.possessor(),
                     possession.opponent(),
                     possession.selector(),
@@ -87,7 +94,7 @@ final class MinuteAttackPhase {
                         0.0,
                         "Chance created for " + possession.possessor().name()
                 ));
-                support.fatigueModel.applyDrain(c, 3);
+                playerStatePolicies.fatigueModel().applyDrain(c, 3);
             }
         }
         return new MinuteAttackState(possession, chanceProbability);
@@ -115,5 +122,9 @@ final class MinuteAttackPhase {
             return min;
         }
         return Math.max(min, Math.min(max, value));
+    }
+
+    java.util.Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(java.util.List<PlayerMatchState> opponents) {
+        return eventPolicies.shotAttemptService().aggregateOpponentDefenderSkills(opponents);
     }
 }

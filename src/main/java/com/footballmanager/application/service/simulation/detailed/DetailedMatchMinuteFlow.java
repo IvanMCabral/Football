@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 final class DetailedMatchMinuteFlow {
-    private final DetailedMatchMinuteSupport support;
     private final MinuteScheduledSubstitutionPhase scheduledSubstitutionPhase;
     private final MinuteTacticalStatePhase tacticalStatePhase;
     private final MinutePossessionPhase possessionPhase;
@@ -19,14 +18,16 @@ final class DetailedMatchMinuteFlow {
     private final MinuteAutomaticSubstitutionPhase automaticSubstitutionPhase;
 
     DetailedMatchMinuteFlow(DisciplineModel disciplineModel, AtomicInteger goalAdditions, Logger log) {
-        this.support = new DetailedMatchMinuteSupport(disciplineModel, goalAdditions, log);
+        DetailedMatchMinuteComposition composition = DetailedMatchMinuteComposition.create(
+                disciplineModel, goalAdditions, log);
         this.scheduledSubstitutionPhase = new MinuteScheduledSubstitutionPhase(log);
-        this.tacticalStatePhase = new MinuteTacticalStatePhase(support);
-        this.possessionPhase = new MinutePossessionPhase(support);
-        this.attackPhase = new MinuteAttackPhase(support);
-        this.disciplinePhase = new MinuteDisciplinePhase(support);
-        this.physicalStatePhase = new MinutePhysicalStatePhase(support);
-        this.automaticSubstitutionPhase = new MinuteAutomaticSubstitutionPhase(support);
+        this.tacticalStatePhase = new MinuteTacticalStatePhase(composition.tacticalPolicies());
+        this.possessionPhase = new MinutePossessionPhase(composition.playerStatePolicies());
+        this.attackPhase = new MinuteAttackPhase(
+                composition.tacticalPolicies(), composition.eventPolicies(), composition.playerStatePolicies());
+        this.disciplinePhase = new MinuteDisciplinePhase(composition.playerStatePolicies(), composition.eventPolicies());
+        this.physicalStatePhase = new MinutePhysicalStatePhase(composition.playerStatePolicies());
+        this.automaticSubstitutionPhase = new MinuteAutomaticSubstitutionPhase(composition.substitutionPolicies());
     }
 
     void processMinute(MinuteSimulationContext minuteContext) {
@@ -47,7 +48,7 @@ final class DetailedMatchMinuteFlow {
     }
 
     Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(List<PlayerMatchState> opponents) {
-        return support.shotAttemptService.aggregateOpponentDefenderSkills(opponents);
+        return attackPhase.aggregateOpponentDefenderSkills(opponents);
     }
 
     void applyYellowCardAndMaybeSecondYellowRed(PlayerMatchState player, MatchTimeline timeline, int minute, String teamRole) {
