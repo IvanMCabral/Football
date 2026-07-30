@@ -1120,10 +1120,8 @@
     "dateOfBirth": "1989-06-08",
     "nationalityCode": "ARG",
     "clubExternalId": "defensa-y-justicia",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
     "shirtNumber": 36,
@@ -1137,8 +1135,8 @@
     },
     "marketValue": "17500261",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1166,10 +1164,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Defensa_y_Justicia",
     "sourceEntityId": "lautaro-amade",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:leandro-fernandez:2005-04-24:arg",
@@ -1252,7 +1250,7 @@
     "marketValue": "23448390",
     "specialAttributes": [
       "one_on_one_keeper",
-      "aerial_specialist"
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",

@@ -122,10 +122,8 @@
     "dateOfBirth": "1995-05-27",
     "nationalityCode": "BRA",
     "clubExternalId": "sao-paulo",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
     "shirtNumber": 31,
@@ -139,8 +137,8 @@
     },
     "marketValue": "21393752",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -168,10 +166,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Sao_Paulo_FC",
     "sourceEntityId": "carlos-coronel",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:cauly:1991-05-12:bra",
@@ -416,7 +414,7 @@
     "dateOfBirth": "2005-11-22",
     "nationalityCode": "BRA",
     "clubExternalId": "sao-paulo",
-    "primaryPosition": "GK",
+    "primaryPosition": "LB",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
@@ -431,8 +429,8 @@
     },
     "marketValue": "24984733",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "workhorse"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -460,10 +458,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Sao_Paulo_FC",
     "sourceEntityId": "enzo-diaz",
-    "positionSource": "MANAGER goalkeeper estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#goalkeeper-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:felipe-preis:2003-06-02:bra",
@@ -940,10 +938,8 @@
     "dateOfBirth": "1997-10-07",
     "nationalityCode": "BRA",
     "clubExternalId": "sao-paulo",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "LEFT",
     "heightCm": 187,
     "shirtNumber": 41,
@@ -957,8 +953,8 @@
     },
     "marketValue": "21939796",
     "specialAttributes": [
-      "workhorse",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -986,10 +982,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Sao_Paulo_FC",
     "sourceEntityId": "joao-pedro",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:luan:2001-11-13:bra",

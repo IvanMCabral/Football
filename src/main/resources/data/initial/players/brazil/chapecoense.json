@@ -21,8 +21,8 @@
     },
     "marketValue": "21987451",
     "specialAttributes": [
-      "aerial_specialist",
-      "one_on_one_keeper"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -77,8 +77,8 @@
     },
     "marketValue": "17122582",
     "specialAttributes": [
-      "aerial_specialist",
-      "one_on_one_keeper"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",

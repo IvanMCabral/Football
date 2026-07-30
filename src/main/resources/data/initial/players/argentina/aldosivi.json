@@ -238,10 +238,8 @@
     "dateOfBirth": "1999-12-21",
     "nationalityCode": "ARG",
     "clubExternalId": "aldosivi",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
     "shirtNumber": 1,
@@ -255,8 +253,8 @@
     },
     "marketValue": "17566175",
     "specialAttributes": [
-      "leader",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -284,10 +282,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Aldosivi",
     "sourceEntityId": "axel-werner",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:david-juarez:2000-11-19:arg",
@@ -841,7 +839,7 @@
     "marketValue": "20970738",
     "specialAttributes": [
       "one_on_one_keeper",
-      "aerial_specialist"
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",

@@ -491,7 +491,7 @@
     "marketValue": "23115388",
     "specialAttributes": [
       "one_on_one_keeper",
-      "aerial_specialist"
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -764,10 +764,8 @@
     "dateOfBirth": "2000-06-14",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
     "shirtNumber": 13,
@@ -781,8 +779,8 @@
     },
     "marketValue": "26327772",
     "specialAttributes": [
-      "workhorse",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -810,10 +808,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
     "sourceEntityId": "javier-garcia",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:joaquin-pineyro:1993-12-20:arg",
@@ -1351,10 +1349,8 @@
     "dateOfBirth": "2000-03-14",
     "nationalityCode": "ARG",
     "clubExternalId": "boca-juniors",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 181,
     "shirtNumber": 12,
@@ -1368,8 +1364,8 @@
     },
     "marketValue": "24085948",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1397,9 +1393,9 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Boca_Juniors",
     "sourceEntityId": "leandro-brey",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   }
 ]

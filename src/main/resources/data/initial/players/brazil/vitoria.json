@@ -64,7 +64,7 @@
     "dateOfBirth": "1996-05-24",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
-    "primaryPosition": "GK",
+    "primaryPosition": "CB",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 184,
@@ -80,7 +80,7 @@
     "marketValue": "20713647",
     "specialAttributes": [
       "aerial_specialist",
-      "one_on_one_keeper"
+      "workhorse"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -108,10 +108,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
     "sourceEntityId": "caca",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:camutanga:1999-03-25:bra",
@@ -763,10 +763,8 @@
     "dateOfBirth": "1991-06-09",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 191,
     "shirtNumber": 35,
@@ -780,8 +778,8 @@
     },
     "marketValue": "17855083",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -809,10 +807,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
     "sourceEntityId": "fintelman",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:gabriel:2002-10-19:bra",
@@ -1114,10 +1112,8 @@
     "dateOfBirth": "1989-09-08",
     "nationalityCode": "BRA",
     "clubExternalId": "vitoria",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 186,
     "shirtNumber": 1,
@@ -1131,8 +1127,8 @@
     },
     "marketValue": "17277191",
     "specialAttributes": [
-      "workhorse",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1160,10 +1156,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Esporte_Clube_Vitoria",
     "sourceEntityId": "lucas-arcanjo",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:marinho:1995-02-16:bra",

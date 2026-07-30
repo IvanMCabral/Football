@@ -64,7 +64,7 @@
     "dateOfBirth": "1998-05-06",
     "nationalityCode": "ESP",
     "clubExternalId": "girona",
-    "primaryPosition": "GK",
+    "primaryPosition": "CB",
     "secondaryPositions": [],
     "preferredFoot": "LEFT",
     "heightCm": 183,
@@ -80,7 +80,7 @@
     "marketValue": "23783774",
     "specialAttributes": [
       "aerial_specialist",
-      "one_on_one_keeper"
+      "workhorse"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -108,10 +108,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Girona_FC",
     "sourceEntityId": "alejandro-frances",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:antal-yaakobishvili:2002-06-06:esp",
@@ -1059,10 +1059,8 @@
     "dateOfBirth": "1992-09-15",
     "nationalityCode": "ESP",
     "clubExternalId": "girona",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 190,
     "shirtNumber": 1,
@@ -1076,8 +1074,8 @@
     },
     "marketValue": "23246633",
     "specialAttributes": [
-      "workhorse",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1105,10 +1103,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Girona_FC",
     "sourceEntityId": "sergi-puig",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:viktor-tsygankov:2002-11-13:esp",
@@ -1176,10 +1174,8 @@
     "dateOfBirth": "2003-10-01",
     "nationalityCode": "ESP",
     "clubExternalId": "girona",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 184,
     "shirtNumber": 13,
@@ -1193,8 +1189,8 @@
     },
     "marketValue": "20490450",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1222,10 +1218,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Girona_FC",
     "sourceEntityId": "vladyslav-krapyvtsov",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:vladyslav-vanat:2004-08-16:esp",

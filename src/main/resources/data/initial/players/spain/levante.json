@@ -21,8 +21,8 @@
     },
     "marketValue": "20396623",
     "specialAttributes": [
-      "sweeper_keeper",
-      "one_on_one_keeper"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1291,10 +1291,8 @@
     "dateOfBirth": "2003-11-11",
     "nationalityCode": "ESP",
     "clubExternalId": "levante",
-    "primaryPosition": "ST",
-    "secondaryPositions": [
-      "CF"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 176,
     "shirtNumber": 1,
@@ -1308,8 +1306,8 @@
     },
     "marketValue": "19949842",
     "specialAttributes": [
-      "line_breaker",
-      "clutch_finisher"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1337,10 +1335,10 @@
     "identitySourceName": "TheSportsDB",
     "identitySourceRef": "https://www.thesportsdb.com/player/34258132",
     "sourceEntityId": "34258132",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:aissa-mandi:2000-09-13:esp",

@@ -6,7 +6,7 @@
     "dateOfBirth": "1990-02-11",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
-    "primaryPosition": "GK",
+    "primaryPosition": "LB",
     "secondaryPositions": [],
     "preferredFoot": "LEFT",
     "heightCm": 183,
@@ -21,8 +21,8 @@
     },
     "marketValue": "20984353",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "workhorse"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -50,10 +50,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Rosario_Central",
     "sourceEntityId": "agustin-sandez",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:alejo-veliz:1990-12-16:arg",
@@ -355,10 +355,8 @@
     "dateOfBirth": "1995-03-01",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
     "shirtNumber": 23,
@@ -372,8 +370,8 @@
     },
     "marketValue": "19691164",
     "specialAttributes": [
-      "leader",
-      "workhorse"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -401,10 +399,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Rosario_Central",
     "sourceEntityId": "conan-ledesma",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:damian-fernandez:1989-11-08:arg",
@@ -704,10 +702,8 @@
     "dateOfBirth": "1993-11-19",
     "nationalityCode": "ARG",
     "clubExternalId": "rosario-central",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 195,
     "shirtNumber": 12,
@@ -721,8 +717,8 @@
     },
     "marketValue": "21968527",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -750,10 +746,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Rosario_Central",
     "sourceEntityId": "ezequiel-zapata",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:fabricio-oviedo:1991-07-28:arg",

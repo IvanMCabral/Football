@@ -21,8 +21,8 @@
     },
     "marketValue": "20152984",
     "specialAttributes": [
-      "aerial_specialist",
-      "one_on_one_keeper"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -78,7 +78,7 @@
     "marketValue": "18214386",
     "specialAttributes": [
       "one_on_one_keeper",
-      "aerial_specialist"
+      "sweeper_keeper"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",

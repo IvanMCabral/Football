@@ -65,7 +65,7 @@
     "dateOfBirth": "1995-04-21",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "GK",
+    "primaryPosition": "CB",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
@@ -80,8 +80,8 @@
     },
     "marketValue": "23095606",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "sweeper_keeper"
+      "aerial_specialist",
+      "workhorse"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -109,10 +109,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
     "sourceEntityId": "clemens-riedel",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:edu-exposito:1994-04-08:esp",
@@ -413,10 +413,8 @@
     "dateOfBirth": "1988-08-24",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 182,
     "shirtNumber": 13,
@@ -430,8 +428,8 @@
     },
     "marketValue": "19101082",
     "specialAttributes": [
-      "workhorse",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -459,10 +457,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
     "sourceEntityId": "marko-dmitrovic",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:miguel-rubio:1991-10-18:esp",
@@ -997,10 +995,8 @@
     "dateOfBirth": "1988-08-24",
     "nationalityCode": "ESP",
     "clubExternalId": "espanyol",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 189,
     "shirtNumber": 1,
@@ -1014,8 +1010,8 @@
     },
     "marketValue": "22065050",
     "specialAttributes": [
-      "workhorse",
-      "aerial_specialist"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -1043,10 +1039,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Espanyol",
     "sourceEntityId": "angel-fortuno",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:antoniu-roca:2002-10-03:esp",

@@ -6,7 +6,7 @@
     "dateOfBirth": "2005-12-26",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
-    "primaryPosition": "GK",
+    "primaryPosition": "LB",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 180,
@@ -21,8 +21,8 @@
     },
     "marketValue": "21462523",
     "specialAttributes": [
-      "one_on_one_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "workhorse"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -50,10 +50,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Gremio_FBPA",
     "sourceEntityId": "caio-paulista",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:carlos-vinicius:2003-02-25:bra",
@@ -473,10 +473,8 @@
     "dateOfBirth": "1994-03-13",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
     "shirtNumber": 12,
@@ -490,8 +488,8 @@
     },
     "marketValue": "22722394",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -519,10 +517,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Gremio_FBPA",
     "sourceEntityId": "gabriel-grando",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:gabriel-mec:1994-07-17:bra",
@@ -822,10 +820,8 @@
     "dateOfBirth": "1988-11-15",
     "nationalityCode": "BRA",
     "clubExternalId": "gremio",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 192,
     "shirtNumber": 18,
@@ -839,8 +835,8 @@
     },
     "marketValue": "24545886",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -868,10 +864,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/Gremio_FBPA",
     "sourceEntityId": "joao-pedro",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:juan-nardoni:1988-06-18:bra",

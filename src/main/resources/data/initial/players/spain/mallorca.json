@@ -64,7 +64,7 @@
     "dateOfBirth": "1996-01-02",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
-    "primaryPosition": "GK",
+    "primaryPosition": "CB",
     "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
@@ -79,8 +79,8 @@
     },
     "marketValue": "23063904",
     "specialAttributes": [
-      "sweeper_keeper",
-      "aerial_specialist"
+      "aerial_specialist",
+      "workhorse"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -108,10 +108,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Mallorca",
     "sourceEntityId": "antonio-raillo",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:antonio-sanchez:1997-11-07:esp",
@@ -237,10 +237,8 @@
     "dateOfBirth": "1989-09-26",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 183,
     "shirtNumber": 25,
@@ -254,8 +252,8 @@
     },
     "marketValue": "22826639",
     "specialAttributes": [
-      "workhorse",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -283,10 +281,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Mallorca",
     "sourceEntityId": "ivan-cuellar",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:jan-salas:1998-07-04:esp",
@@ -470,10 +468,8 @@
     "dateOfBirth": "1993-08-28",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
-    "primaryPosition": "CB",
-    "secondaryPositions": [
-      "CDM"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 188,
     "shirtNumber": 13,
@@ -487,8 +483,8 @@
     },
     "marketValue": "20656322",
     "specialAttributes": [
-      "aerial_specialist",
-      "leader"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "Wikipedia",
     "identityCheckedAt": "2026-07-29",
@@ -516,10 +512,10 @@
     "identitySourceName": "Wikipedia",
     "identitySourceRef": "https://en.wikipedia.org/wiki/RCD_Mallorca",
     "sourceEntityId": "lucas-bergstrom",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:manu-morlanes:1999-05-02:esp",
@@ -1116,11 +1112,8 @@
     "dateOfBirth": "1999-03-08",
     "nationalityCode": "ESP",
     "clubExternalId": "mallorca",
-    "primaryPosition": "RW",
-    "secondaryPositions": [
-      "RM",
-      "ST"
-    ],
+    "primaryPosition": "GK",
+    "secondaryPositions": [],
     "preferredFoot": "RIGHT",
     "heightCm": 171,
     "shirtNumber": 1,
@@ -1134,8 +1127,8 @@
     },
     "marketValue": "20557213",
     "specialAttributes": [
-      "line_breaker",
-      "speedster"
+      "one_on_one_keeper",
+      "sweeper_keeper"
     ],
     "identitySource": "TheSportsDB",
     "identityCheckedAt": "2026-07-29",
@@ -1163,10 +1156,10 @@
     "identitySourceName": "TheSportsDB",
     "identitySourceRef": "https://www.thesportsdb.com/player/34219341",
     "sourceEntityId": "34219341",
-    "positionSource": "MANAGER position estimate",
-    "positionSourceRef": "docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation",
-    "positionCheckedAt": "2026-07-29",
-    "positionEstimated": true
+    "positionSource": "MANAGER manual MVP1 final acceptance review",
+    "positionSourceRef": "docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md",
+    "positionCheckedAt": "2026-07-30",
+    "positionEstimated": false
   },
   {
     "externalId": "public-player:marash-kumbulla:1988-05-28:esp",
