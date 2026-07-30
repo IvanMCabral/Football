@@ -1,33 +1,41 @@
 # Post-MVP 1 Core Architecture Final Independent Audit
 
-Verdict: APPROVED WITH ISSUES
+Verdict: APPROVED
 
 ## Executive summary
 
-The post-MVP 1 core remediation improved the backend architecture in a real way: the detailed match engine is now exposed through a small facade, league simulation responsibilities were split into clearer coordinators, Redis failures are no longer silently hidden, the full backend suite is green, and the frontend remains unchanged.
+The final post-MVP 1 core quality closure is approved. The three important findings from the previous independent audit were corrected without frontend, dataset or database changes.
 
-The closure is not ready for a strict APPROVED verdict yet because this independent audit found issues that the previous closure did not record: the remediation diff fails whitespace hygiene checks because two Java files had extra blank lines at EOF, `DetailedMatchEngineFlow` remains dense and owns too much minute-by-minute simulation detail, and the new architecture tests are useful but partially structural/nominative, so they do not fully prevent complexity from being moved under another name.
+The remediation now has clean diff hygiene, a smaller detailed-match orchestration flow, a cohesive minute-by-minute simulation component, and architecture tests based on compiled classes, packages and roles instead of fragile source-text scanning.
 
 ## Scope reviewed
 
 Reviewed areas:
 
-- Detailed match engine composition.
-- League simulation lifecycle responsibilities.
-- Reactive persistence failure handling.
-- Architecture boundary tests.
-- Backend validation evidence.
-- Frontend working tree status.
+- Post-MVP 1 closure hygiene.
+- Detailed match engine flow density.
+- Minute-by-minute detailed match simulation extraction.
+- Simulation package architecture rules.
+- Backend focused and full suite validation.
+- Frontend repository cleanliness.
 
-Out of scope:
+Out of scope and intentionally unchanged:
 
-- Dataset import or database mutation.
-- Frontend behavior changes.
-- Product/gameplay rule redesign.
+- Frontend behavior and assets.
+- Dataset content and import pipeline.
+- Database state.
+- Runtime product behavior.
+- Push or remote operations.
 
-## Repository state reviewed
+## Commits reviewed in this closure
 
-Observed commits at the time of this audit:
+New closure commits:
+
+- `42b57544 Fix post-MVP 1 core audit hygiene`
+- `e97b58f1 Extract detailed match minute simulation flow`
+- `217e0b81 Strengthen simulation package architecture rules`
+
+Previous remediation base reviewed:
 
 - `8f238953 Close post-MVP 1 core architecture remediation`
 - `ec5e0a1e Enforce simulation architecture boundaries`
@@ -36,129 +44,117 @@ Observed commits at the time of this audit:
 - `4a7599cf Refine detailed match engine composition`
 - `73b616fa docs: record post-MVP 1 code quality audit`
 
-The audit report itself was untracked at review time.
+## Previous important findings and resolution
 
-## Validation evidence reviewed
+### 1. Diff and encoding hygiene
 
-Backend:
+Status: resolved.
+
+Evidence:
+
+- Removed the extra EOF blank line from `DetailedMatchEngineFlow.java`.
+- Removed the extra EOF blank line from `RedisMatchCommandRepository.java`.
+- Normalized this audit report to consistent UTF-8 text.
+- `git diff --check`: green after the corrections.
+
+Conclusion: no remaining whitespace or mojibake issue was found in the active closure files.
+
+### 2. Density of `DetailedMatchEngineFlow`
+
+Status: resolved.
+
+Before:
+
+- `DetailedMatchEngineFlow`: approximately 423 lines.
+- The class owned setup, minute loop details, event generation, channel/shape calculations, substitutions, fatigue, cards and finalization coordination.
+
+After:
+
+- `DetailedMatchEngine`: 95 lines, facade only.
+- `DetailedMatchEngineFlow`: 207 lines, orchestration/setup/finalization only.
+- `DetailedMatchMinuteFlow`: 273 lines, cohesive minute-by-minute step.
+- `MinuteSimulationContext`: 20 lines, immutable per-minute input state.
+- `DetailedMatchMinuteSupport`: 41 lines, collaborator composition for the minute flow.
+
+Conclusion: the minute-level rules no longer live inside the top-level flow. The extracted component has one clear reason to change: rules that happen during a simulated minute. The parent flow now prepares match state, loops the clock and finalizes the result.
+
+### 3. Architecture tests partially nominative
+
+Status: resolved.
+
+Before:
+
+- `SimulationArchitectureBoundaryTest` read Java source files directly.
+- Several protections depended on concrete filenames and source strings.
+
+After:
+
+- The test uses ArchUnit over compiled classes.
+- Rules are expressed by package and role:
+  - simulation core must not depend on adapters, infrastructure, Redis, JDBC, R2DBC or SQL packages;
+  - detailed simulation components must not depend on web, persistence or Spring web/security concerns;
+  - simulation orchestrators must stay in the application simulation package;
+  - simulation orchestrators must not depend on adapters or infrastructure;
+  - the detailed engine facade must remain small and mostly stateless;
+  - flow-role classes in the simulation package must not reintroduce large stateful flow objects.
+
+Conclusion: the architecture test now protects the package/role boundary instead of only checking current names or source text.
+
+## Functional preservation
+
+Status: approved.
+
+Evidence:
 
 - `mvn -q -DskipTests test-compile`: green.
-- `mvn -q test`: green.
-- Full backend suite: 2463 tests, 0 failures, 0 errors, 4 skipped.
-- Focused tests for architecture, Redis, simulation, detailed engine, lineup and dataset runtime: green.
+- Focused validation green:
+  - simulation architecture tests;
+  - detailed match engine tests;
+  - scheduled substitution tests;
+  - timeline consistency tests;
+  - formation tests;
+  - league simulation tests;
+  - lineup tests;
+  - test harness tests;
+  - Redis persistence/failure tests.
+- Full backend suite green: 2466 tests, 0 failures, 0 errors, 4 skipped.
+- No frontend files were modified.
+- `front-ciber` working tree remained clean.
 
-Frontend:
+Conclusion: there is no automated evidence of functional regression after the extraction and architecture-test strengthening.
 
-- Frontend repository status: clean.
-- No frontend files were modified by the remediation.
+## Architecture verdict
 
-Whitespace:
+Approved.
 
-- `git diff --check 35e6bbf7..8f238953`: failed because of extra blank lines at EOF in:
-  - `src/main/java/com/footballmanager/application/service/simulation/detailed/DetailedMatchEngineFlow.java`
-  - `src/main/java/com/footballmanager/infrastructure/persistence/redis/RedisMatchCommandRepository.java`
+The detailed engine now has a clearer structure:
 
-## DetailedMatchEngine review
+- public facade: `DetailedMatchEngine`;
+- match-level flow: `DetailedMatchEngineFlow`;
+- minute-level flow: `DetailedMatchMinuteFlow`;
+- minute context: `MinuteSimulationContext`;
+- minute collaborator composition: `DetailedMatchMinuteSupport`.
 
-Status: approved.
+This is not a simple line-count reduction. Responsibilities are split along runtime boundaries: facade, match setup/finalization, per-minute progression, contextual data and dependency composition.
 
-Evidence:
+## Remaining known debt
 
-- `DetailedMatchEngine` is a small public facade.
-- Approximate size at audit time: 95 lines.
-- Public methods delegate to focused collaborators instead of owning the whole simulation algorithm.
-- The constructor wires the composition once.
+No critical or important findings remain for this requested closure.
 
-Conclusion: the original public engine class is no longer an operative god class.
+Historical debt outside this closure still exists and should remain tracked separately, including broader cleanup of reactive ports and legacy batch infrastructure. These items were not introduced by this closure and do not block the post-MVP 1 core quality approval.
 
-## DetailedMatchEngineFlow review
+## Final validation summary
 
-Status: approved with important issue.
+- Backend compile: green.
+- Backend full suite: 2466 tests, 0 failures, 0 errors, 4 skipped.
+- Architecture tests: green.
+- Detailed engine focused tests: green.
+- Lineup/harness/simulation/Redis focused tests: green.
+- `git diff --check`: green.
+- Frontend repository: clean and untouched.
+- Dataset/DB: untouched.
+- Push: not performed.
 
-Evidence:
+## Final verdict
 
-- Approximate size at audit time: 423 lines.
-- It orchestrates xG, fatigue, discipline, injuries, substitutions, assists, shot locations, tactical shape, attacking contribution, channel defense, probabilities, result finalization, intensity, effective slots, cards and skill selection.
-- The minute loop contains too much detail directly.
-
-Conclusion: this is not simply the old god class moved under another name, because it uses specialized services and has a recognizable responsibility: deterministic detailed-match flow execution. Even so, it is the new hot spot of the engine. It should not receive more rules before extracting the minute-by-minute step into a cohesive component.
-
-## LeagueSimulator review
-
-Status: approved.
-
-Evidence:
-
-- Approximate size at audit time: 313 lines.
-- League lifecycle, standings mutation and fixture/match orchestration were split into collaborators.
-- It remains a relevant orchestrator, but it no longer directly owns all persistence or all state mutation.
-
-Conclusion: the remediation reduced real responsibilities. It is not a blocking god class for the current closure, though it should keep being watched.
-
-## Reactive persistence review
-
-Status: approved.
-
-Evidence:
-
-- `RedisMatchCommandRepository`: approximately 117 lines at audit time.
-- `BaselineStateRedisAdapter`: approximately 136 lines at audit time.
-- `BaselineStateRedisAdapter` uses timeouts and propagates critical failures; focused tests cover simulated read and write failures.
-
-Conclusion: the previous failure-hiding pattern was corrected within the audited scope.
-
-## WebFlux/request-path review
-
-Status: approved with minor note.
-
-Evidence:
-
-- `MatchSimulationOrchestrator` moves heavy work to `orchestratorScheduler`.
-- `RoundController` persists live detail through `ReactiveLifecycleExecutor` and `Mono<Void>`.
-- `MatchEngineController` uses `publishOn(Schedulers.boundedElastic())` to isolate the engine from event-loop blocking.
-- Detailed batch persistence keeps an isolated `.block()` inside `MatchDetailPersistenceCoordinator`, not spread through controllers.
-
-Note: accepted blocking calls still exist in batch/seed legacy infrastructure outside this remediation scope. They are not new, but must not be copied into request paths.
-
-## Architecture tests review
-
-Status: approved with important issue.
-
-Evidence:
-
-- `SimulationArchitectureBoundaryTest` checks that the simulation core does not depend on web DTOs, Redis, JDBC or infrastructure.
-- It checks that `DetailedMatchEngine` remains a facade.
-- `ApplicationLayerBoundaryTest` keeps general application-layer rules.
-
-Conclusion: the tests are useful and reduce regression risk, but they are not a complete design proof. Part of the protection is textual/structural and could be bypassed by moving complexity into another class not covered nominally. For a strict APPROVED verdict, rules should be strengthened by package and role rather than concrete class names.
-
-## Functional equivalence
-
-Status: approved by automated suite.
-
-Evidence:
-
-- Compilation green.
-- Full suite green: 2463 tests, 0 failures, 0 errors, 4 skipped.
-- Focused tests for engine, simulation, lineup, Redis, architecture and dataset runtime green.
-
-Conclusion: there is no automated evidence of functional regression in this closure.
-
-## Critical findings
-
-None.
-
-## Important findings
-
-1. `git diff --check 35e6bbf7..8f238953` fails because of two extra blank lines at EOF. This contradicts a fully clean closure and was not recorded in the previous report.
-2. `DetailedMatchEngineFlow` remains a dense 423-line component that concentrates the minute-by-minute loop and knows too many engine subsystems. It does not block the MVP, but prevents APPROVED without issues.
-3. The new architecture tests are valuable, but partially nominative. They protect current cases, but do not guarantee by themselves that a god class cannot reappear under another name.
-
-## Minor findings
-
-1. The audit originally documented mojibake around an em dash in `MatchSimulationOrchestrator`. The production source currently shows valid UTF-8 text, but the report itself needed encoding cleanup.
-2. Reactive ports and Reactor usage remain documented as historical medium-term architecture debt. They were not introduced by this remediation.
-
-## Ready to continue features
-
-Yes, with issues. The backend compiles and tests fully, risky pieces were separated, and no functional regressions were detected. The technical recommendation is to continue features only after extracting the minute-by-minute simulation step and strengthening architecture tests by package/role.
+APPROVED
