@@ -54,8 +54,9 @@ class LaLigaSeedServiceV25D36F4Test {
                 new com.fasterxml.jackson.databind.ObjectMapper(),
                 worldRepository,
                 playerRepository,
-                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class),
-                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldTeamPostgresWriter.class)
+                org.mockito.Mockito.mock(WorldSeedPlayerWriter.class),
+                org.mockito.Mockito.mock(WorldSeedTeamWriter.class),
+                testSeedResourceLoader()
         );
 
         when(worldRepository.deleteByUserId(any(UUID.class))).thenReturn(Mono.just(true));
@@ -173,4 +174,17 @@ class LaLigaSeedServiceV25D36F4Test {
             assertEquals(h1, h2, "dos generators con mismo seed deben dar misma secuencia (i=" + i + ")");
         }
     }
+
+    private SeedResourceLoader testSeedResourceLoader() {
+        return resourcePath -> {
+            java.io.InputStream inputStream = Thread.currentThread()
+                    .getContextClassLoader()
+                    .getResourceAsStream(resourcePath);
+            if (inputStream == null) {
+                throw new java.io.FileNotFoundException(resourcePath);
+            }
+            return inputStream;
+        };
+    }
+
 }

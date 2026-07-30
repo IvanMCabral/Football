@@ -12,7 +12,6 @@ import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import com.footballmanager.domain.model.entity.Player.Position;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -51,8 +50,9 @@ public class WorldSeedService {
     private final WorldSnapshotRepository worldRepository;
     private final PlayerRepository playerRepository;
     private final LaLigaSeedService laLigaSeedService;
-    private final WorldSeedBatchWriter batchWriter;
-    private final WorldTeamPostgresWriter teamWriter;
+    private final WorldSeedPlayerWriter batchWriter;
+    private final WorldSeedTeamWriter teamWriter;
+    private final SeedResourceLoader seedResourceLoader;
 
     /**
      * Seeds a single league. Delegates La Liga to the existing service
@@ -114,7 +114,7 @@ public class WorldSeedService {
 
     private Mono<LaLigaSeedData> loadSeedData(String resourcePath) {
         return Mono.fromCallable(() -> {
-            try (InputStream in = new ClassPathResource(resourcePath).getInputStream()) {
+            try (InputStream in = seedResourceLoader.open(resourcePath)) {
                 return objectMapper.readValue(in, LaLigaSeedData.class);
             }
         });

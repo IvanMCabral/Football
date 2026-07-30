@@ -42,7 +42,7 @@ class LaLigaSeedServiceV25D32Test {
 
     private WorldSnapshotService snapshotService;
     private RedisWorldRepository worldRepository;
-    private WorldSeedBatchWriter batchWriter;
+    private WorldSeedPlayerWriter batchWriter;
     private PlayerRepository playerRepository;
     private DatabaseClient databaseClient;
     private LaLigaSeedService service;
@@ -62,8 +62,9 @@ class LaLigaSeedServiceV25D32Test {
                 new ObjectMapper(),
                 worldRepository,
                 playerRepository,
-                batchWriter = org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class),
-                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldTeamPostgresWriter.class)
+                batchWriter = org.mockito.Mockito.mock(WorldSeedPlayerWriter.class),
+                org.mockito.Mockito.mock(WorldSeedTeamWriter.class),
+                testSeedResourceLoader()
         );
 
         when(worldRepository.deleteByUserId(any(UUID.class))).thenReturn(Mono.just(true));
@@ -294,4 +295,17 @@ class LaLigaSeedServiceV25D32Test {
                 .findFirst()
                 .orElse(null);
     }
+
+    private SeedResourceLoader testSeedResourceLoader() {
+        return resourcePath -> {
+            java.io.InputStream inputStream = Thread.currentThread()
+                    .getContextClassLoader()
+                    .getResourceAsStream(resourcePath);
+            if (inputStream == null) {
+                throw new java.io.FileNotFoundException(resourcePath);
+            }
+            return inputStream;
+        };
+    }
+
 }

@@ -55,8 +55,9 @@ class LaLigaSeedServiceTest {
                 playerRepository,
                 // exercises the snapshot-layer contract; persistence is
                 // stubbed through no-op writer mocks.
-                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldSeedBatchWriter.class),
-                org.mockito.Mockito.mock(com.footballmanager.application.service.world.WorldTeamPostgresWriter.class)
+                org.mockito.Mockito.mock(WorldSeedPlayerWriter.class),
+                org.mockito.Mockito.mock(WorldSeedTeamWriter.class),
+                testSeedResourceLoader()
         );
 
         // Stubs básicos para que los tests no fallen por NPE en la Capa 2/3
@@ -410,4 +411,17 @@ class LaLigaSeedServiceTest {
                 .findFirst()
                 .orElse(null);
     }
+
+    private SeedResourceLoader testSeedResourceLoader() {
+        return resourcePath -> {
+            java.io.InputStream inputStream = Thread.currentThread()
+                    .getContextClassLoader()
+                    .getResourceAsStream(resourcePath);
+            if (inputStream == null) {
+                throw new java.io.FileNotFoundException(resourcePath);
+            }
+            return inputStream;
+        };
+    }
+
 }

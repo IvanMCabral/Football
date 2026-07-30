@@ -11,7 +11,6 @@ import com.footballmanager.domain.model.valueobject.Division;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -47,8 +46,9 @@ public class LaLigaSeedService {
     private final ObjectMapper objectMapper;
     private final WorldSnapshotRepository worldRepository;
     private final PlayerRepository playerRepository;
-    private final WorldSeedBatchWriter batchWriter;
-    private final WorldTeamPostgresWriter teamWriter;
+    private final WorldSeedPlayerWriter batchWriter;
+    private final WorldSeedTeamWriter teamWriter;
+    private final SeedResourceLoader seedResourceLoader;
 
     // Antes era un singleton de Spring con Random(seed) interno. java.util.Random
     // NO es thread-safe — dos requests concurrentes de executeSeed() podían
@@ -77,7 +77,7 @@ public class LaLigaSeedService {
 
     private Mono<LaLigaSeedData> loadSeedData() {
         return Mono.fromCallable(() -> {
-            try (InputStream in = new ClassPathResource(SEED_RESOURCE).getInputStream()) {
+            try (InputStream in = seedResourceLoader.open(SEED_RESOURCE)) {
                 return objectMapper.readValue(in, LaLigaSeedData.class);
             }
         });

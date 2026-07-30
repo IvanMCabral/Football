@@ -1,7 +1,8 @@
-package com.footballmanager.application.service.world;
+package com.footballmanager.infrastructure.world.legacyseed;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.footballmanager.application.service.world.WorldSeedPlayerWriter;
 import com.footballmanager.domain.model.entity.Player;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WorldSeedBatchWriter {
+public class WorldSeedBatchWriter implements WorldSeedPlayerWriter {
 
     /** Default batch size — tuned for Postgres parameter limits. */
     public static final int DEFAULT_BATCH_SIZE = 200;

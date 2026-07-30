@@ -1,5 +1,6 @@
-package com.footballmanager.application.service.world;
+package com.footballmanager.infrastructure.world.legacyseed;
 
+import com.footballmanager.application.service.world.WorldSeedTeamWriter;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WorldTeamPostgresWriter {
+public class WorldTeamPostgresWriter implements WorldSeedTeamWriter {
 
     private static final Duration BLOCK_TIMEOUT = Duration.ofSeconds(120);
 
