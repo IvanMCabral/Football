@@ -134,17 +134,18 @@ public final class LiveSession {
     }
 
     private LiveSnapshot buildSnapshot() {
-        List<DetailedMatchEvent> eventsSoFar = new ArrayList<>();
+        Map<String, DetailedMatchEvent> eventsByVisibleKey = new LinkedHashMap<>();
         for (DetailedMatchEvent e : engineTimeline) {
             if (e.minute() <= currentMinute) {
-                eventsSoFar.add(e);
+                eventsByVisibleKey.put(visibleEventKey(e), e);
             }
         }
         for (DetailedMatchEvent e : manualEvents) {
             if (e.minute() <= currentMinute) {
-                eventsSoFar.add(e);
+                eventsByVisibleKey.putIfAbsent(visibleEventKey(e), e);
             }
         }
+        List<DetailedMatchEvent> eventsSoFar = new ArrayList<>(eventsByVisibleKey.values());
         int homeGoalsSoFar = 0;
         int awayGoalsSoFar = 0;
         for (DetailedMatchEvent e : eventsSoFar) {
@@ -470,9 +471,33 @@ public final class LiveSession {
     }
 
     public List<DetailedMatchEvent> accumulatedEvents() {
+        java.util.Set<String> manualVisibleKeys = new java.util.LinkedHashSet<>();
+        for (DetailedMatchEvent event : manualEvents) {
+            manualVisibleKeys.add(visibleEventKey(event));
+        }
+
         List<DetailedMatchEvent> combined = new ArrayList<>(engineTimeline.size() + manualEvents.size());
-        combined.addAll(engineTimeline);
-        combined.addAll(manualEvents);
+        for (DetailedMatchEvent event : engineTimeline) {
+            if (!manualVisibleKeys.contains(visibleEventKey(event))) {
+                combined.add(event);
+            }
+        }
+        for (DetailedMatchEvent event : manualEvents) {
+            if (combined.stream().noneMatch(existing ->
+                    visibleEventKey(existing).equals(visibleEventKey(event)))) {
+                combined.add(event);
+            }
+        }
         return java.util.Collections.unmodifiableList(combined);
+    }
+
+    private String visibleEventKey(DetailedMatchEvent event) {
+        if (event.type() == DetailedMatchEventType.SUBSTITUTION) {
+            return event.minute()
+                + "|" + event.type()
+                + "|" + nullSafe(event.playerId())
+                + "|" + nullSafe(event.relatedPlayerId());
+        }
+        return eventKey(event);
     }
 }
