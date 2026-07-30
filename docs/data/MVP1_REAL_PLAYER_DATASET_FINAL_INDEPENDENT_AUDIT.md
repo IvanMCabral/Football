@@ -13,7 +13,7 @@ The implementation is functionally close and both backend/frontend suites are gr
 
 - The local main database `football_manager` does not contain the final `manager-mvp1-explicit` dataset.
 - Player IDs are deterministic but club-dependent, so a transfer changes identity.
-- One source dataset identity has corrupted text: `Aitor Fern?ndez`.
+- One source dataset identity has corrupted text: `Aitor Fernández`.
 - The importer is still an application-layer Spring/JDBC class, not a clean hexagonal application service with persistence/resource adapters.
 - Runtime E2E does not prove full match progression/detailed match/event/stat/rating behavior for all three leagues.
 - Position data is largely MANAGER tactical normalization, not public roster position verification.
@@ -73,7 +73,7 @@ The duplicate-name count is not automatically a defect because football has real
 
 Important identity defect:
 
-- `src/main/resources/data/initial/players/spain/osasuna.json` contains `Aitor Fern?ndez` and `Fern?ndez`. This is corrupted identity text and prevents full approval.
+- `src/main/resources/data/initial/players/spain/osasuna.json` contains `Aitor Fernández` and `Fernández`. This is corrupted identity text and prevents full approval.
 
 External spot-checks:
 
@@ -169,7 +169,7 @@ All players have biographic fields, but most are estimated:
 - `heightCm`: estimated for 1680/1680.
 - `shirtNumber`: estimated for 59/1680.
 
-No nulls were found for required fields. Estimated data is mostly marked as estimated, which is good. The corrupted `Fern?ndez` value remains a quality issue.
+No nulls were found for required fields. Estimated data is mostly marked as estimated, which is good. The corrupted `Fernández` value remains a quality issue.
 
 ## 12. Attributes
 
@@ -363,14 +363,14 @@ The documentation is broadly consistent with counts and cutoff date. Issues:
 - It concludes approval more strongly than the evidence allows.
 - It does not sufficiently highlight that the main DB local instance was not imported.
 - It does not flag club-dependent player IDs as an identity-stability issue.
-- It does not flag `Aitor Fern?ndez`.
+- It does not flag `Aitor Fernández`.
 - It describes runtime acceptance more strongly than the E2E actually proves.
 
 ## 25. Critical findings
 
 1. Main DB is not imported with the final dataset: `0` final-source players and `0` final-source clubs in local `football_manager`.
 2. The importer is not hexagonal: application class owns Spring/JDBC/resource/SQL/transaction concerns.
-3. One real identity is corrupted in the source JSON: `Aitor Fern?ndez`.
+3. One real identity is corrupted in the source JSON: `Aitor Fernández`.
 
 ## 26. Important findings
 
@@ -444,3 +444,18 @@ Post-remediation focal validation:
 - `mvn -q -Dtest='ThreeLeagueDatasetImporterTest,ThreeLeagueDatasetRuntimeAcceptanceE2ETest' test`: passed.
 
 Remediation verdict for the corrected dataset/import path: `APPROVED`.
+
+## Principal database closure addendum - 2026-07-29
+
+This addendum records the later closure evidence against the real local `football_manager` database.
+
+- `.env` was loaded in-session without printing secrets.
+- Backup created before import: `backups/football_manager_before_mvp1_real_dataset_20260729.dump`.
+- Operational import executed against local `football_manager` using the documented importer runner:
+  `mvn -q spring-boot:run "-Dspring-boot.run.arguments=--app.world.import.three-league=true --spring.main.web-application-type=none"`.
+- Import log reported: 3 countries, 3 leagues, 70 clubs, 70 teams, 1680 players, 3360 traits.
+- Principal DB checks after import: 0 invalid trait counts, 0 orphan traits, 0 duplicate `external_id`, 0 old fictional/generated identity IDs, 0 corrupt name markers, 0 club-dependent player IDs.
+- Spot check: `public-player:aitor-fernandez:1991-07-13:esp` persists as `GK`.
+- Runtime smoke against the principal DB passed for Spain, Argentina and Brazil league/team/squad loading; Spanish career creation, 4-4-2 auto-select, 11-slot lineup recovery, fixtures, standings, live round start, persisted match lookup and detailed match retrieval.
+
+Closure verdict for the corrected dataset/import/runtime path: `APPROVED`.

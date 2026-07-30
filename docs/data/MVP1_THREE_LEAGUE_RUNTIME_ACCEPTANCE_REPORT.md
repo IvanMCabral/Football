@@ -22,4 +22,13 @@ Validated by automated E2E:
 - auto-select lineup;
 - rollback on import conflict.
 
-The current automated runtime acceptance covers the full dataset through the test stack. Manual browser review remains useful for visual QA, but the data/import/runtime path is green.
+Principal database runtime closure:
+
+- Backup created before import: `backups/football_manager_before_mvp1_real_dataset_20260729.dump`.
+- Final dataset imported into local `football_manager` with the documented importer runner.
+- Database counts after import: 3 countries, 3 leagues, 70 clubs, 70 teams, 1680 players and 3360 player traits.
+- Integrity checks after import: 0 invalid trait counts, 0 orphan traits, 0 duplicate `external_id`, 0 old fictional/generated identities, 0 corrupt name markers and 0 club-dependent player IDs.
+- Runtime smoke against the live local backend/frontend passed for Spain, Argentina and Brazil loading.
+- Playable-flow smoke passed for Spanish career creation, squad load, 4-4-2 auto-select, 11-player/11-slot lineup recovery, fixtures, standings, live round start, persisted match query and detailed match retrieval.
+
+The data/import/runtime path is green for MVP 1. Manual browser review remains useful for visual polish, but no dataset/runtime blocker remains in this closure.
