@@ -1691,3 +1691,26 @@ Generated after remediation on 2026-07-29. Positions are not assigned by fixed r
 - Players without a position source ref: 0
 - Clubs without goalkeeper: 0
 - Obvious audited position errors remaining: 0
+
+## 2026-07-30 remediation evidence: stable identities and corrected positions
+
+The acceptance test `ThreeLeagueDatasetImporterTest.stablePlayerIdentitiesKeepClubIndependentIdsAndCorrectedPositions`
+now verifies representative real-player rows across Spain, Argentina and Brazil after a full import.
+
+Evidence added:
+
+- Alejandro Balde: `public-player:alejandro-balde:2003-04-15:esp`, display `Balde`, position `LB`.
+- Lamine Yamal: `public-player:lamine-yamal:1999-05-02:esp`, display `Yamal`, position `RW`.
+- Aitor Fernández: `public-player:aitor-fernandez:1991-07-13:esp`, display `Fernández`, position `GK`.
+- Cristhian Stuani: `public-player:cristhian-stuani:2000-01-13:esp`, display `Stuani`, position `ST`.
+- Carlos Palacios: `public-player:carlos-palacios:2005-06-08:arg`, display `Palacios`, position `CAM`.
+- Federico Mancuello: `public-player:federico-mancuello:1994-12-12:arg`, display `Mancuello`, position `CM`.
+- Gonzalo Montiel: `public-player:gonzalo-montiel:2003-02-04:arg`, display `Montiel`, position `RB`.
+- Gabriel Barbosa: `public-player:gabriel-barbosa:1991-03-05:bra`, display `Barbosa`, position `ST`.
+
+The same test asserts that these public IDs are not club-dependent and that each row has non-empty source entity
+and position source references. Focused validation command:
+
+`mvn -q "-Dtest=ThreeLeagueDatasetImporterTest,PlayerRepositorySafetyTest,LegacySeedPrincipalDatabaseGuardTest" test`
+
+Result on 2026-07-30: green.
