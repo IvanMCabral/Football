@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,10 +37,10 @@ class DetailedMatchMinuteGoldenSnapshotTest {
                         30), 12345L));
 
         Map<String, String> expected = new LinkedHashMap<>();
-        expected.put("balanced-42", "score=0-1;shots=23-32;onTarget=25+0;xg=1.702-1.637;poss=46-54;events=103;goals=1;goalMinutes=[7:A:away-balanced starter 9];chances=31;corners=1;offsides=4;fouls=2;yellows=2;reds=0;injuries=1;subs=7;timelineHash=bf1952ad201ac8a44f874e9df636c8ec359cca3b49b2863267e71cd00d8ca33c;timelineHead=[1:CHANCE_CREATED:A:0.000, 2:BLOCK:H:0.074, 3:CHANCE_CREATED:A:0.000, 4:SHOT_ON_TARGET:A:0.072, 5:MISS:A:0.069, 7:GOAL:A:0.067, 10:CHANCE_CREATED:H:0.000, 10:OFFSIDE:H:0.000];timelineTail=[83:CHANCE_CREATED:H:0.000, 84:MISS:A:0.062, 84:CHANCE_CREATED:A:0.000, 85:SHOT_ON_TARGET:A:0.120, 87:MISS:H:0.124, 88:MISS:H:0.067, 89:SHOT_ON_TARGET:H:0.068, 89:CHANCE_CREATED:H:0.000]");
-        expected.put("favorite-7", "score=3-0;shots=40-21;onTarget=25+0;xg=4.945-0.549;poss=46-54;events=124;goals=3;goalMinutes=[15:H:home-favorite starter 2, 76:H:home-favorite starter 6, 82:H:home-favorite starter 8];chances=41;corners=4;offsides=2;fouls=6;yellows=1;reds=0;injuries=1;subs=8;timelineHash=7908e9cc954e7e2bb2c7c930da4c35bb324154e9bca18e6d4e8d983933d9965d;timelineHead=[2:SHOT_ON_TARGET:A:0.011, 3:MISS:H:0.171, 4:CHANCE_CREATED:A:0.000, 5:SHOT_ON_TARGET:H:0.185, 6:MISS:H:0.117, 7:MISS:H:0.155, 7:CHANCE_CREATED:H:0.000, 9:SHOT_ON_TARGET:H:0.112];timelineTail=[86:SUBSTITUTION:H:0.000, 87:MISS:H:0.189, 87:CHANCE_CREATED:H:0.000, 88:SHOT_ON_TARGET:H:0.200, 88:CHANCE_CREATED:H:0.000, 88:SUBSTITUTION:A:0.000, 89:BLOCK:A:0.070, 89:CHANCE_CREATED:A:0.000]");
-        expected.put("defensive-99", "score=0-1;shots=18-35;onTarget=12+0;xg=0.812-2.558;poss=47-53;events=105;goals=1;goalMinutes=[78:A:away-defensive starter 6];chances=29;corners=3;offsides=3;fouls=6;yellows=3;reds=0;injuries=0;subs=8;timelineHash=871f2fdbddfa5d24d63918aff3cf228018337045828c8da8c902e81236ab6f8a;timelineHead=[1:SHOT_ON_TARGET:A:0.070, 2:CHANCE_CREATED:A:0.000, 4:MISS:A:0.065, 5:CORNER:A:0.000, 6:SHOT_ON_TARGET:A:0.079, 6:CHANCE_CREATED:A:0.000, 8:MISS:A:0.026, 8:CHANCE_CREATED:A:0.000];timelineTail=[84:SUBSTITUTION:A:0.000, 85:MISS:A:0.127, 88:SHOT_ON_TARGET:H:0.074, 88:CHANCE_CREATED:H:0.000, 88:FOUL:H:0.000, 88:YELLOW_CARD:H:0.000, 89:MISS:A:0.071, 89:SUBSTITUTION:H:0.000]");
-        expected.put("manual-sub-12345", "score=1-0;shots=24-31;onTarget=22+0;xg=1.495-1.868;poss=48-52;events=109;goals=1;goalMinutes=[40:H:home-manual-sub starter 8];chances=27;corners=4;offsides=2;fouls=7;yellows=4;reds=1;injuries=1;subs=8;timelineHash=ee47c33d2c9ea4e8ab9b8a5294d4221c51adad92c3fd8eb4a17b1b7d30d42d43;timelineHead=[2:SHOT_ON_TARGET:A:0.025, 3:BLOCK:A:0.064, 3:CHANCE_CREATED:A:0.000, 5:MISS:H:0.023, 5:CHANCE_CREATED:H:0.000, 5:FOUL:H:0.000, 6:OFFSIDE:H:0.000, 8:MISS:A:0.024];timelineTail=[84:CHANCE_CREATED:A:0.000, 85:BLOCK:H:0.063, 85:CHANCE_CREATED:H:0.000, 85:SUBSTITUTION:A:0.000, 87:SHOT_ON_TARGET:H:0.123, 88:FOUL:H:0.000, 88:YELLOW_CARD:H:0.000, 89:SHOT_ON_TARGET:A:0.066]");
+        expected.put("balanced-42", "score=0-1;shots=23-32;onTarget=25+0;xg=1.702-1.637;poss=46-54;events=103;goals=1;goalMinutes=[7:A:away-balanced starter 9];chances=31;corners=1;offsides=4;fouls=2;yellows=2;reds=0;injuries=1;subs=7;playerStats=[away-balanced-starter-1={CHANCE_CREATED=1, SUBSTITUTION=1}, away-balanced-starter-10={BLOCK=1, CHANCE_CREATED=2, MISS=5, SHOT_ON_TARGET=4}, away-balanced-starter-2={CHANCE_CREATED=3, MISS=1, SHOT_ON_TARGET=2, SUBSTITUTION=1}, away-balanced-starter-3={BLOCK=1, CHANCE_CREATED=1, SHOT_ON_TARGET=1, SUBSTITUTION=1}, away-balanced-starter-4={CHANCE_CREATED=1, MISS=1}, away-balanced-starter-5={CHANCE_CREATED=1, MISS=1}];ratingProxy=[away-balanced-starter-1:6.120, away-balanced-starter-10:6.840, away-balanced-starter-2:6.660, away-balanced-starter-3:6.270, away-balanced-starter-4:6.120, away-balanced-starter-5:6.120];fatigueProjection=H=0,A=0;timelineHash=bf1952ad201ac8a44f874e9df636c8ec359cca3b49b2863267e71cd00d8ca33c;timelineHead=[1:CHANCE_CREATED:A:0.000, 2:BLOCK:H:0.074, 3:CHANCE_CREATED:A:0.000, 4:SHOT_ON_TARGET:A:0.072, 5:MISS:A:0.069, 7:GOAL:A:0.067, 10:CHANCE_CREATED:H:0.000, 10:OFFSIDE:H:0.000];timelineTail=[83:CHANCE_CREATED:H:0.000, 84:MISS:A:0.062, 84:CHANCE_CREATED:A:0.000, 85:SHOT_ON_TARGET:A:0.120, 87:MISS:H:0.124, 88:MISS:H:0.067, 89:SHOT_ON_TARGET:H:0.068, 89:CHANCE_CREATED:H:0.000]");
+        expected.put("favorite-7", "score=3-0;shots=40-21;onTarget=25+0;xg=4.945-0.549;poss=46-54;events=124;goals=3;goalMinutes=[15:H:home-favorite starter 2, 76:H:home-favorite starter 6, 82:H:home-favorite starter 8];chances=41;corners=4;offsides=2;fouls=6;yellows=1;reds=0;injuries=1;subs=8;playerStats=[away-favorite-starter-0={CHANCE_CREATED=1}, away-favorite-starter-1={CHANCE_CREATED=3, CORNER=1, SUBSTITUTION=1}, away-favorite-starter-10={BLOCK=1, CHANCE_CREATED=4, CORNER=1, FOUL=2, SHOT_ON_TARGET=1}, away-favorite-starter-2={FOUL=1, SHOT_ON_TARGET=1, SUBSTITUTION=1}, away-favorite-starter-3={BLOCK=1, CHANCE_CREATED=1, MISS=1, SHOT_ON_TARGET=1, SUBSTITUTION=1}, away-favorite-starter-4={SHOT_ON_TARGET=3, SUBSTITUTION=1}];ratingProxy=[away-favorite-starter-0:6.120, away-favorite-starter-1:6.360, away-favorite-starter-10:6.630, away-favorite-starter-2:6.150, away-favorite-starter-3:6.270, away-favorite-starter-4:6.450];fatigueProjection=H=0,A=0;timelineHash=7908e9cc954e7e2bb2c7c930da4c35bb324154e9bca18e6d4e8d983933d9965d;timelineHead=[2:SHOT_ON_TARGET:A:0.011, 3:MISS:H:0.171, 4:CHANCE_CREATED:A:0.000, 5:SHOT_ON_TARGET:H:0.185, 6:MISS:H:0.117, 7:MISS:H:0.155, 7:CHANCE_CREATED:H:0.000, 9:SHOT_ON_TARGET:H:0.112];timelineTail=[86:SUBSTITUTION:H:0.000, 87:MISS:H:0.189, 87:CHANCE_CREATED:H:0.000, 88:SHOT_ON_TARGET:H:0.200, 88:CHANCE_CREATED:H:0.000, 88:SUBSTITUTION:A:0.000, 89:BLOCK:A:0.070, 89:CHANCE_CREATED:A:0.000]");
+        expected.put("defensive-99", "score=0-1;shots=18-35;onTarget=12+0;xg=0.812-2.558;poss=47-53;events=105;goals=1;goalMinutes=[78:A:away-defensive starter 6];chances=29;corners=3;offsides=3;fouls=6;yellows=3;reds=0;injuries=0;subs=8;playerStats=[away-defensive-starter-0={MISS=1}, away-defensive-starter-1={SUBSTITUTION=1}, away-defensive-starter-10={BLOCK=2, CHANCE_CREATED=3, CORNER=2, FOUL=1, MISS=3, OFFSIDE=1, SHOT_ON_TARGET=2, YELLOW_CARD=1}, away-defensive-starter-2={CHANCE_CREATED=2, FOUL=1, SUBSTITUTION=1}, away-defensive-starter-3={BLOCK=1, CHANCE_CREATED=2, MISS=2, SUBSTITUTION=1}, away-defensive-starter-4={MISS=1, OFFSIDE=1, SUBSTITUTION=1}];ratingProxy=[away-defensive-starter-0:6.000, away-defensive-starter-1:6.000, away-defensive-starter-10:6.410, away-defensive-starter-2:6.240, away-defensive-starter-3:6.240, away-defensive-starter-4:6.000];fatigueProjection=H=0,A=0;timelineHash=871f2fdbddfa5d24d63918aff3cf228018337045828c8da8c902e81236ab6f8a;timelineHead=[1:SHOT_ON_TARGET:A:0.070, 2:CHANCE_CREATED:A:0.000, 4:MISS:A:0.065, 5:CORNER:A:0.000, 6:SHOT_ON_TARGET:A:0.079, 6:CHANCE_CREATED:A:0.000, 8:MISS:A:0.026, 8:CHANCE_CREATED:A:0.000];timelineTail=[84:SUBSTITUTION:A:0.000, 85:MISS:A:0.127, 88:SHOT_ON_TARGET:H:0.074, 88:CHANCE_CREATED:H:0.000, 88:FOUL:H:0.000, 88:YELLOW_CARD:H:0.000, 89:MISS:A:0.071, 89:SUBSTITUTION:H:0.000]");
+        expected.put("manual-sub-12345", "score=1-0;shots=24-31;onTarget=22+0;xg=1.495-1.868;poss=48-52;events=109;goals=1;goalMinutes=[40:H:home-manual-sub starter 8];chances=27;corners=4;offsides=2;fouls=7;yellows=4;reds=1;injuries=1;subs=8;playerStats=[away-manual-sub-starter-1={SHOT_ON_TARGET=2, SUBSTITUTION=1}, away-manual-sub-starter-10={BLOCK=2, CHANCE_CREATED=1, FOUL=3, MISS=2, RED_CARD=1, SHOT_ON_TARGET=1, YELLOW_CARD=2}, away-manual-sub-starter-2={BLOCK=1, CHANCE_CREATED=2, FOUL=1, SUBSTITUTION=1, YELLOW_CARD=1}, away-manual-sub-starter-3={CHANCE_CREATED=2, SUBSTITUTION=1}, away-manual-sub-starter-4={MISS=1}, away-manual-sub-starter-5={BLOCK=2, INJURY=1, MISS=1, SHOT_ON_TARGET=2, SUBSTITUTION=1}];ratingProxy=[away-manual-sub-starter-1:6.300, away-manual-sub-starter-10:4.770, away-manual-sub-starter-2:5.990, away-manual-sub-starter-3:6.240, away-manual-sub-starter-4:6.000, away-manual-sub-starter-5:5.900];fatigueProjection=H=0,A=0;timelineHash=ee47c33d2c9ea4e8ab9b8a5294d4221c51adad92c3fd8eb4a17b1b7d30d42d43;timelineHead=[2:SHOT_ON_TARGET:A:0.025, 3:BLOCK:A:0.064, 3:CHANCE_CREATED:A:0.000, 5:MISS:H:0.023, 5:CHANCE_CREATED:H:0.000, 5:FOUL:H:0.000, 6:OFFSIDE:H:0.000, 8:MISS:A:0.024];timelineTail=[84:CHANCE_CREATED:A:0.000, 85:BLOCK:H:0.063, 85:CHANCE_CREATED:H:0.000, 85:SUBSTITUTION:A:0.000, 87:SHOT_ON_TARGET:H:0.123, 88:FOUL:H:0.000, 88:YELLOW_CARD:H:0.000, 89:SHOT_ON_TARGET:A:0.066]");
         assertThat(actual).containsExactlyEntriesOf(expected);
     }
 
@@ -67,6 +68,31 @@ class DetailedMatchMinuteGoldenSnapshotTest {
         assertThat(parallel).containsExactlyInAnyOrderEntriesOf(sequential);
     }
 
+    @Test
+    void repeatedConcurrentMatchesWithSameSeedsStayIsolated() throws Exception {
+        MatchContext context = baseContext("parallel-repeat", 84, 74, TeamStyle.ATTACKING, TeamStyle.BALANCED);
+        List<Long> seeds = List.of(5L, 5L, 5L, 21L, 21L, 34L, 34L, 34L);
+        Map<Long, String> sequential = new ConcurrentHashMap<>();
+        for (long seed : seeds) {
+            sequential.putIfAbsent(seed, snapshot(context, seed));
+        }
+
+        try (var executor = Executors.newFixedThreadPool(8)) {
+            List<java.util.concurrent.Callable<String>> tasks = new ArrayList<>();
+            for (int repetition = 0; repetition < 6; repetition++) {
+                for (long seed : seeds) {
+                    tasks.add(() -> snapshot(context, seed));
+                }
+            }
+            int index = 0;
+            for (var future : executor.invokeAll(tasks)) {
+                long seed = seeds.get(index % seeds.size());
+                assertThat(future.get()).isEqualTo(sequential.get(seed));
+                index++;
+            }
+        }
+    }
+
     private static String snapshot(MatchContext context, long seed) {
         DetailedMatchResult result = new DetailedMatchEngine().simulate(context, seed);
         long goals = count(result, DetailedMatchEventType.GOAL);
@@ -78,6 +104,9 @@ class DetailedMatchMinuteGoldenSnapshotTest {
         long reds = count(result, DetailedMatchEventType.RED_CARD);
         long injuries = count(result, DetailedMatchEventType.INJURY);
         long substitutions = count(result, DetailedMatchEventType.SUBSTITUTION);
+        String playerStats = playerStats(result);
+        String ratingProxy = ratingProxy(result);
+        String fatigueProjection = fatigueProjection(context);
         String goalMinutes = result.timeline().goalEvents().stream()
                 .map(e -> e.minute() + ":" + side(context, e.teamId()) + ":" + e.playerName())
                 .toList()
@@ -107,9 +136,64 @@ class DetailedMatchMinuteGoldenSnapshotTest {
                 + ";reds=" + reds
                 + ";injuries=" + injuries
                 + ";subs=" + substitutions
+                + ";playerStats=" + playerStats
+                + ";ratingProxy=" + ratingProxy
+                + ";fatigueProjection=" + fatigueProjection
                 + ";timelineHash=" + sha256(String.join("|", normalizedTimeline))
                 + ";timelineHead=" + timelineHead
                 + ";timelineTail=" + timelineTail;
+    }
+
+    private static String playerStats(DetailedMatchResult result) {
+        return result.timeline().events().stream()
+                .filter(event -> event.playerId() != null)
+                .collect(Collectors.groupingBy(
+                        DetailedMatchEvent::playerId,
+                        java.util.TreeMap::new,
+                        Collectors.groupingBy(
+                                DetailedMatchEvent::type,
+                                () -> new java.util.TreeMap<>(
+                                        java.util.Comparator.comparing(DetailedMatchEventType::name)),
+                                Collectors.counting())))
+                .entrySet().stream()
+                .limit(6)
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .toList()
+                .toString();
+    }
+
+    private static String ratingProxy(DetailedMatchResult result) {
+        return result.timeline().events().stream()
+                .filter(event -> event.playerId() != null)
+                .collect(Collectors.groupingBy(DetailedMatchEvent::playerId, java.util.TreeMap::new, Collectors.toList()))
+                .entrySet().stream()
+                .limit(6)
+                .map(entry -> entry.getKey() + ":" + format(proxyRating(entry.getValue())))
+                .toList()
+                .toString();
+    }
+
+    private static double proxyRating(List<DetailedMatchEvent> events) {
+        double rating = 6.0;
+        for (DetailedMatchEvent event : events) {
+            rating += switch (event.type()) {
+                case GOAL -> 1.0;
+                case SHOT_ON_TARGET -> 0.15;
+                case CHANCE_CREATED -> 0.12;
+                case YELLOW_CARD -> -0.25;
+                case RED_CARD -> -1.0;
+                case INJURY -> -0.4;
+                default -> 0.0;
+            };
+        }
+        return Math.max(1.0, Math.min(10.0, rating));
+    }
+
+    private static String fatigueProjection(MatchContext context) {
+        FatigueModel fatigueModel = new FatigueModel();
+        int home = Math.max(0, 100 - fatigueModel.baseDrainPerMinute(context.homeStyle()) * 90);
+        int away = Math.max(0, 100 - fatigueModel.baseDrainPerMinute(context.awayStyle()) * 90);
+        return "H=" + home + ",A=" + away;
     }
 
     private static long count(DetailedMatchResult result, DetailedMatchEventType type) {
