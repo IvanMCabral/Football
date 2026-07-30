@@ -82,6 +82,7 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
         Set<String> appliedScheduledSubs = new HashSet<>();
         PlayerSelector homeSelector = new PlayerSelector(homeSelectorRandom);
         PlayerSelector awaySelector = new PlayerSelector(awaySelectorRandom);
+        DetailedMatchMinuteFlow simulationMinuteFlow = new DetailedMatchMinuteFlow(disciplineModel, log);
 
         double homePossBase = matchProbabilityService.possessionBase(context.homeStyle());
         double awayPossBase = matchProbabilityService.possessionBase(context.awayStyle());
@@ -106,7 +107,7 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
                     homeSelector,
                     awaySelector,
                     appliedScheduledSubs);
-            minuteFlow.processMinute(new MinuteSimulationInput(minuteConfig, minuteMatchState, minute));
+            simulationMinuteFlow.processMinute(new MinuteSimulationInput(minuteConfig, minuteMatchState, minute));
             clock.advance();
         }
 

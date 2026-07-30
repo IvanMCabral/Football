@@ -100,6 +100,17 @@ class SimulationArchitectureBoundaryTest {
                     "org.springframework..");
 
     @ArchTest
+    static final ArchRule minute_state_input_and_result_do_not_depend_on_minute_composition_or_engines = noClasses()
+            .that().resideInAPackage("..application.service.simulation.detailed..")
+            .and(contextStateInputOrResult())
+            .should().dependOnClassesThat(minuteCompositionPolicyEngineOrPhase());
+
+    @ArchTest
+    static final ArchRule minute_phases_are_concrete_cohesive_steps_not_aggregate_physical_state = noClasses()
+            .that().resideInAPackage("..application.service.simulation.detailed..")
+            .should().haveSimpleName("MinutePhysicalStatePhase");
+
+    @ArchTest
     static final ArchRule simulation_flows_do_not_have_mutable_static_fields = classes()
             .that().resideInAPackage("..application.service.simulation..")
             .and().haveSimpleNameEndingWith("Flow")
@@ -120,6 +131,16 @@ class SimulationArchitectureBoundaryTest {
                     .as(file)
                     .isLessThanOrEqualTo(80);
         }
+    }
+
+    @Test
+    void detailedMinutePipelineUsesExplicitInjuryAndRestartPhases() throws IOException {
+        String pipeline = Files.readString(Path.of(
+                "src/main/java/com/footballmanager/application/service/simulation/detailed/DetailedMatchMinutePipeline.java"));
+
+        assertThat(pipeline).contains("MinuteInjuryPhase");
+        assertThat(pipeline).contains("MinuteRestartEventPhase");
+        assertThat(pipeline).doesNotContain("MinutePhysicalStatePhase");
     }
 
     private static ArchCondition<JavaClass> haveAtMostTwoInstanceFields() {
@@ -180,6 +201,15 @@ class SimulationArchitectureBoundaryTest {
             @Override
             public boolean test(JavaClass input) {
                 return input.getSimpleName().matches(".*(Context|Config|State|Input|Result)");
+            }
+        };
+    }
+
+    private static DescribedPredicate<JavaClass> minuteCompositionPolicyEngineOrPhase() {
+        return new DescribedPredicate<>("minute composition, policies, engines or phases") {
+            @Override
+            public boolean test(JavaClass input) {
+                return input.getSimpleName().matches("DetailedMatchMinuteComposition|.*Engine|.*Phase|.*Policies");
             }
         };
     }
