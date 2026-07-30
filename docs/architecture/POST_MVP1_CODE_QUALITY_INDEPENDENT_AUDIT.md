@@ -482,3 +482,24 @@ None found. No data-loss, build-breaking, test-breaking or immediate unsafe cond
 The project is stable, playable and convincingly validated for MVP 1. It is not in an unsafe state, and there is no evidence that new work must stop immediately. However, it is not yet “professional ready” in the strict clean-code/architecture sense. The main risks are concentrated and understandable: simulation orchestration, importer responsibilities, frontend live/harness complexity, security hardening and strict hexagonal purity.
 
 Final verdict: `READY WITH TECHNICAL DEBT`.
+
+---
+
+## Core architecture remediation status
+
+Date: 2026-07-30
+
+The P1 backend-core remediation was completed after this audit and documented in:
+
+- `docs/architecture/POST_MVP1_CORE_ARCHITECTURE_REMEDIATION.md`
+- `docs/architecture/POST_MVP1_CORE_ARCHITECTURE_INDEPENDENT_REVIEW.md`
+
+Resolved within scope:
+
+- `DetailedMatchEngine` was reduced to a public facade over a package-private deterministic flow collaborator.
+- `LeagueSimulator` now delegates detailed-match persistence and career mutation/tracking to cohesive collaborators.
+- Redis detailed match, baseline and pending command adapters no longer convert infrastructure/corrupt payload failures into false cache misses.
+- Simulation-specific architecture tests now prevent reintroducing web/infrastructure dependencies and god-class responsibilities.
+- The remaining synchronous persistence block is documented as a bounded league/batch boundary.
+
+Post-remediation verdict for the scoped P1 backend-core slice: `APPROVED`.
