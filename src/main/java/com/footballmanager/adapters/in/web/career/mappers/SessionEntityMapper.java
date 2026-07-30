@@ -50,7 +50,13 @@ public final class SessionEntityMapper {
             player.getYellowCards(),
             player.getRedCards(),
             player.getSuspended(),
-            player.getSuspensionRemainingMatches()
+            player.getSuspensionRemainingMatches(),
+            player.getSpecialTraits().stream()
+                    .map(trait -> new SessionPlayerDTO.SpecialTraitDTO(
+                            trait.code(),
+                            trait.name(),
+                            trait.description()))
+                    .toList()
         );
     }
 }

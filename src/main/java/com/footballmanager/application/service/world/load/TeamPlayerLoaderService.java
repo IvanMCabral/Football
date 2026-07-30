@@ -6,6 +6,7 @@ import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import com.footballmanager.domain.ports.out.team.TeamRepository;
 import com.footballmanager.domain.model.entity.Player;
 import com.footballmanager.domain.model.valueobject.Division;
+import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -53,6 +54,7 @@ public class TeamPlayerLoaderService {
                     return playerRepository.findByTeamId(team.getId().getValue())
                             .map(player -> mapPlayerToWorldPlayer(player, worldTeam.getWorldTeamId()))
                             .collectList()
+                            .flatMap(this::attachSpecialTraits)
                             .map(players -> new TeamWithPlayers(worldTeam, players));
                 })
                 .collectList()
@@ -70,6 +72,26 @@ public class TeamPlayerLoaderService {
     }
 
     private record TeamWithPlayers(WorldTeam worldTeam, List<WorldPlayer> players) {}
+
+    private Mono<List<WorldPlayer>> attachSpecialTraits(List<WorldPlayer> players) {
+        List<UUID> playerIds = players.stream()
+                .map(WorldPlayer::getRealPlayerId)
+                .filter(Objects::nonNull)
+                .toList();
+        if (playerIds.isEmpty()) {
+            return Mono.just(players);
+        }
+
+        return playerRepository.findSpecialTraitsByPlayerIds(playerIds)
+                .collectMultimap(PlayerSpecialTrait::playerId)
+                .map(traitsByPlayerId -> {
+                    players.forEach(player -> player.setSpecialTraits(
+                            List.copyOf(traitsByPlayerId.getOrDefault(
+                                    player.getRealPlayerId(),
+                                    List.of()))));
+                    return players;
+                });
+    }
 
     private WorldPlayer mapPlayerToWorldPlayer(Player player, String worldTeamId) {
         var attrs = player.getAttributes();

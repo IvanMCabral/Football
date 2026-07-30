@@ -157,7 +157,8 @@ public class SquadQueryUseCaseImpl implements SquadQueryUseCase {
             worldPlayer.calculateOverall(),
             teamId,
             worldPlayer.getHeightCm(),
-            worldPlayer.getSkillLevels()
+            worldPlayer.getSkillLevels(),
+            worldPlayer.getSpecialTraits()
         );
     }
 }

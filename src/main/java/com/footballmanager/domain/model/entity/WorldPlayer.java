@@ -1,10 +1,13 @@
 package com.footballmanager.domain.model.entity;
 
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
+import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -43,6 +46,7 @@ public class WorldPlayer {
     // provee; null/empty para players viejos (custom/random) que no tienen data
     private Integer heightCm;
     private Map<PlayerSkill, Integer> skillLevels;
+    private List<PlayerSpecialTrait> specialTraits;
 
     public enum WorldPlayerOrigin {
         REAL,     // Clonado de PostgreSQL
@@ -317,5 +321,15 @@ public class WorldPlayer {
 
     public void setSkillLevels(Map<PlayerSkill, Integer> skillLevels) {
         this.skillLevels = skillLevels != null ? new HashMap<>(skillLevels) : null;
+    }
+
+    public List<PlayerSpecialTrait> getSpecialTraits() {
+        return specialTraits == null
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(specialTraits);
+    }
+
+    public void setSpecialTraits(List<PlayerSpecialTrait> specialTraits) {
+        this.specialTraits = specialTraits != null ? new ArrayList<>(specialTraits) : null;
     }
 }

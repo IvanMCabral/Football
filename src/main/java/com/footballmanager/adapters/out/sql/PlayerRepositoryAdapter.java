@@ -5,12 +5,17 @@ import com.footballmanager.infrastructure.persistence.repository.*;
 import com.footballmanager.infrastructure.persistence.redis.PlayerRedisRepository;
 
 import com.footballmanager.domain.model.entity.Player;
+import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Collection;
+import java.util.UUID;
 
 @Component
 @Primary
@@ -19,6 +24,7 @@ public class PlayerRepositoryAdapter implements PlayerRepository {
     private final PlayerR2dbcRepository r2dbcRepository;
     private final TeamSquadR2dbcRepository squadRepository;
     private final PlayerRedisRepository redisRepository;
+    private final DatabaseClient databaseClient;
 
     // ========== Métodos con userId (Redis - scope de usuario) ==========
 
@@ -68,6 +74,28 @@ public class PlayerRepositoryAdapter implements PlayerRepository {
     public Flux<Player> findByTeamId(java.util.UUID teamId) {
         return r2dbcRepository.findByTeamId(teamId)
                 .map(PlayerEntity::toDomain);
+    }
+
+    @Override
+    public Flux<PlayerSpecialTrait> findSpecialTraitsByPlayerIds(Collection<UUID> playerIds) {
+        if (playerIds == null || playerIds.isEmpty()) {
+            return Flux.empty();
+        }
+
+        return databaseClient.sql("""
+                        SELECT psa.player_id, sa.code, sa.name, sa.description
+                        FROM player_special_attributes psa
+                        INNER JOIN special_attributes sa ON sa.id = psa.special_attribute_id
+                        WHERE psa.player_id IN (:playerIds)
+                        ORDER BY psa.player_id, psa.slot
+                        """)
+                .bind("playerIds", playerIds)
+                .map((row, metadata) -> new PlayerSpecialTrait(
+                        row.get("player_id", UUID.class),
+                        row.get("code", String.class),
+                        row.get("name", String.class),
+                        row.get("description", String.class)))
+                .all();
     }
 
     @Override

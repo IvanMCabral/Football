@@ -52,7 +52,7 @@ public class FreePlayersQueryUseCaseImpl implements FreePlayersQueryUseCase {
                                 wp.getWorldPlayerId(), wp.getName(),
                                 wp.getPosition().toString(), wp.getAge(),
                                 wp.calculateOverall(), null,
-                                wp.getHeightCm(), wp.getSkillLevels()
+                                wp.getHeightCm(), wp.getSkillLevels(), wp.getSpecialTraits()
                             ))
                             .collect(Collectors.toList());
 
@@ -64,7 +64,7 @@ public class FreePlayersQueryUseCaseImpl implements FreePlayersQueryUseCase {
                                 wp.getWorldPlayerId(), wp.getName(),
                                 wp.getPosition().toString(), wp.getAge(),
                                 wp.calculateOverall(), null,
-                                wp.getHeightCm(), wp.getSkillLevels()
+                                wp.getHeightCm(), wp.getSkillLevels(), wp.getSpecialTraits()
                             ))
                             .collect(Collectors.toList());
 
@@ -84,7 +84,7 @@ public class FreePlayersQueryUseCaseImpl implements FreePlayersQueryUseCase {
                                 wp.getWorldPlayerId(), wp.getName(),
                                 wp.getPosition().toString(), wp.getAge(),
                                 wp.calculateOverall(), null,
-                                wp.getHeightCm(), wp.getSkillLevels()
+                                wp.getHeightCm(), wp.getSkillLevels(), wp.getSpecialTraits()
                             ))
                             .collect(Collectors.toList());
                         return freePlayers;

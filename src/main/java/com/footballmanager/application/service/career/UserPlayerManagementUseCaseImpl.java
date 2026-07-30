@@ -64,7 +64,8 @@ public class UserPlayerManagementUseCaseImpl implements UserPlayerManagementUseC
                                 wp.calculateOverall(),
                                 career.getUserTeamId().toString(),
                                 wp.getHeightCm(),
-                                wp.getSkillLevels()
+                                wp.getSkillLevels(),
+                                wp.getSpecialTraits()
                             );
 
                             career.addSessionPlayer(newSessionPlayer);

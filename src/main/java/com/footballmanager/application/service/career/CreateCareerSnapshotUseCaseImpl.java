@@ -134,7 +134,8 @@ public class CreateCareerSnapshotUseCaseImpl implements CreateCareerSnapshotUseC
                 worldPlayer.calculateOverall(),
                 sessionTeamId,
                 worldPlayer.getHeightCm(),
-                worldPlayer.getSkillLevels()
+                worldPlayer.getSkillLevels(),
+                worldPlayer.getSpecialTraits()
         );
     }
 }

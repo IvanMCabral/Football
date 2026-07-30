@@ -3,10 +3,13 @@ package com.footballmanager.domain.model.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.footballmanager.domain.model.valueobject.OverallCalculator;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
+import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -53,6 +56,7 @@ public class SessionPlayer {
 
     private Integer heightCm;
     private Map<PlayerSkill, Integer> skillLevels;
+    private List<PlayerSpecialTrait> specialTraits;
 
     private static final int MIN_SKILL_LEVEL = 0;
     private static final int MAX_SKILL_LEVEL = 99;
@@ -74,6 +78,13 @@ public class SessionPlayer {
             String position, Integer age, Integer overall, String currentTeamId,
             Integer heightCm, Map<PlayerSkill, Integer> skillLevels) {
         return fromWorldPlayer(worldPlayerId, name, position, age, overall, heightCm, skillLevels);
+    }
+
+    public static SessionPlayer cloneFromWorldPlayer(String worldPlayerId, String name,
+            String position, Integer age, Integer overall, String currentTeamId,
+            Integer heightCm, Map<PlayerSkill, Integer> skillLevels,
+            List<PlayerSpecialTrait> specialTraits) {
+        return fromWorldPlayer(worldPlayerId, name, position, age, overall, heightCm, skillLevels, specialTraits);
     }
 
     public static SessionPlayer fromWorldPlayer(String worldPlayerId, String name,
@@ -100,6 +111,13 @@ public class SessionPlayer {
     public static SessionPlayer fromWorldPlayer(String worldPlayerId, String name,
             String position, Integer age, Integer overall,
             Integer heightCm, Map<PlayerSkill, Integer> skillLevels) {
+        return fromWorldPlayer(worldPlayerId, name, position, age, overall, heightCm, skillLevels, null);
+    }
+
+    public static SessionPlayer fromWorldPlayer(String worldPlayerId, String name,
+            String position, Integer age, Integer overall,
+            Integer heightCm, Map<PlayerSkill, Integer> skillLevels,
+            List<PlayerSpecialTrait> specialTraits) {
         SessionPlayer p = new SessionPlayer();
         p.sessionPlayerId = worldPlayerId;
         p.worldPlayerId = worldPlayerId;
@@ -124,6 +142,7 @@ public class SessionPlayer {
                 }
             }
         }
+        p.setSpecialTraits(specialTraits);
         return p;
     }
 
@@ -187,6 +206,7 @@ public class SessionPlayer {
         this.suspended = false;
         this.suspensionRemainingMatches = 0;
         this.skillLevels = new HashMap<>();
+        this.specialTraits = new ArrayList<>();
     }
 
     // ========== Business Logic ==========
@@ -258,6 +278,16 @@ public class SessionPlayer {
         return skillLevels == null
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(skillLevels);
+    }
+
+    public List<PlayerSpecialTrait> getSpecialTraits() {
+        return specialTraits == null
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(specialTraits);
+    }
+
+    public void setSpecialTraits(List<PlayerSpecialTrait> specialTraits) {
+        this.specialTraits = specialTraits != null ? new ArrayList<>(specialTraits) : new ArrayList<>();
     }
 
     public int getSkillLevel(PlayerSkill skill) {
