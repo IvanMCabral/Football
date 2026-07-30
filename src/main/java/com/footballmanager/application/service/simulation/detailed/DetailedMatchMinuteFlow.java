@@ -13,7 +13,7 @@ final class DetailedMatchMinuteFlow {
     DetailedMatchMinuteFlow(DisciplineModel disciplineModel, Logger log) {
         DetailedMatchMinuteComposition composition = DetailedMatchMinuteComposition.create(disciplineModel, log);
         this.pipeline = new DetailedMatchMinutePipeline(
-                new MinuteScheduledSubstitutionPhase(log),
+                new MinuteScheduledSubstitutionPhase(log, composition.substitutionPolicies()),
                 new MinuteTacticalStatePhase(composition.tacticalPolicies()),
                 new MinutePossessionPhase(composition.playerStatePolicies()),
                 new MinuteAttackPhase(

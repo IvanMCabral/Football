@@ -42,6 +42,6 @@ record DetailedMatchMinuteComposition(
                         new PlayerSkillService()),
                 new MinuteEventPolicies(shotAttemptService, new CardEventService()),
                 new MinutePlayerStatePolicies(fatigueModel, disciplineModel, injuryModel),
-                new MinuteSubstitutionPolicies(new SubstitutionEngine()));
+                new MinuteSubstitutionPolicies(new SubstitutionEngine(), new SubstitutionEngine()));
     }
 }

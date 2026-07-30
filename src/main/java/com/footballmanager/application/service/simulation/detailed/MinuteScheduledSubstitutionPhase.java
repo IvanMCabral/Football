@@ -4,9 +4,12 @@ import org.slf4j.Logger;
 
 final class MinuteScheduledSubstitutionPhase {
     private final Logger log;
+    private final MinuteSubstitutionPolicies substitutionPolicies;
 
-    MinuteScheduledSubstitutionPhase(Logger log) {
-        this.log = log;
+    MinuteScheduledSubstitutionPhase(Logger log, MinuteSubstitutionPolicies substitutionPolicies) {
+        this.log = java.util.Objects.requireNonNull(log, "log must not be null");
+        this.substitutionPolicies = java.util.Objects.requireNonNull(
+                substitutionPolicies, "substitutionPolicies must not be null");
     }
 
     void apply(MinuteSimulationInput minuteContext) {
@@ -22,7 +25,7 @@ final class MinuteScheduledSubstitutionPhase {
                 continue;
             }
             try {
-                DetailedMatchEvent subEvent = minuteContext.scheduledSubstitutionEngine().manualSubstitute(
+                DetailedMatchEvent subEvent = substitutionPolicies.scheduledSubstitutionEngine().manualSubstitute(
                         target, sub.playerOffId(), sub.playerOnId(), sub.effectiveMinute());
                 minuteContext.timeline().addEvent(subEvent);
                 minuteContext.appliedScheduledSubs().add(subKey);

@@ -80,7 +80,6 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
                 context.awayStyle(), context.awaySlotsByPlayerId());
         MatchTimeline timeline = new MatchTimeline();
         Set<String> appliedScheduledSubs = new HashSet<>();
-        SubstitutionEngine scheduledSubEngine = new SubstitutionEngine();
         PlayerSelector homeSelector = new PlayerSelector(homeSelectorRandom);
         PlayerSelector awaySelector = new PlayerSelector(awaySelectorRandom);
 
@@ -106,8 +105,7 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
                     timeline,
                     homeSelector,
                     awaySelector,
-                    appliedScheduledSubs,
-                    scheduledSubEngine);
+                    appliedScheduledSubs);
             minuteFlow.processMinute(new MinuteSimulationInput(minuteConfig, minuteMatchState, minute));
             clock.advance();
         }

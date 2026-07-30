@@ -11,8 +11,7 @@ record MinuteMatchState(
         MatchTimeline timeline,
         PlayerSelector homeSelector,
         PlayerSelector awaySelector,
-        Set<String> appliedScheduledSubs,
-        SubstitutionEngine scheduledSubstitutionEngine) {
+        Set<String> appliedScheduledSubs) {
 
     MinuteMatchState {
         Objects.requireNonNull(random, "random must not be null");
@@ -22,9 +21,11 @@ record MinuteMatchState(
         Objects.requireNonNull(homeSelector, "homeSelector must not be null");
         Objects.requireNonNull(awaySelector, "awaySelector must not be null");
         Objects.requireNonNull(appliedScheduledSubs, "appliedScheduledSubs must not be null");
-        Objects.requireNonNull(scheduledSubstitutionEngine, "scheduledSubstitutionEngine must not be null");
         if (homeState == awayState) {
             throw new IllegalArgumentException("homeState and awayState must be distinct");
+        }
+        if (homeSelector == awaySelector) {
+            throw new IllegalArgumentException("homeSelector and awaySelector must be distinct");
         }
     }
 }

@@ -48,10 +48,6 @@ record MinuteSimulationInput(
         return matchState.appliedScheduledSubs();
     }
 
-    SubstitutionEngine scheduledSubstitutionEngine() {
-        return matchState.scheduledSubstitutionEngine();
-    }
-
     double homePossBase() {
         return config.homePossessionBase();
     }
