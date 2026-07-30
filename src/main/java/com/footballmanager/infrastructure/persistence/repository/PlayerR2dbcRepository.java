@@ -8,8 +8,6 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.UUID;
 
 @Repository
@@ -26,30 +24,6 @@ public interface PlayerR2dbcRepository extends R2dbcRepository<PlayerEntity, UUI
             WHERE p.id NOT IN (SELECT player_id FROM team_squad)
             """)
     Flux<PlayerEntity> findAvailable();
-
-        @Query("""
-                INSERT INTO players (id, name, age, position, attack, defense, technique, speed, stamina, mentality, market_value, energy, injured, created_at, updated_at, height_cm, skill_levels_json)
-                VALUES (:id, :name, :age, :position, :attack, :defense, :technique, :speed, :stamina, :mentality, :marketValue, :energy, :injured, :createdAt, :updatedAt, :heightCm, :skillLevelsJson)
-                """)
-        Mono<Void> insertPlayer(
-                UUID id,
-                String name,
-                int age,
-                String position,
-                int attack,
-                int defense,
-                int technique,
-                int speed,
-                int stamina,
-                int mentality,
-                BigDecimal marketValue,
-                int energy,
-                boolean injured,
-                Instant createdAt,
-                Instant updatedAt,
-                Integer heightCm,
-                String skillLevelsJson
-        );
 
     @Query("""
             INSERT INTO team_squad (team_id, player_id)
