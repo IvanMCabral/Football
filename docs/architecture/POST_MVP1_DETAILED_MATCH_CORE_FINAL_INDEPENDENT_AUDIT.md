@@ -324,3 +324,34 @@ La suite completa esta verde, no hay cambios de frontend, no se detecto dependen
 El backend esta estable y testeado. La remediacion no debe rechazarse como regresiva, porque reduce el motor global, mejora reglas de arquitectura y mantiene la suite completa verde. Sin embargo, el core detallado no alcanza un cierre profesional perfecto: el minuto quedo como una unidad demasiado grande y el soporte/contexto son signos de refactor mecanico incompleto.
 
 Preparado para continuar features: si, pero con restriccion tecnica fuerte. Antes de agregar nuevas reglas de partido, conviene dividir `processMinute` en pasos cohesionados observables y reemplazar `DetailedMatchMinuteSupport` por componentes con responsabilidades nombradas.
+
+## Minute pipeline remediation status
+
+Fecha: 2026-07-30
+
+Estado: remediado.
+
+Este informe conserva su veredicto historico y sus conclusiones originales. Los hallazgos pendientes del pipeline minuto a minuto fueron corregidos posteriormente en los commits:
+
+- `81423903 Characterize detailed match minute behavior`
+- `7e8bdcd9 Extract detailed match minute pipeline phases`
+- `8ffd2532 Remove minute support dependency holder`
+- `d9365a15 Separate minute configuration state and result`
+- `0035762f Prove detailed match determinism and concurrency`
+
+Evidencia nueva:
+
+- `DetailedMatchMinuteFlow.processMinute` fue reducido a fachada y el orden funcional paso a `DetailedMatchMinutePipeline`.
+- `DetailedMatchMinuteSupport` fue eliminado.
+- `MinuteSimulationContext` fue reemplazado por `MinuteSimulationConfig`, `MinuteMatchState`, `MinuteSimulationInput` y `MinuteSimulationResult`.
+- `DetailedMatchEngineFlow` ya no conserva estado global `goalAdditions`.
+- Se agregaron snapshots golden deterministas y prueba de concurrencia.
+- Se agregaron guardrails de arquitectura para fases, objetos de estado/configuracion, nombres genericos, campos estaticos mutables y longitud de metodos.
+- Suite backend completa: 2472 tests, 0 failures, 0 errors, 4 skipped.
+
+Informe de cierre:
+
+- `docs/architecture/POST_MVP1_MINUTE_PIPELINE_REMEDIATION.md`
+- `docs/architecture/POST_MVP1_MINUTE_PIPELINE_FINAL_INDEPENDENT_AUDIT.md`
+
+Veredicto del cierre especifico del pipeline minuto a minuto: `APPROVED`.
