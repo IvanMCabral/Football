@@ -55,3 +55,35 @@ The first backend restart attempt failed because an embedded PowerShell `.env` p
 ## Result
 
 Runtime and restart acceptance are complete for MVP 1.
+
+---
+
+## Final evidence closure addendum — 2026-07-30
+
+The final acceptance pass added concrete browser and process-restart artifacts:
+
+- browser smoke artifact: `D:\temp\mvp1-browser-smoke\visual-smoke-results.json`;
+- screenshots for Spain, Argentina and Brazil under `D:\temp\mvp1-browser-smoke`;
+- pre-restart runtime artifact: `D:\temp\mvp1-runtime-before-restart.json`;
+- post-restart runtime artifact: `D:\temp\mvp1-runtime-after-restart.json`;
+- backend listener PID changed from `25364` to `26580`;
+- same persisted career, lineup, fixture and standings were recovered after restart.
+
+The final principal database validation remains:
+
+```text
+countries=3
+leagues=3
+clubs=70
+teams=70
+players=1680
+player_special_attributes=3360
+missing_player_source=0
+orphan_traits=0
+duplicate_player_source_ids=0
+players_without_two_traits=0
+question_mark_names=0
+clubs_with_less_than_two_gk=0
+```
+
+Final runtime remediation verdict: `APPROVED`.

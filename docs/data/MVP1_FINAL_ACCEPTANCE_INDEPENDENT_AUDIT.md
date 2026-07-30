@@ -247,7 +247,7 @@ Frontend models include `specialTraits?: PlayerSpecialTrait[]` with `code`, `nam
 
 Frontend tests cover missing/empty traits, one trait, two traits, more than two traits and tooltip descriptions.
 
-Important issue: tracked frontend files still contain mojibake in user-facing text and in the UTF-8 test case, for example `EnergÃ­a`, `Â·`, `JoÃ£o`, `presiÃ³n`, `LÃ­bero`, `Ã¡rea`, and emoji mojibake. This fails the UTF-8/UI stability expectation even though tests pass.
+Important issue from the original audit: tracked frontend files still contained mojibake in user-facing text and in the UTF-8 test case. The corrupt examples corresponded to energy labels, separators, Portuguese names, Spanish accented words, goalkeeper trait labels and emoji text. This failed the UTF-8/UI stability expectation even though tests passed at that time.
 
 ## 20. Visual smoke
 
@@ -350,7 +350,7 @@ The original independent verdict above is preserved as the audit baseline. This 
 | Frontend development build | `npm run build -- --configuration development` | green |
 | Frontend production build | `npm run build` | green |
 | Frontend test suite | `npm test -- --watch=false --browsers=ChromeHeadless`: 1021 success, 0 failures, 2 skipped | green |
-| Frontend encoding scan | No remaining mojibake markers under `src/app` for `Ã`, `Â`, `â`, `ð` or replacement characters | clean |
+| Frontend encoding scan | No remaining visible-text mojibake markers under `src/app` or `src/assets`; the only remaining marker pattern is the technical negative assertion in the encoding guard test | clean |
 | Git whitespace checks | `git diff --check` executed in root and frontend repositories | clean |
 
 ### 27.3 Runtime and principal database evidence

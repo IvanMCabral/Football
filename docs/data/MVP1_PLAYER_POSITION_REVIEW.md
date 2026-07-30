@@ -1470,7 +1470,7 @@ Generated after remediation on 2026-07-29. Positions are not assigned by fixed r
 | Pablo Maffeo | mallorca | ST | docs/data/MVP1_PLAYER_ATTRIBUTE_METHODOLOGY.md#position-estimation | Estimated | explicit MANAGER estimate; requires later source upgrade if higher precision is needed | OK |
 | Abel Bretones | osasuna | LB | https://en.wikipedia.org/wiki/CA_Osasuna | Verified | public position review | OK |
 | Aimar Oroz | osasuna | CAM | https://en.wikipedia.org/wiki/CA_Osasuna | Verified | public position review | OK |
-| Aitor FernÃ¡ndez | osasuna | GK | https://en.wikipedia.org/wiki/Aitor_Fern%C3%A1ndez_(footballer,_born_1991) | Verified | public position review | OK |
+| Aitor Fernández | osasuna | GK | https://en.wikipedia.org/wiki/Aitor_Fern%C3%A1ndez_(footballer,_born_1991) | Verified | public position review | OK |
 | Aitor Fernández | osasuna | GK | https://en.wikipedia.org/wiki/CA_Osasuna | Verified | public position review | OK |
 | Alejandro Catena | osasuna | CB | https://en.wikipedia.org/wiki/CA_Osasuna | Verified | public position review | OK |
 | Ante Budimir | osasuna | ST | https://en.wikipedia.org/wiki/CA_Osasuna | Verified | public position review | OK |

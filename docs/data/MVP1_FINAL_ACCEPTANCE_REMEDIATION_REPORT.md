@@ -116,3 +116,30 @@ missing_source_refs=0
 ## Final acceptance
 
 MVP 1 release dataset, importer boundaries, writer guardrails, runtime evidence, frontend special traits, Redis-backed backend suite and principal database integrity are accepted for the current MVP 1 closure.
+
+---
+
+## Final evidence closure addendum — 2026-07-30
+
+Additional remediation after the definitive audit:
+
+- visible frontend player/squad mojibake removed;
+- corrupt UTF-8 expectations removed from player-card tests;
+- visible-text encoding guard added to the frontend pre-test path;
+- three-league browser smoke completed on the real `/squad` route;
+- importer idempotence now proves stable IDs plus mutable-field, trait and squad-relation restoration;
+- rollback matrix now proves failed validations preserve the existing snapshot;
+- backend restart recovery was proven with a real PID change and persisted career recovery.
+
+Final validation:
+
+```text
+backend: 2453 tests, 0 failures, 0 errors, 4 skipped
+frontend: development build passed
+frontend: production build passed
+frontend: 1022 SUCCESS, 0 failed, 2 skipped
+database: 1680 players, 3360 traits, zero orphans, zero duplicate source IDs, zero players without two traits
+browser smoke: Spain, Argentina and Brazil passed without visible mojibake
+```
+
+Final remediation verdict: `APPROVED`.
