@@ -112,10 +112,14 @@ public class ThreeLeagueDatasetImporter {
     public void validateGlobal() {
         requireZero("""
             SELECT COUNT(*) FROM (
-                SELECT player_id FROM player_special_attributes
-                GROUP BY player_id HAVING COUNT(*) <> 2
+                SELECT p.id
+                FROM players p
+                LEFT JOIN player_special_attributes psa ON psa.player_id = p.id
+                WHERE p.source_system = ?
+                GROUP BY p.id
+                HAVING COUNT(psa.id) <> 2
             ) invalid
-            """, "players without exactly two special attributes");
+            """, "players without exactly two special attributes", SOURCE);
         requireZero("""
             SELECT COUNT(*) FROM player_special_attributes psa
             LEFT JOIN players p ON p.id = psa.player_id
@@ -129,6 +133,19 @@ public class ThreeLeagueDatasetImporter {
                 OR height_cm IS NULL OR height_cm NOT BETWEEN 160 AND 210
             )
             """, "invalid generated player attributes", SOURCE);
+        requireZero("""
+            SELECT COUNT(*) FROM players
+            WHERE source_system = ? AND (
+                source_entity_id IS NULL OR source_entity_id = ''
+                OR identity_source_ref IS NULL OR identity_source_ref = ''
+                OR position_source_ref IS NULL OR position_source_ref = ''
+            )
+            """, "players without required source references", SOURCE);
+        requireZero("""
+            SELECT COUNT(*) FROM players
+            WHERE source_system = ?
+              AND position NOT IN ('GK','CB','LB','RB','LWB','RWB','CDM','CM','CAM','LM','RM','LW','RW','ST','CF')
+            """, "players with invalid primary position", SOURCE);
     }
 
     private <T> T read(String path, TypeReference<T> type) throws IOException {
@@ -478,6 +495,7 @@ public class ThreeLeagueDatasetImporter {
     }
 
     private void upsertTeamSquad(UUID teamId, UUID playerId) {
+        jdbcTemplate.update("DELETE FROM team_squad WHERE player_id = ? AND team_id <> ?", playerId, teamId);
         jdbcTemplate.update("""
             INSERT INTO team_squad (team_id, player_id) VALUES (?, ?)
             ON CONFLICT (team_id, player_id) DO NOTHING

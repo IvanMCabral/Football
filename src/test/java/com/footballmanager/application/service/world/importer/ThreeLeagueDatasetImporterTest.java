@@ -170,6 +170,95 @@ class ThreeLeagueDatasetImporterTest {
         assertPlayerIdentity("public-player:gabriel-barbosa:1991-03-05:bra", "Barbosa", "ST");
     }
 
+    @Test
+    @DisplayName("re-import repairs non-identity mutations without changing stable player ids")
+    void reImportRepairsMutablePlayerFieldsAndRelationshipsWithoutChangingStableIds() {
+        importer.importDataset();
+        DatasetFingerprint before = fingerprint();
+        String sourceId = "public-player:aitor-fernandez:1991-07-13:esp";
+        String playerId = playerId(sourceId);
+        String originalTeamId = playerTeamId(sourceId);
+        String otherTeamId = jdbcTemplate.queryForObject("""
+            SELECT t.id::text
+            FROM teams t
+            WHERE t.id::text <> ?
+            ORDER BY t.id
+            LIMIT 1
+            """, String.class, originalTeamId);
+
+        jdbcTemplate.update("""
+            UPDATE players
+            SET display_name = 'Aitor Broken',
+                shirt_number = 99,
+                position = 'ST',
+                attack = 1,
+                defense = 1,
+                technique = 1,
+                speed = 1,
+                stamina = 1,
+                mentality = 1,
+                source_entity_id = 'broken-source-entity',
+                identity_source_ref = 'broken-identity-ref',
+                position_source_ref = 'broken-position-ref'
+            WHERE id = ?::uuid
+            """, playerId);
+        jdbcTemplate.update("DELETE FROM team_squad WHERE player_id = ?::uuid", playerId);
+        jdbcTemplate.update("INSERT INTO team_squad (team_id, player_id) VALUES (?::uuid, ?::uuid)", otherTeamId, playerId);
+        jdbcTemplate.update("DELETE FROM player_special_attributes WHERE player_id = ?::uuid", playerId);
+
+        importer.importDataset();
+
+        assertThat(playerId(sourceId)).isEqualTo(playerId);
+        assertThat(playerTeamId(sourceId)).isEqualTo(originalTeamId);
+        assertThat(fingerprint()).isEqualTo(before);
+        assertThat(invalidSpecialAttributePlayerCount()).isZero();
+        assertThat(orphanSpecialAttributeCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("rollback matrix keeps snapshot intact for representative importer validation failures")
+    void rollbackMatrixKeepsSnapshotIntactForRepresentativeValidationFailures() {
+        importer.importDataset();
+        DatasetFingerprint before = fingerprint();
+        DatasetCounts beforeCounts = counts();
+
+        assertRollback("missing source ref", () -> jdbcTemplate.update("""
+            UPDATE players
+            SET identity_source_ref = ''
+            WHERE id = (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit' ORDER BY source_id LIMIT 1)
+            """));
+        assertRollback("missing source entity", () -> jdbcTemplate.update("""
+            UPDATE players
+            SET source_entity_id = ''
+            WHERE id = (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit' ORDER BY source_id LIMIT 1)
+            """));
+        assertRollback("invalid position", () -> jdbcTemplate.update("""
+            UPDATE players
+            SET position = 'BAD'
+            WHERE id = (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit' ORDER BY source_id LIMIT 1)
+            """));
+        assertRollback("0 traits", () -> jdbcTemplate.update("""
+            DELETE FROM player_special_attributes
+            WHERE player_id = (SELECT id FROM players WHERE source_system = 'manager-mvp1-explicit' ORDER BY source_id LIMIT 1)
+            """));
+        assertRollback("1 trait", () -> jdbcTemplate.update("""
+            DELETE FROM player_special_attributes
+            WHERE id = (
+                SELECT psa.id
+                FROM player_special_attributes psa
+                JOIN players p ON p.id = psa.player_id
+                WHERE p.source_system = 'manager-mvp1-explicit'
+                ORDER BY p.source_id, psa.slot
+                LIMIT 1
+            )
+            """));
+
+        assertThat(counts()).isEqualTo(beforeCounts);
+        assertThat(fingerprint()).isEqualTo(before);
+        assertThat(invalidSpecialAttributePlayerCount()).isZero();
+        assertThat(orphanSpecialAttributeCount()).isZero();
+    }
+
     private DatasetCounts counts() {
         return new DatasetCounts(
             count("clubs", "source_system = 'manager-mvp1-explicit'"),
@@ -225,6 +314,10 @@ class ThreeLeagueDatasetImporterTest {
         return new DatasetFingerprint(
             hash("""
                 SELECT source_id || '|' || id || '|' || display_name || '|' || position || '|' || shirt_number
+                    || '|' || attack || '|' || defense || '|' || technique || '|' || speed
+                    || '|' || stamina || '|' || mentality || '|' || COALESCE(height_cm::text, '')
+                    || '|' || COALESCE(source_entity_id, '') || '|' || COALESCE(identity_source_ref, '')
+                    || '|' || COALESCE(position_source_ref, '')
                 FROM players
                 WHERE source_system = 'manager-mvp1-explicit'
                 ORDER BY source_id
@@ -246,6 +339,44 @@ class ThreeLeagueDatasetImporterTest {
                 ORDER BY p.source_id, psa.slot
                 """)
         );
+    }
+
+    private void assertRollback(String scenario, Runnable mutation) {
+        DatasetFingerprint before = fingerprint();
+        DatasetCounts beforeCounts = counts();
+        TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
+
+        assertThatThrownBy(() -> transactionTemplate.executeWithoutResult(status -> {
+            mutation.run();
+            importer.validateGlobal();
+        }))
+            .as(scenario)
+            .isInstanceOf(RuntimeException.class);
+
+        assertThat(counts()).as(scenario + " counts").isEqualTo(beforeCounts);
+        assertThat(fingerprint()).as(scenario + " fingerprint").isEqualTo(before);
+        assertThat(orphanSpecialAttributeCount()).as(scenario + " orphan traits").isZero();
+    }
+
+    private String playerId(String sourceId) {
+        return jdbcTemplate.queryForObject("""
+            SELECT id::text
+            FROM players
+            WHERE source_system = 'manager-mvp1-explicit'
+              AND source_id = ?
+            """, String.class, sourceId);
+    }
+
+    private String playerTeamId(String sourceId) {
+        return jdbcTemplate.queryForObject("""
+            SELECT ts.team_id::text
+            FROM team_squad ts
+            JOIN players p ON p.id = ts.player_id
+            WHERE p.source_system = 'manager-mvp1-explicit'
+              AND p.source_id = ?
+            ORDER BY ts.team_id
+            LIMIT 1
+            """, String.class, sourceId);
     }
 
     private void assertPlayerIdentity(String externalId, String displayName, String position) {
