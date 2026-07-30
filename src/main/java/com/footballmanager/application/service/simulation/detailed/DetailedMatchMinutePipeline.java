@@ -12,7 +12,8 @@ final class DetailedMatchMinutePipeline {
     private final MinutePossessionPhase possessionPhase;
     private final MinuteAttackPhase attackPhase;
     private final MinuteDisciplinePhase disciplinePhase;
-    private final MinutePhysicalStatePhase physicalStatePhase;
+    private final MinuteInjuryPhase injuryPhase;
+    private final MinuteRestartEventPhase restartEventPhase;
     private final MinuteAutomaticSubstitutionPhase automaticSubstitutionPhase;
 
     DetailedMatchMinutePipeline(
@@ -21,14 +22,16 @@ final class DetailedMatchMinutePipeline {
             MinutePossessionPhase possessionPhase,
             MinuteAttackPhase attackPhase,
             MinuteDisciplinePhase disciplinePhase,
-            MinutePhysicalStatePhase physicalStatePhase,
+            MinuteInjuryPhase injuryPhase,
+            MinuteRestartEventPhase restartEventPhase,
             MinuteAutomaticSubstitutionPhase automaticSubstitutionPhase) {
         this.scheduledSubstitutionPhase = java.util.Objects.requireNonNull(scheduledSubstitutionPhase);
         this.tacticalStatePhase = java.util.Objects.requireNonNull(tacticalStatePhase);
         this.possessionPhase = java.util.Objects.requireNonNull(possessionPhase);
         this.attackPhase = java.util.Objects.requireNonNull(attackPhase);
         this.disciplinePhase = java.util.Objects.requireNonNull(disciplinePhase);
-        this.physicalStatePhase = java.util.Objects.requireNonNull(physicalStatePhase);
+        this.injuryPhase = java.util.Objects.requireNonNull(injuryPhase);
+        this.restartEventPhase = java.util.Objects.requireNonNull(restartEventPhase);
         this.automaticSubstitutionPhase = java.util.Objects.requireNonNull(automaticSubstitutionPhase);
     }
 
@@ -39,7 +42,8 @@ final class DetailedMatchMinutePipeline {
         MinutePossessionState possessionState = possessionPhase.apply(minuteContext, tacticalState);
         MinuteAttackState attackState = attackPhase.apply(minuteContext, possessionState);
         disciplinePhase.apply(minuteContext, attackState.possession());
-        physicalStatePhase.apply(minuteContext, attackState.possession());
+        injuryPhase.apply(minuteContext, attackState.possession());
+        restartEventPhase.apply(minuteContext, attackState.possession());
         automaticSubstitutionPhase.apply(minuteContext, attackState.possession());
         return new MinuteSimulationResult(minuteContext.minute(), eventsBefore, minuteContext.timeline().size());
     }

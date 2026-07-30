@@ -19,7 +19,8 @@ final class DetailedMatchMinuteFlow {
                 new MinuteAttackPhase(
                         composition.tacticalPolicies(), composition.eventPolicies(), composition.playerStatePolicies()),
                 new MinuteDisciplinePhase(composition.playerStatePolicies(), composition.eventPolicies()),
-                new MinutePhysicalStatePhase(composition.playerStatePolicies()),
+                new MinuteInjuryPhase(composition.playerStatePolicies().injuryModel()),
+                new MinuteRestartEventPhase(),
                 new MinuteAutomaticSubstitutionPhase(composition.substitutionPolicies()));
     }
 
