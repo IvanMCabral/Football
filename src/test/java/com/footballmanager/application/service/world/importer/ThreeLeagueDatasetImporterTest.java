@@ -83,19 +83,24 @@ class ThreeLeagueDatasetImporterTest {
         assertThat(count("players", "source_system = 'manager-mvp1-explicit'")).isEqualTo(1680);
         assertThat(invalidSpecialAttributePlayerCount()).isZero();
         assertThat(orphanSpecialAttributeCount()).isZero();
+        assertThat(clubsWithLessThanTwoGoalkeepers()).isZero();
     }
 
     @Test
-    @DisplayName("second import is idempotent")
-    void secondImportIsIdempotent() {
+    @DisplayName("second import is idempotent across entities, relationships and stable player ids")
+    void secondImportIsIdempotentAcrossLogicalSnapshot() {
         importer.importDataset();
         DatasetCounts first = counts();
+        DatasetFingerprint firstFingerprint = fingerprint();
 
         importer.importDataset();
         DatasetCounts second = counts();
+        DatasetFingerprint secondFingerprint = fingerprint();
 
         assertThat(second).isEqualTo(first);
+        assertThat(secondFingerprint).isEqualTo(firstFingerprint);
         assertThat(invalidSpecialAttributePlayerCount()).isZero();
+        assertThat(clubsWithLessThanTwoGoalkeepers()).isZero();
     }
 
     @Test
@@ -154,6 +159,57 @@ class ThreeLeagueDatasetImporterTest {
             """, Integer.class);
     }
 
+    private int clubsWithLessThanTwoGoalkeepers() {
+        return jdbcTemplate.queryForObject("""
+            SELECT COUNT(*) FROM (
+                SELECT c.id
+                FROM clubs c
+                JOIN teams t ON t.club_id = c.id
+                JOIN team_squad ts ON ts.team_id = t.id
+                JOIN players p ON p.id = ts.player_id
+                WHERE c.source_system = 'manager-mvp1-explicit'
+                GROUP BY c.id
+                HAVING COUNT(*) FILTER (WHERE p.position = 'GK') < 2
+            ) invalid
+            """, Integer.class);
+    }
+
+    private DatasetFingerprint fingerprint() {
+        return new DatasetFingerprint(
+            hash("""
+                SELECT source_id || '|' || id || '|' || display_name || '|' || position || '|' || shirt_number
+                FROM players
+                WHERE source_system = 'manager-mvp1-explicit'
+                ORDER BY source_id
+                """),
+            hash("""
+                SELECT t.id || '|' || p.source_id
+                FROM team_squad ts
+                JOIN teams t ON t.id = ts.team_id
+                JOIN players p ON p.id = ts.player_id
+                WHERE p.source_system = 'manager-mvp1-explicit'
+                ORDER BY t.id, p.source_id
+                """),
+            hash("""
+                SELECT p.source_id || '|' || sa.code || '|' || psa.slot
+                FROM player_special_attributes psa
+                JOIN players p ON p.id = psa.player_id
+                JOIN special_attributes sa ON sa.id = psa.special_attribute_id
+                WHERE p.source_system = 'manager-mvp1-explicit'
+                ORDER BY p.source_id, psa.slot
+                """)
+        );
+    }
+
+    private String hash(String query) {
+        return jdbcTemplate.queryForObject("""
+            SELECT md5(COALESCE(string_agg(row_value, E'\\n'), ''))
+            FROM (
+            """ + query + """
+            ) snapshot(row_value)
+            """, String.class);
+    }
+
     private static String adminUrl() {
         return "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
     }
@@ -163,4 +219,6 @@ class ThreeLeagueDatasetImporterTest {
     }
 
     private record DatasetCounts(int clubs, int teams, int players, int traits) {}
+
+    private record DatasetFingerprint(String players, String squads, String traits) {}
 }
