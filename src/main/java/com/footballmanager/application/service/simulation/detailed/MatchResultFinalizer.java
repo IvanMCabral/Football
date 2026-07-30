@@ -9,7 +9,6 @@ final class MatchResultFinalizer {
             TeamMatchState home,
             TeamMatchState away,
             MatchTimeline timeline,
-            int goalAdditions,
             Logger log) {
 
         int homePossTicks = home.possessionTicks();
@@ -18,7 +17,7 @@ final class MatchResultFinalizer {
         int homePoss = totalPoss > 0 ? (int) Math.round(100.0 * homePossTicks / totalPoss) : 50;
         int awayPoss = 100 - homePoss;
 
-        warnIfTimelineDiverged(ctx, home, away, timeline, goalAdditions, log);
+        warnIfTimelineDiverged(ctx, home, away, timeline, log);
         warnIfXgOutlier(ctx, home, away, log);
 
         String summary = String.format("%s %d - %d %s",
@@ -49,7 +48,6 @@ final class MatchResultFinalizer {
             TeamMatchState home,
             TeamMatchState away,
             MatchTimeline timeline,
-            int goalAdditions,
             Logger log) {
         long goalsInTimeline = timeline.events().stream()
             .filter(e -> e.type() == DetailedMatchEventType.GOAL)
@@ -57,10 +55,10 @@ final class MatchResultFinalizer {
         int totalPossessedGoals = home.goals() + away.goals();
         if (goalsInTimeline != totalPossessedGoals) {
             log.warn("[DETAIL-XG-DIVERGENCE] matchId={}, homeGoals={}, awayGoals={}, "
-                    + "goalsInTimeline={}, counter={}, divergence={}",
+                    + "goalsInTimeline={}, divergence={}",
                 ctx.matchId(),
                 home.goals(), away.goals(),
-                goalsInTimeline, goalAdditions,
+                goalsInTimeline,
                 totalPossessedGoals - goalsInTimeline);
         }
     }

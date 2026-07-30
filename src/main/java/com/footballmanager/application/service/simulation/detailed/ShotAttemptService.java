@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 final class ShotAttemptService {
 
@@ -19,8 +18,6 @@ final class ShotAttemptService {
     private final DefenseChannelService defenseChannelService;
     private final AttackContributionService attackContributionService;
     private final MatchProbabilityService matchProbabilityService;
-    private final AtomicInteger goalCounter;
-    private final Logger log;
 
     ShotAttemptService(
             ShotXgCalculator xgCalculator,
@@ -29,9 +26,7 @@ final class ShotAttemptService {
             ShotLocationService shotLocationService,
             DefenseChannelService defenseChannelService,
             AttackContributionService attackContributionService,
-            MatchProbabilityService matchProbabilityService,
-            AtomicInteger goalCounter,
-            Logger log) {
+            MatchProbabilityService matchProbabilityService) {
         this.xgCalculator = xgCalculator;
         this.fatigueModel = fatigueModel;
         this.assistModel = assistModel;
@@ -39,8 +34,6 @@ final class ShotAttemptService {
         this.defenseChannelService = defenseChannelService;
         this.attackContributionService = attackContributionService;
         this.matchProbabilityService = matchProbabilityService;
-        this.goalCounter = goalCounter;
-        this.log = log;
     }
 
     void attemptShot(
@@ -123,9 +116,6 @@ final class ShotAttemptService {
             isGoal = random.nextDouble() < (xg * matchIntensity / 0.60);
             if (isGoal) {
                 possessor.addGoal();
-                int n = goalCounter.incrementAndGet();
-                log.trace("[DETAIL-XG-COUNTER] addGoal called; counter={}, minute={}, xg={}",
-                    n, minute, xg);
                 possessor.addShot(true);
                 String goalDesc = assistPlayerId != null
                         ? "Goal by " + shooter.name() + " assisted by " + assistPlayerName + " " + minute + "'"

@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
     private static final Logger log = LoggerFactory.getLogger(DetailedMatchEngineFlow.class);
-    private static final AtomicInteger goalAdditions = new AtomicInteger(0);
 
     private final DisciplineModel disciplineModel;
     private final DetailedMatchMinuteFlow minuteFlow;
@@ -31,7 +29,7 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
 
     DetailedMatchEngineFlow(DisciplineModel disciplineModel) {
         this.disciplineModel = disciplineModel != null ? disciplineModel : new DisciplineModel();
-        this.minuteFlow = new DetailedMatchMinuteFlow(this.disciplineModel, goalAdditions, log);
+        this.minuteFlow = new DetailedMatchMinuteFlow(this.disciplineModel, log);
     }
 
     public DetailedMatchResult simulate(MatchContext context, long seed) {
@@ -115,7 +113,7 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
         }
 
         return matchResultFinalizer.finalizeResult(
-                context, homeState, awayState, timeline, goalAdditions.get(), log);
+                context, homeState, awayState, timeline, log);
     }
 
     static double onTargetProbability(double xg) {

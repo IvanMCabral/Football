@@ -17,51 +17,8 @@ final class MinuteAttackPhase {
     }
 
     MinuteAttackState apply(MinuteSimulationInput minuteContext, MinutePossessionState possession) {
-        int keyAttack = 70;
-        int keySpeed = 70;
-        int keyDribbler = 0;
-        int keySpeedster = 0;
-        int bestAttack = Integer.MIN_VALUE;
-        for (PlayerMatchState p : possession.possessor().startingPlayers()) {
-            if (p.onPitch() && !p.injured() && !p.redCard() && p.attack() > bestAttack) {
-                bestAttack = p.attack();
-                keyAttack = p.attack();
-                keySpeed = p.speed();
-                keyDribbler = p.getSkillLevel(PlayerSkill.DRIBBLER);
-                keySpeedster = p.getSkillLevel(PlayerSkill.SPEEDSTER);
-            }
-        }
-        double aggregateAttack = tacticalPolicies.attackContributionService().aggregateAttackerStat(
-                possession.possessor().startingPlayers(), possession.possessorSlots());
-        int teamAttackInfluence = (int) Math.round((keyAttack * 0.40) + (aggregateAttack * 0.60));
-        double opponentDefenderStat = tacticalPolicies.defenseChannelService().aggregateDefenderStat(
-                possession.opponent().startingPlayers(), possession.opponentSlots());
-        double possessorCollectiveStat = tacticalPolicies.attackContributionService().aggregateCollectiveStat(
-                possession.possessor().startingPlayers(), possession.possessorSlots());
-        double opponentCollectiveStat = tacticalPolicies.attackContributionService().aggregateCollectiveStat(
-                possession.opponent().startingPlayers(), possession.opponentSlots());
-        double chanceProbability = tacticalPolicies.matchProbabilityService().chanceProbability(
-                possession.possessor().style(),
-                minuteContext.minute(),
-                teamAttackInfluence,
-                keySpeed,
-                keyDribbler,
-                keySpeedster)
-                * tacticalPolicies.matchProbabilityService().professionalShotTempoMultiplier()
-                * Math.sqrt((1.0 + minuteContext.matchIntensity()) / 2.0)
-                * possession.possessorShape().attackVolumeMultiplier()
-                * possession.opponentShape().defensiveResistanceMultiplier()
-                * tacticalPolicies.defenseChannelService().defenderRosterChanceVolumeMultiplier(opponentDefenderStat)
-                * tacticalPolicies.attackContributionService().scheduledSubAttackVolumeMultiplier(
-                        possession.possessor(),
-                        minuteContext.matchContext().manualSubstitutions(),
-                        possession.possessor().teamId(),
-                        minuteContext.minute())
-                * tacticalPolicies.matchProbabilityService().collectiveQualityChanceVolumeMultiplier(
-                        possessorCollectiveStat, opponentCollectiveStat)
-                * tacticalPolicies.matchProbabilityService().defensiveStyleChanceVolumeMultiplier(possession.opponent().style())
-                * tacticalPolicies.matchProbabilityService().homeFieldChanceVolumeMultiplier(possession.homeHasPossession())
-                * channelMismatchMultiplier(possession.possessorShape(), possession.opponentShape());
+        AttackingThreat threat = strongestAttackingThreat(possession);
+        double chanceProbability = chanceProbability(minuteContext, possession, threat);
         if (minuteContext.random().nextDouble() < chanceProbability) {
             eventPolicies.shotAttemptService().attemptShot(
                     possession.possessor(),
@@ -79,6 +36,69 @@ final class MinuteAttackPhase {
                     minuteContext.timeline(),
                     minuteContext.matchIntensity());
         }
+        maybeCreateChance(minuteContext, possession, chanceProbability);
+        return new MinuteAttackState(possession, chanceProbability);
+    }
+
+    private AttackingThreat strongestAttackingThreat(MinutePossessionState possession) {
+        int keyAttack = 70;
+        int keySpeed = 70;
+        int keyDribbler = 0;
+        int keySpeedster = 0;
+        int bestAttack = Integer.MIN_VALUE;
+        for (PlayerMatchState p : possession.possessor().startingPlayers()) {
+            if (p.onPitch() && !p.injured() && !p.redCard() && p.attack() > bestAttack) {
+                bestAttack = p.attack();
+                keyAttack = p.attack();
+                keySpeed = p.speed();
+                keyDribbler = p.getSkillLevel(PlayerSkill.DRIBBLER);
+                keySpeedster = p.getSkillLevel(PlayerSkill.SPEEDSTER);
+            }
+        }
+        return new AttackingThreat(keyAttack, keySpeed, keyDribbler, keySpeedster);
+    }
+
+    private double chanceProbability(
+            MinuteSimulationInput minuteContext,
+            MinutePossessionState possession,
+            AttackingThreat threat) {
+        double aggregateAttack = tacticalPolicies.attackContributionService().aggregateAttackerStat(
+                possession.possessor().startingPlayers(), possession.possessorSlots());
+        int teamAttackInfluence = (int) Math.round((threat.attack() * 0.40) + (aggregateAttack * 0.60));
+        double opponentDefenderStat = tacticalPolicies.defenseChannelService().aggregateDefenderStat(
+                possession.opponent().startingPlayers(), possession.opponentSlots());
+        double possessorCollectiveStat = tacticalPolicies.attackContributionService().aggregateCollectiveStat(
+                possession.possessor().startingPlayers(), possession.possessorSlots());
+        double opponentCollectiveStat = tacticalPolicies.attackContributionService().aggregateCollectiveStat(
+                possession.opponent().startingPlayers(), possession.opponentSlots());
+        return tacticalPolicies.matchProbabilityService().chanceProbability(
+                possession.possessor().style(),
+                minuteContext.minute(),
+                teamAttackInfluence,
+                threat.speed(),
+                threat.dribblerSkill(),
+                threat.speedsterSkill())
+                * tacticalPolicies.matchProbabilityService().professionalShotTempoMultiplier()
+                * Math.sqrt((1.0 + minuteContext.matchIntensity()) / 2.0)
+                * possession.possessorShape().attackVolumeMultiplier()
+                * possession.opponentShape().defensiveResistanceMultiplier()
+                * tacticalPolicies.defenseChannelService().defenderRosterChanceVolumeMultiplier(opponentDefenderStat)
+                * tacticalPolicies.attackContributionService().scheduledSubAttackVolumeMultiplier(
+                        possession.possessor(),
+                        minuteContext.matchContext().manualSubstitutions(),
+                        possession.possessor().teamId(),
+                        minuteContext.minute())
+                * tacticalPolicies.matchProbabilityService().collectiveQualityChanceVolumeMultiplier(
+                        possessorCollectiveStat, opponentCollectiveStat)
+                * tacticalPolicies.matchProbabilityService().defensiveStyleChanceVolumeMultiplier(possession.opponent().style())
+                * tacticalPolicies.matchProbabilityService().homeFieldChanceVolumeMultiplier(possession.homeHasPossession())
+                * channelMismatchMultiplier(possession.possessorShape(), possession.opponentShape());
+    }
+
+    private void maybeCreateChance(
+            MinuteSimulationInput minuteContext,
+            MinutePossessionState possession,
+            double chanceProbability) {
         if (minuteContext.random().nextDouble() < chanceProbability * 0.6) {
             var creator = possession.selector().selectShooter(
                     possession.possessor().startingPlayers(), possession.formation());
@@ -97,7 +117,13 @@ final class MinuteAttackPhase {
                 playerStatePolicies.fatigueModel().applyDrain(c, 3);
             }
         }
-        return new MinuteAttackState(possession, chanceProbability);
+    }
+
+    private record AttackingThreat(
+            int attack,
+            int speed,
+            int dribblerSkill,
+            int speedsterSkill) {
     }
 
     private double channelMismatchMultiplier(TacticalShapeProfile attack, TacticalShapeProfile defense) {

@@ -2,8 +2,6 @@ package com.footballmanager.application.service.simulation.detailed;
 
 import org.slf4j.Logger;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 record DetailedMatchMinuteComposition(
         MinuteTacticalPolicies tacticalPolicies,
         MinuteEventPolicies eventPolicies,
@@ -12,7 +10,6 @@ record DetailedMatchMinuteComposition(
 
     static DetailedMatchMinuteComposition create(
             DisciplineModel disciplineModel,
-            AtomicInteger goalAdditions,
             Logger log) {
         FatigueModel fatigueModel = new FatigueModel();
         InjuryModel injuryModel = new InjuryModel();
@@ -34,9 +31,7 @@ record DetailedMatchMinuteComposition(
                 shotLocationService,
                 defenseChannelService,
                 attackContributionService,
-                matchProbabilityService,
-                goalAdditions,
-                log);
+                matchProbabilityService);
         return new DetailedMatchMinuteComposition(
                 new MinuteTacticalPolicies(
                         defenseChannelService,

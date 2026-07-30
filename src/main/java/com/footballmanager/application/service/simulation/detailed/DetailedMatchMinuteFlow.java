@@ -6,54 +6,39 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 final class DetailedMatchMinuteFlow {
-    private final MinuteScheduledSubstitutionPhase scheduledSubstitutionPhase;
-    private final MinuteTacticalStatePhase tacticalStatePhase;
-    private final MinutePossessionPhase possessionPhase;
-    private final MinuteAttackPhase attackPhase;
-    private final MinuteDisciplinePhase disciplinePhase;
-    private final MinutePhysicalStatePhase physicalStatePhase;
-    private final MinuteAutomaticSubstitutionPhase automaticSubstitutionPhase;
+    private final DetailedMatchMinutePipeline pipeline;
 
-    DetailedMatchMinuteFlow(DisciplineModel disciplineModel, AtomicInteger goalAdditions, Logger log) {
-        DetailedMatchMinuteComposition composition = DetailedMatchMinuteComposition.create(
-                disciplineModel, goalAdditions, log);
-        this.scheduledSubstitutionPhase = new MinuteScheduledSubstitutionPhase(log);
-        this.tacticalStatePhase = new MinuteTacticalStatePhase(composition.tacticalPolicies());
-        this.possessionPhase = new MinutePossessionPhase(composition.playerStatePolicies());
-        this.attackPhase = new MinuteAttackPhase(
-                composition.tacticalPolicies(), composition.eventPolicies(), composition.playerStatePolicies());
-        this.disciplinePhase = new MinuteDisciplinePhase(composition.playerStatePolicies(), composition.eventPolicies());
-        this.physicalStatePhase = new MinutePhysicalStatePhase(composition.playerStatePolicies());
-        this.automaticSubstitutionPhase = new MinuteAutomaticSubstitutionPhase(composition.substitutionPolicies());
+    DetailedMatchMinuteFlow(DisciplineModel disciplineModel, Logger log) {
+        DetailedMatchMinuteComposition composition = DetailedMatchMinuteComposition.create(disciplineModel, log);
+        this.pipeline = new DetailedMatchMinutePipeline(
+                new MinuteScheduledSubstitutionPhase(log),
+                new MinuteTacticalStatePhase(composition.tacticalPolicies()),
+                new MinutePossessionPhase(composition.playerStatePolicies()),
+                new MinuteAttackPhase(
+                        composition.tacticalPolicies(), composition.eventPolicies(), composition.playerStatePolicies()),
+                new MinuteDisciplinePhase(composition.playerStatePolicies(), composition.eventPolicies()),
+                new MinutePhysicalStatePhase(composition.playerStatePolicies()),
+                new MinuteAutomaticSubstitutionPhase(composition.substitutionPolicies()));
     }
 
     MinuteSimulationResult processMinute(MinuteSimulationInput minuteContext) {
-        int eventsBefore = minuteContext.timeline().size();
-        scheduledSubstitutionPhase.apply(minuteContext);
-        MinuteTacticalState tacticalState = tacticalStatePhase.resolve(minuteContext);
-        MinutePossessionState possessionState = possessionPhase.apply(minuteContext, tacticalState);
-        MinuteAttackState attackState = attackPhase.apply(minuteContext, possessionState);
-        disciplinePhase.apply(minuteContext, attackState.possession());
-        physicalStatePhase.apply(minuteContext, attackState.possession());
-        automaticSubstitutionPhase.apply(minuteContext, attackState.possession());
-        return new MinuteSimulationResult(minuteContext.minute(), eventsBefore, minuteContext.timeline().size());
+        return pipeline.processMinute(minuteContext);
     }
 
     TacticalShapeProfile tacticalShapeProfile(
             TeamMatchState team,
             String formation,
             Map<String, LineupSlot> slotsByPlayerId) {
-        return tacticalStatePhase.tacticalShapeProfile(team, formation, slotsByPlayerId);
+        return pipeline.tacticalShapeProfile(team, formation, slotsByPlayerId);
     }
 
     Map<PlayerSkill, Integer> aggregateOpponentDefenderSkills(List<PlayerMatchState> opponents) {
-        return attackPhase.aggregateOpponentDefenderSkills(opponents);
+        return pipeline.aggregateOpponentDefenderSkills(opponents);
     }
 
     void applyYellowCardAndMaybeSecondYellowRed(PlayerMatchState player, MatchTimeline timeline, int minute, String teamRole) {
-        disciplinePhase.applyYellowCardAndMaybeSecondYellowRed(player, timeline, minute, teamRole);
+        pipeline.applyYellowCardAndMaybeSecondYellowRed(player, timeline, minute, teamRole);
     }
 }
