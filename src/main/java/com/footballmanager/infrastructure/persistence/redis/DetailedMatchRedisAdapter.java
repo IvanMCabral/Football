@@ -68,7 +68,8 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
                             .flatMap(key -> redisTemplate.opsForValue().get(key)
                                     .doOnError(error -> log.warn("[DETAIL-REDIS] deserialization/read failed for key={}: {}",
                                             key, error.getMessage()))
-                                    .onErrorResume(error -> Mono.empty()))
+                                    .onErrorMap(error -> new RedisStateAccessException(
+                                            "Failed to read detailed match key=" + key, error)))
                             .doOnComplete(() -> log.info("[DETAIL-REDIS] findByCareerId completed for careerId={}", careerId))
                             .doOnError(error -> log.error("[DETAIL-REDIS] findByCareerId FAILED for careerId={}, pattern={}: {}",
                                     careerId, pattern, error.getMessage()));

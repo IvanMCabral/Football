@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.ports.out.match.MatchCommandRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -16,8 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Implementación reactiva del repositorio de comandos de partidos usando Redis.
- * Almacena comandos pendientes de forma distribuida y reactiva.
+ * Reactive Redis implementation for pending match commands.
  */
 @Repository
 @RequiredArgsConstructor
@@ -49,7 +47,9 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                         return Mono.error(e);
                     }
                 })
-                .onErrorResume(e -> Mono.empty());
+                .onErrorMap(e -> e instanceof RedisStateAccessException ? e
+                        : new RedisStateAccessException(
+                                "Failed to save pending match command for matchId=" + matchId, e));
     }
 
     @Override
@@ -66,10 +66,14 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                         );
                         return Mono.just(commands);
                     } catch (Exception e) {
-                        return Mono.<List<MatchCommand>>just(new ArrayList<>());
+                        return Mono.error(new RedisStateAccessException(
+                                "Failed to deserialize pending match commands for matchId=" + matchId, e));
                     }
                 })
                 .defaultIfEmpty(new ArrayList<>())
+                .onErrorMap(e -> e instanceof RedisStateAccessException ? e
+                        : new RedisStateAccessException(
+                                "Failed to read pending match commands for matchId=" + matchId, e))
                 .map(list -> (List<MatchCommand>) list);
     }
 
@@ -79,10 +83,12 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
 
         return redisTemplate.delete(key)
                 .then()
-                .onErrorResume(e -> Mono.empty());
+                .onErrorMap(e -> new RedisStateAccessException(
+                        "Failed to delete pending match commands for matchId=" + matchId, e));
     }
 
     private String buildKey(UUID userId, UUID matchId) {
         return KEY_PREFIX + userId.toString() + ":" + matchId.toString();
     }
 }
+

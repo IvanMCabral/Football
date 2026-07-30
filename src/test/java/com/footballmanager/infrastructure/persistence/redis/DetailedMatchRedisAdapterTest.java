@@ -267,7 +267,7 @@ class DetailedMatchRedisAdapterTest {
     }
 
     @Test
-    void findByCareerIdHandlesDeserializationFailure() {
+    void findByCareerIdPropagatesDeserializationFailure() {
         String pattern = "career:career-abc:match-detail:*";
         when(redisTemplate.keys(pattern)).thenReturn(Flux.fromIterable(List.of(
                 "career:career-abc:match-detail:match-123",
@@ -276,10 +276,9 @@ class DetailedMatchRedisAdapterTest {
         when(reactiveValueOps.get("career:career-abc:match-detail:match-123")).thenReturn(Mono.just(sampleDetail));
         when(reactiveValueOps.get("career:career-abc:match-detail:match-456")).thenReturn(Mono.error(new RuntimeException("bad data")));
 
-        List<DetailedMatchData> results = adapter.findByCareerId("career-abc").collectList().block();
-
-        assertEquals(1, results.size());
-        assertEquals("match-123", results.get(0).matchId());
+        RedisStateAccessException error = assertThrows(RedisStateAccessException.class,
+                () -> adapter.findByCareerId("career-abc").collectList().block());
+        assertTrue(error.getMessage().contains("career:career-abc:match-detail:match-456"));
     }
 
     @Test

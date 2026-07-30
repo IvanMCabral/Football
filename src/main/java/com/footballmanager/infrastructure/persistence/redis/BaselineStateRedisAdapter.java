@@ -171,7 +171,8 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
                 .doOnError(e -> log.warn(
                         "[F6-BASELINE-REDIS] Failed to read baseline key={}: {}",
                         key, e.getMessage()))
-                .onErrorResume(e -> Mono.empty())
+                .onErrorMap(e -> new RedisStateAccessException(
+                        "Failed to read baseline key=" + key, e))
                 .map(Optional::ofNullable)
                 .switchIfEmpty(Mono.just(Optional.empty()))
                 .subscribeOn(Schedulers.boundedElastic());

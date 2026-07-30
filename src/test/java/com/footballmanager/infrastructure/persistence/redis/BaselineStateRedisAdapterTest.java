@@ -135,6 +135,17 @@ class BaselineStateRedisAdapterTest {
     }
 
     @Test
+    void findConnectionFailurePropagatesInfrastructureError() {
+        when(reactiveValueOps.get(anyString())).thenReturn(Mono.error(
+                new RedisConnectionFailureException("simulated outage")));
+        lenient().when(redisTemplate.opsForValue()).thenReturn(reactiveValueOps);
+
+        StepVerifier.create(adapter.findByMatchId("career-abc", "match-001"))
+                .expectError(RedisStateAccessException.class)
+                .verify();
+    }
+
+    @Test
     void deleteRemovesKey() {
         when(redisTemplate.delete("career:career-abc:match-baseline:match-001"))
                 .thenReturn(Mono.just(1L));
