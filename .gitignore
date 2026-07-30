@@ -19,6 +19,10 @@ logs/
 # Local Redis persistence snapshots
 dump.rdb
 
+# Local database backups
+backups/
+*.dump
+
 # Local browser / visual QA artifacts
 .playwright-mcp/
 role-slot-impact-*.png
