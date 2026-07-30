@@ -322,3 +322,63 @@ Important contradictions:
 The codebase is significantly closer to MVP 1 acceptance: automated backend and frontend suites are green, Redis works, and the principal dataset is clean for the core counts and invariants. It is not ready for final `APPROVED` release acceptance under the requested criteria because several acceptance blockers remain observable in the current repository state.
 
 Final verdict: `REJECTED`.
+
+---
+
+## 27. Remediation closure re-audit — 2026-07-30
+
+The original independent verdict above is preserved as the audit baseline. This addendum audits the repository state after the final remediation commits.
+
+### 27.1 Critical remediation evidence
+
+| Prior blocker | Remediation evidence | Result |
+| --- | --- | --- |
+| Unsafe global player writer | `PlayerR2dbcRepository.insertPlayer(...)` was removed. `PlayerRepositorySafetyTest` now guards infrastructure persistence repositories against raw `INSERT INTO players` writer paths. | resolved |
+| Partial idempotence / rollback coverage | `ThreeLeagueDatasetImporterTest.failedValidationRollsBackPartialDatasetWrites` validates rollback after a deliberate invalid trait mutation inside the importer transaction. Counts and fingerprints remain stable after the failed validation. | resolved |
+| Stable identity / position proof partial | `ThreeLeagueDatasetImporterTest.stablePlayerIdentitiesKeepClubIndependentIdsAndCorrectedPositions` verifies corrected independent player IDs, short names, positions and source references for representative players across Spain, Argentina and Brazil. | resolved |
+| Real process restart not proven | `MVP1_BACKEND_RESTART_RECOVERY_EVIDENCE.md` records a real backend stop/restart, Flyway validation on `football_manager`, Netty startup on port 8080, frontend startup on port 4200 and post-restart API recovery. | resolved |
+| Three-league runtime flow partial | `MVP1_FINAL_RUNTIME_ACCEPTANCE_REMEDIATION.md` records live principal-DB checks for Spain, Argentina and Brazil: league/team loading, squads, two traits per player, career creation, auto-select, fixtures and standings. | resolved |
+| Frontend trait encoding / visual smoke | Frontend commits `782d510`, `1134b01` and `0c3d416` fix mojibake, add observable trait accessibility assertions, and document ChromeHeadless/Karma visual-render acceptance plus runtime API coverage for one club per league. | resolved |
+
+### 27.2 Validation commands and results
+
+| Area | Evidence | Result |
+| --- | --- | --- |
+| Backend focused safety/import tests | `mvn -q "-Dtest=PlayerRepositorySafetyTest,LegacySeedPrincipalDatabaseGuardTest,ApplicationLayerBoundaryTest" test` | green |
+| Backend importer/idempotence tests | `mvn -q "-Dtest=ThreeLeagueDatasetImporterTest,PlayerRepositorySafetyTest,LegacySeedPrincipalDatabaseGuardTest" test` | green |
+| Backend full suite | Surefire reports: 2451 tests, 0 failures, 0 errors, 4 skipped | green |
+| Frontend development build | `npm run build -- --configuration development` | green |
+| Frontend production build | `npm run build` | green |
+| Frontend test suite | `npm test -- --watch=false --browsers=ChromeHeadless`: 1021 success, 0 failures, 2 skipped | green |
+| Frontend encoding scan | No remaining mojibake markers under `src/app` for `Ã`, `Â`, `â`, `ð` or replacement characters | clean |
+| Git whitespace checks | `git diff --check` executed in root and frontend repositories | clean |
+
+### 27.3 Runtime and principal database evidence
+
+The principal database `football_manager` was validated through the runbook-driven environment loading path without printing secrets.
+
+| Check | Result |
+| --- | --- |
+| Countries | 3 |
+| Leagues | 3 |
+| Clubs | 70 |
+| Teams | 70 |
+| Players | 1680 |
+| Player traits | 3360 |
+| Players without exactly two traits | 0 |
+| Duplicate source identifiers | 0 |
+| Spain runtime sample | Real Madrid, 24 players, all with two traits, auto-select 11/11, fixtures and standings loaded |
+| Argentina runtime sample | River Plate, 24 players, all with two traits, auto-select 11/11, fixtures and standings loaded |
+| Brazil runtime sample | Flamengo, 24 players, all with two traits, auto-select 11/11, fixtures and standings loaded |
+
+### 27.4 Remaining notes
+
+- The PowerShell profile still emits a local alias warning before command output. This is outside the application repository and did not affect validation.
+- Karma still logs mocked SSE 404 warnings in the frontend suite. The suite finishes successfully with 0 failures; this is test-harness noise and not a release blocker for this remediation.
+- The in-app browser connector was unavailable in this local Codex session because its Node kernel assets could not be written. Visual acceptance was therefore completed through ChromeHeadless/Karma render assertions plus live HTTP runtime checks.
+
+### 27.5 Final remediation verdict
+
+All critical and important findings from this audit were remediated or revalidated with concrete repository/runtime evidence. Backend and frontend validations are green, principal database invariants are satisfied, runtime flows recover after restart, and frontend trait rendering is covered without corrupt text.
+
+Final remediation verdict: `APPROVED`.
