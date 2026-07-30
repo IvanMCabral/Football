@@ -1,6 +1,6 @@
 # MVP1 Final Release Dataset Closure Report
 
-Date: 2026-07-29
+Date: 2026-07-30
 
 Verdict: `APPROVED`
 
@@ -33,10 +33,19 @@ Validated against `football_manager`:
 - Backup before legacy cleanup: `backups/football_manager_before_mvp1_catalog_cleanup_20260729.dump`.
 - Backup files are ignored by Git.
 - Legacy seed writers now refuse principal DB writes unless explicitly overridden.
+- Post-audit remediation report: `docs/data/MVP1_FINAL_ACCEPTANCE_REMEDIATION_REPORT.md`.
+- Goalkeeper coverage report: `docs/data/MVP1_GOALKEEPER_AND_SQUAD_COVERAGE_REVIEW.md`.
 
 ## Runtime
 
 Validated:
+
+- Redis authenticated: `PING -> PONG`.
+- Backend suite: 2448 tests, 0 failures, 0 errors, 4 skipped.
+- Frontend suite: 1021 success, 0 failures, 2 skipped.
+- Frontend development build: passed.
+- Frontend production build: passed.
+- Runtime/recovery report: `docs/data/MVP1_THREE_LEAGUE_RUNTIME_RECOVERY_ACCEPTANCE.md`.
 
 - three-league loading;
 - career creation;
