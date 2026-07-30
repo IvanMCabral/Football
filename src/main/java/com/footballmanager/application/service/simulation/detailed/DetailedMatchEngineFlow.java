@@ -420,4 +420,3 @@ private void applyMinuteDrain(TeamMatchState team, TeamStyle style) {
         }
     }
 }
-

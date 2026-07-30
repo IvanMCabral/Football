@@ -91,4 +91,3 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
         return KEY_PREFIX + userId.toString() + ":" + matchId.toString();
     }
 }
-
