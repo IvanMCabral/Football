@@ -121,6 +121,27 @@ class LiveSessionIsolationStressTest {
 
     @Test
     @Timeout(20)
+    @DisplayName("deferred substitutions survive replay without duplicated accumulated events")
+    void deferredSubstitutionsSurviveReplayWithoutDuplicatedAccumulatedEvents() {
+        Scenario scenario = scenario("accumulated-replay", 505L, 32, 9, 5, TeamStyle.COUNTER);
+        LiveSession session = new LiveSession(scenario.context(), scenario.seed());
+
+        tickUntil(session, scenario.subMinute() - 1);
+        session.recordManualSubstitution(scenario.event());
+        session.mutateContext(ctx -> ctx.withNewStyle(ctx.homeTeamId(), scenario.style()));
+        tickUntil(session, 55);
+
+        assertIsolated(scenario, session, null);
+        assertThat(session.accumulatedEvents().stream()
+                .filter(event -> event.type() == DetailedMatchEventType.SUBSTITUTION)
+                .filter(event -> scenario.onPlayerId().equals(event.relatedPlayerId()))
+                .toList())
+                .as("accumulated events must expose one logical substitution after replay")
+                .hasSize(1);
+    }
+
+    @Test
+    @Timeout(20)
     @DisplayName("observable composition lifetime is isolated per LiveSession replay")
     void observableCompositionLifetimeIsolatedPerLiveSessionReplay() throws Exception {
         Scenario first = scenario("lifetime-a", 606L, 14, 8, 4, TeamStyle.BALANCED);

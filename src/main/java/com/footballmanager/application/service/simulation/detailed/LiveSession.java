@@ -142,7 +142,7 @@ public final class LiveSession {
         }
         for (DetailedMatchEvent e : manualEvents) {
             if (e.minute() <= currentMinute) {
-                eventsByVisibleKey.putIfAbsent(visibleEventKey(e), e);
+                eventsByVisibleKey.put(visibleEventKey(e), e);
             }
         }
         List<DetailedMatchEvent> eventsSoFar = new ArrayList<>(eventsByVisibleKey.values());
