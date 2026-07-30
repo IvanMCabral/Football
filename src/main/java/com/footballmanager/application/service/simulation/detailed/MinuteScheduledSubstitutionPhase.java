@@ -9,7 +9,7 @@ final class MinuteScheduledSubstitutionPhase {
         this.log = log;
     }
 
-    void apply(MinuteSimulationContext minuteContext) {
+    void apply(MinuteSimulationInput minuteContext) {
         int minute = minuteContext.minute();
         for (MatchContext.ScheduledSub sub : minuteContext.matchContext().manualSubstitutions()) {
             if (sub.effectiveMinute() != minute) {
@@ -22,7 +22,7 @@ final class MinuteScheduledSubstitutionPhase {
                 continue;
             }
             try {
-                DetailedMatchEvent subEvent = minuteContext.scheduledSubEngine().manualSubstitute(
+                DetailedMatchEvent subEvent = minuteContext.scheduledSubstitutionEngine().manualSubstitute(
                         target, sub.playerOffId(), sub.playerOnId(), sub.effectiveMinute());
                 minuteContext.timeline().addEvent(subEvent);
                 minuteContext.appliedScheduledSubs().add(subKey);

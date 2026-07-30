@@ -7,7 +7,7 @@ final class MinutePossessionPhase {
         this.playerStatePolicies = playerStatePolicies;
     }
 
-    MinutePossessionState apply(MinuteSimulationContext minuteContext, MinuteTacticalState tacticalState) {
+    MinutePossessionState apply(MinuteSimulationInput minuteContext, MinuteTacticalState tacticalState) {
         boolean homeHasPossession = minuteContext.random().nextDouble() < tacticalState.homeShare();
         TeamMatchState possessor = homeHasPossession ? minuteContext.homeState() : minuteContext.awayState();
         TeamMatchState opponent = homeHasPossession ? minuteContext.awayState() : minuteContext.homeState();

@@ -9,7 +9,7 @@ final class MinuteDisciplinePhase {
         this.eventPolicies = eventPolicies;
     }
 
-    void apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
+    void apply(MinuteSimulationInput minuteContext, MinutePossessionState possession) {
         var potentialFouler = possession.selector().selectShooter(
                 possession.possessor().startingPlayers(), possession.formation());
         if (potentialFouler.isEmpty()) {

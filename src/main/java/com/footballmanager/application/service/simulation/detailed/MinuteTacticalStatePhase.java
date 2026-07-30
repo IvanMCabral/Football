@@ -15,7 +15,7 @@ final class MinuteTacticalStatePhase {
         this.tacticalPolicies = tacticalPolicies;
     }
 
-    MinuteTacticalState resolve(MinuteSimulationContext minuteContext) {
+    MinuteTacticalState resolve(MinuteSimulationInput minuteContext) {
         int minute = minuteContext.minute();
         int homeMaxPasser = tacticalPolicies.playerSkillService().maxSkill(
                 minuteContext.homeState().startingPlayers(), PlayerSkill.PASSER);

@@ -9,7 +9,7 @@ final class MinutePhysicalStatePhase {
         this.playerStatePolicies = playerStatePolicies;
     }
 
-    void apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
+    void apply(MinuteSimulationInput minuteContext, MinutePossessionState possession) {
         var potentialInjured = possession.selector().selectShooter(
                 possession.possessor().startingPlayers(), possession.formation());
         if (potentialInjured.isPresent()) {

@@ -30,7 +30,8 @@ final class DetailedMatchMinuteFlow {
         this.automaticSubstitutionPhase = new MinuteAutomaticSubstitutionPhase(composition.substitutionPolicies());
     }
 
-    void processMinute(MinuteSimulationContext minuteContext) {
+    MinuteSimulationResult processMinute(MinuteSimulationInput minuteContext) {
+        int eventsBefore = minuteContext.timeline().size();
         scheduledSubstitutionPhase.apply(minuteContext);
         MinuteTacticalState tacticalState = tacticalStatePhase.resolve(minuteContext);
         MinutePossessionState possessionState = possessionPhase.apply(minuteContext, tacticalState);
@@ -38,6 +39,7 @@ final class DetailedMatchMinuteFlow {
         disciplinePhase.apply(minuteContext, attackState.possession());
         physicalStatePhase.apply(minuteContext, attackState.possession());
         automaticSubstitutionPhase.apply(minuteContext, attackState.possession());
+        return new MinuteSimulationResult(minuteContext.minute(), eventsBefore, minuteContext.timeline().size());
     }
 
     TacticalShapeProfile tacticalShapeProfile(

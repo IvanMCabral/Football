@@ -96,8 +96,12 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
             if (minute > maxMinute) {
                 break;
             }
-            minuteFlow.processMinute(new MinuteSimulationContext(
+            MinuteSimulationConfig minuteConfig = new MinuteSimulationConfig(
                     context,
+                    homePossBase,
+                    awayPossBase,
+                    matchIntensity);
+            MinuteMatchState minuteMatchState = new MinuteMatchState(
                     random,
                     homeState,
                     awayState,
@@ -105,11 +109,8 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
                     homeSelector,
                     awaySelector,
                     appliedScheduledSubs,
-                    scheduledSubEngine,
-                    homePossBase,
-                    awayPossBase,
-                    matchIntensity,
-                    minute));
+                    scheduledSubEngine);
+            minuteFlow.processMinute(new MinuteSimulationInput(minuteConfig, minuteMatchState, minute));
             clock.advance();
         }
 

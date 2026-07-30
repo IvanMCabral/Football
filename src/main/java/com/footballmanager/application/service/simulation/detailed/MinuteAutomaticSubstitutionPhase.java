@@ -7,7 +7,7 @@ final class MinuteAutomaticSubstitutionPhase {
         this.substitutionPolicies = substitutionPolicies;
     }
 
-    void apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
+    void apply(MinuteSimulationInput minuteContext, MinutePossessionState possession) {
         int minute = minuteContext.minute();
         if (minute >= 60
                 && !minuteContext.homeState().startingPlayers().isEmpty()

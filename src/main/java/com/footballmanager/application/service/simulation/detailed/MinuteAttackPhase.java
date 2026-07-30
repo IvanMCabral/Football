@@ -16,7 +16,7 @@ final class MinuteAttackPhase {
         this.playerStatePolicies = playerStatePolicies;
     }
 
-    MinuteAttackState apply(MinuteSimulationContext minuteContext, MinutePossessionState possession) {
+    MinuteAttackState apply(MinuteSimulationInput minuteContext, MinutePossessionState possession) {
         int keyAttack = 70;
         int keySpeed = 70;
         int keyDribbler = 0;
