@@ -1,5 +1,6 @@
-package com.footballmanager.application.service.world.importer;
+package com.footballmanager.infrastructure.world.importer;
 
+import com.footballmanager.application.service.world.importer.ThreeLeagueImportReport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

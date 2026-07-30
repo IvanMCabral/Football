@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.world.importer;
 
+import com.footballmanager.infrastructure.world.importer.ThreeLeagueDatasetImporter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;

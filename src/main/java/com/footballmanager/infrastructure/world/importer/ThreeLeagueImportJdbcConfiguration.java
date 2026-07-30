@@ -1,4 +1,4 @@
-package com.footballmanager.application.service.world.importer;
+package com.footballmanager.infrastructure.world.importer;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

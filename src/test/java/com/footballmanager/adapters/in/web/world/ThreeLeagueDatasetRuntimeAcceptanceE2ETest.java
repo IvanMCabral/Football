@@ -3,7 +3,7 @@ package com.footballmanager.adapters.in.web.world;
 import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.adapters.in.web.career.lineup.dto.LineupDTO;
 import com.footballmanager.application.service.career.CareerSessionService;
-import com.footballmanager.application.service.world.importer.ThreeLeagueDatasetImporter;
+import com.footballmanager.infrastructure.world.importer.ThreeLeagueDatasetImporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

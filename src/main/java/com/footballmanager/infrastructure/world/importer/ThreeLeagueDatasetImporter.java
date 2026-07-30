@@ -1,7 +1,8 @@
-package com.footballmanager.application.service.world.importer;
+package com.footballmanager.infrastructure.world.importer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.footballmanager.application.service.world.importer.ThreeLeagueImportReport;
 import com.footballmanager.application.service.world.PlayerSpecialAttributeSelectionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -32,6 +33,7 @@ public class ThreeLeagueDatasetImporter {
     @Transactional(transactionManager = "threeLeagueImportTransactionManager")
     public ThreeLeagueImportReport importDataset() {
         try {
+            ensurePlayerTraceabilityColumns();
             List<CountryRecord> countries = read("data/initial/countries.json", new TypeReference<>() {});
             List<LeagueRecord> leagues = read("data/initial/leagues.json", new TypeReference<>() {});
             List<SpecialAttributeRecord> specialAttributes =
@@ -95,6 +97,16 @@ public class ThreeLeagueDatasetImporter {
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read MVP 1 dataset resources", e);
         }
+    }
+
+    private void ensurePlayerTraceabilityColumns() {
+        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS source_entity_id VARCHAR(160)");
+        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS identity_source_name VARCHAR(120)");
+        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS identity_source_ref TEXT");
+        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS identity_checked_at DATE");
+        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS position_source_ref TEXT");
+        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS position_checked_at DATE");
+        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS position_estimated BOOLEAN NOT NULL DEFAULT TRUE");
     }
 
     public void validateGlobal() {
@@ -397,8 +409,10 @@ public class ThreeLeagueDatasetImporter {
                 attributes.mentality(),
                 source.marketValue(),
                 source.specialAttributes(),
+                source.sourceEntityId(),
                 source.identitySourceName(),
                 source.identitySourceRef(),
+                source.identityCheckedAt(),
                 source.positionSourceRef(),
                 source.positionCheckedAt(),
                 source.positionEstimated()));
@@ -430,12 +444,21 @@ public class ThreeLeagueDatasetImporter {
             + ",\"SPEEDSTER\":" + player.speed() + "}";
         jdbcTemplate.update("""
             INSERT INTO players (
-                id, source_system, source_id, country_id, name, display_name, age, birth_date, position,
+                id, source_system, source_id, source_entity_id, identity_source_name, identity_source_ref,
+                identity_checked_at, position_source_ref, position_checked_at, position_estimated,
+                country_id, name, display_name, age, birth_date, position,
                 dominant_foot, shirt_number, attack, defense, technique, speed, stamina, mentality,
                 market_value, weekly_salary, energy, injured, height_cm, skill_levels_json, contract_status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 100, FALSE, ?, ?, 'ACTIVE')
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 100, FALSE, ?, ?, 'ACTIVE')
             ON CONFLICT (source_system, source_id) DO UPDATE SET
+                source_entity_id = EXCLUDED.source_entity_id,
+                identity_source_name = EXCLUDED.identity_source_name,
+                identity_source_ref = EXCLUDED.identity_source_ref,
+                identity_checked_at = EXCLUDED.identity_checked_at,
+                position_source_ref = EXCLUDED.position_source_ref,
+                position_checked_at = EXCLUDED.position_checked_at,
+                position_estimated = EXCLUDED.position_estimated,
                 country_id = EXCLUDED.country_id, name = EXCLUDED.name, display_name = EXCLUDED.display_name,
                 age = EXCLUDED.age, birth_date = EXCLUDED.birth_date, position = EXCLUDED.position,
                 dominant_foot = EXCLUDED.dominant_foot, shirt_number = EXCLUDED.shirt_number,
@@ -444,7 +467,10 @@ public class ThreeLeagueDatasetImporter {
                 market_value = EXCLUDED.market_value, weekly_salary = EXCLUDED.weekly_salary,
                 height_cm = EXCLUDED.height_cm, skill_levels_json = EXCLUDED.skill_levels_json,
                 updated_at = NOW()
-            """, player.id(), player.sourceSystem(), player.externalId(), countryId, player.fullName(),
+            """, player.id(), player.sourceSystem(), player.externalId(), player.sourceEntityId(),
+            player.identitySourceName(), player.identitySourceRef(), LocalDate.parse(player.identityCheckedAt()),
+            player.positionSourceRef(), LocalDate.parse(player.positionCheckedAt()),
+            Boolean.TRUE.equals(player.positionEstimated()), countryId, player.fullName(),
             player.displayName(), age, player.birthDate(), player.primaryPosition(), player.preferredFoot(),
             player.shirtNumber(), player.attack(), player.defense(), player.technique(), player.speed(),
             player.stamina(), player.mentality(), player.marketValue(), player.marketValue().divide(BigDecimal.valueOf(250)),
@@ -539,7 +565,8 @@ public class ThreeLeagueDatasetImporter {
         LocalDate birthDate, String nationalityCode, String primaryPosition, List<String> secondaryPositions,
         String preferredFoot, int shirtNumber, int heightCm, int attack, int defense, int technique,
         int speed, int stamina, int mentality, BigDecimal marketValue, List<String> specialAttributes,
-        String identitySourceName, String identitySourceRef, String positionSourceRef,
+        String sourceEntityId, String identitySourceName, String identitySourceRef, String identityCheckedAt,
+        String positionSourceRef,
         String positionCheckedAt, Boolean positionEstimated
     ) {}
 }
