@@ -6,18 +6,11 @@ import com.footballmanager.application.service.simulation.detailed.InjuryRecover
 import com.footballmanager.application.service.simulation.detailed.EnergyRecoveryLifecycleApplier;
 import com.footballmanager.application.service.simulation.detailed.InjuryMutationApplier;
 import com.footballmanager.application.service.simulation.detailed.LiveRoundMutationTracking;
-import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
-import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
 import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
-import com.footballmanager.application.service.simulation.detailed.MatchTimeline;
-import com.footballmanager.application.service.simulation.detailed.MatchLineupPlayerDto;
-import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
 import com.footballmanager.application.service.simulation.detailed.PlayerRatingsAssembler;
 import com.footballmanager.application.service.simulation.detailed.CareerMutationPolicy;
-import com.footballmanager.application.service.simulation.detailed.CareerMutationResult;
 import com.footballmanager.application.service.simulation.detailed.CareerMutationService;
-import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngineProvider;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
@@ -37,15 +30,12 @@ import com.footballmanager.domain.service.MatchSimulator;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 @Slf4j
 public class LeagueSimulator {
-    private static final Duration DETAIL_PERSIST_TIMEOUT = Duration.ofSeconds(5);
-
     private final MatchSimulator matchSimulator;
     private final MatchEngineImpl matchEngine;
     private final boolean useClassicLeagueEngine;
@@ -60,6 +50,9 @@ public class LeagueSimulator {
     private final SuspensionLifecycleApplier suspensionLifecycleApplier = new SuspensionLifecycleApplier();
     private final InjuryRecoveryLifecycleApplier injuryRecoveryLifecycleApplier = new InjuryRecoveryLifecycleApplier();
     private final EnergyRecoveryLifecycleApplier energyRecoveryLifecycleApplier = new EnergyRecoveryLifecycleApplier();
+    private final LiveMatchLifecycleService liveLifecycleService;
+    private final CareerMutationCoordinator careerMutationCoordinator;
+    private final MatchDetailPersistenceCoordinator detailPersistenceCoordinator;
     public LeagueSimulator(MatchSimulator matchSimulator) {
         this(matchSimulator, null, false, false, false, null, false, false, false, false, false);
     }
@@ -108,6 +101,11 @@ public class LeagueSimulator {
                 mutateCareerState, persistInjuries, persistFatigue,
                 persistDiscipline, persistForm);
         this.careerMutationService = new CareerMutationService(new InjuryMutationApplier());
+        this.liveLifecycleService = new LiveMatchLifecycleService(careerMutationPolicy, log);
+        this.careerMutationCoordinator = new CareerMutationCoordinator(
+                careerMutationService, careerMutationPolicy, liveLifecycleService, log);
+        this.detailPersistenceCoordinator = new MatchDetailPersistenceCoordinator(
+                persistDetail, storagePort, playerRatingsAssembler, log);
     }
     public void simulateLeagueRound(CareerSave career, int round) {
         TournamentState tournamentState = career.getTournamentState();
@@ -178,12 +176,11 @@ public class LeagueSimulator {
             tournamentState.recordMatchResult(fixture.getMatchId(), resultData);
             log.debug("Fixture {} simulated with detailed match engine: {} - {}",
                     fixture.getMatchId(), resultData.homeGoals, resultData.awayGoals);
-            if (persistDetail && storagePort != null) {
-                persistDetailedMatchDetail(career, fixture, homeTeam.getName(), awayTeam.getName(), detailedResult, context);
-            }
-            collectStartingXIParticipation(context, tracking);
-            collectDetailedResultParticipation(detailedResult, tracking);
-            applyDetailedCareerMutation(career, detailedResult, tracking);
+            detailPersistenceCoordinator.persistDetailedMatchDetail(
+                    career, fixture, homeTeam.getName(), awayTeam.getName(), detailedResult, context);
+            careerMutationCoordinator.collectStartingXIParticipation(context, tracking);
+            careerMutationCoordinator.collectDetailedResultParticipation(detailedResult, tracking);
+            careerMutationCoordinator.applyDetailedCareerMutation(career, detailedResult, tracking);
             return detailedResult;
         } catch (IllegalArgumentException e) {
             log.warn("detailed match context build failed for fixture {}: {}, falling back to default",
@@ -195,109 +192,6 @@ public class LeagueSimulator {
                     fixture.getMatchId(), e.getMessage());
             simulateWithDefaultEngine(fixture, homeOvr, awayOvr, tournamentState);
             return null;
-        }
-    }
-    private void persistDetailedMatchDetail(CareerSave career, MatchFixture fixture,
-                                   String homeTeamName, String awayTeamName,
-                                   DetailedMatchResult detailedResult,
-                                   MatchContext context) {
-        /*
-         * simulateLeagueRound is a synchronous league/batch workflow: callers
-         * expect the fixture, standings and optional detailed match detail snapshot to be
-         * settled before the round returns. The bounded block stays at this
-         * batch boundary and is not used from a WebFlux controller pipeline.
-         */
-        try {
-            String careerId = career.getData().getCareerId();
-            Integer seasonNumber = career.getSeasonManager().getCurrentSeason();
-            Integer round = fixture.getRound();
-            List<PlayerMatchRatingDto> playerRatings =
-                    playerRatingsAssembler.assemblePlayerRatings(career, fixture, detailedResult);
-            String homeFormation = resolveFormation(career, fixture.getHomeTeamId());
-            String awayFormation = resolveFormation(career, fixture.getAwayTeamId());
-            DetailedMatchData detail = DetailedMatchData.fromResult(
-                    careerId,
-                    seasonNumber,
-                    round,
-                    homeTeamName,
-                    awayTeamName,
-                    homeFormation,
-                    awayFormation,
-                    detailedResult,
-                    playerRatings,
-                    lineupSnapshot(context.homeStartingPlayers()),
-                    lineupSnapshot(context.homeBenchPlayers()),
-                    lineupSnapshot(context.awayStartingPlayers()),
-                    lineupSnapshot(context.awayBenchPlayers())
-            );
-            storagePort.save(careerId, detail)
-                    .doOnSuccess(ignored -> log.debug(
-                            "Detail saved for fixture {} in career {}",
-                            fixture.getMatchId(), careerId))
-                    .onErrorResume(e -> {
-                        log.warn("Failed to persist detail for fixture {}: {}, continuing round",
-                                fixture.getMatchId(), e.getMessage());
-                        return Mono.empty();
-                    })
-                    .block(DETAIL_PERSIST_TIMEOUT);
-        } catch (Exception e) {
-            log.warn("Failed to persist detail for fixture {}: {}, continuing round",
-                    fixture.getMatchId(), e.getMessage());
-        }
-    }
-    private List<MatchLineupPlayerDto> lineupSnapshot(List<SessionPlayer> players) {
-        if (players == null || players.isEmpty()) {
-            return List.of();
-        }
-        return players.stream()
-                .filter(java.util.Objects::nonNull)
-                .map(MatchLineupPlayerDto::fromSessionPlayer)
-                .toList();
-    }
-    private void applyDetailedCareerMutation(CareerSave career, DetailedMatchResult detailedResult,
-                                         RoundMutationTracking tracking) {
-        try {
-            Set<String> preMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
-            CareerMutationResult mutationResult =
-                    careerMutationService.applyMutations(career, detailedResult, careerMutationPolicy);
-            if (!mutationResult.failures().isEmpty()) {
-                log.warn("Career mutation partial failures for career {}: {}",
-                        career.getData().getCareerId(), mutationResult.failures());
-            }
-            if (mutationResult.injuriesApplied() > 0) {
-                log.debug("Applied {} injury mutations for career {}",
-                        mutationResult.injuriesApplied(), career.getData().getCareerId());
-            }
-            if (mutationResult.fatigueApplied() > 0) {
-                log.debug("Applied {} fatigue mutations for career {}",
-                        mutationResult.fatigueApplied(), career.getData().getCareerId());
-            }
-            if (mutationResult.disciplineApplied() > 0) {
-                log.debug("Applied {} discipline mutations for career {}",
-                        mutationResult.disciplineApplied(), career.getData().getCareerId());
-            }
-            if (careerMutationPolicy.isDisciplinePersistenceEnabled()) {
-                Set<String> postMutationSuspended = capturePreRoundSuspendedPlayerIds(career);
-                postMutationSuspended.removeAll(preMutationSuspended);
-                if (!postMutationSuspended.isEmpty()) {
-                    tracking.newlySuspendedPlayerIds.addAll(postMutationSuspended);
-                    log.debug("Newly suspended from mutation: {}",
-                            postMutationSuspended);
-                }
-            }
-            if (careerMutationPolicy.isInjuryPersistenceEnabled()) {
-                Set<String> preMutationInjured = capturePreRoundInjuredPlayerIds(career);
-                Set<String> postMutationInjured = capturePreRoundInjuredPlayerIds(career);
-                postMutationInjured.removeAll(preMutationInjured);
-                if (!postMutationInjured.isEmpty()) {
-                    tracking.newlyInjuredPlayerIds.addAll(postMutationInjured);
-                    log.debug("Newly injured from mutation: {}",
-                            postMutationInjured);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Career mutation failed unexpectedly for career {}: {}, continuing round",
-                    career.getData().getCareerId(), e.getMessage());
         }
     }
     void applyLiveMatchCareerMutations(CareerSave career, DetailedMatchResult detailedResult,
@@ -319,36 +213,6 @@ public class LeagueSimulator {
         liveLifecycleService().applyEndOfRoundLiveLifecycle(career, currentRound, allFixtures, tracking);
     }
 
-    private void collectStartingXIParticipation(MatchContext context,
-                                                  RoundMutationTracking tracking) {
-        for (SessionPlayer p : context.homeStartingPlayers()) {
-            if (p != null && p.getSessionPlayerId() != null && !Boolean.TRUE.equals(p.getSuspended())) {
-                tracking.participatedPlayerIds.add(p.getSessionPlayerId());
-            }
-        }
-        for (SessionPlayer p : context.awayStartingPlayers()) {
-            if (p != null && p.getSessionPlayerId() != null && !Boolean.TRUE.equals(p.getSuspended())) {
-                tracking.participatedPlayerIds.add(p.getSessionPlayerId());
-            }
-        }
-    }
-    private void collectDetailedResultParticipation(DetailedMatchResult detailedResult,
-                                               RoundMutationTracking tracking) {
-        if (detailedResult == null || detailedResult.timeline() == null) return;
-        for (DetailedMatchEvent event : detailedResult.timeline().events()) {
-            if (event.playerId() != null && !event.playerId().isBlank()) {
-                tracking.participatedPlayerIds.add(event.playerId());
-            }
-            if (event.relatedPlayerId() != null && !event.relatedPlayerId().isBlank()) {
-                tracking.participatedPlayerIds.add(event.relatedPlayerId());
-            }
-            if (event.type() == DetailedMatchEventType.RED_CARD) {
-                if (event.playerId() != null && !event.playerId().isBlank()) {
-                    tracking.newlySuspendedPlayerIds.add(event.playerId());
-                }
-            }
-        }
-    }
     private Team buildMinimalTeam(String sessionTeamId, String fallbackName) {
         String name = (fallbackName != null && fallbackName.length() >= 3)
                 ? fallbackName
@@ -405,7 +269,7 @@ public class LeagueSimulator {
     }
 
     private LiveMatchLifecycleService liveLifecycleService() {
-        return new LiveMatchLifecycleService(careerMutationPolicy, log);
+        return liveLifecycleService;
     }
 
     private RoundLifecycleService roundLifecycleService() {
@@ -434,19 +298,6 @@ public class LeagueSimulator {
                 playerRatingsAssembler,
                 liveMutationService()::apply,
                 log);
-    }
-    private String resolveFormation(CareerSave career, String teamId) {
-        if (career == null || teamId == null || teamId.isBlank()) {
-            return null;
-        }
-        return resolveFormation(career.getSessionTeam(teamId));
-    }
-    private String resolveFormation(SessionTeam team) {
-        if (team == null) {
-            return null;
-        }
-        String formation = team.getFormation();
-        return (formation != null && !formation.isBlank()) ? formation : null;
     }
     private int calculateTeamOVR(CareerSave career, String sessionTeamId) {
         List<String> squadPlayerIds = career.getTeamManager().getSquadPlayerIds(sessionTeamId);
