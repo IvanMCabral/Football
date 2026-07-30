@@ -9,6 +9,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 import java.sql.DriverManager;
@@ -123,6 +125,51 @@ class ThreeLeagueDatasetImporterTest {
             .hasMessageContaining("exactly two special attributes");
     }
 
+    @Test
+    @DisplayName("failed validation inside the import transaction rolls back partial dataset writes")
+    void failedValidationRollsBackPartialDatasetWrites() {
+        importer.importDataset();
+        DatasetFingerprint before = fingerprint();
+        DatasetCounts beforeCounts = counts();
+
+        TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
+
+        assertThatThrownBy(() -> transactionTemplate.executeWithoutResult(status -> {
+            jdbcTemplate.update("""
+                DELETE FROM player_special_attributes
+                WHERE id = (
+                    SELECT psa.id
+                    FROM player_special_attributes psa
+                    JOIN players p ON p.id = psa.player_id
+                    WHERE p.source_system = 'manager-mvp1-explicit'
+                    LIMIT 1
+                )
+                """);
+            importer.validateGlobal();
+        }))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("exactly two special attributes");
+
+        assertThat(counts()).isEqualTo(beforeCounts);
+        assertThat(fingerprint()).isEqualTo(before);
+        assertThat(invalidSpecialAttributePlayerCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("stable public player identities keep club-independent ids and corrected positions")
+    void stablePlayerIdentitiesKeepClubIndependentIdsAndCorrectedPositions() {
+        importer.importDataset();
+
+        assertPlayerIdentity("public-player:alejandro-balde:2003-04-15:esp", "Balde", "LB");
+        assertPlayerIdentity("public-player:lamine-yamal:1999-05-02:esp", "Yamal", "RW");
+        assertPlayerIdentity("public-player:aitor-fernandez:1991-07-13:esp", "Fernández", "GK");
+        assertPlayerIdentity("public-player:cristhian-stuani:2000-01-13:esp", "Stuani", "ST");
+        assertPlayerIdentity("public-player:carlos-palacios:2005-06-08:arg", "Palacios", "CAM");
+        assertPlayerIdentity("public-player:federico-mancuello:1994-12-12:arg", "Mancuello", "CM");
+        assertPlayerIdentity("public-player:gonzalo-montiel:2003-02-04:arg", "Montiel", "RB");
+        assertPlayerIdentity("public-player:gabriel-barbosa:1991-03-05:bra", "Barbosa", "ST");
+    }
+
     private DatasetCounts counts() {
         return new DatasetCounts(
             count("clubs", "source_system = 'manager-mvp1-explicit'"),
@@ -199,6 +246,24 @@ class ThreeLeagueDatasetImporterTest {
                 ORDER BY p.source_id, psa.slot
                 """)
         );
+    }
+
+    private void assertPlayerIdentity(String externalId, String displayName, String position) {
+        String playerId = jdbcTemplate.queryForObject("""
+            SELECT id::text
+            FROM players
+            WHERE source_system = 'manager-mvp1-explicit'
+              AND source_id = ?
+              AND display_name = ?
+              AND position = ?
+              AND source_entity_id IS NOT NULL
+              AND position_source_ref IS NOT NULL
+              AND position_source_ref <> ''
+            """, String.class, externalId, displayName, position);
+
+        assertThat(playerId).isNotBlank();
+        assertThat(externalId).doesNotContain(":barcelona:", ":osasuna:", ":girona:", ":boca-juniors:",
+            ":independiente:", ":river-plate:", ":santos:");
     }
 
     private String hash(String query) {
