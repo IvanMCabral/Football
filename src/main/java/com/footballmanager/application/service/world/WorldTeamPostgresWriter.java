@@ -19,8 +19,10 @@ public class WorldTeamPostgresWriter {
     private static final Duration BLOCK_TIMEOUT = Duration.ofSeconds(120);
 
     private final DatabaseClient databaseClient;
+    private final LegacySeedPrincipalDatabaseGuard principalDatabaseGuard;
 
     public void upsertTeams(List<WorldTeam> teams, UUID leagueId, String logPrefix) {
+        principalDatabaseGuard.assertLegacySeedCanWrite("world seed team upsert");
         int upserted = 0;
         int skipped = 0;
         int errors = 0;

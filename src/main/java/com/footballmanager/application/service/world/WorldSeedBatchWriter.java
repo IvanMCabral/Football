@@ -54,6 +54,7 @@ public class WorldSeedBatchWriter {
 
     private final DatabaseClient databaseClient;
     private final ObjectMapper objectMapper;
+    private final LegacySeedPrincipalDatabaseGuard principalDatabaseGuard;
 
     /**
      * Upsert players in batched INSERTs.
@@ -64,6 +65,7 @@ public class WorldSeedBatchWriter {
      */
     public int upsertPlayersBatched(List<WorldPlayer> players,
                                     Function<String, Player.Position> mapper) {
+        principalDatabaseGuard.assertLegacySeedCanWrite("world seed player batch");
         // Drop players without realPlayerId (can't be persisted as a Postgres row).
         List<WorldPlayer> toPersist = players.stream()
                 .filter(wp -> wp.getRealPlayerId() != null)
