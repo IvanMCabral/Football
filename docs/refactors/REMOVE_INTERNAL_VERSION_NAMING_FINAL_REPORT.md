@@ -1,4 +1,4 @@
-﻿# Remove Internal Version Naming - Final Report
+# Remove Internal Version Naming - Final Report
 
 ## Verdict
 
@@ -188,4 +188,3 @@ Runtime success marker:
 COMPLETED.
 
 The current product now uses functional detailed-match naming instead of internal version naming, validates backend/frontend behavior, and passes a full-stack runtime smoke.
-

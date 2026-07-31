@@ -1,8 +1,8 @@
 # MVP 1 Real Player Dataset Final Independent Audit
 
-Date: 2026-07-29  
-Repository: `D:\ProyectosOpenCode\MANAGER`  
-Frontend: `D:\ProyectosOpenCode\MANAGER\front-ciber\project`  
+Date: 2026-07-29
+Repository: `D:\ProyectosOpenCode\MANAGER`
+Frontend: `D:\ProyectosOpenCode\MANAGER\front-ciber\project`
 Auditor mode: read-only except for this report.
 
 ## 1. Verdict
@@ -33,7 +33,7 @@ Current commit during audit: `7ce70c8b Close MVP 1 real player dataset audit`.
 
 ## 3. Git state
 
-Before creating this report, `git status --short` was clean in the root repository and clean in the frontend repository.  
+Before creating this report, `git status --short` was clean in the root repository and clean in the frontend repository.
 `git diff --check ad34a103..7ce70c8b` returned no whitespace errors.
 
 After this audit, the only expected change is this new report file.
