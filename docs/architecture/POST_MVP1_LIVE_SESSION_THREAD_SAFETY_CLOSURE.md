@@ -47,12 +47,12 @@ The synchronized public surface now includes:
 - `finalResult()`;
 - `isFinished()`;
 - `currentMinute()`;
-- `context()`;
+- `contextView()`;
 - `accumulatedEvents()`;
 - `recordManualSubstitution(...)`;
 - `recordTacticalChange(...)`;
 - `replayFromMinute(...)`;
-- `mutateContext(...)`.
+- typed context mutation methods for style, formation, substitutions, and replay.
 
 ## 4. finalResult behavior
 
@@ -68,9 +68,11 @@ Concurrent calls against the same session converge to one final state without co
 
 `accumulatedEvents()` now executes under the same monitor as timeline mutation and returns an immutable snapshot copy.
 
-`isFinished()`, `currentMinute()`, and `context()` are synchronized state reads.
+`isFinished()`, `currentMinute()`, and `contextView()` are synchronized state reads.
 
-The `MatchContext` object returned by `context()` remains an immutable context reference for the active session state. Lineups, bench lists, and event collections are built through defensive-copy paths in the session model.
+`contextView()` is the public read model for session consumers. It exposes value records and immutable containers only, and it does not expose internal `SessionTeam`, `SessionPlayer`, or the live `MatchContext` graph.
+
+The package-level `context()` method is retained only for detailed simulation internals and same-package tests. It returns a defensive copy of the current `MatchContext`, including copied session teams and players, so external mutation of the returned graph does not alter the live session state.
 
 ## 6. Substitution identity
 
@@ -105,6 +107,8 @@ The architecture test suite now includes guards that:
 
 - reject mutable static state in `LiveSession`;
 - verify public synchronization for the core same-instance access surface;
+- reject public `LiveSession` APIs that expose `MatchContext`, `SessionTeam`, or `SessionPlayer`;
+- verify `LiveSessionContextView` record components do not contain mutable session entities;
 - reject global lock/data-structure shortcuts such as `static final Object`, `ReentrantLock`, `ConcurrentHashMap`, and `CopyOnWriteArrayList`;
 - reject accidental adapter/infrastructure dependencies in the `LiveSession` source.
 
@@ -130,11 +134,11 @@ Executed backend validation:
 
 Final Surefire aggregation:
 
-- tests: 2517;
+- tests: 2521;
 - failures: 0;
 - errors: 0;
 - skipped: 4;
-- reports: 277.
+- reports: 278.
 
 Additional hygiene checks:
 
@@ -150,7 +154,7 @@ No critical or important risk remains in the requested same-instance LiveSession
 
 General product risks outside this closure remain unchanged:
 
-- future engine features that add mutable state to `LiveSession` must follow the same instance-monitor policy;
+- future engine features that add mutable state to `LiveSession` must follow the same instance-monitor and immutable-view policy;
 - future visible event types with special replay semantics should define explicit identity keys;
 - concurrency tests should remain part of the regression suite.
 

@@ -14,6 +14,9 @@ Audited commits:
 - `7e1a6f24` Make LiveSession public state access thread safe
 - `d003da24` Strengthen substitution event identity
 - `839a0581` Add same-instance LiveSession concurrency coverage
+- `9597678a` Encapsulate mutable LiveSession context
+- `61369a8b` Migrate LiveSession context consumers
+- `73cbc646` Guard LiveSession context immutability
 
 ## 1. Verdict
 
@@ -77,6 +80,10 @@ Assessment: accepted.
 
 `accumulatedEvents()` now runs under the instance monitor and returns an immutable copy.
 
+`contextView()` is now the public context read model. It returns immutable value records and immutable containers, and it does not expose `MatchContext`, `SessionTeam`, or `SessionPlayer`.
+
+The former mutable-context exposure is closed: `context()` is no longer part of the public `LiveSession` API and same-package callers receive a deep defensive `MatchContext` copy rather than the internal graph.
+
 Same-instance tests verify accumulated-event readers running alongside ticking do not throw, do not expose duplicate logical events, and do not leak mutable event lists.
 
 Assessment: accepted.
@@ -124,6 +131,7 @@ Commands executed:
 - focused LiveSession tests: passed;
 - substitution event identity tests: passed;
 - same-instance LiveSession concurrency tests: passed;
+- LiveSession context encapsulation tests: passed;
 - detailed simulation tests: passed;
 - architecture tests: passed;
 - full backend suite `mvn -q test`: passed;
@@ -131,8 +139,8 @@ Commands executed:
 
 Final Surefire aggregation:
 
-- reports: 277;
-- tests: 2517;
+- reports: 278;
+- tests: 2521;
 - failures: 0;
 - errors: 0;
 - skipped: 4.
@@ -148,12 +156,14 @@ Created:
 
 - `docs/architecture/POST_MVP1_LIVE_SESSION_THREAD_SAFETY_CLOSURE.md`
 - `docs/architecture/POST_MVP1_LIVE_SESSION_THREAD_SAFETY_FINAL_AUDIT.md`
+- `docs/architecture/POST_MVP1_LIVE_SESSION_CONTEXT_ENCAPSULATION_FINAL_AUDIT.md`
 
 Updated:
 
 - `docs/architecture/POST_MVP1_LIVE_SESSION_CONCURRENCY_DEFINITIVE_AUDIT.md`
+- `docs/architecture/POST_MVP1_LIVE_SESSION_THREAD_SAFETY_DEFINITIVE_AUDIT.md`
 
-The historical `APPROVED WITH ISSUES` verdict in the definitive concurrency audit remains unchanged. A follow-up remediation section records the new same-instance closure status.
+The historical `APPROVED WITH ISSUES` verdict in the definitive concurrency audit remains unchanged. The historical `REJECTED` verdict in the same-instance definitive audit also remains unchanged and now includes an appended remediation addendum with the final evidence.
 
 ## 11. Findings
 
@@ -165,6 +175,6 @@ Minor findings: none inside the requested same-instance LiveSession thread-safet
 
 ## 12. Conclusion
 
-The requested same-instance LiveSession thread-safety closure is complete. The previous bounded issue was remediated with cohesive synchronization, safer public state reads, stronger substitution identity, explicit concurrent coverage, architecture guards, full backend validation, and final documentation.
+The requested same-instance LiveSession thread-safety and context-encapsulation closure is complete. The previous bounded issue was remediated with cohesive synchronization, immutable public context views, defensive internal context copies, safer public state reads, stronger substitution identity, explicit concurrent coverage, architecture guards, full backend validation, and final documentation.
 
 Final verdict: `APPROVED`.
