@@ -1,8 +1,10 @@
 package com.footballmanager.application.service.simulation.detailed;
 
-import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.valueobject.FormationSlot;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +13,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 public final class LiveSession {
@@ -451,18 +454,64 @@ public final class LiveSession {
             homeGoals, awayGoals, engineTimeline.size() + manualEvents.size());
     }
 
-    public synchronized void mutateContext(UnaryOperator<MatchContext> mutator) {
+    public synchronized void changeTeamStyle(String teamId, TeamStyle newStyle) {
+        mutateContext(ctx -> ctx.withNewStyle(teamId, newStyle));
+    }
+
+    public synchronized void changeFormation(
+            String teamId,
+            String formation,
+            Map<String, String> tacticalPositionsByPlayerId,
+            Map<String, LineupSlot> slotsByPlayerId) {
+        Map<String, String> safePositions = tacticalPositionsByPlayerId != null
+                ? Map.copyOf(tacticalPositionsByPlayerId)
+                : Map.of();
+        Map<String, LineupSlot> safeSlots = slotsByPlayerId != null
+                ? Map.copyOf(slotsByPlayerId)
+                : Map.of();
+        mutateContext(ctx -> {
+            MatchContext changed = ctx.withNewFormation(teamId, formation);
+            changed = safeSlots.isEmpty() ? changed : changed.withSlots(teamId, safeSlots);
+            if (safePositions.isEmpty()) {
+                return changed;
+            }
+            for (SessionPlayer player : playersForTeam(changed, teamId)) {
+                String position = safePositions.get(player.getSessionPlayerId());
+                if (position != null && !position.equals(player.getPosition())) {
+                    player.setPosition(position);
+                }
+            }
+            return changed;
+        });
+    }
+
+    public synchronized void scheduleManualSubstitution(
+            String teamId,
+            String playerOffId,
+            String playerOnId,
+            int minute) {
+        mutateContext(ctx -> ctx.withManualSubstitution(
+                teamId, playerOffId, playerOnId, minute));
+    }
+
+    public synchronized void replayCurrentMinute() {
+        if (currentMinute >= 1) {
+            replayFromMinute(currentMinute);
+        }
+    }
+
+    synchronized void mutateContext(UnaryOperator<MatchContext> mutator) {
         if (mutator == null) {
             throw new IllegalArgumentException("mutator must not be null");
         }
         if (finished) {
             throw new IllegalStateException("Match already finished - cannot mutate");
         }
-        MatchContext next = mutator.apply(effectiveContext);
+        MatchContext next = mutator.apply(copyContext(effectiveContext));
         if (next == null) {
             throw new IllegalArgumentException("mutator must not return null");
         }
-        this.effectiveContext = next;
+        this.effectiveContext = copyContext(next);
         log.trace("mutateContext applied, triggering replay from currentMinute={}",
             currentMinute);
         if (currentMinute >= 1) {
@@ -474,8 +523,12 @@ public final class LiveSession {
         return currentMinute;
     }
 
-    public synchronized MatchContext context() {
-        return effectiveContext;
+    synchronized MatchContext context() {
+        return copyContext(effectiveContext);
+    }
+
+    public synchronized LiveSessionContextView contextView() {
+        return contextView(effectiveContext);
     }
 
     public synchronized List<DetailedMatchEvent> accumulatedEvents() {
@@ -544,5 +597,199 @@ public final class LiveSession {
             }
         }
         return false;
+    }
+
+    private List<SessionPlayer> playersForTeam(MatchContext context, String teamId) {
+        if (context.homeTeamId().equals(teamId)) {
+            List<SessionPlayer> players = new ArrayList<>(
+                    context.homeStartingPlayers().size() + context.homeBenchPlayers().size());
+            players.addAll(context.homeStartingPlayers());
+            players.addAll(context.homeBenchPlayers());
+            return players;
+        }
+        if (context.awayTeamId().equals(teamId)) {
+            List<SessionPlayer> players = new ArrayList<>(
+                    context.awayStartingPlayers().size() + context.awayBenchPlayers().size());
+            players.addAll(context.awayStartingPlayers());
+            players.addAll(context.awayBenchPlayers());
+            return players;
+        }
+        throw new IllegalArgumentException(
+                "teamId " + teamId + " does not match home (" + context.homeTeamId()
+                        + ") or away (" + context.awayTeamId() + ") of this match");
+    }
+
+    private LiveSessionContextView contextView(MatchContext context) {
+        return new LiveSessionContextView(
+                context.matchId(),
+                teamView(context.homeTeam(), context.homeFormation(), context.homeStyle(), context.homeSlotsByPlayerId()),
+                teamView(context.awayTeam(), context.awayFormation(), context.awayStyle(), context.awaySlotsByPlayerId()),
+                playerViews(context.homeStartingPlayers()),
+                playerViews(context.awayStartingPlayers()),
+                playerViews(context.homeBenchPlayers()),
+                playerViews(context.awayBenchPlayers()),
+                substitutionViews(context.manualSubstitutions()));
+    }
+
+    private LiveSessionContextView.TeamContextView teamView(
+            SessionTeam team,
+            String formation,
+            TeamStyle style,
+            Map<String, LineupSlot> slotsByPlayerId) {
+        return new LiveSessionContextView.TeamContextView(
+                team.getSessionTeamId(),
+                team.getBaseTeamId(),
+                team.getWorldTeamId(),
+                team.getName(),
+                team.getCountry(),
+                team.getBudget(),
+                formation != null ? formation : team.getFormation(),
+                style != null ? style : team.getStyle(),
+                team.getManagerName(),
+                team.getMorale(),
+                team.getReputation(),
+                slotsByPlayerId != null ? slotsByPlayerId : Map.of());
+    }
+
+    private List<LiveSessionContextView.PlayerContextView> playerViews(List<SessionPlayer> players) {
+        if (players == null || players.isEmpty()) {
+            return List.of();
+        }
+        List<LiveSessionContextView.PlayerContextView> views = new ArrayList<>(players.size());
+        for (SessionPlayer player : players) {
+            views.add(playerView(player));
+        }
+        return List.copyOf(views);
+    }
+
+    private LiveSessionContextView.PlayerContextView playerView(SessionPlayer player) {
+        return new LiveSessionContextView.PlayerContextView(
+                player.getSessionPlayerId(),
+                player.getBasePlayerId(),
+                player.getWorldPlayerId(),
+                player.getName(),
+                player.getAge(),
+                player.getPosition(),
+                player.getAttack(),
+                player.getDefense(),
+                player.getTechnique(),
+                player.getSpeed(),
+                player.getStamina(),
+                player.getMentality(),
+                player.getMarketValue(),
+                player.getEnergy(),
+                player.getForm(),
+                player.getInjured(),
+                player.getInjuryType(),
+                player.getInjuryRemainingMatches(),
+                player.getMatchesPlayedInRow(),
+                player.getYellowCards(),
+                player.getRedCards(),
+                player.getSuspended(),
+                player.getSuspensionRemainingMatches(),
+                player.getHeightCm(),
+                player.getSkillLevels(),
+                player.getSpecialTraits());
+    }
+
+    private List<LiveSessionContextView.ScheduledSubstitutionView> substitutionViews(
+            List<MatchContext.ScheduledSub> substitutions) {
+        if (substitutions == null || substitutions.isEmpty()) {
+            return List.of();
+        }
+        List<LiveSessionContextView.ScheduledSubstitutionView> views = new ArrayList<>(substitutions.size());
+        for (MatchContext.ScheduledSub sub : substitutions) {
+            views.add(new LiveSessionContextView.ScheduledSubstitutionView(
+                    sub.teamId(),
+                    sub.playerOffId(),
+                    sub.playerOnId(),
+                    sub.effectiveMinute()));
+        }
+        return List.copyOf(views);
+    }
+
+    private MatchContext copyContext(MatchContext context) {
+        return new MatchContext(
+                context.matchId(),
+                context.homeTeamId(),
+                context.awayTeamId(),
+                copyTeam(context.homeTeam()),
+                copyTeam(context.awayTeam()),
+                copyPlayers(context.homeStartingPlayers()),
+                copyPlayers(context.awayStartingPlayers()),
+                copyPlayers(context.homeBenchPlayers()),
+                copyPlayers(context.awayBenchPlayers()),
+                context.homeFormation(),
+                context.awayFormation(),
+                context.homeStyle(),
+                context.awayStyle(),
+                context.manualSubstitutions(),
+                context.homeSlotsByPlayerId(),
+                context.awaySlotsByPlayerId());
+    }
+
+    private SessionTeam copyTeam(SessionTeam team) {
+        SessionTeam copy = SessionTeam.fromRealTeam(
+                team.getBaseTeamId(),
+                team.getWorldTeamId(),
+                team.getName(),
+                team.getCountry(),
+                team.getBudget(),
+                team.getFormation(),
+                team.getManagerName());
+        copy.setSessionTeamId(team.getSessionTeamId());
+        copy.setStyle(team.getStyle());
+        copy.setMorale(team.getMorale());
+        copy.setReputation(team.getReputation());
+        copy.setOrigin(team.getOrigin());
+        copy.setCreatedAt(team.getCreatedAt());
+        copy.setLastUpdated(team.getLastUpdated());
+        return copy;
+    }
+
+    private List<SessionPlayer> copyPlayers(List<SessionPlayer> players) {
+        if (players == null || players.isEmpty()) {
+            return List.of();
+        }
+        List<SessionPlayer> copy = new ArrayList<>(players.size());
+        for (SessionPlayer player : players) {
+            copy.add(copyPlayer(player));
+        }
+        return List.copyOf(copy);
+    }
+
+    private SessionPlayer copyPlayer(SessionPlayer player) {
+        SessionPlayer copy = SessionPlayer.custom(
+                player.getName(),
+                player.getAge(),
+                player.getPosition(),
+                player.getAttack(),
+                player.getDefense(),
+                player.getTechnique(),
+                player.getSpeed(),
+                player.getStamina(),
+                player.getMentality(),
+                player.getMarketValue());
+        copy.setSessionPlayerId(player.getSessionPlayerId());
+        copy.setBasePlayerId(player.getBasePlayerId());
+        copy.setWorldPlayerId(player.getWorldPlayerId());
+        copy.setEnergy(player.getEnergy());
+        copy.setForm(player.getForm());
+        copy.setInjured(player.getInjured());
+        copy.setInjuryType(player.getInjuryType());
+        copy.setInjuryRemainingMatches(player.getInjuryRemainingMatches());
+        copy.setMatchesPlayedInRow(player.getMatchesPlayedInRow());
+        copy.setYellowCards(player.getYellowCards());
+        copy.setRedCards(player.getRedCards());
+        copy.setSuspended(player.getSuspended());
+        copy.setSuspensionRemainingMatches(player.getSuspensionRemainingMatches());
+        copy.setOrigin(player.getOrigin());
+        copy.setHeightCm(player.getHeightCm());
+        for (Map.Entry<com.footballmanager.domain.model.valueobject.PlayerSkill, Integer> entry
+                : player.getSkillLevels().entrySet()) {
+            copy.setSkillLevel(entry.getKey(), entry.getValue());
+        }
+        copy.setSpecialTraits(player.getSpecialTraits());
+        return copy;
     }
 }

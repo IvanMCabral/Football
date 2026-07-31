@@ -118,6 +118,36 @@ public class PlayerMatchState {
         );
     }
 
+    public static PlayerMatchState fromContextView(
+            LiveSessionContextView.PlayerContextView player,
+            String teamId) {
+        Objects.requireNonNull(player, "player must not be null");
+        Objects.requireNonNull(teamId, "teamId must not be null");
+        String name = (player.name() == null || player.name().isBlank())
+                ? "Unknown Player" : player.name();
+        String playerPos = player.position();
+        return new PlayerMatchState(
+                player.sessionPlayerId(),
+                teamId,
+                name,
+                playerPos,
+                playerPos,
+                intOr(player.attack(), 50),
+                intOr(player.defense(), 50),
+                intOr(player.technique(), 50),
+                intOr(player.speed(), 50),
+                intOr(player.stamina(), 50),
+                intOr(player.mentality(), 50),
+                intOr(player.energy(), 100),
+                intOr(player.form(), 50),
+                0, false,
+                player.injured() != null && player.injured(),
+                true,
+                player.heightCm(),
+                player.skillLevels()
+        );
+    }
+
     private static int intOr(Integer v, int fallback) {
         return v != null ? v : fallback;
     }

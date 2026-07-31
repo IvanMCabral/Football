@@ -111,6 +111,44 @@ public class TeamMatchState {
         );
     }
 
+    public static TeamMatchState create(
+            LiveSessionContextView.TeamContextView team,
+            List<LiveSessionContextView.PlayerContextView> starting,
+            List<LiveSessionContextView.PlayerContextView> bench) {
+        Objects.requireNonNull(team, "team must not be null");
+        Objects.requireNonNull(starting, "starting list must not be null");
+        Objects.requireNonNull(bench, "bench list must not be null");
+        int min = com.footballmanager.domain.service.LineupRules.MIN_AVAILABLE_PLAYERS;
+        if (starting.size() < min || starting.size() > 11) {
+            throw new IllegalArgumentException(
+                "starting must contain between " + min + " and 11 players, got " + starting.size());
+        }
+
+        List<PlayerMatchState> startState = new ArrayList<>();
+        for (LiveSessionContextView.PlayerContextView player : starting) {
+            PlayerMatchState playerState = PlayerMatchState.fromContextView(player, team.teamId());
+            applyPersistedTacticalSlot(playerState, team.slotsByPlayerId());
+            startState.add(playerState);
+        }
+
+        List<PlayerMatchState> benchState = new ArrayList<>();
+        for (LiveSessionContextView.PlayerContextView player : bench) {
+            PlayerMatchState benchPlayer = PlayerMatchState.fromContextView(player, team.teamId());
+            benchPlayer.substituteOff();
+            benchState.add(benchPlayer);
+        }
+
+        return new TeamMatchState(
+                team.teamId(),
+                team.name(),
+                team.formation(),
+                team.style() != null ? team.style() : TeamStyle.BALANCED,
+                startState,
+                benchState,
+                0, 0.0, 0, 0, 0
+        );
+    }
+
     private static void applyPersistedTacticalSlot(
             PlayerMatchState playerState,
             Map<String, LineupSlot> slotsByPlayerId) {

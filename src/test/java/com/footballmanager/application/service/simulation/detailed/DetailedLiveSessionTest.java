@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -287,8 +288,13 @@ class LiveSessionTest {
         // random seeds.
         for (int i = 0; i < 10; i++) session.tick();
         assertEquals(11, session.currentMinute());
-        assertNotNull(session.context());
-        assertEquals(context, session.context());
+        MatchContext safeContext = session.context();
+        assertNotNull(safeContext);
+        assertNotSame(context, safeContext);
+        assertEquals(context.matchId(), safeContext.matchId());
+        assertEquals(context.homeTeamId(), safeContext.homeTeamId());
+        assertNotSame(context.homeTeam(), safeContext.homeTeam());
+        assertNotSame(context.homeStartingPlayers().getFirst(), safeContext.homeStartingPlayers().getFirst());
         // Accumulated events is non-null and (over 11 minutes) non-empty.
         assertNotNull(session.accumulatedEvents());
         assertFalse(session.accumulatedEvents().isEmpty());
