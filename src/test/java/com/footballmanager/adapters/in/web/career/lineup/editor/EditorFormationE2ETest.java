@@ -17,11 +17,11 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 /**
  * MVP1-lineup-cancha-1: E2E HTTP coverage para los 2 endpoints nuevos
- * del editor de formación.
+ * del editor de formaciÃ³n.
  *
  * <p>Estrategia: SpringBootTest + WebTestClient con profile "test"
  * (DB {@code football_manager_test}, Redis DB 15, Flyway off).
- * Los endpoints son estáticos (no tocan DB) así que no necesitan mocks.
+ * Los endpoints son estÃ¡ticos (no tocan DB) asÃ­ que no necesitan mocks.
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -32,7 +32,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 )
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@DisplayName("Editor formation — E2E HTTP coverage")
+@DisplayName("Editor formation â€” E2E HTTP coverage")
 class EditorFormationE2ETest {
 
     private static final UUID TEST_USER_ID =
@@ -58,13 +58,13 @@ class EditorFormationE2ETest {
             .block();
     }
 
-    // ---------- GET /api/v1/editor/subdivisions ----------
+    // ---------- GET /api/v1/lineup-editor/subdivisions ----------
 
     @Test
-    @DisplayName("GET /editor/subdivisions — 200 OK con 82 subdivisiones")
+    @DisplayName("GET /lineup-editor/subdivisions â€” 200 OK con 82 subdivisiones")
     void getSubdivisions_returns200_with82Elements() {
         webTestClient.mutateWith(mockUser(TEST_USER_ID.toString()))
-            .get().uri("/api/v1/editor/subdivisions")
+            .get().uri("/api/v1/lineup-editor/subdivisions")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
@@ -76,10 +76,10 @@ class EditorFormationE2ETest {
     }
 
     @Test
-    @DisplayName("GET /editor/subdivisions — primera subdivisión GK tiene coordenadas válidas")
+    @DisplayName("GET /lineup-editor/subdivisions â€” primera subdivisiÃ³n GK tiene coordenadas vÃ¡lidas")
     void getSubdivisions_goalkeeperHasValidCoords() {
         webTestClient.mutateWith(mockUser(TEST_USER_ID.toString()))
-            .get().uri("/api/v1/editor/subdivisions")
+            .get().uri("/api/v1/lineup-editor/subdivisions")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
@@ -90,15 +90,15 @@ class EditorFormationE2ETest {
             .jsonPath("$[0].sector").isEqualTo(26);
     }
 
-    // ---------- GET /api/v1/editor/formations ----------
+    // ---------- GET /api/v1/lineup-editor/formations ----------
 
     @Test
-    @DisplayName("GET /editor/formations — 200 OK con 12 formaciones")
+    @DisplayName("GET /lineup-editor/formations â€” 200 OK con 12 formaciones")
     void getFormations_returns200_with4Elements() {
         // Asserting exact count was too strict; the next test verifies the
         // 4 named formations are still present.
         webTestClient.mutateWith(mockUser(TEST_USER_ID.toString()))
-            .get().uri("/api/v1/editor/formations")
+            .get().uri("/api/v1/lineup-editor/formations")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
@@ -106,10 +106,10 @@ class EditorFormationE2ETest {
     }
 
     @Test
-    @DisplayName("GET /editor/formations — contiene las 4 formaciones esperadas")
+    @DisplayName("GET /lineup-editor/formations â€” contiene las 4 formaciones esperadas")
     void getFormations_containsExpectedNames() {
         webTestClient.mutateWith(mockUser(TEST_USER_ID.toString()))
-            .get().uri("/api/v1/editor/formations")
+            .get().uri("/api/v1/lineup-editor/formations")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
@@ -120,10 +120,10 @@ class EditorFormationE2ETest {
     }
 
     @Test
-    @DisplayName("GET /editor/formations/4-4-2 — 200 OK con shape completo")
+    @DisplayName("GET /lineup-editor/formations/4-4-2 â€” 200 OK con shape completo")
     void getFormationByName_happyPath() {
         webTestClient.mutateWith(mockUser(TEST_USER_ID.toString()))
-            .get().uri("/api/v1/editor/formations/4-4-2")
+            .get().uri("/api/v1/lineup-editor/formations/4-4-2")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
@@ -138,10 +138,10 @@ class EditorFormationE2ETest {
     }
 
     @Test
-    @DisplayName("GET /editor/formations/{name} — 500/422 para nombre desconocido")
+    @DisplayName("GET /lineup-editor/formations/{name} â€” 500/422 para nombre desconocido")
     void getFormationByName_unknown_returnsError() {
         webTestClient.mutateWith(mockUser(TEST_USER_ID.toString()))
-            .get().uri("/api/v1/editor/formations/5-5-5")
+            .get().uri("/api/v1/lineup-editor/formations/5-5-5")
             .exchange()
             .expectStatus().is4xxClientError();
     }

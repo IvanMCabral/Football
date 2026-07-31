@@ -12,31 +12,31 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /**
- * Controller para exponer las subdivisiones del campo de fÃºtbol.
+ * Controller para exponer las subdivisiones del campo de fÃƒÆ’Ã‚Âºtbol.
  *
  * <p>Endpoints nuevos del sprint MVP1-lineup-cancha-1.
- * Vive bajo el namespace {@code /api/v1/editor/*} (junto a custom-player,
- * custom-team, etc.) â€” ver {@code EditorController} existente.
+ * Vive bajo el namespace {@code /api/v1/lineup-editor/*} (junto a custom-player,
+ * custom-team, etc.) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â ver {@code EditorController} existente.
  *
  * <p>El modal {@code SquadEditorModalComponent} consume este endpoint al
- * inicializar; sin Ã©l el modal no podrÃ­a renderizar los 82 slots.
+ * inicializar; sin ÃƒÆ’Ã‚Â©l el modal no podrÃƒÆ’Ã‚Â­a renderizar los 82 slots.
  */
 @RestController
-@RequestMapping("/api/v1/editor/subdivisions")
+@RequestMapping("/api/v1/lineup-editor/subdivisions")
 @RequiredArgsConstructor
 public class FieldSubdivisionController {
 
     private final FieldSubdivisionService fieldSubdivisionService;
 
     /**
-     * GET /api/v1/editor/subdivisions
+     * GET /api/v1/lineup-editor/subdivisions
      *
      * <p>Retorna las 82 subdivisiones del campo (81 normales + 1 GK).
      * El modal las lee al inicializar para renderizar los slots clickeables.
      *
-     * <p>No requiere autenticaciÃ³n: los datos son estÃ¡ticos y pÃºblicos
+     * <p>No requiere autenticaciÃƒÆ’Ã‚Â³n: los datos son estÃƒÆ’Ã‚Â¡ticos y pÃƒÆ’Ã‚Âºblicos
      * (no contienen info del usuario). De todos modos corre bajo la
-     * chain de Spring Security como los demÃ¡s endpoints /api/v1/editor/*.
+     * chain de Spring Security como los demÃƒÆ’Ã‚Â¡s endpoints /api/v1/lineup-editor/*.
      */
     @GetMapping
     public Mono<List<FieldSubdivisionDTO>> getAllSubdivisions() {
@@ -58,4 +58,3 @@ public class FieldSubdivisionController {
             subdivision.zone());
     }
 }
-

@@ -8,7 +8,9 @@ import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.ports.in.player.AssignPlayerUseCase;
 import com.footballmanager.domain.ports.in.player.RemovePlayerUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -18,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/editor")
 @RequiredArgsConstructor
+@Profile({"dev", "local", "test"})
 public class EditorController {
 
     private final WorldTeamCommandService teamCommandService;
@@ -33,9 +36,9 @@ public class EditorController {
     @PostMapping("/custom-player")
     public Mono<ResponseEntity<WorldSnapshot>> createCustomPlayer(
             @RequestBody CreateCustomPlayerRequest request,
-            @RequestHeader("Authorization") String token) {
+            Authentication authentication) {
 
-        UUID userId = extractUserIdFromToken(token);
+        UUID userId = authenticatedUserId(authentication);
 
         return playerCommandService.createCustomPlayer(
                         userId, request.name(), request.age(), request.position(),
@@ -52,9 +55,9 @@ public class EditorController {
     @PostMapping("/custom-team")
     public Mono<ResponseEntity<WorldSnapshot>> createCustomTeam(
             @RequestBody CreateCustomTeamRequest request,
-            @RequestHeader("Authorization") String token) {
+            Authentication authentication) {
 
-        UUID userId = extractUserIdFromToken(token);
+        UUID userId = authenticatedUserId(authentication);
 
         return teamCommandService.createCustomTeam(
                         userId, request.name(), request.country(),
@@ -68,7 +71,8 @@ public class EditorController {
      * Genera 1 equipo random en WorldSnapshot
      */
     @PostMapping("/random-team")
-    public Mono<ResponseEntity<WorldTeam>> createRandomTeam(@RequestParam UUID userId) {
+    public Mono<ResponseEntity<WorldTeam>> createRandomTeam(Authentication authentication) {
+        UUID userId = authenticatedUserId(authentication);
         return teamCommandService.createRandomTeam(userId)
                 .map(snapshot -> snapshot.getAllWorldTeams().stream()
                         .reduce((first, second) -> second)
@@ -81,8 +85,11 @@ public class EditorController {
      * Genera N equipos random en WorldSnapshot
      */
     @PostMapping("/random-teams")
-    public Mono<ResponseEntity<RandomTeamsResponse>> createRandomTeams(@RequestBody RandomTeamsRequest request) {
-        return teamCommandService.createRandomTeams(request.userId(), request.count())
+    public Mono<ResponseEntity<RandomTeamsResponse>> createRandomTeams(
+            @RequestBody RandomTeamsRequest request,
+            Authentication authentication) {
+        UUID userId = authenticatedUserId(authentication);
+        return teamCommandService.createRandomTeams(userId, request.count())
                 .map(snapshot -> {
                     RandomTeamsResponse response = new RandomTeamsResponse(
                             request.count(),
@@ -99,9 +106,9 @@ public class EditorController {
     @PostMapping("/assign-player")
     public Mono<ResponseEntity<WorldSnapshot>> assignPlayerToTeam(
             @RequestBody AssignPlayerRequest request,
-            @RequestHeader("Authorization") String token) {
+            Authentication authentication) {
 
-        UUID userId = extractUserIdFromToken(token);
+        UUID userId = authenticatedUserId(authentication);
 
         return assignPlayerUseCase.execute(userId, request.playerId(), request.teamId())
                 .map(ResponseEntity::ok);
@@ -114,9 +121,9 @@ public class EditorController {
     @PostMapping("/remove-player")
     public Mono<ResponseEntity<WorldSnapshot>> removePlayerFromTeam(
             @RequestBody RemovePlayerRequest request,
-            @RequestHeader("Authorization") String token) {
+            Authentication authentication) {
 
-        UUID userId = extractUserIdFromToken(token);
+        UUID userId = authenticatedUserId(authentication);
 
         return removePlayerUseCase.execute(userId, request.playerId())
                 .map(ResponseEntity::ok);
@@ -128,9 +135,9 @@ public class EditorController {
      */
     @GetMapping("/free-players")
     public Mono<ResponseEntity<List<WorldPlayer>>> getFreePlayers(
-            @RequestHeader("Authorization") String token) {
+            Authentication authentication) {
 
-        UUID userId = extractUserIdFromToken(token);
+        UUID userId = authenticatedUserId(authentication);
 
         return queryService.getFreePlayers(userId)
                 .map(ResponseEntity::ok);
@@ -142,18 +149,18 @@ public class EditorController {
      */
     @GetMapping("/teams")
     public Mono<ResponseEntity<List<WorldTeam>>> getAllTeams(
-            @RequestHeader("Authorization") String token) {
+            Authentication authentication) {
 
-        UUID userId = extractUserIdFromToken(token);
+        UUID userId = authenticatedUserId(authentication);
 
         return queryService.getAllTeamsForEditor(userId)
                 .map(ResponseEntity::ok);
     }
 
-    /**
-     * Extrae userId del JWT token
-     */
-    private UUID extractUserIdFromToken(String token) {
-        return UUID.fromString("470b99cf-e9b3-48e6-bb88-9ecbb8e0b529");
+    private UUID authenticatedUserId(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new IllegalArgumentException("Authenticated user is required");
+        }
+        return UUID.fromString(authentication.getName());
     }
 }

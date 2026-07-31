@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.footballmanager.adapters.in.web.career.controllers.CareerAdminController;
 import com.footballmanager.adapters.in.web.career.controllers.CareerDebugController;
+import com.footballmanager.adapters.in.web.editor.EditorController;
+import com.footballmanager.adapters.in.web.league.LeagueTeamCommandController;
 import com.footballmanager.adapters.in.web.world.AdminWorldController;
 import com.footballmanager.adapters.in.web.world.LaLigaSeedController;
 import com.footballmanager.adapters.in.web.world.WorldSeedController;
@@ -21,6 +23,8 @@ class ProductionEndpointProfileTest {
         assertExcludesProd("com.footballmanager.adapters.in.web.testharness.TestHarnessController");
         assertExcludesProd("com.footballmanager.adapters.in.web.testharness.TestHarnessLabsController");
         assertExcludesProd(CareerDebugController.class);
+        assertExcludesProd(EditorController.class);
+        assertExcludesProd(LeagueTeamCommandController.class);
     }
 
     private static void assertExcludesProd(String controllerClassName) {

@@ -15,24 +15,24 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /**
- * Controller para exponer las formaciones tÃ¡cticas disponibles.
+ * Controller para exponer las formaciones tÃƒÆ’Ã‚Â¡cticas disponibles.
  *
  * <p>Endpoints nuevos del sprint MVP1-lineup-cancha-1.
- * Vive bajo el namespace {@code /api/v1/editor/*}.
+ * Vive bajo el namespace {@code /api/v1/lineup-editor/*}.
  *
  * <p>El modal {@code SquadEditorModalComponent} consume este endpoint al
- * inicializar para saber quÃ© slots del campo marcar como "recommended"
- * segÃºn la formaciÃ³n seleccionada por el usuario.
+ * inicializar para saber quÃƒÆ’Ã‚Â© slots del campo marcar como "recommended"
+ * segÃƒÆ’Ã‚Âºn la formaciÃƒÆ’Ã‚Â³n seleccionada por el usuario.
  */
 @RestController
-@RequestMapping("/api/v1/editor/formations")
+@RequestMapping("/api/v1/lineup-editor/formations")
 @RequiredArgsConstructor
 public class FormationController {
 
     private final FormationService formationService;
 
     /**
-     * GET /api/v1/editor/formations
+     * GET /api/v1/lineup-editor/formations
      *
      * <p>Retorna las 12 formaciones hardcoded con sus posiciones.
      * 4-2-2-2 y 4-1-2-3.
@@ -45,9 +45,9 @@ public class FormationController {
     }
 
     /**
-     * GET /api/v1/editor/formations/{name}
+     * GET /api/v1/lineup-editor/formations/{name}
      *
-     * <p>Retorna una formaciÃ³n especÃ­fica por nombre ({@code 4-4-2}, etc.).
+     * <p>Retorna una formaciÃƒÆ’Ã‚Â³n especÃƒÆ’Ã‚Â­fica por nombre ({@code 4-4-2}, etc.).
      * 404 si no existe.
      */
     @GetMapping("/{name}")
@@ -80,4 +80,3 @@ public class FormationController {
             position.subdivisionId());
     }
 }
-
