@@ -1,0 +1,49 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  flyway:
+    baseline-on-migrate: false
+  data:
+    redis:
+      ssl:
+        enabled: ${REDIS_SSL:true}
+
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    com.footballmanager: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.springframework.r2dbc: WARN
+    org.springframework.data.redis: WARN
+    io.r2dbc.postgresql: WARN
+
+app:
+  simulation:
+    detailed:
+      mutate-career-state: false
+      persist-injuries: false
+      persist-fatigue: false
+      persist-discipline: false
+      persist-form: false
+      persist-detail: true
+      expose-detail-api: true
+  production:
+    admin-endpoints-enabled: false
+    seed-endpoints-enabled: false
+    debug-endpoints-enabled: false

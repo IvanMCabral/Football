@@ -6,14 +6,25 @@ spring:
     activate:
       on-profile: local
   datasource:
-    password: "Mgr2026Rot!Secure#"
-    hikari:
-      password: "Mgr2026Rot!Secure#"
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:football_manager}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD}
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:football_manager}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD}
+  flyway:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:football_manager}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD}
+    baseline-on-migrate: true
   data:
     redis:
-      password: "MgrRedis2026!Rotate#Secure"
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
 jwt:
-  secret: "exJDmBLu+dhN5md5EkZW1r5qRKF/R8ECjc+Rp4ynVfdi9NA7nwAf5z2635ZtI4CWekeXMwpQXouI8QaUHOaTOw=="
+  secret: ${JWT_SECRET}
 
 app:
   simulation:
@@ -28,3 +39,6 @@ app:
       persist-fatigue: false
       persist-discipline: false
       persist-form: false
+  security:
+    cors:
+      allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200}

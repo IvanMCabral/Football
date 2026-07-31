@@ -12,6 +12,11 @@
 # to support this profile - keep test concerns in this file only.
 
 spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:Mgr2026Rot!Secure#}
+
   # Reuse the dev DB credentials, point at the TEST database
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
