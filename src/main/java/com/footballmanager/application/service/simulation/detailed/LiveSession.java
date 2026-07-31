@@ -38,6 +38,7 @@ public final class LiveSession {
     private int currentMinute;
     private int ticksRun;
     private boolean finished;
+    private boolean cachedResultFinal;
 
     public LiveSession(MatchContext context, long seed) {
         this.effectiveContext = context;
@@ -52,6 +53,7 @@ public final class LiveSession {
         this.currentMinute = 0;
         this.ticksRun = 0;
         this.finished = false;
+        this.cachedResultFinal = false;
     }
 
     public synchronized LiveSnapshot tick() {
@@ -62,6 +64,7 @@ public final class LiveSession {
         int maxMinute = Math.min(ticksRun + 1, 90);
         DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom, maxMinute);
         this.cachedResult = result;
+        this.cachedResultFinal = maxMinute >= 90;
         this.homeGoals = result.homeGoals();
         this.awayGoals = result.awayGoals();
         ticksRun++;
@@ -109,7 +112,7 @@ public final class LiveSession {
         return buildSnapshot();
     }
 
-    public boolean isFinished() {
+    public synchronized boolean isFinished() {
         return finished;
     }
 
@@ -370,14 +373,18 @@ public final class LiveSession {
         }
     }
 
-    public DetailedMatchResult finalResult() {
-        if (cachedResult == null) {
+    public synchronized DetailedMatchResult finalResult() {
+        if (cachedResult == null || !cachedResultFinal) {
             cachedRandom.rewind();
             this.cachedResult = engine.simulate(effectiveContext, cachedRandom);
+            this.cachedResultFinal = true;
             this.homeGoals = cachedResult.homeGoals();
             this.awayGoals = cachedResult.awayGoals();
             this.engineTimeline.clear();
             this.engineTimeline.addAll(cachedResult.timeline().events());
+            this.currentMinute = 90;
+            this.ticksRun = Math.max(ticksRun, 90);
+            this.finished = true;
         }
         return cachedResult;
     }
@@ -435,6 +442,7 @@ public final class LiveSession {
             fromMinute, index);
         DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom);
         this.cachedResult = result;
+        this.cachedResultFinal = true;
         this.homeGoals = result.homeGoals();
         this.awayGoals = result.awayGoals();
         this.engineTimeline.clear();
@@ -462,15 +470,15 @@ public final class LiveSession {
         }
     }
 
-    public int currentMinute() {
+    public synchronized int currentMinute() {
         return currentMinute;
     }
 
-    public MatchContext context() {
+    public synchronized MatchContext context() {
         return effectiveContext;
     }
 
-    public List<DetailedMatchEvent> accumulatedEvents() {
+    public synchronized List<DetailedMatchEvent> accumulatedEvents() {
         java.util.Set<String> manualVisibleKeys = new java.util.LinkedHashSet<>();
         for (DetailedMatchEvent event : manualEvents) {
             manualVisibleKeys.add(visibleEventKey(event));
