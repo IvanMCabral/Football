@@ -116,6 +116,12 @@ class SimulationArchitectureBoundaryTest {
             .and().haveSimpleNameEndingWith("Flow")
             .should(haveNoMutableStaticFields());
 
+    @ArchTest
+    static final ArchRule live_session_has_no_mutable_static_state = classes()
+            .that().haveFullyQualifiedName(
+                    "com.footballmanager.application.service.simulation.detailed.LiveSession")
+            .should(haveNoMutableStaticFields());
+
     @Test
     void detailedMinutePipelineMethodsRemainSmallEnoughToAudit() throws IOException {
         Path detailedPackage = Path.of(
@@ -141,6 +147,22 @@ class SimulationArchitectureBoundaryTest {
         assertThat(pipeline).contains("MinuteInjuryPhase");
         assertThat(pipeline).contains("MinuteRestartEventPhase");
         assertThat(pipeline).doesNotContain("MinutePhysicalStatePhase");
+    }
+
+    @Test
+    void liveSessionUsesInstanceMonitorWithoutGlobalLocksOrExternalDependencies() throws IOException {
+        String source = Files.readString(Path.of(
+                "src/main/java/com/footballmanager/application/service/simulation/detailed/LiveSession.java"));
+
+        assertThat(source).contains("public synchronized LiveSnapshot tick()");
+        assertThat(source).contains("public synchronized DetailedMatchResult finalResult()");
+        assertThat(source).contains("public synchronized List<DetailedMatchEvent> accumulatedEvents()");
+        assertThat(source).doesNotContain("static final Object");
+        assertThat(source).doesNotContain("ReentrantLock");
+        assertThat(source).doesNotContain("ConcurrentHashMap");
+        assertThat(source).doesNotContain("CopyOnWriteArrayList");
+        assertThat(source).doesNotContain("..adapters..");
+        assertThat(source).doesNotContain("..infrastructure..");
     }
 
     private static ArchCondition<JavaClass> haveAtMostTwoInstanceFields() {
