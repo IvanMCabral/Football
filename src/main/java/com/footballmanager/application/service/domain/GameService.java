@@ -84,7 +84,7 @@ public class GameService {
      * the live match flow is unaffected.
      */
     public Mono<Game> createGameFromCareer(CareerSave career, String leagueId,
-                                           String difficulty, String gameSpeed, int teamsPerDivision) {
+                                           String difficulty, String gameSpeed, Integer teamsPerDivision) {
         if (career == null || career.getData() == null || career.getData().getCareerId() == null) {
             return Mono.error(new IllegalArgumentException("career/careerId must not be null"));
         }

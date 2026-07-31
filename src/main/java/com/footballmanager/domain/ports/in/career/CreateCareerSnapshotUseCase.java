@@ -43,6 +43,6 @@ public interface CreateCareerSnapshotUseCase {
             UUID userTeamId,
             String difficulty,
             String gameSpeed,
-            int teamsPerDivision
+            Integer teamsPerDivision
     );
 }

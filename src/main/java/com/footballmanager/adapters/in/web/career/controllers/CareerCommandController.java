@@ -69,10 +69,7 @@ public class CareerCommandController {
             Authentication authentication) {
 
         UUID userId = controllerHelper.getUserId(authentication);
-        // teamsPerDivision es requerido — default a 5 si viene null (antiguo frontend)
-        int effectiveTeamsPerDivision = request.teamsPerDivision() != null
-                ? request.teamsPerDivision()
-                : 5;
+        Integer effectiveTeamsPerDivision = request.teamsPerDivision();
 
         final String leagueId = request.leagueId();
         final String difficulty = request.difficulty();

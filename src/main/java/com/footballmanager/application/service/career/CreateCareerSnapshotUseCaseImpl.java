@@ -34,7 +34,7 @@ public class CreateCareerSnapshotUseCaseImpl implements CreateCareerSnapshotUseC
             UUID userTeamId,
             String difficulty,
             String gameSpeed,
-            int teamsPerDivision) {
+            Integer teamsPerDivision) {
 
         return Mono.fromCallable(() -> {
             // Validar que la liga existe
@@ -53,8 +53,10 @@ public class CreateCareerSnapshotUseCaseImpl implements CreateCareerSnapshotUseC
                 throw new IllegalStateException("La liga debe tener al menos 2 equipos");
             }
 
+            int resolvedTeamsPerDivision = teamsPerDivision != null ? teamsPerDivision : leagueTeams.size();
+
             // Validar teamsPerDivision
-            if (teamsPerDivision < 2 || teamsPerDivision > leagueTeams.size()) {
+            if (resolvedTeamsPerDivision < 2 || resolvedTeamsPerDivision > leagueTeams.size()) {
                 throw new IllegalArgumentException("teamsPerDivision inválido");
             }
 
@@ -102,7 +104,7 @@ public class CreateCareerSnapshotUseCaseImpl implements CreateCareerSnapshotUseC
             }
 
             // Asignar equipos a divisiones basándose en OVR
-            career.assignTeamsToDivisions(teamsPerDivision);
+            career.assignTeamsToDivisions(resolvedTeamsPerDivision);
 
             // Generar fixtures
             careerFixtureService.setupCareerFixtures(career, true);

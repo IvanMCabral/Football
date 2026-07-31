@@ -35,7 +35,7 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
 
     @Override
     public Mono<CareerSave> start(UUID userId, String worldLeagueId, String worldTeamId,
-                                  String difficulty, String gameSpeed, int teamsPerDivision) {
+                                  String difficulty, String gameSpeed, Integer teamsPerDivision) {
         UUID leagueId = UUID.fromString(worldLeagueId);
 
         // Paso 0: Eliminar carrera anterior para evitar duplicación de datos

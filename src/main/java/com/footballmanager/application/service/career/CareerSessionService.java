@@ -59,7 +59,7 @@ public class CareerSessionService {
 
     @Deprecated
     public Mono<CareerSave> startNewCareer(UUID userId, String worldLeagueId, String worldTeamId,
-                                            String difficulty, String gameSpeed, int teamsPerDivision) {
+                                            String difficulty, String gameSpeed, Integer teamsPerDivision) {
         return startCareerUseCase.start(userId, worldLeagueId, worldTeamId, difficulty, gameSpeed, teamsPerDivision);
     }
 
@@ -98,7 +98,7 @@ public class CareerSessionService {
                                             String difficulty, String gameSpeed) {
         // Redirige al método correcto con teamsPerDivision default de 5.
         // El deprecated 5-param creaba un Career VACÍO (sin userSessionTeamId) — BUG.
-        return startCareerUseCase.start(userId, worldLeagueId, worldTeamId, difficulty, gameSpeed, 5);
+        return startCareerUseCase.start(userId, worldLeagueId, worldTeamId, difficulty, gameSpeed, null);
     }
 
     @Deprecated

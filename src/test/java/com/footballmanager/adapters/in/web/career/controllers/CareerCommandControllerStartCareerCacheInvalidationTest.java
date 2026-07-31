@@ -90,6 +90,10 @@ class CareerCommandControllerStartCareerCacheInvalidationTest {
         return new CareerStartRequest(LEAGUE_ID, TEAM_ID, "NORMAL", "NORMAL", 5);
     }
 
+    private CareerStartRequest sampleRequestWithoutTeamsPerDivision() {
+        return new CareerStartRequest(LEAGUE_ID, TEAM_ID, "NORMAL", "NORMAL", null);
+    }
+
     private Authentication authForUser() {
         Authentication auth = mock(Authentication.class);
         // SUT calls controllerHelper.getUserId(auth) directly). We do NOT
@@ -120,6 +124,29 @@ class CareerCommandControllerStartCareerCacheInvalidationTest {
         // /career/status read re-fetches the new CareerSave from Redis
         // instead of returning the previously-cached one.
         verify(sessionService, times(1)).invalidateCache(USER_ID);
+    }
+
+    @Test
+    @DisplayName("startCareer preserves omitted teamsPerDivision for application-level resolution")
+    void startCareer_omittedTeamsPerDivisionPassesNullToUseCase() {
+        CareerSave newCareer = mock(CareerSave.class);
+        Game game = mock(Game.class);
+
+        when(sessionService.startNewCareer(
+                eq(USER_ID), eq(LEAGUE_ID), eq(TEAM_ID),
+                anyString(), anyString(), eq(null)))
+            .thenReturn(Mono.just(newCareer));
+        when(gameService.createGameFromCareer(
+                eq(newCareer), eq(LEAGUE_ID), anyString(), anyString(), eq(null)))
+            .thenReturn(Mono.just(game));
+
+        StepVerifier.create(controller.startCareer(sampleRequestWithoutTeamsPerDivision(), authForUser()))
+            .verifyComplete();
+
+        verify(sessionService, times(1)).startNewCareer(
+            eq(USER_ID), eq(LEAGUE_ID), eq(TEAM_ID), anyString(), anyString(), eq(null));
+        verify(gameService, times(1)).createGameFromCareer(
+            eq(newCareer), eq(LEAGUE_ID), anyString(), anyString(), eq(null));
     }
 
     @Test
