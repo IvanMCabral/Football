@@ -35,7 +35,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/test-harness/career")
 @Profile({"dev", "local", "test"})
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
 @Slf4j
 public class TestHarnessController {

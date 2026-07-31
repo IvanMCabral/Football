@@ -2,6 +2,7 @@ package com.footballmanager.adapters.in.web.world;
 
 import com.footballmanager.application.service.world.LaLigaSeedService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -35,7 +36,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/v1/world/seed-la-liga")
-@CrossOrigin(origins = "http://localhost:4200")
+@Profile("!prod")
 @RequiredArgsConstructor
 public class LaLigaSeedController {
 

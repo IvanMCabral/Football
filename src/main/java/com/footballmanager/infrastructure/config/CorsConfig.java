@@ -1,64 +1,62 @@
 package com.footballmanager.infrastructure.config;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
 
-import java.util.Arrays;
-
-import reactor.core.publisher.Mono;
-
-/**
- * Configuración CORS para WebFlux
- */
 @Configuration
 public class CorsConfig {
 
-    @Bean
-    public WebFilter corsWebFilter() {
-        return (ServerWebExchange exchange, WebFilterChain chain) -> {
-            String path = exchange.getRequest().getPath().value();
-            String method = exchange.getRequest().getMethod().name();
-            String origin = exchange.getRequest().getHeaders().getFirst("Origin");
+    private final List<String> allowedOrigins;
 
-            // Permitir CORS para todos los endpoints de API
-            if (path.startsWith("/api")) {
-                exchange.getResponse().getHeaders().add("Access-Control-Allow-Origin", "*");
-                exchange.getResponse().getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-                exchange.getResponse().getHeaders().add("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, Origin, X-Requested-With");
-                exchange.getResponse().getHeaders().add("Access-Control-Max-Age", "3600");
-                exchange.getResponse().getHeaders().add("Access-Control-Expose-Headers", "Content-Type");
+    public CorsConfig(@Value("${app.security.cors.allowed-origins:}") String allowedOrigins) {
+        this.allowedOrigins = parseOrigins(allowedOrigins);
+    }
 
-                // Handle OPTIONS preflight
-                if ("OPTIONS".equals(method)) {
-                    exchange.getResponse().getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-                    exchange.getResponse().getHeaders().add("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, Origin, X-Requested-With");
-                    return exchange.getResponse().setComplete();
-                }
-            }
+    public boolean isAllowedOrigin(String origin) {
+        return origin != null && allowedOrigins.contains(origin);
+    }
 
-            return chain.filter(exchange);
-        };
+    public List<String> allowedOrigins() {
+        return allowedOrigins;
     }
 
     @Bean
     public CorsWebFilter corsWebFilterBean() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(Arrays.asList("*"));
+        corsConfig.setAllowedOrigins(allowedOrigins);
         corsConfig.setMaxAge(3600L);
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        corsConfig.setAllowedHeaders(Arrays.asList("*"));
-        corsConfig.setExposedHeaders(Arrays.asList("Content-Type"));
-        corsConfig.setAllowCredentials(false);
+        corsConfig.setAllowedHeaders(Arrays.asList(
+            HttpHeaders.AUTHORIZATION,
+            HttpHeaders.CONTENT_TYPE,
+            HttpHeaders.ACCEPT,
+            HttpHeaders.ORIGIN,
+            "X-Requested-With"));
+        corsConfig.setExposedHeaders(List.of(HttpHeaders.CONTENT_TYPE));
+        corsConfig.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
+        source.registerCorsConfiguration("/api/**", corsConfig);
 
         return new CorsWebFilter(source);
+    }
+
+    private static List<String> parseOrigins(String rawOrigins) {
+        if (rawOrigins == null || rawOrigins.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(rawOrigins.split(","))
+            .map(String::trim)
+            .filter(origin -> !origin.isBlank())
+            .distinct()
+            .toList();
     }
 }

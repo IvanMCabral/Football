@@ -5,7 +5,6 @@ import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +27,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/career/debug")
 @Profile("dev")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class CareerDebugController {
 
     private final CareerSessionService sessionService;

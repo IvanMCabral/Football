@@ -4,6 +4,7 @@ import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.domain.port.in.fixture.MigrateFixturesUseCase;
 import com.footballmanager.domain.port.in.fixture.RegenerateFixturesUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -21,7 +22,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/v1/career/admin")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@Profile("!prod")
 @RequiredArgsConstructor
 public class CareerAdminController {
 

@@ -9,12 +9,11 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * Controller para gestión de ligas - Versión simplificada.
- * Los endpoints de add-team/remove-team están en LeagueControllerReactive.
+ * Controller para gestiÃ³n de ligas - VersiÃ³n simplificada.
+ * Los endpoints de add-team/remove-team estÃ¡n en LeagueControllerReactive.
  */
 @RestController
 @RequestMapping("/api/v1/leagues")
-@CrossOrigin(origins = "http://localhost:4200")
 public class LeagueController {
 
     private final WorldLeagueCommandService leagueCommandService;

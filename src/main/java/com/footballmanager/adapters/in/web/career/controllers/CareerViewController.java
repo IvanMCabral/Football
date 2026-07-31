@@ -23,7 +23,6 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/career")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class CareerViewController {
 
     private final ControllerHelper controllerHelper;
@@ -66,7 +65,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/fixtures
-     * Obtiene fixtures de la división del usuario para una fecha específica
+     * Obtiene fixtures de la divisiÃ³n del usuario para una fecha especÃ­fica
      */
     @GetMapping("/fixtures")
     public Mono<List<FixtureQueryDtos.MatchInfo>> getUserDivisionFixtures(
@@ -80,7 +79,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/fixtures/all[?round=N]
-     * Obtiene los fixtures de la división del usuario.
+     * Obtiene los fixtures de la divisiÃ³n del usuario.
      *
      * query param and always returned all 240 matches across 10 rounds. Now it
      * honors {@code ?round=N} (1-based) and returns a single-round slice with
@@ -125,7 +124,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/fixtures/league
-     * Obtiene fixtures de todas las divisiones para una fecha específica
+     * Obtiene fixtures de todas las divisiones para una fecha especÃ­fica
      */
     @GetMapping("/fixtures/league")
     public Mono<List<FixtureQueryDtos.LeagueDivisionFixtures>> getLeagueFixtures(
@@ -141,7 +140,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/fixtures/round/{round}
-     * Obtiene fixtures de la división del usuario para una fecha específica CON info de BYE
+     * Obtiene fixtures de la divisiÃ³n del usuario para una fecha especÃ­fica CON info de BYE
      */
     @GetMapping("/fixtures/round/{round}")
     public Mono<FixtureQueryDtos.RoundFixturesWithBye> getUserDivisionFixturesWithBye(
@@ -166,7 +165,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/standings
-     * Obtiene standings de la división del usuario
+     * Obtiene standings de la divisiÃ³n del usuario
      */
     @GetMapping("/standings")
     public Mono<List<StandingQueryService.StandingEntry>> getUserStandings(Authentication auth) {
@@ -194,7 +193,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/champion
-     * Obtiene el campeón del torneo (solo si está terminado)
+     * Obtiene el campeÃ³n del torneo (solo si estÃ¡ terminado)
      */
     @GetMapping("/champion")
     public Mono<CareerChampionQueryService.ChampionInfo> getChampion(Authentication auth) {
@@ -206,7 +205,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/palmares
-     * Obtiene palmares de la división del usuario
+     * Obtiene palmares de la divisiÃ³n del usuario
      */
     @GetMapping("/palmares")
     public Mono<List<CareerPalmaresQueryService.PalmaresEntry>> getUserPalmares(Authentication auth) {
@@ -234,7 +233,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/tops
-     * Obtiene los equipos más ganadores de todas las divisiones
+     * Obtiene los equipos mÃ¡s ganadores de todas las divisiones
      */
     @GetMapping("/tops")
     public Mono<List<CareerPalmaresQueryService.TopTeamEntry>> getTopTeams(Authentication auth) {
@@ -262,7 +261,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/tops/division/{divisionId}
-     * Obtiene los equipos con más títulos de una division especifica
+     * Obtiene los equipos con mÃ¡s tÃ­tulos de una division especifica
      */
     @GetMapping("/tops/division/{divisionId}")
     public Mono<List<CareerPalmaresQueryService.TopTeamEntry>> getTopTeamsByDivision(
@@ -290,7 +289,7 @@ public class CareerViewController {
 
     /**
      * GET /api/v1/career/divisions
-     * Obtiene información de las divisiones
+     * Obtiene informaciÃ³n de las divisiones
      */
     @GetMapping("/divisions")
     public Mono<List<CareerQueryService.DivisionInfo>> getDivisions(Authentication auth) {

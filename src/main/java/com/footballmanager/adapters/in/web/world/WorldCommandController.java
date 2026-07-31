@@ -23,7 +23,6 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/v1/world")
-@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class WorldCommandController {
 

@@ -16,11 +16,10 @@ import java.util.UUID;
  * Responsabilidad: Streaming de eventos en tiempo real.
  *
  * Endpoints:
- * - GET /api/v1/career/events → SSE stream de eventos
+ * - GET /api/v1/career/events â†’ SSE stream de eventos
  */
 @RestController
 @RequestMapping("/api/v1/career/events")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class CareerEventController {
 
     private final CareerNotificationService notificationService;
@@ -34,7 +33,7 @@ public class CareerEventController {
     /**
      * GET /api/v1/career/events
      * Endpoint SSE para suscribirse a eventos de career en tiempo real.
-     * El frontend puede conectarse aquí para recibir actualizaciones del fixture.
+     * El frontend puede conectarse aquÃ­ para recibir actualizaciones del fixture.
      */
     @GetMapping(value = "", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<CareerNotificationService.CareerEvent> streamCareerEvents(Authentication authentication) {

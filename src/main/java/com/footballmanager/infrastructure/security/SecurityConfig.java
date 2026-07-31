@@ -2,6 +2,7 @@ package com.footballmanager.infrastructure.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.adapters.in.web.common.ErrorResponseBody;
+import com.footballmanager.infrastructure.config.CorsConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,13 +27,14 @@ import reactor.core.publisher.Mono;
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
+    private final CorsConfig corsConfig;
 
-    public static void addCorsHeaders(ServerWebExchange exchange) {
+    private void addCorsHeaders(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
         ServerHttpResponse response = exchange.getResponse();
         String origin = request.getHeaders().getOrigin();
 
-        if (origin != null) {
+        if (corsConfig.isAllowedOrigin(origin)) {
             response.getHeaders().set("Access-Control-Allow-Origin", origin);
             response.getHeaders().set("Vary", "Origin");
             response.getHeaders().set("Access-Control-Allow-Credentials", "true");
@@ -92,17 +94,13 @@ public class SecurityConfig {
                 .pathMatchers("/actuator/health").permitAll()
                 .pathMatchers("/api/v1/players", "/api/v1/players/**").authenticated()
                 .pathMatchers("/api/v1/matches", "/api/v1/matches/**").authenticated()
-                // Legacy public paths intentionally return router-level 404s instead of auth 401s.
-                .pathMatchers("/api/v1/teams", "/api/v1/teams/**").permitAll()
+                .pathMatchers("/api/v1/teams", "/api/v1/teams/**").authenticated()
                 .pathMatchers("/api/v1/career", "/api/v1/career/**").authenticated()
                 .pathMatchers("/api/v1/world", "/api/v1/world/**").authenticated()
-                // Admin world operations require an authenticated request; controller logic checks roles.
                 .pathMatchers("/api/v1/admin/world", "/api/v1/admin/world/**").authenticated()
-                // League endpoints perform their own user checks where needed.
-                .pathMatchers("/api/v1/leagues", "/api/v1/leagues/**").permitAll()
-                // Match-engine streaming remains public; mutating handlers validate users in-code.
-                .pathMatchers("/api/v1/match-engine", "/api/v1/match-engine/**").permitAll()
-                .pathMatchers("/api/v1/fixtures", "/api/v1/fixtures/**").permitAll()
+                .pathMatchers("/api/v1/leagues", "/api/v1/leagues/**").authenticated()
+                .pathMatchers("/api/v1/match-engine", "/api/v1/match-engine/**").authenticated()
+                .pathMatchers("/api/v1/fixtures", "/api/v1/fixtures/**").authenticated()
                 .pathMatchers("/api/v1/games", "/api/v1/games/**").authenticated()
                 .pathMatchers("/api/v1/dashboard/**").authenticated()
                 .anyExchange().authenticated()

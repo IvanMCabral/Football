@@ -30,7 +30,6 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/career")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class CareerCommandController {
 
     private final ControllerHelper controllerHelper;
@@ -90,7 +89,7 @@ public class CareerCommandController {
                 // TestHarnessUseCaseImpl / ContinueSeasonUseCaseImpl / StartRoundUseCaseImpl.
                 .doOnNext(started -> sessionService.invalidateCache(userId))
                 // career is initialized, also persist a Game entity that
-                // shares the career's UUID. Best-effort — if Redis fails,
+                // shares the career's UUID. Best-effort â€” if Redis fails,
                 // we log warn and return success anyway so the live match
                 // flow is never blocked.
                 .flatMap(career -> gameService.createGameFromCareer(
@@ -113,7 +112,7 @@ public class CareerCommandController {
     public Mono<Void> resetCareer(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
         return sessionService.deleteCareer(userId)
-                // Game entity that mirrors the career. Best-effort — we
+                // Game entity that mirrors the career. Best-effort â€” we
                 // already cleared the CareerSave; deleting the Game is
                 // housekeeping so the dashboard does not show a phantom
                 // game pointing to a deleted career.
@@ -121,7 +120,7 @@ public class CareerCommandController {
                     // We don't know the careerId post-delete (it may have
                     // been wiped from the cache). For simplicity, look up
                     // the Game entity by userId only (the Game has the
-                    // same UUID as the career that was just deleted — so
+                    // same UUID as the career that was just deleted â€” so
                     // findByUserId should return at most one entry).
                     return gameService.getAllGames(userId)
                             .collectList()
@@ -149,7 +148,7 @@ public class CareerCommandController {
     /**
      * POST /api/v1/career/{careerId}/next-round
      * Avanza a la siguiente fecha (solo si estado es WAITING_USER)
-     * Retorna información sobre el avance para el frontend.
+     * Retorna informaciÃ³n sobre el avance para el frontend.
      */
     @PostMapping("/{careerId}/next-round")
     @ResponseStatus(HttpStatus.OK)
@@ -163,7 +162,7 @@ public class CareerCommandController {
 
     /**
      * POST /api/v1/career/continue
-     * Inicia una nueva temporada (solo si torneo está en FINISHED)
+     * Inicia una nueva temporada (solo si torneo estÃ¡ en FINISHED)
      */
     @PostMapping("/continue")
     @ResponseStatus(HttpStatus.OK)
@@ -193,7 +192,7 @@ public class CareerCommandController {
             @PathVariable String careerId,
             @PathVariable String roundId,
             Authentication authentication) {
-        // Extract userId — throws via ControllerHelper if JWT is missing/invalid.
+        // Extract userId â€” throws via ControllerHelper if JWT is missing/invalid.
         UUID userId = controllerHelper.getUserId(authentication);
         UUID roundIdUuid;
         try {

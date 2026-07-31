@@ -49,7 +49,10 @@ class SmokeE2ETest extends AbstractIntegrationTest {
         webTestClient.get().uri("/api/v1/health")
             .exchange()
             .expectStatus().isOk()
-            .expectBody(String.class).isEqualTo("OK");
+            .expectBody()
+            .jsonPath("$.status").isEqualTo("UP")
+            .jsonPath("$.database").isEqualTo("UP")
+            .jsonPath("$.redis").isEqualTo("UP");
     }
 
     @Test

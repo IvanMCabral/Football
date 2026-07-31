@@ -185,7 +185,8 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("GET roundId with malformed matchId — 400 BAD_REQUEST")
     void getRoundId_invalidUuid_returns400() {
-        webTestClient.get().uri("/api/v1/match-engine/matches/{id}/roundId", "not-a-uuid")
+        webTestClient.mutateWith(mockUser(SEED_USER_ID))
+            .get().uri("/api/v1/match-engine/matches/{id}/roundId", "not-a-uuid")
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isBadRequest()
@@ -198,7 +199,8 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
     void getRoundId_noRegisteredEngine_returns404() {
         String matchId = UUID.randomUUID().toString();
 
-        webTestClient.get().uri("/api/v1/match-engine/matches/{id}/roundId", matchId)
+        webTestClient.mutateWith(mockUser(SEED_USER_ID))
+            .get().uri("/api/v1/match-engine/matches/{id}/roundId", matchId)
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isNotFound()
@@ -215,7 +217,8 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
         String roundId = live[0];
         String matchId = live[1];
 
-        webTestClient.get().uri("/api/v1/match-engine/matches/{id}/roundId", matchId)
+        webTestClient.mutateWith(mockUser(userId))
+            .get().uri("/api/v1/match-engine/matches/{id}/roundId", matchId)
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk()

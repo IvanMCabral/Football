@@ -63,11 +63,13 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
             .flushDb()
             .block();
         careerSessionService.clearCache();
+        jdbcTemplate.update("DELETE FROM players WHERE source_system = 'conflict-fixture'");
     }
 
     @Test
     @DisplayName("imports, exposes and starts playable careers for Spain, Argentina and Brazil")
     void importedThreeLeagueDatasetSupportsPlayableCareerSetup() {
+        deleteGeneratedDatasetRows();
         importer.importDataset();
 
         for (LeagueCase league : LEAGUES) {
@@ -146,7 +148,8 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
         return leagues.stream()
             .filter(row -> league.name().equals(row.get("name")))
             .findFirst()
-            .orElseThrow(() -> new AssertionError("Missing imported league: " + league.name()));
+            .orElseThrow(() -> new AssertionError("Missing imported league: " + league.name()
+                + ". Actual leagues: " + leagues));
     }
 
     private List<Map<String, Object>> teamsForLeague(UUID userId, String leagueId) {

@@ -17,13 +17,12 @@ import java.util.UUID;
 
 /**
  * validan que el {@code userId} del JWT coincide con el {@code userId}
- * del body. Si NO coincide → 403 IMPERSONATION_FORBIDDEN. Antes de C50,
- * un user A autenticado podía crear jugadores en el WorldSnapshot del
+ * del body. Si NO coincide â†’ 403 IMPERSONATION_FORBIDDEN. Antes de C50,
+ * un user A autenticado podÃ­a crear jugadores en el WorldSnapshot del
  * user B o reasignar/remover jugadores del squad del user B.
  */
 @RestController
 @RequestMapping("/api/v1/world")
-@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class PlayerCommandController {
 
@@ -87,7 +86,7 @@ public class PlayerCommandController {
 
     /**
      * POST /api/v1/world/create-random-players
-     * Crea múltiples jugadores aleatorios en WorldSnapshot
+     * Crea mÃºltiples jugadores aleatorios en WorldSnapshot
      */
     @PostMapping("/create-random-players")
     public Mono<ResponseEntity<BatchPlayerCreationResponse>> createRandomPlayers(

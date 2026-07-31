@@ -24,18 +24,17 @@ import java.util.UUID;
  * World API - Consultas sobre el mundo.
  *
  * Endpoints principales para obtener ligas, equipos y jugadores.
- * Los equipos custom (sin liga) están disponibles en /api/v1/editor/teams
+ * Los equipos custom (sin liga) estÃ¡n disponibles en /api/v1/editor/teams
  *
  * validan que el {@code userId} del JWT coincide con el {@code userId}
- * del query param. Si NO coincide → 403 IMPERSONATION_FORBIDDEN. Antes
- * de C50, el userId del query param se aceptaba ciegamente — un user A
- * autenticado podía leer los datos (leagues/teams/players/free-players)
+ * del query param. Si NO coincide â†’ 403 IMPERSONATION_FORBIDDEN. Antes
+ * de C50, el userId del query param se aceptaba ciegamente â€” un user A
+ * autenticado podÃ­a leer los datos (leagues/teams/players/free-players)
  * del user B. Defense-in-depth con SecurityConfig.java (post-C48) que
- * ya rechaza requests anónimas con 401.
+ * ya rechaza requests anÃ³nimas con 401.
  */
 @RestController
 @RequestMapping("/api/v1/world")
-@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class WorldQueryController {
 

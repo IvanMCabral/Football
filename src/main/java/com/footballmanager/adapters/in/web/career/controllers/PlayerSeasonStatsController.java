@@ -16,15 +16,15 @@ import java.util.Map;
  *
  * <p>Three endpoints:
  * <ul>
- *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/player-stats — all players</li>
- *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/teams/{teamId}/player-stats — team filter</li>
- *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/players/{playerId}/stats — single player</li>
+ *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/player-stats â€” all players</li>
+ *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/teams/{teamId}/player-stats â€” team filter</li>
+ *   <li>GET /api/v1/careers/{careerId}/seasons/{season}/players/{playerId}/stats â€” single player</li>
  * </ul>
  *
  * <p>Pagination (all/team endpoints):
  * <ul>
- *   <li>limit: default 50, max 200, limit <= 0 → 400</li>
- *   <li>offset: default 0, offset < 0 → 400</li>
+ *   <li>limit: default 50, max 200, limit <= 0 â†’ 400</li>
+ *   <li>offset: default 0, offset < 0 â†’ 400</li>
  *   <li>sortBy: goals|assists|averageRating|appearances|starts|shots|keyPasses|yellowCards|redCards|injuries|fouls|playerName (default: goals)</li>
  *   <li>order: asc|desc (default: desc)</li>
  * </ul>
@@ -35,7 +35,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/careers")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class PlayerSeasonStatsController {
 
     private final PlayerSeasonStatsQueryService queryService;
@@ -62,22 +61,22 @@ public class PlayerSeasonStatsController {
                     .body(Map.of("error", "season must not be null")));
         }
 
-        // Validation: limit <= 0 → 400
+        // Validation: limit <= 0 â†’ 400
         if (limit != null && limit <= 0) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "limit must be greater than 0")));
         }
-        // Validation: offset < 0 → 400
+        // Validation: offset < 0 â†’ 400
         if (offset != null && offset < 0) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "offset must not be negative")));
         }
-        // Validation: invalid sortBy → 400
+        // Validation: invalid sortBy â†’ 400
         if (sortBy != null && !sortBy.isBlank() && PlayerSeasonStatsSortField.fromString(sortBy) == null) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid sortBy field: " + sortBy)));
         }
-        // Validation: invalid order → 400
+        // Validation: invalid order â†’ 400
         if (order != null && !order.isBlank() && !order.equalsIgnoreCase("asc") && !order.equalsIgnoreCase("desc")) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid order: " + order + " (must be 'asc' or 'desc')")));
@@ -131,22 +130,22 @@ public class PlayerSeasonStatsController {
                     .body(Map.of("error", "teamId must not be blank")));
         }
 
-        // Validation: limit <= 0 → 400
+        // Validation: limit <= 0 â†’ 400
         if (limit != null && limit <= 0) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "limit must be greater than 0")));
         }
-        // Validation: offset < 0 → 400
+        // Validation: offset < 0 â†’ 400
         if (offset != null && offset < 0) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "offset must not be negative")));
         }
-        // Validation: invalid sortBy → 400
+        // Validation: invalid sortBy â†’ 400
         if (sortBy != null && !sortBy.isBlank() && PlayerSeasonStatsSortField.fromString(sortBy) == null) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid sortBy field: " + sortBy)));
         }
-        // Validation: invalid order → 400
+        // Validation: invalid order â†’ 400
         if (order != null && !order.isBlank() && !order.equalsIgnoreCase("asc") && !order.equalsIgnoreCase("desc")) {
             return Mono.just(ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid order: " + order + " (must be 'asc' or 'desc')")));

@@ -10,12 +10,11 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * Controlador para operaciones de relación Liga-Equipo.
+ * Controlador para operaciones de relaciÃ³n Liga-Equipo.
  * Responsibility: agregar/remover equipos de ligas en Redis y actualizar el WorldSnapshot.
  */
 @RestController
 @RequestMapping("/api/v1/world/leagues")
-@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class LeagueTeamCommandController {
 

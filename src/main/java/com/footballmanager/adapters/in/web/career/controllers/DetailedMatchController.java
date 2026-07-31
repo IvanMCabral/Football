@@ -29,7 +29,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/careers")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class DetailedMatchController {
 
     private final DetailedMatchQueryService queryService;
@@ -125,7 +124,7 @@ public class DetailedMatchController {
 
         // Mono<MatchComparison> so it composes correctly with the Reactor
         // scheduler (the sync version was silently aborting under Reactor
-        // parallel scheduling — blockOptional() threw IllegalStateException
+        // parallel scheduling â€” blockOptional() threw IllegalStateException
         // which was caught and turned into Optional.empty, making the
         // endpoint return 404 even when the baseline was in Redis).
         return matchComparisonService.getComparison(careerId, matchId)
@@ -152,7 +151,7 @@ public class DetailedMatchController {
      *
      * <p>Returns a partial snapshot of the stored match data filtered up to
      * and including minute N. Used by the test-harness UI timeline scrubber.
-     * Pure derivation from the stored timeline — no re-simulation, no cache.
+     * Pure derivation from the stored timeline â€” no re-simulation, no cache.
      *
      * <p>Feature-gated: returns 404 when
      * {@code app.simulation.detailed.expose-detail-api=false} (same flag as

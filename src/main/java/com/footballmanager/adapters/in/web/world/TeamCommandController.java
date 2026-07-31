@@ -14,13 +14,12 @@ import java.util.UUID;
 
 /**
  * validan que el {@code userId} del JWT coincide con el {@code userId}
- * del body/query param. Si NO coincide → 403 IMPERSONATION_FORBIDDEN.
- * Antes de C50, un user A autenticado podía crear/sobreescribir equipos
+ * del body/query param. Si NO coincide â†’ 403 IMPERSONATION_FORBIDDEN.
+ * Antes de C50, un user A autenticado podÃ­a crear/sobreescribir equipos
  * en el WorldSnapshot del user B (privilege escalation / data tampering).
  */
 @RestController
 @RequestMapping("/api/v1/world")
-@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class TeamCommandController {
 
@@ -72,7 +71,7 @@ public class TeamCommandController {
 
     /**
      * POST /api/v1/world/random-teams
-     * Crea múltiples equipos aleatorios en WorldSnapshot
+     * Crea mÃºltiples equipos aleatorios en WorldSnapshot
      */
     @PostMapping("/random-teams")
     public Mono<ResponseEntity<RandomTeamsResponse>> createRandomTeams(

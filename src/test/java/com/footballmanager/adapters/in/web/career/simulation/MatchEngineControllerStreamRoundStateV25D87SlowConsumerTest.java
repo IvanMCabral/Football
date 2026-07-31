@@ -8,6 +8,7 @@ import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
+import com.footballmanager.infrastructure.security.JwtTokenProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -71,6 +72,9 @@ class MatchEngineControllerStreamRoundStateV25D87SlowConsumerTest extends Abstra
     @Autowired
     private RoundEngineRegistry roundEngineRegistry;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     @AfterEach
     void cleanup() {
         if (roundEngineRegistry.getActiveRoundCount() > 0) {
@@ -108,6 +112,7 @@ class MatchEngineControllerStreamRoundStateV25D87SlowConsumerTest extends Abstra
         WebClient webClient = WebClient.builder().baseUrl("http://localhost:" + port).build();
         Flux<RoundState> stream = webClient.get()
             .uri("/api/v1/match-engine/rounds/{roundId}/stream", roundId)
+            .headers(headers -> headers.setBearerAuth(jwtTokenProvider.generateToken(SEED_USER_ID, "USER")))
             .accept(MediaType.TEXT_EVENT_STREAM)
             .retrieve()
             .bodyToFlux(RoundState.class)
