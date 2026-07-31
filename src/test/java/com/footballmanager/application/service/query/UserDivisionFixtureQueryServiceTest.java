@@ -171,19 +171,10 @@ class UserDivisionFixtureQueryServiceTest {
         RoundFixturesWithBye result = service.getRoundWithBye(save, 1).block();
 
         assertNotNull(result);
-        assertEquals(2, result.matches().size(), "Round 1 must contain both matches");
-
-        MatchInfo crossMatch = result.matches().stream()
-                .filter(m -> DIV_B_TEAM_1.equals(m.homeTeamId()))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Expected cross-division match m2 not found"));
-
-        assertEquals(DIV_B_TEAM_1_NAME, crossMatch.homeTeamName(),
-                "Cross-division homeTeamId must resolve to real name (NOT UUID). "
-              + "Before DetailedSprint24.3-FIX this was: " + DIV_B_TEAM_1);
-        assertEquals(DIV_B_TEAM_2_NAME, crossMatch.awayTeamName(),
-                "Cross-division awayTeamId must resolve to real name (NOT UUID). "
-              + "Before DetailedSprint24.3-FIX this was: " + DIV_B_TEAM_2);
+        assertEquals(1, result.matches().size(), "User-division endpoint must not return other divisions");
+        assertTrue(result.matches().stream().noneMatch(m -> DIV_B_TEAM_1.equals(m.homeTeamId())));
+        assertEquals(USER_TEAM_NAME, result.matches().get(0).homeTeamName());
+        assertEquals(DIV_A_TEAM_NAME, result.matches().get(0).awayTeamName());
     }
 
     @Test
@@ -220,20 +211,12 @@ class UserDivisionFixtureQueryServiceTest {
         assertNotNull(result);
         assertEquals(2, result.rounds().size());
 
-        // Round 2 has the cross-division match — verify it resolves
         var round2 = result.rounds().stream()
                 .filter(r -> r.round() == 2)
                 .findFirst()
                 .orElseThrow();
-        MatchInfo crossMatch = round2.matches().stream()
-                .filter(m -> DIV_B_TEAM_1.equals(m.homeTeamId()))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Cross-division match m3 not found in round 2"));
-
-        assertEquals(DIV_B_TEAM_1_NAME, crossMatch.homeTeamName(),
-                "Round 2 cross-division homeTeamId must resolve to real name");
-        assertEquals(DIV_B_TEAM_2_NAME, crossMatch.awayTeamName(),
-                "Round 2 cross-division awayTeamId must resolve to real name");
+        assertEquals(1, round2.matches().size(), "Only user-division round 2 fixtures should be present");
+        assertTrue(round2.matches().stream().noneMatch(m -> DIV_B_TEAM_1.equals(m.homeTeamId())));
     }
 
     // ========== getByRound ==========
@@ -249,13 +232,9 @@ class UserDivisionFixtureQueryServiceTest {
         List<MatchInfo> matches = service.getByRound(save, 1).block();
 
         assertNotNull(matches);
-        assertEquals(2, matches.size());
-        MatchInfo crossMatch = matches.stream()
-                .filter(m -> DIV_B_TEAM_1.equals(m.homeTeamId()))
-                .findFirst()
-                .orElseThrow();
-        assertEquals(DIV_B_TEAM_1_NAME, crossMatch.homeTeamName());
-        assertEquals(DIV_B_TEAM_2_NAME, crossMatch.awayTeamName());
+        assertEquals(1, matches.size(), "User-division endpoint must not return other divisions");
+        assertEquals(USER_TEAM, matches.get(0).homeTeamId());
+        assertEquals(DIV_A_TEAM, matches.get(0).awayTeamId());
     }
 
     // ========== getAll ==========
@@ -297,17 +276,14 @@ class UserDivisionFixtureQueryServiceTest {
         assertEquals(1, response.rounds().size(),
                 "BUG-M4: only the requested round must be in the rounds array");
         assertEquals(2, response.rounds().get(0).round());
-        // Matches include BOTH the user-division and cross-division fixture of round 2
-        assertEquals(2, response.rounds().get(0).matches().size(),
-                "BUG-M4: round 2 contains both m2 (user-div) and m3 (cross-div)");
-        // Metadata stays complete (config + teams + teamNames) so UI can still resolve names
+        assertEquals(1, response.rounds().get(0).matches().size(),
+                "User-division round payload must exclude cross-division fixtures");
         assertNotNull(response.config());
         assertEquals(2, response.teams().size(), "User-division teams list stays complete");
         assertEquals(USER_TEAM_NAME, response.teamNames().get(USER_TEAM));
         assertEquals(DIV_A_TEAM_NAME, response.teamNames().get(DIV_A_TEAM));
-        assertEquals(DIV_B_TEAM_1_NAME, response.teamNames().get(DIV_B_TEAM_1),
-                "BUG-M4: cross-division teamNames must still resolve in single-round payload");
-        assertEquals(DIV_B_TEAM_2_NAME, response.teamNames().get(DIV_B_TEAM_2));
+        assertNull(response.teamNames().get(DIV_B_TEAM_1));
+        assertNull(response.teamNames().get(DIV_B_TEAM_2));
     }
 
     @Test

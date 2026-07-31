@@ -27,7 +27,10 @@ public class UserDivisionFixtureQueryService {
             }
 
             TournamentState tournamentState = career.getTournamentState();
-            List<MatchFixture> fixtures = tournamentState.getFixturesForRound(round);
+            List<MatchFixture> fixtures = filterToUserDivision(
+                tournamentState.getFixturesForRound(round),
+                userDivision
+            );
             // cross-division fixtures injected via test-harness replaceFixtures resolve
             Set<String> teamIdsInFixtures = new HashSet<>(userDivision.getTeamIds());
             teamIdsInFixtures.addAll(FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures));
@@ -75,7 +78,12 @@ public class UserDivisionFixtureQueryService {
             teamNames.putAll(extraNames);
             List<String> teamIds = new ArrayList<>(userDivision.getTeamIds());
             List<RoundInfo> rounds = FixtureQueryHelper.buildRoundInfosWithPhase(
-                    tournamentState.getFixtures(), teamNames, teamIds, totalRounds, roundsWithBye, career.getCareerId());
+                    filterToUserDivision(tournamentState.getFixtures(), userDivision),
+                    teamNames,
+                    teamIds,
+                    totalRounds,
+                    roundsWithBye,
+                    career.getCareerId());
 
             List<TeamInfo> teamsList = userDivision.getTeamIds().stream()
                     .map(teamId -> career.getSessionTeam(teamId))
@@ -123,13 +131,6 @@ public class UserDivisionFixtureQueryService {
         int totalRounds = roundsWithBye * 2;
 
         Map<String, String> teamNames = FixtureQueryHelper.buildTeamNamesMap(career, userDivision.getTeamIds());
-        // Same defensive merge as getAll — extend with cross-division teams from
-        // any fixture in the tournament (not just this round), so the teamNames
-        // map stays useful even when the filter limits rounds.
-        Set<String> allFixtureTeamIds = FixtureQueryHelper.extractTeamIdsFromFixtures(
-            career.getTournamentState().getFixtures());
-        Map<String, String> extraNames = FixtureQueryHelper.buildTeamNamesMap(career, allFixtureTeamIds);
-        teamNames.putAll(extraNames);
 
         List<TeamInfo> teamsList = userDivision.getTeamIds().stream()
             .map(teamId -> career.getSessionTeam(teamId))
@@ -182,7 +183,10 @@ public class UserDivisionFixtureQueryService {
             }
 
             TournamentState tournamentState = career.getTournamentState();
-            List<MatchFixture> fixtures = tournamentState.getFixturesForRound(round);
+            List<MatchFixture> fixtures = filterToUserDivision(
+                tournamentState.getFixturesForRound(round),
+                userDivision
+            );
             // so this is a superset and never shrinks the map.
             Set<String> teamIdsInFixtures = new HashSet<>(userDivision.getTeamIds());
             teamIdsInFixtures.addAll(FixtureQueryHelper.extractTeamIdsFromFixtures(fixtures));
@@ -218,7 +222,10 @@ public class UserDivisionFixtureQueryService {
             List<RoundFixturesWithBye> rounds = new ArrayList<>();
             for (int r = 1; r <= totalRounds; r++) {
                 final int currentRound = r;
-                List<MatchFixture> roundFixtures = tournamentState.getFixtures().stream()
+                List<MatchFixture> roundFixtures = filterToUserDivision(
+                        tournamentState.getFixtures(),
+                        userDivision
+                    ).stream()
                         .filter(f -> f.getRound() == currentRound)
                         .toList();
                 List<MatchInfo> matches = roundFixtures.stream()
@@ -229,5 +236,15 @@ public class UserDivisionFixtureQueryService {
             }
             return new AllRoundsWithBye(rounds, career.getUserSessionTeamId());
         });
+    }
+
+    private List<MatchFixture> filterToUserDivision(List<MatchFixture> fixtures, Division userDivision) {
+        if (fixtures == null || fixtures.isEmpty() || userDivision == null) {
+            return List.of();
+        }
+        Set<String> divisionTeamIds = new HashSet<>(userDivision.getTeamIds());
+        return fixtures.stream()
+            .filter(f -> divisionTeamIds.contains(f.getHomeTeamId()) && divisionTeamIds.contains(f.getAwayTeamId()))
+            .toList();
     }
 }
