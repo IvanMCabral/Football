@@ -34,6 +34,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
     @Override
     public Mono<AuthTokenResult> register(AuthRegisterCommand command) {
+        validatePassword(command.password());
         return userRepository.findByEmail(command.email())
             .<User>flatMap(user -> Mono.error(new IllegalArgumentException("Email already exists")))
             .switchIfEmpty(Mono.defer(() -> {
@@ -45,6 +46,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
     @Override
     public Mono<AuthTokenResult> login(AuthLoginCommand command) {
+        validatePasswordShape(command.password());
         return userRepository.findByEmail(command.email())
             .switchIfEmpty(Mono.defer(() -> Mono.error(new IllegalArgumentException("User not found"))))
             .filterWhen(user -> Mono.fromCallable(() ->
@@ -116,5 +118,18 @@ public class AuthUseCaseImpl implements AuthUseCase {
             return new AuthTokenResult(accessToken, refreshToken,
                 authTokenService.getExpirationTime(), "Bearer");
         });
+    }
+
+    private static void validatePassword(String password) {
+        validatePasswordShape(password);
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("Password does not meet minimum requirements");
+        }
+    }
+
+    private static void validatePasswordShape(String password) {
+        if (password == null || password.length() > 128 || password.isBlank()) {
+            throw new IllegalArgumentException("Invalid credentials");
+        }
     }
 }

@@ -35,7 +35,7 @@ public class MatchController {
 
         return matchManagementService.pauseMatch(userId, matchIdUuid)
             .thenReturn(ResponseEntity.ok().build())
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage())));
+            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed")));
     }
 
     /**
@@ -51,7 +51,7 @@ public class MatchController {
 
         return matchManagementService.resumeMatch(userId, matchIdUuid)
             .thenReturn(ResponseEntity.ok().build())
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage())));
+            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed")));
     }
 
     /**
@@ -67,6 +67,6 @@ public class MatchController {
 
         return matchManagementService.stopMatch(userId, matchIdUuid)
             .thenReturn(ResponseEntity.ok().build())
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage())));
+            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed")));
     }
 }

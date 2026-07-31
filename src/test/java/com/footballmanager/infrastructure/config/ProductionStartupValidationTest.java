@@ -56,6 +56,78 @@ class ProductionStartupValidationTest {
     }
 
     @Test
+    void prodProfileRejectsJwtSecretShorterThan64Bytes() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("JWT_SECRET", "a".repeat(63));
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileAcceptsJwtSecretWith64Bytes() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("JWT_SECRET", "a".repeat(64));
+        environment.setActiveProfiles("prod");
+
+        assertDoesNotThrow(validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileRejectsJwtSecretWithSurroundingSpaces() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("JWT_SECRET", " " + "a".repeat(64));
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileRejectsInvalidJwtExpirations() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("JWT_EXPIRATION", "0");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileRejectsInvalidRefreshExpiration() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("JWT_REFRESH_EXPIRATION", "-1");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileRejectsCorsWildcard() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("APP_CORS_ALLOWED_ORIGINS", "*");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileRejectsCorsOriginWithoutScheme() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("APP_CORS_ALLOWED_ORIGINS", "manager.example.com");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileRejectsCorsOriginWithPath() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("APP_CORS_ALLOWED_ORIGINS", "https://manager.example.com/app");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
     void nonProdProfileDoesNotRequireProductionSecrets() {
         MockEnvironment environment = new MockEnvironment();
         environment.setActiveProfiles("local");
@@ -77,7 +149,13 @@ class ProductionStartupValidationTest {
             .withProperty("REDIS_HOST", "redis.example.com")
             .withProperty("REDIS_PORT", "6379")
             .withProperty("REDIS_PASSWORD", "safe-redis-password")
-            .withProperty("JWT_SECRET", "safe-jwt-secret-with-enough-entropy-for-prod")
+            .withProperty("JWT_SECRET", "a".repeat(64))
             .withProperty("APP_CORS_ALLOWED_ORIGINS", "https://beta.example.com");
+    }
+
+    private static ProductionStartupValidation validation(MockEnvironment environment) {
+        return new ProductionStartupValidation(
+            environment,
+            "DB_HOST,DB_PORT,DB_NAME,DB_USER,DB_PASSWORD,REDIS_HOST,REDIS_PORT,REDIS_PASSWORD,JWT_SECRET,APP_CORS_ALLOWED_ORIGINS");
     }
 }

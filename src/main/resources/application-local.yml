@@ -27,6 +27,9 @@ jwt:
   secret: ${JWT_SECRET}
 
 app:
+  security:
+    rate-limit:
+      enabled: false
   simulation:
     league:
       use-classic-engine: false

@@ -4,6 +4,7 @@ import com.footballmanager.adapters.in.web.career.simulation.dto.FormationChange
 import com.footballmanager.adapters.in.web.career.simulation.dto.FormationChangeResultDTO;
 import com.footballmanager.adapters.in.web.career.simulation.dto.FormationSlotDTO;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
+import com.footballmanager.adapters.in.web.common.PublicErrorMessageResolver;
 import com.footballmanager.application.service.match.TacticalChangeService;
 import com.footballmanager.application.service.match.TacticalFormationChangeResult;
 import com.footballmanager.application.service.match.TacticalFormationSlot;
@@ -32,12 +33,12 @@ import java.util.UUID;
  *
  * <p>Error mapping mirrors the {@link StyleChangeController}:
  * <ul>
- *   <li>Request-shape errors (invalid UUID, null body, empty/null slots) →
+ *   <li>Request-shape errors (invalid UUID, null body, empty/null slots) â†’
  *       400 BAD_REQUEST.</li>
  *   <li>Use case validation failures (no session, match finished, invalid
- *       formation, players not in roster) → 400 BAD_REQUEST for formation
+ *       formation, players not in roster) â†’ 400 BAD_REQUEST for formation
  *       shape issues, 409 CONFLICT for session/finished issues.</li>
- *   <li>Unexpected errors → 500 via the generic catch-all.</li>
+ *   <li>Unexpected errors â†’ 500 via the generic catch-all.</li>
  * </ul>
  */
 @Slf4j
@@ -48,6 +49,7 @@ public class FormationChangeController {
 
     private final TacticalChangeService tacticalChangeService;
     private final ControllerHelper controllerHelper;
+    private final PublicErrorMessageResolver errorMessageResolver;
 
     @PostMapping("/matches/{matchId}/formation")
     public Mono<ResponseEntity<FormationChangeResultDTO>> changeFormation(
@@ -85,15 +87,15 @@ public class FormationChangeController {
             .map(ResponseEntity::ok)
             .onErrorResume(IllegalArgumentException.class, e ->
                 Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(FormationChangeResultDTO.error(e.getMessage()))))
+                    .body(FormationChangeResultDTO.error(errorMessageResolver.clientMessage(e, "Formation change rejected")))))
             .onErrorResume(IllegalStateException.class, e ->
                 Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(FormationChangeResultDTO.error(e.getMessage()))))
+                    .body(FormationChangeResultDTO.error(errorMessageResolver.clientMessage(e, "Formation change rejected")))))
             .onErrorResume(e -> {
                 log.error("Unexpected error during formation change for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(FormationChangeResultDTO.error("Internal error: " + e.getMessage())));
+                    .body(FormationChangeResultDTO.error("Formation change failed")));
             });
     }
 

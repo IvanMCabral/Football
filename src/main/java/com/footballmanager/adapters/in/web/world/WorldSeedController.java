@@ -24,7 +24,7 @@ import java.util.UUID;
  *
  * <p>Each endpoint accepts {@code ?userId=X} (same convention as the C44
  * La Liga seed endpoint). The userId is checked against the JWT (impersonation
- * guard added in C50) — non-matching → 403 IMPERSONATION_FORBIDDEN.
+ * guard added in C50) â€” non-matching â†’ 403 IMPERSONATION_FORBIDDEN.
  */
 @Slf4j
 @RestController
@@ -57,7 +57,7 @@ public class WorldSeedController {
                 .onErrorResume(e -> {
                     log.error("World seed failed for league={} userId={}", lt.slug(), userId, e);
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(error("SEED_FAILED", e.getMessage())));
+                            .body(error("SEED_FAILED", "Seed operation failed")));
                 });
     }
 
@@ -79,7 +79,7 @@ public class WorldSeedController {
                     return ResponseEntity.ok(body);
                 })
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(error("SEED_ALL_FAILED", e.getMessage()))));
+                        .body(error("SEED_ALL_FAILED", "Seed operation failed"))));
     }
 
     private Map<String, Object> success(UUID userId, WorldSeedService.SeedResult r) {

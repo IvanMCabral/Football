@@ -3,6 +3,7 @@ package com.footballmanager.adapters.in.web.career.simulation;
 import com.footballmanager.adapters.in.web.career.simulation.dto.StyleChangeRequestDTO;
 import com.footballmanager.adapters.in.web.career.simulation.dto.StyleChangeResultDTO;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
+import com.footballmanager.adapters.in.web.common.PublicErrorMessageResolver;
 import com.footballmanager.application.service.match.TacticalChangeService;
 import com.footballmanager.application.service.match.TacticalStyleChangeResult;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +30,12 @@ import java.util.UUID;
  *
  * <p>Error mapping:
  * <ul>
- *   <li>Request-shape errors (invalid UUID, null body, null newStyle) →
+ *   <li>Request-shape errors (invalid UUID, null body, null newStyle) â†’
  *       400 BAD_REQUEST with success=false.</li>
- *   <li>Use case validation failures (no session, match finished) →
+ *   <li>Use case validation failures (no session, match finished) â†’
  *       409 CONFLICT with success=false (consistent with the F1 substitution
  *       controller's pattern).</li>
- *   <li>Unexpected errors (NPE, DB, etc.) → 500 via the generic catch-all.</li>
+ *   <li>Unexpected errors (NPE, DB, etc.) â†’ 500 via the generic catch-all.</li>
  * </ul>
  */
 @Slf4j
@@ -45,6 +46,7 @@ public class StyleChangeController {
 
     private final TacticalChangeService tacticalChangeService;
     private final ControllerHelper controllerHelper;
+    private final PublicErrorMessageResolver errorMessageResolver;
 
     @PostMapping("/matches/{matchId}/style")
     public Mono<ResponseEntity<StyleChangeResultDTO>> changeStyle(
@@ -78,15 +80,15 @@ public class StyleChangeController {
             .map(ResponseEntity::ok)
             .onErrorResume(IllegalArgumentException.class, e ->
                 Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(StyleChangeResultDTO.error(e.getMessage()))))
+                    .body(StyleChangeResultDTO.error(errorMessageResolver.clientMessage(e, "Style change rejected")))))
             .onErrorResume(IllegalStateException.class, e ->
                 Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(StyleChangeResultDTO.error(e.getMessage()))))
+                    .body(StyleChangeResultDTO.error(errorMessageResolver.clientMessage(e, "Style change rejected")))))
             .onErrorResume(e -> {
                 log.error("Unexpected error during style change for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(StyleChangeResultDTO.error("Internal error: " + e.getMessage())));
+                    .body(StyleChangeResultDTO.error("Style change failed")));
             });
     }
 

@@ -14,11 +14,11 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * CareerAdminController - Endpoints administrativos/técnicos.
+ * CareerAdminController - Endpoints administrativos/tÃ©cnicos.
  * Base path: /api/v1/career/admin
  *
- * Responsabilidad: Solo HTTP + auth + delegación.
- * La lógica de negocio vive en los UseCases.
+ * Responsabilidad: Solo HTTP + auth + delegaciÃ³n.
+ * La lÃ³gica de negocio vive en los UseCases.
  */
 @RestController
 @RequestMapping("/api/v1/career/admin")
@@ -48,7 +48,7 @@ public class CareerAdminController {
                 .onErrorResume(e -> {
                     Map<String, Object> error = new HashMap<>();
                     error.put("status", "error");
-                    error.put("error", e.getMessage());
+                    error.put("error", "Request could not be processed");
                     return Mono.just(error);
                 });
     }
@@ -71,7 +71,7 @@ public class CareerAdminController {
                 .onErrorResume(e -> {
                     Map<String, Object> error = new HashMap<>();
                     error.put("success", false);
-                    error.put("error", e.getMessage());
+                    error.put("error", "Request could not be processed");
                     return Mono.just(error);
                 });
     }

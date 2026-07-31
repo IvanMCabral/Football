@@ -124,7 +124,7 @@ public class DetailedMatchController {
 
         // Mono<MatchComparison> so it composes correctly with the Reactor
         // scheduler (the sync version was silently aborting under Reactor
-        // parallel scheduling â€” blockOptional() threw IllegalStateException
+        // parallel scheduling Ã¢â‚¬â€ blockOptional() threw IllegalStateException
         // which was caught and turned into Optional.empty, making the
         // endpoint return 404 even when the baseline was in Redis).
         return matchComparisonService.getComparison(careerId, matchId)
@@ -143,7 +143,7 @@ public class DetailedMatchController {
                     log.warn("[F6-MATCH-COMPARE] Invalid argument for careerId={}, matchId={}: {}",
                             careerId, matchId, e.getMessage());
                     return Mono.just(ResponseEntity.badRequest()
-                            .body(Map.of("error", e.getMessage())));
+                            .body(Map.of("error", "Detailed match unavailable")));
                 });
     }
 
@@ -151,7 +151,7 @@ public class DetailedMatchController {
      *
      * <p>Returns a partial snapshot of the stored match data filtered up to
      * and including minute N. Used by the test-harness UI timeline scrubber.
-     * Pure derivation from the stored timeline â€” no re-simulation, no cache.
+     * Pure derivation from the stored timeline Ã¢â‚¬â€ no re-simulation, no cache.
      *
      * <p>Feature-gated: returns 404 when
      * {@code app.simulation.detailed.expose-detail-api=false} (same flag as

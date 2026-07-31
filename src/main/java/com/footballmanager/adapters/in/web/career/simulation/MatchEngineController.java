@@ -56,7 +56,7 @@ public class MatchEngineController {
             // passing integration tests: a slow real consumer (Spring SSE
             // writer + Jackson + Netty chunked write + proxy buffer) on a
             // hot stream producer. Defensive fix:
-            //   - .publishOn(boundedElastic()) — serialize downstream on
+            //   - .publishOn(boundedElastic()) â€” serialize downstream on
             //     a separate thread so the producer (round-engine scheduler)
             //     never blocks on TCP flush backpressure.
             //   - REMOVED .onBackpressureLatest(): it WAS dropping
@@ -103,7 +103,7 @@ public class MatchEngineController {
             .then(Mono.just(ResponseEntity.ok().build()))
             .onErrorResume(e -> {
                 log.error("[MATCH-CONTROLLER] Error in pauseMatch: {}", e.getMessage());
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage()));
+                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed"));
             });
     }
 
@@ -127,7 +127,7 @@ public class MatchEngineController {
             .then(Mono.just(ResponseEntity.ok().build()))
             .onErrorResume(e -> {
                 log.error("[MATCH-CONTROLLER] Error in resumeMatch: {}", e.getMessage());
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage()));
+                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed"));
             });
     }
 
@@ -151,7 +151,7 @@ public class MatchEngineController {
             .then(Mono.just(ResponseEntity.ok().build()))
             .onErrorResume(e -> {
                 log.error("[MATCH-CONTROLLER] Error in stopMatch: {}", e.getMessage());
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage()));
+                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed"));
             });
     }
 

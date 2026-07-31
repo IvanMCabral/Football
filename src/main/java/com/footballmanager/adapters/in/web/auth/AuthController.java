@@ -38,7 +38,7 @@ public class AuthController {
         String userId = authentication != null ? authentication.getName() : null;
         return authUseCase.assignTeam(userId, request.teamId())
             .thenReturn(ResponseEntity.ok("Team assigned successfully"))
-            .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body("Could not assign team: " + e.getMessage())));
+            .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body("Could not assign team")));
     }
 
     @PostMapping("/register")

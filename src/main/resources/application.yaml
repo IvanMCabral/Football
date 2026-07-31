@@ -1,6 +1,8 @@
 spring:
   application:
     name: football-manager
+  lifecycle:
+    timeout-per-shutdown-phase: ${SHUTDOWN_TIMEOUT:30s}
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USER}
@@ -31,6 +33,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME:}
       password: ${REDIS_PASSWORD}
       ssl:
         enabled: ${REDIS_SSL:false}
@@ -52,6 +55,7 @@ jwt:
 # Server Configuration
 server:
   port: ${PORT:${SERVER_PORT:8080}}
+  shutdown: graceful
   error:
     include-message: never
     include-binding-errors: never
@@ -105,5 +109,10 @@ app:
   security:
     cors:
       allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:}
+    rate-limit:
+      enabled: ${APP_RATE_LIMIT_ENABLED:true}
+      auth:
+        max-requests: ${APP_AUTH_RATE_LIMIT_MAX_REQUESTS:20}
+        window: ${APP_AUTH_RATE_LIMIT_WINDOW:PT1M}
     production:
       required-variables: DB_HOST,DB_PORT,DB_NAME,DB_USER,DB_PASSWORD,REDIS_HOST,REDIS_PORT,REDIS_PASSWORD,JWT_SECRET,APP_CORS_ALLOWED_ORIGINS

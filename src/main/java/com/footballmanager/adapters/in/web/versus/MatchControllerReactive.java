@@ -72,7 +72,7 @@ public class MatchControllerReactive {
                 ? ResponseEntity.ok("Comando aplicado")
                 : ResponseEntity.badRequest().body("Comando no aplicado"))
             .onErrorResume(e -> {
-                return Mono.just(ResponseEntity.badRequest().body(e.getMessage()));
+                return Mono.just(ResponseEntity.badRequest().body("Request could not be processed"));
             });
     }
 
@@ -120,7 +120,7 @@ public class MatchControllerReactive {
         UUID userId = controllerHelper.getUserId(authentication);
 
         // Before this fix, an empty/malformed body ({} or missing homeTeamId/awayTeamId)
-        // caused UUID.fromString(null) â†’ NPE â†’ 500 Internal Server Error with the
+        // caused UUID.fromString(null) Ã¢â€ â€™ NPE Ã¢â€ â€™ 500 Internal Server Error with the
         // confusing message "Cannot invoke \"String.length()\" because \"name\" is null"
         // {@code POST /api/v1/matches} endpoint, not a /match-detail endpoint).
         // Now we return 400 Bad Request with a clear, structured error body.
@@ -239,7 +239,7 @@ public class MatchControllerReactive {
      *
      * <p>The frontend {@code MatchDetailComponent} calls this endpoint to drive
      * its 700ms-step animation of the match timeline. Pre-fix, the endpoint
-     * did not exist â†’ 404 from Spring's no-handler path â†’ frontend stays in
+     * did not exist Ã¢â€ â€™ 404 from Spring's no-handler path Ã¢â€ â€™ frontend stays in
      * loading state. Now we look up the detailed match detail for the user's active
      * career + this match and return one synthetic final-state entry that
      * the frontend can render (cumulative goals + all events).
@@ -249,7 +249,7 @@ public class MatchControllerReactive {
      * the frontend's animation logic simple (it shows the final state in
      * one tick) while solving the "Loading..." indefinitely symptom.
      *
-     * <p>404 if no career or no detail (which is the common case â€” detailed match
+     * <p>404 if no career or no detail (which is the common case Ã¢â‚¬â€ detailed match
      * detail is only persisted when the detailed match engine + persistence are both
      * enabled for that career). The frontend error handler treats this as
      * "no data" and shows the failure message.

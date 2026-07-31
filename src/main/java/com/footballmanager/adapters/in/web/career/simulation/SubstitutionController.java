@@ -41,14 +41,14 @@ import java.util.UUID;
  * <p>Error mapping (FLAG 1 UX):
  * <ul>
  *   <li>Request-shape errors (invalid UUID, blank playerOffId/playerOnId,
- *       null body) → 400 BAD_REQUEST with a {@code SubstitutionResultDTO}
+ *       null body) â†’ 400 BAD_REQUEST with a {@code SubstitutionResultDTO}
  *       carrying {@code success=false} (controller-level validation,
  *       short-circuited before the use case runs).</li>
  *   <li>Use case validation failures (no session, player not found, max subs
- *       reached, off not in starting, on not on bench, etc.) → 200 OK with
+ *       reached, off not in starting, on not on bench, etc.) â†’ 200 OK with
  *       {@code success=false} and a descriptive {@code error} (FLAG 1 fix;
  *       was previously 409 CONFLICT).</li>
- *   <li>Unexpected errors (NPE, DB, etc.) → 500 via the generic catch-all.</li>
+ *   <li>Unexpected errors (NPE, DB, etc.) â†’ 500 via the generic catch-all.</li>
  * </ul>
  */
 @Slf4j
@@ -109,8 +109,8 @@ public class SubstitutionController {
                 result.error())))
             .onErrorResume(e -> {
                 // for "no active match session" / missing LiveSession / missing
-                // context, IllegalArgumentException — and its subclass
-                // MinuteInPastException — for "minute in past") must propagate to
+                // context, IllegalArgumentException â€” and its subclass
+                // MinuteInPastException â€” for "minute in past") must propagate to
                 // GlobalExceptionHandler so the frontend gets the right 4xx
                 // semantic code (422 LINEUP_STATE_ERROR, 400 MINUTE_IN_PAST).
                 // Only genuinely unexpected errors (NPE, DB, etc.) are mapped to
@@ -123,7 +123,7 @@ public class SubstitutionController {
                 log.error("Unexpected error during substitution for matchId={}",
                     matchUuid, e);
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(SubstitutionResultDTO.error("Internal error: " + e.getMessage())));
+                    .body(SubstitutionResultDTO.error("Substitution failed")));
             });
     }
 }
