@@ -132,7 +132,7 @@ class GameControllerV25D79Test {
         MatchStateSnapshot snapshot = new MatchStateSnapshot(
             matchId, homeId, awayId,
             60, MatchStatus.RUNNING, new Score(1, 0),
-            List.of(), "career-c55-14", "user-c55-14",
+            List.of(), "career-c55-14", userId.toString(),
             55, 45, "BALANCED", "BALANCED", "4-4-2", "4-4-2",
             homeRatings, awayRatings,
             3 // 2 subs used -> 3 remaining
@@ -180,7 +180,7 @@ class GameControllerV25D79Test {
         MatchStateSnapshot snapshot = new MatchStateSnapshot(
             matchId, homeId, awayId,
             45, MatchStatus.RUNNING, new Score(0, 0),
-            List.of(), "career-c55-14", "user-c55-14",
+            List.of(), "career-c55-14", userId.toString(),
             50, 50, "BALANCED", "BALANCED", "4-4-2", "4-4-2",
             List.of(), List.of(),
             4
@@ -196,6 +196,36 @@ class GameControllerV25D79Test {
                 assertNotNull(body);
                 assertEquals(4, body.substitutionsRemaining(),
                     "substitutionsRemaining must equal 4 after 1 substitution (5 - 1)");
+            })
+            .verifyComplete();
+
+        verify(roundEngineRegistry).getByMatchId(eq(matchId));
+        verify(roundEngine).getCurrentMatchSnapshot(eq(matchId));
+    }
+
+    @Test
+    @DisplayName("getMatchState rejects a live match owned by another user")
+    void getGameState_rejectsCrossUserLiveMatchAccess() {
+        UUID homeId = UUID.randomUUID();
+        UUID awayId = UUID.randomUUID();
+        UUID ownerUserId = UUID.randomUUID();
+        MatchStateSnapshot snapshot = new MatchStateSnapshot(
+            matchId, homeId, awayId,
+            30, MatchStatus.RUNNING, new Score(0, 0),
+            List.of(), "career-secure-live", ownerUserId.toString(),
+            50, 50, "BALANCED", "BALANCED", "4-4-2", "4-4-2",
+            List.of(), List.of(),
+            5
+        );
+
+        when(roundEngineRegistry.getByMatchId(eq(matchId))).thenReturn(roundEngine);
+        when(roundEngine.getCurrentMatchSnapshot(eq(matchId))).thenReturn(snapshot);
+
+        StepVerifier.create(controller.getMatchState(matchId.toString(), auth))
+            .assertNext(resp -> {
+                assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode(),
+                    "live match detail must not leak across authenticated users");
+                assertNull(resp.getBody(), "403 response must not include private match state");
             })
             .verifyComplete();
 

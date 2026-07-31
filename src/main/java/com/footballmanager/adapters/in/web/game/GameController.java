@@ -236,10 +236,6 @@ public class GameController {
         if (userIdStr == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        // userId is kept here for symmetry with sibling endpoints (and to
-        // anchor future user-scoping work) but the current lookup is
-        // intentionally global on the matchId, same as the SSE RoundState
-        // consumer in the UI.
         UUID userId = UUID.fromString(userIdStr);
 
         UUID matchIdUuid;
@@ -250,8 +246,16 @@ public class GameController {
         }
 
         return Mono.justOrEmpty(roundEngineRegistry.getByMatchId(matchIdUuid))
-                .map(roundEngine -> roundEngine.getCurrentMatchSnapshot(matchIdUuid))
-                .map(ResponseEntity::ok)
+                .map(roundEngine -> {
+                    MatchStateSnapshot snapshot = roundEngine.getCurrentMatchSnapshot(matchIdUuid);
+                    if (snapshot == null) {
+                        return ResponseEntity.notFound().<MatchStateSnapshot>build();
+                    }
+                    if (snapshot.userId() != null && !snapshot.userId().equals(userId.toString())) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).<MatchStateSnapshot>build();
+                    }
+                    return ResponseEntity.ok(snapshot);
+                })
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 

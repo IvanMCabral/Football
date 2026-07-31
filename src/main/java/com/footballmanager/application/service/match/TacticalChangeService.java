@@ -239,6 +239,7 @@ public class TacticalChangeService {
             buildFormationChangeDescription(previousCode, newCode, newFormation, context, managerTeamId)
         );
         liveSession.recordTacticalChange(event);
+        session.refreshDetailedSnapshot();
 
         log.info("Formation changed: matchId={} teamId={} from={} to={} minute={}",
             matchId, managerTeamId, previousCode, newCode, minute);
