@@ -36,3 +36,20 @@ Fecha: 2026-07-31
 - [ ] Medición de startup, memoria JVM y tamaño JAR.
 - [ ] Rate limiting de auth/register.
 - [ ] Migrar durabilidad primaria de Redis a PostgreSQL.
+## PB1.1 final remediation addendum - 2026-07-31
+
+Post-audit remediation closed the P0 application hardening findings. See:
+
+- `docs/deployment/PB1_PRODUCTION_HARDENING_FINAL_REMEDIATION.md`
+- `docs/deployment/PB1_PRODUCTION_HARDENING_FINAL_REVIEW.md`
+- `docs/deployment/PB1_SECRET_ROTATION_AND_REPOSITORY_HYGIENE.md`
+- `docs/deployment/PRODUCTION_SECURITY_HEADERS.md`
+- `docs/deployment/PB1_REMAINING_INFRASTRUCTURE_GATES.md`
+
+Validation evidence:
+
+- Backend: 2548 tests, 0 failures, 0 errors, 4 skipped.
+- Frontend: 1029 SUCCESS, 0 failures, 2 skipped.
+- Production frontend artifact inspection: no test harness route/chunk/text in `dist/demo`.
+
+Historical rejected verdicts remain preserved in their original reports; the remediation is recorded separately.

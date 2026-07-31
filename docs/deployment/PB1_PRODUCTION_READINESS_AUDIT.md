@@ -919,3 +919,20 @@ No aprobado todavía para beta pública abierta hasta completar PB1.2 con infrae
 - Firebase Hosting quickstart / SPA rewrite: https://firebase.google.com/docs/hosting/quickstart
 - Neon connection pooling: https://neon.com/docs/connect/connection-pooling
 - Upstash Redis client connection and TLS: https://upstash.com/docs/redis/howto/connect-client
+## PB1.1 final remediation addendum - 2026-07-31
+
+Post-audit remediation closed the P0 application hardening findings. See:
+
+- `docs/deployment/PB1_PRODUCTION_HARDENING_FINAL_REMEDIATION.md`
+- `docs/deployment/PB1_PRODUCTION_HARDENING_FINAL_REVIEW.md`
+- `docs/deployment/PB1_SECRET_ROTATION_AND_REPOSITORY_HYGIENE.md`
+- `docs/deployment/PRODUCTION_SECURITY_HEADERS.md`
+- `docs/deployment/PB1_REMAINING_INFRASTRUCTURE_GATES.md`
+
+Validation evidence:
+
+- Backend: 2548 tests, 0 failures, 0 errors, 4 skipped.
+- Frontend: 1029 SUCCESS, 0 failures, 2 skipped.
+- Production frontend artifact inspection: no test harness route/chunk/text in `dist/demo`.
+
+Historical rejected verdicts remain preserved in their original reports; the remediation is recorded separately.

@@ -59,3 +59,36 @@ Antes de abrir usuarios externos:
 ## Fase recomendada posterior
 
 PB1.2 debe mover la durabilidad primaria de carreras, standings y detalles crÃ­ticos a PostgreSQL, dejando Redis como cache/session accelerator.
+
+## Clasificación PB1.1 por familia de key
+
+| Familia | Clasificación | Restore PB1.1 | Nota |
+| --- | --- | --- | --- |
+| `career:{userId}` | DURABLE / NOT RECONSTRUCTIBLE | Snapshot Redis requerido | Contiene continuidad de carrera y no debe tratarse como cache. |
+| `standing:{userId}:*` | DURABLE / RECONSTRUCTIBLE parcial | Redis snapshot o reconstrucción validada | Requiere fixtures/resultados completos para reconstrucción. |
+| `career:{careerId}:match-detail:{matchId}` | DURABLE / RECONSTRUCTIBLE parcial | Redis snapshot recomendado | La vista detallada puede degradarse si falta. |
+| `match:state:{userId}:{matchId}` | EPHEMERAL runtime | No garantizado | Estado de partido activo; pérdida debe cortar readiness. |
+| `runtime:match:{userId}:{matchId}` | EPHEMERAL / NOT RECONSTRUCTIBLE | No garantizado | Live runtime en curso; PB1.2 debe probar reconexión/pérdida. |
+| `career:{careerId}:match-baseline:{matchId}` | CACHE / RECONSTRUCTIBLE parcial | No crítico | Comparación/harness no productivo. |
+| World snapshot keys | DURABLE / RECONSTRUCTIBLE parcial | Redis snapshot o reload desde SQL probado | Debe validarse por usuario/carrera. |
+| Command/live session keys | EPHEMERAL / NOT RECONSTRUCTIBLE | No garantizado | Deben rechazarse o drenarse durante shutdown. |
+
+## Configuración gestionada soportada en PB1.1
+
+- `REDIS_HOST` y `REDIS_PORT` obligatorios en `prod`.
+- `REDIS_USERNAME` opcional para ACL de proveedores gestionados.
+- `REDIS_PASSWORD` obligatorio en `prod`.
+- `REDIS_SSL` activado por defecto en `prod`.
+- Timeout de conexión/comando definido por configuración Lettuce/Spring.
+- Health fail-fast: si Redis no responde, readiness custom devuelve HTTP 503.
+
+## Gates PB1.2
+
+Redis sigue siendo crítico. Antes de beta pública abierta se requiere:
+
+- proveedor Redis persistente;
+- política TTL por familia;
+- backup/export si el proveedor lo admite;
+- restore drill;
+- prueba de pérdida y reconexión;
+- documentación de qué se pierde si una LiveSession cae a mitad de partido.
