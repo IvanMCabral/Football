@@ -13,9 +13,13 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -165,6 +169,40 @@ class SimulationArchitectureBoundaryTest {
         assertThat(source).doesNotContain("..infrastructure..");
     }
 
+    @Test
+    void liveSessionPublicApiDoesNotExposeMutableSessionContextGraph() {
+        for (Method method : com.footballmanager.application.service.simulation.detailed.LiveSession.class.getDeclaredMethods()) {
+            if (!Modifier.isPublic(method.getModifiers())) {
+                continue;
+            }
+            assertThat(method.getReturnType())
+                    .as(method.toString())
+                    .isNotEqualTo(com.footballmanager.application.service.simulation.detailed.MatchContext.class)
+                    .isNotEqualTo(com.footballmanager.domain.model.entity.SessionTeam.class)
+                    .isNotEqualTo(com.footballmanager.domain.model.entity.SessionPlayer.class);
+            assertThat(publicReturnTypeMentionsMutableEntity(method.getGenericReturnType()))
+                    .as(method.toString())
+                    .isFalse();
+        }
+    }
+
+    @Test
+    void liveSessionContextViewDoesNotContainMutableSessionEntities() {
+        Class<?>[] viewTypes = {
+                com.footballmanager.application.service.simulation.detailed.LiveSessionContextView.class,
+                com.footballmanager.application.service.simulation.detailed.LiveSessionContextView.TeamContextView.class,
+                com.footballmanager.application.service.simulation.detailed.LiveSessionContextView.PlayerContextView.class,
+                com.footballmanager.application.service.simulation.detailed.LiveSessionContextView.ScheduledSubstitutionView.class
+        };
+        for (Class<?> viewType : viewTypes) {
+            for (java.lang.reflect.RecordComponent component : viewType.getRecordComponents()) {
+                assertThat(publicReturnTypeMentionsMutableEntity(component.getGenericType()))
+                        .as(viewType.getSimpleName() + "." + component.getName())
+                        .isFalse();
+            }
+        }
+    }
+
     private static ArchCondition<JavaClass> haveAtMostTwoInstanceFields() {
         return haveAtMostInstanceFields(2);
     }
@@ -272,5 +310,28 @@ class SimulationArchitectureBoundaryTest {
             }
         }
         return count;
+    }
+
+    private static boolean publicReturnTypeMentionsMutableEntity(Type type) {
+        if (type instanceof Class<?> rawType) {
+            return rawType.equals(com.footballmanager.domain.model.entity.SessionTeam.class)
+                    || rawType.equals(com.footballmanager.domain.model.entity.SessionPlayer.class);
+        }
+        if (type instanceof ParameterizedType parameterizedType) {
+            Type rawType = parameterizedType.getRawType();
+            if (rawType instanceof Class<?> rawClass && Collection.class.isAssignableFrom(rawClass)) {
+                for (Type argument : parameterizedType.getActualTypeArguments()) {
+                    if (publicReturnTypeMentionsMutableEntity(argument)) {
+                        return true;
+                    }
+                }
+            }
+            for (Type argument : parameterizedType.getActualTypeArguments()) {
+                if (publicReturnTypeMentionsMutableEntity(argument)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
