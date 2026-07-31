@@ -1,8 +1,8 @@
 # Post-MVP 1 Two-Season Short League E2E Certification
 
-Date: 2026-07-31  
-Branch: `feat/v25d99.20.3.1-runtime-fixes`  
-Root baseline before this closure: `fb933f48`  
+Date: 2026-07-31
+Branch: `feat/v25d99.20.3.1-runtime-fixes`
+Root baseline before this closure: `fb933f48`
 Frontend baseline before this closure: `e68cffc`
 
 ## 1. Verdict
@@ -32,10 +32,10 @@ No P0 or P1 issue remains open for the certified scope.
 
 ## 4. Career setup
 
-Audit user: `two_season_ui_1785514375642@manager.local`  
-Country: Spain  
-Team: Real Sociedad  
-Short league size: 4 teams per division  
+Audit user: `two_season_ui_1785514375642@manager.local`
+Country: Spain
+Team: Real Sociedad
+Short league size: 4 teams per division
 Expected rounds: 6 per season
 
 Evidence:
@@ -263,3 +263,26 @@ The short-league MVP flow is playable and stable enough to continue feature work
 - Full backend/frontend suites are green.
 
 Conclusion: `TWO-SEASON E2E APPROVED`.
+
+## Independent reproducibility closure
+
+Date: 2026-07-31
+
+Evidence added in `docs/qa/evidence/post_mvp1_two_season_e2e/`:
+
+- `EVIDENCE_INDEX.md`: all 36 PNG screenshots and the JSON artifact indexed with season, round, action, assertion, source, SHA-256 hash and logical duplicate classification.
+- `backend-suite-summary.txt`: isolated backend validation, `2529` tests, `0` failures, `0` errors, `4` skipped.
+- `frontend-suite-summary.txt`: isolated frontend validation, development build PASS, production build PASS, `1026 SUCCESS`, `0` failures, `2` skipped.
+- `database-evidence.txt`: direct PostgreSQL evidence captured from the main `football_manager` database without printing secrets.
+- `standings-reconciliation.json`: season 1 and season 2 standings from the certified API artifact reconciled against the independent calculation; differences are empty.
+- `browser-console-summary.json`: authenticated in-app browser traversal of login, dashboard, squad, standings, season 1 detail, season 2 detail and live detail with zero console errors.
+- `browser-network-summary.json`: authenticated route traversal plus status probes; no unexpected 5xx responses were observed.
+- `restart-recovery-evidence.txt`: backend restart with PID change and authenticated recovery probes.
+- `npm-audit-summary.json`: sanitized `npm audit --json` summary; fixes were not applied.
+
+Important limits preserved instead of overstated:
+
+- The certified short-league career is not present in PostgreSQL `games/matches/standings`; PostgreSQL world tables are available, but the short-league career/runtime evidence is recovered from the application runtime/Redis and the persisted API artifact.
+- Historical detailed-match endpoints for the certified season 1 and season 2 match ids returned 404/400 during status probes, while the UI route rendered the expected fallback detail page. This remains a release-evidence issue, not a hidden pass.
+- Promotion/relegation is classified as `IMPLEMENTED BUT NOT FULLY CERTIFIED`; no new simulation was performed in this closure.
+- `npm audit --json` reports high/critical advisories in the frontend dependency tree. No dependency fix was authorized in this evidence-only task.
