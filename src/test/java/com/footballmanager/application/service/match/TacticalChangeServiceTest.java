@@ -1,16 +1,15 @@
 package com.footballmanager.application.service.match;
 
-
-
-
-import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
-import com.footballmanager.application.service.simulation.detailed.LiveSession;
-import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSessionContextView;
+import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.valueobject.LineupSlot;
+import com.footballmanager.domain.model.valueobject.TeamStyle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,29 +19,20 @@ import reactor.test.StepVerifier;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.UnaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- *
- * <p>Per the F5 spec section 5: {@code changeStyle_invokesMutateContext}
- * (B3) — verifies the service calls {@code LiveSession.mutateContext}
- * with a {@link UnaryOperator} that swaps the home team's style.
- *
- * <p>Mockito is used to mock {@link MatchSessionRegistry} and
- * {@link LiveSession} so the test focuses on the service's contract,
- * not the live-session internals.
- */
 class TacticalChangeServiceTest {
 
     private MatchSessionRegistry registry;
@@ -65,29 +55,15 @@ class TacticalChangeServiceTest {
         context = buildContext("home", "away");
 
         when(session.getLiveSession()).thenReturn(liveSession);
-        when(liveSession.context()).thenReturn(context);
+        when(liveSession.contextView()).thenReturn(new LiveSession(context, 1L).contextView());
         when(liveSession.isFinished()).thenReturn(false);
         when(liveSession.currentMinute()).thenReturn(30);
         when(registry.getSession(userId, matchId)).thenReturn(Optional.of(session));
     }
 
     @Test
-    @DisplayName("changeStyle invokes mutateContext with withNewStyle unary operator (B3 GREEN)")
-    void changeStyle_invokesMutateContext() {
-        // Arrange: a no-op mutateContext so the test doesn't blow up — we only verify
-        // that the service CALLS mutateContext with a UnaryOperator that returns a
-        // context whose homeStyle equals the new style.
-        // mutateContext is void; capture the UnaryOperator arg and execute it.
-        org.mockito.Mockito.doAnswer(inv -> {
-            @SuppressWarnings("unchecked")
-            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
-            MatchContext result = op.apply(context);
-            assertEquals(TeamStyle.ATTACKING, result.homeStyle(),
-                "withNewStyle must swap homeStyle to the new value");
-            return null;
-        }).when(liveSession).mutateContext(any());
-
-        // Act + Assert
+    @DisplayName("changeStyle invokes typed LiveSession style mutation")
+    void changeStyle_invokesTypedMutation() {
         StepVerifier.create(service.changeStyle(userId, matchId, TeamStyle.ATTACKING))
             .assertNext(result -> {
                 assertNotNull(result);
@@ -97,10 +73,7 @@ class TacticalChangeServiceTest {
             })
             .verifyComplete();
 
-        // Verify the service called mutateContext
-        verify(liveSession, atLeastOnce()).mutateContext(any());
-
-        // Verify the service recorded a TACTICAL_CHANGE event
+        verify(liveSession, atLeastOnce()).changeTeamStyle(context.homeTeamId(), TeamStyle.ATTACKING);
         verify(liveSession, atLeastOnce()).recordTacticalChange(any());
     }
 
@@ -111,8 +84,7 @@ class TacticalChangeServiceTest {
 
         StepVerifier.create(service.changeStyle(userId, matchId, TeamStyle.DEFENSIVE))
             .expectErrorSatisfies(e -> {
-                assertTrue(e instanceof IllegalStateException,
-                    "Expected IllegalStateException for missing session, got " + e.getClass());
+                assertTrue(e instanceof IllegalStateException);
                 assertTrue(e.getMessage().toLowerCase().contains("no active match session"));
             })
             .verify();
@@ -132,7 +104,7 @@ class TacticalChangeServiceTest {
     }
 
     @Test
-    @DisplayName("changeStyle fails when newStyle is null (defense in depth)")
+    @DisplayName("changeStyle fails when newStyle is null")
     void changeStyle_nullStyle_returnsError() {
         StepVerifier.create(service.changeStyle(userId, matchId, null))
             .expectErrorSatisfies(e -> {
@@ -145,7 +117,6 @@ class TacticalChangeServiceTest {
     @Test
     @DisplayName("changeFormation validates 10-11 slots, 1 GK, unique playerIds")
     void changeFormation_invalidSlots_returnsError() {
-        // 12 players — too many
         List<TacticalFormationSlot> tooMany = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
             tooMany.add(new TacticalFormationSlot("home-starter-" + i, "MID"));
@@ -161,7 +132,6 @@ class TacticalChangeServiceTest {
     @Test
     @DisplayName("changeFormation fails when no GK slot is present")
     void changeFormation_noGoalkeeper_returnsError() {
-        // 10 DEF slots, 0 GK
         List<TacticalFormationSlot> noGk = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             noGk.add(new TacticalFormationSlot("home-starter-" + (i + 1), "DEF"));
@@ -175,31 +145,9 @@ class TacticalChangeServiceTest {
     }
 
     @Test
-    @DisplayName("changeFormation invokes mutateContext + recordTacticalChange on happy path")
-    void changeFormation_happyPath_invokesMutateContext() {
-        // Build a valid 4-4-2 formation using the home starting players.
-        List<TacticalFormationSlot> formation = new ArrayList<>();
-        formation.add(new TacticalFormationSlot("home-starter-0", "GK"));
-        formation.add(new TacticalFormationSlot("home-starter-1", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-2", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-3", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-4", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-5", "MID"));
-        formation.add(new TacticalFormationSlot("home-starter-6", "MID"));
-        formation.add(new TacticalFormationSlot("home-starter-7", "MID"));
-        formation.add(new TacticalFormationSlot("home-starter-8", "MID"));
-        formation.add(new TacticalFormationSlot("home-starter-9", "ATT"));
-        formation.add(new TacticalFormationSlot("home-starter-10", "ATT"));
-
-        // No-op mutateContext for the test (mutateContext is void)
-        org.mockito.Mockito.doAnswer(inv -> {
-            @SuppressWarnings("unchecked")
-            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
-            MatchContext result = op.apply(context);
-            assertEquals("4-4-2", result.homeFormation(),
-                "withNewFormation must swap homeFormation to the derived code");
-            return null;
-        }).when(liveSession).mutateContext(any());
+    @DisplayName("changeFormation invokes typed formation mutation on happy path")
+    void changeFormation_happyPath_invokesTypedMutation() {
+        List<TacticalFormationSlot> formation = home442();
 
         StepVerifier.create(service.changeFormation(userId, matchId, formation))
             .assertNext(result -> {
@@ -210,89 +158,42 @@ class TacticalChangeServiceTest {
             })
             .verifyComplete();
 
-        verify(liveSession, atLeastOnce()).mutateContext(any());
+        verify(liveSession, atLeastOnce()).changeFormation(eq(context.homeTeamId()), eq("4-4-2"), any(), any());
         verify(liveSession, atLeastOnce()).recordTacticalChange(any());
     }
 
     @Test
     @DisplayName("changeFormation uses requested formationCode instead of deriving from role counts")
     void changeFormation_requestedFormationCodeWinsOverDerivedCode() {
-        List<TacticalFormationSlot> formation = new ArrayList<>();
-        formation.add(new TacticalFormationSlot("home-starter-0", "GK"));
-        formation.add(new TacticalFormationSlot("home-starter-1", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-2", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-3", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-4", "DEF"));
-        formation.add(new TacticalFormationSlot("home-starter-5", "MID"));
-        formation.add(new TacticalFormationSlot("home-starter-6", "MID"));
-        formation.add(new TacticalFormationSlot("home-starter-7", "MID"));
-        formation.add(new TacticalFormationSlot("home-starter-8", "WINGER"));
-        formation.add(new TacticalFormationSlot("home-starter-9", "ATT"));
-        formation.add(new TacticalFormationSlot("home-starter-10", "WINGER"));
-
-        org.mockito.Mockito.doAnswer(inv -> {
-            @SuppressWarnings("unchecked")
-            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
-            MatchContext result = op.apply(context);
-            assertEquals("4-3-3", result.homeFormation(),
-                "manager-selected code must win over role-count derivation");
-            return null;
-        }).when(liveSession).mutateContext(any());
+        List<TacticalFormationSlot> formation = home433Roles();
 
         StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-3-3"))
             .assertNext(result -> assertTrue(result.success()))
             .verifyComplete();
+
+        verify(liveSession, atLeastOnce()).changeFormation(eq(context.homeTeamId()), eq("4-3-3"), any(), any());
     }
 
     @Test
     @DisplayName("changeFormation carries live custom pixel coordinates into detailed match context slots")
     void changeFormation_customCoordinatesUpdateContextSlots() {
-        List<TacticalFormationSlot> formation = new ArrayList<>();
-        formation.add(new TacticalFormationSlot("home-starter-0", "GK", 0, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-1", "DEF", 1, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-2", "DEF", 2, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-3", "DEF", 3, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-4", "DEF", 4, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-5", "MID", 5, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-6", "MID", 6, 47.25, 58.75));
-        formation.add(new TacticalFormationSlot("home-starter-7", "MID", 7, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-8", "MID", 8, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-9", "ATT", 9, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-10", "ATT", 10, null, null));
-
-        org.mockito.Mockito.doAnswer(inv -> {
-            @SuppressWarnings("unchecked")
-            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
-            MatchContext result = op.apply(context);
-            assertTrue(result.homeSlotsByPlayerId().containsKey("home-starter-6"),
-                "custom live slot must be written into the home slot map");
-            assertEquals(47.25, result.homeSlotsByPlayerId().get("home-starter-6").customXPercent());
-            assertEquals(58.75, result.homeSlotsByPlayerId().get("home-starter-6").customYPercent());
-            return null;
-        }).when(liveSession).mutateContext(any());
+        List<TacticalFormationSlot> formation = home442WithPixel("home-starter-6", 47.25, 58.75);
 
         StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-4-2"))
             .assertNext(result -> assertTrue(result.success()))
             .verifyComplete();
+
+        ArgumentCaptor<Map<String, LineupSlot>> slotsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(liveSession, atLeastOnce()).changeFormation(eq(context.homeTeamId()), eq("4-4-2"), any(), slotsCaptor.capture());
+        assertTrue(slotsCaptor.getValue().containsKey("home-starter-6"));
+        assertEquals(47.25, slotsCaptor.getValue().get("home-starter-6").customXPercent());
+        assertEquals(58.75, slotsCaptor.getValue().get("home-starter-6").customYPercent());
     }
 
     @Test
     @DisplayName("changeFormation records custom pixels in the tactical-change event")
     void changeFormation_customCoordinatesAreVisibleInTimelineEvent() {
-        List<TacticalFormationSlot> formation = new ArrayList<>();
-        formation.add(new TacticalFormationSlot("home-starter-0", "GK", 0, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-1", "DEF", 1, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-2", "DEF", 2, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-3", "DEF", 3, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-4", "DEF", 4, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-5", "MID", 5, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-6", "MID", 6, 47.25, 58.75));
-        formation.add(new TacticalFormationSlot("home-starter-7", "MID", 7, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-8", "MID", 8, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-9", "ATT", 9, null, null));
-        formation.add(new TacticalFormationSlot("home-starter-10", "ATT", 10, null, null));
-
-        org.mockito.Mockito.doNothing().when(liveSession).mutateContext(any());
+        List<TacticalFormationSlot> formation = home442WithPixel("home-starter-6", 47.25, 58.75);
 
         StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-4-2"))
             .assertNext(result -> assertTrue(result.success()))
@@ -309,31 +210,7 @@ class TacticalChangeServiceTest {
     @Test
     @DisplayName("changeFormation supports away manager roster and writes custom pixels into away slots")
     void changeFormation_awayManagerRosterAndPixels() {
-        List<TacticalFormationSlot> formation = new ArrayList<>();
-        formation.add(new TacticalFormationSlot("away-starter-0", "GK", 0, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-1", "DEF", 1, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-2", "DEF", 2, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-3", "DEF", 3, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-4", "DEF", 4, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-5", "MID", 5, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-6", "MID", 6, 52.5, 41.25));
-        formation.add(new TacticalFormationSlot("away-starter-7", "MID", 7, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-8", "MID", 8, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-9", "ATT", 9, null, null));
-        formation.add(new TacticalFormationSlot("away-starter-10", "ATT", 10, null, null));
-
-        org.mockito.Mockito.doAnswer(inv -> {
-            @SuppressWarnings("unchecked")
-            UnaryOperator<MatchContext> op = (UnaryOperator<MatchContext>) inv.getArgument(0);
-            MatchContext result = op.apply(context);
-            assertEquals("4-4-2", result.awayFormation(),
-                "away manager formation change must mutate awayFormation");
-            assertTrue(result.awaySlotsByPlayerId().containsKey("away-starter-6"),
-                "custom live slot must be written into the away slot map");
-            assertEquals(52.5, result.awaySlotsByPlayerId().get("away-starter-6").customXPercent());
-            assertEquals(41.25, result.awaySlotsByPlayerId().get("away-starter-6").customYPercent());
-            return null;
-        }).when(liveSession).mutateContext(any());
+        List<TacticalFormationSlot> formation = away442WithPixel("away-starter-6", 52.5, 41.25);
 
         StepVerifier.create(service.changeFormation(userId, matchId, formation, "4-4-2"))
             .assertNext(result -> {
@@ -341,9 +218,63 @@ class TacticalChangeServiceTest {
                 assertEquals(30, result.minuteApplied());
             })
             .verifyComplete();
+
+        ArgumentCaptor<Map<String, LineupSlot>> slotsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(liveSession, atLeastOnce()).changeFormation(eq(context.awayTeamId()), eq("4-4-2"), any(), slotsCaptor.capture());
+        assertTrue(slotsCaptor.getValue().containsKey("away-starter-6"));
+        assertEquals(52.5, slotsCaptor.getValue().get("away-starter-6").customXPercent());
+        assertEquals(41.25, slotsCaptor.getValue().get("away-starter-6").customYPercent());
     }
 
-    // ========== Fixture helpers ==========
+    private List<TacticalFormationSlot> home442() {
+        return List.of(
+            new TacticalFormationSlot("home-starter-0", "GK"),
+            new TacticalFormationSlot("home-starter-1", "DEF"),
+            new TacticalFormationSlot("home-starter-2", "DEF"),
+            new TacticalFormationSlot("home-starter-3", "DEF"),
+            new TacticalFormationSlot("home-starter-4", "DEF"),
+            new TacticalFormationSlot("home-starter-5", "MID"),
+            new TacticalFormationSlot("home-starter-6", "MID"),
+            new TacticalFormationSlot("home-starter-7", "MID"),
+            new TacticalFormationSlot("home-starter-8", "MID"),
+            new TacticalFormationSlot("home-starter-9", "ATT"),
+            new TacticalFormationSlot("home-starter-10", "ATT"));
+    }
+
+    private List<TacticalFormationSlot> home433Roles() {
+        return List.of(
+            new TacticalFormationSlot("home-starter-0", "GK"),
+            new TacticalFormationSlot("home-starter-1", "DEF"),
+            new TacticalFormationSlot("home-starter-2", "DEF"),
+            new TacticalFormationSlot("home-starter-3", "DEF"),
+            new TacticalFormationSlot("home-starter-4", "DEF"),
+            new TacticalFormationSlot("home-starter-5", "MID"),
+            new TacticalFormationSlot("home-starter-6", "MID"),
+            new TacticalFormationSlot("home-starter-7", "MID"),
+            new TacticalFormationSlot("home-starter-8", "WINGER"),
+            new TacticalFormationSlot("home-starter-9", "ATT"),
+            new TacticalFormationSlot("home-starter-10", "WINGER"));
+    }
+
+    private List<TacticalFormationSlot> home442WithPixel(String playerId, double x, double y) {
+        List<TacticalFormationSlot> formation = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            String id = "home-starter-" + i;
+            String pos = i == 0 ? "GK" : i < 5 ? "DEF" : i < 9 ? "MID" : "ATT";
+            formation.add(new TacticalFormationSlot(id, pos, i, id.equals(playerId) ? x : null, id.equals(playerId) ? y : null));
+        }
+        return formation;
+    }
+
+    private List<TacticalFormationSlot> away442WithPixel(String playerId, double x, double y) {
+        List<TacticalFormationSlot> formation = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            String id = "away-starter-" + i;
+            String pos = i == 0 ? "GK" : i < 5 ? "DEF" : i < 9 ? "MID" : "ATT";
+            formation.add(new TacticalFormationSlot(id, pos, i, id.equals(playerId) ? x : null, id.equals(playerId) ? y : null));
+        }
+        return formation;
+    }
 
     private MatchContext buildContext(String homeTeamId, String awayTeamId) {
         SessionTeam homeTeam = makeTeam(homeTeamId, "Home FC");
@@ -362,10 +293,12 @@ class TacticalChangeServiceTest {
     }
 
     private SessionTeam makeTeam(String id, String name) {
-        return SessionTeam.fromRealTeam(
+        SessionTeam team = SessionTeam.fromRealTeam(
             UUID.nameUUIDFromBytes(id.getBytes()),
             "world_" + id, name, "Country",
             BigDecimal.ZERO, "4-3-3", null);
+        team.setSessionTeamId(id);
+        return team;
     }
 
     private List<SessionPlayer> makePlayers(String prefix, int count, int ovr) {
@@ -375,13 +308,10 @@ class TacticalChangeServiceTest {
             SessionPlayer p = SessionPlayer.custom(
                 id, 25, "MID",
                 ovr, ovr, ovr, ovr, ovr, ovr,
-                BigDecimal.valueOf(ovr * 1000));
-            // SessionPlayer.custom generates a random sessionPlayerId; align it
-            // with our test id so the formation change's roster lookup works.
+                BigDecimal.valueOf(ovr * 1000L));
             p.setSessionPlayerId(id);
             list.add(p);
         }
         return list;
     }
 }
-

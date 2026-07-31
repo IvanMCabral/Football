@@ -4,6 +4,7 @@ import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEngine;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
 import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSessionContextView;
 import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.domain.model.entity.CareerSave;
@@ -11,6 +12,7 @@ import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.testharness.ScenarioMatrixRow;
 
+import java.util.Map;
 import java.util.Random;
 
 final class TestHarnessScenarioRunner {
@@ -97,40 +99,42 @@ final class TestHarnessScenarioRunner {
             int changeMinute,
             ScenarioAction safeAction) {
         if (safeAction.type() == ScenarioActionType.STYLE) {
-            session.mutateContext(ctx -> ctx.withNewStyle(userTeamId, safeAction.changedStyle()));
+            session.changeTeamStyle(userTeamId, safeAction.changedStyle());
             return new ScenarioMutationCounters(1, 0);
         }
         if (safeAction.type() == ScenarioActionType.OPPONENT_STYLE) {
             String opponentTeamId = userIsHome ? fixture.getAwayTeamId() : fixture.getHomeTeamId();
-            session.mutateContext(ctx -> ctx.withNewStyle(opponentTeamId, safeAction.changedStyle()));
+            session.changeTeamStyle(opponentTeamId, safeAction.changedStyle());
             return new ScenarioMutationCounters(1, 0);
         }
         if (safeAction.type() == ScenarioActionType.NOOP_REPLAY) {
-            session.mutateContext(ctx -> ctx);
+            session.replayCurrentMinute();
             return new ScenarioMutationCounters(0, 0);
         }
         if (safeAction.type() == ScenarioActionType.FORMATION) {
-            session.mutateContext(ctx -> {
-                MatchContext changed = ctx.withNewFormation(userTeamId, safeAction.changedFormation());
-                return safeAction.formationSlotsByPlayerId() != null
-                    && !safeAction.formationSlotsByPlayerId().isEmpty()
-                        ? changed.withSlots(userTeamId, safeAction.formationSlotsByPlayerId())
-                        : changed;
-            });
+            session.changeFormation(
+                    userTeamId,
+                    safeAction.changedFormation(),
+                    Map.of(),
+                    safeAction.formationSlotsByPlayerId());
             return new ScenarioMutationCounters(1, 0);
         }
         if (safeAction.type() == ScenarioActionType.POSITION && safeAction.positionPlan() != null) {
             PositionPlan plan = safeAction.positionPlan();
-            session.mutateContext(ctx -> ctx.withSlots(userTeamId, plan.slotsByPlayerId()));
+            session.changeFormation(
+                    userTeamId,
+                    currentFormation(session.contextView(), userTeamId),
+                    Map.of(),
+                    plan.slotsByPlayerId());
             return new ScenarioMutationCounters(1, 0);
         }
         if (safeAction.type() == ScenarioActionType.SUBSTITUTION && safeAction.subPlan() != null) {
             SubPlan plan = safeAction.subPlan();
-            session.mutateContext(ctx -> ctx.withManualSubstitution(
+            session.scheduleManualSubstitution(
                 userTeamId,
                 plan.playerOffId(),
                 plan.playerOnId(),
-                changeMinute));
+                changeMinute);
             return new ScenarioMutationCounters(0, 1);
         }
         if (safeAction.type() == ScenarioActionType.POSITION_AND_SUBSTITUTION
@@ -138,16 +142,25 @@ final class TestHarnessScenarioRunner {
             && safeAction.subPlan() != null) {
             PositionPlan positionPlan = safeAction.positionPlan();
             SubPlan subPlan = safeAction.subPlan();
-            session.mutateContext(ctx -> ctx
-                .withSlots(userTeamId, positionPlan.slotsByPlayerId())
-                .withManualSubstitution(
+            session.changeFormation(
+                    userTeamId,
+                    currentFormation(session.contextView(), userTeamId),
+                    Map.of(),
+                    positionPlan.slotsByPlayerId());
+            session.scheduleManualSubstitution(
                     userTeamId,
                     subPlan.playerOffId(),
                     subPlan.playerOnId(),
-                    changeMinute));
+                    changeMinute);
             return new ScenarioMutationCounters(1, 1);
         }
         return new ScenarioMutationCounters(0, 0);
+    }
+
+    private static String currentFormation(LiveSessionContextView context, String teamId) {
+        return context.homeTeamId().equals(teamId)
+                ? context.homeFormation()
+                : context.awayFormation();
     }
 
     private static ScenarioMatrixRow toRow(

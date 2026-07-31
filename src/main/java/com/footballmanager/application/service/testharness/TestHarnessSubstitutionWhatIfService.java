@@ -168,7 +168,7 @@ class TestHarnessSubstitutionWhatIfService {
         for (int i = 0; i < minute; i++) {
             session.tick();
         }
-        session.mutateContext(ctx -> ctx.withManualSubstitution(teamId, playerOffId, playerOnId, minute));
+        session.scheduleManualSubstitution(teamId, playerOffId, playerOnId, minute);
         while (!session.isFinished()) {
             session.tick();
         }
@@ -180,7 +180,7 @@ class TestHarnessSubstitutionWhatIfService {
         for (int i = 0; i < minute; i++) {
             session.tick();
         }
-        session.mutateContext(ctx -> ctx);
+        session.replayCurrentMinute();
         while (!session.isFinished()) {
             session.tick();
         }

@@ -3,8 +3,8 @@ package com.footballmanager.application.service.match.session;
 import com.footballmanager.application.engine.match.MatchCommandHandler;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchResult;
 import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.simulation.detailed.LiveSessionContextView;
 import com.footballmanager.application.service.simulation.detailed.LiveSnapshot;
-import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
 import com.footballmanager.application.service.simulation.detailed.MatchTimeline;
 import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
@@ -18,7 +18,6 @@ import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
-import com.footballmanager.domain.model.entity.SessionPlayer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -259,7 +258,7 @@ public class MatchSession {
         // match, NOT the final 90-minute projection.
         List<PlayerMatchRatingDto> homePlayerRatings = List.of();
         List<PlayerMatchRatingDto> awayPlayerRatings = List.of();
-        MatchContext ctx = detailedMatchSession.context();
+        LiveSessionContextView ctx = detailedMatchSession.contextView();
         if (ctx != null) {
             String homeIdStr = snap.homeTeamId();
             String awayIdStr = snap.awayTeamId();
@@ -346,28 +345,28 @@ public class MatchSession {
     }
 
     /**
-     * or away team from the {@code MatchContext}'s starting + bench lists
-     * (both {@link SessionPlayer}). Returns an empty list when the team has no
+     * or away team from the safe context view's starting + bench lists.
+     * Returns an empty list when the team has no
      * players (defensive — never crashes SSE).
      */
     private List<PlayerMatchState> buildPlayerStates(
             String teamId,
-            List<SessionPlayer> starting,
-            List<SessionPlayer> bench) {
+            List<LiveSessionContextView.PlayerContextView> starting,
+            List<LiveSessionContextView.PlayerContextView> bench) {
         if (teamId == null) {
             return List.of();
         }
         List<PlayerMatchState> states = new ArrayList<>();
         if (starting != null) {
-            for (SessionPlayer p : starting) {
+            for (LiveSessionContextView.PlayerContextView p : starting) {
                 if (p == null) continue;
-                states.add(PlayerMatchState.fromSessionPlayer(p, teamId));
+                states.add(PlayerMatchState.fromContextView(p, teamId));
             }
         }
         if (bench != null) {
-            for (SessionPlayer p : bench) {
+            for (LiveSessionContextView.PlayerContextView p : bench) {
                 if (p == null) continue;
-                states.add(PlayerMatchState.fromSessionPlayer(p, teamId));
+                states.add(PlayerMatchState.fromContextView(p, teamId));
             }
         }
         return states;

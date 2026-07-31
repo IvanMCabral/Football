@@ -8,11 +8,9 @@ import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.application.service.simulation.detailed.LiveSession;
-import com.footballmanager.application.service.simulation.detailed.MatchContext;
+import com.footballmanager.application.service.simulation.detailed.LiveSessionContextView;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
-import com.footballmanager.domain.model.entity.SessionPlayer;
-import com.footballmanager.domain.model.entity.SessionTeam;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,11 +109,11 @@ public class TacticalChangeService {
                 "Match " + matchId + " has already finished — cannot change style");
         }
 
-        MatchContext context = liveSession.context();
+        LiveSessionContextView context = liveSession.contextView();
         String homeTeamId = context.homeTeamId();
 
         // 2. Drive mutateContext — F1 replays from currentMinute automatically.
-        liveSession.mutateContext(ctx -> ctx.withNewStyle(homeTeamId, newStyle));
+        liveSession.changeTeamStyle(homeTeamId, newStyle);
 
         // 3. Record the tactical-change event in the timeline (visible to F3 UI).
         int minute = Math.max(1, liveSession.currentMinute());
@@ -200,7 +198,7 @@ public class TacticalChangeService {
                 "Match " + matchId + " has already finished — cannot change formation");
         }
 
-        MatchContext context = liveSession.context();
+        LiveSessionContextView context = liveSession.contextView();
         String managerTeamId = resolveFormationTeamId(context, newFormation);
 
         // 3. Roster validation: every playerId must be in the manager team's live roster.
@@ -221,27 +219,12 @@ public class TacticalChangeService {
             : deriveFormationCode(newFormation);
 
         // 5. Mutate the SessionTeam.formation — the engine reads this on the next replay.
-        SessionTeam managerTeam = context.homeTeamId().equals(managerTeamId)
-            ? context.homeTeam()
-            : context.awayTeam();
-        String previousCode = managerTeam.getFormation();
-        managerTeam.setFormation(newCode);
+        String previousCode = context.team(managerTeamId).formation();
 
         // 6. Mutate each affected SessionPlayer.position — engine reads this on the next rebuild.
-        for (TacticalFormationSlot slot : newFormation) {
-            // Find the player in either starting or bench and mutate.
-            SessionPlayer p = findPlayer(context, managerTeamId, slot.playerId());
-            if (p != null && !slot.position().equals(p.getPosition())) {
-                p.setPosition(slot.position());
-            }
-        }
-
         // 7. Drive mutateContext — F1 replays from currentMinute automatically.
         Map<String, LineupSlot> liveSlots = buildLiveSlots(newFormation);
-        liveSession.mutateContext(ctx -> {
-            MatchContext changed = ctx.withNewFormation(managerTeamId, newCode);
-            return liveSlots.isEmpty() ? changed : changed.withSlots(managerTeamId, liveSlots);
-        });
+        liveSession.changeFormation(managerTeamId, newCode, buildTacticalPositions(newFormation), liveSlots);
 
         // 8. Record the tactical-change event.
         int minute = Math.max(1, liveSession.currentMinute());
@@ -302,7 +285,7 @@ public class TacticalChangeService {
             String previousCode,
             String newCode,
             List<TacticalFormationSlot> formation,
-            MatchContext context,
+            LiveSessionContextView context,
             String managerTeamId) {
         StringBuilder description = new StringBuilder("Formation changed from ")
             .append(previousCode)
@@ -320,8 +303,8 @@ public class TacticalChangeService {
                 if (x == null && y == null) {
                     continue;
                 }
-                SessionPlayer player = findPlayer(context, managerTeamId, slot.playerId());
-                String name = player != null ? player.getName() : slot.playerId();
+                LiveSessionContextView.PlayerContextView player = findPlayer(context, managerTeamId, slot.playerId());
+                String name = player != null ? player.name() : slot.playerId();
                 moved.add(String.format(Locale.US, "%s %.1f/%.1f",
                     name,
                     x != null ? x : -1.0,
@@ -421,7 +404,20 @@ public class TacticalChangeService {
         return code;
     }
 
-    private String resolveFormationTeamId(MatchContext context, List<TacticalFormationSlot> formation) {
+    private Map<String, String> buildTacticalPositions(List<TacticalFormationSlot> formation) {
+        Map<String, String> positions = new LinkedHashMap<>();
+        if (formation == null) {
+            return positions;
+        }
+        for (TacticalFormationSlot slot : formation) {
+            if (slot != null && slot.playerId() != null && slot.position() != null) {
+                positions.put(slot.playerId(), slot.position());
+            }
+        }
+        return positions;
+    }
+
+    private String resolveFormationTeamId(LiveSessionContextView context, List<TacticalFormationSlot> formation) {
         Set<String> requestedIds = new HashSet<>();
         for (TacticalFormationSlot slot : formation) {
             requestedIds.add(slot.playerId());
@@ -437,33 +433,20 @@ public class TacticalChangeService {
         throw new IllegalArgumentException("formation players do not belong to a single live team roster");
     }
 
-    private Set<String> rosterIdsForTeam(MatchContext context, String teamId) {
+    private Set<String> rosterIdsForTeam(LiveSessionContextView context, String teamId) {
         Set<String> rosterIds = new HashSet<>();
-        List<SessionPlayer> starters = context.homeTeamId().equals(teamId)
-            ? context.homeStartingPlayers()
-            : context.awayStartingPlayers();
-        List<SessionPlayer> bench = context.homeTeamId().equals(teamId)
-            ? context.homeBenchPlayers()
-            : context.awayBenchPlayers();
-        for (SessionPlayer p : starters) rosterIds.add(p.getSessionPlayerId());
-        for (SessionPlayer p : bench) rosterIds.add(p.getSessionPlayerId());
+        List<LiveSessionContextView.PlayerContextView> starters = context.startingPlayers(teamId);
+        List<LiveSessionContextView.PlayerContextView> bench = context.benchPlayers(teamId);
+        for (LiveSessionContextView.PlayerContextView p : starters) rosterIds.add(p.sessionPlayerId());
+        for (LiveSessionContextView.PlayerContextView p : bench) rosterIds.add(p.sessionPlayerId());
         return rosterIds;
     }
 
-    private SessionPlayer findPlayer(MatchContext context, String teamId, String playerId) {
-        List<SessionPlayer> starters = context.homeTeamId().equals(teamId)
-            ? context.homeStartingPlayers()
-            : context.awayStartingPlayers();
-        List<SessionPlayer> bench = context.homeTeamId().equals(teamId)
-            ? context.homeBenchPlayers()
-            : context.awayBenchPlayers();
-        for (SessionPlayer p : starters) {
-            if (playerId.equals(p.getSessionPlayerId())) return p;
-        }
-        for (SessionPlayer p : bench) {
-            if (playerId.equals(p.getSessionPlayerId())) return p;
-        }
-        return null;
+    private LiveSessionContextView.PlayerContextView findPlayer(
+            LiveSessionContextView context,
+            String teamId,
+            String playerId) {
+        return context.findPlayer(teamId, playerId);
     }
 }
 

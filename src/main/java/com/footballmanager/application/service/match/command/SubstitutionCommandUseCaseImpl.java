@@ -7,13 +7,11 @@ import com.footballmanager.application.service.simulation.detailed.AppliedSubsti
 import com.footballmanager.application.service.simulation.detailed.BaselineState;
 import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
 import com.footballmanager.application.service.simulation.detailed.LiveSession;
-import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.LiveSessionContextView;
 import com.footballmanager.application.service.simulation.detailed.PlayerMatchState;
 import com.footballmanager.application.service.simulation.detailed.SubstitutionEngine;
 import com.footballmanager.application.service.simulation.detailed.TeamMatchState;
-import com.footballmanager.domain.model.entity.SessionPlayer;
-import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.port.in.match.SubstitutionCommandUseCase;
 import com.footballmanager.domain.port.in.match.SubstitutionResult;
 import org.slf4j.Logger;
@@ -33,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link LiveSession#mutateContext} + {@link LiveSession#replayFromMinute}
  * (the F1 replay infrastructure). The D1=B invariant was removed in F2:
  * swapping {@code playerOffId} out of the starting lineup and
- * {@code playerOnId} in via {@link MatchContext#withManualSubstitution}
+ * {@code playerOnId} in through the live session mutation API
  * causes the engine's next replay to use the new lineup, so
  * {@code homeGoals}/{@code awayGoals} can change from the baseline.
  *
@@ -46,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link IllegalArgumentException}/{@link IllegalStateException} for business
  * validation. Those exceptions (raised by the engine for missing players,
  * max subs reached, already-subbed, etc. — or by
- * {@code MatchContext#withManualSubstitution} for invalid teamId / off
+ * live session validation for invalid teamId / off
  * not in starting / on not in bench / etc.) are caught and translated into
  * a {@link SubstitutionResult#failure(String)} so the controller can forward
  * a uniform 200 OK + {@code success=false} body to the frontend. Only
@@ -137,7 +135,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             throw new IllegalStateException(
                 "Session has no LiveSession (not in detailed match path?) for matchId=" + matchId);
         }
-        MatchContext context = liveSession.context();
+        LiveSessionContextView context = liveSession.contextView();
         if (context == null) {
             throw new IllegalStateException(
                 "LiveSession has no context for matchId=" + matchId);
@@ -287,7 +285,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
      * starting lineups and bench for the playerOffId.
      * Returns the teamId or throws IllegalArgumentException if not found.
      */
-    private String resolveTeamId(MatchContext context, String playerOffId) {
+    private String resolveTeamId(LiveSessionContextView context, String playerOffId) {
         if (containsPlayer(context.homeStartingPlayers(), playerOffId)) {
             return context.homeTeamId();
         }
@@ -304,11 +302,13 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             "playerOffId " + playerOffId + " not found in either team's starting lineup or bench");
     }
 
-    private boolean containsPlayer(List<SessionPlayer> players, String sessionPlayerId) {
+    private boolean containsPlayer(
+            List<LiveSessionContextView.PlayerContextView> players,
+            String sessionPlayerId) {
         if (players == null) {
             return false;
         }
-        for (SessionPlayer p : players) {
+        for (LiveSessionContextView.PlayerContextView p : players) {
             if (p != null && playerOffId_equals(p, sessionPlayerId)) {
                 return true;
             }
@@ -316,9 +316,10 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
         return false;
     }
 
-    private boolean playerOffId_equals(SessionPlayer p, String sessionPlayerId) {
-        // SessionPlayer.getSessionPlayerId() returns String; that's what the engine uses.
-        return sessionPlayerId != null && sessionPlayerId.equals(p.getSessionPlayerId());
+    private boolean playerOffId_equals(
+            LiveSessionContextView.PlayerContextView p,
+            String sessionPlayerId) {
+        return sessionPlayerId != null && sessionPlayerId.equals(p.sessionPlayerId());
     }
 
     /**
@@ -328,28 +329,10 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
      * builds the PlayerMatchState objects via {@code PlayerMatchState.fromSessionPlayer}.
      * The bench players are auto-marked as substituteOff in the factory.
      */
-    private TeamMatchState buildTeamFromContext(MatchContext context, String teamId) {
-        SessionTeam team;
-        List<SessionPlayer> starting;
-        List<SessionPlayer> bench;
-        com.footballmanager.domain.model.valueobject.TeamStyle style;
-
-        if (context.homeTeamId().equals(teamId)) {
-            team = context.homeTeam();
-            starting = context.homeStartingPlayers();
-            bench = context.homeBenchPlayers();
-            style = context.homeStyle();
-        } else if (context.awayTeamId().equals(teamId)) {
-            team = context.awayTeam();
-            starting = context.awayStartingPlayers();
-            bench = context.awayBenchPlayers();
-            style = context.awayStyle();
-        } else {
-            throw new IllegalArgumentException(
-                "teamId " + teamId + " does not match home (" + context.homeTeamId()
-                + ") or away (" + context.awayTeamId() + ") of this match");
-        }
-
-        return TeamMatchState.create(team, new ArrayList<>(starting), new ArrayList<>(bench), style);
+    private TeamMatchState buildTeamFromContext(LiveSessionContextView context, String teamId) {
+        return TeamMatchState.create(
+                context.team(teamId),
+                new ArrayList<>(context.startingPlayers(teamId)),
+                new ArrayList<>(context.benchPlayers(teamId)));
     }
 }
