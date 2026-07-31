@@ -232,4 +232,53 @@ class GameControllerV25D79Test {
         verify(roundEngineRegistry).getByMatchId(eq(matchId));
         verify(roundEngine).getCurrentMatchSnapshot(eq(matchId));
     }
+
+    @Test
+    @DisplayName("getMatchState rejects a live match snapshot with missing owner")
+    void getGameState_rejectsNullOwnerLiveMatchAccess() {
+        UUID homeId = UUID.randomUUID();
+        UUID awayId = UUID.randomUUID();
+        MatchStateSnapshot snapshot = new MatchStateSnapshot(
+            matchId, homeId, awayId,
+            30, MatchStatus.RUNNING, new Score(0, 0),
+            List.of(), "career-secure-live", null,
+            50, 50, "BALANCED", "BALANCED", "4-4-2", "4-4-2",
+            List.of(), List.of(),
+            5
+        );
+
+        when(roundEngineRegistry.getByMatchId(eq(matchId))).thenReturn(roundEngine);
+        when(roundEngine.getCurrentMatchSnapshot(eq(matchId))).thenReturn(snapshot);
+
+        StepVerifier.create(controller.getMatchState(matchId.toString(), auth))
+            .assertNext(resp -> {
+                assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode(),
+                    "live match detail must fail closed when ownership is missing");
+                assertNull(resp.getBody(), "403 response must not include private match state");
+            })
+            .verifyComplete();
+
+        verify(roundEngineRegistry).getByMatchId(eq(matchId));
+        verify(roundEngine).getCurrentMatchSnapshot(eq(matchId));
+    }
+
+    @Test
+    @DisplayName("getMatchState returns 401 without authentication")
+    void getGameState_rejectsMissingAuthentication() {
+        StepVerifier.create(controller.getMatchState(matchId.toString(), null))
+            .assertNext(resp -> assertEquals(HttpStatus.UNAUTHORIZED, resp.getStatusCode()))
+            .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("getMatchState returns 404 when no live engine owns the match")
+    void getGameState_returnsNotFoundForUnknownMatch() {
+        when(roundEngineRegistry.getByMatchId(eq(matchId))).thenReturn(null);
+
+        StepVerifier.create(controller.getMatchState(matchId.toString(), auth))
+            .assertNext(resp -> assertEquals(HttpStatus.NOT_FOUND, resp.getStatusCode()))
+            .verifyComplete();
+
+        verify(roundEngineRegistry).getByMatchId(eq(matchId));
+    }
 }

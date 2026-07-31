@@ -251,7 +251,10 @@ public class GameController {
                     if (snapshot == null) {
                         return ResponseEntity.notFound().<MatchStateSnapshot>build();
                     }
-                    if (snapshot.userId() != null && !snapshot.userId().equals(userId.toString())) {
+                    if (snapshot.userId() == null || snapshot.userId().isBlank()) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).<MatchStateSnapshot>build();
+                    }
+                    if (!snapshot.userId().equals(userId.toString())) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).<MatchStateSnapshot>build();
                     }
                     return ResponseEntity.ok(snapshot);
