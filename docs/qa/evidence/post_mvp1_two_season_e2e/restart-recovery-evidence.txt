@@ -1,0 +1,20 @@
+Restart/recovery evidence
+Generated at: 2026-07-31T17:53:31.695Z
+Old PID: 28748
+Stop time: 2026-07-31T14:51:29
+Start command: mvn spring-boot:run -Dspring-boot.run.profiles=local,career-mutations
+Start time: 2026-07-31T14:51:33
+New PID: 2644
+PID changed: true
+Career alias: certified-two-season-career
+Career id: 59073caa-a5bd-45a3-a48e-b72087b7afc2
+Login recovery status: 200
+Career debug endpoint status: 404
+Lineup recovery status: 200
+Team recovery status: 200
+Squad recovery status: 200
+Recovered squad players: 24
+Season/Round recovery note: certified career is expected at season 3 round 1 PRE_MATCH after the previous idempotency probe.
+Season 1 fixture/result evidence: fixtures=12, completed=12, standingsRows=4
+Season 2 fixture/result evidence: fixtures=12, completed=12, standingsRows=4
+Token persisted in evidence: false

@@ -1,0 +1,97 @@
+{
+  "generatedAt": "2026-07-31T17:46:53.880Z",
+  "browser": "in-app browser",
+  "authenticated": true,
+  "routesVisited": [
+    "login",
+    "dashboard",
+    "squad",
+    "standings",
+    "season1-detail",
+    "season2-detail",
+    "live-detail"
+  ],
+  "observedResources": [],
+  "unexpected5xx": [],
+  "note": "Browser-authenticated route traversal completed; HTTP statuses captured through local authenticated Node probes with token kept only in memory and not persisted.",
+  "apiProbes": [
+    {
+      "method": "POST",
+      "url": "/api/v1/auth/login",
+      "status": 200,
+      "ok": true,
+      "durationMs": 227
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/auth/me",
+      "status": 200,
+      "ok": true,
+      "durationMs": 6
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/career/debug",
+      "status": 404,
+      "ok": false,
+      "durationMs": 5
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/career/lineup/current",
+      "status": 200,
+      "ok": true,
+      "durationMs": 4
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/career/teams/me/squad",
+      "status": 200,
+      "ok": true,
+      "durationMs": 25
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/career/players/squad",
+      "status": 200,
+      "ok": true,
+      "durationMs": 4
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/career/teams/me",
+      "status": 200,
+      "ok": true,
+      "durationMs": 22
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/careers/{careerId}/matches/{season1MatchId}/detail",
+      "status": 404,
+      "ok": false,
+      "durationMs": 4
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/careers/{careerId}/matches/{season2MatchId}/detail",
+      "status": 404,
+      "ok": false,
+      "durationMs": 4
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/careers/{careerId}/matches/{season1MatchId}/timeline",
+      "status": 400,
+      "ok": false,
+      "durationMs": 5
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/careers/{careerId}/matches/{season2MatchId}/timeline",
+      "status": 400,
+      "ok": false,
+      "durationMs": 3
+    }
+  ],
+  "nodeProbeTokenPersisted": false
+}

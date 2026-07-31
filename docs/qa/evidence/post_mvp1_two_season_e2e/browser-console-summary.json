@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-07-31T17:46:53.880Z",
+  "browser": "in-app browser",
+  "authenticated": true,
+  "routesVisited": [
+    {
+      "name": "login",
+      "requestedUrl": "http://localhost:4200/login",
+      "finalUrl": "http://localhost:4200/login",
+      "title": "My app",
+      "loaded": true,
+      "bodyPreview": "⚽\nFootball Manager\nInicio\nPartidos\nSalir\nLogin\nEntrar\n¿No tienes cuenta? Regístrate\n\n© 2024 Football Manager. Todos los derechos reservados."
+    },
+    {
+      "name": "dashboard",
+      "requestedUrl": "http://localhost:4200/dashboard",
+      "finalUrl": "http://localhost:4200/dashboard",
+      "title": "My app",
+      "loaded": true,
+      "bodyPreview": "⚽\nFootball Manager\nInicio\nPartidos\nSalir\n⚽ MI UNIVERSO DE FUTBOL\n\nBienvenido de nuevo, two_season_ui_1785514375642.\n\nTU DIVISIÓN\nSEGUNDA\nVer tabla completa →\n▶️\nContinuar carrera\nF"
+    },
+    {
+      "name": "squad",
+      "requestedUrl": "http://localhost:4200/squad",
+      "finalUrl": "http://localhost:4200/squad",
+      "title": "My app",
+      "loaded": true,
+      "bodyPreview": "⚽\nFootball Manager\nInicio\nPartidos\nSalir\n⚽ Mi equipo\n← Volver\nTEMPORADA\n3\nDIVISIÓN\nSEGUNDA\nJORNADA\n1 / 6\nPLANTILLA\n24 / 25\nLIBRES\n0\n📅 Ver Fixture\n🏆 Tabla\n📜 Palmarés\n📊 Ascensos\n"
+    },
+    {
+      "name": "standings",
+      "requestedUrl": "http://localhost:4200/standings",
+      "finalUrl": "http://localhost:4200/standings",
+      "title": "My app",
+      "loaded": true,
+      "bodyPreview": "⚽\nFootball Manager\nInicio\nPartidos\nSalir\nVolver\n🏆\nTabla de posiciones\nTU DIVISIÓN: SEGUNDA\nZona de ascenso (3 mejores)\nZona de descenso (3 peores)\nPrimera División\n👑\nSegunda Divi"
+    },
+    {
+      "name": "season1-detail",
+      "requestedUrl": "http://localhost:4200/careers/{careerId}/matches/{season1MatchId}/detail",
+      "finalUrl": "http://localhost:4200/careers/{careerId}/matches/{season1MatchId}/detail",
+      "title": "My app",
+      "loaded": true,
+      "bodyPreview": "⚽\nFootball Manager\nInicio\nPartidos\nSalir\n?\nDetalle del partido\n\nEl detalle completo no está disponible para este partido.\n\nPosibles motivos:\n\nEl partido se jugó antes de guardar de"
+    },
+    {
+      "name": "season2-detail",
+      "requestedUrl": "http://localhost:4200/careers/{careerId}/matches/{season2MatchId}/detail",
+      "finalUrl": "http://localhost:4200/careers/{careerId}/matches/{season2MatchId}/detail",
+      "title": "My app",
+      "loaded": true,
+      "bodyPreview": "⚽\nFootball Manager\nInicio\nPartidos\nSalir\n?\nDetalle del partido\n\nEl detalle completo no está disponible para este partido.\n\nPosibles motivos:\n\nEl partido se jugó antes de guardar de"
+    },
+    {
+      "name": "live-detail",
+      "requestedUrl": "http://localhost:4200/games/{careerId}/round/1/live",
+      "finalUrl": "http://localhost:4200/games/{careerId}/round/1/live",
+      "title": "My app",
+      "loaded": true,
+      "bodyPreview": "⚽\nFootball Manager\nInicio\nPartidos\nSalir\nFecha 1 - En Vivo\n⏸️ Pausar todos\nVolver\n⭐ Tu partido\n⭐ TU PARTIDO\nEn Juego\nReal Sociedad\n0\nVS\nFC Barcelona\n0\n2'\n0%\n100%\nBALANCED · 4-4-2\nB"
+    }
+  ],
+  "logCount": 48,
+  "errors": [],
+  "warnings": []
+}

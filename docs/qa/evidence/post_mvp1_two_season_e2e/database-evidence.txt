@@ -1,0 +1,54 @@
+Database evidence for two-season E2E closure
+Generated at: 2026-07-31T14:42:17
+Career alias: certified-two-season-career
+Career id: 59073caa-a5bd-45a3-a48e-b72087b7afc2
+Secrets: not printed; connection loaded from .env in current PowerShell session
+
+## current-db-user
+SELECT current_database() AS database, current_user AS user_name;
+database,user_name
+football_manager,postgres
+(1 fila)
+
+## game-row
+SELECT id, name, team_id, created_at FROM games WHERE id = '59073caa-a5bd-45a3-a48e-b72087b7afc2';
+id,name,team_id,created_at
+(0 filas)
+
+## seasons-summary
+SELECT s.id, s.external_id, s.season_year, s.status, l.name AS league_name FROM seasons s JOIN leagues l ON l.id = s.league_id ORDER BY s.season_year, s.id;
+id,external_id,season_year,status,league_name
+1,84d0959d-1eec-3177-9a57-d4e7aa6b2e49,2026,READY,Spanish Primera Division
+2,3c7c73cb-9c73-32c6-a5b5-67604e62c0cd,2026,READY,Argentine Primera Division
+3,91a06b07-8ef9-3e23-bb77-b526f1e0dc80,2026,READY,Brazilian Serie A
+(3 filas)
+
+## matches-by-season-year
+SELECT s.season_year, COUNT(*) AS fixtures, COUNT(*) FILTER (WHERE m.status = 'COMPLETED') AS completed, COUNT(*) FILTER (WHERE m.status <> 'COMPLETED') AS pending FROM matches m JOIN seasons s ON s.id = (SELECT id FROM seasons WHERE season_year = EXTRACT(YEAR FROM m.scheduled_at)::int LIMIT 1) GROUP BY s.season_year ORDER BY s.season_year;
+season_year,fixtures,completed,pending
+(0 filas)
+
+## short-league-fixtures-by-year
+SELECT EXTRACT(YEAR FROM scheduled_at)::int AS year, COUNT(*) fixtures, COUNT(*) FILTER (WHERE status='COMPLETED') completed, COUNT(*) FILTER (WHERE status<>'COMPLETED') pending FROM matches WHERE game_id = '59073caa-a5bd-45a3-a48e-b72087b7afc2' GROUP BY EXTRACT(YEAR FROM scheduled_at)::int ORDER BY year;
+year,fixtures,completed,pending
+(0 filas)
+
+## standings-by-season
+SELECT s.season_year, COUNT(*) standings_rows, MIN(st.played) min_played, MAX(st.played) max_played FROM standings st JOIN seasons s ON s.id = st.season_id GROUP BY s.season_year ORDER BY s.season_year;
+season_year,standings_rows,min_played,max_played
+(0 filas)
+
+## duplicate-fixtures
+SELECT game_id, home_team_id, away_team_id, round, COUNT(*) FROM matches WHERE game_id = '59073caa-a5bd-45a3-a48e-b72087b7afc2' GROUP BY game_id, home_team_id, away_team_id, round HAVING COUNT(*) > 1;
+game_id,home_team_id,away_team_id,round,count
+(0 filas)
+
+## duplicate-results
+SELECT id, COUNT(*) FROM matches WHERE game_id = '59073caa-a5bd-45a3-a48e-b72087b7afc2' AND status='COMPLETED' GROUP BY id HAVING COUNT(*) > 1;
+id,count
+(0 filas)
+
+## player-stats-by-season
+SELECT s.season_year, COUNT(*) player_season_stat_rows FROM player_season_statistics pss JOIN seasons s ON s.id=pss.season_id GROUP BY s.season_year ORDER BY s.season_year;
+season_year,player_season_stat_rows
+(0 filas)

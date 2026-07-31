@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-07-31T14:52:00-03:00",
+  "command": "npm audit --json",
+  "exitCode": 1,
+  "fixApplied": false,
+  "vulnerabilities": {
+    "info": 0,
+    "low": 1,
+    "moderate": 19,
+    "high": 32,
+    "critical": 3,
+    "total": 55
+  },
+  "dependencies": {
+    "prod": 16,
+    "dev": 1002,
+    "optional": 136,
+    "peer": 1,
+    "peerOptional": 0,
+    "total": 1017
+  },
+  "prodDevClassification": "npm audit summary records package metadata counts only. No npm audit fix was executed. The audit output includes critical/high advisories in the frontend dependency tree and must remain a release-evidence issue until dependency remediation is explicitly authorized."
+}

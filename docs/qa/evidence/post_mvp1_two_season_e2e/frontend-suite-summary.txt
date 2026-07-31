@@ -1,0 +1,13 @@
+Frontend isolated suite summary
+Generated at: 2026-07-31T14:41:06
+Development build command: npm run build -- --configuration development
+Development build result: PASS
+Production build command: npm run build
+Production build result: PASS
+Test command: npm test -- --watch=false --browsers=ChromeHeadless
+Test result: PASS
+Parsed success tests: 1026
+Parsed failures: 0
+Parsed skipped: 2
+Encoding guard files inspected: 321
+Expected: 1026 SUCCESS / 0 failures / 2 skipped

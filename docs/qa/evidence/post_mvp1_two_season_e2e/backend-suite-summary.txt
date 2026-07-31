@@ -1,0 +1,11 @@
+Backend isolated suite summary
+Generated at: 2026-07-31T14:37:58
+Compile command: mvn -q -DskipTests test-compile
+Suite command: mvn -q test
+Surefire XML files: 279
+Tests: 2529
+Failures: 0
+Errors: 0
+Skipped: 4
+Expected: 2529 tests / 0 failures / 0 errors / 4 skipped
+Result: PASS
