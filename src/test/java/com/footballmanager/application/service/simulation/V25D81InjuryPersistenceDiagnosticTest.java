@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * verify the injured flag survives. Uses real Redis to verify the
  * persistence layer works as documented.
  *
- * <p>Run: REDIS_PASSWORD=MgrRedis2026!Rotate#Secure DB_PASSWORD=Mgr2026Rot!Secure#
+ * <p>Run with DB_PASSWORD and REDIS_PASSWORD loaded from the local `.env`.
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

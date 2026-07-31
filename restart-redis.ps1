@@ -35,8 +35,8 @@ $ErrorActionPreference = 'Stop'
 
 $RedisRoot       = 'C:\temp\redis'
 $RedisExe        = Join-Path $RedisRoot 'redis-server.exe'
-# V25D77-C55.2.5 fix: use redis-min.conf (TIENE requirepass MgrRedis2026!Rotate#Secure)
-# backend application-local.properties spring.data.redis.password=MgrRedis2026!Rotate#Secure
+# Use redis-min.conf with a local requirepass value loaded from .env.
+# Do not commit Redis passwords in this script or comments.
 $RedisConfig     = Join-Path $RedisRoot 'redis-min.conf'
 $RedisHost       = '127.0.0.1'
 $RedisPort       = 6379

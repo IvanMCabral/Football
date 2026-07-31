@@ -25,7 +25,7 @@ class ThreeLeagueDatasetImporterTest {
     private static final String DB_HOST = System.getenv().getOrDefault("DB_HOST", "localhost");
     private static final String DB_PORT = System.getenv().getOrDefault("DB_PORT", "5432");
     private static final String DB_USER = System.getenv().getOrDefault("DB_USER", "postgres");
-    private static final String DB_PASSWORD = System.getenv().getOrDefault("DB_PASSWORD", "Mgr2026Rot!Secure#");
+    private static final String DB_PASSWORD = requiredEnv("DB_PASSWORD");
     private static final String DB_NAME = "manager_three_league_import_" + UUID.randomUUID().toString().replace("-", "");
 
     private static SingleConnectionDataSource dataSource;
@@ -412,6 +412,14 @@ class ThreeLeagueDatasetImporterTest {
 
     private static String dbUrl() {
         return "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME;
+    }
+
+    private static String requiredEnv(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(name + " must be provided by the test environment");
+        }
+        return value;
     }
 
     private record DatasetCounts(int clubs, int teams, int players, int traits) {}

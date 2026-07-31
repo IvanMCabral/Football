@@ -15,14 +15,13 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:Mgr2026Rot!Secure#}
+    password: ${DB_PASSWORD}
 
   # Reuse the dev DB credentials, point at the TEST database
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
     username: ${DB_USER:postgres}
-    # CI and local runs can override this through DB_PASSWORD.
-    password: ${DB_PASSWORD:Mgr2026Rot!Secure#}
+    password: ${DB_PASSWORD}
     pool:
       initial-size: 2
       max-size: 5
@@ -40,10 +39,11 @@ spring:
   # The ReactiveRedisConnectionFactory is auto-configured from these properties.
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      # CI and local runs can override this through REDIS_PASSWORD.
-      password: ${REDIS_PASSWORD:MgrRedis2026!Rotate#Secure}
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: false
       database: 15
       timeout: 10000ms
       lettuce:
@@ -60,6 +60,9 @@ spring:
 
 # Use the detailed engine in tests so behaviour matches local development.
 app:
+  security:
+    rate-limit:
+      enabled: false
   simulation:
     league:
       use-classic-engine: false

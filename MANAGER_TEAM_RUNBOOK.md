@@ -15,7 +15,7 @@
 - **Stack:** Spring Boot 3.2.1 WebFlux + R2DBC PostgreSQL + Redis + Angular.
 - **Java 17/21** (`C:\Users\ichu_\.jdk\jdk-21.0.8\bin\java.exe`)
 - **Profile activo:** `local,career-mutations`
-- **DB:** PostgreSQL en `localhost:5432` (DB `football_manager`, user/pass `postgres/postgres`).
+- **DB:** PostgreSQL configurado por `.env` local. No documentar ni commitear usuarios/passwords reales.
 - **Redis:** binario en `C:\temp\redis\redis-server.exe`, puerto 6379.
 - **Backend port:** 8080, **Frontend port:** 4200.
 - **Health check:** NO usar `/actuator/health` (da 404). Usar `POST /api/v1/auth/login` con body `{}` — cualquier 4xx/5xx != connection refused = vivo.
@@ -635,8 +635,8 @@ mavis cron delete mavis <name>
 
 **Regla:** desde DetailedSprint12-D (rotacion de credenciales, 2026-06-15), `mvn test` requiere **AMBAS** env vars exportadas antes de invocarse. Sin ellas, los 19 test classes E2E fallan con `NOAUTH Authentication required` en `AbstractIntegrationTest.cleanRedis:61` (línea 64 original con `.block()`).
 
-- `DB_PASSWORD` — la test DB `football_manager_test` requiere la password rotada de DetailedSprint12-D-6 (`Mgr2026Rot!Secure#`).
-- `REDIS_PASSWORD` — Redis DB 15 (test) requiere la password rotada de DetailedSprint12-D (`MgrRedis2026!Rotate#Secure`).
+- `DB_PASSWORD` — cargar desde `.env`; si un valor estuvo versionado, rotarlo antes de usarlo fuera de local.
+- `REDIS_PASSWORD` — cargar desde `.env`; si un valor estuvo versionado, rotarlo antes de usarlo fuera de local.
 
 **Forma recomendada** (idempotente, ambos tests):
 
@@ -651,8 +651,8 @@ powershell -ExecutionPolicy Bypass -File D:\ProyectosOpenCode\MANAGER\run-game-c
 **Forma manual** (si necesitas copiar/pegar en otra terminal):
 
 ```powershell
-$env:DB_PASSWORD = "Mgr2026Rot!Secure#"
-$env:REDIS_PASSWORD = "MgrRedis2026!Rotate#Secure"
+$env:DB_PASSWORD = "<load-from-.env>"
+$env:REDIS_PASSWORD = "<load-from-.env>"
 Set-Location D:\ProyectosOpenCode\MANAGER
 mvn test
 ```

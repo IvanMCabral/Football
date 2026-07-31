@@ -26,7 +26,7 @@ class Mvp1DatabaseBaselineContractTest {
     private static final String DB_HOST = env("DB_HOST", "localhost");
     private static final String DB_PORT = env("DB_PORT", "5432");
     private static final String DB_USER = env("DB_USER", "postgres");
-    private static final String DB_PASSWORD = env("DB_PASSWORD", "Mgr2026Rot!Secure#");
+    private static final String DB_PASSWORD = requiredEnv("DB_PASSWORD");
     private static final String DATABASE =
         "manager_mvp1_baseline_contract_" + UUID.randomUUID().toString().replace("-", "");
 
@@ -219,6 +219,14 @@ class Mvp1DatabaseBaselineContractTest {
     private static String env(String name, String fallback) {
         String value = System.getenv(name);
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static String requiredEnv(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(name + " must be provided by the test environment");
+        }
+        return value;
     }
 
     private static void assertTableExists(Connection connection, String table) throws SQLException {
