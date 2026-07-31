@@ -503,9 +503,46 @@ public final class LiveSession {
         if (event.type() == DetailedMatchEventType.SUBSTITUTION) {
             return event.minute()
                 + "|" + event.type()
+                + "|" + visibleSubstitutionTeamKey(event)
                 + "|" + nullSafe(event.playerId())
                 + "|" + nullSafe(event.relatedPlayerId());
         }
         return eventKey(event);
+    }
+
+    private String visibleSubstitutionTeamKey(DetailedMatchEvent event) {
+        if (isContextTeamId(event.teamId())) {
+            return event.teamId();
+        }
+        String inferred = inferTeamIdFromPlayerId(event.playerId());
+        return inferred != null ? inferred : nullSafe(event.teamId());
+    }
+
+    private boolean isContextTeamId(String teamId) {
+        return teamId != null
+            && (teamId.equals(effectiveContext.homeTeamId()) || teamId.equals(effectiveContext.awayTeamId()));
+    }
+
+    private String inferTeamIdFromPlayerId(String playerId) {
+        boolean home = containsPlayer(effectiveContext.homeStartingPlayers(), playerId)
+            || containsPlayer(effectiveContext.homeBenchPlayers(), playerId);
+        boolean away = containsPlayer(effectiveContext.awayStartingPlayers(), playerId)
+            || containsPlayer(effectiveContext.awayBenchPlayers(), playerId);
+        if (home == away) {
+            return null;
+        }
+        return home ? effectiveContext.homeTeamId() : effectiveContext.awayTeamId();
+    }
+
+    private boolean containsPlayer(List<SessionPlayer> players, String playerId) {
+        if (playerId == null || players == null) {
+            return false;
+        }
+        for (SessionPlayer player : players) {
+            if (player != null && playerId.equals(player.getSessionPlayerId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
