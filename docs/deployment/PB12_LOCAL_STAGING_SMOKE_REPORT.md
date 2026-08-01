@@ -53,6 +53,18 @@ Useful finding: local PostgreSQL temporary startup works, but the direct smoke h
 | Localhost absent from production artifact | PASS |
 | Source map references absent | PASS |
 
+## Suites
+
+| Suite | Result |
+|---|---|
+| Backend `mvn -q -DskipTests test-compile` | PASS |
+| Backend `mvn -q test` | 2564 tests, 0 failures, 0 errors, 4 skipped |
+| Frontend encoding guard | PASS, 385 files scanned |
+| Frontend development build | PASS |
+| Frontend production build | PASS |
+| Frontend artifact inspection | PASS, 52 files scanned |
+| Frontend tests | 1029 SUCCESS, 0 failures, 2 skipped |
+
 ## Docker smoke status
 
 Status: externally blocked on this workstation because `docker` is not installed.
