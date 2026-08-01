@@ -1,0 +1,36 @@
+# PB1.2 Remaining Cloud Gates
+
+Date: 2026-08-01
+
+These gates are intentionally outside PB1.2.1. They must be closed before public staging/beta.
+
+## P0 before Internet exposure
+
+- Build and smoke the Docker image on a machine with Docker.
+- Choose and create managed PostgreSQL staging.
+- Choose and create managed Redis staging with TLS and persistence policy.
+- Configure production secrets in the provider.
+- Run Flyway against staging and verify fail-fast behavior.
+- Run liveness/readiness checks from the provider.
+- Verify frontend API routing and production CORS with real domains.
+- Validate SSE through the selected edge/proxy.
+- Execute backup and restore drill for PostgreSQL.
+- Execute Redis loss/reconnect drill and define RPO/RTO.
+- Confirm graceful shutdown behavior on the selected runtime.
+
+## P1 before broader beta
+
+- Add CI/CD build and deploy gates.
+- Add image vulnerability scanning.
+- Add provider log retention and alerts.
+- Add uptime checks.
+- Add rollback drill.
+- Add HSTS and final CSP after domain is stable.
+- Add budget/cost alerts.
+
+## Not blockers for PB1.2.1
+
+- No cloud resource exists yet.
+- No domain exists yet.
+- No Docker smoke could run locally because Docker is absent.
+- No public deploy was performed.

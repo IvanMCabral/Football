@@ -24,3 +24,15 @@ The public edge must own final browser policy headers:
 - static asset cache policy.
 
 Do not enable edge HSTS before the production domain and HTTPS rollback path are confirmed.
+
+## PB1.2.1 Firebase Hosting baseline
+
+The frontend hosting artifact defines initial static headers in `front-ciber/project/firebase.json`:
+
+- `index.html`: no-cache/no-store so users receive the current application shell.
+- hashed JavaScript/CSS assets: one year immutable cache.
+- image/font/static assets: one year immutable cache.
+- `X-Content-Type-Options: nosniff` for served assets.
+- `Referrer-Policy: strict-origin-when-cross-origin` on `index.html`.
+
+Final HSTS and CSP still belong to PB1.2 after the domain, backend origin, Firebase project and rollback path are selected.

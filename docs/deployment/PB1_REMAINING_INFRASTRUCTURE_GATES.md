@@ -18,6 +18,34 @@ These items do not reopen PB1.1 hardening if documented honestly; they block PB1
 
 ---
 
+## 2026-08-01 PB1.2.1 runtime artifacts
+
+PB1.2.1 added local production runtime artifacts without creating cloud resources:
+
+- backend Dockerfile and `.dockerignore`;
+- frontend Firebase Hosting configuration;
+- production artifact inspection for the Angular build;
+- runtime environment contract;
+- container security notes;
+- local staging smoke report;
+- remaining cloud gates.
+
+Docker is not installed on the current workstation, so Docker build/run smoke is still an infrastructure gate. The artifact exists, but image size, runtime UID inspection and `docker stop` graceful shutdown evidence must be collected on a Docker-capable machine or build runner.
+
+Remaining PB1.2 gates after PB1.2.1:
+
+- Docker image build/smoke.
+- Managed PostgreSQL staging.
+- Managed Redis staging with TLS and persistence policy.
+- Cloud health/readiness validation.
+- SSE validation behind the selected proxy/CDN.
+- PostgreSQL backup/restore drill.
+- Redis loss/reconnect drill.
+- Provider graceful shutdown drill.
+- CI/CD and rollback.
+
+---
+
 ## 2026-08-01 definitive test runtime closure
 
 The blocker closure rejection has been remediated in a later change set. See:

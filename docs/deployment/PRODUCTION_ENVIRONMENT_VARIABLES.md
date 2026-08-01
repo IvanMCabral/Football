@@ -53,6 +53,7 @@ APP_CORS_ALLOWED_ORIGINS=https://manager-beta.example.com,https://manager.exampl
 - Separar secretos de staging y production.
 - Rotar cualquier secreto que haya sido usado en local si va a tocar producción.
 - En proveedores serverless/managed, configurar estas variables desde secret manager o environment variables del proveedor.
+
 ## PB1.1 hardening requirements
 
 Production startup is fail-closed for the following values:
@@ -66,3 +67,18 @@ Production startup is fail-closed for the following values:
 - Rate limiting defaults are enabled in production through `APP_RATE_LIMIT_ENABLED`, `APP_AUTH_RATE_LIMIT_MAX_REQUESTS`, and `APP_AUTH_RATE_LIMIT_WINDOW`.
 
 Never version real secret values. Load secrets through the deployment provider or a local `.env` outside Git.
+
+## PB1.2.1 container runtime additions
+
+The production container artifact also relies on:
+
+| Variable | Uso | Default / regla |
+|---|---|---|
+| `SERVER_ADDRESS` | Binding de red | `0.0.0.0` en contenedor |
+| `JAVA_TOOL_OPTIONS` | Opciones JVM base | memory percentage, UTF-8, UTC, OOM exit |
+| `JAVA_OPTS` | Opciones Java adicionales | opcional |
+| `SHUTDOWN_TIMEOUT` | Timeout graceful shutdown | `30s` |
+
+For a managed Redis provider, set `REDIS_SSL=true` unless the provider explicitly terminates TLS elsewhere. If ACLs are enabled, set `REDIS_USERNAME` as well as `REDIS_PASSWORD`.
+
+The image must never receive secrets through committed files. Use provider environment variables or secret manager integration.
