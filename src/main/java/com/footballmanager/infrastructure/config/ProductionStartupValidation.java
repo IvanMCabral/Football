@@ -1,11 +1,11 @@
 package com.footballmanager.infrastructure.config;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -66,7 +66,7 @@ public class ProductionStartupValidation {
     }
 
     private boolean isMissingOrUnsafe(String name) {
-        String value = environment.getProperty(name);
+        String value = configuredValue(name);
         if (value == null || value.isBlank()) {
             return true;
         }
@@ -74,7 +74,7 @@ public class ProductionStartupValidation {
     }
 
     private void validateJwt() {
-        String jwtSecret = environment.getProperty("JWT_SECRET");
+        String jwtSecret = configuredValue("JWT_SECRET");
         if (jwtSecret == null || jwtSecret.isBlank() || !jwtSecret.equals(jwtSecret.trim())) {
             throw new IllegalStateException("Production startup blocked. JWT_SECRET must be a trimmed non-empty value");
         }
@@ -84,7 +84,7 @@ public class ProductionStartupValidation {
     }
 
     private void validateCors() {
-        String rawOrigins = environment.getProperty("APP_CORS_ALLOWED_ORIGINS");
+        String rawOrigins = configuredValue("APP_CORS_ALLOWED_ORIGINS");
         if (rawOrigins == null || rawOrigins.isBlank()) {
             throw new IllegalStateException("Production startup blocked. APP_CORS_ALLOWED_ORIGINS is required");
         }
@@ -116,7 +116,7 @@ public class ProductionStartupValidation {
     }
 
     private void validatePositiveLong(String name, long min, long max) {
-        String raw = environment.getProperty(name);
+        String raw = configuredValue(name);
         if (raw == null || raw.isBlank()) {
             return;
         }
@@ -131,7 +131,7 @@ public class ProductionStartupValidation {
     }
 
     private void validatePositiveInt(String name) {
-        String raw = environment.getProperty(name);
+        String raw = configuredValue(name);
         try {
             if (raw == null || raw.isBlank() || Integer.parseInt(raw.trim()) <= 0) {
                 throw new IllegalStateException("Production startup blocked. Invalid numeric variable: " + name);
@@ -139,6 +139,19 @@ public class ProductionStartupValidation {
         } catch (NumberFormatException e) {
             throw new IllegalStateException("Production startup blocked. Invalid numeric variable: " + name);
         }
+    }
+
+    private String configuredValue(String name) {
+        String directValue = environment.getProperty(name);
+        if (directValue != null) {
+            return directValue;
+        }
+        String canonicalValue = environment.getProperty(name.toLowerCase().replace('_', '.'));
+        if (canonicalValue != null) {
+            return canonicalValue;
+        }
+        String placeholder = environment.resolvePlaceholders("${" + name + ":}");
+        return placeholder.isBlank() ? null : placeholder;
     }
 
     private static List<String> parseRequiredVariables(String rawVariables) {

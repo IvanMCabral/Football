@@ -2,9 +2,9 @@
 # Activated with: @ActiveProfiles("test")
 #
 # This profile is ISOLATED from the running dev backend:
-#   - DB: football_manager_test (separate database, same Postgres instance)
-#   - Redis: database 15 (the dev backend uses database 0)
-#   - Flyway: DISABLED (the test DB is pre-initialized from a dump of football_manager)
+#   - DB: ephemeral PostgreSQL process managed by test bootstrap
+#   - Redis: ephemeral Redis process managed by test bootstrap, logical database 15
+#   - Flyway: enabled against the ephemeral PostgreSQL database
 #   - Server: RANDOM_PORT (assigned by Spring TestContext, never clashes with :8080)
 #
 # DO NOT use this profile for the running dev backend.
@@ -13,14 +13,14 @@
 
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
-    username: ${DB_USER:postgres}
+    url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME_TEST:postgres}
+    username: ${DB_USER:manager_test}
     password: ${DB_PASSWORD:}
 
   # Reuse the dev DB credentials, point at the TEST database
   r2dbc:
-    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:football_manager_test}
-    username: ${DB_USER:postgres}
+    url: r2dbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME_TEST:postgres}
+    username: ${DB_USER:manager_test}
     password: ${DB_PASSWORD:}
     pool:
       initial-size: 2
@@ -28,12 +28,8 @@ spring:
       max-idle-time: 5m
       validation-query: SELECT 1
 
-  # Flyway is disabled in tests: the football_manager_test DB is pre-initialized
-  # from a pg_dump of the dev DB. The dump lives at
-  #   ciberfootbolt_local/tests/db_test_dump.sql
-  # (regenerate with: pg_dump -U postgres -h localhost -d football_manager --no-owner ... > db_test_dump.sql)
   flyway:
-    enabled: false
+    enabled: true
 
   # Use Redis database 15 so the dev backend (DB 0) and tests don't collide.
   # The ReactiveRedisConnectionFactory is auto-configured from these properties.
@@ -75,6 +71,10 @@ app:
       persist-form: false
       persist-detail: true
       expose-detail-api: true
+
+manager:
+  redis:
+    auto-reconnect: false
 
 jwt:
   secret: test-profile-synthetic-jwt-secret-64-bytes-minimum-000000000000000000

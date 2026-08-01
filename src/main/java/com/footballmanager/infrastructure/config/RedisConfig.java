@@ -1,6 +1,8 @@
 
 package com.footballmanager.infrastructure.config;
 
+import io.lettuce.core.ClientOptions;
+import org.springframework.boot.convert.DurationStyle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -28,8 +30,6 @@ public class RedisConfig {
 
     // Timeouts en milisegundos
     private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(10);
-    private static final Duration SHUTDOWN_TIMEOUT = Duration.ofSeconds(5);
-
     @Value("${spring.data.redis.host:localhost}")
     private String redisHost;
 
@@ -48,6 +48,12 @@ public class RedisConfig {
     @Value("${spring.data.redis.database:0}")
     private int redisDatabase;
 
+    @Value("${spring.data.redis.lettuce.shutdown-timeout:5s}")
+    private String shutdownTimeout;
+
+    @Value("${manager.redis.auto-reconnect:true}")
+    private boolean autoReconnect;
+
     @Bean
     @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
@@ -65,7 +71,10 @@ public class RedisConfig {
         LettuceClientConfiguration.LettuceClientConfigurationBuilder clientConfigBuilder =
             LettuceClientConfiguration.builder()
             .commandTimeout(COMMAND_TIMEOUT)
-            .shutdownTimeout(SHUTDOWN_TIMEOUT);
+            .shutdownTimeout(DurationStyle.detectAndParse(shutdownTimeout))
+            .clientOptions(ClientOptions.builder()
+                .autoReconnect(autoReconnect)
+                .build());
         if (redisSslEnabled) {
             clientConfigBuilder.useSsl();
         }

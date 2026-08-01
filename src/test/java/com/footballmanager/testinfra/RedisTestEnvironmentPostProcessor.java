@@ -5,7 +5,6 @@ import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.Profiles;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,9 +21,6 @@ public class RedisTestEnvironmentPostProcessor implements EnvironmentPostProcess
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        if (!environment.acceptsProfiles(Profiles.of("test"))) {
-            return;
-        }
         if ("false".equalsIgnoreCase(environment.getProperty("manager.test.redis.bootstrap", "true"))) {
             return;
         }

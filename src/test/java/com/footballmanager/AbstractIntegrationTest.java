@@ -43,7 +43,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
     properties = {
         // Belt-and-suspenders: the application-test.yml also sets these,
         // but pinning them here makes the contract obvious to subclasses.
-        "spring.flyway.enabled=false",
+        "spring.flyway.enabled=true",
         "spring.data.redis.database=15"
     }
 )

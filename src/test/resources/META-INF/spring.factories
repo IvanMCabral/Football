@@ -1,2 +1,3 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
+com.footballmanager.testinfra.PostgresTestEnvironmentPostProcessor,\
 com.footballmanager.testinfra.RedisTestEnvironmentPostProcessor
