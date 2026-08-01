@@ -1,4 +1,4 @@
-# PB1.2.1 Runtime P0 Final Review
+﻿# PB1.2.1 Runtime P0 Final Review
 
 Date: 2026-08-01
 
@@ -12,6 +12,7 @@ Verdict: `PB1.2.1 IMPLEMENTATION COMPLETE - DOCKER SMOKE BLOCKED`
 | Root logger DEBUG in production | CLOSED | root defaults to `${LOG_LEVEL_ROOT:-INFO}` |
 | Docker healthcheck uses undeclared `wget` | CLOSED STATICALLY | Jammy runtime installs `curl`; healthcheck uses curl/liveness |
 | Missing production JAR smoke | CLOSED | `tools/run-production-jar-smoke.ps1` PASS |
+| Graceful shutdown not proven | CLOSED | Windows console control event, two JAR runs, no force kill |
 
 ## P1 status
 
@@ -29,12 +30,20 @@ Verdict: `PB1.2.1 IMPLEMENTATION COMPLETE - DOCKER SMOKE BLOCKED`
 - JAR SHA-256: `F7C0C609A97418C9FFDE36821CE5CD7EA0562C32B74EAA6504C9BF1DC08F9FB1`
 - JAR size: `42,467,597` bytes
 - Smoke port: `61012`
+- Definitive graceful smoke port: `58016`
+- Second startup port: `64852`
 - Liveness: `200`
 - Readiness: `200`
 - Auth register/login: PASS
 - Minimal career creation: PASS
 - Flyway successful migrations: `1`
-- Shutdown drill: PASS
+- Shutdown drill: PASS, two graceful shutdowns
+- Graceful signal sent: `true`
+- Graceful shutdown observed: `true`
+- Force kill used: `false`
+- Java exit codes: `130`, `130`
+- Residual Java/helper processes: `0`
+- Residual app ports: `0`
 - Local log artifacts: `0`
 
 ## Docker status

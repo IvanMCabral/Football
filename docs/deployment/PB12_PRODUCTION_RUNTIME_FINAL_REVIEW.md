@@ -1,4 +1,4 @@
-# PB1.2.1 Production Runtime Final Review
+﻿# PB1.2.1 Production Runtime Final Review
 
 Date: 2026-08-01
 
@@ -20,7 +20,7 @@ PB1.2.1 created the backend container artifact, frontend Firebase Hosting artifa
 | Health | Custom liveness/readiness endpoints exist and are allowed by security | PASS |
 | Graceful shutdown | `server.shutdown=graceful`, timeout configurable, entrypoint uses `exec` | PASS |
 | Flyway | Startup migrations enabled, no dangerous baseline/repair setting | PASS |
-| Production JAR smoke | Temporary PostgreSQL/Redis, health, auth, minimal career, shutdown | PASS |
+| Production JAR smoke | Temporary PostgreSQL/Redis, health, auth, minimal career, two startups, graceful shutdown | PASS |
 | Frontend production | Build passed; artifact inspection passed; no test harness in production dist | PASS |
 | Firebase config | SPA rewrite and cache headers prepared without project ID | PASS |
 | Docker smoke | Docker CLI unavailable locally | BLOCKED EXTERNALLY |
@@ -30,7 +30,7 @@ PB1.2.1 created the backend container artifact, frontend Firebase Hosting artifa
 | Suite | Result |
 |---|---|
 | Backend test-compile | PASS |
-| Backend full suite | 2568 tests, 0 failures, 0 errors, 4 skipped |
+| Backend full suite | 2570 tests, 0 failures, 0 errors, 4 skipped |
 | Frontend encoding guard | PASS, 385 files scanned |
 | Frontend development build | PASS |
 | Frontend production build | PASS |
@@ -45,12 +45,20 @@ Docker-specific evidence is intentionally not invented because Docker is unavail
 - JAR: `football-manager-1.0.0.jar`
 - JAR bytes: `42,467,597`
 - SHA-256: `F7C0C609A97418C9FFDE36821CE5CD7EA0562C32B74EAA6504C9BF1DC08F9FB1`
-- Port: `61012`
+- Run 1 port: `58016` via `PORT`
+- Run 2 port: `64852` via `SERVER_PORT`
 - Liveness: `200`
 - Readiness: `200`
 - Register/login: PASS
 - Minimal game/career: PASS
 - Flyway successful migrations: `1`
+- Second startup: PASS
+- Graceful signal sent: `true`
+- Graceful shutdown observed: `true`
+- Force kill used: `false`
+- Shutdown durations: `2712 ms`, `2711 ms`
+- Java exit codes: `130`, `130`
+- Residual processes/ports: `0` / `0`
 - Local log artifacts: `0`
 - Shutdown: PASS
 
