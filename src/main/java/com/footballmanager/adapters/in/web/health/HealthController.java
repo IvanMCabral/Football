@@ -1,10 +1,8 @@
 package com.footballmanager.adapters.in.web.health;
 
-import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +15,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class HealthController {
 
-    private static final Duration PROBE_TIMEOUT = Duration.ofSeconds(2);
-    private final R2dbcEntityTemplate r2dbc;
+    private final DatabaseHealthProbe databaseHealthProbe;
     private final RedisHealthProbe redisHealthProbe;
 
     @GetMapping
@@ -28,7 +25,7 @@ public class HealthController {
 
     @GetMapping("/readiness")
     public Mono<ResponseEntity<Map<String, Object>>> readiness() {
-        Mono<Boolean> db = databaseIsAvailable();
+        Mono<Boolean> db = databaseHealthProbe.isAvailable();
         Mono<Boolean> redis = redisHealthProbe.isAvailable();
 
         return Mono.zip(db, redis)
@@ -48,16 +45,6 @@ public class HealthController {
     @GetMapping("/liveness")
     public Mono<ResponseEntity<Map<String, Object>>> liveness() {
         return Mono.just(ResponseEntity.ok(Map.of("status", "UP")));
-    }
-
-    private Mono<Boolean> databaseIsAvailable() {
-        return r2dbc.getDatabaseClient()
-            .sql("SELECT 1")
-            .fetch()
-            .first()
-            .map(row -> true)
-            .timeout(PROBE_TIMEOUT)
-            .onErrorReturn(false);
     }
 
 }
