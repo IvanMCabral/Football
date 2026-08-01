@@ -34,3 +34,4 @@ These gates are intentionally outside PB1.2.1. They must be closed before public
 - No domain exists yet.
 - No Docker smoke could run locally because Docker is absent.
 - No public deploy was performed.
+- Production JAR smoke is green locally with temporary PostgreSQL/Redis.

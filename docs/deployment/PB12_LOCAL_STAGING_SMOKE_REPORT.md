@@ -15,7 +15,7 @@ Date: 2026-08-01
 ## Backend artifact
 
 - JAR: `target/football-manager-1.0.0.jar`
-- JAR size: `42,487,084` bytes
+- JAR size: `42,467,597` bytes
 - Dockerfile: present
 - `.dockerignore`: present
 - Docker image: not built locally because Docker is unavailable
@@ -27,19 +27,45 @@ Date: 2026-08-01
 |---|---|
 | Dockerfile uses explicit tags | PASS |
 | Final runtime non-root user | PASS (`manager`) |
+| Conservative Jammy runtime base | PASS |
+| Explicit curl healthcheck tool | PASS |
 | Profile defaults to `prod` | PASS |
 | Port configurable through `PORT` | PASS |
+| `server.address` configurable through `SERVER_ADDRESS` | PASS |
 | UTC/UTF-8 configured | PASS |
 | `.env` excluded from Docker context | PASS |
 | logs/backups/dumps excluded | PASS |
 | frontend `node_modules` and `dist` excluded | PASS |
 | healthcheck targets liveness | PASS |
 
+## Production JAR smoke
+
+| Check | Result |
+|---|---|
+| Temporary PostgreSQL | PASS |
+| Temporary Redis with auth | PASS |
+| `.env` not loaded | PASS |
+| `prod` profile | PASS |
+| Random non-standard `PORT` | PASS (`61012`) |
+| `SERVER_ADDRESS=0.0.0.0` | PASS |
+| Flyway V1 applied | PASS |
+| Three-league import in temporary DB | PASS |
+| Liveness | 200 |
+| Readiness | 200 |
+| Register/login | PASS |
+| Minimal game/career | PASS |
+| Local log artifacts | 0 |
+| Shutdown drill | PASS, 50 ms |
+
+JAR SHA-256 after reproducible clean builds:
+
+```text
+F7C0C609A97418C9FFDE36821CE5CD7EA0562C32B74EAA6504C9BF1DC08F9FB1
+```
+
 ## Direct JAR smoke
 
-A direct Windows JAR smoke was attempted with ephemeral PostgreSQL and Redis. PostgreSQL started, but the script did not reach application startup before the terminal timeout. No result was invented from this run. This does not replace the required Docker smoke.
-
-Useful finding: local PostgreSQL temporary startup works, but the direct smoke harness needs simplification before it can serve as a reliable Windows-only preflight.
+The direct Windows JAR smoke now passes with ephemeral PostgreSQL and Redis. It validates the packaged artifact, production profile startup, Flyway, health, auth, minimal career creation, absence of local log artifacts and shutdown. This still does not replace the required Docker smoke because Docker is unavailable on this workstation.
 
 ## Frontend artifact
 
@@ -58,7 +84,7 @@ Useful finding: local PostgreSQL temporary startup works, but the direct smoke h
 | Suite | Result |
 |---|---|
 | Backend `mvn -q -DskipTests test-compile` | PASS |
-| Backend `mvn -q test` | 2564 tests, 0 failures, 0 errors, 4 skipped |
+| Backend `mvn -q test` | 2568 tests, 0 failures, 0 errors, 4 skipped |
 | Frontend encoding guard | PASS, 385 files scanned |
 | Frontend development build | PASS |
 | Frontend production build | PASS |

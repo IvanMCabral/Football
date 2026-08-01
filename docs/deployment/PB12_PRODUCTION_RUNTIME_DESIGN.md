@@ -18,7 +18,7 @@ Scope: production runtime artifacts only. No gameplay, simulation, dataset, depl
 The backend Dockerfile uses:
 
 - build image: `maven:3.9.11-eclipse-temurin-21`;
-- runtime image: `eclipse-temurin:21.0.8_9-jre-alpine`;
+- runtime image: `eclipse-temurin:21.0.8_9-jre-jammy`;
 - non-root runtime user: `manager`;
 - working directory: `/app`;
 - copied runtime artifact: `/app/app.jar`;
@@ -27,6 +27,8 @@ The backend Dockerfile uses:
 - UTC timezone and UTF-8 encoding;
 - JVM memory percentages instead of fixed heap sizes;
 - `exec java ...` entrypoint so the Java process receives termination signals.
+
+The runtime base intentionally favors Debian/Ubuntu compatibility over Alpine size optimization for the first public beta. `curl`, `ca-certificates` and `tzdata` are installed explicitly for healthcheck, TLS and timezone predictability.
 
 Docker is not installed on this workstation, so the image was validated statically and the actual image build/smoke remains an external local tooling blocker for this phase.
 
@@ -80,4 +82,4 @@ SSE is implemented in the application, but it has not yet been certified behind 
 
 ## Verdict for this design
 
-The runtime design is ready for local Docker validation and then cloud staging provisioning. It is not yet Internet-deployed and does not claim cloud SSE, backup/restore or rollback certification.
+The runtime design is ready for local Docker validation and then cloud staging provisioning. The production JAR smoke is now green with isolated PostgreSQL/Redis, health, Flyway, auth, minimal career creation and shutdown. It is not yet Internet-deployed and does not claim cloud SSE, backup/restore or rollback certification.

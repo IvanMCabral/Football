@@ -16,6 +16,7 @@ Expected behavior:
 - Maven builds the JAR inside the build stage.
 - The final image contains only the JRE, non-root user, `/app/app.jar` and runtime metadata.
 - `.env`, logs, backups, dumps, frontend `node_modules`, frontend `dist`, Git history and local captures are excluded by `.dockerignore`.
+- The runtime base is Jammy, not Alpine, to reduce first-beta TLS/DNS/native-library uncertainty.
 
 ## Run
 
@@ -85,3 +86,13 @@ docker: command not found / not recognized
 ```
 
 Therefore the container image size, runtime UID inspection and `docker stop` drill are PB1.2.1 external smoke items, not fabricated results.
+
+## JAR preflight without Docker
+
+Before Docker is available, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-jar-smoke.ps1
+```
+
+This validates the packaged production JAR with temporary PostgreSQL/Redis, random `PORT`, `SERVER_ADDRESS=0.0.0.0`, liveness, readiness, Flyway, auth, minimal career creation and shutdown.

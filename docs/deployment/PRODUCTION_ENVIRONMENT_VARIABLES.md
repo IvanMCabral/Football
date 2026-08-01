@@ -63,7 +63,7 @@ Production startup is fail-closed for the following values:
 - `APP_CORS_ALLOWED_ORIGINS` must contain explicit absolute `http://` or `https://` origins only; wildcard values, partial wildcards, `null`, empty origins, paths, query strings, and fragments are rejected.
 - `REDIS_PASSWORD` is required in production.
 - `REDIS_USERNAME` is supported for managed Redis ACLs when the provider requires it.
-- Redis SSL is controlled by `spring.data.redis.ssl.enabled` / `REDIS_SSL_ENABLED` depending on deployment property binding.
+- Redis SSL is controlled by the official deployment variable `REDIS_SSL`.
 - Rate limiting defaults are enabled in production through `APP_RATE_LIMIT_ENABLED`, `APP_AUTH_RATE_LIMIT_MAX_REQUESTS`, and `APP_AUTH_RATE_LIMIT_WINDOW`.
 
 Never version real secret values. Load secrets through the deployment provider or a local `.env` outside Git.
