@@ -45,12 +45,16 @@ public class RedisConfig {
     @Value("${spring.data.redis.ssl.enabled:false}")
     private boolean redisSslEnabled;
 
+    @Value("${spring.data.redis.database:0}")
+    private int redisDatabase;
+
     @Bean
     @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
         redisConfig.setHostName(redisHost);
         redisConfig.setPort(redisPort);
+        redisConfig.setDatabase(redisDatabase);
         if (redisUsername != null && !redisUsername.isBlank()) {
             redisConfig.setUsername(redisUsername);
         }

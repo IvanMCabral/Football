@@ -1,0 +1,34 @@
+package com.footballmanager.adapters.in.web.health;
+
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.UUID;
+
+@Component
+public class RedisHealthProbe {
+
+    private static final Duration PROBE_TIMEOUT = Duration.ofSeconds(2);
+    private static final Duration PROBE_TTL = Duration.ofSeconds(5);
+
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
+
+    public RedisHealthProbe(ReactiveRedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public Mono<Boolean> isAvailable() {
+        String key = "__manager_healthcheck__:" + UUID.randomUUID();
+        return redisTemplate.opsForValue()
+            .set(key, "ok", PROBE_TTL)
+            .flatMap(written -> Boolean.TRUE.equals(written)
+                ? redisTemplate.opsForValue().get(key)
+                : Mono.just(""))
+            .map("ok"::equals)
+            .flatMap(readBack -> redisTemplate.delete(key).thenReturn(readBack))
+            .timeout(PROBE_TIMEOUT)
+            .onErrorReturn(false);
+    }
+}

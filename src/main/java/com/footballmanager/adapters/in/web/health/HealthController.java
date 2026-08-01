@@ -1,10 +1,10 @@
 package com.footballmanager.adapters.in.web.health;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,21 +17,19 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class HealthController {
 
+    private static final Duration PROBE_TIMEOUT = Duration.ofSeconds(2);
     private final R2dbcEntityTemplate r2dbc;
-    private final ReactiveRedisTemplate<String, String> redisTemplate;
+    private final RedisHealthProbe redisHealthProbe;
 
     @GetMapping
     public Mono<ResponseEntity<Map<String, Object>>> health() {
-        Mono<Boolean> db = r2dbc.getDatabaseClient()
-            .sql("SELECT 1")
-            .fetch()
-            .first()
-            .map(row -> true)
-            .onErrorReturn(false);
+        return readiness();
+    }
 
-        Mono<Boolean> redis = redisTemplate.hasKey("__manager_healthcheck__")
-            .map(ignored -> true)
-            .onErrorReturn(false);
+    @GetMapping("/readiness")
+    public Mono<ResponseEntity<Map<String, Object>>> readiness() {
+        Mono<Boolean> db = databaseIsAvailable();
+        Mono<Boolean> redis = redisHealthProbe.isAvailable();
 
         return Mono.zip(db, redis)
             .map(tuple -> {
@@ -46,4 +44,20 @@ public class HealthController {
                     : ResponseEntity.status(503).body(body);
             });
     }
+
+    @GetMapping("/liveness")
+    public Mono<ResponseEntity<Map<String, Object>>> liveness() {
+        return Mono.just(ResponseEntity.ok(Map.of("status", "UP")));
+    }
+
+    private Mono<Boolean> databaseIsAvailable() {
+        return r2dbc.getDatabaseClient()
+            .sql("SELECT 1")
+            .fetch()
+            .first()
+            .map(row -> true)
+            .timeout(PROBE_TIMEOUT)
+            .onErrorReturn(false);
+    }
+
 }
