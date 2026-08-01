@@ -1,13 +1,13 @@
-# MANAGER - PB1.1 Production Hardening Checklist
+﻿# MANAGER - PB1.1 Production Hardening Checklist
 
-Fecha: 2026-07-31
+Fecha: 2026-08-01
 
-## P0 cerrados en esta fase
+## P0 cerrados en PB1.1
 
 - [x] Perfil `prod` explícito creado.
 - [x] Defaults inseguros removidos del perfil base.
 - [x] Arranque `prod` falla si faltan variables críticas.
-- [x] Secretos locales reales removidos de `src/main/resources/application-local.properties`.
+- [x] Secretos locales reales removidos de configuración activa.
 - [x] CORS centralizado por allowlist configurable.
 - [x] CORS wildcard eliminado de controllers.
 - [x] `match-engine`, `fixtures`, `teams` y `leagues` ya no están como `permitAll`.
@@ -18,13 +18,20 @@ Fecha: 2026-07-31
 - [x] Redis clasificado como runtime crítico para PB1.1.
 - [x] Health valida DB y Redis.
 - [x] Logging base en producción pasa a `INFO` y Actuator expone solo `health,info`.
+- [x] Respuestas de error productivas sanitizadas con mensajes públicos y request ID.
+- [x] Redis readiness usa operación efímera real y falla cerrado con HTTP 503.
+- [x] Tests Redis aislados de credenciales y base Redis compartida.
 
 ## P1 directamente relacionados abordados
 
 - [x] `PORT` soportado para plataformas cloud.
 - [x] Redis SSL configurable y activo por defecto en `prod`.
+- [x] Redis username/password/database soportados para proveedores gestionados.
 - [x] Flyway `baseline-on-migrate=false` en base/prod.
 - [x] Error detail de servidor reducido en configuración productiva.
+- [x] Rate limiting mínimo de auth/register/refresh.
+- [x] Política mínima de password.
+- [x] Correlation/request ID en respuestas de error relevantes.
 
 ## Pendiente para PB1.2 Production Runtime
 
@@ -34,12 +41,15 @@ Fecha: 2026-07-31
 - [ ] Restore drill real.
 - [ ] CI/CD.
 - [ ] Medición de startup, memoria JVM y tamaño JAR.
-- [ ] Rate limiting de auth/register.
 - [ ] Migrar durabilidad primaria de Redis a PostgreSQL.
-## PB1.1 final remediation addendum - 2026-07-31
+- [ ] Managed Redis loss/reconnect drill.
+
+## PB1.1 final blocking remediation addendum - 2026-08-01
 
 Post-audit remediation closed the P0 application hardening findings. See:
 
+- `docs/deployment/PB1_PRODUCTION_HARDENING_BLOCKER_CLOSURE.md`
+- `docs/deployment/PB1_PRODUCTION_HARDENING_BLOCKER_CLOSURE_REVIEW.md`
 - `docs/deployment/PB1_PRODUCTION_HARDENING_FINAL_REMEDIATION.md`
 - `docs/deployment/PB1_PRODUCTION_HARDENING_FINAL_REVIEW.md`
 - `docs/deployment/PB1_SECRET_ROTATION_AND_REPOSITORY_HYGIENE.md`
@@ -48,8 +58,13 @@ Post-audit remediation closed the P0 application hardening findings. See:
 
 Validation evidence:
 
-- Backend: 2548 tests, 0 failures, 0 errors, 4 skipped.
-- Frontend: 1029 SUCCESS, 0 failures, 2 skipped.
-- Production frontend artifact inspection: no test harness route/chunk/text in `dist/demo`.
+- Backend full suite run 1: PASS.
+- Backend full suite run 2: PASS.
+- Backend final count: 2553 tests, 0 failures, 0 errors, 4 skipped.
+- Frontend encoding guard: PASS, 385 files scanned.
+- Frontend development build: PASS.
+- Frontend production build: PASS.
+- Frontend tests: 1029 SUCCESS, 0 failures, 2 skipped.
+- Production frontend build output: no test harness lazy chunk emitted.
 
 Historical rejected verdicts remain preserved in their original reports; the remediation is recorded separately.

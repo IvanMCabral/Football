@@ -1,8 +1,8 @@
 # PB1 Remaining Infrastructure Gates
 
-Date: 2026-07-31
+Date: 2026-08-01
 
-These gates remain outside PB1.1 by explicit scope and are required for PB1.2 Internet runtime:
+These gates remain outside PB1.1 by explicit scope and are required for PB1.2 Internet runtime. PB1.1 blocker remediation closed the application-level P0 findings; this document tracks infrastructure work only:
 
 - Docker/buildpack/cloud runtime artifact.
 - CI/CD pipeline and deploy gates.

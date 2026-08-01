@@ -1,6 +1,6 @@
 # PB1.1 Production Hardening Final Review
 
-Date: 2026-07-31
+Date: 2026-08-01
 
 Verdict: `PB1.1 HARDENING APPROVED WITH ISSUES`
 
@@ -15,21 +15,22 @@ The PB1.1 application hardening gates required before exposing the MVP to a cont
 | No reusable credential defaults in active config | PASS | DB/Redis test defaults removed; scripts/runbook use `.env` placeholders. |
 | JWT fail-closed | PASS | Startup validation tests cover 63-byte reject, 64-byte accept, blank/space reject, insecure value reject, and invalid expirations. |
 | CORS fail-closed | PASS | Startup validation rejects wildcard, partial wildcard, missing scheme, paths, empty/null values; WebFlux CORS tests remain green. |
-| Production errors sanitized | PASS | Controller errors use public messages in prod while logging full exceptions. |
+| Production errors sanitized | PASS | Controller and global error paths return controlled public messages with request IDs in prod while logging full exceptions. |
 | Rate limiting | PASS | Minimal configurable limiter covers auth mutators and returns 429. |
 | Password policy | PASS | Minimal length/maximum/blank checks added without artificial complexity rules. |
-| Redis managed-provider compatibility | PASS | Username, password, SSL, timeout properties supported and production validation requires secure settings. |
+| Redis managed-provider compatibility | PASS | Username, password, SSL, timeout properties supported; Redis database selection is honored; production validation requires secure settings. |
 | Redis honesty | PASS | Redis remains runtime-critical; restore drill and persistence guarantees are explicitly PB1.2. |
+| Redis readiness | PASS | `/api/v1/health/readiness` performs an ephemeral Redis write/read/delete probe and returns 503 when Redis is unavailable. |
 | Production frontend debug artifact | PASS | Production build excludes debug route import; artifact inspection finds no test harness route/chunk/text. |
 | Graceful shutdown | PASS | Graceful shutdown and timeout configured; operational limitations documented. |
 | Correlation ID/security headers | PASS | Request ID and baseline headers added; CDN/proxy headers documented for PB1.2. |
-| Suites | PASS | Backend 2548/0/0/4; frontend 1029 SUCCESS/0 failures/2 skipped. |
+| Suites | PASS | Backend 2553/0/0/4 across two full runs; frontend 1029 SUCCESS/0 failures/2 skipped. |
 
 ## Remaining PB1.2 issues
 
 | Issue | Severity | Reason |
 | --- | --- | --- |
-| Managed Redis restore drill | P1 | Required before stronger durability claims; not required to close PB1.1 hardening. |
+| Managed Redis restore drill | P1 | Required before stronger durability claims; not required to close PB1.1 application hardening. |
 | Provider health probe mapping | P1 | Cloud Run/Firebase mapping must be configured during deployment work. |
 | Docker/CI/CD/deploy pipeline | P1 | Explicitly out of scope for this remediation. |
 | CDN/proxy security headers | P1 | HSTS/CSP/referrer policy belong to the public edge configuration. |
