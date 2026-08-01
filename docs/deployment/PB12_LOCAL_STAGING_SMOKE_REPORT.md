@@ -1,4 +1,4 @@
-# PB1.2.1 Local Staging Smoke Report
+﻿# PB1.2.1 Local Staging Smoke Report
 
 Date: 2026-08-01
 
@@ -57,6 +57,23 @@ Date: 2026-08-01
 | Local log artifacts | 0 |
 | Shutdown drill | PASS, 50 ms |
 
+Definitive graceful shutdown run:
+
+| Check | Result |
+|---|---|
+| Run 1 port mode | `PORT` |
+| Run 1 port | `58016` |
+| Run 2 port mode | `SERVER_PORT` |
+| Run 2 port | `64852` |
+| Second startup against same DB | PASS |
+| Graceful signal sent | `true` |
+| Graceful shutdown observed | `true` |
+| Force kill used | `false` |
+| Shutdown durations | `2712 ms`, `2711 ms` |
+| Java exit codes | `130`, `130` |
+| Residual processes | `0` |
+| Residual ports | `0` |
+
 JAR SHA-256 after reproducible clean builds:
 
 ```text
@@ -84,7 +101,7 @@ The direct Windows JAR smoke now passes with ephemeral PostgreSQL and Redis. It 
 | Suite | Result |
 |---|---|
 | Backend `mvn -q -DskipTests test-compile` | PASS |
-| Backend `mvn -q test` | 2568 tests, 0 failures, 0 errors, 4 skipped |
+| Backend `mvn -q test` | 2570 tests, 0 failures, 0 errors, 4 skipped |
 | Frontend encoding guard | PASS, 385 files scanned |
 | Frontend development build | PASS |
 | Frontend production build | PASS |

@@ -95,4 +95,6 @@ Before Docker is available, run:
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-jar-smoke.ps1
 ```
 
-This validates the packaged production JAR with temporary PostgreSQL/Redis, random `PORT`, `SERVER_ADDRESS=0.0.0.0`, liveness, readiness, Flyway, auth, minimal career creation and shutdown.
+This validates the packaged production JAR with temporary PostgreSQL/Redis, random `PORT`, `SERVER_ADDRESS=0.0.0.0`, liveness, readiness, Flyway, auth, minimal career creation, a second startup against the same temporary DB, and graceful shutdown through a Windows console control event. PASS requires `gracefulSignalSent=true`, `gracefulShutdownObserved=true` and `forceKillUsed=false`.
+
+This proves Spring/JAR graceful shutdown on Windows. It does not prove container PID 1 or `docker stop`; that remains a Docker-capable runner gate.

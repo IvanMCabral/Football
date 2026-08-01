@@ -16,7 +16,7 @@ These gates are intentionally outside PB1.2.1. They must be closed before public
 - Validate SSE through the selected edge/proxy.
 - Execute backup and restore drill for PostgreSQL.
 - Execute Redis loss/reconnect drill and define RPO/RTO.
-- Confirm graceful shutdown behavior on the selected runtime.
+- Confirm container PID 1 and `docker stop` graceful shutdown behavior on the selected runtime.
 
 ## P1 before broader beta
 
@@ -34,4 +34,4 @@ These gates are intentionally outside PB1.2.1. They must be closed before public
 - No domain exists yet.
 - No Docker smoke could run locally because Docker is absent.
 - No public deploy was performed.
-- Production JAR smoke is green locally with temporary PostgreSQL/Redis.
+- Production JAR smoke is green locally with temporary PostgreSQL/Redis, two startups and graceful Windows console shutdown. Docker/PID 1 shutdown remains unproven until Docker is available.

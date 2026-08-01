@@ -1,10 +1,11 @@
-# PB1.2.1 Runtime P0 Remediation
+﻿# PB1.2.1 Runtime P0 Remediation
 
 Date: 2026-08-01
 
 Historical audit preserved separately:
 
 - `docs/deployment/PB12_PRODUCTION_RUNTIME_ARTIFACTS_INDEPENDENT_AUDIT.md`
+- `docs/deployment/PB12_RUNTIME_P0_DEFINITIVE_INDEPENDENT_AUDIT.md`
 - Historical verdict: `PB1.2.1 PRODUCTION RUNTIME REJECTED`
 
 This document records the remediation after that rejected audit. It does not rewrite historical evidence.
@@ -80,16 +81,48 @@ The smoke:
 - registers a user;
 - logs in;
 - creates a minimal game/career;
-- verifies Flyway successful migration count;
+- fails if the minimal game/career is not created;
+- verifies Flyway successful migration count is exactly `1`;
+- shuts down the first backend with a Windows console control event;
+- starts the same JAR a second time against the same temporary DB;
+- verifies Flyway is not reapplied incorrectly;
+- verifies login and `/auth/me` still work after restart;
+- shuts down the second backend with the same graceful signal mechanism;
+- verifies no force kill was used in PASS;
+- verifies Java/helper processes and app ports have zero residuals before dependency cleanup;
 - checks no local log artifact was created or changed;
-- terminates the Java process;
+- stops the Java process by graceful console control event, not `Stop-Process`;
 - stops PostgreSQL and Redis.
 
 Observed PASS:
 
 ```json
-{"status":"PASS","jar":"football-manager-1.0.0.jar","jarBytes":42467597,"port":61012,"serverAddress":"0.0.0.0","liveness":200,"readiness":200,"registered":true,"login":true,"userId":"a4298c30-732d-4265-ab7e-d4c09fafea2f","careerCreated":true,"flywaySuccessfulMigrations":1,"localLogArtifacts":0,"shutdownMs":50,"postgresTemp":true,"redisTemp":true}
+{"status":"PASS","jar":"football-manager-1.0.0.jar","jarBytes":42467597,"port":58016,"run1PortMode":"PORT","run2Port":64852,"run2PortMode":"SERVER_PORT","javaPid":28192,"javaPidRun2":44996,"postgresPid":47832,"redisPid":50588,"startupDurationMs":6661,"startupDurationMsRun2":6543,"liveness":200,"readiness":200,"registered":true,"login":true,"me":true,"careerCreated":true,"flywaySuccessfulMigrations":1,"secondStartup":true,"gracefulSignalSent":true,"gracefulShutdownObserved":true,"forceKillUsed":false,"shutdownDurationMs":2712,"shutdownDurationMsRun2":2711,"javaExitCode":130,"javaExitCodeRun2":130,"shutdownMarkersObserved":4,"residualProcesses":0,"residualPorts":0,"localLogArtifacts":0}
 ```
+
+### 4. Definitive graceful shutdown evidence
+
+Closed.
+
+Created:
+
+- `tools/GracefulProcessGroupRunner.cs`
+
+The helper is tooling only. It is compiled into the temporary smoke workspace with PowerShell `Add-Type`, starts the JAR in a Windows process group with a dedicated console, attaches to that console and sends a console control event. This is the Windows equivalent of asking a foreground Java/Spring process to terminate gracefully. It is not `Stop-Process`, `taskkill /F` or `Process.destroyForcibly`.
+
+The runner distinguishes:
+
+- graceful signal sent;
+- graceful shutdown observed;
+- force kill fallback.
+
+For PASS:
+
+- `gracefulSignalSent=true`;
+- `gracefulShutdownObserved=true`;
+- `forceKillUsed=false`.
+
+The observed run met all three conditions in both startup/shutdown cycles.
 
 ## P1 directly related
 
