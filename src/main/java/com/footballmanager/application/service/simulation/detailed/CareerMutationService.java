@@ -80,7 +80,7 @@ public class CareerMutationService {
             try {
                 injuries = injuryMutationApplier.applyInjuries(career, result, policy);
             } catch (Exception e) {
-                failures.add("Injury mutation failed: " + e.getMessage());
+                failures.add("Injury mutation failed");
             }
         }
 
@@ -88,7 +88,7 @@ public class CareerMutationService {
             try {
                 fatigue = fatigueMutationApplier.applyFatigue(career, result, policy);
             } catch (Exception e) {
-                failures.add("Fatigue mutation failed: " + e.getMessage());
+                failures.add("Fatigue mutation failed");
             }
         }
 
@@ -96,7 +96,7 @@ public class CareerMutationService {
             try {
                 discipline = disciplineMutationApplier.applyDiscipline(career, result, policy);
             } catch (Exception e) {
-                failures.add("Discipline mutation failed: " + e.getMessage());
+                failures.add("Discipline mutation failed");
             }
         }
 
@@ -104,7 +104,7 @@ public class CareerMutationService {
             try {
                 form = formMutationApplier.applyForm(career, result, policy);
             } catch (Exception e) {
-                failures.add("Form mutation failed: " + e.getMessage());
+                failures.add("Form mutation failed");
             }
         }
 

@@ -10,12 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 
 import reactor.core.publisher.Mono;
+
+import java.nio.charset.StandardCharsets;
 
 @Component
 @Order(-100)
@@ -60,7 +63,18 @@ public class RateLimitingWebFilter implements WebFilter {
 
         if (counter.count.get() > maxRequests) {
             exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            return exchange.getResponse().setComplete();
+            exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+            String requestId = exchange.getResponse().getHeaders()
+                .getFirst(RequestCorrelationWebFilter.REQUEST_ID_HEADER);
+            if (requestId == null || requestId.isBlank()) {
+                requestId = "unavailable";
+            }
+            String json = """
+                {"code":"RATE_LIMITED","message":"Demasiadas solicitudes. Intentá nuevamente más tarde.","status":429,"requestId":"%s"}"""
+                .formatted(requestId);
+            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse()
+                .bufferFactory()
+                .wrap(json.getBytes(StandardCharsets.UTF_8))));
         }
         return chain.filter(exchange);
     }

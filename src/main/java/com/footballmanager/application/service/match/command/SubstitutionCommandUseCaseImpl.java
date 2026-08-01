@@ -222,7 +222,10 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             // FLAG 1 UX fix: validation failures are NOT thrown to the controller;
             // they're returned as a failure result so the frontend gets a uniform
             // snackbar shape regardless of which validator rejected the request.
-            return new SubstitutionExecution(SubstitutionResult.failure(e.getMessage()), null);
+            log.warn("Substitution validation rejected for matchId={}: {}", matchId, e.getMessage());
+            return new SubstitutionExecution(
+                SubstitutionResult.failure("No se pudo aplicar la sustitución solicitada."),
+                null);
         }
     }
 

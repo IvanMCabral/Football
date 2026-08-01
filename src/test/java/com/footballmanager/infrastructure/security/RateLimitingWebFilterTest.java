@@ -16,6 +16,7 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+
 class RateLimitingWebFilterTest {
 
     @Test
@@ -46,6 +47,10 @@ class RateLimitingWebFilterTest {
         })).verifyComplete();
 
         assertThat(third.getResponse().getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+        String body = third.getResponse().getBodyAsString().block();
+        assertThat(body).contains("\"code\":\"RATE_LIMITED\"");
+        assertThat(body).contains("\"status\":429");
+        assertThat(body).contains("\"requestId\"");
         assertThat(passed).hasValue(2);
     }
 

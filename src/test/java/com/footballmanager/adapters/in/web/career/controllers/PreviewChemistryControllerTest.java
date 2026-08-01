@@ -1,6 +1,7 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
+import com.footballmanager.adapters.in.web.common.PublicErrorMessageResolver;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.editor.FormationService;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -85,7 +87,8 @@ class PreviewChemistryControllerTest {
         // /preview-chemistry tests don't hit that path; pass a real
         // instance so the constructor accepts the new arg.
         controller = new LineupController(lineupCommandUseCase, lineupQueryUseCase,
-                careerSessionService, new FormationService(), controllerHelper);
+                careerSessionService, new FormationService(), controllerHelper,
+                new PublicErrorMessageResolver(new MockEnvironment()));
 
         // Authentication with a UUID-shaped principal
         auth = new UsernamePasswordAuthenticationToken(

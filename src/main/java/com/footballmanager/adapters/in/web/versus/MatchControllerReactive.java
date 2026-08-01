@@ -149,7 +149,7 @@ public class MatchControllerReactive {
         } catch (IllegalArgumentException ex) {
             // Malformed UUID string (non-null, non-blank, but invalid format).
             return Mono.just(ResponseEntity.badRequest().body(
-                java.util.Map.of("error", "teamIds must be valid UUIDs: " + ex.getMessage())));
+                java.util.Map.of("error", "teamIds must be valid UUIDs")));
         }
 
         MatchId matchId = MatchId.generate();

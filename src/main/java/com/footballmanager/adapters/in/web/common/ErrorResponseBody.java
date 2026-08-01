@@ -16,7 +16,11 @@ package com.footballmanager.adapters.in.web.common;
  * <p>Do NOT change the field names or order without coordinating with
  * the frontend — clients parse this body for code/message.
  */
-public record ErrorResponseBody(String code, String message, int status) {
+public record ErrorResponseBody(String code, String message, int status, String requestId) {
+
+    public ErrorResponseBody(String code, String message, int status) {
+        this(code, message, status, null);
+    }
 
     /**
      * Factory for HTTP 401 Unauthorized responses.
@@ -24,5 +28,9 @@ public record ErrorResponseBody(String code, String message, int status) {
      */
     public static ErrorResponseBody unauthorized(String message) {
         return new ErrorResponseBody("UNAUTHORIZED", message, 401);
+    }
+
+    public static ErrorResponseBody unauthorized(String message, String requestId) {
+        return new ErrorResponseBody("UNAUTHORIZED", message, 401, requestId);
     }
 }

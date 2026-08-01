@@ -9,7 +9,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests mutation orchestration in isolation — no Spring, no Redis, no IO.
+ * Tests mutation orchestration in isolation â€” no Spring, no Redis, no IO.
  */
 class CareerMutationServiceTest {
 
@@ -224,7 +224,7 @@ class CareerMutationServiceTest {
         CareerMutationResult r = bogusService.applyMutations(career, res, pol);
 
         assertFalse(r.failures().isEmpty());
-        assertTrue(r.failures().get(0).contains("Simulated failure"));
+        assertEquals("Injury mutation failed", r.failures().get(0));
         assertFalse(r.partialFailure());
     }
 
@@ -354,7 +354,7 @@ class CareerMutationServiceTest {
         CareerSave career = careerWithPlayer("p1");
         career.getSessionPlayer("p1").setEnergy(100);
         // p1 has only a goal (fatigue participation)
-        // p2 has only an injury (injury participation) — different player
+        // p2 has only an injury (injury participation) â€” different player
         DetailedMatchEvent p1Goal = new DetailedMatchEvent(60, DetailedMatchEventType.GOAL, "team-A", "p1", "Goal", null, null, 0.35, "Goal");
         DetailedMatchEvent p2Injury = new DetailedMatchEvent(45, DetailedMatchEventType.INJURY, "team-A", "p2", "Injured", null, null, 0.0, "Injury");
         SessionPlayer p2 = SessionPlayer.fromWorldPlayer("p2", "Player2", "MID", 25, 70);
@@ -446,7 +446,7 @@ class CareerMutationServiceTest {
         CareerMutationResult r = failingService.applyMutations(career, res, pol);
 
         assertEquals(1, r.failures().size());
-        assertTrue(r.failures().get(0).contains("Fatigue applier failed"));
+        assertEquals("Fatigue mutation failed", r.failures().get(0));
         assertEquals(0, r.fatigueApplied()); // fatigue applier threw, no count recorded
         assertFalse(r.partialFailure()); // no mutation succeeded
     }
@@ -471,7 +471,7 @@ class CareerMutationServiceTest {
         CareerMutationResult r = failingInjuryService.applyMutations(career, res, pol);
 
         assertEquals(1, r.failures().size());
-        assertTrue(r.failures().get(0).contains("Injury applier failed"));
+        assertEquals("Injury mutation failed", r.failures().get(0));
         assertTrue(r.partialFailure());
         assertEquals(1, r.fatigueApplied());
         assertEquals(88, career.getSessionPlayer("p1").getEnergy());
@@ -497,7 +497,7 @@ class CareerMutationServiceTest {
         CareerMutationResult r = failingFatigueService.applyMutations(career, res, pol);
 
         assertEquals(1, r.failures().size());
-        assertTrue(r.failures().get(0).contains("Fatigue applier failed"));
+        assertEquals("Fatigue mutation failed", r.failures().get(0));
         assertTrue(r.partialFailure());
         assertEquals(1, r.injuriesApplied());
         assertTrue(career.getSessionPlayer("p1").getInjured());
@@ -841,7 +841,7 @@ class CareerMutationServiceTest {
 
         assertEquals(0, r.disciplineApplied());
         assertFalse(r.failures().isEmpty());
-        assertTrue(r.failures().get(0).contains("boom discipline"));
+        assertEquals("Discipline mutation failed", r.failures().get(0));
     }
 
     @Test
@@ -885,7 +885,7 @@ class CareerMutationServiceTest {
     }
 
     /**
-     * 2a. disabledPolicy_noDisciplineMutationAndNoThresholdEffect — master false
+     * 2a. disabledPolicy_noDisciplineMutationAndNoThresholdEffect â€” master false
      */
     @Test
     void disabledPolicy_noDisciplineMutationAndNoThresholdEffect_masterFalse() {
@@ -906,7 +906,7 @@ class CareerMutationServiceTest {
     }
 
     /**
-     * 2b. disabledPolicy_noDisciplineMutationAndNoThresholdEffect — discipline flag false
+     * 2b. disabledPolicy_noDisciplineMutationAndNoThresholdEffect â€” discipline flag false
      */
     @Test
     void disabledPolicy_noDisciplineMutationAndNoThresholdEffect_disciplineFlagFalse() {
@@ -929,8 +929,8 @@ class CareerMutationServiceTest {
     /**
      * 3. thresholdAndRedCard_bothTrackedCorrectly
      *
-     * Player A: yellowCards=4 + YELLOW_CARD → threshold suspension
-     * Player B: RED_CARD → red suspension
+     * Player A: yellowCards=4 + YELLOW_CARD â†’ threshold suspension
+     * Player B: RED_CARD â†’ red suspension
      * Both contribute to disciplineApplied: 1 yellow + 1 threshold + 1 red = 3
      */
     @Test
@@ -943,7 +943,7 @@ class CareerMutationServiceTest {
         career.addSessionPlayer(playerB);
 
         DetailedMatchResult res = result(
-                yellowCardEvent("player-a", 25), // triggers threshold: 5 → suspended, yellowCards=0
+                yellowCardEvent("player-a", 25), // triggers threshold: 5 â†’ suspended, yellowCards=0
                 redCardEvent("player-b", 70)     // red suspension: suspended, redCards=1
         );
         CareerMutationPolicy pol = policy(true, false, false, true, false);
@@ -1043,7 +1043,7 @@ class CareerMutationServiceTest {
 
         assertEquals(0, r.disciplineApplied());
         assertFalse(r.failures().isEmpty());
-        assertTrue(r.failures().get(0).contains("boom discipline"));
+        assertEquals("Discipline mutation failed", r.failures().get(0));
         assertFalse(r.partialFailure()); // no mutation succeeded
     }
 
@@ -1103,14 +1103,14 @@ class CareerMutationServiceTest {
 
     /**
      *
-     * FormMutationApplier is final — cannot be stubbed via anonymous subclass.
+     * FormMutationApplier is final â€” cannot be stubbed via anonymous subclass.
      * Real applier always succeeds with valid inputs (no failure path to trigger).
      * This test verifies form success alongside other mutations using real applier.
      */
     @Test
     void formMutationSucceedsAlongsideOtherMutations() {
         // 2 players: p1 gets goal (form +1), p2 gets yellow (discipline +1)
-        // Form applier sees both in starting XI — p1 gets rating 6.8 (+1), p2 gets 5.7 (0)
+        // Form applier sees both in starting XI â€” p1 gets rating 6.8 (+1), p2 gets 5.7 (0)
         CareerSave career = new CareerSave();
         SessionPlayer p1 = SessionPlayer.fromWorldPlayer("p1-goal", "Goal Guy", "MID", 25, 70);
         SessionPlayer p2 = SessionPlayer.fromWorldPlayer("p2-yellow", "Card Guy", "MID", 25, 70);
@@ -1135,7 +1135,7 @@ class CareerMutationServiceTest {
         assertEquals(2, r.formApplied());
         assertTrue(r.failures().isEmpty());
         assertFalse(r.partialFailure());
-        // p1-goal: 6.8 → +1 = form 51; p2-yellow: 5.7 → 0 = form unchanged at null→50
+        // p1-goal: 6.8 â†’ +1 = form 51; p2-yellow: 5.7 â†’ 0 = form unchanged at nullâ†’50
         assertEquals(51, career.getSessionPlayer("p1-goal").getForm());
         assertEquals(50, career.getSessionPlayer("p2-yellow").getForm());
         assertEquals(1, career.getSessionPlayer("p2-yellow").getYellowCards());

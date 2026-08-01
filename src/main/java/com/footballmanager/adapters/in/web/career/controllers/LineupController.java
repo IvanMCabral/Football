@@ -2,6 +2,7 @@ package com.footballmanager.adapters.in.web.career.controllers;
 
 import com.footballmanager.adapters.in.web.career.lineup.dto.*;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
+import com.footballmanager.adapters.in.web.common.PublicErrorMessageResolver;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.editor.FormationService;
@@ -52,6 +53,7 @@ public class LineupController {
     // ratings endpoint applies the new distance-aware effectiveness.
     private final FormationService formationService;
     private final ControllerHelper controllerHelper;
+    private final PublicErrorMessageResolver errorMessageResolver;
 
     /**
      * Auto-seleccionar Starting XI basado en OVR
@@ -61,6 +63,9 @@ public class LineupController {
     @PostMapping("/auto-select")
     public Mono<LineupDTO> autoSelectLineup(@RequestBody AutoSelectRequest request,
                                             Authentication authentication) {
+        if (request == null || request.formation() == null || request.formation().isBlank()) {
+            return Mono.error(new IllegalArgumentException("formation must not be blank"));
+        }
         UUID userId = controllerHelper.getUserId(authentication);
         return careerSessionService.getCareerFromCache(userId)
             .flatMap(career -> {
@@ -89,6 +94,12 @@ public class LineupController {
     @PostMapping("/manual-select")
     public Mono<LineupDTO> manualSelectLineup(@RequestBody ManualSelectRequest request,
                                               Authentication authentication) {
+        if (request == null || request.formation() == null || request.formation().isBlank()) {
+            return Mono.error(new IllegalArgumentException("formation must not be blank"));
+        }
+        if (request.playerIds() == null || request.playerIds().size() != 11) {
+            return Mono.error(new IllegalArgumentException("playerIds must contain exactly 11 players"));
+        }
         UUID userId = controllerHelper.getUserId(authentication);
         return careerSessionService.getCareerFromCache(userId)
             .flatMap(career -> {
@@ -226,9 +237,12 @@ public class LineupController {
                         breakdown)));
             })
             .onErrorResume(IllegalArgumentException.class, ex ->
-                Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))))
+                Mono.just(ResponseEntity.badRequest().body(Map.of("error",
+                    errorMessageResolver.clientMessage(ex, "La solicitud de alineación no es válida.")))))
             .onErrorResume(NotEnoughPlayersException.class, ex ->
-                Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))));
+                Mono.just(ResponseEntity.badRequest().body(Map.of("error",
+                    errorMessageResolver.clientMessage(ex,
+                        "No hay suficientes jugadores disponibles para formar la alineación.")))));
     }
 
     /**
@@ -332,9 +346,13 @@ public class LineupController {
                             fe.teamAverage())));
                 })
                 .onErrorResume(IllegalArgumentException.class, ex ->
-                        Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))))
+                        Mono.just(ResponseEntity.badRequest().body(Map.of("error",
+                            errorMessageResolver.clientMessage(ex,
+                                "La solicitud de preview de alineación no es válida.")))))
                 .onErrorResume(NotEnoughPlayersException.class, ex ->
-                        Mono.just(ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()))));
+                        Mono.just(ResponseEntity.badRequest().body(Map.of("error",
+                            errorMessageResolver.clientMessage(ex,
+                                "No hay suficientes jugadores disponibles para formar la alineación.")))));
     }
 
     private List<LineupSlot> toDomainSlots(List<LineupSlotDTO> slots) {

@@ -72,7 +72,7 @@ public class TestHarnessController {
             UUID.fromString(request.teamId());
         } catch (IllegalArgumentException ex) {
             return Mono.just(ResponseEntity.badRequest().body(
-                Map.of("error", "leagueId/teamId must be valid UUIDs: " + ex.getMessage())));
+                Map.of("error", "leagueId/teamId must be valid UUIDs")));
         }
 
         int teamsPerDivision = request.teamsPerDivision() != null

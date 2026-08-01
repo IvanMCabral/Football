@@ -6,6 +6,7 @@ import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.career.AdvanceRoundUseCase;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -18,6 +19,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdvanceRoundUseCaseImpl implements AdvanceRoundUseCase {
 
     private final CareerRepository careerRepository;
@@ -75,7 +77,8 @@ public class AdvanceRoundUseCaseImpl implements AdvanceRoundUseCase {
                 return careerRepository.save(career).thenReturn(result);
             })
             .onErrorResume(e -> {
-                return Mono.just(AdvanceResult.error("ERROR_INTERNO", "Error al procesar avance: " + e.getMessage()));
+                log.error("[AdvanceRound] Failed to advance careerId={} for userId={}", careerId, userId, e);
+                return Mono.just(AdvanceResult.error("ERROR_INTERNO", "No se pudo procesar el avance de ronda."));
             });
     }
 }

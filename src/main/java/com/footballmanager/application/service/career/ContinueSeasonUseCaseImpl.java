@@ -102,8 +102,8 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
                 return careerRepository.save(career).thenReturn(result);
             })
             .onErrorResume(e -> {
-                log.error("[ContinueSeason] Error continuing season for userId={}: {}", userId, e.getMessage(), e);
-                return Mono.just(ContinueResult.error("ERROR_INTERNO", "Error: " + e.getMessage()));
+                log.error("[ContinueSeason] Error continuing season for userId={}", userId, e);
+                return Mono.just(ContinueResult.error("ERROR_INTERNO", "No se pudo continuar la temporada."));
             });
     }
 }

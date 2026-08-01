@@ -65,8 +65,11 @@ public class SecurityConfig {
                     exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
                     exchange.getResponse().getHeaders().setContentType(
                         org.springframework.http.MediaType.APPLICATION_JSON);
+                    String requestId = exchange.getResponse().getHeaders()
+                        .getFirst(RequestCorrelationWebFilter.REQUEST_ID_HEADER);
                     ErrorResponseBody body = ErrorResponseBody.unauthorized(
-                        "Unauthorized: no user id in authentication");
+                        "No autenticado.",
+                        requestId == null || requestId.isBlank() ? "unavailable" : requestId);
                     String json;
                     try {
                         json = objectMapper.writeValueAsString(body);
@@ -90,7 +93,7 @@ public class SecurityConfig {
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .pathMatchers("/api/v1/auth/**").permitAll()
-                .pathMatchers("/api/v1/health").permitAll()
+                .pathMatchers("/api/v1/health", "/api/v1/health/**").permitAll()
                 .pathMatchers("/actuator/health").permitAll()
                 .pathMatchers("/api/v1/players", "/api/v1/players/**").authenticated()
                 .pathMatchers("/api/v1/matches", "/api/v1/matches/**").authenticated()
