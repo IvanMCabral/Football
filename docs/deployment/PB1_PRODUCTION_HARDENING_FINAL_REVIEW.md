@@ -39,3 +39,21 @@ The PB1.1 application hardening gates required before exposing the MVP to a cont
 ## Final assessment
 
 PB1.1 no longer has open P0 application-security findings from the independent audit. The project is ready for PB1.2 infrastructure implementation, where provider-level deployment, restore drills, edge headers, and CI/CD should be completed before opening the beta broadly.
+
+---
+
+## 2026-08-01 definitive test runtime closure
+
+The blocker closure rejection has been remediated in a later change set. See:
+
+- `docs/deployment/PB1_TEST_RUNTIME_REPRODUCIBILITY_REMEDIATION.md`
+- `docs/deployment/PB1_TEST_RUNTIME_REPRODUCIBILITY_FINAL_REVIEW.md`
+
+Current reproducibility evidence:
+
+- Backend compile: PASS.
+- Backend full suite run 1: 2564 tests, 0 failures, 0 errors, 4 skipped.
+- Backend full suite run 2: 2564 tests, 0 failures, 0 errors, 4 skipped.
+- Frontend: encoding guard PASS, development build PASS, production build PASS, 1029 SUCCESS, 0 failures, 2 skipped.
+- Test infrastructure: no `.env`, no manually started PostgreSQL, no manually started Redis; local PostgreSQL and Redis binaries are launched as ephemeral test processes.
+- Redis durability remains a PB1.2 infrastructure gate, not a closed PB1.1 durability claim.
