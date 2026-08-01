@@ -67,6 +67,42 @@ class ProductionRuntimeArtifactGuardTest {
         assertThat(dockerignore).contains(".env");
     }
 
+    @Test
+    void productionJarSmokeRequiresGracefulShutdownAndMandatoryCareer() throws IOException {
+        String script = read("tools/run-production-jar-smoke.ps1");
+        String helper = read("tools/GracefulProcessGroupRunner.cs");
+
+        assertThat(helper).contains("CREATE_NEW_PROCESS_GROUP");
+        assertThat(helper).contains("CREATE_NEW_CONSOLE");
+        assertThat(helper).contains("AttachConsole(processInfo.dwProcessId)");
+        assertThat(helper).contains("GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)");
+        assertThat(helper).contains("forceKillUsed");
+        assertThat(script).contains("if (-not $careerResponse)");
+        assertThat(script).contains("Minimal career creation returned an empty response.");
+        assertThat(script).contains("Expected exactly 1 successful Flyway migration after run 2");
+        assertThat(script).contains("Stop-AppRunGracefully $run1");
+        assertThat(script).contains("Stop-AppRunGracefully $run2");
+        assertThat(script).contains("forceKillUsed");
+        assertThat(script).contains("residualProcesses");
+        assertThat(script).contains("residualPorts");
+        assertThat(script).contains("Remove-Item -LiteralPath $work -Recurse -Force");
+        assertThat(script).doesNotContain("Stop-Process -Id $appProcess.Id");
+        assertThat(script).doesNotContain("careerCreated = $false");
+    }
+
+    @Test
+    void productionJarSmokeCoversPortAndServerPortModes() throws IOException {
+        String script = read("tools/run-production-jar-smoke.ps1");
+        String application = read("src/main/resources/application.yaml");
+
+        assertThat(application).contains("port: ${PORT:${SERVER_PORT:8080}}");
+        assertThat(script).contains("Start-AppRun 1 'PORT'");
+        assertThat(script).contains("Start-AppRun 2 'SERVER_PORT'");
+        assertThat(script).contains("$env:SERVER_ADDRESS = '0.0.0.0'");
+        assertThat(script).contains("Remove-Item Env:SERVER_PORT");
+        assertThat(script).contains("Remove-Item Env:PORT");
+    }
+
     private static String read(String relativePath) throws IOException {
         return Files.readString(ROOT.resolve(relativePath), StandardCharsets.UTF_8);
     }
