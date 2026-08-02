@@ -101,7 +101,8 @@ image_size_bytes="$(docker image inspect -f '{{.Size}}' "$IMAGE")"; image_layers
 image_architecture="$(docker image inspect -f '{{.Architecture}}' "$IMAGE")"; runtime_user="$(docker image inspect -f '{{.Config.User}}' "$IMAGE")"
 docker image inspect "$IMAGE" > "$IMAGE_INSPECT"; docker history --no-trunc "$IMAGE" > "$IMAGE_HISTORY"
 if [[ -z "$runtime_user" || "$runtime_user" == root || "$runtime_user" == 0 ]]; then fail "image runtime user is root or unspecified"; exit 1; fi
-if ! docker image inspect -f '{{json .Config.Healthcheck}}' "$IMAGE" | grep -q curl; then fail "image healthcheck is missing curl"; exit 1; fi
+healthcheck_config="$(docker image inspect -f '{{json .Config.Healthcheck}}' "$IMAGE")"
+if [[ "$healthcheck_config" != *curl* ]]; then fail "image healthcheck is missing curl"; exit 1; fi
 if ! docker run --rm --entrypoint sh "$IMAGE" -c 'id; pwd; test -f /app/app.jar; find /app -maxdepth 2 -type f -print' > "$IMAGE_FILES" 2>&1; then fail "image filesystem inspection failed"; exit 1; fi
 runtime_uid="$(docker run --rm --entrypoint sh "$IMAGE" -c 'id -u')"
 if [[ "$runtime_uid" == 0 ]] || grep -Eiq '(^|/)(\.env|.*\.log)$|D:/|C:/|/app/.*(password|secret|token)' "$IMAGE_FILES"; then fail "image static inspection found root or forbidden files"; exit 1; fi
@@ -154,7 +155,7 @@ done
 if [[ "$healthcheck_healthy" != true ]]; then fail "backend Docker HEALTHCHECK did not become healthy"; exit 1; fi
 
 AUTH_TMP="$(mktemp -d)"; AUTH_EMAIL="pb12-$RUN_ID@example.invalid"; AUTH_USERNAME="pb12_$RUN_ID"
-AUTH_PASSWORD="$(openssl rand -base64 36 | tr -dc 'A-Za-z0-9' | head -c 32)"
+AUTH_PASSWORD="$(openssl rand -hex 24)"
 register_code="$(curl --silent --show-error --connect-timeout 3 --max-time 20 -o "$AUTH_TMP/register.json" -w '%{http_code}' -X POST "http://127.0.0.1:$HOST_PORT/api/v1/auth/register" -H 'Content-Type: application/json' -d "{\"email\":\"$AUTH_EMAIL\",\"username\":\"$AUTH_USERNAME\",\"password\":\"$AUTH_PASSWORD\"}")"
 if [[ "$register_code" != 200 ]]; then fail "register returned $register_code"; exit 1; fi
 registered=true
@@ -199,7 +200,7 @@ postgres_down_readiness="$(http_code "http://127.0.0.1:$RESTART_PORT/api/v1/heal
 if [[ "$postgres_down_liveness" != 200 || "$postgres_down_readiness" != 503 ]]; then fail "PostgreSQL-down readiness matrix failed"; exit 1; fi
 
 docker diff "$RESTART_BACKEND" > "$RUN_DIR/runtime.diff" 2>&1 || true
-unexpected_filesystem_writes="$(grep -Ev '^$|^C /tmp|^A /tmp|^D /tmp' "$RUN_DIR/runtime.diff" | wc -l | tr -d ' ')"
+unexpected_filesystem_writes="$( { grep -Ev '^$|^C /tmp|^A /tmp|^D /tmp' "$RUN_DIR/runtime.diff" || true; } | wc -l | tr -d ' ')"
 if [[ "$unexpected_filesystem_writes" != 0 ]]; then fail "unexpected runtime filesystem writes detected"; exit 1; fi
 if grep -RInE 'D:/|C:/|Authorization: Bearer|JWT_SECRET=|REDIS_PASSWORD=|DB_PASSWORD=' "$RUN_DIR" --exclude='pb12-docker-smoke-result.json' --exclude='cleanup-report.json' >/dev/null 2>&1; then secret_leaks_detected=1; fail "secret or local-path pattern found in smoke evidence"; exit 1; fi
 write_result
