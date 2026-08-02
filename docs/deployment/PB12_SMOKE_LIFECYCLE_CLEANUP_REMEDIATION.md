@@ -7,7 +7,12 @@ Historical audit preserved:
 - `docs/deployment/PB12_GRACEFUL_SHUTDOWN_DEFINITIVE_INDEPENDENT_AUDIT.md`
 - Historical verdict: `PB1.2.1 PRODUCTION RUNTIME REJECTED`
 
-This remediation closes the remaining runner evidence gaps without changing gameplay, simulation, datasets, cloud resources, CI/CD or Docker.
+This remediation is superseded by the actual implementation closure in:
+
+- `docs/deployment/PB12_SMOKE_LIFECYCLE_ACTUAL_IMPLEMENTATION_REMEDIATION.md`
+- `docs/deployment/PB12_SMOKE_LIFECYCLE_ACTUAL_IMPLEMENTATION_REPORT.md`
+
+It remains as historical context for the first cleanup pass. The actual implementation closure replaced the synthetic self-test with executable `-LifecycleTestMode` flows.
 
 ## P0 closure
 
@@ -65,7 +70,7 @@ PASS requires both markers and valid order for both runs.
 
 ## Negative lifecycle tests
 
-The runner provides `-LifecycleSelfTest` and controlled `-TestMode` failures. Verified negative modes:
+The current runner provides controlled `-LifecycleTestMode` failures from the official `tools/run-production-jar-smoke.ps1` file. `-LifecycleSelfTest` now fails intentionally because synthetic lifecycle evidence is forbidden. Verified negative modes:
 
 - `postgres-stop-fails`;
 - `redis-stop-fails`;
