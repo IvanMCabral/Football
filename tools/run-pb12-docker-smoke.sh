@@ -50,7 +50,7 @@ record_unexpected_error() {
 
 write_result() {
   jq -n --arg status "$status" --arg failureReason "$failure_reason" --arg imageId "$image_id" --arg imageDigest "$image_digest" \
-    --arg runtimeUser "$runtime_user" --arg architecture "$image_architecture" --arg baseImage "eclipse-temurin:21.0.11_10-jre-ubi9-minimal" \
+    --arg runtimeUser "$runtime_user" --arg architecture "$image_architecture" --arg baseImage "eclipse-temurin:21.0.11_10-jre-alpine-3.23" \
     --argjson dockerAvailable "$docker_available" --argjson imageBuilt "$image_built" --argjson imageSizeBytes "$image_size_bytes" \
     --argjson imageLayers "$image_layers" --argjson runtimeUid "$runtime_uid" --argjson javaPid1 "$java_pid1" \
     --argjson healthcheckHealthy "$healthcheck_healthy" --argjson liveness "$liveness" --argjson readiness "$readiness" \

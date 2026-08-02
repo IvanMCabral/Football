@@ -6,7 +6,7 @@ COPY pom.xml ./
 COPY src ./src
 RUN mvn -q -DskipTests package
 
-FROM eclipse-temurin:21.0.11_10-jre-ubi9-minimal
+FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23
 
 ENV TZ=UTC \
     LANG=C.UTF-8 \
@@ -16,9 +16,7 @@ ENV TZ=UTC \
     PORT=8080 \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=20 -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.security.egd=file:/dev/./urandom"
 
-RUN microdnf update -y \
-    && microdnf install -y curl ca-certificates tzdata shadow-utils findutils \
-    && microdnf clean all \
+RUN apk add --no-cache curl ca-certificates tzdata shadow findutils \
     && groupadd --system manager \
     && useradd --system --gid manager --home-dir /app --create-home manager
 WORKDIR /app
