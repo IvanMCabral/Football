@@ -54,7 +54,7 @@ The independent Docker audit recorded three fixable HIGH advisories on the PB1.2
 - Focused production runtime guard: PASS.
 - Dependency trees after the change report Spring Data Commons `3.5.13`, Spring Expression `6.2.19` and Spring WebFlux `6.2.19`.
 - Full backend and frontend suites are rerun on the final HEAD before the PB1.2.2 P1 verdict.
-- The final Docker smoke must report `CRITICAL=0` and `HIGH=0`; a remaining HIGH keeps the remediation open.
+- Final Docker smoke run #24 reported `CRITICAL=0` and `HIGH=0`; all three advisories are absent.
 
 ## Ownership and deadline
 

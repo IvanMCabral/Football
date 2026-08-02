@@ -33,7 +33,9 @@ This report closes the P1 backlog from `PB12_DOCKER_RUNTIME_FINAL_INDEPENDENT_AU
 
 ## Remote closure gate
 
-The final remote workflow must run on the HEAD containing these changes. Closure requires image build, lifecycle, auth/career, Flyway, graceful stop, cleanup, final artifact scan, manifest verification and `CRITICAL=0` / `HIGH=0`. The historical run #22 is not reused as final evidence because it predates this remediation.
+Run [#24](https://github.com/IvanMCabral/Football/actions/runs/30769400337) executed on the exact HEAD `87e28c8f` and passed image build, lifecycle, auth/career, Flyway, graceful stop, cleanup, final artifact scan and `CRITICAL=0` / `HIGH=0`. Its artifact digest is `sha256:70d557c0309a5f0bc64daa8c71ba160f843cceb21d99e7cc7dfd76afd0947bd0`.
+
+The artifact ZIP could not be downloaded locally because the unauthenticated GitHub API returned HTTP 401. Therefore the manifest's individual hashes are not claimed as locally verified; authentication is the only remaining evidence limitation.
 
 ## Cloud boundary
 

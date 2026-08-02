@@ -4,7 +4,7 @@ Date: 2026-08-02
 
 ## Result
 
-The remote Docker smoke is green on GitHub Actions run [#22](https://github.com/IvanMCabral/Football/actions/runs/30755616038), commit `3ee8d2a4`, branch `feat/v25d99.20.3.1-runtime-fixes`. The run completed successfully in 2m19s and uploaded the sanitized artifact `pb12-docker-smoke-30755616038` (88.2 KB; artifact digest `sha256:23cfd415d8a0521d5cbf04b64b48ec02ead4e40050610e404dab789ef3b52997`).
+The final remote Docker smoke is green on GitHub Actions run [#24](https://github.com/IvanMCabral/Football/actions/runs/30769400337), commit `87e28c8f`, branch `feat/v25d99.20.3.1-runtime-fixes`. The run completed successfully in 2m05s and uploaded the sanitized artifact `pb12-docker-smoke-30769400337` (88.9 KB; artifact digest `sha256:70d557c0309a5f0bc64daa8c71ba160f843cceb21d99e7cc7dfd76afd0947bd0`).
 
 ## Runner
 
@@ -17,8 +17,8 @@ The workflow published the following result summary as a GitHub Actions notice:
 | Gate | Observed value | Result |
 |---|---:|---|
 | Status | `PASS` | PASS |
-| Image ID | `sha256:f5e3853cfecd62f78967578efd1dbe88aacb1401cf453a789d5a406c9849b372` | PASS |
-| Image size | 258,908,085 bytes | INFO |
+| Image ID | `sha256:69c0787e75da31ebb907d42b0cac75e1c9b4244924607f02bf513e618337b203` | PASS |
+| Image size | 258,928,412 bytes | INFO |
 | Runtime user / UID | `manager` / `122` | PASS |
 | Java PID 1 | `true` | PASS |
 | Docker healthcheck | `true` | PASS |
@@ -29,17 +29,19 @@ The workflow published the following result summary as a GitHub Actions notice:
 | Second startup | `true` | PASS |
 | `docker stop` / `docker kill` | `true` / `false` | PASS |
 | Graceful shutdown / marker ordering | `true` / `true` | PASS |
-| Shutdown duration / exit code | 2,505 ms / `143` | PASS |
+| Shutdown duration / exit code | 2,507 ms / `143` | PASS |
 | Redis-down readiness | `503` | PASS |
 | PostgreSQL-down readiness | `503` | PASS |
 | Residual containers / networks | `0` / `0` | PASS |
+| Auth temp exists / cleanup verified | `false` / `true` | PASS |
+| Final artifact secret scan / leaks | `true` / `0` | PASS |
 | Cleanup verified | `true` | PASS |
 
 ## Image security evidence
 
 - SBOM: generated with Anchore SBOM Action and retained in the run artifact.
-- Trivy scan: `critical=0`, `high=3`, `ignore-unfixed=true`.
-- The three remaining high findings are reported by the workflow as current Spring Data/Spring Expression/Spring WebFlux advisories. They do not fail the PB1.2.2 gate, which fails only on fixable critical vulnerabilities, and remain visible for dependency maintenance.
+- Trivy scan: `critical=0`, `high=0`, `ignore-unfixed=true`.
+- The three Spring advisories from run #22 are absent after the Spring Boot 3.5.16 patch update.
 - No credentials are emitted by the runner, result JSON, annotations or artifact names.
 
 ## Local validation
@@ -47,6 +49,8 @@ The workflow published the following result summary as a GitHub Actions notice:
 - `mvn -q -DskipTests test-compile`: PASS.
 - `mvn -q test`: PASS, 2,572 tests, 0 failures, 0 errors, 4 skipped. The additional test is the fail-closed Docker artifact-hygiene guard.
 - Docker CLI/daemon: unavailable locally; no local Docker claim is made.
+
+The artifact is published and its remote digest is recorded above. Direct ZIP download from this workstation returned HTTP 401 because GitHub authentication is unavailable; no local manifest/hash claim is made.
 
 ## Conclusion
 
