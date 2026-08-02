@@ -323,6 +323,13 @@ internal static class GracefulProcessGroupRunner
         }
         catch (Exception ex)
         {
+            // A failed recovery must not claim that a signal path was completed.
+            // This keeps the evidence truthful when the process handle becomes
+            // invalid after the helper has exited.
+            if (signalUsed == "NONE")
+            {
+                signalAttempted = "NONE";
+            }
             File.WriteAllText(
                 resultFile,
                 "{" +

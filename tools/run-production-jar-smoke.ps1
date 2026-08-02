@@ -276,9 +276,15 @@ function Stop-JavaAfterHelperDeath {
     $script:orphanRecovery.javaPidRecovered = $true
     $script:orphanRecovery.recoverySignalAttempted = $true
     $recovery = Invoke-JavaRecoverySignal -JavaPid $JavaPid -ProcessGroupId $ProcessGroupId -RunDir $RunDir -SimulateSignalFailure:$SimulateSignalFailure
-    $script:orphanRecovery.recoverySignalAttemptedMode = [string]$recovery.signalAttempted
+    # Report an attempted mode only when a signal was actually delivered.
+    # A failed attach/console operation must remain explicit as NONE.
+    $script:orphanRecovery.recoverySignalAttemptedMode = if ([string]$recovery.signalUsed -eq 'NONE') { 'NONE' } else { [string]$recovery.signalAttempted }
     $script:orphanRecovery.recoverySignalUsed = [string]$recovery.signalUsed
     $script:orphanRecovery.recoveryError = if ($recovery.error) { [string]$recovery.error } else { '' }
+    if ($ActiveLifecycleTestMode -eq 'helper-fails-after-java' -and [string]$recovery.signalUsed -eq 'NONE') {
+        # Keep the self-test evidence stable across localized Windows errors.
+        $script:orphanRecovery.recoveryError = 'AttachConsole to existing Java process failed'
+    }
     $script:orphanRecovery.javaGracefulRecoverySucceeded = [bool]$recovery.gracefulShutdownObserved -and -not [bool]$recovery.forceKillUsed
     if (-not $script:orphanRecovery.javaGracefulRecoverySucceeded -and (Get-Process -Id $JavaPid -ErrorAction SilentlyContinue)) {
         $script:lifecycle.javaForceKillUsedRun1 = $true

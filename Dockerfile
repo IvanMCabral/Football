@@ -17,6 +17,7 @@ ENV TZ=UTC \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=20 -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.security.egd=file:/dev/./urandom"
 
 RUN apk add --no-cache curl ca-certificates tzdata shadow findutils \
+    && apk upgrade --no-cache \
     && groupadd --system manager \
     && useradd --system --gid manager --home-dir /app --create-home manager
 WORKDIR /app

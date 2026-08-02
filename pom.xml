@@ -24,6 +24,9 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.outputTimestamp>2026-08-01T00:00:00Z</project.build.outputTimestamp>
+        <!-- Keep the embedded runtime libraries on versions with current security fixes. -->
+        <jackson.version>2.18.8</jackson.version>
+        <netty.version>4.1.136.Final</netty.version>
     </properties>
 
     <dependencies>
