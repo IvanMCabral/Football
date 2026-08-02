@@ -39,6 +39,14 @@ IMAGE_FILES="$RUN_DIR/image-files.txt"; STARTUP_LOG="$RUN_DIR/startup.log"; REST
 SHUTDOWN_LOG="$RUN_DIR/shutdown.log"; NEGATIVE_LOG="$RUN_DIR/negative-readiness.log"; CLEANUP_REPORT="$RUN_DIR/cleanup-report.json"
 RESULT="$RUN_DIR/pb12-docker-smoke-result.json"
 
+record_unexpected_error() {
+  local rc=$?
+  if [[ -z "$failure_reason" ]]; then
+    failure_reason="unexpected command failure at line ${BASH_LINENO[0]:-unknown}"
+  fi
+  return "$rc"
+}
+
 write_result() {
   jq -n --arg status "$status" --arg failureReason "$failure_reason" --arg imageId "$image_id" --arg imageDigest "$image_digest" \
     --arg runtimeUser "$runtime_user" --arg architecture "$image_architecture" --arg baseImage "eclipse-temurin:21.0.8_9-jre-jammy" \
@@ -93,6 +101,7 @@ cleanup() {
     echo "::error title=PB12 Docker smoke failure::$failure_reason"
   fi
 }
+trap record_unexpected_error ERR
 trap cleanup EXIT
 
 if ! command -v docker >/dev/null 2>&1 || ! docker version > "$RUN_DIR/docker-version.txt" 2>&1 || ! docker info > "$RUN_DIR/docker-info.txt" 2>&1; then fail "docker daemon unavailable"; exit 1; fi
