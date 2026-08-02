@@ -56,9 +56,24 @@ jobs:
           DOCKER_BUILDKIT: "1"
         run: |
           set -euo pipefail
+          set +e
           bash tools/run-pb12-docker-smoke.sh
+          smoke_exit=$?
+          set -e
+          result="$PB12_RUN_DIR/pb12-docker-smoke-result.json"
+          if [[ -s "$result" ]]; then
+            smoke_failure_reason="$(jq -r '.failureReason // "unknown smoke failure"' "$result")"
+            echo "PB12 smoke result:"
+            jq '{status,failureReason,dockerAvailable,imageBuilt,healthcheckHealthy,liveness,readiness,registered,login,me,careerCreated,careerRecovered,secondStartup,javaPid1,gracefulShutdownObserved,redisDownReadiness,postgresDownReadiness,cleanupVerified}' "$result"
+            if [[ "$smoke_exit" -ne 0 ]]; then
+              echo "::error title=PB12 Docker smoke failure::$smoke_failure_reason"
+            fi
+          else
+            echo "::error title=PB12 Docker smoke failure::result JSON missing"
+          fi
+          if [[ "$smoke_exit" -ne 0 ]]; then exit "$smoke_exit"; fi
           mkdir -p target
-          cp "$PB12_RUN_DIR/pb12-docker-smoke-result.json" target/pb12-docker-smoke-result.json
+          cp "$result" target/pb12-docker-smoke-result.json
 
       - name: Generate image SBOM
         if: always()
