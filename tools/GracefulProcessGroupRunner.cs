@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -94,6 +95,10 @@ internal static class GracefulProcessGroupRunner
         try
         {
             Dictionary<string, string> options = Parse(args);
+            if (options.ContainsKey("signal-existing"))
+            {
+                return SignalExisting(options);
+            }
             string command = Require(options, "command");
             string signalFile = Require(options, "signal-file");
             string pidFile = Require(options, "pid-file");
@@ -129,14 +134,19 @@ internal static class GracefulProcessGroupRunner
                 File.WriteAllText(pidFile, processInfo.dwProcessId.ToString(), Encoding.UTF8);
                 if (!string.IsNullOrWhiteSpace(stateFile))
                 {
-                    File.WriteAllText(
-                        stateFile,
-                        "{" +
-                        "\"javaPid\":" + processInfo.dwProcessId + "," +
-                        "\"processGroupId\":" + processInfo.dwProcessId + "," +
-                        "\"created\":true" +
-                        "}",
-                        Encoding.UTF8);
+                    using (FileStream stateStream = new FileStream(stateFile, FileMode.Create, FileAccess.Write, FileShare.Read))
+                    using (StreamWriter stateWriter = new StreamWriter(stateStream, new UTF8Encoding(false)))
+                    {
+                        stateWriter.Write(
+                            "{" +
+                            "\"javaPid\":" + processInfo.dwProcessId + "," +
+                            "\"processGroupId\":" + processInfo.dwProcessId + "," +
+                            "\"created\":true," +
+                            "\"consoleReady\":true" +
+                            "}");
+                        stateWriter.Flush();
+                        stateStream.Flush(true);
+                    }
                 }
 
                 bool gracefulSignalSent = false;
@@ -236,6 +246,101 @@ internal static class GracefulProcessGroupRunner
         }
     }
 
+    private static int SignalExisting(Dictionary<string, string> options)
+    {
+        uint javaPid = uint.Parse(Require(options, "java-pid"));
+        uint processGroupId = uint.Parse(Require(options, "process-group-id"));
+        string resultFile = Require(options, "result-file");
+        int timeoutMs = options.ContainsKey("timeout-ms") ? int.Parse(options["timeout-ms"]) : 35000;
+        bool simulateSignalFail = options.ContainsKey("simulate-signal-fail");
+
+        bool gracefulSignalSent = false;
+        bool gracefulShutdownObserved = false;
+        bool forceKillUsed = false;
+        bool ctrlCResult = false;
+        bool ctrlBreakResult = false;
+        bool fallbackUsed = false;
+        string signalAttempted = "NONE";
+        string signalUsed = "NONE";
+        int ctrlCError = 0;
+        int ctrlBreakError = 0;
+        uint javaExitCode = 0;
+        DateTime startedShutdownAt = DateTime.UtcNow;
+
+        try
+        {
+            Process java = Process.GetProcessById((int)javaPid);
+            if (simulateSignalFail)
+            {
+                signalAttempted = "SIMULATED_FAILURE";
+            }
+            else
+            {
+                SetConsoleCtrlHandler(IntPtr.Zero, true);
+                FreeConsole();
+                bool attached = AttachConsole(javaPid);
+                if (!attached)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "AttachConsole to existing Java process failed");
+                }
+                signalAttempted = "CTRL_C_EVENT";
+                ctrlCResult = GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+                if (!ctrlCResult)
+                {
+                    ctrlCError = Marshal.GetLastWin32Error();
+                    fallbackUsed = true;
+                    ctrlBreakResult = GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, 0);
+                    if (!ctrlBreakResult)
+                    {
+                        ctrlBreakError = Marshal.GetLastWin32Error();
+                    }
+                }
+                FreeConsole();
+                gracefulSignalSent = ctrlCResult || ctrlBreakResult;
+                signalUsed = ctrlCResult ? "CTRL_C_EVENT" : (ctrlBreakResult ? "CTRL_BREAK_EVENT" : "NONE");
+            }
+
+            if (gracefulSignalSent)
+            {
+                gracefulShutdownObserved = java.WaitForExit(timeoutMs);
+            }
+            if (!java.HasExited)
+            {
+                java.Refresh();
+            }
+            if (java.HasExited)
+            {
+                javaExitCode = unchecked((uint)java.ExitCode);
+            }
+            string status = gracefulSignalSent && gracefulShutdownObserved && !forceKillUsed ? "PASS" : "FAIL";
+            File.WriteAllText(
+                resultFile,
+                Json(status, javaPid, gracefulSignalSent, gracefulShutdownObserved, forceKillUsed,
+                    (long)(DateTime.UtcNow - startedShutdownAt).TotalMilliseconds, javaExitCode, signalAttempted, signalUsed,
+                    fallbackUsed, ctrlCResult, ctrlBreakResult, ctrlCError, ctrlBreakError, startedShutdownAt),
+                Encoding.UTF8);
+            return status == "PASS" ? 0 : 2;
+        }
+        catch (Exception ex)
+        {
+            File.WriteAllText(
+                resultFile,
+                "{" +
+                "\"status\":\"FAIL\"," +
+                "\"javaPid\":" + javaPid + "," +
+                "\"processGroupId\":" + processGroupId + "," +
+                "\"signalAttempted\":\"" + signalAttempted + "\"," +
+                "\"signalUsed\":\"NONE\"," +
+                "\"error\":\"" + Escape(ex.Message) + "\"," +
+                "\"gracefulSignalSent\":false," +
+                "\"gracefulShutdownObserved\":false," +
+                "\"forceKillUsed\":false" +
+                "}",
+                Encoding.UTF8);
+            return 1;
+        }
+    }
+
     private static Dictionary<string, string> Parse(string[] args)
     {
         Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -315,5 +420,10 @@ internal static class GracefulProcessGroupRunner
     private static string Bool(bool value)
     {
         return value ? "true" : "false";
+    }
+
+    private static string Escape(string value)
+    {
+        return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 }

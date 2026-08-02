@@ -4,9 +4,9 @@ param(
     [switch]$SkipBuild,
     [switch]$KeepArtifacts,
     [switch]$KeepArtifactsOnFailure,
-    [ValidateSet('', 'postgres-stop-fails', 'redis-stop-fails', 'helper-fails-after-java', 'workspace-delete-fails', 'marker-order-invalid')]
+    [ValidateSet('', 'postgres-stop-fails', 'redis-stop-fails', 'helper-fails-after-java', 'helper-dead-recovery-signal-fails', 'safe-summary-delete-fails', 'workspace-delete-fails', 'marker-order-invalid')]
     [string]$TestMode = '',
-    [ValidateSet('', 'postgres-stop-fails', 'redis-stop-fails', 'helper-fails-after-java', 'workspace-delete-fails', 'marker-order-invalid')]
+    [ValidateSet('', 'postgres-stop-fails', 'redis-stop-fails', 'helper-fails-after-java', 'helper-dead-recovery-signal-fails', 'safe-summary-delete-fails', 'workspace-delete-fails', 'marker-order-invalid')]
     [string]$LifecycleTestMode = '',
     [switch]$LifecycleSelfTest
 )
@@ -122,6 +122,60 @@ function Update-LifecycleForceFlag {
         $script:lifecycle.redisForceKillUsed
 }
 
+function Get-HistoricalSafeSummaries {
+    $tempRoot = [System.IO.Path]::GetFullPath($env:TEMP)
+    return @(Get-ChildItem -Path $tempRoot -Filter 'manager-prod-jar-smoke-*-summary.json' -File -ErrorAction SilentlyContinue | Where-Object {
+        [System.IO.Path]::GetFullPath($_.FullName).StartsWith($tempRoot, [System.StringComparison]::OrdinalIgnoreCase)
+    })
+}
+
+function Clear-HistoricalSafeSummaries {
+    $before = Get-HistoricalSafeSummaries
+    foreach ($summary in $before) {
+        [void](Remove-PathFailClosed $summary.FullName)
+    }
+    $after = Get-HistoricalSafeSummaries
+    return [ordered]@{
+        before = $before.Count
+        after = $after.Count
+        verified = $after.Count -eq 0
+    }
+}
+
+function Assert-CurrentRunSummaryCleanup {
+    param(
+        [string]$SummaryPath,
+        [hashtable]$Payload
+    )
+    $Payload.path = $SummaryPath
+    $Payload.createdAtUtc = [DateTime]::UtcNow.ToString('O')
+    $Payload | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $SummaryPath -Encoding UTF8
+    if (-not (Test-Path -LiteralPath $SummaryPath)) {
+        throw 'Current run safe summary was not created for cleanup verification.'
+    }
+    if ($ActiveLifecycleTestMode -eq 'safe-summary-delete-fails') {
+        $script:safeSummaryFailureLock = [System.IO.File]::Open(
+            $SummaryPath,
+            [System.IO.FileMode]::Open,
+            [System.IO.FileAccess]::Read,
+            [System.IO.FileShare]::None)
+    }
+    try {
+        [void](Remove-PathFailClosed $SummaryPath)
+    } finally {
+        if ($script:safeSummaryFailureLock) {
+            $script:safeSummaryFailureLock.Dispose()
+            $script:safeSummaryFailureLock = $null
+        }
+    }
+    $exists = Test-Path -LiteralPath $SummaryPath
+    return [ordered]@{
+        currentRunSummaryPath = $SummaryPath
+        currentRunSafeSummaryExists = $exists
+        safeSummaryCleanupVerified = -not $exists
+    }
+}
+
 function Invoke-Psql($sql, $database, $outputName) {
     $out = Join-Path $work "$outputName.out.log"
     $err = Join-Path $work "$outputName.err.log"
@@ -172,6 +226,67 @@ function Build-GracefulHelper {
         throw 'Compiled graceful process helper not found.'
     }
     return $helperExe
+}
+
+function Invoke-JavaRecoverySignal {
+    param(
+        [int]$JavaPid,
+        [int]$ProcessGroupId,
+        [string]$RunDir,
+        [switch]$SimulateSignalFailure
+    )
+    $recoveryResultFile = Join-Path $RunDir 'recovery-helper-result.json'
+    $arguments = @(
+        '--signal-existing', 'true',
+        '--java-pid', "$JavaPid",
+        '--process-group-id', "$ProcessGroupId",
+        '--result-file', $recoveryResultFile,
+        '--timeout-ms', "$($ShutdownTimeoutSeconds * 1000)"
+    )
+    if ($SimulateSignalFailure) {
+        $arguments += @('--simulate-signal-fail', 'true')
+    }
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $helperExe
+    $startInfo.Arguments = ConvertTo-CommandLine $arguments
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $false
+    $recoveryHelper = [System.Diagnostics.Process]::new()
+    $recoveryHelper.StartInfo = $startInfo
+    [void]$recoveryHelper.Start()
+    [void]$recoveryHelper.WaitForExit(($ShutdownTimeoutSeconds + 10) * 1000)
+    if (-not $recoveryHelper.HasExited) {
+        Stop-ProcessEmergency $recoveryHelper 'helper' 1
+    }
+    if (-not (Test-Path -LiteralPath $recoveryResultFile)) {
+        throw 'Recovery helper result missing.'
+    }
+    return Get-Content $recoveryResultFile -Raw | ConvertFrom-Json
+}
+
+function Stop-JavaAfterHelperDeath {
+    param(
+        [int]$JavaPid,
+        [int]$ProcessGroupId,
+        [string]$RunDir,
+        [switch]$SimulateSignalFailure
+    )
+    $script:orphanRecovery.javaPidRecovered = $true
+    $script:orphanRecovery.recoverySignalAttempted = $true
+    $recovery = Invoke-JavaRecoverySignal -JavaPid $JavaPid -ProcessGroupId $ProcessGroupId -RunDir $RunDir -SimulateSignalFailure:$SimulateSignalFailure
+    $script:orphanRecovery.recoverySignalAttemptedMode = [string]$recovery.signalAttempted
+    $script:orphanRecovery.recoverySignalUsed = [string]$recovery.signalUsed
+    $script:orphanRecovery.recoveryError = if ($recovery.error) { [string]$recovery.error } else { '' }
+    $script:orphanRecovery.javaGracefulRecoverySucceeded = [bool]$recovery.gracefulShutdownObserved -and -not [bool]$recovery.forceKillUsed
+    if (-not $script:orphanRecovery.javaGracefulRecoverySucceeded -and (Get-Process -Id $JavaPid -ErrorAction SilentlyContinue)) {
+        $script:lifecycle.javaForceKillUsedRun1 = $true
+        Stop-Process -Id $JavaPid -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 500
+    }
+    Update-LifecycleForceFlag
+    return $recovery
 }
 
 function Set-AppEnvironment($port, $mode) {
@@ -247,24 +362,43 @@ function Start-AppRun($index, $portMode) {
     $javaPid = $null
     try {
         $pidDeadline = (Get-Date).AddSeconds(20)
-        while (-not (Test-Path $pidFile)) {
+        while (-not (Test-Path $stateFile)) {
             if ($helperProcess.HasExited) {
                 $tail = if (Test-Path $helperErr) { (Get-Content $helperErr -Tail 20) -join "`n" } else { '' }
-                throw "Graceful helper exited before Java PID was written: $tail"
+                throw "Graceful helper exited before Java state was written: $tail"
             }
             if ((Get-Date) -gt $pidDeadline) {
-                throw 'Timed out waiting for Java PID.'
+                throw 'Timed out waiting for Java state file.'
             }
             Start-Sleep -Milliseconds 100
         }
-        if (Test-Path $stateFile) {
-            $state = Get-Content $stateFile -Raw | ConvertFrom-Json
-            $javaPid = [int]$state.javaPid
-        } else {
-            $javaPid = [int](Get-Content $pidFile -Raw)
+        $state = Get-Content $stateFile -Raw | ConvertFrom-Json
+        if (-not $state.created -or -not $state.consoleReady) {
+            throw 'Java state file is incomplete.'
         }
-        if ($ActiveLifecycleTestMode -eq 'helper-fails-after-java') {
-            throw 'Injected helper failure after Java PID was written.'
+        $javaPid = [int]$state.javaPid
+        $processGroupId = [int]$state.processGroupId
+        $script:orphanRecovery.javaPid = $javaPid
+        $script:orphanRecovery.httpPort = $port
+        $script:orphanRecovery.helperPid = $helperProcess.Id
+        if ($ActiveLifecycleTestMode -eq 'helper-fails-after-java' -or $ActiveLifecycleTestMode -eq 'helper-dead-recovery-signal-fails') {
+            $script:orphanRecovery.originalHelperPid = $helperProcess.Id
+            $helperProcess.Kill()
+            [void]$helperProcess.WaitForExit(5000)
+            $script:orphanRecovery.originalHelperExited = $helperProcess.HasExited
+            $script:orphanRecovery.javaWasAliveAfterHelperExit = [bool](Get-Process -Id $javaPid -ErrorAction SilentlyContinue)
+            if (-not $script:orphanRecovery.originalHelperExited) {
+                throw 'Injected helper death did not stop the original helper.'
+            }
+            if (-not $script:orphanRecovery.javaWasAliveAfterHelperExit) {
+                throw 'Java was not alive after original helper death.'
+            }
+            [void](Stop-JavaAfterHelperDeath `
+                -JavaPid $javaPid `
+                -ProcessGroupId $processGroupId `
+                -RunDir $runDir `
+                -SimulateSignalFailure:($ActiveLifecycleTestMode -eq 'helper-dead-recovery-signal-fails'))
+            throw 'Injected helper death after Java creation.'
         }
 
         $startupStartedAt = Get-Date
@@ -565,6 +699,7 @@ if (-not $jar) {
 
 $stamp = [Guid]::NewGuid().ToString('N')
 $work = Join-Path $env:TEMP "manager-prod-jar-smoke-$stamp"
+$currentRunSummaryPath = Join-Path $work 'current-run-summary.json'
 $pgData = Join-Path $work 'postgres-data'
 $localLogPaths = @('logs', 'app.log') | ForEach-Object { Join-Path $root $_ }
 $localLogSnapshot = @{}
@@ -605,6 +740,28 @@ $result = $null
 $status = 'FAIL'
 $workCleanupDone = $false
 $workspaceDeleteFailureLock = $null
+$safeSummaryFailureLock = $null
+$safeSummaryEvidence = [ordered]@{
+    currentRunSummaryPath = $currentRunSummaryPath
+    currentRunSafeSummaryExists = $null
+    historicalSafeSummaryCountBefore = $null
+    historicalSafeSummaryCountAfter = $null
+    safeSummaryCleanupVerified = $false
+}
+$orphanRecovery = [ordered]@{
+    javaPid = $null
+    httpPort = $null
+    helperPid = $null
+    originalHelperPid = $null
+    originalHelperExited = $false
+    javaWasAliveAfterHelperExit = $false
+    javaPidRecovered = $false
+    recoverySignalAttempted = $false
+    recoverySignalAttemptedMode = 'NONE'
+    recoverySignalUsed = 'NONE'
+    recoveryError = ''
+    javaGracefulRecoverySucceeded = $false
+}
 $lifecycle = [ordered]@{
     javaForceKillUsedRun1 = $false
     javaForceKillUsedRun2 = $false
@@ -623,6 +780,13 @@ $postgresExitCode = $null
 $redisExitCode = $null
 
 try {
+    $historicalSafeSummaryCleanup = Clear-HistoricalSafeSummaries
+    $safeSummaryEvidence.historicalSafeSummaryCountBefore = $historicalSafeSummaryCleanup.before
+    $safeSummaryEvidence.historicalSafeSummaryCountAfter = $historicalSafeSummaryCleanup.after
+    if (-not $historicalSafeSummaryCleanup.verified) {
+        throw 'Historical safe summary cleanup failed.'
+    }
+
     $helperExe = Build-GracefulHelper
 
     $init = Start-Process `
@@ -793,6 +957,23 @@ try {
         throw "Residual processes or ports remain: $($residual | ConvertTo-Json -Compress)"
     }
 
+    $safeSummaryCleanup = Assert-CurrentRunSummaryCleanup `
+        -SummaryPath $currentRunSummaryPath `
+        -Payload @{
+            runId = $stamp
+            status = 'pre-pass-cleanup-check'
+            javaRun1 = $run1.javaPid
+            javaRun2 = $run2.javaPid
+            postgres = $pgProcess.Id
+            redis = $redisProcess.Id
+        }
+    $safeSummaryEvidence.currentRunSummaryPath = $safeSummaryCleanup.currentRunSummaryPath
+    $safeSummaryEvidence.currentRunSafeSummaryExists = $safeSummaryCleanup.currentRunSafeSummaryExists
+    $safeSummaryEvidence.safeSummaryCleanupVerified = $safeSummaryCleanup.safeSummaryCleanupVerified
+    if (-not $safeSummaryEvidence.safeSummaryCleanupVerified) {
+        throw 'Current run safe summary cleanup verification failed.'
+    }
+
     $status = 'PASS'
     $result = [ordered]@{
         status = 'PASS'
@@ -858,7 +1039,11 @@ try {
         residualPorts = $residual.residualPorts
         localLogArtifacts = 0
         workspaceExists = $null
-        safeSummaryExists = $false
+        currentRunSummaryPath = $safeSummaryEvidence.currentRunSummaryPath
+        currentRunSafeSummaryExists = $safeSummaryEvidence.currentRunSafeSummaryExists
+        historicalSafeSummaryCountBefore = $safeSummaryEvidence.historicalSafeSummaryCountBefore
+        historicalSafeSummaryCountAfter = $safeSummaryEvidence.historicalSafeSummaryCountAfter
+        safeSummaryCleanupVerified = $safeSummaryEvidence.safeSummaryCleanupVerified
         residualTempArtifacts = $null
         cleanupVerified = $null
     }
@@ -886,7 +1071,8 @@ try {
         Sanitize-SmokeArtifacts $work
     }
     $result.workspaceExists = Test-Path -LiteralPath $work
-    $result.safeSummaryExists = $false
+    $result.currentRunSafeSummaryExists = Test-Path -LiteralPath $currentRunSummaryPath
+    $result.safeSummaryCleanupVerified = -not $result.currentRunSafeSummaryExists
     $result.residualTempArtifacts = if ($result.workspaceExists) { 1 } else { 0 }
     $result.cleanupVerified = if ($KeepArtifacts) { $true } else { -not $result.workspaceExists }
     $lifecycle.cleanupVerified = $result.cleanupVerified
@@ -932,15 +1118,15 @@ try {
     Start-Sleep -Milliseconds 500
     Update-LifecycleForceFlag
     $currentPids = @{
-        javaRun1 = if ($runs.Count -ge 1) { $runs[0].javaPid } else { $null }
-        helperRun1 = if ($runs.Count -ge 1) { $runs[0].helperPid } else { $null }
+        javaRun1 = if ($runs.Count -ge 1) { $runs[0].javaPid } else { $orphanRecovery.javaPid }
+        helperRun1 = if ($runs.Count -ge 1) { $runs[0].helperPid } else { $orphanRecovery.helperPid }
         javaRun2 = if ($runs.Count -ge 2) { $runs[1].javaPid } else { $null }
         helperRun2 = if ($runs.Count -ge 2) { $runs[1].helperPid } else { $null }
         postgres = if ($pgProcess) { $pgProcess.Id } else { $null }
         redis = if ($redisProcess) { $redisProcess.Id } else { $null }
     }
     $currentPorts = @{
-        httpRun1 = if ($runs.Count -ge 1) { $runs[0].port } else { $null }
+        httpRun1 = if ($runs.Count -ge 1) { $runs[0].port } else { $orphanRecovery.httpPort }
         httpRun2 = if ($runs.Count -ge 2) { $runs[1].port } else { $null }
         postgres = $pgPort
         redis = $redisPort
@@ -949,7 +1135,16 @@ try {
     $failure = [ordered]@{
         status = 'FAIL'
         lifecycleTestMode = $ActiveLifecycleTestMode
+        failureMode = $ActiveLifecycleTestMode
         error = $_.Exception.Message
+        originalHelperExited = $orphanRecovery.originalHelperExited
+        javaWasAliveAfterHelperExit = $orphanRecovery.javaWasAliveAfterHelperExit
+        javaPidRecovered = $orphanRecovery.javaPidRecovered
+        recoverySignalAttempted = $orphanRecovery.recoverySignalAttempted
+        recoverySignalAttemptedMode = $orphanRecovery.recoverySignalAttemptedMode
+        recoverySignalUsed = $orphanRecovery.recoverySignalUsed
+        recoveryError = $orphanRecovery.recoveryError
+        javaGracefulRecoverySucceeded = $orphanRecovery.javaGracefulRecoverySucceeded
         javaForceKillUsedRun1 = $lifecycle.javaForceKillUsedRun1
         javaForceKillUsedRun2 = $lifecycle.javaForceKillUsedRun2
         helperForceKillUsedRun1 = $lifecycle.helperForceKillUsedRun1
@@ -966,11 +1161,15 @@ try {
         residualPostgresPorts = $residualOnFailure.residualPostgresPorts
         residualRedisPorts = $residualOnFailure.residualRedisPorts
         residualPorts = $residualOnFailure.residualPorts
+        currentRunSummaryPath = $currentRunSummaryPath
+        currentRunSafeSummaryExists = Test-Path -LiteralPath $currentRunSummaryPath
+        historicalSafeSummaryCountBefore = $safeSummaryEvidence.historicalSafeSummaryCountBefore
+        historicalSafeSummaryCountAfter = (Get-HistoricalSafeSummaries).Count
+        safeSummaryCleanupVerified = -not (Test-Path -LiteralPath $currentRunSummaryPath) -and ((Get-HistoricalSafeSummaries).Count -eq 0)
         cleanupVerified = $false
     }
     if ($ActiveLifecycleTestMode -eq 'workspace-delete-fails') {
         $failure.workspaceExists = Test-Path -LiteralPath $work
-        $failure.safeSummaryExists = $false
         $failure.residualTempArtifacts = if ($failure.workspaceExists) { 1 } else { 0 }
     }
     $failure | ConvertTo-Json -Compress
@@ -984,6 +1183,10 @@ try {
         if ($run.helperProcess -and -not $run.helperProcess.HasExited) {
             Stop-ProcessEmergency $run.helperProcess 'helper' $run.index
         }
+    }
+    if ($orphanRecovery.javaPid -and (Get-Process -Id $orphanRecovery.javaPid -ErrorAction SilentlyContinue)) {
+        $lifecycle.javaForceKillUsedRun1 = $true
+        Stop-Process -Id $orphanRecovery.javaPid -Force -ErrorAction SilentlyContinue
     }
     if ($redisProcess -and -not $redisProcess.HasExited) {
         Stop-ProcessEmergency $redisProcess 'redis'

@@ -111,6 +111,8 @@ class ProductionRuntimeArtifactGuardTest {
             "postgres-stop-fails",
             "redis-stop-fails",
             "helper-fails-after-java",
+            "helper-dead-recovery-signal-fails",
+            "safe-summary-delete-fails",
             "workspace-delete-fails",
             "marker-order-invalid"
         };
@@ -139,6 +141,31 @@ class ProductionRuntimeArtifactGuardTest {
             assertThat(output).as(mode).contains("\"lifecycleTestMode\":\"" + mode + "\"");
             assertThat(output).as(mode).contains("\"residualProcesses\":0");
             assertThat(output).as(mode).contains("\"residualPorts\":0");
+            assertThat(output).as(mode).contains("\"historicalSafeSummaryCountAfter\":0");
+            if (mode.equals("helper-fails-after-java")) {
+                assertThat(output).contains("\"originalHelperExited\":true");
+                assertThat(output).contains("\"javaWasAliveAfterHelperExit\":true");
+                assertThat(output).contains("\"javaPidRecovered\":true");
+                assertThat(output).contains("\"recoverySignalAttempted\":true");
+                assertThat(output).contains("\"recoverySignalAttemptedMode\":\"NONE\"");
+                assertThat(output).contains("\"recoveryError\":\"AttachConsole to existing Java process failed\"");
+                assertThat(output).contains("\"javaGracefulRecoverySucceeded\":false");
+                assertThat(output).contains("\"javaForceKillUsedRun1\":true");
+                assertThat(output).contains("\"forceKillUsed\":true");
+            }
+            if (mode.equals("helper-dead-recovery-signal-fails")) {
+                assertThat(output).contains("\"originalHelperExited\":true");
+                assertThat(output).contains("\"javaWasAliveAfterHelperExit\":true");
+                assertThat(output).contains("\"javaPidRecovered\":true");
+                assertThat(output).contains("\"recoverySignalAttempted\":true");
+                assertThat(output).contains("\"javaGracefulRecoverySucceeded\":false");
+                assertThat(output).contains("\"javaForceKillUsedRun1\":true");
+                assertThat(output).contains("\"forceKillUsed\":true");
+            }
+            if (mode.equals("safe-summary-delete-fails")) {
+                assertThat(output).contains("\"currentRunSafeSummaryExists\":true");
+                assertThat(output).contains("\"safeSummaryCleanupVerified\":false");
+            }
         }
     }
 
