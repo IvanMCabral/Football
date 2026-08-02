@@ -13,6 +13,7 @@ Verdict: `PB1.2.1 IMPLEMENTATION COMPLETE - DOCKER SMOKE BLOCKED`
 | Docker healthcheck uses undeclared `wget` | CLOSED STATICALLY | Jammy runtime installs `curl`; healthcheck uses curl/liveness |
 | Missing production JAR smoke | CLOSED | `tools/run-production-jar-smoke.ps1` PASS |
 | Graceful shutdown not proven | CLOSED | Windows console control event, two JAR runs, no force kill |
+| Dependency shutdown/cleanup not fail-closed | CLOSED | PostgreSQL/Redis graceful stop, global force kill false, workspace removed |
 
 ## P1 status
 
@@ -30,8 +31,8 @@ Verdict: `PB1.2.1 IMPLEMENTATION COMPLETE - DOCKER SMOKE BLOCKED`
 - JAR SHA-256: `F7C0C609A97418C9FFDE36821CE5CD7EA0562C32B74EAA6504C9BF1DC08F9FB1`
 - JAR size: `42,467,597` bytes
 - Smoke port: `61012`
-- Definitive graceful smoke port: `58016`
-- Second startup port: `64852`
+- Definitive graceful smoke port: `50816`
+- Second startup port: `50218`
 - Liveness: `200`
 - Readiness: `200`
 - Auth register/login: PASS
@@ -39,11 +40,19 @@ Verdict: `PB1.2.1 IMPLEMENTATION COMPLETE - DOCKER SMOKE BLOCKED`
 - Flyway successful migrations: `1`
 - Shutdown drill: PASS, two graceful shutdowns
 - Graceful signal sent: `true`
+- Signal used: `CTRL_C_EVENT`, `CTRL_C_EVENT`
 - Graceful shutdown observed: `true`
+- Shutdown marker order: `true`, `true`
 - Force kill used: `false`
 - Java exit codes: `130`, `130`
+- PostgreSQL graceful stop: PASS, exit `0`
+- Redis graceful stop: PASS, exit `0`
 - Residual Java/helper processes: `0`
+- Residual PostgreSQL/Redis processes: `0`
 - Residual app ports: `0`
+- Residual PostgreSQL/Redis ports: `0`
+- Workspace exists after default PASS: `false`
+- Safe summary exists after default PASS: `false`
 - Local log artifacts: `0`
 
 ## Docker status

@@ -62,17 +62,26 @@ Definitive graceful shutdown run:
 | Check | Result |
 |---|---|
 | Run 1 port mode | `PORT` |
-| Run 1 port | `58016` |
+| Run 1 port | `50816` |
 | Run 2 port mode | `SERVER_PORT` |
-| Run 2 port | `64852` |
+| Run 2 port | `50218` |
 | Second startup against same DB | PASS |
 | Graceful signal sent | `true` |
 | Graceful shutdown observed | `true` |
 | Force kill used | `false` |
-| Shutdown durations | `2712 ms`, `2711 ms` |
+| Signal used | `CTRL_C_EVENT`, `CTRL_C_EVENT` |
+| Shutdown marker order | `true`, `true` |
+| Shutdown durations | `2728 ms`, `2744 ms` |
 | Java exit codes | `130`, `130` |
+| PostgreSQL exit code | `0` |
+| Redis exit code | `0` |
 | Residual processes | `0` |
 | Residual ports | `0` |
+| PostgreSQL graceful stop | PASS, `pg_ctl stop -m fast`, exit `0` |
+| Redis graceful stop | PASS, `SHUTDOWN NOSAVE`, exit `0` |
+| Workspace exists after default PASS | `false` |
+| Safe summary exists | `false` |
+| Residual temp artifacts | `0` |
 
 JAR SHA-256 after reproducible clean builds:
 
@@ -101,7 +110,7 @@ The direct Windows JAR smoke now passes with ephemeral PostgreSQL and Redis. It 
 | Suite | Result |
 |---|---|
 | Backend `mvn -q -DskipTests test-compile` | PASS |
-| Backend `mvn -q test` | 2570 tests, 0 failures, 0 errors, 4 skipped |
+| Backend `mvn -q test` | 2571 tests, 0 failures, 0 errors, 4 skipped |
 | Frontend encoding guard | PASS, 385 files scanned |
 | Frontend development build | PASS |
 | Frontend production build | PASS |

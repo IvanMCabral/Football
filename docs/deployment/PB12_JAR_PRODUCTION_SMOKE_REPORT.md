@@ -32,7 +32,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-jar-smo
 ## Result
 
 ```json
-{"status":"PASS","jar":"football-manager-1.0.0.jar","jarBytes":42467597,"port":58016,"run1PortMode":"PORT","run2Port":64852,"run2PortMode":"SERVER_PORT","javaPid":28192,"javaPidRun2":44996,"postgresPid":47832,"redisPid":50588,"startupDurationMs":6661,"startupDurationMsRun2":6543,"liveness":200,"readiness":200,"registered":true,"login":true,"me":true,"careerCreated":true,"flywaySuccessfulMigrations":1,"secondStartup":true,"gracefulSignalSent":true,"gracefulShutdownObserved":true,"forceKillUsed":false,"shutdownDurationMs":2712,"shutdownDurationMsRun2":2711,"javaExitCode":130,"javaExitCodeRun2":130,"shutdownMarkersObserved":4,"residualProcesses":0,"residualPorts":0,"localLogArtifacts":0}
+{"status":"PASS","jar":"football-manager-1.0.0.jar","jarBytes":42467597,"port":50816,"run1PortMode":"PORT","run2Port":50218,"run2PortMode":"SERVER_PORT","javaPid":18668,"javaPidRun2":43776,"postgresPid":46776,"redisPid":34752,"startupDurationMs":6550,"startupDurationMsRun2":6553,"liveness":200,"readiness":200,"registered":true,"login":true,"me":true,"careerCreated":true,"flywaySuccessfulMigrations":1,"secondStartup":true,"signalUsedRun1":"CTRL_C_EVENT","signalUsedRun2":"CTRL_C_EVENT","signalFallbackUsedRun1":false,"signalFallbackUsedRun2":false,"javaGracefulRun1":true,"javaGracefulRun2":true,"javaGracefulStop":true,"postgresGracefulStop":true,"redisGracefulStop":true,"gracefulSignalSent":true,"gracefulShutdownObserved":true,"javaForceKillUsed":false,"postgresForceKillUsed":false,"redisForceKillUsed":false,"forceKillUsed":false,"shutdownDurationMs":2728,"shutdownDurationMsRun2":2744,"javaExitCode":130,"javaExitCodeRun2":130,"postgresExitCode":0,"redisExitCode":0,"shutdownStartMarkerRun1":true,"shutdownCompleteMarkerRun1":true,"shutdownMarkerOrderRun1":true,"shutdownStartMarkerRun2":true,"shutdownCompleteMarkerRun2":true,"shutdownMarkerOrderRun2":true,"shutdownMarkersObserved":4,"residualJavaProcesses":0,"residualHelperProcesses":0,"residualPostgresProcesses":0,"residualRedisProcesses":0,"residualProcesses":0,"residualHttpPorts":0,"residualPostgresPorts":0,"residualRedisPorts":0,"residualPorts":0,"localLogArtifacts":0,"workspaceExists":false,"safeSummaryExists":false,"residualTempArtifacts":0,"cleanupVerified":true}
 ```
 
 ## Verified behavior
@@ -52,12 +52,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-jar-smo
 - Flyway remained stable at exactly one successful migration after the second startup.
 - Both shutdowns used a Windows console control event delivered by `GracefulProcessGroupRunner`.
 - Both shutdowns observed Spring graceful shutdown log markers.
-- No force kill was used in the passing run.
+- No force kill was used in the passing run for Java, PostgreSQL or Redis.
+- PostgreSQL stopped gracefully with `pg_ctl stop -m fast -w` and exit code `0`.
+- Redis stopped gracefully with authenticated `SHUTDOWN NOSAVE` and exit code `0`.
 - Java exit code was `130`, consistent with console interrupt termination after graceful shutdown.
-- Java/helper processes and app ports had zero residuals before PostgreSQL/Redis cleanup.
+- Java/helper/PostgreSQL/Redis processes and HTTP/PostgreSQL/Redis ports had zero residuals.
 - No root `logs/` or `app.log` artifact was created or changed by the application.
 - Java process terminated by itself after the graceful signal in both runs.
-- Temporary PostgreSQL and Redis processes were stopped.
+- Temporary workspace cleanup was verified fail-closed on PASS.
 
 ## Known limitation
 

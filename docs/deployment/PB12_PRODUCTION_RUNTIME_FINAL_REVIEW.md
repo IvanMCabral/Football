@@ -30,7 +30,7 @@ PB1.2.1 created the backend container artifact, frontend Firebase Hosting artifa
 | Suite | Result |
 |---|---|
 | Backend test-compile | PASS |
-| Backend full suite | 2570 tests, 0 failures, 0 errors, 4 skipped |
+| Backend full suite | 2571 tests, 0 failures, 0 errors, 4 skipped |
 | Frontend encoding guard | PASS, 385 files scanned |
 | Frontend development build | PASS |
 | Frontend production build | PASS |
@@ -45,8 +45,8 @@ Docker-specific evidence is intentionally not invented because Docker is unavail
 - JAR: `football-manager-1.0.0.jar`
 - JAR bytes: `42,467,597`
 - SHA-256: `F7C0C609A97418C9FFDE36821CE5CD7EA0562C32B74EAA6504C9BF1DC08F9FB1`
-- Run 1 port: `58016` via `PORT`
-- Run 2 port: `64852` via `SERVER_PORT`
+- Run 1 port: `50816` via `PORT`
+- Run 2 port: `50218` via `SERVER_PORT`
 - Liveness: `200`
 - Readiness: `200`
 - Register/login: PASS
@@ -55,10 +55,17 @@ Docker-specific evidence is intentionally not invented because Docker is unavail
 - Second startup: PASS
 - Graceful signal sent: `true`
 - Graceful shutdown observed: `true`
+- Signal used: `CTRL_C_EVENT`, `CTRL_C_EVENT`
+- Shutdown marker order: `true`, `true`
 - Force kill used: `false`
-- Shutdown durations: `2712 ms`, `2711 ms`
+- PostgreSQL force kill used: `false`
+- Redis force kill used: `false`
+- Shutdown durations: `2728 ms`, `2744 ms`
 - Java exit codes: `130`, `130`
-- Residual processes/ports: `0` / `0`
+- PostgreSQL/Redis exit codes: `0` / `0`
+- Residual Java/helper/PostgreSQL/Redis processes: `0`
+- Residual HTTP/PostgreSQL/Redis ports: `0`
+- Workspace cleanup: PASS, `workspaceExists=false`, `safeSummaryExists=false`, `residualTempArtifacts=0`
 - Local log artifacts: `0`
 - Shutdown: PASS
 
