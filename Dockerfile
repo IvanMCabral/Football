@@ -29,4 +29,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
   CMD curl --fail --silent --show-error --max-time 3 "http://127.0.0.1:${PORT}/api/v1/health/liveness" >/dev/null || exit 1
 
-ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS:-} -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS:-} -jar /app/app.jar \"$@\"", "--"]
