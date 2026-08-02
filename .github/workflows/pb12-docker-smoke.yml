@@ -49,6 +49,10 @@ jobs:
             echo "PB12_RESTART_PORT=18081"
           } >> "$GITHUB_ENV"
 
+      - name: Verify artifact hygiene fails closed
+        shell: bash
+        run: bash tools/test-pb12-artifact-hygiene.sh
+
       - name: Run real Docker build and lifecycle smoke
         id: smoke
         shell: bash

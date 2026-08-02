@@ -23,7 +23,7 @@ DB_PASSWORD="$(printenv DB_PASSWORD 2>/dev/null || true)"
 REDIS_PASSWORD="$(printenv REDIS_PASSWORD 2>/dev/null || true)"
 REDIS_USERNAME="$(printenv REDIS_USERNAME 2>/dev/null || echo default)"
 JWT_SECRET="$(printenv JWT_SECRET 2>/dev/null || true)"
-if [[ -z "$DB_PASSWORD" || -z "$REDIS_PASSWORD" || -z "$JWT_SECRET" ]]; then echo "required ephemeral variables are missing" >&2; exit 1; fi
+if [[ "${PB12_HYGIENE_SELF_TEST:-false}" != true && ( -z "$DB_PASSWORD" || -z "$REDIS_PASSWORD" || -z "$JWT_SECRET" ) ]]; then echo "required ephemeral variables are missing" >&2; exit 1; fi
 
 status=PASS; failure_reason=""
 docker_available=false; image_built=false; image_id=""; image_digest=""; image_size_bytes=0; image_layers=0; image_architecture=""
@@ -134,6 +134,15 @@ cleanup() {
 }
 trap record_unexpected_error ERR
 trap cleanup EXIT
+
+if [[ "${PB12_HYGIENE_SELF_TEST:-false}" == true ]]; then
+  AUTH_TMP="$RUN_DIR/auth-tmp"
+  (umask 077 && mkdir -p "$AUTH_TMP")
+  if [[ "${PB12_FORCE_AUTH_TMP_DELETE_FAILURE:-false}" == true ]]; then
+    exit 1
+  fi
+  exit 0
+fi
 
 if ! command -v docker >/dev/null 2>&1 || ! docker version > "$RUN_DIR/docker-version.txt" 2>&1 || ! docker info > "$RUN_DIR/docker-info.txt" 2>&1; then fail "docker daemon unavailable"; exit 1; fi
 docker_available=true
