@@ -165,10 +165,24 @@ ACCESS_TOKEN="$(jq -r '.accessToken // empty' "$AUTH_TMP/token.json")"; if [[ -z
 me_code="$(curl --silent --show-error --connect-timeout 3 --max-time 20 -o "$AUTH_TMP/me.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/auth/me" -H "Authorization: Bearer $ACCESS_TOKEN")"
 if [[ "$me_code" != 200 ]]; then fail "auth me returned $me_code"; exit 1; fi
 me=true; USER_ID="$(jq -r '.id // empty' "$AUTH_TMP/me.json")"; if [[ -z "$USER_ID" ]]; then fail "auth me did not contain user id"; exit 1; fi
-leagues_code="$(curl --silent --show-error --connect-timeout 3 --max-time 30 -o "$AUTH_TMP/leagues.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/world/leagues?userId=$USER_ID" -H "Authorization: Bearer $ACCESS_TOKEN")"
-LEAGUE_ID="$(jq -r '.[0].id // empty' "$AUTH_TMP/leagues.json" 2>/dev/null || true)"; if [[ "$leagues_code" != 200 || -z "$LEAGUE_ID" ]]; then fail "world league lookup failed"; exit 1; fi
-teams_code="$(curl --silent --show-error --connect-timeout 3 --max-time 30 -o "$AUTH_TMP/teams.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/world/leagues/$LEAGUE_ID/teams?userId=$USER_ID" -H "Authorization: Bearer $ACCESS_TOKEN")"
-TEAM_ID="$(jq -r '.[0].id // empty' "$AUTH_TMP/teams.json" 2>/dev/null || true)"; if [[ "$teams_code" != 200 || -z "$TEAM_ID" ]]; then fail "world team lookup failed"; exit 1; fi
+LEAGUE_ID=""
+leagues_code=0
+for i in $(seq 1 60); do
+  leagues_code="$(curl --silent --show-error --connect-timeout 3 --max-time 30 -o "$AUTH_TMP/leagues.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/world/leagues?userId=$USER_ID" -H "Authorization: Bearer $ACCESS_TOKEN")"
+  LEAGUE_ID="$(jq -r '.[0].id // empty' "$AUTH_TMP/leagues.json" 2>/dev/null || true)"
+  if [[ "$leagues_code" == 200 && -n "$LEAGUE_ID" ]]; then break; fi
+  sleep 2
+done
+if [[ "$leagues_code" != 200 || -z "$LEAGUE_ID" ]]; then fail "world league lookup failed (status=$leagues_code)"; exit 1; fi
+TEAM_ID=""
+teams_code=0
+for i in $(seq 1 60); do
+  teams_code="$(curl --silent --show-error --connect-timeout 3 --max-time 30 -o "$AUTH_TMP/teams.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/world/leagues/$LEAGUE_ID/teams?userId=$USER_ID" -H "Authorization: Bearer $ACCESS_TOKEN")"
+  TEAM_ID="$(jq -r '.[0].id // empty' "$AUTH_TMP/teams.json" 2>/dev/null || true)"
+  if [[ "$teams_code" == 200 && -n "$TEAM_ID" ]]; then break; fi
+  sleep 2
+done
+if [[ "$teams_code" != 200 || -z "$TEAM_ID" ]]; then fail "world team lookup failed (status=$teams_code)"; exit 1; fi
 game_code="$(curl --silent --show-error --connect-timeout 3 --max-time 60 -o "$AUTH_TMP/game.json" -w '%{http_code}' -X POST "http://127.0.0.1:$HOST_PORT/api/v1/games" -H 'Content-Type: application/json' -H "Authorization: Bearer $ACCESS_TOKEN" -d "{\"leagueId\":\"$LEAGUE_ID\",\"teamId\":\"$TEAM_ID\",\"name\":\"PB12 Docker Smoke\",\"difficulty\":\"NORMAL\",\"gameSpeed\":\"NORMAL\",\"teamsPerDivision\":5}")"
 if [[ "$game_code" != 201 ]]; then fail "career creation returned $game_code"; exit 1; fi
 career_created=true; flyway_run1="$(docker exec "$POSTGRES" psql -U "$DB_USER" -d "$DB_NAME" -Atc "SELECT COUNT(*) FROM flyway_schema_history WHERE success = true" | tr -d '[:space:]')"
