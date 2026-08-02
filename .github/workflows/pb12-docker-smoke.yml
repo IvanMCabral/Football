@@ -130,7 +130,7 @@ jobs:
            if [[ "$critical" -gt 0 || "$high" -gt 0 ]]; then
              echo "::warning title=PB12 image vulnerability counts::critical=$critical high=$high"
            fi
-           jq '{status,dockerAvailable,imageBuilt,imageId,imageSizeBytes,runtimeUser,runtimeUid,javaPid1,healthcheckHealthy,liveness,readiness,registered,login,me,careerCreated,secondStartup,dockerStopUsed,dockerKillUsed,gracefulShutdownObserved,shutdownMarkerOrderValid,redisDownReadiness,postgresDownReadiness,criticalVulnerabilities,highVulnerabilities,residualContainers,residualNetworks,cleanupVerified}' "$result"
+           jq '{status,failureReason,dockerAvailable,imageBuilt,imageId,imageSizeBytes,runtimeUser,runtimeUid,javaPid1,healthcheckHealthy,liveness,readiness,registered,login,me,careerCreated,careerRecovered,flywayMigrationsRun1,secondStartup,flywayMigrationsRun2,dockerStopUsed,dockerKillUsed,gracefulShutdownObserved,shutdownMarkerOrderValid,shutdownDurationMs,containerExitCode,redisDownReadiness,postgresDownReadiness,criticalVulnerabilities,highVulnerabilities,residualContainers,residualNetworks,cleanupVerified}' "$result"
           [[ "$critical" -eq 0 ]]
 
       - name: Upload Docker smoke evidence

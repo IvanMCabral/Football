@@ -6,7 +6,7 @@ COPY pom.xml ./
 COPY src ./src
 RUN mvn -q -DskipTests package
 
-FROM eclipse-temurin:21.0.8_9-jre-jammy
+FROM eclipse-temurin:21.0.11_10-jre-jammy
 
 ENV TZ=UTC \
     LANG=C.UTF-8 \

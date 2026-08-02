@@ -30,6 +30,7 @@ runtime_user=""; runtime_uid=0; java_pid1=false; healthcheck_healthy=false
 liveness=0; readiness=0; registered=false; login=false; me=false; career_created=false; career_recovered=false
 flyway_run1=0; flyway_run2=0; second_startup=false; docker_stop_used=false; docker_kill_used=false
 graceful_shutdown_observed=false; shutdown_marker_order_valid=false; shutdown_duration_ms=0
+container_exit_code=125
 redis_down_liveness=0; redis_down_readiness=0; postgres_down_liveness=0; postgres_down_readiness=0
 unexpected_filesystem_writes=0; secret_leaks_detected=0; critical_vulnerabilities=0; high_vulnerabilities=0
 residual_containers=0; residual_networks=0; cleanup_verified=false; cleanup_force_used=false
@@ -57,13 +58,14 @@ write_result() {
     --argjson careerRecovered "$career_recovered" --argjson flywayMigrationsRun1 "$flyway_run1" --argjson secondStartup "$second_startup" \
     --argjson flywayMigrationsRun2 "$flyway_run2" --argjson dockerStopUsed "$docker_stop_used" --argjson dockerKillUsed "$docker_kill_used" \
     --argjson gracefulShutdownObserved "$graceful_shutdown_observed" --argjson shutdownMarkerOrderValid "$shutdown_marker_order_valid" \
-    --argjson shutdownDurationMs "$shutdown_duration_ms" --argjson redisDownLiveness "$redis_down_liveness" --argjson redisDownReadiness "$redis_down_readiness" \
+    --argjson shutdownDurationMs "$shutdown_duration_ms" --argjson containerExitCode "$container_exit_code" \
+    --argjson redisDownLiveness "$redis_down_liveness" --argjson redisDownReadiness "$redis_down_readiness" \
     --argjson postgresDownLiveness "$postgres_down_liveness" --argjson postgresDownReadiness "$postgres_down_readiness" \
     --argjson unexpectedFilesystemWrites "$unexpected_filesystem_writes" --argjson secretLeaksDetected "$secret_leaks_detected" \
     --argjson criticalVulnerabilities "$critical_vulnerabilities" --argjson highVulnerabilities "$high_vulnerabilities" \
     --argjson residualContainers "$residual_containers" --argjson residualNetworks "$residual_networks" --argjson cleanupVerified "$cleanup_verified" \
     --argjson cleanupForceUsed "$cleanup_force_used" \
-    '{status:$status,failureReason:$failureReason,dockerAvailable:$dockerAvailable,imageBuilt:$imageBuilt,imageId:$imageId,imageDigest:$imageDigest,imageSizeBytes:$imageSizeBytes,imageLayers:$imageLayers,architecture:$architecture,baseImage:$baseImage,runtimeUser:$runtimeUser,runtimeUid:$runtimeUid,javaPid1:$javaPid1,healthcheckHealthy:$healthcheckHealthy,liveness:$liveness,readiness:$readiness,registered:$registered,login:$login,me:$me,careerCreated:$careerCreated,careerRecovered:$careerRecovered,flywayMigrationsRun1:$flywayMigrationsRun1,secondStartup:$secondStartup,flywayMigrationsRun2:$flywayMigrationsRun2,dockerStopUsed:$dockerStopUsed,dockerKillUsed:$dockerKillUsed,gracefulShutdownObserved:$gracefulShutdownObserved,shutdownMarkerOrderValid:$shutdownMarkerOrderValid,shutdownDurationMs:$shutdownDurationMs,redisDownLiveness:$redisDownLiveness,redisDownReadiness:$redisDownReadiness,postgresDownLiveness:$postgresDownLiveness,postgresDownReadiness:$postgresDownReadiness,unexpectedFilesystemWrites:$unexpectedFilesystemWrites,secretLeaksDetected:$secretLeaksDetected,criticalVulnerabilities:$criticalVulnerabilities,highVulnerabilities:$highVulnerabilities,residualContainers:$residualContainers,residualNetworks:$residualNetworks,cleanupVerified:$cleanupVerified,cleanupForceUsed:$cleanupForceUsed}' > "$RESULT"
+    '{status:$status,failureReason:$failureReason,dockerAvailable:$dockerAvailable,imageBuilt:$imageBuilt,imageId:$imageId,imageDigest:$imageDigest,imageSizeBytes:$imageSizeBytes,imageLayers:$imageLayers,architecture:$architecture,baseImage:$baseImage,runtimeUser:$runtimeUser,runtimeUid:$runtimeUid,javaPid1:$javaPid1,healthcheckHealthy:$healthcheckHealthy,liveness:$liveness,readiness:$readiness,registered:$registered,login:$login,me:$me,careerCreated:$careerCreated,careerRecovered:$careerRecovered,flywayMigrationsRun1:$flywayMigrationsRun1,secondStartup:$secondStartup,flywayMigrationsRun2:$flywayMigrationsRun2,dockerStopUsed:$dockerStopUsed,dockerKillUsed:$dockerKillUsed,gracefulShutdownObserved:$gracefulShutdownObserved,shutdownMarkerOrderValid:$shutdownMarkerOrderValid,shutdownDurationMs:$shutdownDurationMs,containerExitCode:$containerExitCode,redisDownLiveness:$redisDownLiveness,redisDownReadiness:$redisDownReadiness,postgresDownLiveness:$postgresDownLiveness,postgresDownReadiness:$postgresDownReadiness,unexpectedFilesystemWrites:$unexpectedFilesystemWrites,secretLeaksDetected:$secretLeaksDetected,criticalVulnerabilities:$criticalVulnerabilities,highVulnerabilities:$highVulnerabilities,residualContainers:$residualContainers,residualNetworks:$residualNetworks,cleanupVerified:$cleanupVerified,cleanupForceUsed:$cleanupForceUsed}' > "$RESULT"
 }
 fail() { status=FAIL; if [[ -z "$failure_reason" ]]; then failure_reason="$1"; else failure_reason="$failure_reason; $1"; fi; }
 container_exists() { docker container inspect "$1" >/dev/null 2>&1; }
@@ -205,12 +207,16 @@ if [[ "$teams_code" != 200 || -z "$TEAM_ID" ]]; then fail "world team lookup fai
 game_code="$(curl --silent --show-error --connect-timeout 3 --max-time 60 -o "$AUTH_TMP/game.json" -w '%{http_code}' -X POST "http://127.0.0.1:$HOST_PORT/api/v1/games" -H 'Content-Type: application/json' -H "Authorization: Bearer $ACCESS_TOKEN" -d "{\"leagueId\":\"$LEAGUE_ID\",\"teamId\":\"$TEAM_ID\",\"name\":\"PB12 Docker Smoke\",\"difficulty\":\"NORMAL\",\"gameSpeed\":\"NORMAL\",\"teamsPerDivision\":5}")"
 if [[ "$game_code" != 201 ]]; then fail "career creation returned $game_code"; exit 1; fi
 career_created=true; flyway_run1="$(docker exec "$POSTGRES" psql -U "$DB_USER" -d "$DB_NAME" -Atc "SELECT COUNT(*) FROM flyway_schema_history WHERE success = true" | tr -d '[:space:]')"
+if ! [[ "$flyway_run1" =~ ^[1-9][0-9]*$ ]]; then fail "Flyway run 1 did not produce a positive migration count"; exit 1; fi
 
 stop_started="$(date +%s%3N)"
 if ! docker stop --time 30 "$BACKEND" > "$RUN_DIR/docker-stop-run1.txt" 2>&1; then fail "docker stop run 1 failed"; exit 1; fi
-docker_stop_used=true; stop_finished="$(date +%s%3N)"; shutdown_duration_ms=$((stop_finished - stop_started)); docker logs "$BACKEND" > "$SHUTDOWN_LOG" 2>&1 || true
-if grep -qi 'Commencing graceful shutdown' "$SHUTDOWN_LOG" && grep -qi 'Graceful shutdown complete' "$SHUTDOWN_LOG"; then graceful_shutdown_observed=true; shutdown_marker_order_valid=true; fi
+docker_stop_used=true; stop_finished="$(date +%s%3N)"; shutdown_duration_ms=$((stop_finished - stop_started)); container_exit_code="$(docker inspect -f '{{.State.ExitCode}}' "$BACKEND" 2>/dev/null || echo 125)"; docker logs "$BACKEND" > "$SHUTDOWN_LOG" 2>&1 || true
+first_shutdown_line="$(grep -inm1 'Commencing graceful shutdown' "$SHUTDOWN_LOG" | cut -d: -f1 || true)"
+last_shutdown_line="$(grep -inm1 'Graceful shutdown complete' "$SHUTDOWN_LOG" | cut -d: -f1 || true)"
+if [[ -n "$first_shutdown_line" && -n "$last_shutdown_line" ]]; then graceful_shutdown_observed=true; if (( first_shutdown_line < last_shutdown_line )); then shutdown_marker_order_valid=true; fi; fi
 if [[ "$graceful_shutdown_observed" != true ]]; then fail "graceful shutdown markers were not observed"; exit 1; fi
+if [[ "$shutdown_marker_order_valid" != true || "$container_exit_code" != 0 ]]; then fail "graceful shutdown ordering or exit code invalid"; exit 1; fi
 
 start_backend "$RESTART_BACKEND" "$RESTART_PORT" false
 if ! wait_ready "$RESTART_PORT"; then docker logs "$RESTART_BACKEND" > "$RESTART_LOG" 2>&1 || true; fail "second startup did not become ready"; exit 1; fi
@@ -221,6 +227,7 @@ restart_login_code="$(curl --silent --show-error --connect-timeout 3 --max-time 
 if [[ "$restart_login_code" != 200 ]]; then fail "login after restart returned $restart_login_code"; exit 1; fi
 restart_games_code="$(curl --silent --show-error --connect-timeout 3 --max-time 20 -o "$AUTH_TMP/restart-games.json" -w '%{http_code}' "http://127.0.0.1:$RESTART_PORT/api/v1/games" -H "Authorization: Bearer $ACCESS_TOKEN")"; [[ "$restart_games_code" == 200 ]] && career_recovered=true
 flyway_run2="$(docker exec "$POSTGRES" psql -U "$DB_USER" -d "$DB_NAME" -Atc "SELECT COUNT(*) FROM flyway_schema_history WHERE success = true" | tr -d '[:space:]')"
+if ! [[ "$flyway_run2" =~ ^[1-9][0-9]*$ ]] || [[ "$flyway_run2" != "$flyway_run1" ]]; then fail "Flyway migration count changed across restart"; exit 1; fi
 
 docker stop --time 10 "$REDIS" >/dev/null; sleep 3
 redis_down_liveness="$(http_code "http://127.0.0.1:$RESTART_PORT/api/v1/health/liveness" "$RUN_DIR/redis-down-liveness.json")"
