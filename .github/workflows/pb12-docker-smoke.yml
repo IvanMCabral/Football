@@ -116,13 +116,21 @@ jobs:
           fi
           critical="$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' "$scan")"
           high="$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$scan")"
-          jq --argjson critical "$critical" --argjson high "$high" \
-            '.criticalVulnerabilities=$critical | .highVulnerabilities=$high |
-             if $critical > 0 then .status="FAIL" | .failureReason=((.failureReason // "") + "; fixable CRITICAL vulnerabilities present") else . end' \
-            "$result" > "$result.tmp"
-          mv "$result.tmp" "$result"
-          cp "$result" target/pb12-docker-smoke-result.json
-          jq '{status,dockerAvailable,imageBuilt,imageId,imageSizeBytes,runtimeUser,runtimeUid,javaPid1,healthcheckHealthy,liveness,readiness,registered,login,me,careerCreated,secondStartup,dockerStopUsed,dockerKillUsed,gracefulShutdownObserved,shutdownMarkerOrderValid,redisDownReadiness,postgresDownReadiness,criticalVulnerabilities,highVulnerabilities,residualContainers,residualNetworks,cleanupVerified}' "$result"
+           jq --argjson critical "$critical" --argjson high "$high" \
+             '.criticalVulnerabilities=$critical | .highVulnerabilities=$high |
+              if $critical > 0 then .status="FAIL" | .failureReason=((.failureReason // "") + "; fixable CRITICAL vulnerabilities present") else . end' \
+             "$result" > "$result.tmp"
+           mv "$result.tmp" "$result"
+           cp "$result" target/pb12-docker-smoke-result.json
+           final_status="$(jq -r '.status // "FAIL"' "$result")"
+           final_reason="$(jq -r '.failureReason // "unknown result failure"' "$result")"
+           if [[ "$final_status" != PASS ]]; then
+             echo "::error title=PB12 Docker result::$final_reason"
+           fi
+           if [[ "$critical" -gt 0 || "$high" -gt 0 ]]; then
+             echo "::warning title=PB12 image vulnerability counts::critical=$critical high=$high"
+           fi
+           jq '{status,dockerAvailable,imageBuilt,imageId,imageSizeBytes,runtimeUser,runtimeUid,javaPid1,healthcheckHealthy,liveness,readiness,registered,login,me,careerCreated,secondStartup,dockerStopUsed,dockerKillUsed,gracefulShutdownObserved,shutdownMarkerOrderValid,redisDownReadiness,postgresDownReadiness,criticalVulnerabilities,highVulnerabilities,residualContainers,residualNetworks,cleanupVerified}' "$result"
           [[ "$critical" -eq 0 ]]
 
       - name: Upload Docker smoke evidence
