@@ -1,0 +1,122 @@
+name: PB1.2.2 Docker smoke
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - pom.xml
+      - src/**
+      - tools/**
+      - .github/workflows/pb12-docker-smoke.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pb12-docker-smoke
+  cancel-in-progress: true
+
+jobs:
+  docker-smoke:
+    name: Build and smoke backend image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout audited revision
+        uses: actions/checkout@v4
+
+      - name: Generate ephemeral job credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          db_password="$(openssl rand -hex 32)"
+          redis_password="$(openssl rand -hex 32)"
+          jwt_secret="$(openssl rand -base64 96 | tr -d '\n')"
+          echo "::add-mask::$db_password"
+          echo "::add-mask::$redis_password"
+          echo "::add-mask::$jwt_secret"
+          {
+            echo "DB_PASSWORD=$db_password"
+            echo "REDIS_PASSWORD=$redis_password"
+            echo "REDIS_USERNAME=default"
+            echo "JWT_SECRET=$jwt_secret"
+            echo "DB_NAME=football_manager"
+            echo "DB_USER=manager"
+            echo "PB12_RUN_DIR=$RUNNER_TEMP/pb12-docker-smoke-$GITHUB_RUN_ID"
+            echo "PB12_HOST_PORT=18080"
+            echo "PB12_RESTART_PORT=18081"
+          } >> "$GITHUB_ENV"
+
+      - name: Run real Docker build and lifecycle smoke
+        id: smoke
+        shell: bash
+        env:
+          DOCKER_BUILDKIT: "1"
+        run: |
+          set -euo pipefail
+          bash tools/run-pb12-docker-smoke.sh
+          mkdir -p target
+          cp "$PB12_RUN_DIR/pb12-docker-smoke-result.json" target/pb12-docker-smoke-result.json
+
+      - name: Generate image SBOM
+        if: always()
+        uses: anchore/sbom-action@v0.17.0
+        with:
+          image: manager-backend:pb12
+          format: cyclonedx-json
+          output-file: ${{ runner.temp }}/pb12-docker-smoke-${{ github.run_id }}/pb12-image-sbom.cdx.json
+          upload-artifact: false
+
+      - name: Scan image for vulnerabilities
+        if: always()
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: manager-backend:pb12
+          format: json
+          output: ${{ runner.temp }}/pb12-docker-smoke-${{ github.run_id }}/pb12-trivy.json
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+          vuln-type: os,library
+          scanners: vuln
+
+      - name: Finalize scan gate and result JSON
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$PB12_RUN_DIR/pb12-docker-smoke-result.json"
+          sbom="$PB12_RUN_DIR/pb12-image-sbom.cdx.json"
+          scan="$PB12_RUN_DIR/pb12-trivy.json"
+          if [[ ! -s "$result" ]]; then
+            jq -n '{status:"FAIL",failureReason:"smoke result missing",dockerAvailable:true,imageBuilt:false,cleanupVerified:false}' > "$result"
+          fi
+          if [[ ! -s "$sbom" || ! -s "$scan" ]]; then
+            jq '.status="FAIL" | .failureReason=((.failureReason // "") + "; SBOM or vulnerability scan missing")' "$result" > "$result.tmp"
+            mv "$result.tmp" "$result"
+            cp "$result" target/pb12-docker-smoke-result.json 2>/dev/null || true
+            exit 1
+          fi
+          critical="$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' "$scan")"
+          high="$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$scan")"
+          jq --argjson critical "$critical" --argjson high "$high" \
+            '.criticalVulnerabilities=$critical | .highVulnerabilities=$high |
+             if $critical > 0 then .status="FAIL" | .failureReason=((.failureReason // "") + "; fixable CRITICAL vulnerabilities present") else . end' \
+            "$result" > "$result.tmp"
+          mv "$result.tmp" "$result"
+          cp "$result" target/pb12-docker-smoke-result.json
+          jq '{status,dockerAvailable,imageBuilt,imageId,imageSizeBytes,runtimeUser,runtimeUid,javaPid1,healthcheckHealthy,liveness,readiness,registered,login,me,careerCreated,secondStartup,dockerStopUsed,dockerKillUsed,gracefulShutdownObserved,shutdownMarkerOrderValid,redisDownReadiness,postgresDownReadiness,criticalVulnerabilities,highVulnerabilities,residualContainers,residualNetworks,cleanupVerified}' "$result"
+          [[ "$critical" -eq 0 ]]
+
+      - name: Upload Docker smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pb12-docker-smoke-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/pb12-docker-smoke-${{ github.run_id }}/
+            target/pb12-docker-smoke-result.json
+          if-no-files-found: warn
+          retention-days: 7
