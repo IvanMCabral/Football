@@ -27,11 +27,22 @@ No Docker result is claimed in this review.
 | Validation | Result |
 |---|---|
 | Backend test compile | PASS |
-| Backend full suite | 2570 tests, 0 failures, 0 errors, 4 skipped |
+| Backend full suite | 2571 tests, 0 failures, 0 errors, 4 skipped |
 | Production JAR smoke | PASS |
 | Frontend encoding guard | PASS |
 | Frontend development build | PASS |
 | Frontend production build | PASS |
 | Frontend artifact inspection | PASS |
 | Frontend tests | 1029 SUCCESS, 0 failures, 2 skipped |
+
+## Final smoke lifecycle cleanup
+
+The follow-up lifecycle cleanup closed the remaining runner evidence gaps:
+
+- PostgreSQL stops with `pg_ctl stop -m fast -w`;
+- Redis stops with authenticated `SHUTDOWN NOSAVE`;
+- PASS requires `javaForceKillUsed=false`, `postgresForceKillUsed=false`, `redisForceKillUsed=false`;
+- PASS verifies Java/helper/PostgreSQL/Redis processes and HTTP/PostgreSQL/Redis ports;
+- default PASS removes the workspace and reports `workspaceExists=false`, `safeSummaryExists=false`, `residualTempArtifacts=0`;
+- negative lifecycle modes fail closed and never emit PASS.
 
