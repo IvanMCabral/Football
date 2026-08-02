@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.1</version>
+        <version>3.3.11</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -25,8 +25,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.outputTimestamp>2026-08-01T00:00:00Z</project.build.outputTimestamp>
         <!-- Keep the embedded runtime libraries on versions with current security fixes. -->
-        <jackson.version>2.18.8</jackson.version>
+        <jackson-bom.version>2.18.8</jackson-bom.version>
         <netty.version>4.1.136.Final</netty.version>
+        <postgresql.version>42.7.11</postgresql.version>
+        <flyway.version>11.20.0</flyway.version>
     </properties>
 
     <dependencies>
@@ -88,6 +90,10 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
         <!-- JWT Support -->
