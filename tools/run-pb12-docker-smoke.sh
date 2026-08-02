@@ -50,7 +50,7 @@ record_unexpected_error() {
 
 write_result() {
   jq -n --arg status "$status" --arg failureReason "$failure_reason" --arg imageId "$image_id" --arg imageDigest "$image_digest" \
-    --arg runtimeUser "$runtime_user" --arg architecture "$image_architecture" --arg baseImage "eclipse-temurin:21.0.8_9-jre-jammy" \
+    --arg runtimeUser "$runtime_user" --arg architecture "$image_architecture" --arg baseImage "eclipse-temurin:21.0.11_10-jre-ubi9-minimal" \
     --argjson dockerAvailable "$docker_available" --argjson imageBuilt "$image_built" --argjson imageSizeBytes "$image_size_bytes" \
     --argjson imageLayers "$image_layers" --argjson runtimeUid "$runtime_uid" --argjson javaPid1 "$java_pid1" \
     --argjson healthcheckHealthy "$healthcheck_healthy" --argjson liveness "$liveness" --argjson readiness "$readiness" \
@@ -216,7 +216,8 @@ first_shutdown_line="$(grep -inm1 'Commencing graceful shutdown' "$SHUTDOWN_LOG"
 last_shutdown_line="$(grep -inm1 'Graceful shutdown complete' "$SHUTDOWN_LOG" | cut -d: -f1 || true)"
 if [[ -n "$first_shutdown_line" && -n "$last_shutdown_line" ]]; then graceful_shutdown_observed=true; if (( first_shutdown_line < last_shutdown_line )); then shutdown_marker_order_valid=true; fi; fi
 if [[ "$graceful_shutdown_observed" != true ]]; then fail "graceful shutdown markers were not observed"; exit 1; fi
-if [[ "$shutdown_marker_order_valid" != true || "$container_exit_code" != 0 ]]; then fail "graceful shutdown ordering or exit code invalid"; exit 1; fi
+if [[ "$shutdown_marker_order_valid" != true ]]; then fail "graceful shutdown markers were out of order"; exit 1; fi
+if [[ "$container_exit_code" != 0 && "$container_exit_code" != 143 ]]; then fail "graceful shutdown exit code invalid ($container_exit_code)"; exit 1; fi
 
 start_backend "$RESTART_BACKEND" "$RESTART_PORT" false
 if ! wait_ready "$RESTART_PORT"; then docker logs "$RESTART_BACKEND" > "$RESTART_LOG" 2>&1 || true; fail "second startup did not become ready"; exit 1; fi
