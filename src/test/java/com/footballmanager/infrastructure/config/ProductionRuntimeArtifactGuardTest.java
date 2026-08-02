@@ -45,8 +45,8 @@ class ProductionRuntimeArtifactGuardTest {
     void dockerfileUsesExplicitHardenedRuntimeNonRootAndCurlHealthcheck() throws IOException {
         String dockerfile = read("Dockerfile");
 
-        assertThat(dockerfile).contains("FROM maven:3.9.11-eclipse-temurin-21 AS build");
-        assertThat(dockerfile).contains("FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23");
+        assertThat(dockerfile).contains("FROM maven:3.9.11-eclipse-temurin-21@sha256:463a1849665463254b2dd56e3a5b316f1596bc93d0571065c06ea05bb48ab8f4 AS build");
+        assertThat(dockerfile).contains("FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23@sha256:426401268a42785be73823f6115ee0e721bdb59c12c779947b83fcead1a66645");
         assertThat(dockerfile).contains("apk add --no-cache curl ca-certificates tzdata shadow findutils");
         assertThat(dockerfile).contains("apk upgrade --no-cache");
         assertThat(dockerfile).contains("USER manager");
@@ -54,6 +54,26 @@ class ProductionRuntimeArtifactGuardTest {
         assertThat(dockerfile).contains("http://127.0.0.1:${PORT}/api/v1/health/liveness");
         assertThat(dockerfile).doesNotContain("latest");
         assertThat(dockerfile).doesNotContain("wget");
+    }
+
+    @Test
+    void dockerSmokeSupplyChainAndArtifactHygieneAreFailClosed() throws IOException {
+        String dockerfile = read("Dockerfile");
+        String workflow = read(".github/workflows/pb12-docker-smoke.yml");
+        String runner = read("tools/run-pb12-docker-smoke.sh");
+
+        assertThat(dockerfile).contains("@sha256:");
+        assertThat(workflow).contains("actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683");
+        assertThat(workflow).contains("anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5");
+        assertThat(workflow).contains("aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25");
+        assertThat(workflow).contains("actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02");
+        assertThat(workflow).doesNotContain("uses: actions/checkout@v");
+        assertThat(workflow).doesNotContain("docker system prune");
+        assertThat(workflow).contains("pb12-artifact-manifest.json");
+        assertThat(workflow).contains("finalArtifactSecretScanPassed");
+        assertThat(runner).contains("authTempCleanupVerified");
+        assertThat(runner).contains("finalArtifactSecretScanPassed");
+        assertThat(runner).contains("PB12_FORCE_AUTH_TMP_DELETE_FAILURE");
     }
 
     @Test

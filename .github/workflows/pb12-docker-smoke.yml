@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 35
     steps:
       - name: Checkout audited revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Generate ephemeral job credentials
         shell: bash
@@ -77,7 +77,7 @@ jobs:
 
       - name: Generate image SBOM
         if: always()
-        uses: anchore/sbom-action@v0.17.0
+        uses: anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
         with:
           image: manager-backend:pb12
           format: cyclonedx-json
@@ -86,7 +86,7 @@ jobs:
 
       - name: Scan image for vulnerabilities
         if: always()
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: manager-backend:pb12
           format: json
@@ -139,9 +139,54 @@ jobs:
            echo "::notice title=PB12 Docker result summary::$result_summary"
            [[ "$critical" -eq 0 ]]
 
+      - name: Final artifact secret scan and manifest
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$PB12_RUN_DIR/pb12-docker-smoke-result.json"
+          final_scan="$PB12_RUN_DIR/pb12-final-secret-scan.json"
+          manifest="$PB12_RUN_DIR/pb12-artifact-manifest.json"
+          mkdir -p "$PB12_RUN_DIR"
+          leaks=0
+          if find "$PB12_RUN_DIR" -type d -name auth-tmp -print -quit | grep -q .; then leaks=1; fi
+          if grep -RIlE 'Authorization:[[:space:]]*Bearer[[:space:]]+[A-Za-z0-9._~-]{20,}|JWT_SECRET[=:][^[:space:]]+|REDIS_PASSWORD[=:][^[:space:]]+|DB_PASSWORD[=:][^[:space:]]+|postgres(ql)?://[^[:space:]]+:[^[:space:]]+@|redis://[^[:space:]]+:[^[:space:]]+@|(^|/)(\.env|.*\.cookie)$' "$PB12_RUN_DIR" target/pb12-docker-smoke-result.json --exclude='pb12-final-secret-scan.json' --exclude='pb12-artifact-manifest.json' >/dev/null 2>&1; then leaks=1; fi
+          passed=true
+          if [[ "$leaks" -ne 0 ]]; then passed=false; fi
+          jq -n --argjson passed "$passed" --argjson leaks "$leaks" '{passed:$passed,secretLeaksDetected:$leaks,scope:"final uploaded artifact set",details:"match details intentionally withheld"}' > "$final_scan"
+          if [[ -s "$result" ]]; then
+            jq --argjson passed "$passed" --argjson leaks "$leaks" '.finalArtifactSecretScanPassed=$passed | .secretLeaksDetected=$leaks | if $passed then . else .status="FAIL" | .failureReason=((.failureReason // "") + "; final artifact secret scan failed") end' "$result" > "$result.tmp"
+            mv "$result.tmp" "$result"
+            cp "$result" target/pb12-docker-smoke-result.json
+          fi
+          python - "$PB12_RUN_DIR" "target/pb12-docker-smoke-result.json" <<'PY'
+          import hashlib, json, pathlib, sys
+          run_dir = pathlib.Path(sys.argv[1])
+          target = pathlib.Path(sys.argv[2])
+          files = []
+          for path in sorted(run_dir.rglob('*')):
+              if path.is_file() and path.name != 'pb12-artifact-manifest.json':
+                  files.append(path)
+          if target.is_file():
+              files.append(target)
+          entries = []
+          for path in files:
+              entries.append({
+                  'path': path.as_posix(),
+                  'sizeBytes': path.stat().st_size,
+                  'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                  'type': path.suffix.lstrip('.') or 'text',
+                  'containsSecrets': False,
+              })
+          (run_dir / 'pb12-artifact-manifest.json').write_text(
+              json.dumps({'containsSecrets': False, 'files': entries}, indent=2) + '\n',
+              encoding='utf-8')
+          PY
+          [[ "$leaks" -eq 0 ]]
+
       - name: Upload Docker smoke evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pb12-docker-smoke-${{ github.run_id }}
           path: |

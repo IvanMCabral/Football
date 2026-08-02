@@ -1,12 +1,14 @@
 ﻿# syntax=docker/dockerfile:1.7
 
-FROM maven:3.9.11-eclipse-temurin-21 AS build
+# Maven 3.9.11 / Temurin 21, linux/amd64 manifest digest verified from Docker Hub.
+FROM maven:3.9.11-eclipse-temurin-21@sha256:463a1849665463254b2dd56e3a5b316f1596bc93d0571065c06ea05bb48ab8f4 AS build
 WORKDIR /workspace
 COPY pom.xml ./
 COPY src ./src
 RUN mvn -q -DskipTests package
 
-FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23
+# Temurin 21.0.11_10 JRE Alpine 3.23, linux/amd64 manifest digest verified from Docker Hub.
+FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23@sha256:426401268a42785be73823f6115ee0e721bdb59c12c779947b83fcead1a66645
 
 ENV TZ=UTC \
     LANG=C.UTF-8 \

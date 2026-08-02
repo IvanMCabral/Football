@@ -7,6 +7,7 @@ RUNNER_TEMP_VALUE="$(printenv RUNNER_TEMP 2>/dev/null || true)"
 if [[ -z "$RUNNER_TEMP_VALUE" ]]; then RUNNER_TEMP_VALUE=target; fi
 RUN_DIR="$(printenv PB12_RUN_DIR 2>/dev/null || echo "$RUNNER_TEMP_VALUE/pb12-docker-smoke-$RUN_ID")"
 mkdir -p "$RUN_DIR" target
+chmod 700 "$RUN_DIR"
 IMAGE="$(printenv PB12_IMAGE 2>/dev/null || echo manager-backend:pb12)"
 NETWORK="manager-pb12-smoke-$RUN_ID"
 POSTGRES="manager-pb12-postgres-$RUN_ID"
@@ -34,10 +35,12 @@ container_exit_code=125
 redis_down_liveness=0; redis_down_readiness=0; postgres_down_liveness=0; postgres_down_readiness=0
 unexpected_filesystem_writes=0; secret_leaks_detected=0; critical_vulnerabilities=0; high_vulnerabilities=0
 residual_containers=0; residual_networks=0; cleanup_verified=false; cleanup_force_used=false
+AUTH_TMP=""; auth_temp_exists=false; auth_temp_cleanup_verified=false; final_artifact_secret_scan_passed=false
 
 BUILD_LOG="$RUN_DIR/docker-build.log"; IMAGE_INSPECT="$RUN_DIR/docker-image-inspect.json"; IMAGE_HISTORY="$RUN_DIR/docker-image-history.txt"
 IMAGE_FILES="$RUN_DIR/image-files.txt"; STARTUP_LOG="$RUN_DIR/startup.log"; RESTART_LOG="$RUN_DIR/restart.log"
 SHUTDOWN_LOG="$RUN_DIR/shutdown.log"; NEGATIVE_LOG="$RUN_DIR/negative-readiness.log"; CLEANUP_REPORT="$RUN_DIR/cleanup-report.json"
+FINAL_SECRET_SCAN_REPORT="$RUN_DIR/pb12-final-secret-scan.json"
 RESULT="$RUN_DIR/pb12-docker-smoke-result.json"
 
 record_unexpected_error() {
@@ -64,8 +67,9 @@ write_result() {
     --argjson unexpectedFilesystemWrites "$unexpected_filesystem_writes" --argjson secretLeaksDetected "$secret_leaks_detected" \
     --argjson criticalVulnerabilities "$critical_vulnerabilities" --argjson highVulnerabilities "$high_vulnerabilities" \
     --argjson residualContainers "$residual_containers" --argjson residualNetworks "$residual_networks" --argjson cleanupVerified "$cleanup_verified" \
-    --argjson cleanupForceUsed "$cleanup_force_used" \
-    '{status:$status,failureReason:$failureReason,dockerAvailable:$dockerAvailable,imageBuilt:$imageBuilt,imageId:$imageId,imageDigest:$imageDigest,imageSizeBytes:$imageSizeBytes,imageLayers:$imageLayers,architecture:$architecture,baseImage:$baseImage,runtimeUser:$runtimeUser,runtimeUid:$runtimeUid,javaPid1:$javaPid1,healthcheckHealthy:$healthcheckHealthy,liveness:$liveness,readiness:$readiness,registered:$registered,login:$login,me:$me,careerCreated:$careerCreated,careerRecovered:$careerRecovered,flywayMigrationsRun1:$flywayMigrationsRun1,secondStartup:$secondStartup,flywayMigrationsRun2:$flywayMigrationsRun2,dockerStopUsed:$dockerStopUsed,dockerKillUsed:$dockerKillUsed,gracefulShutdownObserved:$gracefulShutdownObserved,shutdownMarkerOrderValid:$shutdownMarkerOrderValid,shutdownDurationMs:$shutdownDurationMs,containerExitCode:$containerExitCode,redisDownLiveness:$redisDownLiveness,redisDownReadiness:$redisDownReadiness,postgresDownLiveness:$postgresDownLiveness,postgresDownReadiness:$postgresDownReadiness,unexpectedFilesystemWrites:$unexpectedFilesystemWrites,secretLeaksDetected:$secretLeaksDetected,criticalVulnerabilities:$criticalVulnerabilities,highVulnerabilities:$highVulnerabilities,residualContainers:$residualContainers,residualNetworks:$residualNetworks,cleanupVerified:$cleanupVerified,cleanupForceUsed:$cleanupForceUsed}' > "$RESULT"
+    --argjson cleanupForceUsed "$cleanup_force_used" --argjson authTempExists "$auth_temp_exists" \
+    --argjson authTempCleanupVerified "$auth_temp_cleanup_verified" --argjson finalArtifactSecretScanPassed "$final_artifact_secret_scan_passed" \
+    '{status:$status,failureReason:$failureReason,dockerAvailable:$dockerAvailable,imageBuilt:$imageBuilt,imageId:$imageId,imageDigest:$imageDigest,imageSizeBytes:$imageSizeBytes,imageLayers:$imageLayers,architecture:$architecture,baseImage:$baseImage,runtimeUser:$runtimeUser,runtimeUid:$runtimeUid,javaPid1:$javaPid1,healthcheckHealthy:$healthcheckHealthy,liveness:$liveness,readiness:$readiness,registered:$registered,login:$login,me:$me,careerCreated:$careerCreated,careerRecovered:$careerRecovered,flywayMigrationsRun1:$flywayMigrationsRun1,secondStartup:$secondStartup,flywayMigrationsRun2:$flywayMigrationsRun2,dockerStopUsed:$dockerStopUsed,dockerKillUsed:$dockerKillUsed,gracefulShutdownObserved:$gracefulShutdownObserved,shutdownMarkerOrderValid:$shutdownMarkerOrderValid,shutdownDurationMs:$shutdownDurationMs,containerExitCode:$containerExitCode,redisDownLiveness:$redisDownLiveness,redisDownReadiness:$redisDownReadiness,postgresDownLiveness:$postgresDownLiveness,postgresDownReadiness:$postgresDownReadiness,unexpectedFilesystemWrites:$unexpectedFilesystemWrites,secretLeaksDetected:$secretLeaksDetected,criticalVulnerabilities:$criticalVulnerabilities,highVulnerabilities:$highVulnerabilities,residualContainers:$residualContainers,residualNetworks:$residualNetworks,cleanupVerified:$cleanupVerified,cleanupForceUsed:$cleanupForceUsed,authTempExists:$authTempExists,authTempCleanupVerified:$authTempCleanupVerified,finalArtifactSecretScanPassed:$finalArtifactSecretScanPassed}' > "$RESULT"
 }
 fail() { status=FAIL; if [[ -z "$failure_reason" ]]; then failure_reason="$1"; else failure_reason="$failure_reason; $1"; fi; }
 container_exists() { docker container inspect "$1" >/dev/null 2>&1; }
@@ -91,12 +95,37 @@ cleanup() {
     fi
   done
   docker network rm "$NETWORK" >/dev/null 2>&1
+  if [[ -n "$AUTH_TMP" ]]; then
+    auth_temp_exists=false
+    if [[ "${PB12_FORCE_AUTH_TMP_DELETE_FAILURE:-false}" == true ]]; then
+      auth_temp_cleanup_verified=false
+    else
+      rm -rf -- "$AUTH_TMP" >/dev/null 2>&1 || true
+      if [[ -e "$AUTH_TMP" ]]; then auth_temp_cleanup_verified=false; else auth_temp_cleanup_verified=true; fi
+    fi
+    if [[ -e "$AUTH_TMP" ]]; then auth_temp_exists=true; fi
+  else
+    auth_temp_cleanup_verified=true
+  fi
   residual_containers="$(docker ps -aq --filter "name=^$POSTGRES$" --filter "name=^$REDIS$" --filter "name=^$BACKEND$" --filter "name=^$RESTART_BACKEND$" | sed '/^$/d' | wc -l | tr -d ' ')"
   residual_networks="$(docker network ls -q --filter "name=^$NETWORK$" | sed '/^$/d' | wc -l | tr -d ' ')"
   if [[ "$residual_containers" == 0 && "$residual_networks" == 0 && "$cleanup_force_used" == false ]]; then cleanup_verified=true; else cleanup_verified=false; fi
   jq -n --argjson residualContainers "$residual_containers" --argjson residualNetworks "$residual_networks" --argjson cleanupVerified "$cleanup_verified" --argjson cleanupForceUsed "$cleanup_force_used" \
-    '{residualContainers:$residualContainers,residualNetworks:$residualNetworks,cleanupVerified:$cleanupVerified,cleanupForceUsed:$cleanupForceUsed}' > "$CLEANUP_REPORT"
+    --argjson authTempExists "$auth_temp_exists" --argjson authTempCleanupVerified "$auth_temp_cleanup_verified" \
+    '{residualContainers:$residualContainers,residualNetworks:$residualNetworks,cleanupVerified:$cleanupVerified,cleanupForceUsed:$cleanupForceUsed,authTempExists:$authTempExists,authTempCleanupVerified:$authTempCleanupVerified}' > "$CLEANUP_REPORT"
   if [[ "$cleanup_verified" != true ]]; then status=FAIL; if [[ -z "$failure_reason" ]]; then failure_reason="cleanup verification failed"; else failure_reason="$failure_reason; cleanup verification failed"; fi; fi
+  if [[ "$auth_temp_cleanup_verified" != true || "$auth_temp_exists" == true ]]; then status=FAIL; if [[ -z "$failure_reason" ]]; then failure_reason="auth temporary directory cleanup failed"; else failure_reason="$failure_reason; auth temporary directory cleanup failed"; fi; fi
+  final_artifact_secret_scan_passed=true
+  secret_matches="$(grep -RIlE 'Authorization:[[:space:]]*Bearer[[:space:]]+[A-Za-z0-9._~-]{20,}|JWT_SECRET[=:][^[:space:]]+|REDIS_PASSWORD[=:][^[:space:]]+|DB_PASSWORD[=:][^[:space:]]+|postgres(ql)?://[^[:space:]]+:[^[:space:]]+@|redis://[^[:space:]]+:[^[:space:]]+@|(^|/)(\.env|.*\.cookie)$' "$RUN_DIR" --exclude='pb12-docker-smoke-result.json' --exclude='pb12-final-secret-scan.json' 2>/dev/null || true)"
+  if [[ -n "$secret_matches" ]]; then
+    secret_leaks_detected="$(printf '%s\n' "$secret_matches" | sed '/^$/d' | wc -l | tr -d ' ')"
+    final_artifact_secret_scan_passed=false
+    status=FAIL
+    if [[ -z "$failure_reason" ]]; then failure_reason="final artifact secret scan detected a sensitive pattern"; else failure_reason="$failure_reason; final artifact secret scan detected a sensitive pattern"; fi
+  fi
+  if [[ "$auth_temp_cleanup_verified" != true || "$auth_temp_exists" == true ]]; then final_artifact_secret_scan_passed=false; fi
+  jq -n --argjson passed "$final_artifact_secret_scan_passed" --argjson leaks "$secret_leaks_detected" \
+    '{passed:$passed,secretLeaksDetected:$leaks,scope:"final uploaded artifact set",details:"match details intentionally withheld"}' > "$FINAL_SECRET_SCAN_REPORT"
   write_result
   if [[ "$status" != PASS ]]; then
     echo "PB12 smoke failure: $failure_reason" >&2
@@ -175,7 +204,8 @@ for i in $(seq 1 60); do
 done
 if [[ "$healthcheck_healthy" != true ]]; then fail "backend Docker HEALTHCHECK did not become healthy"; exit 1; fi
 
-AUTH_TMP="$(mktemp -d)"; AUTH_EMAIL="pb12-$RUN_ID@example.invalid"; AUTH_USERNAME="pb12_$RUN_ID"
+AUTH_TMP="$RUN_DIR/auth-tmp"; (umask 077 && mkdir -p "$AUTH_TMP"); chmod 700 "$AUTH_TMP"
+AUTH_EMAIL="pb12-$RUN_ID@example.invalid"; AUTH_USERNAME="pb12_$RUN_ID"
 AUTH_PASSWORD="$(openssl rand -hex 24)"
 register_code="$(curl --silent --show-error --connect-timeout 3 --max-time 20 -o "$AUTH_TMP/register.json" -w '%{http_code}' -X POST "http://127.0.0.1:$HOST_PORT/api/v1/auth/register" -H 'Content-Type: application/json' -d "{\"email\":\"$AUTH_EMAIL\",\"username\":\"$AUTH_USERNAME\",\"password\":\"$AUTH_PASSWORD\"}")"
 if [[ "$register_code" != 200 ]]; then fail "register returned $register_code"; exit 1; fi
@@ -244,6 +274,6 @@ if [[ "$postgres_down_liveness" != 200 || "$postgres_down_readiness" != 503 ]]; 
 docker diff "$RESTART_BACKEND" > "$RUN_DIR/runtime.diff" 2>&1 || true
 unexpected_filesystem_writes="$( { grep -Ev '^$|^C /tmp|^A /tmp|^D /tmp' "$RUN_DIR/runtime.diff" || true; } | wc -l | tr -d ' ')"
 if [[ "$unexpected_filesystem_writes" != 0 ]]; then fail "unexpected runtime filesystem writes detected"; exit 1; fi
-if grep -RInE 'D:/|C:/|Authorization: Bearer|JWT_SECRET=|REDIS_PASSWORD=|DB_PASSWORD=' "$RUN_DIR" --exclude='pb12-docker-smoke-result.json' --exclude='cleanup-report.json' >/dev/null 2>&1; then secret_leaks_detected=1; fail "secret or local-path pattern found in smoke evidence"; exit 1; fi
+if grep -RInE 'D:/|C:/|Authorization: Bearer|JWT_SECRET=|REDIS_PASSWORD=|DB_PASSWORD=' "$RUN_DIR" --exclude='pb12-docker-smoke-result.json' --exclude='cleanup-report.json' --exclude='pb12-final-secret-scan.json' --exclude-dir='auth-tmp' >/dev/null 2>&1; then secret_leaks_detected=1; fail "secret or local-path pattern found in smoke evidence"; exit 1; fi
 write_result
 exit 0
