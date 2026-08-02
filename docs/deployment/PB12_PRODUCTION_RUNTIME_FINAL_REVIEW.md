@@ -90,4 +90,6 @@ Remaining outside PB1.2.1:
 
 ## Final decision
 
+PB1.2.2 Docker implementation is versioned separately. Its remote execution is a distinct gate and is not inferred from the local JAR smoke.
+
 The implementation is complete for PB1.2.1, but Docker smoke is externally blocked by missing Docker on this workstation. The next phase can proceed only after Docker-capable validation or a cloud/build-runner smoke.

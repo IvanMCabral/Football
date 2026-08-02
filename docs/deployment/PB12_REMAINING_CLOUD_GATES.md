@@ -4,9 +4,13 @@ Date: 2026-08-01
 
 These gates are intentionally outside PB1.2.1. They must be closed before public staging/beta.
 
+## PB1.2.2 Docker gate
+
+The reproducible Docker workflow is now versioned at `.github/workflows/pb12-docker-smoke.yml` and uses `tools/run-pb12-docker-smoke.sh`. It must be dispatched and observed remotely before Docker is considered approved. The current workstation still has no Docker daemon, so no local image result is claimed.
+
 ## P0 before Internet exposure
 
-- Build and smoke the Docker image on a machine with Docker.
+- Observe a green remote PB1.2.2 Docker image build and lifecycle smoke; the workflow implementation is present but execution evidence is still required.
 - Choose and create managed PostgreSQL staging.
 - Choose and create managed Redis staging with TLS and persistence policy.
 - Configure production secrets in the provider.

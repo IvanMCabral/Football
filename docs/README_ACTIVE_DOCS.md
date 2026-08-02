@@ -18,6 +18,16 @@ This index lists the current documentation set for MVP 1. Older reports are reta
 - `MANAGER_TEAM_RUNBOOK.md`
 - `.env` is operational configuration and must not be printed or committed.
 
+## Deployment and runtime gates
+
+- `docs/deployment/PB12_DOCKER_SMOKE_DESIGN.md`
+- `docs/deployment/PB12_DOCKER_CI_RUNBOOK.md`
+- `docs/deployment/PB12_DOCKER_SECURITY_SCAN_POLICY.md`
+- `docs/deployment/PB12_DOCKER_SMOKE_EXECUTION_REPORT.md`
+- `docs/deployment/PB12_DOCKER_RUNTIME_IMPLEMENTATION_REPORT.md`
+- `docs/deployment/PB12_DOCKER_RUNTIME_FINAL_REVIEW.md`
+- `docs/deployment/PB12_REMAINING_CLOUD_GATES.md`
+
 ## Data/model documentation
 
 - `docs/data/MVP1_FINAL_CLOSURE_INDEPENDENT_AUDIT.md`
