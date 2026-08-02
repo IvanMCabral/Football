@@ -88,6 +88,10 @@ cleanup() {
     '{residualContainers:$residualContainers,residualNetworks:$residualNetworks,cleanupVerified:$cleanupVerified,cleanupForceUsed:$cleanupForceUsed}' > "$CLEANUP_REPORT"
   if [[ "$cleanup_verified" != true ]]; then status=FAIL; if [[ -z "$failure_reason" ]]; then failure_reason="cleanup verification failed"; else failure_reason="$failure_reason; cleanup verification failed"; fi; fi
   write_result
+  if [[ "$status" != PASS ]]; then
+    echo "PB12 smoke failure: $failure_reason" >&2
+    echo "::error title=PB12 Docker smoke failure::$failure_reason"
+  fi
 }
 trap cleanup EXIT
 
