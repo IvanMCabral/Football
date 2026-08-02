@@ -61,6 +61,9 @@ class ProductionRuntimeArtifactGuardTest {
         String dockerfile = read("Dockerfile");
         String workflow = read(".github/workflows/pb12-docker-smoke.yml");
         String runner = read("tools/run-pb12-docker-smoke.sh");
+        String manifestBuilder = read("tools/build-pb12-artifact-manifest.py");
+        String manifestVerifier = read("tools/verify-pb12-artifact-manifest.py");
+        String manifestTests = read("tools/test-pb12-artifact-manifest.py");
 
         assertThat(dockerfile).contains("@sha256:");
         assertThat(workflow).contains("actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683");
@@ -70,10 +73,26 @@ class ProductionRuntimeArtifactGuardTest {
         assertThat(workflow).doesNotContain("uses: actions/checkout@v");
         assertThat(workflow).doesNotContain("docker system prune");
         assertThat(workflow).contains("pb12-artifact-manifest.json");
+        assertThat(workflow).contains("tools/build-pb12-artifact-manifest.py");
+        assertThat(workflow).contains("tools/verify-pb12-artifact-manifest.py");
+        assertThat(workflow).contains("artifactInventoryExact");
+        assertThat(workflow).contains("manifestMetadataVerified");
+        assertThat(workflow).contains("path: ${{ runner.temp }}/pb12-docker-smoke-${{ github.run_id }}/artifact/");
+        assertThat(workflow).doesNotContain("'containsSecrets': False");
+        assertThat(workflow).doesNotContain("containsSecrets: False");
         assertThat(workflow).contains("finalArtifactSecretScanPassed");
         assertThat(runner).contains("authTempCleanupVerified");
         assertThat(runner).contains("finalArtifactSecretScanPassed");
         assertThat(runner).contains("PB12_FORCE_AUTH_TMP_DELETE_FAILURE");
+        assertThat(manifestBuilder).contains("containsSecrets");
+        assertThat(manifestBuilder).contains("matches != 0 or not passed");
+        assertThat(manifestBuilder).contains("metadataFiles");
+        assertThat(manifestVerifier).contains("artifact inventory is not exact");
+        assertThat(manifestVerifier).contains("manifest canonical hash mismatch");
+        assertThat(manifestVerifier).contains("containsSecrets mismatch");
+        assertThat(manifestTests).contains("JWT");
+        assertThat(manifestTests).contains("SHA altered");
+        assertThat(manifestTests).contains("file added after manifest");
     }
 
     @Test

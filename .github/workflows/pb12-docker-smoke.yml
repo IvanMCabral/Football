@@ -53,6 +53,10 @@ jobs:
         shell: bash
         run: bash tools/test-pb12-artifact-hygiene.sh
 
+      - name: Verify artifact manifest fails closed
+        shell: bash
+        run: python tools/test-pb12-artifact-manifest.py
+
       - name: Run real Docker build and lifecycle smoke
         id: smoke
         shell: bash
@@ -143,58 +147,54 @@ jobs:
            echo "::notice title=PB12 Docker result summary::$result_summary"
            [[ "$critical" -eq 0 ]]
 
-      - name: Final artifact secret scan and manifest
+      - name: Build and verify exact artifact manifest
         if: always()
         shell: bash
         run: |
           set -euo pipefail
           result="$PB12_RUN_DIR/pb12-docker-smoke-result.json"
-          final_scan="$PB12_RUN_DIR/pb12-final-secret-scan.json"
-          manifest="$PB12_RUN_DIR/pb12-artifact-manifest.json"
-          mkdir -p "$PB12_RUN_DIR"
-          leaks=0
-          if find "$PB12_RUN_DIR" -type d -name auth-tmp -print -quit | grep -q .; then leaks=1; fi
-          if grep -RIlE 'Authorization:[[:space:]]*Bearer[[:space:]]+[A-Za-z0-9._~-]{20,}|JWT_SECRET[=:][^[:space:]]+|REDIS_PASSWORD[=:][^[:space:]]+|DB_PASSWORD[=:][^[:space:]]+|postgres(ql)?://[^[:space:]]+:[^[:space:]]+@|redis://[^[:space:]]+:[^[:space:]]+@|(^|/)(\.env|.*\.cookie)$' "$PB12_RUN_DIR" target/pb12-docker-smoke-result.json --exclude='pb12-final-secret-scan.json' --exclude='pb12-artifact-manifest.json' >/dev/null 2>&1; then leaks=1; fi
-          passed=true
-          if [[ "$leaks" -ne 0 ]]; then passed=false; fi
-          jq -n --argjson passed "$passed" --argjson leaks "$leaks" '{passed:$passed,secretLeaksDetected:$leaks,scope:"final uploaded artifact set",details:"match details intentionally withheld"}' > "$final_scan"
+          artifact="$PB12_RUN_DIR/artifact"
+          manifest="$artifact/pb12-artifact-manifest.json"
+          scan_report="$artifact/pb12-secret-scan-report.json"
+          verification="$PB12_RUN_DIR/pb12-artifact-verification.json"
+          python tools/prepare-pb12-artifact.py --run-dir "$PB12_RUN_DIR" --artifact-dir "$artifact"
+          python tools/build-pb12-artifact-manifest.py --artifact-dir "$artifact" --manifest "$manifest" --scan-report "$scan_report"
+          python tools/verify-pb12-artifact-manifest.py --artifact-dir "$artifact" --manifest "$manifest" --scan-report "$scan_report" --verification-output "$verification"
           if [[ -s "$result" ]]; then
-            jq --argjson passed "$passed" --argjson leaks "$leaks" '.finalArtifactSecretScanPassed=$passed | .secretLeaksDetected=$leaks | if $passed then . else .status="FAIL" | .failureReason=((.failureReason // "") + "; final artifact secret scan failed") end' "$result" > "$result.tmp"
-            mv "$result.tmp" "$result"
-            cp "$result" target/pb12-docker-smoke-result.json
+            jq --slurpfile verification "$verification" \
+              '.artifactManifestVerified=$verification[0].artifactManifestVerified |
+               .artifactInventoryExact=$verification[0].artifactInventoryExact |
+               .artifactFilesUnscanned=$verification[0].artifactFilesUnscanned |
+               .artifactFilesWithSecretMatches=$verification[0].artifactFilesWithSecretMatches |
+               .manifestMetadataVerified=$verification[0].manifestMetadataVerified |
+               .filesInventoried=$verification[0].filesInventoried |
+               .filesScanned=$verification[0].filesScanned' \
+              "$artifact/pb12-docker-smoke-result.json" > "$artifact/result.tmp"
+            mv "$artifact/result.tmp" "$artifact/pb12-docker-smoke-result.json"
           fi
-          python - "$PB12_RUN_DIR" "target/pb12-docker-smoke-result.json" <<'PY'
-          import hashlib, json, pathlib, sys
-          run_dir = pathlib.Path(sys.argv[1])
-          target = pathlib.Path(sys.argv[2])
-          files = []
-          for path in sorted(run_dir.rglob('*')):
-              if path.is_file() and path.name != 'pb12-artifact-manifest.json':
-                  files.append(path)
-          if target.is_file():
-              files.append(target)
-          entries = []
-          for path in files:
-              entries.append({
-                  'path': path.as_posix(),
-                  'sizeBytes': path.stat().st_size,
-                  'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
-                  'type': path.suffix.lstrip('.') or 'text',
-                  'containsSecrets': False,
-              })
-          (run_dir / 'pb12-artifact-manifest.json').write_text(
-              json.dumps({'containsSecrets': False, 'files': entries}, indent=2) + '\n',
-              encoding='utf-8')
-          PY
-          [[ "$leaks" -eq 0 ]]
+          python tools/build-pb12-artifact-manifest.py --artifact-dir "$artifact" --manifest "$manifest" --scan-report "$scan_report"
+          python tools/verify-pb12-artifact-manifest.py --artifact-dir "$artifact" --manifest "$manifest" --scan-report "$scan_report" --verification-output "$verification"
+          cp "$artifact/pb12-docker-smoke-result.json" target/pb12-docker-smoke-result.json
+          jq '{artifactManifestVerified,artifactInventoryExact,artifactFilesUnscanned,artifactFilesWithSecretMatches,manifestMetadataVerified,filesInventoried,filesScanned}' "$verification"
+          final_status="$(jq -r '.status // "FAIL"' "$artifact/pb12-docker-smoke-result.json")"
+          [[ "$final_status" == PASS ]]
+
+      - name: Publish exact artifact verification summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$PB12_RUN_DIR/artifact/pb12-docker-smoke-result.json"
+          if [[ -s "$result" ]]; then
+            summary="$(jq -c '{status,failureReason,artifactManifestVerified,artifactInventoryExact,artifactFilesUnscanned,artifactFilesWithSecretMatches,manifestMetadataVerified,filesInventoried,filesScanned,finalArtifactSecretScanPassed,secretLeaksDetected,criticalVulnerabilities,highVulnerabilities,cleanupVerified,authTempExists,authTempCleanupVerified}' "$result")"
+            echo "::notice title=PB12 exact artifact verification::$summary"
+          fi
 
       - name: Upload Docker smoke evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pb12-docker-smoke-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/pb12-docker-smoke-${{ github.run_id }}/
-            target/pb12-docker-smoke-result.json
+          path: ${{ runner.temp }}/pb12-docker-smoke-${{ github.run_id }}/artifact/
           if-no-files-found: warn
           retention-days: 7
