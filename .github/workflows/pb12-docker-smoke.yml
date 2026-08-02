@@ -129,6 +129,10 @@ jobs:
            fi
            if [[ "$critical" -gt 0 || "$high" -gt 0 ]]; then
              echo "::warning title=PB12 image vulnerability counts::critical=$critical high=$high"
+             vuln_summary="$(jq -r '[.Results[]? | .Target as $target | .Vulnerabilities[]? | select(.Severity=="CRITICAL" or .Severity=="HIGH") | "\($target):\(.VulnerabilityID):\(.PkgName):\(.InstalledVersion)->\(.FixedVersion // "unfixed")"] | .[0:20] | join(" | ")' "$scan")"
+             if [[ -n "$vuln_summary" ]]; then
+               echo "::warning title=PB12 image vulnerability summary::$vuln_summary"
+             fi
            fi
            jq '{status,failureReason,dockerAvailable,imageBuilt,imageId,imageSizeBytes,runtimeUser,runtimeUid,javaPid1,healthcheckHealthy,liveness,readiness,registered,login,me,careerCreated,careerRecovered,flywayMigrationsRun1,secondStartup,flywayMigrationsRun2,dockerStopUsed,dockerKillUsed,gracefulShutdownObserved,shutdownMarkerOrderValid,shutdownDurationMs,containerExitCode,redisDownReadiness,postgresDownReadiness,criticalVulnerabilities,highVulnerabilities,residualContainers,residualNetworks,cleanupVerified}' "$result"
           [[ "$critical" -eq 0 ]]
