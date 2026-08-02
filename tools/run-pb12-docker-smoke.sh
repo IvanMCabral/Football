@@ -128,12 +128,16 @@ if ! wait_healthy "$POSTGRES" || ! wait_healthy "$REDIS"; then fail "dependency 
 start_backend() {
   local c="$1" port="$2" importer="$3"
   local import_arg=()
-  if [[ "$importer" == true ]]; then import_arg=(--app.world.import.three-league=true); fi
+  local java_opts=""
+  if [[ "$importer" == true ]]; then
+    import_arg=(--app.world.import.three-league=true)
+    java_opts=-Dapp.world.import.three-league=true
+  fi
   docker run -d --name "$c" --network "$NETWORK" -p "$port:8080" --memory=768m --read-only --tmpfs /tmp:rw,noexec,nosuid,size=128m --security-opt=no-new-privileges \
     -e SPRING_PROFILES_ACTIVE=prod -e PORT=8080 -e SERVER_ADDRESS=0.0.0.0 \
     -e DB_HOST="$POSTGRES" -e DB_PORT=5432 -e DB_NAME="$DB_NAME" -e DB_USER="$DB_USER" -e DB_PASSWORD="$DB_PASSWORD" \
     -e REDIS_HOST="$REDIS" -e REDIS_PORT=6379 -e REDIS_USERNAME="$REDIS_USERNAME" -e REDIS_PASSWORD="$REDIS_PASSWORD" -e REDIS_SSL=false \
-    -e JWT_SECRET="$JWT_SECRET" -e APP_CORS_ALLOWED_ORIGINS=http://localhost:4200 -e APP_WORLD_IMPORT_THREE_LEAGUE="$importer" "$IMAGE" "${import_arg[@]}" >/dev/null
+    -e JWT_SECRET="$JWT_SECRET" -e APP_CORS_ALLOWED_ORIGINS=http://localhost:4200 -e APP_WORLD_IMPORT_THREE_LEAGUE="$importer" -e JAVA_OPTS="$java_opts" "$IMAGE" "${import_arg[@]}" >/dev/null
 }
 http_code() { curl --silent --show-error --connect-timeout 3 --max-time 10 -o "$2" -w '%{http_code}' "$1" || true; }
 wait_ready() {
