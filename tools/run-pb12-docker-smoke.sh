@@ -175,7 +175,7 @@ LEAGUE_ID=""
 leagues_code=0
 for i in $(seq 1 60); do
   leagues_code="$(curl --silent --show-error --connect-timeout 3 --max-time 30 -o "$AUTH_TMP/leagues.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/world/leagues?userId=$USER_ID" -H "Authorization: Bearer $ACCESS_TOKEN")"
-  LEAGUE_ID="$(jq -r '.[0].id // empty' "$AUTH_TMP/leagues.json" 2>/dev/null || true)"
+  LEAGUE_ID="$(jq -r '.[0].realLeagueId // empty' "$AUTH_TMP/leagues.json" 2>/dev/null || true)"
   if [[ "$leagues_code" == 200 && -n "$LEAGUE_ID" ]]; then break; fi
   sleep 2
 done
@@ -184,7 +184,7 @@ TEAM_ID=""
 teams_code=0
 for i in $(seq 1 60); do
   teams_code="$(curl --silent --show-error --connect-timeout 3 --max-time 30 -o "$AUTH_TMP/teams.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/world/leagues/$LEAGUE_ID/teams?userId=$USER_ID" -H "Authorization: Bearer $ACCESS_TOKEN")"
-  TEAM_ID="$(jq -r '.[0].id // empty' "$AUTH_TMP/teams.json" 2>/dev/null || true)"
+  TEAM_ID="$(jq -r '.[0].worldTeamId // empty' "$AUTH_TMP/teams.json" 2>/dev/null || true)"
   if [[ "$teams_code" == 200 && -n "$TEAM_ID" ]]; then break; fi
   sleep 2
 done
