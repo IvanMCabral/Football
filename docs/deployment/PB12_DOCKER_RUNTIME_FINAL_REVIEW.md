@@ -38,5 +38,5 @@ The three remaining high advisories are visible in the workflow warning and are 
 ## Local regression validation
 
 - Backend test compilation passed.
-- Full backend suite passed: 2,571 tests, 0 failures, 0 errors, 4 skipped.
+- Full backend suite passed: 2,572 tests, 0 failures, 0 errors, 4 skipped. The additional test is the fail-closed Docker artifact-hygiene guard.
 - Frontend development/production builds and the existing ChromeHeadless suite remain green: 1,029 successes, 0 failures, 2 skipped.

@@ -45,7 +45,7 @@ The workflow published the following result summary as a GitHub Actions notice:
 ## Local validation
 
 - `mvn -q -DskipTests test-compile`: PASS.
-- `mvn -q test`: PASS, 2,571 tests, 0 failures, 0 errors, 4 skipped.
+- `mvn -q test`: PASS, 2,572 tests, 0 failures, 0 errors, 4 skipped. The additional test is the fail-closed Docker artifact-hygiene guard.
 - Docker CLI/daemon: unavailable locally; no local Docker claim is made.
 
 ## Conclusion
