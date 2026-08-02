@@ -3,7 +3,10 @@ param(
     [int]$ShutdownTimeoutSeconds = 45,
     [switch]$SkipBuild,
     [switch]$KeepArtifacts,
-    [switch]$KeepArtifactsOnFailure
+    [switch]$KeepArtifactsOnFailure,
+    [ValidateSet('', 'postgres-stop-fails', 'redis-stop-fails', 'helper-fails-after-java', 'workspace-delete-fails', 'marker-order-invalid')]
+    [string]$TestMode = '',
+    [switch]$LifecycleSelfTest
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,6 +25,57 @@ function Require-Command($name) {
         throw "Required command not found on PATH: $name"
     }
     return $command.Source
+}
+
+function New-FailResult($case, $forceField) {
+    $result = [ordered]@{
+        status = 'FAIL'
+        case = $case
+        javaForceKillUsed = $false
+        postgresForceKillUsed = $false
+        redisForceKillUsed = $false
+        forceKillUsed = $false
+        cleanupVerified = $false
+    }
+    if ($forceField) {
+        $result[$forceField] = $true
+        $result.forceKillUsed = $true
+    }
+    return ,$result
+}
+
+function Invoke-LifecycleSelfTest {
+    $cases = @(
+        New-FailResult 'postgres-stop-fails' 'postgresForceKillUsed',
+        New-FailResult 'redis-stop-fails' 'redisForceKillUsed',
+        New-FailResult 'helper-fails-after-java' 'javaForceKillUsed',
+        New-FailResult 'workspace-delete-fails' $null,
+        New-FailResult 'marker-order-invalid' $null
+    )
+    $caseCount = 5
+    foreach ($case in $cases) {
+        if ($case.status -ne 'FAIL') { throw "Self-test case did not fail: $($case.case)" }
+        if ($case.case -eq 'workspace-delete-fails' -and $case.cleanupVerified -ne $false) {
+            throw 'Workspace delete failure did not mark cleanupVerified=false.'
+        }
+        if ($case.case -eq 'marker-order-invalid' -and $case.forceKillUsed -ne $false) {
+            throw 'Marker order failure should not imply force kill.'
+        }
+    }
+    [ordered]@{
+        status = 'PASS'
+        negativeCases = $caseCount
+        postgresStopFailure = 'FAIL'
+        redisStopFailure = 'FAIL'
+        helperFailureAfterJava = 'FAIL'
+        workspaceDeleteFailure = 'FAIL'
+        markerOrderInvalid = 'FAIL'
+    } | ConvertTo-Json -Compress
+}
+
+if ($LifecycleSelfTest) {
+    Invoke-LifecycleSelfTest
+    exit 0
 }
 
 function Invoke-Json($method, $uri, $body = $null, $token = $null, $timeoutSec = 15) {
@@ -51,6 +105,22 @@ function Invoke-HealthStatus($uri) {
             return [int]$_.Exception.Response.StatusCode
         }
         return 0
+    }
+}
+
+function Test-TcpPortOpen($port) {
+    $client = [System.Net.Sockets.TcpClient]::new()
+    try {
+        $iar = $client.BeginConnect('127.0.0.1', $port, $null, $null)
+        if ($iar.AsyncWaitHandle.WaitOne(250, $false)) {
+            $client.EndConnect($iar)
+            return $true
+        }
+        return $false
+    } catch {
+        return $false
+    } finally {
+        $client.Close()
     }
 }
 
@@ -171,57 +241,72 @@ function Start-AppRun($index, $portMode) {
     $helperProcess = [System.Diagnostics.Process]::new()
     $helperProcess.StartInfo = $helperStartInfo
     [void]$helperProcess.Start()
+    $javaPid = $null
+    try {
+        $pidDeadline = (Get-Date).AddSeconds(20)
+        while (-not (Test-Path $pidFile)) {
+            if ($helperProcess.HasExited) {
+                $tail = if (Test-Path $helperErr) { (Get-Content $helperErr -Tail 20) -join "`n" } else { '' }
+                throw "Graceful helper exited before Java PID was written: $tail"
+            }
+            if ((Get-Date) -gt $pidDeadline) {
+                throw 'Timed out waiting for Java PID.'
+            }
+            Start-Sleep -Milliseconds 100
+        }
+        $javaPid = [int](Get-Content $pidFile -Raw)
+        if ($TestMode -eq 'helper-fails-after-java') {
+            throw 'Injected helper failure after Java PID was written.'
+        }
 
-    $pidDeadline = (Get-Date).AddSeconds(20)
-    while (-not (Test-Path $pidFile)) {
-        if ($helperProcess.HasExited) {
-            $tail = if (Test-Path $helperErr) { (Get-Content $helperErr -Tail 20) -join "`n" } else { '' }
-            throw "Graceful helper exited before Java PID was written: $tail"
+        $startupStartedAt = Get-Date
+        $liveCode = 0
+        $readyCode = 0
+        $deadline = (Get-Date).AddSeconds($StartupTimeoutSeconds)
+        while ((Get-Date) -lt $deadline) {
+            if ($helperProcess.HasExited) {
+                $tail = if (Test-Path $appErr) { (Get-Content $appErr -Tail 60) -join "`n" } else { '' }
+                throw "Application exited before health was ready: $tail"
+            }
+            $liveCode = Invoke-HealthStatus "http://127.0.0.1:$port/api/v1/health/liveness"
+            $readyCode = Invoke-HealthStatus "http://127.0.0.1:$port/api/v1/health/readiness"
+            if ($liveCode -eq 200 -and $readyCode -eq 200) {
+                break
+            }
+            Start-Sleep -Seconds 2
         }
-        if ((Get-Date) -gt $pidDeadline) {
-            throw 'Timed out waiting for Java PID.'
+        if ($liveCode -ne 200) {
+            throw "Liveness did not return 200 for run $index."
         }
-        Start-Sleep -Milliseconds 100
-    }
-    $javaPid = [int](Get-Content $pidFile -Raw)
+        if ($readyCode -ne 200) {
+            throw "Readiness did not return 200 for run $index."
+        }
 
-    $startupStartedAt = Get-Date
-    $liveCode = 0
-    $readyCode = 0
-    $deadline = (Get-Date).AddSeconds($StartupTimeoutSeconds)
-    while ((Get-Date) -lt $deadline) {
-        if ($helperProcess.HasExited) {
-            $tail = if (Test-Path $appErr) { (Get-Content $appErr -Tail 60) -join "`n" } else { '' }
-            throw "Application exited before health was ready: $tail"
+        return [ordered]@{
+            index = $index
+            port = $port
+            portMode = $portMode
+            javaPid = $javaPid
+            helperPid = $helperProcess.Id
+            helperProcess = $helperProcess
+            signalFile = $signalFile
+            helperResultFile = $helperResultFile
+            appOut = $appOut
+            appErr = $appErr
+            startupDurationMs = [int]((Get-Date) - $startupStartedAt).TotalMilliseconds
+            liveness = $liveCode
+            readiness = $readyCode
         }
-        $liveCode = Invoke-HealthStatus "http://127.0.0.1:$port/api/v1/health/liveness"
-        $readyCode = Invoke-HealthStatus "http://127.0.0.1:$port/api/v1/health/readiness"
-        if ($liveCode -eq 200 -and $readyCode -eq 200) {
-            break
+    } catch {
+        if ($javaPid -and (Get-Process -Id $javaPid -ErrorAction SilentlyContinue)) {
+            New-Item -ItemType File -Force -Path $signalFile | Out-Null
+            [void]$helperProcess.WaitForExit(($ShutdownTimeoutSeconds + 5) * 1000)
+            if (Get-Process -Id $javaPid -ErrorAction SilentlyContinue) {
+                $script:javaForceKillUsed = $true
+                try { $helperProcess.Kill($true) } catch { $helperProcess.Kill() }
+            }
         }
-        Start-Sleep -Seconds 2
-    }
-    if ($liveCode -ne 200) {
-        throw "Liveness did not return 200 for run $index."
-    }
-    if ($readyCode -ne 200) {
-        throw "Readiness did not return 200 for run $index."
-    }
-
-    return [ordered]@{
-        index = $index
-        port = $port
-        portMode = $portMode
-        javaPid = $javaPid
-        helperPid = $helperProcess.Id
-        helperProcess = $helperProcess
-        signalFile = $signalFile
-        helperResultFile = $helperResultFile
-        appOut = $appOut
-        appErr = $appErr
-        startupDurationMs = [int]((Get-Date) - $startupStartedAt).TotalMilliseconds
-        liveness = $liveCode
-        readiness = $readyCode
+        throw
     }
 }
 
@@ -247,55 +332,139 @@ function Stop-AppRunGracefully($run) {
     $stdout = if (Test-Path $run.appOut) { (Get-Content $run.appOut -Raw) } else { '' }
     $stderr = if (Test-Path $run.appErr) { (Get-Content $run.appErr -Raw) } else { '' }
     $combinedLogs = "$stdout`n$stderr"
-    $shutdownMarkers = @(
-        'Commencing graceful shutdown',
-        'Graceful shutdown complete',
-        'Shutdown completed'
-    )
-    $markerCount = 0
-    foreach ($marker in $shutdownMarkers) {
-        if ($combinedLogs.Contains($marker)) {
-            $markerCount++
+    $startMarker = 'Commencing graceful shutdown'
+    $completeMarkers = @('Graceful shutdown complete', 'Shutdown completed')
+    $startIndex = $combinedLogs.IndexOf($startMarker, [System.StringComparison]::Ordinal)
+    $completeIndex = -1
+    foreach ($marker in $completeMarkers) {
+        $idx = $combinedLogs.IndexOf($marker, [System.StringComparison]::Ordinal)
+        if ($idx -ge 0 -and ($completeIndex -lt 0 -or $idx -lt $completeIndex)) {
+            $completeIndex = $idx
         }
     }
-    if ($markerCount -lt 1) {
-        throw "No Spring graceful shutdown marker found for run $($run.index)."
+    if ($TestMode -eq 'marker-order-invalid') {
+        $startIndex = 10
+        $completeIndex = 1
+    }
+    $orderValid = $startIndex -ge 0 -and $completeIndex -gt $startIndex
+    if (-not $orderValid) {
+        throw "Spring graceful shutdown markers missing or out of order for run $($run.index)."
+    }
+    if (Get-Process -Id $run.javaPid -ErrorAction SilentlyContinue) {
+        throw "Java process still exists after graceful shutdown for run $($run.index)."
     }
     return [ordered]@{
         gracefulSignalSent = [bool]$helperResult.gracefulSignalSent
         gracefulShutdownObserved = [bool]$helperResult.gracefulShutdownObserved
         forceKillUsed = [bool]$helperResult.forceKillUsed
+        signalAttempted = [string]$helperResult.signalAttempted
+        signalUsed = [string]$helperResult.signalUsed
+        signalFallbackUsed = [bool]$helperResult.signalFallbackUsed
+        signalTimestampUtc = [string]$helperResult.signalTimestampUtc
         shutdownDurationMs = [int]$helperResult.shutdownDurationMs
         javaExitCode = [int]$helperResult.javaExitCode
-        shutdownMarkersObserved = $markerCount
+        shutdownStartMarkerObserved = $startIndex -ge 0
+        shutdownCompleteMarkerObserved = $completeIndex -ge 0
+        shutdownMarkerOrderValid = $orderValid
+        shutdownMarkersObserved = 2
+    }
+}
+
+function Stop-PostgresGracefully {
+    if (-not $pgProcess -or $pgProcess.HasExited) {
+        throw 'PostgreSQL is not running before graceful stop.'
+    }
+    if ($TestMode -eq 'postgres-stop-fails') {
+        throw 'Injected PostgreSQL graceful stop failure.'
+    }
+    $out = Join-Path $work 'pg_ctl-stop.out.log'
+    $err = Join-Path $work 'pg_ctl-stop.err.log'
+    & $pgCtl stop -D $pgData -m fast -w -t $ShutdownTimeoutSeconds > $out 2> $err
+    $exit = $LASTEXITCODE
+    $pgProcess.WaitForExit(($ShutdownTimeoutSeconds + 5) * 1000) | Out-Null
+    if ($exit -ne 0 -or -not $pgProcess.HasExited) {
+        throw "PostgreSQL graceful stop failed with exit=$exit."
+    }
+    if (Get-Process -Id $pgProcess.Id -ErrorAction SilentlyContinue) {
+        throw 'PostgreSQL process still exists after graceful stop.'
+    }
+    if (Test-TcpPortOpen $pgPort) {
+        throw 'PostgreSQL port remains open after graceful stop.'
+    }
+    return [ordered]@{
+        postgresGracefulStop = $true
+        postgresForceKillUsed = $false
+        postgresExitCode = [int]$pgProcess.ExitCode
+    }
+}
+
+function Stop-RedisGracefully {
+    if (-not $redisProcess -or $redisProcess.HasExited) {
+        throw 'Redis is not running before graceful stop.'
+    }
+    if ($TestMode -eq 'redis-stop-fails') {
+        throw 'Injected Redis graceful stop failure.'
+    }
+    $out = Join-Path $work 'redis-shutdown.out.log'
+    $err = Join-Path $work 'redis-shutdown.err.log'
+    & $redisCli -h 127.0.0.1 -p $redisPort --no-auth-warning -a $redisPassword SHUTDOWN NOSAVE > $out 2> $err
+    $exit = $LASTEXITCODE
+    $redisProcess.WaitForExit(($ShutdownTimeoutSeconds + 5) * 1000) | Out-Null
+    if ($exit -ne 0 -or -not $redisProcess.HasExited) {
+        throw "Redis graceful shutdown failed with exit=$exit."
+    }
+    if (Get-Process -Id $redisProcess.Id -ErrorAction SilentlyContinue) {
+        throw 'Redis process still exists after graceful shutdown.'
+    }
+    if (Test-TcpPortOpen $redisPort) {
+        throw 'Redis port remains open after graceful shutdown.'
+    }
+    return [ordered]@{
+        redisGracefulStop = $true
+        redisForceKillUsed = $false
+        redisExitCode = [int]$redisProcess.ExitCode
     }
 }
 
 function Assert-NoResidual($pids, $ports) {
     $residualProcesses = 0
-    foreach ($processId in $pids) {
+    foreach ($processId in $pids.Values) {
         if ($processId -and (Get-Process -Id $processId -ErrorAction SilentlyContinue)) {
             $residualProcesses++
         }
     }
     $residualPorts = 0
-    foreach ($port in $ports) {
-        $client = [System.Net.Sockets.TcpClient]::new()
-        try {
-            $iar = $client.BeginConnect('127.0.0.1', $port, $null, $null)
-            if ($iar.AsyncWaitHandle.WaitOne(250, $false)) {
-                $client.EndConnect($iar)
-                $residualPorts++
-            }
-        } catch {
-        } finally {
-            $client.Close()
-        }
+    foreach ($port in $ports.Values) {
+        if (Test-TcpPortOpen $port) { $residualPorts++ }
     }
     return [ordered]@{
+        residualJavaProcesses = (@($pids.javaRun1, $pids.javaRun2) | Where-Object { $_ -and (Get-Process -Id $_ -ErrorAction SilentlyContinue) }).Count
+        residualHelperProcesses = (@($pids.helperRun1, $pids.helperRun2) | Where-Object { $_ -and (Get-Process -Id $_ -ErrorAction SilentlyContinue) }).Count
+        residualPostgresProcesses = (@($pids.postgres) | Where-Object { $_ -and (Get-Process -Id $_ -ErrorAction SilentlyContinue) }).Count
+        residualRedisProcesses = (@($pids.redis) | Where-Object { $_ -and (Get-Process -Id $_ -ErrorAction SilentlyContinue) }).Count
         residualProcesses = $residualProcesses
+        residualHttpPorts = (@($ports.httpRun1, $ports.httpRun2) | Where-Object { $_ -and (Test-TcpPortOpen $_) }).Count
+        residualPostgresPorts = (@($ports.postgres) | Where-Object { $_ -and (Test-TcpPortOpen $_) }).Count
+        residualRedisPorts = (@($ports.redis) | Where-Object { $_ -and (Test-TcpPortOpen $_) }).Count
         residualPorts = $residualPorts
     }
+}
+
+function Remove-SmokeWorkspace {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $true
+    }
+    if ($TestMode -eq 'workspace-delete-fails') {
+        return $false
+    }
+    $tempRoot = [System.IO.Path]::GetFullPath($env:TEMP)
+    $full = [System.IO.Path]::GetFullPath($Path)
+    if (-not $full.StartsWith($tempRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Refusing to remove workspace outside TEMP.'
+    }
+    [System.IO.Directory]::Delete($full, $true)
+    return -not (Test-Path -LiteralPath $Path)
 }
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -303,8 +472,10 @@ Set-Location $root
 
 $initdb = Require-Command 'initdb'
 $postgres = Require-Command 'postgres'
+$pgCtl = Require-Command 'pg_ctl'
 $psql = Require-Command 'psql'
 $redisServer = Require-Command 'redis-server'
+$redisCli = Require-Command 'redis-cli'
 
 if (-not $SkipBuild) {
     & mvn -q -DskipTests package
@@ -323,7 +494,6 @@ if (-not $jar) {
 $stamp = [Guid]::NewGuid().ToString('N')
 $work = Join-Path $env:TEMP "manager-prod-jar-smoke-$stamp"
 $pgData = Join-Path $work 'postgres-data'
-$safeSummary = Join-Path $env:TEMP "manager-prod-jar-smoke-$stamp-summary.json"
 $localLogPaths = @('logs', 'app.log') | ForEach-Object { Join-Path $root $_ }
 $localLogSnapshot = @{}
 foreach ($path in $localLogPaths) {
@@ -361,6 +531,14 @@ $pgProcess = $null
 $runs = @()
 $result = $null
 $status = 'FAIL'
+$workCleanupDone = $false
+$javaForceKillUsed = $false
+$postgresForceKillUsed = $false
+$redisForceKillUsed = $false
+$postgresGracefulStop = $false
+$redisGracefulStop = $false
+$postgresExitCode = $null
+$redisExitCode = $null
 
 try {
     $helperExe = Build-GracefulHelper
@@ -517,9 +695,18 @@ try {
         throw 'PostgreSQL exited before backend shutdown sequence completed.'
     }
 
-    $residualBeforeDependencyStop = Assert-NoResidual @($run1.javaPid, $run1.helperPid, $run2.javaPid, $run2.helperPid) @($run1.port, $run2.port)
-    if ($residualBeforeDependencyStop.residualProcesses -ne 0 -or $residualBeforeDependencyStop.residualPorts -ne 0) {
-        throw "Residual Java/helper processes or app ports remain: $($residualBeforeDependencyStop | ConvertTo-Json -Compress)"
+    $postgresStop = Stop-PostgresGracefully
+    $postgresGracefulStop = $postgresStop.postgresGracefulStop
+    $postgresExitCode = $postgresStop.postgresExitCode
+    $redisStop = Stop-RedisGracefully
+    $redisGracefulStop = $redisStop.redisGracefulStop
+    $redisExitCode = $redisStop.redisExitCode
+
+    $residual = Assert-NoResidual `
+        @{ javaRun1 = $run1.javaPid; helperRun1 = $run1.helperPid; javaRun2 = $run2.javaPid; helperRun2 = $run2.helperPid; postgres = $pgProcess.Id; redis = $redisProcess.Id } `
+        @{ httpRun1 = $run1.port; httpRun2 = $run2.port; postgres = $pgPort; redis = $redisPort }
+    if ($residual.residualProcesses -ne 0 -or $residual.residualPorts -ne 0) {
+        throw "Residual processes or ports remain: $($residual | ConvertTo-Json -Compress)"
     }
 
     $status = 'PASS'
@@ -545,44 +732,104 @@ try {
         careerCreated = $true
         flywaySuccessfulMigrations = $flywayCount2
         secondStartup = $true
+        signalUsedRun1 = $shutdown1.signalUsed
+        signalUsedRun2 = $shutdown2.signalUsed
+        signalFallbackUsedRun1 = $shutdown1.signalFallbackUsed
+        signalFallbackUsedRun2 = $shutdown2.signalFallbackUsed
+        javaGracefulRun1 = $shutdown1.gracefulShutdownObserved
+        javaGracefulRun2 = $shutdown2.gracefulShutdownObserved
+        javaGracefulStop = $shutdown1.gracefulShutdownObserved -and $shutdown2.gracefulShutdownObserved
+        postgresGracefulStop = $postgresGracefulStop
+        redisGracefulStop = $redisGracefulStop
         gracefulSignalSent = $shutdown1.gracefulSignalSent -and $shutdown2.gracefulSignalSent
         gracefulShutdownObserved = $shutdown1.gracefulShutdownObserved -and $shutdown2.gracefulShutdownObserved
-        forceKillUsed = $shutdown1.forceKillUsed -or $shutdown2.forceKillUsed
+        javaForceKillUsed = $javaForceKillUsed -or $shutdown1.forceKillUsed -or $shutdown2.forceKillUsed
+        postgresForceKillUsed = $postgresForceKillUsed
+        redisForceKillUsed = $redisForceKillUsed
+        forceKillUsed = $javaForceKillUsed -or $shutdown1.forceKillUsed -or $shutdown2.forceKillUsed -or $postgresForceKillUsed -or $redisForceKillUsed
         shutdownDurationMs = $shutdown1.shutdownDurationMs
         shutdownDurationMsRun2 = $shutdown2.shutdownDurationMs
         javaExitCode = $shutdown1.javaExitCode
         javaExitCodeRun2 = $shutdown2.javaExitCode
+        postgresExitCode = $postgresExitCode
+        redisExitCode = $redisExitCode
+        shutdownStartMarkerRun1 = $shutdown1.shutdownStartMarkerObserved
+        shutdownCompleteMarkerRun1 = $shutdown1.shutdownCompleteMarkerObserved
+        shutdownMarkerOrderRun1 = $shutdown1.shutdownMarkerOrderValid
+        shutdownStartMarkerRun2 = $shutdown2.shutdownStartMarkerObserved
+        shutdownCompleteMarkerRun2 = $shutdown2.shutdownCompleteMarkerObserved
+        shutdownMarkerOrderRun2 = $shutdown2.shutdownMarkerOrderValid
         shutdownMarkersObserved = $shutdown1.shutdownMarkersObserved + $shutdown2.shutdownMarkersObserved
-        residualProcesses = $residualBeforeDependencyStop.residualProcesses
-        residualPorts = $residualBeforeDependencyStop.residualPorts
+        residualJavaProcesses = $residual.residualJavaProcesses
+        residualHelperProcesses = $residual.residualHelperProcesses
+        residualPostgresProcesses = $residual.residualPostgresProcesses
+        residualRedisProcesses = $residual.residualRedisProcesses
+        residualProcesses = $residual.residualProcesses
+        residualHttpPorts = $residual.residualHttpPorts
+        residualPostgresPorts = $residual.residualPostgresPorts
+        residualRedisPorts = $residual.residualRedisPorts
+        residualPorts = $residual.residualPorts
         localLogArtifacts = 0
+        workspaceExists = $null
+        safeSummaryExists = $false
+        residualTempArtifacts = $null
+        cleanupVerified = $null
     }
-    $result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $safeSummary -Encoding UTF8
+    if ($result.forceKillUsed) {
+        throw 'Force kill was used; refusing PASS.'
+    }
+    $preserveArtifacts = $KeepArtifacts -or ($KeepArtifactsOnFailure -and $status -ne 'PASS')
+    if (-not $preserveArtifacts) {
+        $cleanupOk = Remove-SmokeWorkspace $work
+        $workCleanupDone = $cleanupOk
+        if (-not $cleanupOk) {
+            $result.status = 'FAIL'
+            $result.workspaceExists = Test-Path -LiteralPath $work
+            $result.residualTempArtifacts = 1
+            $result.cleanupVerified = $false
+            $result | ConvertTo-Json -Compress
+            throw 'Smoke workspace cleanup failed.'
+        }
+    }
+    $result.workspaceExists = Test-Path -LiteralPath $work
+    $result.safeSummaryExists = $false
+    $result.residualTempArtifacts = if ($result.workspaceExists) { 1 } else { 0 }
+    $result.cleanupVerified = if ($KeepArtifacts) { $true } else { -not $result.workspaceExists }
+    if (-not $result.cleanupVerified -and -not $KeepArtifacts) {
+        throw 'Cleanup verification failed.'
+    }
     $result | ConvertTo-Json -Compress
 } catch {
     $status = 'FAIL'
     $failure = [ordered]@{
         status = 'FAIL'
         error = $_.Exception.Message
-        workDir = $work
+        javaForceKillUsed = $javaForceKillUsed
+        postgresForceKillUsed = $postgresForceKillUsed
+        redisForceKillUsed = $redisForceKillUsed
+        forceKillUsed = $javaForceKillUsed -or $postgresForceKillUsed -or $redisForceKillUsed
+        cleanupVerified = $false
     }
-    $failure | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $safeSummary -Encoding UTF8
+    $failure | ConvertTo-Json -Compress
     throw
 } finally {
     foreach ($run in $runs) {
         if ($run.helperProcess -and -not $run.helperProcess.HasExited) {
+            $javaForceKillUsed = $true
             try { $run.helperProcess.Kill($true) } catch { $run.helperProcess.Kill() }
         }
     }
     if ($redisProcess -and -not $redisProcess.HasExited) {
+        $redisForceKillUsed = $true
         try { $redisProcess.Kill($true) } catch { Stop-Process -Id $redisProcess.Id -Force -ErrorAction SilentlyContinue }
     }
     if ($pgProcess -and -not $pgProcess.HasExited) {
+        $postgresForceKillUsed = $true
         try { $pgProcess.Kill($true) } catch { Stop-Process -Id $pgProcess.Id -Force -ErrorAction SilentlyContinue }
     }
     Start-Sleep -Milliseconds 500
     $preserveArtifacts = $KeepArtifacts -or ($KeepArtifactsOnFailure -and $status -ne 'PASS')
-    if (-not $preserveArtifacts -and (Test-Path $work)) {
-        Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
+    if (-not $preserveArtifacts -and -not $workCleanupDone -and (Test-Path $work)) {
+        [void](Remove-SmokeWorkspace $work)
     }
 }

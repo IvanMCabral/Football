@@ -3,9 +3,10 @@ package com.footballmanager.infrastructure.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 
@@ -85,7 +86,8 @@ class ProductionRuntimeArtifactGuardTest {
         assertThat(script).contains("forceKillUsed");
         assertThat(script).contains("residualProcesses");
         assertThat(script).contains("residualPorts");
-        assertThat(script).contains("Remove-Item -LiteralPath $work -Recurse -Force");
+        assertThat(script).contains("Remove-SmokeWorkspace $work");
+        assertThat(script).contains("[System.IO.Directory]::Delete($full, $true)");
         assertThat(script).doesNotContain("Stop-Process -Id $appProcess.Id");
         assertThat(script).doesNotContain("careerCreated = $false");
     }
@@ -101,6 +103,34 @@ class ProductionRuntimeArtifactGuardTest {
         assertThat(script).contains("$env:SERVER_ADDRESS = '0.0.0.0'");
         assertThat(script).contains("Remove-Item Env:SERVER_PORT");
         assertThat(script).contains("Remove-Item Env:PORT");
+    }
+
+    @Test
+    void productionJarSmokeLifecycleSelfTestExercisesNegativeCases() throws Exception {
+        Process process = new ProcessBuilder(
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            ROOT.resolve("tools/run-production-jar-smoke.ps1").toString(),
+            "-LifecycleSelfTest")
+            .directory(ROOT.toFile())
+            .redirectErrorStream(true)
+            .start();
+
+        boolean finished = process.waitFor(Duration.ofSeconds(30).toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        assertThat(finished).isTrue();
+        assertThat(process.exitValue()).isZero();
+        assertThat(output).contains("\"status\":\"PASS\"");
+        assertThat(output).contains("\"negativeCases\":5");
+        assertThat(output).contains("\"postgresStopFailure\":\"FAIL\"");
+        assertThat(output).contains("\"redisStopFailure\":\"FAIL\"");
+        assertThat(output).contains("\"helperFailureAfterJava\":\"FAIL\"");
+        assertThat(output).contains("\"workspaceDeleteFailure\":\"FAIL\"");
+        assertThat(output).contains("\"markerOrderInvalid\":\"FAIL\"");
     }
 
     private static String read(String relativePath) throws IOException {

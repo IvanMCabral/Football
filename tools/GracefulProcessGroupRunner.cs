@@ -130,6 +130,13 @@ internal static class GracefulProcessGroupRunner
                 bool gracefulSignalSent = false;
                 bool gracefulShutdownObserved = false;
                 bool forceKillUsed = false;
+                bool ctrlCResult = false;
+                bool ctrlBreakResult = false;
+                bool fallbackUsed = false;
+                string signalAttempted = "NONE";
+                string signalUsed = "NONE";
+                int ctrlCError = 0;
+                int ctrlBreakError = 0;
                 uint javaExitCode = 0;
                 long shutdownDurationMs = 0;
                 DateTime startedShutdownAt = DateTime.MinValue;
@@ -159,12 +166,21 @@ internal static class GracefulProcessGroupRunner
                             {
                                 throw new Win32Exception(Marshal.GetLastWin32Error(), "AttachConsole to child process failed");
                             }
-                            gracefulSignalSent = GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
-                            if (!gracefulSignalSent)
+                            signalAttempted = "CTRL_C_EVENT";
+                            ctrlCResult = GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+                            if (!ctrlCResult)
                             {
-                                gracefulSignalSent = GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, 0);
+                                ctrlCError = Marshal.GetLastWin32Error();
+                                fallbackUsed = true;
+                                ctrlBreakResult = GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, 0);
+                                if (!ctrlBreakResult)
+                                {
+                                    ctrlBreakError = Marshal.GetLastWin32Error();
+                                }
                             }
                             FreeConsole();
+                            gracefulSignalSent = ctrlCResult || ctrlBreakResult;
+                            signalUsed = ctrlCResult ? "CTRL_C_EVENT" : (ctrlBreakResult ? "CTRL_BREAK_EVENT" : "NONE");
                             if (!gracefulSignalSent)
                             {
                                 throw new Win32Exception(Marshal.GetLastWin32Error(), "GenerateConsoleCtrlEvent CTRL_BREAK_EVENT failed");
@@ -187,7 +203,12 @@ internal static class GracefulProcessGroupRunner
 
                     GetExitCodeProcess(processInfo.hProcess, out javaExitCode);
                     string status = gracefulSignalSent && gracefulShutdownObserved && !forceKillUsed ? "PASS" : "FAIL";
-                    File.WriteAllText(resultFile, Json(status, processInfo.dwProcessId, gracefulSignalSent, gracefulShutdownObserved, forceKillUsed, shutdownDurationMs, javaExitCode), Encoding.UTF8);
+                    File.WriteAllText(
+                        resultFile,
+                        Json(status, processInfo.dwProcessId, gracefulSignalSent, gracefulShutdownObserved, forceKillUsed,
+                            shutdownDurationMs, javaExitCode, signalAttempted, signalUsed, fallbackUsed, ctrlCResult,
+                            ctrlBreakResult, ctrlCError, ctrlBreakError, startedShutdownAt),
+                        Encoding.UTF8);
                     return status == "PASS" ? 0 : 2;
                 }
                 finally
@@ -239,11 +260,35 @@ internal static class GracefulProcessGroupRunner
         }
     }
 
-    private static string Json(string status, uint javaPid, bool signalSent, bool observed, bool forceKill, long durationMs, uint exitCode)
+    private static string Json(
+        string status,
+        uint javaPid,
+        bool signalSent,
+        bool observed,
+        bool forceKill,
+        long durationMs,
+        uint exitCode,
+        string signalAttempted,
+        string signalUsed,
+        bool fallbackUsed,
+        bool ctrlCResult,
+        bool ctrlBreakResult,
+        int ctrlCError,
+        int ctrlBreakError,
+        DateTime signalTimestamp)
     {
         return "{" +
             "\"status\":\"" + status + "\"," +
             "\"javaPid\":" + javaPid + "," +
+            "\"processGroupId\":" + javaPid + "," +
+            "\"signalAttempted\":\"" + signalAttempted + "\"," +
+            "\"signalUsed\":\"" + signalUsed + "\"," +
+            "\"signalFallbackUsed\":" + Bool(fallbackUsed) + "," +
+            "\"ctrlCResult\":" + Bool(ctrlCResult) + "," +
+            "\"ctrlBreakResult\":" + Bool(ctrlBreakResult) + "," +
+            "\"ctrlCError\":" + ctrlCError + "," +
+            "\"ctrlBreakError\":" + ctrlBreakError + "," +
+            "\"signalTimestampUtc\":\"" + (signalTimestamp == DateTime.MinValue ? "" : signalTimestamp.ToString("O")) + "\"," +
             "\"gracefulSignalSent\":" + Bool(signalSent) + "," +
             "\"gracefulShutdownObserved\":" + Bool(observed) + "," +
             "\"forceKillUsed\":" + Bool(forceKill) + "," +
