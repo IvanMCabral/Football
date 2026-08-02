@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.11</version>
+        <version>3.5.14</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -27,8 +27,7 @@
         <!-- Keep the embedded runtime libraries on versions with current security fixes. -->
         <jackson-bom.version>2.18.8</jackson-bom.version>
         <netty.version>4.1.136.Final</netty.version>
-        <postgresql.version>42.7.11</postgresql.version>
-        <flyway.version>11.20.0</flyway.version>
+        <postgresql.version>42.7.12</postgresql.version>
     </properties>
 
     <dependencies>
