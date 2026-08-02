@@ -41,8 +41,10 @@ The follow-up lifecycle cleanup closed the remaining runner evidence gaps:
 
 - PostgreSQL stops with `pg_ctl stop -m fast -w`;
 - Redis stops with authenticated `SHUTDOWN NOSAVE`;
-- PASS requires `javaForceKillUsed=false`, `postgresForceKillUsed=false`, `redisForceKillUsed=false`;
+- PASS requires all Java/helper/PostgreSQL/Redis force-kill flags to be false;
 - PASS verifies Java/helper/PostgreSQL/Redis processes and HTTP/PostgreSQL/Redis ports;
 - default PASS removes the workspace and reports `workspaceExists=false`, `safeSummaryExists=false`, `residualTempArtifacts=0`;
 - negative lifecycle modes fail closed and never emit PASS.
+
+The later actual implementation closure replaced synthetic lifecycle evidence with executable `-LifecycleTestMode` flows in the official runner.
 

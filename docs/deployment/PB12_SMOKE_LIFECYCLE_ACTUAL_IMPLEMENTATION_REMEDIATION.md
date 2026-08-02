@@ -59,4 +59,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\run-production-jar-smo
 - `mvn -q -Dtest=ProductionRuntimeArtifactGuardTest test`: PASS.
 - `mvn -q test`: 2571 tests, 0 failures, 0 errors, 4 skipped.
 - Frontend encoding/builds/artifact inspection/tests: PASS, 1029 SUCCESS, 0 failures, 2 skipped.
-
