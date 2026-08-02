@@ -6,7 +6,7 @@ These gates are intentionally outside PB1.2.1. They must be closed before public
 
 ## PB1.2.2 Docker gate
 
-PASS. The reproducible workflow `.github/workflows/pb12-docker-smoke.yml` and runner `tools/run-pb12-docker-smoke.sh` passed remotely in [GitHub Actions run #22](https://github.com/IvanMCabral/Football/actions/runs/30755616038). The workstation still has no Docker daemon, so the image result is remote evidence.
+PASS (historical). The reproducible workflow `.github/workflows/pb12-docker-smoke.yml` and runner `tools/run-pb12-docker-smoke.sh` passed remotely in [GitHub Actions run #24](https://github.com/IvanMCabral/Football/actions/runs/30769400337). The workstation still has no Docker daemon, so the image result is remote evidence. A new exact-HEAD run is required after the final manifest remediation.
 
 ## P0 before Internet exposure
 

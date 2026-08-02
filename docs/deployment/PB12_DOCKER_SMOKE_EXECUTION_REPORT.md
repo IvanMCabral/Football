@@ -4,7 +4,7 @@ Date: 2026-08-02
 
 ## Result
 
-The final remote Docker smoke is green on GitHub Actions run [#24](https://github.com/IvanMCabral/Football/actions/runs/30769400337), commit `87e28c8f`, branch `feat/v25d99.20.3.1-runtime-fixes`. The run completed successfully in 2m05s and uploaded the sanitized artifact `pb12-docker-smoke-30769400337` (88.9 KB; artifact digest `sha256:70d557c0309a5f0bc64daa8c71ba160f843cceb21d99e7cc7dfd76afd0947bd0`).
+The previous remote Docker smoke is historical evidence from GitHub Actions run [#24](https://github.com/IvanMCabral/Football/actions/runs/30769400337), commit `87e28c8f`, branch `feat/v25d99.20.3.1-runtime-fixes`. The run completed successfully in 2m05s and uploaded the sanitized artifact `pb12-docker-smoke-30769400337` (88.9 KB; artifact digest `sha256:70d557c0309a5f0bc64daa8c71ba160f843cceb21d99e7cc7dfd76afd0947bd0`). A new exact-HEAD run is required after the manifest remediation.
 
 ## Runner
 
@@ -47,10 +47,10 @@ The workflow published the following result summary as a GitHub Actions notice:
 ## Local validation
 
 - `mvn -q -DskipTests test-compile`: PASS.
-- `mvn -q test`: PASS, 2,572 tests, 0 failures, 0 errors, 4 skipped. The additional test is the fail-closed Docker artifact-hygiene guard.
+- Baseline `mvn -q test`: PASS, 2,572 tests, 0 failures, 0 errors, 4 skipped (Surefire text-report sum). A fresh count is required after the manifest tooling changes.
 - Docker CLI/daemon: unavailable locally; no local Docker claim is made.
 
-The artifact is published and its remote digest is recorded above. Direct ZIP download from this workstation returned HTTP 401 because GitHub authentication is unavailable; no local manifest/hash claim is made.
+The historical artifact is published and its remote digest is recorded above. Direct ZIP download from this workstation returned HTTP 401 because GitHub authentication is unavailable; no local manifest/hash claim is made.
 
 ## Conclusion
 
