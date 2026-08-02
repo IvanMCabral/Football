@@ -12,8 +12,8 @@ The existing Windows JAR smoke and full backend/frontend suites remain green. Do
 
 ## Remote evidence
 
-Remote execution is pending until GitHub Actions is dispatched. The final result must include the real run ID, artifact, image metadata, health status, auth/career outcome, Flyway counts, shutdown markers, negative readiness codes, SBOM and vulnerability counts.
+GitHub Actions run [#22](https://github.com/IvanMCabral/Football/actions/runs/30755616038) passed on commit `3ee8d2a4` in 2m19s. Its sanitized artifact is `pb12-docker-smoke-30755616038` (88.2 KB; digest `sha256:23cfd415d8a0521d5cbf04b64b48ec02ead4e40050610e404dab789ef3b52997`). The result recorded image ID `sha256:f5e3853cfecd62f78967578efd1dbe88aacb1401cf453a789d5a406c9849b372`, size 258,908,085 bytes, non-root `manager` UID 122, Java PID 1, healthy Docker healthcheck, liveness/readiness 200/200, register/login/me, career creation/recovery, Flyway 1/1, second startup, graceful docker stop, no docker kill, marker ordering, 2,505 ms shutdown, exit 143, 503 readiness while Redis/PostgreSQL were down, zero residual resources, and verified cleanup. SBOM generation passed; Trivy reported 0 critical and 3 high findings.
 
 ## Limitations
 
-This work does not deploy to Cloud Run/Firebase, configure a domain, provision managed PostgreSQL/Redis or perform cloud backup/restore. Those are separate cloud gates.
+This work does not deploy to Cloud Run/Firebase, configure a domain, provision managed PostgreSQL/Redis or perform cloud backup/restore. Those remain separate PB1.2.3/cloud gates.

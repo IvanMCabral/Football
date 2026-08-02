@@ -6,11 +6,10 @@ These gates are intentionally outside PB1.2.1. They must be closed before public
 
 ## PB1.2.2 Docker gate
 
-The reproducible Docker workflow is now versioned at `.github/workflows/pb12-docker-smoke.yml` and uses `tools/run-pb12-docker-smoke.sh`. It must be dispatched and observed remotely before Docker is considered approved. The current workstation still has no Docker daemon, so no local image result is claimed.
+PASS. The reproducible workflow `.github/workflows/pb12-docker-smoke.yml` and runner `tools/run-pb12-docker-smoke.sh` passed remotely in [GitHub Actions run #22](https://github.com/IvanMCabral/Football/actions/runs/30755616038). The workstation still has no Docker daemon, so the image result is remote evidence.
 
 ## P0 before Internet exposure
 
-- Observe a green remote PB1.2.2 Docker image build and lifecycle smoke; the workflow implementation is present but execution evidence is still required.
 - Choose and create managed PostgreSQL staging.
 - Choose and create managed Redis staging with TLS and persistence policy.
 - Configure production secrets in the provider.
@@ -20,7 +19,7 @@ The reproducible Docker workflow is now versioned at `.github/workflows/pb12-doc
 - Validate SSE through the selected edge/proxy.
 - Execute backup and restore drill for PostgreSQL.
 - Execute Redis loss/reconnect drill and define RPO/RTO.
-- Confirm container PID 1 and `docker stop` graceful shutdown behavior on the selected runtime.
+- Confirm container PID 1 and `docker stop` graceful shutdown behavior on the selected cloud runtime (the disposable Docker runner already passes this gate).
 
 ## P1 before broader beta
 
@@ -36,6 +35,6 @@ The reproducible Docker workflow is now versioned at `.github/workflows/pb12-doc
 
 - No cloud resource exists yet.
 - No domain exists yet.
-- No Docker smoke could run locally because Docker is absent.
+- No Docker smoke could run locally because Docker is absent; the remote PB1.2.2 smoke is green.
 - No public deploy was performed.
-- Production JAR smoke is green locally with temporary PostgreSQL/Redis, two startups, graceful Windows console shutdown, graceful PostgreSQL/Redis shutdown, fail-closed cleanup, executable negative lifecycle modes and zero residual processes/ports. Docker/PID 1 shutdown remains unproven until Docker is available.
+- Production JAR smoke is green locally with temporary PostgreSQL/Redis, two startups, graceful Windows console shutdown, graceful PostgreSQL/Redis shutdown, fail-closed cleanup, executable negative lifecycle modes and zero residual processes/ports. Docker/PID 1 shutdown is also green in the remote PB1.2.2 run.
