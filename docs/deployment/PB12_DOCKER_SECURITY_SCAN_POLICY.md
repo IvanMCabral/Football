@@ -6,7 +6,7 @@ Every workflow run generates a CycloneDX JSON SBOM with Anchore Syft through anc
 
 ## Vulnerabilities
 
-Trivy scans OS and library packages with severity CRITICAL,HIGH and --ignore-unfixed. The result is preserved as JSON. A fixable CRITICAL finding fails the workflow. HIGH findings are counted and reported for remediation; they are not hidden by an automatic fix.
+Trivy action v0.36.0 scans OS and library packages with severity CRITICAL,HIGH and --ignore-unfixed. The result is preserved as JSON. A fixable CRITICAL finding fails the workflow. HIGH findings are counted and reported for remediation; they are not hidden by an automatic fix.
 
 A scanner failure or missing output fails the workflow. No dependency update or automatic remediation is performed by this gate.
 
