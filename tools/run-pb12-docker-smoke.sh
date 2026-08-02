@@ -183,6 +183,7 @@ registered=true
 login_code="$(curl --silent --show-error --connect-timeout 3 --max-time 20 -o "$AUTH_TMP/token.json" -w '%{http_code}' -X POST "http://127.0.0.1:$HOST_PORT/api/v1/auth/login" -H 'Content-Type: application/json' -d "{\"email\":\"$AUTH_EMAIL\",\"password\":\"$AUTH_PASSWORD\"}")"
 if [[ "$login_code" != 200 ]]; then fail "login returned $login_code"; exit 1; fi
 ACCESS_TOKEN="$(jq -r '.accessToken // empty' "$AUTH_TMP/token.json")"; if [[ -z "$ACCESS_TOKEN" ]]; then fail "login response did not contain an access token"; exit 1; fi
+login=true
 me_code="$(curl --silent --show-error --connect-timeout 3 --max-time 20 -o "$AUTH_TMP/me.json" -w '%{http_code}' "http://127.0.0.1:$HOST_PORT/api/v1/auth/me" -H "Authorization: Bearer $ACCESS_TOKEN")"
 if [[ "$me_code" != 200 ]]; then fail "auth me returned $me_code"; exit 1; fi
 me=true; USER_ID="$(jq -r '.id // empty' "$AUTH_TMP/me.json")"; if [[ -z "$USER_ID" ]]; then fail "auth me did not contain user id"; exit 1; fi
