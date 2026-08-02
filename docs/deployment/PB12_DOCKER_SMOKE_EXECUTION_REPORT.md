@@ -45,7 +45,7 @@ The workflow published the following result summary as a GitHub Actions notice:
 ## Local validation
 
 - `mvn -q -DskipTests test-compile`: PASS.
-- `mvn -q test`: PASS, 2,778 tests, 0 failures, 0 errors, 4 skipped. The suite is larger than the earlier 2,571-test baseline because subsequent runtime/security tests are now included; no tests were removed or disabled.
+- `mvn -q test`: PASS, 2,571 tests, 0 failures, 0 errors, 4 skipped.
 - Docker CLI/daemon: unavailable locally; no local Docker claim is made.
 
 ## Conclusion

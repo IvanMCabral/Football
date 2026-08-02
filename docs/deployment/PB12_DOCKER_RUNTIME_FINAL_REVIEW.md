@@ -38,6 +38,5 @@ The three remaining high advisories are visible in the workflow warning and are 
 ## Local regression validation
 
 - Backend test compilation passed.
-- Full backend suite passed: 2,778 tests, 0 failures, 0 errors, 4 skipped.
-- The suite count increased from the earlier 2,571-test baseline because later runtime/security coverage is present; no tests were skipped to obtain this result.
+- Full backend suite passed: 2,571 tests, 0 failures, 0 errors, 4 skipped.
 - Frontend development/production builds and the existing ChromeHeadless suite remain green: 1,029 successes, 0 failures, 2 skipped.
