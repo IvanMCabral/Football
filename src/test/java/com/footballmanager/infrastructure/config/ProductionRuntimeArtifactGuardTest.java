@@ -106,31 +106,40 @@ class ProductionRuntimeArtifactGuardTest {
     }
 
     @Test
-    void productionJarSmokeLifecycleSelfTestExercisesNegativeCases() throws Exception {
-        Process process = new ProcessBuilder(
-            "powershell",
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-File",
-            ROOT.resolve("tools/run-production-jar-smoke.ps1").toString(),
-            "-LifecycleSelfTest")
-            .directory(ROOT.toFile())
-            .redirectErrorStream(true)
-            .start();
+    void productionJarSmokeLifecycleTestModesFailClosedThroughExecutableRunner() throws Exception {
+        String[] modes = {
+            "postgres-stop-fails",
+            "redis-stop-fails",
+            "helper-fails-after-java",
+            "workspace-delete-fails",
+            "marker-order-invalid"
+        };
 
-        boolean finished = process.waitFor(Duration.ofSeconds(30).toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        for (String mode : modes) {
+            Process process = new ProcessBuilder(
+                "powershell",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                ROOT.resolve("tools/run-production-jar-smoke.ps1").toString(),
+                "-SkipBuild",
+                "-LifecycleTestMode",
+                mode)
+                .directory(ROOT.toFile())
+                .redirectErrorStream(true)
+                .start();
 
-        assertThat(finished).isTrue();
-        assertThat(process.exitValue()).isZero();
-        assertThat(output).contains("\"status\":\"PASS\"");
-        assertThat(output).contains("\"negativeCases\":5");
-        assertThat(output).contains("\"postgresStopFailure\":\"FAIL\"");
-        assertThat(output).contains("\"redisStopFailure\":\"FAIL\"");
-        assertThat(output).contains("\"helperFailureAfterJava\":\"FAIL\"");
-        assertThat(output).contains("\"workspaceDeleteFailure\":\"FAIL\"");
-        assertThat(output).contains("\"markerOrderInvalid\":\"FAIL\"");
+            boolean finished = process.waitFor(Duration.ofMinutes(5).toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+            assertThat(finished).as(mode).isTrue();
+            assertThat(process.exitValue()).as(mode).isNotZero();
+            assertThat(output).as(mode).contains("\"status\":\"FAIL\"");
+            assertThat(output).as(mode).contains("\"lifecycleTestMode\":\"" + mode + "\"");
+            assertThat(output).as(mode).contains("\"residualProcesses\":0");
+            assertThat(output).as(mode).contains("\"residualPorts\":0");
+        }
     }
 
     private static String read(String relativePath) throws IOException {

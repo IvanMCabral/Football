@@ -97,6 +97,7 @@ internal static class GracefulProcessGroupRunner
             string command = Require(options, "command");
             string signalFile = Require(options, "signal-file");
             string pidFile = Require(options, "pid-file");
+            string stateFile = options.ContainsKey("state-file") ? options["state-file"] : string.Empty;
             string resultFile = Require(options, "result-file");
             string stdoutPath = Require(options, "stdout");
             string stderrPath = Require(options, "stderr");
@@ -126,6 +127,17 @@ internal static class GracefulProcessGroupRunner
 
                 CloseHandle(processInfo.hThread);
                 File.WriteAllText(pidFile, processInfo.dwProcessId.ToString(), Encoding.UTF8);
+                if (!string.IsNullOrWhiteSpace(stateFile))
+                {
+                    File.WriteAllText(
+                        stateFile,
+                        "{" +
+                        "\"javaPid\":" + processInfo.dwProcessId + "," +
+                        "\"processGroupId\":" + processInfo.dwProcessId + "," +
+                        "\"created\":true" +
+                        "}",
+                        Encoding.UTF8);
+                }
 
                 bool gracefulSignalSent = false;
                 bool gracefulShutdownObserved = false;
@@ -283,10 +295,13 @@ internal static class GracefulProcessGroupRunner
             "\"processGroupId\":" + javaPid + "," +
             "\"signalAttempted\":\"" + signalAttempted + "\"," +
             "\"signalUsed\":\"" + signalUsed + "\"," +
+            "\"fallbackUsed\":" + Bool(fallbackUsed) + "," +
             "\"signalFallbackUsed\":" + Bool(fallbackUsed) + "," +
             "\"ctrlCResult\":" + Bool(ctrlCResult) + "," +
             "\"ctrlBreakResult\":" + Bool(ctrlBreakResult) + "," +
+            "\"ctrlCWin32Error\":" + ctrlCError + "," +
             "\"ctrlCError\":" + ctrlCError + "," +
+            "\"ctrlBreakWin32Error\":" + ctrlBreakError + "," +
             "\"ctrlBreakError\":" + ctrlBreakError + "," +
             "\"signalTimestampUtc\":\"" + (signalTimestamp == DateTime.MinValue ? "" : signalTimestamp.ToString("O")) + "\"," +
             "\"gracefulSignalSent\":" + Bool(signalSent) + "," +
