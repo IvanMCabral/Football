@@ -13,11 +13,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthUseCase authUseCase;
 
@@ -46,7 +50,8 @@ public class AuthController {
         return Mono.defer(() -> authUseCase.register(new AuthRegisterCommand(
                 request.email(), request.username(), request.password()))
             .map(AuthController::toJwtTokenResponse)
-            .map(ResponseEntity::ok));
+            .map(ResponseEntity::ok))
+            .doOnError(error -> log.error("Authentication registration failed: type={}", error.getClass().getName(), error));
     }
 
     @PostMapping("/login")
