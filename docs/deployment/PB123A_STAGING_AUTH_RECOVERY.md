@@ -34,3 +34,10 @@
 The production-jar lifecycle smoke exposed a separate packaged-runtime issue: the optional three-league importer runs on a worker thread, whose context class loader is not guaranteed to be Spring Boot's executable-jar loader. Dataset resources were therefore reported as missing even though they were packaged. `ThreeLeagueDatasetImporter` now resolves resources through its application class loader explicitly. The smoke harness also waits for the asynchronous importer to materialize the league/team prerequisite after readiness instead of racing it.
 
 Focused lifecycle coverage and the complete backend suite pass after this correction.
+
+## Final validation run
+
+- Backend: `mvn -q -DskipTests test-compile` and `mvn -q test`; 2579 tests, 0 failures, 0 errors, 4 skipped.
+- Frontend development and production builds pass.
+- Frontend encoding guard and Karma suite pass; 1031 tests successful, 0 failures, 2 skipped.
+- `git diff --check` is clean. The only remaining root working-tree entry is the pre-existing untracked historical audit `docs/deployment/PB123A_ZERO_COST_STAGING_DEFINITIVE_INDEPENDENT_AUDIT.md`; it was not modified or included.
