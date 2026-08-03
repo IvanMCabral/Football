@@ -8,6 +8,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -24,6 +26,11 @@ public class ThreeLeagueImportRunner implements ApplicationRunner {
         if (!enabled) {
             return;
         }
+        log.info("Scheduling three-league dataset import in the staging worker");
+        CompletableFuture.runAsync(this::executeImport);
+    }
+
+    private void executeImport() {
         log.info("Starting three-league dataset import");
         try {
             ThreeLeagueImportReport report = importer.importDataset();
