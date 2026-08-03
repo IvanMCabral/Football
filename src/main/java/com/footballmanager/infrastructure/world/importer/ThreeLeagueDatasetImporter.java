@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.application.service.world.importer.ThreeLeagueImportReport;
 import com.footballmanager.application.service.world.PlayerSpecialAttributeSelectionValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ThreeLeagueDatasetImporter {
 
     private static final String SOURCE = "manager-mvp1-explicit";
@@ -33,6 +35,7 @@ public class ThreeLeagueDatasetImporter {
     @Transactional(transactionManager = "threeLeagueImportTransactionManager")
     public ThreeLeagueImportReport importDataset() {
         try {
+            log.info("Three-league import: preparing schema and resources");
             ensurePlayerTraceabilityColumns();
             List<CountryRecord> countries = read("data/initial/countries.json", new TypeReference<>() {});
             List<LeagueRecord> leagues = read("data/initial/leagues.json", new TypeReference<>() {});
@@ -45,9 +48,11 @@ public class ThreeLeagueDatasetImporter {
             );
 
             validateInput(countries, leagues, clubsByCountry, specialAttributes);
+            log.info("Three-league import: validated resources countries={} leagues={} clubs={}", countries.size(), leagues.size(), clubsByCountry.values().stream().mapToInt(List::size).sum());
             Map<String, SpecialAttributeRecord> specialAttributesByCode = specialAttributes.stream()
                 .collect(LinkedHashMap::new, (map, attribute) -> map.put(attribute.code(), attribute), Map::putAll);
             upsertSystemUser();
+            log.info("Three-league import: system owner ready");
             Map<String, UUID> countryIds = upsertCountries(countries);
             Map<String, UUID> leagueIds = upsertLeagues(leagues, countryIds);
             Map<String, UUID> divisionIds = upsertDivisions(leagues, leagueIds);
