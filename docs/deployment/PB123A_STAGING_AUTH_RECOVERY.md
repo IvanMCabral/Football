@@ -80,9 +80,19 @@ Final public verification after the fix:
 - Login smoke: the same public session remained usable after registration.
 - Error smoke: a backend 500 cleared the loading state and showed only the safe
   public message; the button was enabled again.
+- A subsequent registration against the updated backend reached the dashboard
+  after the controlled startup notice (approximately 25 seconds), proving that
+  the notice is transitional rather than an indefinite loading state.
+- Direct public API validation returned `200` for a new identity in 2.88 seconds
+  and `409` for the immediate duplicate in 0.59 seconds.
+- The duplicate browser flow showed `El usuario ya existe...` and re-enabled the
+  `Registrarse` button; no second POST was issued automatically.
 - Frontend: 1037 SUCCESS, 0 failures, 2 skipped; encoding guard passed; focused
   registration lifecycle tests (6) passed; development, staging (built to a
   temporary output on C: because D: was full) and production builds passed.
 - Backend focused authentication/profile mapping tests passed after the pool
   configuration change. The last complete backend suite before this configuration
   change was 2579 tests, 0 failures, 0 errors, 4 skipped.
+- Backend remediation commit: `93abfb83` (R2DBC production pool resilience).
+- Frontend remediation commit: `d3fe51b` (change-detection-safe registration
+  lifecycle), deployed to Firebase from the same branch.
