@@ -4,12 +4,12 @@ Date: 2026-08-02
 
 ## Decision
 
-**Primary architecture:** Firebase Hosting + Google Cloud Run + Neon Postgres + Upstash Redis. The choice minimizes operations while preserving the Docker artifact already approved in PB1.2.2. It is a staging design only: no account, project, resource, billing configuration, or deployment was created by this document.
+**Active PB1.2.3A zero-cost architecture:** Firebase Hosting Spark + Render Free Web Service + Neon Free + Upstash Redis Free. Cloud Run remains a historical alternative but is explicitly rejected for this phase because it requires a Google billing account. The active stack is staging-only and must stop if any dashboard requests a card, billing, paid trial or pay-as-you-go activation.
 
 | Layer | Primary | Alternative | Initial cost posture | Card/billing | Main risk |
 | --- | --- | --- | --- | --- | --- |
 | Angular SPA | Firebase Hosting | Cloudflare Pages | Free allowance is sufficient for a small SPA | Firebase Spark needs no payment method; Cloud Run/API requires a Google billing account | 10 GB storage and 10 GB/month transfer no-cost quota; excess can disable Spark hosting |
-| Docker API | Cloud Run | Koyeb free instance or Render paid web service | Pay per use; free allowance can cover low traffic | Google billing account required even when usage stays within allowance | Cold start, request/stream timeout, egress and billing coupling |
+| Docker API | Render Free | Cloud Run (requires billing) or Koyeb Free | USD 0 within 750 instance-hours/workspace/month | Card requirement must be checked in Dashboard; stop if requested | 512 MB/0.1 CPU, sleep after 15 minutes, suspension and SSE risk |
 | PostgreSQL | Neon | Supabase | Neon Free has no time limit and no card; paid Launch is usage-based | No card for Free; paid use requires billing | 0.5 GB/100 CU-hours Free allowance and connection/region validation |
 | Redis | Upstash Redis | Redis Cloud or paid Upstash Fixed | Free prototype tier; pay-as-you-go starts at $0.20/100K commands | Free can be used without paid upgrade; budget controls require paid plan | Free 256 MB/500K commands and no production SLA; durable state needs restore drill |
 | Image registry | Artifact Registry | GitHub Container Registry | Artifact Registry is natural for Cloud Run; GHCR is already integrated with GitHub | Google billing applies to storage/egress; GHCR public packages are free and private plans have quotas | Retention and IAM must be configured before staging |
@@ -47,6 +47,12 @@ Date: 2026-08-02
 - **Artifact Registry:** preferred with Cloud Run because IAM, regional placement and image digests are in one Google project. Storage/egress and retention must be costed in the project.
 - **GitHub Container Registry (GHCR):** provider-neutral and fits the existing GitHub workflow. Public packages are free; GitHub Free private packages include 500 MB storage and 1 GB transfer shared with Actions artifacts. It is the fallback if avoiding Google registry coupling matters. Source: [GitHub Packages billing](https://docs.github.com/en/billing/concepts/product-billing/github-packages).
 
+## Active zero-cost gate
+
+Render Free is documented as 512 MB/0.1 CPU with 750 instance-hours/month and one ephemeral instance; it is explicitly for testing/hobby use. The local Docker smoke used 768 MB, so memory compatibility is a P0 staging test. Source: [Render Free](https://render.com/docs/free), [Render compute plans](https://render.com/docs/compute-plans).
+
+No provider is provisioned yet. See `PB123A_ZERO_COST_PROVIDER_VERIFICATION.md` and `PB123A_ZERO_COST_STAGING_FINAL_REVIEW.md` for the payment gate and current blocked status.
+
 ## Acceptance boundary
 
-This decision is ready for PB1.2.3A provisioning, but it is not a public-beta approval. The following must be proven with real staging resources: region latency, Flyway over JDBC plus R2DBC pooling, Redis ACL/TLS, SSE reconnect, backup/restore, spend alerts and rollback.
+This decision is ready for PB1.2.3A provisioning only after authenticated dashboard access. It is not a public-beta approval. The following must be proven with real staging resources: region latency, Render memory/startup, Flyway over JDBC plus R2DBC pooling, Redis ACL/TLS, SSE reconnect, backup/restore, quota behavior and rollback.

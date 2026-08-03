@@ -1,6 +1,6 @@
 # PB1.2.3 Cloud staging architecture
 
-## Target topology
+## Active PB1.2.3A topology
 
 ```text
 Browser
@@ -11,14 +11,14 @@ Angular SPA (Firebase Hosting)
   |
   | absolute API origin, Authorization header, exact CORS
   v
-Cloud Run service (Spring Boot WebFlux, Docker, prod profile)
+Render Free Web Service (Spring Boot WebFlux, Docker, prod profile)
   |                         |
   | TLS/JDBC + R2DBC        | TLS/ACL, bounded timeouts
   v                         v
 Neon PostgreSQL             Upstash Redis
 ```
 
-The API should use a dedicated origin such as `https://api-staging.<owned-domain>`, not a committed provider URL. Firebase Hosting currently rewrites SPA paths to `index.html`; no API rewrite is present in `front-ciber/project/firebase.json`. Keeping API traffic absolute avoids relying on Firebase proxy buffering for SSE. A same-origin rewrite may be evaluated only after a real five-minute SSE test; it is not the staging default.
+The API should use the Render origin `https://<service>.onrender.com/api/v1` until a real custom domain exists. Firebase Hosting currently rewrites SPA paths to `index.html`; no API rewrite is present in `front-ciber/project/firebase.json`. Keeping API traffic absolute avoids relying on Firebase proxy buffering for SSE. Cloud Run is retained only as a historical paid/billing alternative.
 
 ## Existing frontend contract
 
@@ -29,15 +29,15 @@ The API base is currently defined in:
 
 Both currently contain `apiUrl: '/api/v1'`, with production debug routes disabled and SSE enabled. A later provisioning change must add an explicit staging replacement (for example `environment.staging.ts`) and set `apiUrl` to the HTTPS API origin. Do not put a secret in Angular configuration; the URL is public configuration. SSE must use the same API origin as normal HTTP calls.
 
-## Cloud Run configuration proposal
+## Render Free configuration proposal
 
-- Region: start with `southamerica-east1` if Neon/Upstash latency is acceptable; otherwise choose the nearest common region and record the measured RTT.
-- `min-instances=0` for disposable staging; `max-instances=1` initially; raise only after load and LiveSession isolation evidence.
-- Initial concurrency target: 20, not the platform maximum, because SSE and live sessions hold connections.
-- Request timeout: configure up to 3600 seconds only after heartbeat/reconnect tests. A Cloud Run timeout closes the stream with 504; a normal match must never depend on an uninterrupted connection.
-- Container port: provider `PORT`, `SERVER_ADDRESS=0.0.0.0`, existing non-root image and liveness endpoint.
+- Render region: choose the closest available region after comparing Neon/Upstash latency; Render's documented regions do not include South America.
+- Plan: `free`, one instance, 512 MB RAM and 0.1 CPU. No persistent disk and no autoscaling.
+- Idle behavior: service sleeps after 15 minutes and wakes in about one minute; browser retry/backoff is required.
+- Container port: Render-provided `PORT`, `SERVER_ADDRESS=0.0.0.0`, existing non-root image and liveness endpoint.
 - Health: liveness may be public; readiness must check PostgreSQL and Redis and return 503 when either dependency is unavailable.
-- Shutdown: preserve `server.shutdown=graceful`; drain SSE and reject new mutating commands during the platform termination window.
+- Shutdown: Render Blueprint uses a 30-second SIGTERM delay; drain SSE and reject new mutating commands during shutdown.
+- Memory gate: current Docker smoke used 768 MB, so 512 MB compatibility must be measured before accepting Render Free.
 
 ## Security and routing
 
@@ -81,4 +81,4 @@ Cloud Run scale-to-zero may drop an idle connection, but it must not lose commit
 
 ## Observability
 
-Use Cloud Run stdout/stderr logs and request IDs already emitted by the backend. Track readiness, 5xx, latency, container restarts, CPU, memory, R2DBC pool saturation, Redis errors, SSE connection count and backup result. Configure budget alerts because Google billing alerts notify but do not cap charges.
+Use Render logs/metrics and request IDs already emitted by the backend. Track readiness, 5xx, latency, restarts, CPU, memory, R2DBC pool saturation, Redis errors, SSE connection count and backup result. Free quota exhaustion must result in suspension/disabled builds, never a paid upgrade.

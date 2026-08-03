@@ -8,9 +8,9 @@ These gates are intentionally outside PB1.2.1. They must be closed before public
 
 PASS. The reproducible workflow `.github/workflows/pb12-docker-smoke.yml` and runner `tools/run-pb12-docker-smoke.sh` passed at the exact final HEAD in [GitHub Actions run #25](https://github.com/IvanMCabral/Football/actions/runs/30771583693). The run verified the approved Docker runtime, graceful lifecycle and Trivy result of 0 critical / 0 high. The workstation still has no Docker daemon, so the image result remains remote evidence.
 
-## PB1.2.3 design handoff
+## PB1.2.3A zero-cost design handoff
 
-The provider, topology, backup/restore, SSE, cost and release gates are documented in the `PB123_*` documents. No cloud resource was created. Provisioning remains a human-approved PB1.2.3A action.
+The active zero-cost target is Firebase Spark + Render Free + Neon Free + Upstash Free. Cloud Run remains historical and is rejected for this phase because it requires billing. Provider verification, blueprint, secret inventory, smoke, cold-start and SSE gates are documented in the `PB123A_*` documents. No cloud resource was created; authenticated human dashboard access is required for provisioning.
 
 ## P0 before Internet exposure
 
