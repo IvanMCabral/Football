@@ -17,7 +17,7 @@
 
 - Production artifact inspection confirms the Render API origin is present and no relative API base or localhost URL is present.
 - Frontend production and staging builds pass.
-- Frontend suite passes with 1031 successes and 2 skipped tests.
+- Frontend suite passes with 1037 successes and 2 skipped tests.
 - Backend auth integration and error-classification tests pass.
 
 ## Public staging evidence
@@ -41,3 +41,48 @@ Focused lifecycle coverage and the complete backend suite pass after this correc
 - Frontend development and production builds pass.
 - Frontend encoding guard and Karma suite pass; 1031 tests successful, 0 failures, 2 skipped.
 - `git diff --check` is clean. The only remaining root working-tree entry is the pre-existing untracked historical audit `docs/deployment/PB123A_ZERO_COST_STAGING_DEFINITIVE_INDEPENDENT_AUDIT.md`; it was not modified or included.
+
+## Public registration incident and final verification (2026-08-03)
+
+The original public reproduction was classified as **C + D**: the request reached
+Render while the free instance was starting and the pooled PostgreSQL connection
+was stale; the backend eventually returned an error while the Angular component
+kept the button in `Registrando...`. There was no browser console error and no
+evidence of a frontend CORS rewrite after the absolute API base was deployed.
+
+Observed evidence (sanitized):
+
+- Firebase request URL: `https://manager-staging-api.onrender.com/api/v1/auth/register`.
+- Render startup took approximately 120 seconds in the service log; readiness
+  returned 200 once the instance was ready.
+- The first post-deploy request returned a controlled 500 in the browser. Render
+  logged `PostgresConnectionClosedException` while validating an R2DBC pooled
+  connection (`Cannot exchange messages because the connection is closed`).
+- A manual retry against the warm instance completed registration and navigated to
+  `/dashboard`; no duplicate automatic retry is performed by the client.
+
+The frontend now forces a view refresh for timer, timeout/finalize and error
+callbacks. This is required by the Angular production runtime so the slow-server
+notice and the re-enabled button are observable even when the request finishes
+outside a change-detection turn. The request still has a bounded 120-second
+timeout and never retries automatically.
+
+The production R2DBC pool now evicts idle/lifetime-expired connections in the
+background, validates remotely, and bounds acquire/create times. This prevents a
+managed PostgreSQL provider from handing the registration path a connection that
+was closed while idle.
+
+Final public verification after the fix:
+
+- Firebase was rebuilt from frontend commit `d3fe51b` and redeployed successfully
+  to `https://manager-4f952.web.app`.
+- New registration: dashboard navigation succeeded on the warm public backend.
+- Login smoke: the same public session remained usable after registration.
+- Error smoke: a backend 500 cleared the loading state and showed only the safe
+  public message; the button was enabled again.
+- Frontend: 1037 SUCCESS, 0 failures, 2 skipped; encoding guard passed; focused
+  registration lifecycle tests (6) passed; development, staging (built to a
+  temporary output on C: because D: was full) and production builds passed.
+- Backend focused authentication/profile mapping tests passed after the pool
+  configuration change. The last complete backend suite before this configuration
+  change was 2579 tests, 0 failures, 0 errors, 4 skipped.

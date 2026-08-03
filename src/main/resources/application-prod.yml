@@ -2,6 +2,18 @@ spring:
   config:
     activate:
       on-profile: prod
+  r2dbc:
+    pool:
+      # Managed PostgreSQL providers can close idle TCP sessions before the
+      # client-side pool notices. Evict and validate proactively so the first
+      # public request after an idle window creates a fresh connection.
+      max-idle-time: ${R2DBC_MAX_IDLE_TIME:2m}
+      max-life-time: ${R2DBC_MAX_LIFE_TIME:10m}
+      background-eviction-interval: ${R2DBC_BACKGROUND_EVICTION_INTERVAL:1m}
+      max-acquire-time: ${R2DBC_MAX_ACQUIRE_TIME:10s}
+      max-create-connection-time: ${R2DBC_MAX_CREATE_CONNECTION_TIME:10s}
+      validation-depth: remote
+      validation-query: SELECT 1
   flyway:
     baseline-on-migrate: false
   data:
