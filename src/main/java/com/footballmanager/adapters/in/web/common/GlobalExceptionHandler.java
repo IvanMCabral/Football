@@ -117,6 +117,15 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<Map<String, Object>>> handleIllegalArgument(
             IllegalArgumentException ex,
             ServerWebExchange exchange) {
+        if (ex instanceof AuthConflictException) {
+            return authError(exchange, "AUTH_EMAIL_EXISTS", "El email ya esta registrado.", HttpStatus.CONFLICT);
+        }
+        if (ex instanceof AuthCredentialsException) {
+            return authError(exchange, "AUTH_INVALID_CREDENTIALS", "Las credenciales no son validas.", HttpStatus.BAD_REQUEST);
+        }
+        if (ex instanceof AuthValidationException) {
+            return authError(exchange, "AUTH_VALIDATION_ERROR", "La solicitud de autenticacion no es valida.", HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         return validationError(ex, exchange);
     }
 
