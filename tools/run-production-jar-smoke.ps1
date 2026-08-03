@@ -877,8 +877,19 @@ try {
     }
 
     $idsQuery = "select l.id as league_id, t.id as team_id from leagues l join teams t on t.league_id = l.id order by l.name, t.name limit 1;"
-    $ids = Invoke-Psql $idsQuery $dbName 'ids'
-    $firstIds = $ids | Select-Object -First 1
+    # The optional three-league importer runs in its staging worker after the
+    # application becomes ready.  Readiness therefore does not imply that the
+    # world rows are available yet; wait for the public career prerequisite
+    # instead of racing the importer.
+    $firstIds = $null
+    $idsDeadline = (Get-Date).AddSeconds(120)
+    while ((Get-Date) -lt $idsDeadline -and -not $firstIds) {
+        $ids = Invoke-Psql $idsQuery $dbName 'ids'
+        $firstIds = $ids | Select-Object -First 1
+        if (-not $firstIds) {
+            Start-Sleep -Seconds 2
+        }
+    }
     if (-not $firstIds -or -not $firstIds.Contains(',')) {
         throw 'No league/team ids found for minimal career.'
     }

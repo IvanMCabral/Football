@@ -155,7 +155,11 @@ public class ThreeLeagueDatasetImporter {
     }
 
     private <T> T read(String path, TypeReference<T> type) throws IOException {
-        try (var in = new ClassPathResource(path).getInputStream()) {
+        // The runner executes the import on a worker thread.  Resolve against
+        // the application's class loader explicitly instead of the worker's
+        // context loader, which may be the plain system loader in a packaged
+        // Spring Boot executable JAR.
+        try (var in = new ClassPathResource(path, ThreeLeagueDatasetImporter.class.getClassLoader()).getInputStream()) {
             String json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             if (!json.isEmpty() && json.charAt(0) == '\uFEFF') {
                 json = json.substring(1);
