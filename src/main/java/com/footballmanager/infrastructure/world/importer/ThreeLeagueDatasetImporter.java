@@ -10,7 +10,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.annotation.PostConstruct;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -33,16 +32,10 @@ public class ThreeLeagueDatasetImporter {
     private final PlayerSpecialAttributeSelectionValidator specialAttributeSelectionValidator =
         new PlayerSpecialAttributeSelectionValidator();
 
-    @PostConstruct
-    void configureStatementTimeout() {
-        jdbcTemplate.setQueryTimeout(30);
-    }
-
     @Transactional(transactionManager = "threeLeagueImportTransactionManager")
     public ThreeLeagueImportReport importDataset() {
         try {
-            log.info("Three-league import: preparing schema and resources");
-            ensurePlayerTraceabilityColumns();
+            log.info("Three-league import: preparing resources (schema managed by Flyway)");
             jdbcTemplate.execute("SET lock_timeout = '5s'");
             jdbcTemplate.execute("SET statement_timeout = '30s'");
             List<CountryRecord> countries = read("data/initial/countries.json", new TypeReference<>() {});
@@ -120,16 +113,6 @@ public class ThreeLeagueDatasetImporter {
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read MVP 1 dataset resources", e);
         }
-    }
-
-    private void ensurePlayerTraceabilityColumns() {
-        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS source_entity_id VARCHAR(160)");
-        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS identity_source_name VARCHAR(120)");
-        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS identity_source_ref TEXT");
-        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS identity_checked_at DATE");
-        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS position_source_ref TEXT");
-        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS position_checked_at DATE");
-        jdbcTemplate.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS position_estimated BOOLEAN NOT NULL DEFAULT TRUE");
     }
 
     public void validateGlobal() {
