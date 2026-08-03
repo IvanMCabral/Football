@@ -101,15 +101,13 @@ public class ThreeLeagueDatasetImporter {
                         if (!playerExternalIds.add(player.externalId())) {
                             throw new IllegalArgumentException("Duplicate player externalId: " + player.externalId());
                         }
-                        upsertPlayer(player, countryIds.get(player.nationalityCode()));
                         players++;
                         traitRows += 2;
                     }
+                    upsertPlayers(squad, countryIds);
                     upsertTeamSquad(teamId, squad);
-                    for (PlayerRecord player : squad) {
-                        upsertSecondaryPositions(player);
-                        upsertPlayerSpecialAttributes(player, specialAttributeIds);
-                    }
+                    upsertSecondaryPositions(squad);
+                    upsertPlayerSpecialAttributes(squad, specialAttributeIds);
                     log.info("Three-league import: club ready league={} club={}", league.code(), club.code());
                 }
             }
@@ -478,13 +476,8 @@ public class ThreeLeagueDatasetImporter {
         positionGroup(source.primaryPosition());
     }
 
-    private void upsertPlayer(PlayerRecord player, UUID countryId) {
-        int age = LocalDate.now().getYear() - player.birthDate().getYear();
-        String skillsJson = "{\"PASSER\":" + player.technique()
-            + ",\"SHOOTER\":" + player.attack()
-            + ",\"TACKLER\":" + player.defense()
-            + ",\"SPEEDSTER\":" + player.speed() + "}";
-        jdbcTemplate.update("""
+    private void upsertPlayers(List<PlayerRecord> players, Map<String, UUID> countryIds) {
+        jdbcTemplate.batchUpdate("""
             INSERT INTO players (
                 id, source_system, source_id, source_entity_id, identity_source_name, identity_source_ref,
                 identity_checked_at, position_source_ref, position_checked_at, position_estimated,
@@ -509,14 +502,21 @@ public class ThreeLeagueDatasetImporter {
                 market_value = EXCLUDED.market_value, weekly_salary = EXCLUDED.weekly_salary,
                 height_cm = EXCLUDED.height_cm, skill_levels_json = EXCLUDED.skill_levels_json,
                 updated_at = NOW()
-            """, player.id(), player.sourceSystem(), player.externalId(), player.sourceEntityId(),
-            player.identitySourceName(), player.identitySourceRef(), LocalDate.parse(player.identityCheckedAt()),
-            player.positionSourceRef(), LocalDate.parse(player.positionCheckedAt()),
-            Boolean.TRUE.equals(player.positionEstimated()), countryId, player.fullName(),
-            player.displayName(), age, player.birthDate(), player.primaryPosition(), player.preferredFoot(),
-            player.shirtNumber(), player.attack(), player.defense(), player.technique(), player.speed(),
-            player.stamina(), player.mentality(), player.marketValue(), player.marketValue().divide(BigDecimal.valueOf(250)),
-            player.heightCm(), skillsJson);
+            """, players.stream().map(player -> {
+                int age = LocalDate.now().getYear() - player.birthDate().getYear();
+                String skillsJson = "{\"PASSER\":" + player.technique()
+                    + ",\"SHOOTER\":" + player.attack()
+                    + ",\"TACKLER\":" + player.defense()
+                    + ",\"SPEEDSTER\":" + player.speed() + "}";
+                return new Object[] {player.id(), player.sourceSystem(), player.externalId(), player.sourceEntityId(),
+                    player.identitySourceName(), player.identitySourceRef(), LocalDate.parse(player.identityCheckedAt()),
+                    player.positionSourceRef(), LocalDate.parse(player.positionCheckedAt()),
+                    Boolean.TRUE.equals(player.positionEstimated()), countryIds.get(player.nationalityCode()), player.fullName(),
+                    player.displayName(), age, player.birthDate(), player.primaryPosition(), player.preferredFoot(),
+                    player.shirtNumber(), player.attack(), player.defense(), player.technique(), player.speed(),
+                    player.stamina(), player.mentality(), player.marketValue(), player.marketValue().divide(BigDecimal.valueOf(250)),
+                    player.heightCm(), skillsJson};
+            }).toList());
     }
 
     private void clearTeamSquadOwnership(List<PlayerRecord> squad) {
@@ -534,26 +534,35 @@ public class ThreeLeagueDatasetImporter {
             squad.stream().map(player -> new Object[] {teamId, player.id()}).toList());
     }
 
-    private void upsertSecondaryPositions(PlayerRecord player) {
-        jdbcTemplate.update("DELETE FROM player_secondary_positions WHERE player_id = ?", player.id());
-        for (String position : player.secondaryPositions()) {
-            jdbcTemplate.update("""
+    private void upsertSecondaryPositions(List<PlayerRecord> players) {
+        jdbcTemplate.batchUpdate("DELETE FROM player_secondary_positions WHERE player_id = ?",
+            players.stream().map(player -> new Object[] {player.id()}).toList());
+        List<Object[]> rows = players.stream()
+            .flatMap(player -> player.secondaryPositions().stream().map(position -> new Object[] {player.id(), position}))
+            .toList();
+        if (!rows.isEmpty()) {
+            jdbcTemplate.batchUpdate("""
                 INSERT INTO player_secondary_positions (player_id, position)
                 VALUES (?, ?) ON CONFLICT (player_id, position) DO NOTHING
-                """, player.id(), position);
+                """, rows);
         }
     }
 
-    private void upsertPlayerSpecialAttributes(PlayerRecord player, Map<String, UUID> specialAttributeIds) {
-        var selection = specialAttributeSelectionValidator.validate(player.specialAttributes(), specialAttributeIds.keySet());
-        jdbcTemplate.update("DELETE FROM player_special_attributes WHERE player_id = ?", player.id());
-        int slot = 1;
-        for (String code : selection.codes()) {
-            jdbcTemplate.update("""
+    private void upsertPlayerSpecialAttributes(List<PlayerRecord> players, Map<String, UUID> specialAttributeIds) {
+        jdbcTemplate.batchUpdate("DELETE FROM player_special_attributes WHERE player_id = ?",
+            players.stream().map(player -> new Object[] {player.id()}).toList());
+        List<Object[]> rows = new ArrayList<>();
+        for (PlayerRecord player : players) {
+            var selection = specialAttributeSelectionValidator.validate(player.specialAttributes(), specialAttributeIds.keySet());
+            int slot = 1;
+            for (String code : selection.codes()) {
+                rows.add(new Object[] {player.id(), specialAttributeIds.get(code), slot++});
+            }
+        }
+        jdbcTemplate.batchUpdate("""
                 INSERT INTO player_special_attributes (player_id, special_attribute_id, slot)
                 VALUES (?, ?, ?)
-                """, player.id(), specialAttributeIds.get(code), slot++);
-        }
+                """, rows);
     }
 
     private void requireZero(String sql, String label, Object... args) {
