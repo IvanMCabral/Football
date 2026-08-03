@@ -39,7 +39,8 @@ public class SecurityConfig {
             response.getHeaders().set("Vary", "Origin");
             response.getHeaders().set("Access-Control-Allow-Credentials", "true");
             response.getHeaders().set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-            response.getHeaders().set("Access-Control-Allow-Headers", "Content-Type,Authorization");
+            response.getHeaders().set("Access-Control-Allow-Headers",
+                String.join(",", corsConfig.allowedHeaders()));
         }
     }
 

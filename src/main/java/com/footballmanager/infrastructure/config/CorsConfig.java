@@ -14,6 +14,13 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
+    private static final List<String> ALLOWED_HEADERS = List.of(
+        HttpHeaders.AUTHORIZATION,
+        HttpHeaders.CONTENT_TYPE,
+        HttpHeaders.ACCEPT,
+        HttpHeaders.ORIGIN,
+        "X-Requested-With");
+
     private final List<String> allowedOrigins;
 
     public CorsConfig(@Value("${app.security.cors.allowed-origins:}") String allowedOrigins) {
@@ -28,18 +35,18 @@ public class CorsConfig {
         return allowedOrigins;
     }
 
+    /** Same allowlist used by security error responses (401/403). */
+    public List<String> allowedHeaders() {
+        return ALLOWED_HEADERS;
+    }
+
     @Bean
     public CorsWebFilter corsWebFilterBean() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.setAllowedOrigins(allowedOrigins);
         corsConfig.setMaxAge(3600L);
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        corsConfig.setAllowedHeaders(Arrays.asList(
-            HttpHeaders.AUTHORIZATION,
-            HttpHeaders.CONTENT_TYPE,
-            HttpHeaders.ACCEPT,
-            HttpHeaders.ORIGIN,
-            "X-Requested-With"));
+        corsConfig.setAllowedHeaders(ALLOWED_HEADERS);
         corsConfig.setExposedHeaders(List.of(HttpHeaders.CONTENT_TYPE));
         corsConfig.setAllowCredentials(true);
 
