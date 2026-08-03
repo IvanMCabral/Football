@@ -192,6 +192,25 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<ErrorResponseBody>> handleUnexpected(
             Exception ex,
             ServerWebExchange exchange) {
+        Throwable authFailure = findAuthFailure(ex);
+        if (authFailure instanceof AuthConflictException) {
+            return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorResponseBody("AUTH_EMAIL_EXISTS", "El email ya esta registrado.",
+                    HttpStatus.CONFLICT.value(), requestId(exchange))));
+        }
+        if (authFailure instanceof AuthCredentialsException) {
+            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorResponseBody("AUTH_INVALID_CREDENTIALS", "Las credenciales no son validas.",
+                    HttpStatus.BAD_REQUEST.value(), requestId(exchange))));
+        }
+        if (authFailure instanceof AuthValidationException) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorResponseBody("AUTH_VALIDATION_ERROR", "La solicitud de autenticacion no es valida.",
+                    HttpStatus.UNPROCESSABLE_ENTITY.value(), requestId(exchange))));
+        }
         ErrorResponseBody body = new ErrorResponseBody(
             "INTERNAL_ERROR",
             GENERIC_UNEXPECTED_MESSAGE,
@@ -202,6 +221,19 @@ public class GlobalExceptionHandler {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
         );
+    }
+
+    private static Throwable findAuthFailure(Throwable failure) {
+        Throwable current = failure;
+        while (current != null) {
+            if (current instanceof AuthConflictException
+                || current instanceof AuthCredentialsException
+                || current instanceof AuthValidationException) {
+                return current;
+            }
+            current = current.getCause();
+        }
+        return null;
     }
 
     private Mono<ResponseEntity<Map<String, Object>>> validationError(
@@ -217,6 +249,21 @@ public class GlobalExceptionHandler {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
         );
+    }
+
+    private Mono<ResponseEntity<Map<String, Object>>> authError(
+            ServerWebExchange exchange,
+            String code,
+            String message,
+            HttpStatus status) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", code);
+        body.put("message", message);
+        body.put("status", status.value());
+        body.put("requestId", requestId(exchange));
+        return Mono.just(ResponseEntity.status(status)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(body));
     }
 
     private Mono<ResponseEntity<Map<String, Object>>> forbidden(
