@@ -40,11 +40,16 @@ class ThreeLeagueImportJdbcConfiguration {
         // when the runtime datasource points at the transaction pooler.
         url = url.replace("-pooler.", ".");
         if (url.startsWith("jdbc:")) {
-            return url;
+            return withImportTimeouts(url);
         }
         if (url.startsWith("r2dbc:postgresql:")) {
-            return "jdbc:postgresql:" + url.substring("r2dbc:postgresql:".length());
+            return withImportTimeouts("jdbc:postgresql:" + url.substring("r2dbc:postgresql:".length()));
         }
-        return url;
+        return withImportTimeouts(url);
+    }
+
+    private static String withImportTimeouts(String jdbcUrl) {
+        String separator = jdbcUrl.contains("?") ? "&" : "?";
+        return jdbcUrl + separator + "options=-c%20statement_timeout%3D30000%20-c%20lock_timeout%3D5000";
     }
 }

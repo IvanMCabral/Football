@@ -79,7 +79,9 @@ public class ThreeLeagueDatasetImporter {
                 List<ClubRecord> leagueClubs = clubsByCountry.get(league.countryCode());
                 int sort = 1;
                 UUID seasonExternalId = deterministicUuid("season:" + league.code() + ":" + league.seasonYear());
+                log.info("Three-league import: season start league={}", league.code());
                 int seasonId = upsertSeason(leagueIds.get(league.code()), seasonExternalId, league.seasonYear());
+                log.info("Three-league import: season ready league={}", league.code());
                 upsertSeasonCompetition(seasonId, leagueIds.get(league.code()), divisionIds.get(league.code()), league.name());
 
                 for (ClubRecord club : leagueClubs) {
