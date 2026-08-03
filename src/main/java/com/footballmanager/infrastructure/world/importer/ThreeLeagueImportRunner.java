@@ -24,10 +24,16 @@ public class ThreeLeagueImportRunner implements ApplicationRunner {
         if (!enabled) {
             return;
         }
-        ThreeLeagueImportReport report = importer.importDataset();
-        log.info(
-            "Three-league dataset import completed countries={} leagues={} clubs={} teams={} players={} traits={}",
-            report.countries(), report.leagues(), report.clubs(), report.teams(), report.players(),
-            report.playerSpecialAttributes());
+        log.info("Starting three-league dataset import");
+        try {
+            ThreeLeagueImportReport report = importer.importDataset();
+            log.info(
+                "Three-league dataset import completed countries={} leagues={} clubs={} teams={} players={} traits={}",
+                report.countries(), report.leagues(), report.clubs(), report.teams(), report.players(),
+                report.playerSpecialAttributes());
+        } catch (RuntimeException exception) {
+            log.error("Three-league dataset import failed", exception);
+            throw exception;
+        }
     }
 }
