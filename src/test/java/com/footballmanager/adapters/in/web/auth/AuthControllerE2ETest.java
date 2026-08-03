@@ -104,6 +104,22 @@ class AuthControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /register - validation is not reported as a lineup error")
+    void register_invalidPassword_returnsAuthValidationCode() {
+        webTestClient.post().uri("/api/v1/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(String.format(
+                "{\"email\":\"%s\",\"username\":\"valid-user\",\"password\":\"short\"}",
+                uniqueEmail()))
+            .exchange()
+            .expectStatus().isEqualTo(422)
+            .expectBody()
+            .jsonPath("$.code").isEqualTo("AUTH_VALIDATION_ERROR")
+            .jsonPath("$.code").value(code ->
+                org.junit.jupiter.api.Assertions.assertNotEquals("LINEUP_VALIDATION_ERROR", code));
+    }
+
+    @Test
     @DisplayName("POST /login — 200 with JWT tokens for valid credentials")
     void login_validCredentials_returnsJwtTokens() throws Exception {
         String email = uniqueEmail();

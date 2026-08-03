@@ -1,5 +1,8 @@
 package com.footballmanager.adapters.in.web.common;
 
+import com.footballmanager.application.exception.AuthConflictException;
+import com.footballmanager.application.exception.AuthCredentialsException;
+import com.footballmanager.application.exception.AuthValidationException;
 import com.footballmanager.infrastructure.security.RequestCorrelationWebFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -67,6 +70,36 @@ class GlobalExceptionHandlerProductionTest {
         assertThat(body.message()).isEqualTo("No autenticado.");
         assertThat(body.requestId()).isEqualTo("req-auth");
         assertThat(body.toString()).doesNotContain("internal-db", "LettuceConnectionException", "C:\\secret");
+    }
+
+    @Test
+    void classifiesAuthenticationFailuresOutsideLineupContract() {
+        ErrorResponseBody conflict = handler.handleAuthConflict(
+                new AuthConflictException("jdbc:postgresql://internal-db duplicate"),
+                exchangeWithRequestId("req-auth-conflict"))
+            .block().getBody();
+        ErrorResponseBody credentials = handler.handleAuthCredentials(
+                new AuthCredentialsException("internal password details"),
+                exchangeWithRequestId("req-auth-credentials"))
+            .block().getBody();
+        ErrorResponseBody validation = handler.handleAuthValidation(
+                new AuthValidationException("internal validation details"),
+                exchangeWithRequestId("req-auth-validation"))
+            .block().getBody();
+
+        assertThat(conflict).isNotNull();
+        assertThat(conflict.code()).isEqualTo("AUTH_EMAIL_EXISTS");
+        assertThat(conflict.status()).isEqualTo(409);
+        assertThat(conflict.requestId()).isEqualTo("req-auth-conflict");
+        assertThat(conflict.toString()).doesNotContain("internal-db");
+        assertThat(credentials).isNotNull();
+        assertThat(credentials.code()).isEqualTo("AUTH_INVALID_CREDENTIALS");
+        assertThat(credentials.status()).isEqualTo(400);
+        assertThat(credentials.requestId()).isEqualTo("req-auth-credentials");
+        assertThat(validation).isNotNull();
+        assertThat(validation.code()).isEqualTo("AUTH_VALIDATION_ERROR");
+        assertThat(validation.status()).isEqualTo(422);
+        assertThat(validation.requestId()).isEqualTo("req-auth-validation");
     }
 
     @Test

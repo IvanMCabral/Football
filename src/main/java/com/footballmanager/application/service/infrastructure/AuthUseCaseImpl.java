@@ -1,6 +1,9 @@
 package com.footballmanager.application.service.infrastructure;
 
 import com.footballmanager.domain.model.aggregate.User;
+import com.footballmanager.application.exception.AuthConflictException;
+import com.footballmanager.application.exception.AuthCredentialsException;
+import com.footballmanager.application.exception.AuthValidationException;
 import com.footballmanager.domain.port.in.auth.AuthLoginCommand;
 import com.footballmanager.domain.port.in.auth.AuthRefreshCommand;
 import com.footballmanager.domain.port.in.auth.AuthRegisterCommand;
@@ -36,7 +39,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
     public Mono<AuthTokenResult> register(AuthRegisterCommand command) {
         validatePassword(command.password());
         return userRepository.findByEmail(command.email())
-            .<User>flatMap(user -> Mono.error(new IllegalArgumentException("Email already exists")))
+            .<User>flatMap(user -> Mono.error(new AuthConflictException("Email already exists")))
             .switchIfEmpty(Mono.defer(() -> {
                 String encodedPassword = passwordEncoder.encode(command.password());
                 return userRepository.createNew(command.email(), command.username(), encodedPassword);
@@ -48,10 +51,10 @@ public class AuthUseCaseImpl implements AuthUseCase {
     public Mono<AuthTokenResult> login(AuthLoginCommand command) {
         validatePasswordShape(command.password());
         return userRepository.findByEmail(command.email())
-            .switchIfEmpty(Mono.defer(() -> Mono.error(new IllegalArgumentException("User not found"))))
+            .switchIfEmpty(Mono.defer(() -> Mono.error(new AuthCredentialsException("Invalid credentials"))))
             .filterWhen(user -> Mono.fromCallable(() ->
                 passwordEncoder.matches(command.password(), user.getPasswordHash())))
-            .switchIfEmpty(Mono.defer(() -> Mono.error(new IllegalArgumentException("Invalid password"))))
+            .switchIfEmpty(Mono.defer(() -> Mono.error(new AuthCredentialsException("Invalid credentials"))))
             .flatMap(user -> {
                 return generateTokenResponse(user);
             });
@@ -121,15 +124,17 @@ public class AuthUseCaseImpl implements AuthUseCase {
     }
 
     private static void validatePassword(String password) {
-        validatePasswordShape(password);
+        if (password == null || password.length() > 128 || password.isBlank()) {
+            throw new AuthValidationException("Invalid password");
+        }
         if (password.length() < 8) {
-            throw new IllegalArgumentException("Password does not meet minimum requirements");
+            throw new AuthValidationException("Password does not meet minimum requirements");
         }
     }
 
     private static void validatePasswordShape(String password) {
         if (password == null || password.length() > 128 || password.isBlank()) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new AuthCredentialsException("Invalid credentials");
         }
     }
 }

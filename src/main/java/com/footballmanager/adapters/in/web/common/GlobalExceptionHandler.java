@@ -2,6 +2,9 @@ package com.footballmanager.adapters.in.web.common;
 
 import com.footballmanager.application.exception.MinuteInPastException;
 import com.footballmanager.application.exception.NotEnoughPlayersException;
+import com.footballmanager.application.exception.AuthConflictException;
+import com.footballmanager.application.exception.AuthCredentialsException;
+import com.footballmanager.application.exception.AuthValidationException;
 import com.footballmanager.infrastructure.security.RequestCorrelationWebFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +39,45 @@ public class GlobalExceptionHandler {
     private static final String CONFLICT_MESSAGE = "La operación no puede completarse por un conflicto de estado.";
 
     private final PublicErrorMessageResolver messageResolver;
+
+    @ExceptionHandler(AuthConflictException.class)
+    public Mono<ResponseEntity<ErrorResponseBody>> handleAuthConflict(
+            AuthConflictException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ErrorResponseBody(
+                "AUTH_EMAIL_EXISTS",
+                messageResolver.clientMessage(ex, "El email ya esta registrado."),
+                HttpStatus.CONFLICT.value(),
+                requestId(exchange))));
+    }
+
+    @ExceptionHandler(AuthCredentialsException.class)
+    public Mono<ResponseEntity<ErrorResponseBody>> handleAuthCredentials(
+            AuthCredentialsException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ErrorResponseBody(
+                "AUTH_INVALID_CREDENTIALS",
+                messageResolver.clientMessage(ex, "Las credenciales no son validas."),
+                HttpStatus.BAD_REQUEST.value(),
+                requestId(exchange))));
+    }
+
+    @ExceptionHandler(AuthValidationException.class)
+    public Mono<ResponseEntity<ErrorResponseBody>> handleAuthValidation(
+            AuthValidationException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ErrorResponseBody(
+                "AUTH_VALIDATION_ERROR",
+                messageResolver.clientMessage(ex, "La solicitud de autenticacion no es valida."),
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                requestId(exchange))));
+    }
 
     @ExceptionHandler(NotEnoughPlayersException.class)
     public Mono<ResponseEntity<Map<String, Object>>> handleNotEnoughPlayers(

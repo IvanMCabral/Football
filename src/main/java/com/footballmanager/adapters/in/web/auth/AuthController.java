@@ -43,26 +43,17 @@ public class AuthController {
 
     @PostMapping("/register")
     public Mono<ResponseEntity<JwtTokenResponse>> register(@RequestBody RegisterUserRequest request) {
-        return authUseCase.register(new AuthRegisterCommand(
+        return Mono.defer(() -> authUseCase.register(new AuthRegisterCommand(
                 request.email(), request.username(), request.password()))
             .map(AuthController::toJwtTokenResponse)
-            .map(ResponseEntity::ok)
-            .onErrorResume(e -> {
-                if (e instanceof IllegalArgumentException && e.getMessage().contains("Email already exists")) {
-                    return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build());
-                }
-                return Mono.just(ResponseEntity.badRequest().build());
-            });
+            .map(ResponseEntity::ok));
     }
 
     @PostMapping("/login")
     public Mono<ResponseEntity<JwtTokenResponse>> login(@RequestBody LoginRequest request) {
-        return authUseCase.login(new AuthLoginCommand(request.email(), request.password()))
+        return Mono.defer(() -> authUseCase.login(new AuthLoginCommand(request.email(), request.password())))
             .map(AuthController::toJwtTokenResponse)
-            .map(ResponseEntity::ok)
-            .onErrorResume(e -> {
-                return Mono.just(ResponseEntity.badRequest().build());
-            });
+            .map(ResponseEntity::ok);
     }
 
     @PostMapping("/refresh")
