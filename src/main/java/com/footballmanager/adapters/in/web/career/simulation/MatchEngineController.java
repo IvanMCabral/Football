@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -48,7 +49,11 @@ public class MatchEngineController {
             RoundEngine roundEngine = roundEngineRegistry.get(id);
             if (roundEngine == null) {
                 log.warn("[SSE-STREAM] Round engine not found for roundId: {}. Active engines: {}", id, roundEngineRegistry.getActiveRoundCount());
-                return Flux.empty(); // Return empty flux instead of error
+                // A missing engine is terminal for this round. Returning an
+                // empty 200 stream made clients reconnect forever after a
+                // completed round had been unregistered.
+                return Flux.error(new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Round stream is no longer available"));
             }
 
             log.info("[SSE-STREAM] Streaming roundId: {}", id);

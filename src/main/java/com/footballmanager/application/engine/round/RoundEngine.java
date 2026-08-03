@@ -33,6 +33,7 @@ public class RoundEngine {
     private final Map<UUID, MatchEngine> matchEngines;
     private final RoundStatusCalculator statusCalculator;
     private final Sinks.Many<RoundState> stateSink;
+    private volatile RoundState latestState;
 
     private volatile boolean isRunning = false;
     private volatile boolean isPaused = false;
@@ -49,6 +50,11 @@ public class RoundEngine {
         this.statusCalculator = statusCalculator;
         // Keep the latest round state available for SSE clients.
         this.stateSink = Sinks.many().replay().latest();
+        this.latestState = new RoundState(
+            roundId,
+            Instant.now(),
+            List.of(),
+            RoundState.RoundStatus.NOT_STARTED);
     }
 
     public void registerMatch(UUID matchId, MatchEngine engine) {
@@ -146,6 +152,7 @@ public class RoundEngine {
         List<MatchStateSnapshot> matchStates = getMatchStates();
         RoundState roundState = new RoundState(roundId, Instant.now(), matchStates,
             statusCalculator.calculate(matchStates));
+        latestState = roundState;
         stateSink.tryEmitNext(roundState);
     }
 
@@ -153,6 +160,7 @@ public class RoundEngine {
         List<MatchStateSnapshot> matchStates = getMatchStates();
         RoundState completedState = new RoundState(roundId, Instant.now(), matchStates,
             RoundState.RoundStatus.COMPLETED);
+        latestState = completedState;
         stateSink.tryEmitNext(completedState);
     }
 
@@ -173,6 +181,15 @@ public class RoundEngine {
 
     public Flux<RoundState> getStateStream() {
         return stateSink.asFlux();
+    }
+
+    /**
+     * Returns the authoritative state for idempotent start requests. The
+     * latest state is retained even after completion so a repeated request
+     * cannot create a second scheduler or advance the career again.
+     */
+    public RoundState getLatestState() {
+        return latestState;
     }
 
     public List<MatchStateSnapshot> getMatchStates() {

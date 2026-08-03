@@ -39,9 +39,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @RestController
@@ -60,6 +63,10 @@ public class RoundController {
     private final BaselineStateStoragePort baselineStoragePort;
     private final ControllerHelper controllerHelper;
     private final ReactiveLifecycleExecutor lifecycleExecutor;
+    /** Shares concurrent start requests for the same round instead of creating
+     * competing schedulers and callbacks. Entries are short-lived; completed
+     * rounds are served from RoundEngineRegistry. */
+    private final ConcurrentMap<UUID, Mono<RoundState>> inFlightStarts = new ConcurrentHashMap<>();
 
     @Value("${simulation.use-detailed-match-engine:true}")
     private boolean useDetailedMatchEngine;
@@ -75,7 +82,16 @@ public class RoundController {
 
         log.info("[ROUND-CONTROLLER] Starting round {} for user {}", roundId, userId);
 
-        return startMatches(roundId, userId, request)
+        RoundEngine existing = roundEngineRegistry.get(roundId);
+        if (existing != null) {
+            return Mono.just(ResponseEntity.ok(existing.getLatestState()));
+        }
+
+        Mono<RoundState> coordinatedStart = inFlightStarts.computeIfAbsent(
+            roundId,
+            id -> startMatches(id, userId, request).cache());
+
+        return coordinatedStart
             .map(initialState -> ResponseEntity.ok(initialState))
             .onErrorResume(e -> {
                 if (e instanceof IllegalStateException
@@ -84,6 +100,11 @@ public class RoundController {
                 }
                 log.error("[ROUND-CONTROLLER] Unexpected error starting round {}: {}", request.roundId(), e.getMessage(), e);
                 return Mono.just(ResponseEntity.internalServerError().build());
+            })
+            .doFinally(signal -> {
+                if (signal != SignalType.CANCEL) {
+                    inFlightStarts.remove(roundId, coordinatedStart);
+                }
             });
     }
 
