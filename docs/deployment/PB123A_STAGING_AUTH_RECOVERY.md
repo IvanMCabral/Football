@@ -98,3 +98,7 @@ Final public verification after the fix:
 - Backend remediation commit: `93abfb83` (R2DBC production pool resilience).
 - Frontend remediation commit: `d3fe51b` (change-detection-safe registration
   lifecycle), deployed to Firebase from the same branch.
+- Render Events confirms the latest live service revision is `cf53e893`
+  (`Document final public registration smoke`), which contains the backend pool
+  remediation; the later root commit `7617fc58` is documentation-only and was
+  observed as a subsequent auto-deploy start.
