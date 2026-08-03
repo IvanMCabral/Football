@@ -95,17 +95,22 @@ public class ThreeLeagueDatasetImporter {
 
                     List<PlayerRecord> squad = readExplicitSquad(league, club, teamId);
                     validateSquad(league, club, squad, specialAttributesByCode);
+                    log.info("Three-league import: club start league={} club={} squad={}", league.code(), club.code(), squad.size());
+                    clearTeamSquadOwnership(squad);
                     for (PlayerRecord player : squad) {
                         if (!playerExternalIds.add(player.externalId())) {
                             throw new IllegalArgumentException("Duplicate player externalId: " + player.externalId());
                         }
                         upsertPlayer(player, countryIds.get(player.nationalityCode()));
-                        upsertTeamSquad(teamId, player.id());
-                        upsertSecondaryPositions(player);
-                        upsertPlayerSpecialAttributes(player, specialAttributeIds);
                         players++;
                         traitRows += 2;
                     }
+                    upsertTeamSquad(teamId, squad);
+                    for (PlayerRecord player : squad) {
+                        upsertSecondaryPositions(player);
+                        upsertPlayerSpecialAttributes(player, specialAttributeIds);
+                    }
+                    log.info("Three-league import: club ready league={} club={}", league.code(), club.code());
                 }
             }
 
@@ -514,12 +519,19 @@ public class ThreeLeagueDatasetImporter {
             player.heightCm(), skillsJson);
     }
 
-    private void upsertTeamSquad(UUID teamId, UUID playerId) {
-        jdbcTemplate.update("DELETE FROM team_squad WHERE player_id = ? AND team_id <> ?", playerId, teamId);
-        jdbcTemplate.update("""
-            INSERT INTO team_squad (team_id, player_id) VALUES (?, ?)
-            ON CONFLICT (team_id, player_id) DO NOTHING
-            """, teamId, playerId);
+    private void clearTeamSquadOwnership(List<PlayerRecord> squad) {
+        if (squad.isEmpty()) {
+            return;
+        }
+        jdbcTemplate.batchUpdate(
+            "DELETE FROM team_squad WHERE player_id = ?",
+            squad.stream().map(PlayerRecord::id).map(id -> new Object[] {id}).toList());
+    }
+
+    private void upsertTeamSquad(UUID teamId, List<PlayerRecord> squad) {
+        jdbcTemplate.batchUpdate(
+            "INSERT INTO team_squad (team_id, player_id) VALUES (?, ?) ON CONFLICT (team_id, player_id) DO NOTHING",
+            squad.stream().map(player -> new Object[] {teamId, player.id()}).toList());
     }
 
     private void upsertSecondaryPositions(PlayerRecord player) {
