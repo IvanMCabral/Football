@@ -36,6 +36,9 @@ class ThreeLeagueImportJdbcConfiguration {
     }
 
     private static String toJdbcUrl(String url) {
+        // The importer keeps one long transaction; use Neon's direct endpoint
+        // when the runtime datasource points at the transaction pooler.
+        url = url.replace("-pooler.", ".");
         if (url.startsWith("jdbc:")) {
             return url;
         }
