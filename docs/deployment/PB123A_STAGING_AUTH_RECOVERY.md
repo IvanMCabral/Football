@@ -93,6 +93,8 @@ Final public verification after the fix:
 - Backend focused authentication/profile mapping tests passed after the pool
   configuration change. The last complete backend suite before this configuration
   change was 2579 tests, 0 failures, 0 errors, 4 skipped.
+- The complete backend suite was rerun after the pool configuration change:
+  2579 tests, 0 failures, 0 errors, 4 skipped.
 - Backend remediation commit: `93abfb83` (R2DBC production pool resilience).
 - Frontend remediation commit: `d3fe51b` (change-detection-safe registration
   lifecycle), deployed to Firebase from the same branch.
