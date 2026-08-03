@@ -37,6 +37,8 @@ public class ThreeLeagueDatasetImporter {
         try {
             log.info("Three-league import: preparing schema and resources");
             ensurePlayerTraceabilityColumns();
+            jdbcTemplate.execute("SET lock_timeout = '5s'");
+            jdbcTemplate.execute("SET statement_timeout = '30s'");
             List<CountryRecord> countries = read("data/initial/countries.json", new TypeReference<>() {});
             List<LeagueRecord> leagues = read("data/initial/leagues.json", new TypeReference<>() {});
             List<SpecialAttributeRecord> specialAttributes =
@@ -54,7 +56,9 @@ public class ThreeLeagueDatasetImporter {
             upsertSystemUser();
             log.info("Three-league import: system owner ready");
             Map<String, UUID> countryIds = upsertCountries(countries);
+            log.info("Three-league import: countries ready");
             Map<String, UUID> leagueIds = upsertLeagues(leagues, countryIds);
+            log.info("Three-league import: leagues ready");
             Map<String, UUID> divisionIds = upsertDivisions(leagues, leagueIds);
             Map<String, UUID> specialAttributeIds = upsertSpecialAttributes(specialAttributes);
             int clubs = 0;
