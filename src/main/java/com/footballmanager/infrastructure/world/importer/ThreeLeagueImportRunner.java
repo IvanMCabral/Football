@@ -20,6 +20,7 @@ public class ThreeLeagueImportRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        log.info("Three-league dataset import runner enabled={}", enabled);
         if (!enabled) {
             return;
         }
