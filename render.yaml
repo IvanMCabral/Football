@@ -1,0 +1,49 @@
+# PB1.2.3A zero-cost staging blueprint.
+# Render Dashboard must supply every sync:false value during initial creation.
+# This file intentionally creates one Free Docker web service only.
+services:
+  - name: manager-staging-api
+    type: web
+    runtime: docker
+    plan: free
+    branch: feat/v25d99.20.3.1-runtime-fixes
+    autoDeployTrigger: off
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health/liveness
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SERVER_ADDRESS
+        value: 0.0.0.0
+      - key: REDIS_SSL
+        value: "true"
+      - key: APP_RATE_LIMIT_ENABLED
+        value: "true"
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_USERNAME
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRATION
+        sync: false
+      - key: JWT_REFRESH_EXPIRATION
+        sync: false
+      - key: APP_CORS_ALLOWED_ORIGINS
+        sync: false
