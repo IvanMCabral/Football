@@ -87,6 +87,8 @@ Final public verification after the fix:
   and `409` for the immediate duplicate in 0.59 seconds.
 - The duplicate browser flow showed `El usuario ya existe...` and re-enabled the
   `Registrarse` button; no second POST was issued automatically.
+- Chrome's application-origin console stream had no errors; the only captured
+  warnings were from the browser bridge itself and were not emitted by the SPA.
 - Frontend: 1037 SUCCESS, 0 failures, 2 skipped; encoding guard passed; focused
   registration lifecycle tests (6) passed; development, staging (built to a
   temporary output on C: because D: was full) and production builds passed.
