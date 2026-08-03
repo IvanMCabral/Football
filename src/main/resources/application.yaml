@@ -10,7 +10,7 @@ spring:
   
   # R2DBC (Reactive Database Connection)
   r2dbc:
-    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslMode=${DB_SSL_MODE:disable}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     pool:
