@@ -10,6 +10,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.annotation.PostConstruct;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -31,6 +32,11 @@ public class ThreeLeagueDatasetImporter {
     private final ObjectMapper objectMapper;
     private final PlayerSpecialAttributeSelectionValidator specialAttributeSelectionValidator =
         new PlayerSpecialAttributeSelectionValidator();
+
+    @PostConstruct
+    void configureStatementTimeout() {
+        jdbcTemplate.setQueryTimeout(30);
+    }
 
     @Transactional(transactionManager = "threeLeagueImportTransactionManager")
     public ThreeLeagueImportReport importDataset() {
@@ -60,7 +66,9 @@ public class ThreeLeagueDatasetImporter {
             Map<String, UUID> leagueIds = upsertLeagues(leagues, countryIds);
             log.info("Three-league import: leagues ready");
             Map<String, UUID> divisionIds = upsertDivisions(leagues, leagueIds);
+            log.info("Three-league import: divisions ready");
             Map<String, UUID> specialAttributeIds = upsertSpecialAttributes(specialAttributes);
+            log.info("Three-league import: special attributes ready");
             int clubs = 0;
             int teams = 0;
             int players = 0;
@@ -100,6 +108,7 @@ public class ThreeLeagueDatasetImporter {
             }
 
             validateGlobal();
+            log.info("Three-league import: global validation ready");
             return new ThreeLeagueImportReport(
                 countries.size(), leagues.size(), clubs, teams, players, traitRows,
                 List.of("Player identities are explicit public-identity records with MANAGER-estimated attributes."));
