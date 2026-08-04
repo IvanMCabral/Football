@@ -2,9 +2,11 @@
 
 ## Veredicto
 
-**COMPLETED WITH ISSUES**
+**BLOCKED**
 
 El MVP es jugable en Internet para un piloto controlado: registro, login, carrera, plantilla, auto-select, editor táctico, partido minuto a minuto, pausa por lesión, resumen, tabla, refresh y recuperación completaron sin pérdida de estado.
+
+El cierre público queda bloqueado por una dependencia externa de publicación: Firebase CLI no está autenticado en esta sesión. El commit frontend `2e730f6` ya está subido y compilado, pero no puede desplegarse ni verificarse en `manager-4f952.web.app` hasta disponer de una sesión Firebase CLI válida. El sitio público sigue sirviendo `d444e69`, donde el status bar mantiene overflow horizontal a 390 × 844.
 
 ## URLs y revisiones
 
@@ -27,6 +29,14 @@ El MVP es jugable en Internet para un piloto controlado: registro, login, carrer
 | Nombres de fixture | WARNING | P2 histórico fuera del flujo canónico |
 | Cold start | WARNING | 8–20 s observados en staging gratuito |
 | Estado de carrera compartido | PASS | Corrección de `shareReplay` |
-| Producción frontend móvil | WARNING | `2e730f6` subido; publicación Firebase pendiente por autenticación CLI |
+| Producción frontend móvil | FAIL | `2e730f6` subido; publicación Firebase bloqueada por autenticación CLI |
 
-No hay P0 ni P1 abiertos derivados del piloto. El único pendiente funcional clasificado es el P2 histórico de nombres genéricos; no impide el piloto público, pero debe cerrarse antes de una certificación definitiva.
+No hay P0 derivados del backend ni del motor. Queda un P1 operativo abierto: publicar y verificar `2e730f6` en Firebase. El P2 histórico de nombres genéricos sigue clasificado y no se alteró durante el piloto.
+
+## Bloqueo externo exacto
+
+Comando ejecutado: `npx --yes firebase-tools deploy --only hosting --project manager-4f952`
+
+Error: `Failed to authenticate, have you run firebase login?`
+
+Alternativas locales intentadas: CLI global (no instalado), `npx firebase-tools` (disponible), proyecto explícito `manager-4f952`, búsqueda de `FIREBASE_TOKEN`/credenciales de gcloud y workflows de deploy. No hay token, gcloud autenticado ni workflow de Firebase disponible en el entorno. No se puede publicar ni certificar el revision exacto sin credenciales externas.
