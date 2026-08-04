@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-08-04",
+  "environment": "public authenticated warm session after af9403c9 and ecd284e",
+  "method": "navigation to visible page heading; client-side elapsed milliseconds; n=10 per surface",
+  "percentileMethod": "nearest-rank (p50=5th sorted sample, p95=10th sorted sample)",
+  "surfaces": {
+    "dashboard": {"samplesMs": [765, 1224, 846, 483, 530, 564, 533, 518, 1207, 511], "p50Ms": 533, "p95Ms": 1224, "maxMs": 1224},
+    "squad": {"samplesMs": [534, 562, 532, 519, 868, 901, 525, 530, 520, 522], "p50Ms": 530, "p95Ms": 901, "maxMs": 901},
+    "matches": {"samplesMs": [549, 523, 817, 886, 543, 500, 537, 639, 954, 870], "p50Ms": 549, "p95Ms": 954, "maxMs": 954}
+  },
+  "catalog": {"clientCache": "singleton shareReplay cache; first subscription miss, subsequent subscribers hit until invalidation", "ttl": "session lifetime; explicit invalidation after seed/retry", "payload": "not independently measured from Chrome"},
+  "limitations": ["The browser surface did not expose request-level PerformanceResourceTiming data.", "A separate cold-start sample and ten-sample timings for every H6 operation remain uncollected."]
+}

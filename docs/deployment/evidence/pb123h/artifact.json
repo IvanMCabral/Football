@@ -1,0 +1,7 @@
+{
+  "capturedAt": "2026-08-04",
+  "frontendRevision": "ecd284ec039f4994310e04370a2d9f82878ab411",
+  "productionArtifact": {"filesScanned": 53, "sourceMaps": 0, "testHarnessReferences": 0, "inspection": "passed"},
+  "npmAuditProduction": {"critical": 0, "high": 0, "moderate": 0, "low": 0, "total": 0},
+  "firebaseHosting": "https://manager-4f952.web.app"
+}

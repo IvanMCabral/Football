@@ -1,0 +1,10 @@
+{
+  "capturedAt": "2026-08-04",
+  "backend": "https://manager-staging-api.onrender.com",
+  "checks": [
+    {"path": "/", "status": 401, "elapsedMs": 338, "note": "authenticated application root; expected protected response"},
+    {"path": "/api/v1/health/liveness", "status": 200, "elapsedMs": 211, "body": {"status": "UP"}},
+    {"path": "/api/v1/health/readiness", "status": 200, "elapsedMs": 2045, "body": {"status": "UP", "database": "UP", "redis": "UP"}}
+  ],
+  "revision": "af9403c9f719d43ea445be22eda24996f5a0c1bf"
+}

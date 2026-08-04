@@ -1,0 +1,11 @@
+{
+  "capturedAt": "2026-08-04",
+  "revision": "af9403c9f719d43ea445be22eda24996f5a0c1bf",
+  "observations": [
+    {"operation": "redis.career.load", "count": 2, "success": 1, "errors": 1, "avgMs": 12245.5, "p95Ms": 13895, "maxMs": 13895},
+    {"operation": "http.dashboard.worldStatus", "count": 1, "success": 0, "errors": 1, "avgMs": 10597, "p95Ms": 10597, "maxMs": 10597},
+    {"operation": "redis.career.load", "count": 4, "success": 1, "errors": 3, "avgMs": 11222.25, "p95Ms": 13895, "maxMs": 13895},
+    {"operation": "http.dashboard.userStats", "count": 1, "success": 0, "errors": 1, "avgMs": 10298, "p95Ms": 10298, "maxMs": 10298}
+  ],
+  "interpretation": "Transient errors were observed during the first public wake/reload window; current readiness and live match smoke recovered. The data is retained as a P2 follow-up, not hidden as a cache hit."
+}

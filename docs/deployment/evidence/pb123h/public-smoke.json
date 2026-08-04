@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-08-04",
+  "frontend": "https://manager-4f952.web.app",
+  "backend": "https://manager-staging-api.onrender.com",
+  "flow": {
+    "authenticatedDashboard": "loaded; private world status rendered",
+    "squad": "loaded; 11/11 lineup visible",
+    "lineupEditor": "opened; formation preview and confirmation controls rendered",
+    "roundStart": {"clicks": 1, "elapsedToLiveRouteMs": 5278, "route": "/games/6775308c-bb78-4db5-9ff7-45efd3b2ab83/round/2/live", "duplicateStartObserved": false},
+    "firstLiveState": {"observed": true, "status": "En Juego", "minuteObserved": 22, "transport": "SSE-backed live updates inferred from advancing server state"},
+    "hardReload": {"observed": true, "routePreserved": true, "minuteObservedAfterReload": 26, "errors404or500": false}
+  },
+  "sanitization": "No tokens, cookies, emails, connection strings or complete career payloads stored."
+}

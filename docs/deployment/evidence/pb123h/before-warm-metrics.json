@@ -1,0 +1,12 @@
+{
+  "capturedAt": "2026-08-04",
+  "environment": "public authenticated warm session",
+  "method": "navigation to visible page heading; client-side elapsed milliseconds; n=10 per surface",
+  "percentileMethod": "nearest-rank (p50=5th sorted sample, p95=10th sorted sample)",
+  "surfaces": {
+    "dashboard": {"samplesMs": [651, 650, 611, 1618, 1109, 480, 485, 502, 501, 501], "p50Ms": 502, "p95Ms": 1618, "maxMs": 1618},
+    "squad": {"samplesMs": [950, 1227, 553, 484, 456, 604, 569, 540, 557, 753], "p50Ms": 557, "p95Ms": 1227, "maxMs": 1227},
+    "matches": {"samplesMs": [1024, 552, 624, 576, 606, 557, 541, 553, 784, 1150], "p50Ms": 576, "p95Ms": 1150, "maxMs": 1150}
+  },
+  "limitations": ["No browser Performance API timings were exposed by the connected Chrome surface.", "Catalog, create-career, lineup, auto-select and start-round request timings were not captured as independent ten-sample series in this baseline run."]
+}
