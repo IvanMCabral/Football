@@ -38,7 +38,7 @@ career with Real Madrid and a 4-4-2 lineup. In the tactical editor:
 - Public/local `index.html` SHA-256:
   `5A55D0C93734DAA04A682D8B7AC4AB90470567CE7E0B40F8EE682DC4F9646EC5`
 - Production bundle: 52 files, 0 source maps, 0 test-harness references.
-- Local `main-AHLJWP2U.js` SHA-256:
+- Public/local `main-AHLJWP2U.js` SHA-256:
   `14E53BD88B71927BCA66A5FC080501425B9DE8EF5ED74B983DCAABFDA8466B0A`
 
 No credentials, tokens, cookies or user identifiers are stored in this
