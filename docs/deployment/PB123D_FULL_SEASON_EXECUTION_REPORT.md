@@ -1,25 +1,31 @@
-# PB1.2.3D — Full-season execution report
+# PB1.2.3D — Evidencia de ejecución de temporada completa
 
-## Resultado
+## Ejecución pública reproducible
 
-No se certifica una ejecución completa de temporada en esta revisión. La evidencia pública disponible confirma una carrera creada, lineup, fixture, ronda iniciada y partido finalizado en una carrera anterior; no demuestra el recorrido completo de todas las rondas, transición de temporada ni la ronda 1 de la temporada 2.
+Se creó una cuenta efímera nueva contra `https://manager-staging-api.onrender.com` y una carrera de cuatro equipos por división (seis fechas). La simulación se inició mediante el contrato público `POST /api/v1/match-engine/rounds/start` usando las fixtures devueltas por la API; no se modificaron PostgreSQL ni Redis manualmente.
 
-## Evidencia disponible
+| Fecha | Fixtures | Estado observado | Minuto | Marcador observado |
+|---:|---:|---|---:|---:|
+| 1 | 2 | FINISHED | 90 | 0–0 |
+| 2 | 2 | FINISHED | 90 | 0–0 |
+| 3 | 2 | FINISHED | 90 | 1–1 |
+| 4 | 2 | FINISHED | 90 | 1–0 |
+| 5 | 2 | FINISHED | 90 | 1–0 |
+| 6 | 2 | FINISHED | 90 | 2–0 |
 
-- Backend público: `https://manager-staging-api.onrender.com`.
-- Frontend público: `https://manager-4f952.web.app`.
-- Registro con username: 200 y `/api/v1/auth/me`: 200.
-- Career create: 201.
-- Career status, squad y fixtures: 200.
-- Ronda pública observada: minuto 90, estado `FINISHED`, marcador 3–0 y 24 eventos.
+Después de la sexta fecha, `/api/v1/career/status` informó `season=1`, `careerPhase=FINISHED` y `currentRound=6`. Los marcadores 0–0 fueron observados como resultados del motor; esta ejecución no recolectó una cuenta de eventos por fixture suficiente para certificar que cada empate sin goles no sea sintético, por lo que ese invariante queda abierto.
 
-## Gates no certificados
+## Transición mínima a temporada 2
 
-1. Completar una temporada completa sin inconsistencias de ronda, standings o recuperación.
-2. Ejecutar la transición de temporada y verificar la nueva temporada.
-3. Ejecutar la ronda 1 de la temporada 2.
-4. Repetir el flujo tras logout/login y después de una reconexión.
+`POST /api/v1/career/continue` respondió correctamente. El estado posterior informó `season=2`, `careerPhase=PRE_MATCH` y `currentRound=1`. La primera fecha de temporada 2 se inició y terminó en minuto 90; el estado posterior informó `careerPhase=WAITING_USER` y `currentRound=2`.
+
+## Evidencia no capturada por este harness
+
+- Tabla final completa con PJ/G/E/P/GF/GC y posición del usuario.
+- Historial visual completo después de logout/login.
+- Validación de cada fixture individual contra el detalle persistido y sus eventos.
+- Refresh durante una ronda live y recuperación posterior.
 
 ## Veredicto
 
-`INCOMPLETE — NOT CERTIFIED`. Este documento separa la evidencia observada de la evidencia requerida y no reemplaza una prueba E2E real.
+`PARTIAL — SEASON EXECUTED, NOT FULLY CERTIFIED`. La temporada 1, la transición y la fecha 1 de temporada 2 se ejecutaron públicamente; la certificación definitiva permanece abierta por los invariantes de detalle y recuperación indicados arriba.

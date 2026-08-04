@@ -1,29 +1,28 @@
-# PB1.2.3D — Redis/PostgreSQL instrumentation
+# PB1.2.3D — Instrumentación Redis/PostgreSQL
 
-## Principios
+## Implementación
 
-La instrumentación mide comportamiento observable sin registrar secretos ni datos sensibles. No incluye claves Redis, valores serializados, tokens, contraseñas ni payloads de usuario. Los identificadores operativos existentes en logs no se amplían.
+`RuntimeOperationMetrics` usa publishers diferidos y agrega duración, éxitos y errores en memoria. Los logs agregados se emiten cada diez observaciones o ante error. No registra claves completas, valores serializados, payloads, tokens, passwords ni datos personales.
 
-## Operaciones medidas
+## Operaciones instrumentadas
 
 | Fuente | Operaciones |
 |---|---|
 | Redis | `redis.career.save`, `load`, `exists`, `delete`, `ttl` |
 | PostgreSQL | `postgres.user.save`, `create`, `findById`, `findByEmail`, `findByUsername`, `existsByEmail`, `existsByUsername`, `delete` |
-| HTTP/application | `http.dashboard.userStats`, `worldStatus`, `reloadWorld`, `http.career.status`, `fixtures`, `standings` |
+| HTTP/aplicación | `http.dashboard.userStats`, `worldStatus`, `reloadWorld`, `http.career.status`, `fixtures`, `standings` |
 
-Cada observación registra duración, éxito/error y un agregado periódico en memoria. `Mono.defer` evita ejecutar operaciones al construir el pipeline; los errores se propagan sin silenciarse.
+## Evidencia de rendimiento relacionada
 
-## Uso operativo
+En la medición pública warm actual, N=10: status p50/p95 `209/392 ms`, squad `205/259 ms`, lineup `220/251 ms`, auto-select `898/2.276 ms`, fixtures `199/257 ms`, standings `211/264 ms`. Los tiempos Redis y PostgreSQL no se aislaron en esta ejecución; no se atribuye causalidad sin esos datos.
 
-La métrica permite comparar revisiones warm y detectar regresiones de lectura/escritura. Debe exportarse a un backend de métricas antes de escalar horizontalmente: el agregado actual es local a la instancia y no pretende ser un sistema de observabilidad durable.
+## Limitaciones
 
-## Limitaciones honestas
-
-- No se registran bytes de payload ni TTL efectivo por clave; el contador `ttl` solo mide la operación de extensión.
-- No hay dashboard externo ni alertas configuradas en PB1.2.3D.
-- La latencia de readiness puede incluir wake-up de Render Free y no debe atribuirse exclusivamente a PostgreSQL o Redis.
+- El agregado es local a la instancia; no es un sistema de métricas distribuido.
+- No se exportan bytes de payload ni TTL efectivo por clave; `ttl` mide la operación de extensión.
+- No hay dashboard externo, alertas ni correlación persistida por request.
+- Readiness puede incluir wake-up de Render Free.
 
 ## Veredicto
 
-`PARTIAL — SAFE BASIC INSTRUMENTATION`. La medición interna es real y segura; la observabilidad de producción distribuida queda pendiente para el siguiente gate de infraestructura.
+`PARTIAL — SAFE BASIC INSTRUMENTATION`. La capa es real y segura para comparar revisiones; la observabilidad persistente y la separación Redis/DB quedan pendientes del siguiente gate de infraestructura.
