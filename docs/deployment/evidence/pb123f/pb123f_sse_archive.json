@@ -1,0 +1,48 @@
+{
+  "schema": "pb1.2.3f-sse-evidence-v1",
+  "source": "public browser pilot; rendered live-session state only",
+  "capturedAt": "2026-08-04T14:11:56-03:00",
+  "round": {
+    "careerId": "5281bf46-0001-4a62-b2c0-4d1d04acc942",
+    "round": 1,
+    "home": "Real Madrid",
+    "away": "Real Oviedo"
+  },
+  "snapshots": [
+    {
+      "sequence": 1,
+      "capturedAt": "2026-08-04T14:10:26-03:00",
+      "minute": 12,
+      "status": "LIVE",
+      "score": { "home": 0, "away": 0 },
+      "eventCountVisible": 0
+    },
+    {
+      "sequence": 2,
+      "capturedAt": "2026-08-04T14:10:45-03:00",
+      "minute": 31,
+      "status": "PAUSED_INJURY",
+      "score": { "home": 0, "away": 0 },
+      "eventCountVisible": 1,
+      "note": "The public UI paused for a Jude Bellingham injury decision; no spinner loop was observed."
+    },
+    {
+      "sequence": 3,
+      "capturedAt": "2026-08-04T14:11:56-03:00",
+      "minute": 90,
+      "status": "FINISHED",
+      "score": { "home": 0, "away": 0 },
+      "eventCountVisible": 3
+    }
+  ],
+  "assertions": {
+    "sequenceMonotonic": true,
+    "minuteMonotonic": true,
+    "finalScoreMatchesSummary": true,
+    "summaryStandingsConsistent": true,
+    "containsSecrets": false,
+    "containsTokensOrPii": false,
+    "physicalSseStreamsObserved": "not inspected; browser evidence is limited to rendered public state"
+  },
+  "checksum": "SHA-256(canonical snapshots and assertions): 318b13ce3724f61cb52a3eaa62b183342c34b28e9d4915ea5cfa03ec3ed7b24f"
+}
