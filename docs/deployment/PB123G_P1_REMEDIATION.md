@@ -23,8 +23,9 @@ data was changed.
 ## Local evidence
 
 - Frontend focused modal suite: 135 SUCCESS.
-- Frontend full suite: 1,048 SUCCESS, 0 failures, 2 skipped.
+- Frontend full suite: 1,049 SUCCESS, 0 failures, 2 skipped.
 - Frontend development and production builds: PASS.
+- Production bundle: 52 files, 0 source maps, 0 test-harness references.
 - `npm ci`: PASS.
 - Production audit: 0 vulnerabilities.
 - Backend rate-limit regression: PASS.
@@ -34,6 +35,11 @@ data was changed.
   used an isolated `java.io.tmpdir` on the data volume because the default
   Windows temporary volume was full; no repository or application data was
   changed.
+
+The live-match coordinate label now uses the correct UTF-8 separator and
+Spanish accents. The live-round mobile grid uses a bounded single-column
+layout below 600px, eliminating the 7px horizontal overflow observed at
+390px.
 
 ## Commits
 
