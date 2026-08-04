@@ -168,7 +168,8 @@ class MatchSimulationOrchestratorTest {
         assertEquals(CareerPhase.WAITING_USER, state.getCareerPhase(),
                 "Phase should remain WAITING_USER after BYE advance (no match was played)");
         verify(careerSessionService).saveCareer(career);
-        verify(roundEngineRegistry).unregister(USER_ID);
+        // No live round can be resolved for this synthetic bye result.
+        verify(roundEngineRegistry, never()).unregister(any());
     }
 
     @Test
@@ -221,7 +222,9 @@ class MatchSimulationOrchestratorTest {
         assertEquals(0, fixture.getResult().getAwayGoals());
 
         verify(careerSessionService).saveCareer(career);
-        verify(roundEngineRegistry).unregister(USER_ID);
+        // The fixture id is intentionally non-UUID and is not registered in
+        // a live round; cleanup must not guess using the user id.
+        verify(roundEngineRegistry, never()).unregister(any());
     }
 
     @Test
@@ -285,6 +288,8 @@ class MatchSimulationOrchestratorTest {
         assertEquals(1, fixture.getResult().getAwayGoals());
 
         verify(careerSessionService).saveCareer(career);
-        verify(roundEngineRegistry).unregister(USER_ID);
+        // The fixture id is intentionally non-UUID and is not registered in
+        // a live round; cleanup must not guess using the user id.
+        verify(roundEngineRegistry, never()).unregister(any());
     }
 }
