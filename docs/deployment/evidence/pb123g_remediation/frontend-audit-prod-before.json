@@ -1,0 +1,382 @@
+﻿{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@angular/animations": {
+      "name": "@angular/animations",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular/core"
+      ],
+      "effects": [],
+      "range": "21.0.0-next.0 - 21.1.5",
+      "nodes": [
+        "node_modules/@angular/animations"
+      ],
+      "fixAvailable": true
+    },
+    "@angular/common": {
+      "name": "@angular/common",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular/core",
+        {
+          "source": 1123499,
+          "name": "@angular/common",
+          "dependency": "@angular/common",
+          "title": "@angular/common: Denial of Service (DoS) via OOM in Date Formatting (formatDate)",
+          "url": "https://github.com/advisories/GHSA-48r7-hpm6-gfxm",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=21.0.0-next.0 <21.2.17"
+        },
+        {
+          "source": 1123503,
+          "name": "@angular/common",
+          "dependency": "@angular/common",
+          "title": "@angular/common: Weak 32-Bit Cache Key Hashing in `HttpTransferCache` Leading to Cross-Request Data Leakage and State Poisoning",
+          "url": "https://github.com/advisories/GHSA-39pv-4j6c-2g6v",
+          "severity": "high",
+          "cwe": [
+            "CWE-328",
+            "CWE-345"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.17"
+        },
+        {
+          "source": 1123535,
+          "name": "@angular/common",
+          "dependency": "@angular/common",
+          "title": "@angular/common: Denial of Service (DoS) via OOM in Number Formatting (digitsInfo)",
+          "url": "https://github.com/advisories/GHSA-p3vc-36g9-x9gr",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-834"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.15"
+        },
+        {
+          "source": 1123540,
+          "name": "@angular/common",
+          "dependency": "@angular/common",
+          "title": "@angular/common: Information Leak via Default Caching of Credentialed Requests in HttpTransferCache",
+          "url": "https://github.com/advisories/GHSA-q6f4-qqrg-jv6x",
+          "severity": "high",
+          "cwe": [
+            "CWE-524"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.15"
+        },
+        {
+          "source": 1130679,
+          "name": "@angular/common",
+          "dependency": "@angular/common",
+          "title": "Angular: Cache-Key Ambiguity in HttpTransferCache Leading to Cross-Request Response Reuse and State Poisoning",
+          "url": "https://github.com/advisories/GHSA-jhpw-976m-542j",
+          "severity": "high",
+          "cwe": [
+            "CWE-345"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=21.0.0-next.0 <21.2.19"
+        }
+      ],
+      "effects": [
+        "@angular/forms",
+        "@angular/platform-browser",
+        "@angular/router"
+      ],
+      "range": "21.0.0-next.0 - 21.2.18",
+      "nodes": [
+        "node_modules/@angular/common"
+      ],
+      "fixAvailable": true
+    },
+    "@angular/compiler": {
+      "name": "@angular/compiler",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1117737,
+          "name": "@angular/compiler",
+          "dependency": "@angular/compiler",
+          "title": "Angular vulnerable to XSS in i18n attribute bindings",
+          "url": "https://github.com/advisories/GHSA-g93w-mfhg-p222",
+          "severity": "high",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 9,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H"
+          },
+          "range": ">=21.0.0-next.0 <21.2.4"
+        },
+        {
+          "source": 1123507,
+          "name": "@angular/compiler",
+          "dependency": "@angular/compiler",
+          "title": "@angular/compiler: Two-Way Property Binding Sanitization Bypass (XSS)",
+          "url": "https://github.com/advisories/GHSA-58w9-8g37-x9v5",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.17"
+        },
+        {
+          "source": 1123513,
+          "name": "@angular/compiler",
+          "dependency": "@angular/compiler",
+          "title": "Angular: Template and Attribute Namespace Sanitization Bypass (XSS)",
+          "url": "https://github.com/advisories/GHSA-f3m7-gqxr-g87x",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.15"
+        },
+        {
+          "source": 1130699,
+          "name": "@angular/compiler",
+          "dependency": "@angular/compiler",
+          "title": "Angular i18n: Cross-Site Scripting (XSS) via event-handler attributes",
+          "url": "https://github.com/advisories/GHSA-jj27-h5hq-8x99",
+          "severity": "high",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=21.0.0-next.0 <21.2.19"
+        }
+      ],
+      "effects": [
+        "@angular/core"
+      ],
+      "range": "21.0.0-next.0 - 21.2.18",
+      "nodes": [
+        "node_modules/@angular/compiler"
+      ],
+      "fixAvailable": true
+    },
+    "@angular/core": {
+      "name": "@angular/core",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular/compiler",
+        {
+          "source": 1113590,
+          "name": "@angular/core",
+          "dependency": "@angular/core",
+          "title": "Angular i18n vulnerable to Cross-Site Scripting",
+          "url": "https://github.com/advisories/GHSA-prjf-86w9-mfqv",
+          "severity": "high",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <=21.1.5"
+        },
+        {
+          "source": 1117740,
+          "name": "@angular/core",
+          "dependency": "@angular/core",
+          "title": "Angular vulnerable to XSS in i18n attribute bindings",
+          "url": "https://github.com/advisories/GHSA-g93w-mfhg-p222",
+          "severity": "high",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 9,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H"
+          },
+          "range": ">=21.0.0-next.0 <21.2.4"
+        },
+        {
+          "source": 1123518,
+          "name": "@angular/core",
+          "dependency": "@angular/core",
+          "title": "Angular: Template and Attribute Namespace Sanitization Bypass (XSS)",
+          "url": "https://github.com/advisories/GHSA-f3m7-gqxr-g87x",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.15"
+        },
+        {
+          "source": 1123549,
+          "name": "@angular/core",
+          "dependency": "@angular/core",
+          "title": "@angular/core: Angular Template and Dynamic Component Namespace Bypass leading to Cross-Site Scripting (XSS)",
+          "url": "https://github.com/advisories/GHSA-692r-grfm-v8x7",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.15"
+        },
+        {
+          "source": 1123562,
+          "name": "@angular/core",
+          "dependency": "@angular/core",
+          "title": "Angular Client Hydration DOM Clobbering & Response-Cache Poisoning",
+          "url": "https://github.com/advisories/GHSA-rgjc-h3x7-9mwg",
+          "severity": "high",
+          "cwe": [
+            "CWE-79",
+            "CWE-471"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=21.0.0-next.0 <21.2.17"
+        },
+        {
+          "source": 1130695,
+          "name": "@angular/core",
+          "dependency": "@angular/core",
+          "title": "Angular i18n: Cross-Site Scripting (XSS) via event-handler attributes",
+          "url": "https://github.com/advisories/GHSA-jj27-h5hq-8x99",
+          "severity": "high",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=21.0.0-next.0 <21.2.19"
+        }
+      ],
+      "effects": [
+        "@angular/animations",
+        "@angular/common",
+        "@angular/forms",
+        "@angular/platform-browser",
+        "@angular/router"
+      ],
+      "range": "21.0.0-next.0 - 21.2.18",
+      "nodes": [
+        "node_modules/@angular/core"
+      ],
+      "fixAvailable": true
+    },
+    "@angular/forms": {
+      "name": "@angular/forms",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular/common",
+        "@angular/core",
+        "@angular/platform-browser"
+      ],
+      "effects": [],
+      "range": "4.4.0-RC.0 - 4.4.0 || 21.0.0-next.0 - 21.2.18",
+      "nodes": [
+        "node_modules/@angular/forms"
+      ],
+      "fixAvailable": true
+    },
+    "@angular/platform-browser": {
+      "name": "@angular/platform-browser",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular/animations",
+        "@angular/common",
+        "@angular/core"
+      ],
+      "effects": [],
+      "range": "21.0.0-next.0 - 21.2.18",
+      "nodes": [
+        "node_modules/@angular/platform-browser"
+      ],
+      "fixAvailable": true
+    },
+    "@angular/router": {
+      "name": "@angular/router",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular/common",
+        "@angular/core",
+        "@angular/platform-browser"
+      ],
+      "effects": [],
+      "range": "10.0.0-next.0 - 10.0.0-rc.1 || 21.0.0-next.0 - 21.2.18",
+      "nodes": [
+        "node_modules/@angular/router"
+      ],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 7,
+      "critical": 0,
+      "total": 7
+    },
+    "dependencies": {
+      "prod": 16,
+      "dev": 1002,
+      "optional": 136,
+      "peer": 1,
+      "peerOptional": 0,
+      "total": 1017
+    }
+  }
+}
