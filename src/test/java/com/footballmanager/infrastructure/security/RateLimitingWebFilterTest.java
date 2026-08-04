@@ -51,6 +51,8 @@ class RateLimitingWebFilterTest {
         assertThat(body).contains("\"code\":\"RATE_LIMITED\"");
         assertThat(body).contains("\"status\":429");
         assertThat(body).contains("\"requestId\"");
+        assertThat(body).contains("Intentá nuevamente más tarde.");
+        assertThat(body).doesNotContain("Ã");
         assertThat(passed).hasValue(2);
     }
 
