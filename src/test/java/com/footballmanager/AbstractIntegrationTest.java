@@ -1,5 +1,6 @@
 package com.footballmanager;
 
+import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import reactor.core.publisher.Mono;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,8 +63,17 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
 
+    @Autowired
+    protected RoundEngineRegistry roundEngineRegistry;
+
     @BeforeEach
     void cleanRedis() {
+        // Live simulations use independent scheduler threads. Stop any engine left
+        // by a previous integration test before resetting shared Redis/PostgreSQL
+        // state; otherwise a stale callback can contend for the same test resources
+        // and make the next HTTP assertion time out nondeterministically.
+        roundEngineRegistry.stopAllEngines();
+
         // Wipe test Redis DB so state from a previous test does not leak.
         // Cheap (in-memory flush), avoids test-order coupling.
         reactiveRedisTemplate.getConnectionFactory().getReactiveConnection()
