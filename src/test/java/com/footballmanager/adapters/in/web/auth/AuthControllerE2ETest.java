@@ -120,6 +120,23 @@ class AuthControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /register - missing username returns safe 422 instead of database 500")
+    void register_missingUsername_returnsSafeValidationError() {
+        webTestClient.post().uri("/api/v1/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(String.format(
+                "{\"email\":\"%s\",\"password\":\"pass1234\"}", uniqueEmail()))
+            .exchange()
+            .expectStatus().isEqualTo(422)
+            .expectBody()
+            .jsonPath("$.code").isEqualTo("AUTH_VALIDATION_ERROR")
+            .jsonPath("$.status").isEqualTo(422)
+            .jsonPath("$.requestId").isNotEmpty()
+            .jsonPath("$.message").value(message ->
+                org.junit.jupiter.api.Assertions.assertFalse(message.toString().contains("NOT NULL")));
+    }
+
+    @Test
     @DisplayName("POST /login — 200 with JWT tokens for valid credentials")
     void login_validCredentials_returnsJwtTokens() throws Exception {
         String email = uniqueEmail();

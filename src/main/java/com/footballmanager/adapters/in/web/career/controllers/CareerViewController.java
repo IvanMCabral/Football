@@ -5,6 +5,7 @@ import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.query.*;
 import com.footballmanager.domain.model.entity.Division;
 import com.footballmanager.domain.port.in.career.GetCareerStatusUseCase;
+import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -60,7 +61,7 @@ public class CareerViewController {
     @GetMapping("/status")
     public Mono<GetCareerStatusUseCase.CareerStatusDto> getCareerStatus(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        return getCareerStatusUseCase.execute(userId);
+        return RuntimeOperationMetrics.measure("http.career.status", getCareerStatusUseCase.execute(userId));
     }
 
     /**
@@ -72,9 +73,9 @@ public class CareerViewController {
             @RequestParam int round,
             Authentication auth) {
         UUID userId = controllerHelper.getUserId(auth);
-        return sessionService.getCareerFromCache(userId)
+        return RuntimeOperationMetrics.measure("http.career.fixtures", sessionService.getCareerFromCache(userId)
                 .flatMap(career -> fixtureQueryService.getUserDivisionFixturesByRound(career, round))
-                .switchIfEmpty(Mono.just(List.of()));
+                .switchIfEmpty(Mono.just(List.of())));
     }
 
     /**
@@ -170,9 +171,9 @@ public class CareerViewController {
     @GetMapping("/standings")
     public Mono<List<StandingQueryService.StandingEntry>> getUserStandings(Authentication auth) {
         UUID userId = controllerHelper.getUserId(auth);
-        return sessionService.getCareerFromCache(userId)
+        return RuntimeOperationMetrics.measure("http.career.standings", sessionService.getCareerFromCache(userId)
                 .flatMap(career -> standingQueryService.getUserDivisionStandings(career, career.getUserDivision()))
-                .switchIfEmpty(Mono.just(List.of()));
+                .switchIfEmpty(Mono.just(List.of())));
     }
 
     /**

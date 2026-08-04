@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -52,11 +53,10 @@ public class RedisCareerRepository implements CareerRepository {
             String json = objectMapper.writeValueAsString(careerSave);
             int palmaresSize = careerSave.getSeasonManager().getPalmares() != null ? careerSave.getSeasonManager().getPalmares().size() : 0;
             log.info("[REDIS-SAVE] userId={}, palmaresSize={}", careerSave.getUserId(), palmaresSize);
-            return redisTemplate.opsForValue()
-                    .set(key, json, CACHE_TTL)
-                    .then();
+            return RuntimeOperationMetrics.measure("redis.career.save",
+                redisTemplate.opsForValue().set(key, json, CACHE_TTL).then());
         } catch (Exception e) {
-            return Mono.error(e);
+            return RuntimeOperationMetrics.measure("redis.career.save", Mono.error(e));
         }
     }
 
@@ -66,7 +66,8 @@ public class RedisCareerRepository implements CareerRepository {
     @Override
     public Mono<Optional<CareerSave>> findById(String id) {
         String key = getKey(id);
-        return redisTemplate.opsForValue()
+        return RuntimeOperationMetrics.measure("redis.career.load",
+            redisTemplate.opsForValue()
                 .get(key)
                 .map(json -> {
                     try {
@@ -81,7 +82,7 @@ public class RedisCareerRepository implements CareerRepository {
                         return Optional.<CareerSave>empty();
                     }
                 })
-                .defaultIfEmpty(Optional.empty());
+                .defaultIfEmpty(Optional.empty()));
     }
 
     /**
@@ -90,7 +91,7 @@ public class RedisCareerRepository implements CareerRepository {
     // Not part of interface
     public Mono<Boolean> existsByUserId(String userId) {
         String key = getKey(userId);
-        return redisTemplate.hasKey(key);
+        return RuntimeOperationMetrics.measure("redis.career.exists", redisTemplate.hasKey(key));
     }
 
     /**
@@ -99,8 +100,8 @@ public class RedisCareerRepository implements CareerRepository {
     @Override
     public Mono<Void> deleteById(String id) {
         String key = getKey(id);
-        return redisTemplate.delete(key)
-                .then();
+        return RuntimeOperationMetrics.measure("redis.career.delete",
+            redisTemplate.delete(key).then());
     }
 
     /**
@@ -108,6 +109,6 @@ public class RedisCareerRepository implements CareerRepository {
      */
     public Mono<Boolean> extendTTL(UUID userId) {
         String key = getKey(userId.toString());
-        return redisTemplate.expire(key, CACHE_TTL);
+        return RuntimeOperationMetrics.measure("redis.career.ttl", redisTemplate.expire(key, CACHE_TTL));
     }
 }

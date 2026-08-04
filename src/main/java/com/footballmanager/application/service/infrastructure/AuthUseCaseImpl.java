@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Authentication use case implementation.
@@ -37,13 +38,24 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
     @Override
     public Mono<AuthTokenResult> register(AuthRegisterCommand command) {
-        validatePassword(command.password());
-        return userRepository.findByEmail(command.email())
+        validateRegistration(command);
+        AuthRegisterCommand normalizedCommand = new AuthRegisterCommand(
+            command.email().trim(), command.username().trim(), command.password());
+        validatePassword(normalizedCommand.password());
+        return userRepository.findByEmail(normalizedCommand.email())
             .<User>flatMap(user -> Mono.error(new AuthConflictException("Email already exists")))
             .switchIfEmpty(Mono.defer(() -> {
-                String encodedPassword = passwordEncoder.encode(command.password());
-                return userRepository.createNew(command.email(), command.username(), encodedPassword);
+                return userRepository.existsByUsername(normalizedCommand.username())
+                    .flatMap(usernameExists -> {
+                        if (usernameExists) {
+                            return Mono.error(new AuthConflictException("Username already exists"));
+                        }
+                        String encodedPassword = passwordEncoder.encode(normalizedCommand.password());
+                        return userRepository.createNew(normalizedCommand.email(), normalizedCommand.username(), encodedPassword);
+                    });
             }))
+            .onErrorMap(DataIntegrityViolationException.class,
+                error -> new AuthConflictException("Email or username already exists"))
             .flatMap(user -> generateTokenResponse(user));
     }
 
@@ -135,6 +147,20 @@ public class AuthUseCaseImpl implements AuthUseCase {
     private static void validatePasswordShape(String password) {
         if (password == null || password.length() > 128 || password.isBlank()) {
             throw new AuthCredentialsException("Invalid credentials");
+        }
+    }
+
+    private static void validateRegistration(AuthRegisterCommand command) {
+        if (command == null) {
+            throw new AuthValidationException("Invalid registration request");
+        }
+        String email = command.email() == null ? "" : command.email().trim();
+        if (email.isBlank() || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new AuthValidationException("Invalid email");
+        }
+        String username = command.username() == null ? "" : command.username().trim();
+        if (username.length() < 3 || username.length() > 50 || !username.matches("^[A-Za-z0-9_.-]+$")) {
+            throw new AuthValidationException("Invalid username");
         }
     }
 }

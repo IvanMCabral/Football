@@ -8,6 +8,7 @@ import com.footballmanager.application.service.domain.UserStatsService;
 import com.footballmanager.application.service.world.WorldSnapshotService;
 import com.footballmanager.application.service.world.WorldStatusQueryService;
 import com.footballmanager.application.service.world.WorldStatusSummary;
+import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,15 +32,15 @@ public class DashboardController {
     @GetMapping("/user-stats")
     public Mono<UserStatsResponse> getUserStats(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        return userStatsService.getUserStats(userId)
-            .map(DashboardController::toDto);
+        return RuntimeOperationMetrics.measure("http.dashboard.userStats",
+            userStatsService.getUserStats(userId).map(DashboardController::toDto));
     }
 
     @GetMapping("/world-status")
     public Mono<WorldStatusResponse> getWorldStatus(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        return worldStatusQueryService.getWorldStatus(userId)
-            .map(DashboardController::toDto);
+        return RuntimeOperationMetrics.measure("http.dashboard.worldStatus",
+            worldStatusQueryService.getWorldStatus(userId).map(DashboardController::toDto));
     }
 
     /**
@@ -54,9 +55,10 @@ public class DashboardController {
     @PostMapping("/reload-world")
     public Mono<WorldStatusResponse> reloadWorldSnapshot(Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
-        return worldSnapshotService.reloadFromDatabase(userId)
+        return RuntimeOperationMetrics.measure("http.dashboard.reloadWorld",
+            worldSnapshotService.reloadFromDatabase(userId)
                 .then(worldStatusQueryService.getWorldStatus(userId))
-                .map(DashboardController::toDto);
+                .map(DashboardController::toDto));
     }
 
     private static UserStatsResponse toDto(UserStatsSummary summary) {

@@ -7,6 +7,8 @@ import com.footballmanager.domain.port.in.auth.AuthRegisterCommand;
 import com.footballmanager.domain.port.in.auth.AuthTokenResult;
 import com.footballmanager.domain.port.in.auth.AuthUserInfo;
 import com.footballmanager.domain.port.in.auth.AuthUseCase;
+import com.footballmanager.application.exception.AuthConflictException;
+import com.footballmanager.application.exception.AuthValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +53,7 @@ public class AuthController {
                 request.email(), request.username(), request.password()))
             .map(AuthController::toJwtTokenResponse)
             .map(ResponseEntity::ok))
-            .doOnError(error -> log.error("Authentication registration failed: type={}", error.getClass().getName(), error));
+            .doOnError(AuthController::logRegistrationFailure);
     }
 
     @PostMapping("/login")
@@ -86,5 +88,13 @@ public class AuthController {
         response.teamId = info.teamId();
         response.teamName = info.teamName();
         return response;
+    }
+
+    private static void logRegistrationFailure(Throwable error) {
+        if (error instanceof AuthValidationException || error instanceof AuthConflictException) {
+            log.info("Authentication registration rejected: type={}", error.getClass().getSimpleName());
+            return;
+        }
+        log.error("Authentication registration failed: type={}", error.getClass().getName(), error);
     }
 }
