@@ -100,6 +100,12 @@ public class TeamRepositoryAdapter implements TeamRepository {
     }
 
     @Override
+    public Flux<Team> findAllFromDatabase() {
+        return teamR2dbcRepository.findAll()
+                .map(entity -> entity.toDomain(Set.of()));
+    }
+
+    @Override
     public Mono<Boolean> existsById(UUID userId, UUID teamId) {
         return teamRedisRepository.existsById(userId, teamId);
     }

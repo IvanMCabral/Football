@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import com.footballmanager.domain.ports.out.team.TeamRepository;
 import com.footballmanager.domain.model.entity.Player;
+import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.valueobject.Division;
 import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Carga teams y sus players asociados desde SQL.
@@ -32,46 +34,39 @@ public class TeamPlayerLoaderService {
      * Carga todos los teams y sus players asociados.
      */
     public Mono<TeamsAndPlayersResult> loadTeamsAndPlayers(UUID userId, Map<UUID, UUID> leagueTeamsMap) {
-        return teamRepository.findAllByUserId(userId)
-                .flatMap(team -> {
-                    UUID leagueId = leagueTeamsMap.get(team.getId().getValue());
+        // A new manager has no Redis keys yet. Loading each team and its squad
+        // separately made the first world request perform hundreds of remote
+        // round trips and could outlive the public proxy timeout. Bootstrap
+        // both canonical tables in two bounded queries, then attach traits in
+        // one bulk query.
+        return Mono.zip(
+                        teamRepository.findAllFromDatabase().collectList(),
+                        playerRepository.findAllByTeamFromDatabase())
+                .flatMap(tuple -> {
+                    List<Team> teams = tuple.getT1();
+                    Map<UUID, List<Player>> playersByTeam = tuple.getT2();
+                    Map<UUID, WorldTeam> worldTeamsById = new HashMap<>();
+                    List<WorldTeam> worldTeams = teams.stream().map(team -> {
+                        UUID leagueId = leagueTeamsMap.get(team.getId().getValue());
+                        WorldTeam worldTeam = WorldTeam.fromRealTeam(
+                                team.getId().getValue(), leagueId, team.getName(), team.getCountry(),
+                                team.getCountry(), team.getBudget(),
+                                team.getFormation() != null ? team.getFormation().toString() : "4-3-3",
+                                team.getDivision() != null ? team.getDivision() : Division.defaultDivision());
+                        worldTeamsById.put(team.getId().getValue(), worldTeam);
+                        return worldTeam;
+                    }).toList();
 
-                    WorldTeam worldTeam = WorldTeam.fromRealTeam(
-                            team.getId().getValue(),
-                            leagueId,
-                            team.getName(),
-                            team.getCountry(),
-                            team.getCountry(),
-                            team.getBudget(),
-                            team.getFormation() != null ? team.getFormation().toString() : "4-3-3",
-                            // teams.division (Postgres) through to WorldTeam so the
-                            // WorldView carries the tier info for division-aware
-                            // queries (phase 4 UI: standings, dropdowns,
-                            // promotion/relegation).
-                            team.getDivision() != null ? team.getDivision() : Division.defaultDivision()
-                    );
+                    List<WorldPlayer> worldPlayers = teams.stream()
+                            .flatMap(team -> playersByTeam.getOrDefault(team.getId().getValue(), List.of()).stream()
+                                    .map(player -> mapPlayerToWorldPlayer(player,
+                                            worldTeamsById.get(team.getId().getValue()).getWorldTeamId())))
+                            .collect(Collectors.toCollection(ArrayList::new));
 
-                    return playerRepository.findByTeamId(team.getId().getValue())
-                            .map(player -> mapPlayerToWorldPlayer(player, worldTeam.getWorldTeamId()))
-                            .collectList()
-                            .flatMap(this::attachSpecialTraits)
-                            .map(players -> new TeamWithPlayers(worldTeam, players));
-                })
-                .collectList()
-                .map(teamWithPlayersList -> {
-                    List<WorldTeam> allWorldTeams = new ArrayList<>();
-                    List<WorldPlayer> allWorldPlayers = new ArrayList<>();
-
-                    for (TeamWithPlayers twp : teamWithPlayersList) {
-                        allWorldTeams.add(twp.worldTeam());
-                        allWorldPlayers.addAll(twp.players());
-                    }
-
-                    return new TeamsAndPlayersResult(allWorldTeams, allWorldPlayers);
+                    return attachSpecialTraits(worldPlayers)
+                            .map(enriched -> new TeamsAndPlayersResult(worldTeams, enriched));
                 });
     }
-
-    private record TeamWithPlayers(WorldTeam worldTeam, List<WorldPlayer> players) {}
 
     private Mono<List<WorldPlayer>> attachSpecialTraits(List<WorldPlayer> players) {
         List<UUID> playerIds = players.stream()

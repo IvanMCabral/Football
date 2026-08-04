@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import io.r2dbc.spi.Row;
 
 @Data
 @NoArgsConstructor
@@ -48,6 +49,33 @@ public class PlayerEntity {
      * Skill levels serialized as JSON text.
      */
     private String skillLevelsJson;
+
+    /** Maps the canonical player columns when the world bootstrap joins team_squad. */
+    public static PlayerEntity fromRow(Row row) {
+        return new PlayerEntity(
+                row.get("id", UUID.class),
+                row.get("name", String.class),
+                value(row, "age", Integer.class, 0),
+                row.get("position", String.class),
+                value(row, "attack", Integer.class, 0),
+                value(row, "defense", Integer.class, 0),
+                value(row, "technique", Integer.class, 0),
+                value(row, "speed", Integer.class, 0),
+                value(row, "stamina", Integer.class, 0),
+                value(row, "mentality", Integer.class, 0),
+                value(row, "market_value", BigDecimal.class, BigDecimal.ZERO),
+                value(row, "energy", Integer.class, 100),
+                value(row, "injured", Boolean.class, false),
+                row.get("created_at", Instant.class),
+                row.get("updated_at", Instant.class),
+                row.get("height_cm", Integer.class),
+                row.get("skill_levels_json", String.class));
+    }
+
+    private static <T> T value(Row row, String column, Class<T> type, T fallback) {
+        T value = row.get(column, type);
+        return value == null ? fallback : value;
+    }
 
     // JSON codec.
     //

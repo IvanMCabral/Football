@@ -74,6 +74,12 @@ public class LeagueTeamSyncService {
                 .map(entry -> leagueTeamRepository.addTeamToLeague(userId, entry.getValue(), entry.getKey()))
                 .toList();
 
-        return Flux.concat(operations).then();
+        // Redis is the per-user cache for the relationship, but serializing
+        // every team write made first-world bootstrap needlessly slow on a
+        // remote managed Redis. The operations are independent; bounded
+        // concurrency preserves back-pressure without blocking the event loop.
+        return Flux.fromIterable(operations)
+                .flatMap(operation -> operation, 16)
+                .then();
     }
 }

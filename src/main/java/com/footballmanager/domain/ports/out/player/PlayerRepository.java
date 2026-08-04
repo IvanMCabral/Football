@@ -18,6 +18,8 @@ public interface PlayerRepository {
 
     // Métodos de solo lectura desde SQL (para inicialización del WorldSnapshot)
     Flux<Player> findByTeamId(UUID teamId);
+    /** Reads canonical players grouped by team in one database query. */
+    Mono<java.util.Map<UUID, java.util.List<Player>>> findAllByTeamFromDatabase();
     Flux<PlayerSpecialTrait> findSpecialTraitsByPlayerIds(Collection<UUID> playerIds);
     Mono<Void> addPlayerToTeamSquad(UUID teamId, UUID playerId);
     Mono<Void> removePlayerFromTeamSquad(UUID teamId, UUID playerId);

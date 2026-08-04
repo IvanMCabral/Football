@@ -77,6 +77,25 @@ public class PlayerRepositoryAdapter implements PlayerRepository {
     }
 
     @Override
+    public Mono<java.util.Map<UUID, java.util.List<Player>>> findAllByTeamFromDatabase() {
+        return databaseClient.sql("""
+                        SELECT ts.team_id, p.*
+                        FROM players p
+                        INNER JOIN team_squad ts ON p.id = ts.player_id
+                        ORDER BY ts.team_id, p.id
+                        """)
+                .map((row, metadata) -> new java.util.AbstractMap.SimpleEntry<>(
+                        row.get("team_id", UUID.class),
+                        PlayerEntity.fromRow(row).toDomain()))
+                .all()
+                .collectMultimap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue)
+                .map(multimap -> multimap.entrySet().stream()
+                        .collect(java.util.stream.Collectors.toMap(
+                                java.util.Map.Entry::getKey,
+                                entry -> java.util.List.copyOf(entry.getValue()))));
+    }
+
+    @Override
     public Flux<PlayerSpecialTrait> findSpecialTraitsByPlayerIds(Collection<UUID> playerIds) {
         if (playerIds == null || playerIds.isEmpty()) {
             return Flux.empty();
