@@ -1,0 +1,68 @@
+[
+  {
+    "requested": "/",
+    "url": "https://manager-4f952.web.app/dashboard",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"⚽ MI UNIVERSO DE FUTBOL\" [level=1]\n  - paragraph: Bienvenido de nuevo, manager.\n  - generic: Cargando carrera...\n  - separator\n  - heading \"📊 MIS ESTADISTICAS COMO DT\" [level=2]\n  - heading \"🌍 ESTADO DEL MUNDO\" [level=2]\n  - generic: Clubes\n  - generic: Jugadores\n  - generic: Partidos\n  - heading \"⚡ ACCIONES RAPIDAS\" [level=2]\n  - link \"➕ Crear club\":\n    - /url: /teams/create\n    - generic: ➕\n    - generic: Crear club\n  - link \"👤 Crear jugador\":\n    - /url: /players/create\n    - generic: 👤\n    - generic: Crear jugador\n  - link \"⚽ Gestionar jugadores y equipos\":\n    - /url: /players/manage\n    - generic: ⚽\n    - generic: Gestionar jugadores y equipos\n  - link \"⚙️ Gestionar ligas y equipos\":\n    - /url: /teams/manage\n    - generic: ⚙️\n    - generic: Gestionar ligas y equipos\n  - link \"🏟️ Ver partidos\":\n    - /url: /matches\n    - generic: 🏟️\n    - generic: Ver partidos\n  - link \"🎯 Programar partido\":\n    - /url: /matches/create\n    - generic: 🎯\n    - generic: Programar partido\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/dashboard",
+    "url": "https://manager-4f952.web.app/dashboard",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"⚽ MI UNIVERSO DE FUTBOL\" [level=1]\n  - paragraph: Bienvenido de nuevo, manager.\n  - generic: Cargando carrera...\n  - separator\n  - heading \"📊 MIS ESTADISTICAS COMO DT\" [level=2]\n  - heading \"🌍 ESTADO DEL MUNDO\" [level=2]\n  - generic: Clubes\n  - generic: Jugadores\n  - generic: Partidos\n  - heading \"⚡ ACCIONES RAPIDAS\" [level=2]\n  - link \"➕ Crear club\":\n    - /url: /teams/create\n    - generic: ➕\n    - generic: Crear club\n  - link \"👤 Crear jugador\":\n    - /url: /players/create\n    - generic: 👤\n    - generic: Crear jugador\n  - link \"⚽ Gestionar jugadores y equipos\":\n    - /url: /players/manage\n    - generic: ⚽\n    - generic: Gestionar jugadores y equipos\n  - link \"⚙️ Gestionar ligas y equipos\":\n    - /url: /teams/manage\n    - generic: ⚙️\n    - generic: Gestionar ligas y equipos\n  - link \"🏟️ Ver partidos\":\n    - /url: /matches\n    - generic: 🏟️\n    - generic: Ver partidos\n  - link \"🎯 Programar partido\":\n    - /url: /matches/create\n    - generic: 🎯\n    - generic: Programar partido\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/squad",
+    "url": "https://manager-4f952.web.app/squad",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - status:\n    - paragraph: Cargando plantilla...\n  - heading \"⚽ Mi equipo\" [level=1]\n  - link \"← Volver\":\n    - /url: /dashboard\n  - paragraph: Cargando datos...\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/standings",
+    "url": "https://manager-4f952.web.app/standings",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - link \"Volver al inicio\":\n    - /url: /dashboard\n    - generic: Volver\n  - heading \"🏆 Tabla de posiciones\" [level=1]:\n    - generic: 🏆\n    - text: Tabla de posiciones\n  - generic: Zona de ascenso (3 mejores)\n  - generic: Zona de descenso (3 peores)\n  - paragraph: Cargando tablas de posiciones...\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/matches",
+    "url": "https://manager-4f952.web.app/matches",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"Fixture de carrera\" [level=1]\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/career/setup",
+    "url": "https://manager-4f952.web.app/career/setup",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"🎮 SELECCIONA TUS OPCIONES DE PARTIDA\" [level=1]\n  - paragraph: Configura tu nueva carrera y comienza tu camino a la gloria\n  - paragraph: Cargando datos...\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/login",
+    "url": "https://manager-4f952.web.app/login",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"Login\" [level=1]\n  - textbox \"Email\"\n  - textbox \"Contraseña\"\n  - button \"Entrar\" [disabled]\n  - link \"¿No tienes cuenta? Regístrate\":\n    - /url: /register\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/register",
+    "url": "https://manager-4f952.web.app/register",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"Registro\" [level=1]\n  - textbox \"Usuario\"\n  - textbox \"Email\"\n  - textbox \"Contraseña\"\n  - button \"Registrarse\" [disabled]\n  - link \"¿Ya tienes cuenta? Inicia sesión\":\n    - /url: /login\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/players/manage",
+    "url": "https://manager-4f952.web.app/players/manage",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"⚽ Gestionar jugadores y equipos\" [level=2]\n  - heading \"Elegir equipo\" [level=3]\n  - combobox:\n    - option \"-- Elegir equipo --\"\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/careers/invalid/matches/invalid/detail",
+    "url": "https://manager-4f952.web.app/careers/invalid/matches/invalid/detail",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - status:\n    - paragraph: Cargando detalle del partido...\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  },
+  {
+    "requested": "/debug/test-harness",
+    "url": "https://manager-4f952.web.app/dashboard",
+    "snapshot": "- navigation:\n  - link \"⚽ Football Manager\":\n    - /url: /\n    - generic: ⚽\n    - generic: Football Manager\n  - link \"Inicio\":\n    - /url: /dashboard\n  - link \"Partidos\":\n    - /url: /matches\n  - button \"Salir\"\n- main:\n  - heading \"⚽ MI UNIVERSO DE FUTBOL\" [level=1]\n  - paragraph: Bienvenido de nuevo, manager.\n  - generic: Cargando carrera...\n  - separator\n  - heading \"📊 MIS ESTADISTICAS COMO DT\" [level=2]\n  - heading \"🌍 ESTADO DEL MUNDO\" [level=2]\n  - generic: Clubes\n  - generic: Jugadores\n  - generic: Partidos\n  - heading \"⚡ ACCIONES RAPIDAS\" [level=2]\n  - link \"➕ Crear club\":\n    - /url: /teams/create\n    - generic: ➕\n    - generic: Crear club\n  - link \"👤 Crear jugador\":\n    - /url: /players/create\n    - generic: 👤\n    - generic: Crear jugador\n  - link \"⚽ Gestionar jugadores y equipos\":\n    - /url: /players/manage\n    - generic: ⚽\n    - generic: Gestionar jugadores y equipos\n  - link \"⚙️ Gestionar ligas y equipos\":\n    - /url: /teams/manage\n    - generic: ⚙️\n    - generic: Gestionar ligas y equipos\n  - link \"🏟️ Ver partidos\":\n    - /url: /matches\n    - generic: 🏟️\n    - generic: Ver partidos\n  - link \"🎯 Programar partido\":\n    - /url: /matches/create\n    - generic: 🎯\n    - generic: Programar partido\n- contentinfo:\n  - paragraph: © 2024 Football Manager. Todos los derechos reservados.",
+    "hasError": false
+  }
+]

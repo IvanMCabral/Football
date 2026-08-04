@@ -1,0 +1,23 @@
+﻿[
+    {
+        "origin":  "https://manager-4f952.web.app",
+        "status":  200,
+        "allowOrigin":  "https://manager-4f952.web.app",
+        "allowCred":  "true",
+        "allowMethods":  "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+    },
+    {
+        "origin":  "https://evil.example",
+        "status":  403,
+        "allowOrigin":  "",
+        "allowCred":  "",
+        "allowMethods":  ""
+    },
+    {
+        "origin":  "*",
+        "status":  403,
+        "allowOrigin":  "",
+        "allowCred":  "",
+        "allowMethods":  ""
+    }
+]

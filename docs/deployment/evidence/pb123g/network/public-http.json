@@ -1,0 +1,82 @@
+﻿[
+    {
+        "url":  "https://manager-4f952.web.app/",
+        "status":  200,
+        "ms":  681,
+        "contentType":  "text/html; charset=utf-8",
+        "cacheControl":  "max-age=3600",
+        "xContent":  null,
+        "referrer":  null,
+        "body":  ""
+    },
+    {
+        "url":  "https://manager-4f952.web.app/login",
+        "status":  200,
+        "ms":  535,
+        "contentType":  "text/html; charset=utf-8",
+        "cacheControl":  "max-age=3600",
+        "xContent":  null,
+        "referrer":  null,
+        "body":  ""
+    },
+    {
+        "url":  "https://manager-4f952.web.app/dashboard",
+        "status":  200,
+        "ms":  443,
+        "contentType":  "text/html; charset=utf-8",
+        "cacheControl":  "max-age=3600",
+        "xContent":  null,
+        "referrer":  null,
+        "body":  ""
+    },
+    {
+        "url":  "https://manager-4f952.web.app/squad",
+        "status":  200,
+        "ms":  304,
+        "contentType":  "text/html; charset=utf-8",
+        "cacheControl":  "max-age=3600",
+        "xContent":  null,
+        "referrer":  null,
+        "body":  ""
+    },
+    {
+        "url":  "https://manager-4f952.web.app/standings",
+        "status":  200,
+        "ms":  242,
+        "contentType":  "text/html; charset=utf-8",
+        "cacheControl":  "max-age=3600",
+        "xContent":  null,
+        "referrer":  null,
+        "body":  ""
+    },
+    {
+        "url":  "https://manager-4f952.web.app/matches",
+        "status":  200,
+        "ms":  311,
+        "contentType":  "text/html; charset=utf-8",
+        "cacheControl":  "max-age=3600",
+        "xContent":  null,
+        "referrer":  null,
+        "body":  ""
+    },
+    {
+        "url":  "https://manager-staging-api.onrender.com/api/v1/health/liveness",
+        "status":  200,
+        "ms":  1323,
+        "contentType":  "application/json",
+        "cacheControl":  "no-store",
+        "xContent":  "nosniff",
+        "referrer":  "no-referrer",
+        "body":  "{\"status\":\"UP\"}"
+    },
+    {
+        "url":  "https://manager-staging-api.onrender.com/api/v1/health/readiness",
+        "status":  200,
+        "ms":  15473,
+        "contentType":  "application/json",
+        "cacheControl":  "no-store",
+        "xContent":  "nosniff",
+        "referrer":  "no-referrer",
+        "body":  "{\"status\":\"UP\",\"database\":\"UP\",\"redis\":\"UP\"}"
+    }
+]

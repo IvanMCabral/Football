@@ -1,0 +1,56 @@
+﻿[
+    {
+        "url":  "https://manager-staging-api.onrender.com/api/v1/health/liveness",
+        "samplesMs":  [
+                          380,
+                          713,
+                          212,
+                          262,
+                          261,
+                          260,
+                          230,
+                          261,
+                          268,
+                          259
+                      ],
+        "p50Ms":  261,
+        "p95Ms":  380,
+        "success":  10
+    },
+    {
+        "url":  "https://manager-staging-api.onrender.com/api/v1/health/readiness",
+        "samplesMs":  [
+                          -1,
+                          2169,
+                          760,
+                          777,
+                          827,
+                          811,
+                          769,
+                          884,
+                          739,
+                          739
+                      ],
+        "p50Ms":  777,
+        "p95Ms":  884,
+        "success":  9
+    },
+    {
+        "url":  "https://manager-4f952.web.app/",
+        "samplesMs":  [
+                          53,
+                          24,
+                          24,
+                          22,
+                          23,
+                          22,
+                          22,
+                          22,
+                          22,
+                          22
+                      ],
+        "p50Ms":  22,
+        "p95Ms":  24,
+        "success":  10
+    }
+]

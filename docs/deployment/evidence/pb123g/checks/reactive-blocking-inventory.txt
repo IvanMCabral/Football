@@ -1,0 +1,22 @@
+﻿src/main/java\com\footballmanager\infrastructure\world\legacyseed\WorldTeamPostgresWriter.java:62:                    .block(BLOCK_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\world\legacyseed\WorldTeamPostgresWriter.java:108:                .block(BLOCK_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\world\legacyseed\WorldTeamPostgresWriter.java:147:                .block(BLOCK_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\world\legacyseed\WorldSeedBatchWriter.java:107:                        .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\world\legacyseed\WorldSeedBatchWriter.java:247:            .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\world\legacyseed\WorldSeedBatchWriter.java:292:                    .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\world\legacyseed\WorldSeedBatchWriter.java:331:                .fetch().rowsUpdated().block(BLOCK_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\world\legacyseed\LegacySeedPrincipalDatabaseGuard.java:32:                .block(CHECK_TIMEOUT);
+src/main/java\com\footballmanager\application\service\match\TacticalChangeService.java:317:            description.append(String.join(", ", moved.stream().limit(4).toList()));
+src/main/java\com\footballmanager\application\service\simulation\MatchDetailPersistenceCoordinator.java:86:                    .block(DETAIL_PERSIST_TIMEOUT);
+src/main/java\com\footballmanager\infrastructure\security\SecurityConfig.java:43:                String.join(",", corsConfig.allowedHeaders()));
+src/main/java\com\footballmanager\infrastructure\persistence\redis\BaselineStateRedisAdapter.java:148:        // implementation used .blockOptional(Duration.ofSeconds(5)) which
+src/main/java\com\footballmanager\infrastructure\persistence\redis\BaselineStateRedisAdapter.java:149:        // throws IllegalStateException("blockOptional() is blocking, which
+src/main/java\com\footballmanager\infrastructure\config\ProductionStartupValidation.java:53:                    + String.join(", ", missingOrUnsafe));
+src/main/java\com\footballmanager\application\service\simulation\detailed\BaselineStateStoragePort.java:25: * swallowed timeouts silently via {@code CompletableFuture.get(5s)}, causing
+src/main/java\com\footballmanager\application\service\simulation\detailed\BaselineStateStoragePort.java:59:     * adapter to use {@code .blockOptional(...)} which threw
+src/main/java\com\footballmanager\application\service\simulation\detailed\BaselineStateStoragePort.java:60:     * {@code IllegalStateException("blockOptional() is blocking, which
+src/main/java\com\footballmanager\application\service\reactive\ReactiveLifecycleExecutor.java:44:            .subscribe();
+src/main/java\com\footballmanager\adapters\in\web\career\controllers\DetailedMatchController.java:127:        // parallel scheduling Ã¢â‚¬â€ blockOptional() threw IllegalStateException
+src/main/java\com\footballmanager\application\service\simulation\detailed\MatchComparisonService.java:83:     * internally called {@code .blockOptional()} on the storage ports
+src/main/java\com\footballmanager\application\service\simulation\detailed\MatchComparisonService.java:84:     * — which threw {@code IllegalStateException("blockOptional() is
+src/main/java\com\footballmanager\application\service\simulation\detailed\stats\PlayerSeasonStatsQueryService.java:289:            String input = String.join("|", matchIds);

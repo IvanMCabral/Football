@@ -1,0 +1,11 @@
+﻿{
+    "devBuildExit":  0,
+    "prodBuildExit":  0,
+    "encodingGuardExit":  0,
+    "artifactInspectionExit":  0,
+    "tests":  1046,
+    "failures":  0,
+    "errors":  0,
+    "skipped":  2,
+    "karmaTotal":  1048
+}

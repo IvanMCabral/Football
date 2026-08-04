@@ -1,0 +1,724 @@
+- navigation:
+  - link:
+    - /url: /
+    - generic: ⚽
+    - generic: Football Manager
+  - link:
+    - /url: /dashboard
+    - text: Inicio
+  - link:
+    - /url: /matches
+    - text: Partidos
+  - button: Salir
+- main:
+  - heading [level=1]: ⚽ Mi equipo
+  - link:
+    - /url: /dashboard
+    - text: ← Volver
+  - generic: Temporada
+  - generic: "1"
+  - generic: División
+  - generic: PRIMERA
+  - generic: Jornada
+  - generic: 2 / 38
+  - generic: Plantilla
+  - generic: 24 / 25
+  - generic: Libres
+  - generic: "0"
+  - button: 📅 Ver Fixture
+  - button: 🏆 Tabla
+  - button: 📜 Palmarés
+  - button: 📊 Ascensos
+  - heading [level=2]: 🏆 Real Madrid
+  - generic: 📍 Ciudad
+  - generic: 💰 94.000.000 €
+  - button: 👥 Plantilla
+  - button: 📊 Estadísticas
+  - heading [level=3]: 👥 Tu plantilla (24 / 24 disponibles)
+  - link:
+    - /url: /players/manage
+    - text: ⚙️ Gestionar
+  - text: "⚽ Alineación armada:"
+  - strong: 11 / 11
+  - text: —
+  - button: Ir a confirmar
+  - alert:
+    - generic: ⚠
+    - text: Tienes 24 jugadores sanos (mínimo recomendado 11).
+    - link:
+      - /url: /players/manage
+      - text: Gestionar plantilla
+  - generic: Trent Alexander-Arnold
+  - generic: RB
+  - generic: ATT
+  - generic: "77"
+  - generic: DEF
+  - generic: "77"
+  - generic: TEC
+  - generic: "77"
+  - generic: SPD
+  - generic: "77"
+  - generic: "Edad: 26"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Aerial specialist
+  - generic: Leader
+  - generic: Gonzalo García
+  - generic: ST
+  - generic: ATT
+  - generic: "78"
+  - generic: DEF
+  - generic: "78"
+  - generic: TEC
+  - generic: "78"
+  - generic: SPD
+  - generic: "78"
+  - generic: "Edad: 33"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Clutch finisher
+  - generic: Aerial specialist
+  - generic: Endrick
+  - generic: ST
+  - generic: ATT
+  - generic: "81"
+  - generic: DEF
+  - generic: "81"
+  - generic: TEC
+  - generic: "81"
+  - generic: SPD
+  - generic: "81"
+  - generic: "Edad: 37"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Speedster
+  - generic: Clutch finisher
+  - generic: Éder Militão
+  - generic: CB
+  - generic: ATT
+  - generic: "80"
+  - generic: DEF
+  - generic: "80"
+  - generic: TEC
+  - generic: "80"
+  - generic: SPD
+  - generic: "80"
+  - generic: "Edad: 28"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Aerial specialist
+  - generic: Leader
+  - generic: Antonio Rüdiger
+  - generic: CB
+  - generic: ATT
+  - generic: "77"
+  - generic: DEF
+  - generic: "77"
+  - generic: TEC
+  - generic: "77"
+  - generic: SPD
+  - generic: "77"
+  - generic: "Edad: 35"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Leader
+  - generic: Aerial specialist
+  - generic: Álvaro Carreras
+  - generic: CB
+  - generic: ATT
+  - generic: "73"
+  - generic: DEF
+  - generic: "73"
+  - generic: TEC
+  - generic: "73"
+  - generic: SPD
+  - generic: "73"
+  - generic: "Edad: 38"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Workhorse
+  - generic: Aerial specialist
+  - generic: Raúl Asencio
+  - generic: CDM
+  - generic: ATT
+  - generic: "82"
+  - generic: DEF
+  - generic: "82"
+  - generic: TEC
+  - generic: "82"
+  - generic: SPD
+  - generic: "82"
+  - generic: "Edad: 24"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Line breaker
+  - generic: Press resistant
+  - generic: Ferland Mendy
+  - generic: LB
+  - generic: ATT
+  - generic: "72"
+  - generic: DEF
+  - generic: "72"
+  - generic: TEC
+  - generic: "72"
+  - generic: SPD
+  - generic: "72"
+  - generic: "Edad: 32"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Aerial specialist
+  - generic: Leader
+  - generic: Vinícius Júnior
+  - generic: LW
+  - generic: ATT
+  - generic: "82"
+  - generic: DEF
+  - generic: "82"
+  - generic: TEC
+  - generic: "82"
+  - generic: SPD
+  - generic: "82"
+  - generic: "Edad: 37"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Set piece specialist
+  - generic: Speedster
+  - generic: Jude Bellingham
+  - generic: CAM
+  - generic: ATT
+  - generic: "83"
+  - generic: DEF
+  - generic: "83"
+  - generic: TEC
+  - generic: "83"
+  - generic: SPD
+  - generic: "83"
+  - generic: "Edad: 30"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Line breaker
+  - generic: Leader
+  - generic: Andriy Lunin
+  - generic: GK
+  - generic: ATT
+  - generic: "80"
+  - generic: DEF
+  - generic: "80"
+  - generic: TEC
+  - generic: "80"
+  - generic: SPD
+  - generic: "80"
+  - generic: "Edad: 33"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: One-on-one keeper
+  - generic: Sweeper keeper
+  - generic: Federico Valverde
+  - generic: CM
+  - generic: ATT
+  - generic: "78"
+  - generic: DEF
+  - generic: "78"
+  - generic: TEC
+  - generic: "78"
+  - generic: SPD
+  - generic: "78"
+  - generic: "Edad: 28"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Workhorse
+  - generic: Set piece specialist
+  - generic: Gonzalo
+  - generic: ST
+  - generic: ATT
+  - generic: "77"
+  - generic: DEF
+  - generic: "77"
+  - generic: TEC
+  - generic: "77"
+  - generic: SPD
+  - generic: "77"
+  - generic: "Edad: 23"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Line breaker
+  - generic: Clutch finisher
+  - generic: Dean Huijsen
+  - generic: CDM
+  - generic: ATT
+  - generic: "80"
+  - generic: DEF
+  - generic: "80"
+  - generic: TEC
+  - generic: "80"
+  - generic: SPD
+  - generic: "80"
+  - generic: "Edad: 30"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Leader
+  - generic: Set piece specialist
+  - generic: Thibaut Courtois
+  - generic: GK
+  - generic: ATT
+  - generic: "78"
+  - generic: DEF
+  - generic: "78"
+  - generic: TEC
+  - generic: "78"
+  - generic: SPD
+  - generic: "78"
+  - generic: "Edad: 31"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: One-on-one keeper
+  - generic: Sweeper keeper
+  - generic: Arda Güler
+  - generic: CAM
+  - generic: ATT
+  - generic: "79"
+  - generic: DEF
+  - generic: "79"
+  - generic: TEC
+  - generic: "79"
+  - generic: SPD
+  - generic: "79"
+  - generic: "Edad: 35"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Set piece specialist
+  - generic: Press resistant
+  - generic: Bernardo Silva
+  - generic: CDM
+  - generic: ATT
+  - generic: "82"
+  - generic: DEF
+  - generic: "82"
+  - generic: TEC
+  - generic: "82"
+  - generic: SPD
+  - generic: "82"
+  - generic: "Edad: 22"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Press resistant
+  - generic: Set piece specialist
+  - generic: Kylian Mbappé
+  - generic: ST
+  - generic: ATT
+  - generic: "83"
+  - generic: DEF
+  - generic: "83"
+  - generic: TEC
+  - generic: "83"
+  - generic: SPD
+  - generic: "83"
+  - generic: "Edad: 29"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Clutch finisher
+  - generic: Aerial specialist
+  - generic: Denzel Dumfries
+  - generic: CB
+  - generic: ATT
+  - generic: "76"
+  - generic: DEF
+  - generic: "76"
+  - generic: TEC
+  - generic: "76"
+  - generic: SPD
+  - generic: "76"
+  - generic: "Edad: 26"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Leader
+  - generic: Aerial specialist
+  - generic: Eduardo Camavinga
+  - generic: CM
+  - generic: ATT
+  - generic: "81"
+  - generic: DEF
+  - generic: "81"
+  - generic: TEC
+  - generic: "81"
+  - generic: SPD
+  - generic: "81"
+  - generic: "Edad: 33"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Leader
+  - generic: Press resistant
+  - generic: Franco Mastantuono
+  - generic: RW
+  - generic: ATT
+  - generic: "81"
+  - generic: DEF
+  - generic: "81"
+  - generic: TEC
+  - generic: "81"
+  - generic: SPD
+  - generic: "81"
+  - generic: "Edad: 32"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Line breaker
+  - generic: Set piece specialist
+  - generic: Brahim Díaz
+  - generic: ST
+  - generic: ATT
+  - generic: "79"
+  - generic: DEF
+  - generic: "79"
+  - generic: TEC
+  - generic: "79"
+  - generic: SPD
+  - generic: "79"
+  - generic: "Edad: 38"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Clutch finisher
+  - generic: Aerial specialist
+  - generic: Aurélien Tchouaméni
+  - generic: CDM
+  - generic: ATT
+  - generic: "81"
+  - generic: DEF
+  - generic: "81"
+  - generic: TEC
+  - generic: "81"
+  - generic: SPD
+  - generic: "81"
+  - generic: "Edad: 33"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Leader
+  - generic: Press resistant
+  - generic: Rodrygo
+  - generic: RW
+  - generic: ATT
+  - generic: "84"
+  - generic: DEF
+  - generic: "84"
+  - generic: TEC
+  - generic: "84"
+  - generic: SPD
+  - generic: "84"
+  - generic: "Edad: 38"
+  - generic: "Forma: 50%"
+  - generic: "Energía: 100% · Fresco"
+  - generic: Line breaker
+  - generic: Speedster
+  - heading [level=3]: ⚽ Alineación Titular
+  - generic: "Formación:"
+  - combobox
+  - button: 🤖 Auto seleccionar
+  - button: 🎯 Editar Formación Visual
+  - generic: 4-4-2
+  - generic: ⚗ 80/99
+  - generic: 11 / 11
+  - text: Detalle de química
+  - generic: (0% cobertura)
+  - generic: "GK:"
+  - generic: GK-SLOT 0
+  - generic: "DEF:"
+  - generic: DEF-SLOT 0
+  - generic: "MID:"
+  - generic: MID-SLOT 0
+  - generic: "ATT:"
+  - generic: ATT-SLOT 0
+  - alert:
+    - generic: ⚠
+    - generic: 1 DEF slot(s) filled by off-position players.
+    - button: ×
+  - generic: Andriy Lunin
+  - generic: GK
+  - generic: "OVR: 80"
+  - generic: 100%
+  - generic: "Edad: 33"
+  - generic: Éder Militão
+  - generic: CB
+  - generic: "OVR: 80"
+  - generic: 100%
+  - generic: "Edad: 28"
+  - generic: Trent Alexander-Arnold
+  - generic: RB
+  - generic: "OVR: 77"
+  - generic: 100%
+  - generic: "Edad: 26"
+  - generic: Antonio Rüdiger
+  - generic: CB
+  - generic: "OVR: 77"
+  - generic: 100%
+  - generic: "Edad: 35"
+  - generic: Denzel Dumfries
+  - generic: CB
+  - generic: "OVR: 76"
+  - generic: 100%
+  - generic: "Edad: 26"
+  - generic: Rodrygo
+  - generic: RW
+  - generic: "OVR: 84"
+  - generic: 100%
+  - generic: "Edad: 38"
+  - generic: Vinícius Júnior
+  - generic: LW
+  - generic: "OVR: 82"
+  - generic: 100%
+  - generic: "Edad: 37"
+  - generic: Jude Bellingham
+  - generic: CAM
+  - generic: "OVR: 83"
+  - generic: 100%
+  - generic: "Edad: 30"
+  - generic: Raúl Asencio
+  - generic: CDM
+  - generic: "OVR: 82"
+  - generic: 100%
+  - generic: "Edad: 24"
+  - generic: Kylian Mbappé
+  - generic: ST
+  - generic: "OVR: 83"
+  - generic: 100%
+  - generic: "Edad: 29"
+  - generic: Endrick
+  - generic: ST
+  - generic: "OVR: 81"
+  - generic: 100%
+  - generic: "Edad: 37"
+  - generic: ⚽ 11 / 11 jugadores
+  - button: ✅ Confirmar y jugar
+- contentinfo:
+  - paragraph: © 2024 Football Manager. Todos los derechos reservados.
+- dialog:
+  - heading "Editor de Formación" [level=2]
+  - generic: "Formación:"
+  - combobox [active]:
+    - option "4-4-2" [selected]
+    - option "4-3-3"
+    - option "3-5-2"
+    - option "4-2-3-1"
+    - option "5-3-2"
+    - option "4-1-4-1"
+    - option "3-4-3"
+    - option "3-5-2-CDM"
+    - option "5-4-1"
+    - option "3-4-1-2"
+    - option "4-2-2-2"
+    - option "4-1-2-3"
+    - option "Formación manual" [disabled]
+  - generic: "Quimica proyectada:"
+  - generic: 65/99
+  - generic "Ponderado por formación (eff. team 82%)": ×82%
+  - generic "Δ vs chemistry guardado en backend (80/99)": (-15)
+  - generic: "Formación inferida:"
+  - generic: 4-4-2
+  - generic: ·
+  - generic: "Eff. team:"
+  - generic: 82%
+  - button "×": ×
+  - complementary "Team stats panel":
+    - heading "📊 Match preview" [level=3]
+    - generic: "Formación:"
+    - generic: 4-4-2
+    - generic: 11/11
+    - generic: Balanced
+    - generic: Direct Attack
+    - generic: Creative mid
+    - generic: Holding mid
+    - generic: Wing Play
+    - heading "⚗ Chemistry" [level=3]
+    - generic: 65/99
+    - 'generic "Eff. team: 82%"': ×82%
+    - generic: Tactical links
+    - generic: 78/99
+    - generic: DEF 70
+    - generic: MID 73
+    - generic: ATT 84
+    - generic: L 90
+    - generic: C 92
+    - generic: R 89
+    - generic: Stamina avg
+    - generic: 100%
+    - generic: Eff. team
+    - generic: 82%
+    - generic: Injured
+    - generic: "0"
+    - heading "⚔ Attack vs Defense" [level=3]
+    - generic: ATT
+    - generic: 107%
+    - generic: MID
+    - generic: 74%
+    - generic: DEF
+    - generic: 104%
+    - generic: Balance
+    - generic: Equilibrado
+    - heading "🧭 Shape & canales" [level=3]
+    - generic: ATT
+    - generic: L 0
+    - generic: C 2
+    - generic: R 0
+    - generic: MID
+    - generic: L 1
+    - generic: C 2
+    - generic: R 1
+    - generic: DEF
+    - generic: L 1
+    - generic: C 2
+    - generic: R 1
+    - generic: Ancho 67%
+    - generic: Compact. 34%
+    - generic: Bloque 39%
+    - generic: Prof. DEF 83%
+    - generic "Lectura de amenaza conexion y cobertura por canal":
+      - generic: Canal
+      - generic: Amenaza
+      - generic: Conex.
+      - generic: Cobertura
+      - generic: L
+      - generic: 10%
+      - generic: 48%
+      - generic: 68%
+      - generic: C
+      - generic: 99%
+      - generic: 99%
+      - generic: 99%
+      - generic: R
+      - generic: 10%
+      - generic: 48%
+      - generic: 68%
+    - generic: "Bloque largo: líneas separadas"
+    - heading "🧠 Lectura DT" [level=3]
+    - generic: Ancho sano
+    - generic: "La ocupacion lateral es razonable: hay bandas sin romper demasiado el centro."
+    - generic: Centro fuerte
+    - generic: "Tenes buena presencia interior: mejora control, pero revisa que no falte amplitud."
+    - generic: Bandas protegidas
+    - generic: Los costados quedan cubiertos. Mejor para cuidar resultado, menos agresivo arriba.
+    - generic: Bloque largo
+    - generic: "Las lineas estan separadas: puede aparecer espacio entre defensa y medio."
+    - generic: Roles forzados
+    - generic: 2 jugador(es) estan muy fuera de rol. El motor lo va a penalizar.
+    - heading "⚠ Penalizaciones (2)" [level=3]
+    - generic: "Impacto fuerte: 2 jugador(es) fuera de rol, 95% acumulado. Cambia jugador o formación si querés competir fino."
+    - generic: Kylian Mbappé
+    - generic: ST
+    - generic: →
+    - generic: CM
+    - generic: "-53%"
+    - generic: Aporta gol, pero pierde retorno y orden. Mejor como ST/CAM o con cobertura detrás.
+    - generic: Endrick
+    - generic: ST
+    - generic: →
+    - generic: RM
+    - generic: "-42%"
+    - generic: Aporta gol, pero pierde retorno y orden. Mejor como ST/CAM o con cobertura detrás.
+    - heading "🎯 Características" [level=3]
+    - generic: ⚡ Pace
+    - generic: "80"
+    - generic: 🧠 Technique
+    - generic: "80"
+    - generic: 🧱 Mentality
+    - generic: "80"
+    - heading "📹 Zonas" [level=3]
+    - table:
+      - rowgroup:
+        - row "Zona N OVR Eff %":
+          - columnheader "Zona"
+          - columnheader "N"
+          - columnheader "OVR"
+          - columnheader "Eff"
+          - columnheader "%"
+      - rowgroup:
+        - row "GK 1 80 100% 11%":
+          - cell "GK"
+          - cell "1"
+          - cell "80"
+          - cell "100%"
+          - cell "11%"
+        - row "DEF 4 78 89% 38%":
+          - cell "DEF"
+          - cell "4"
+          - cell "78"
+          - cell "89%"
+          - cell "38%"
+        - row "MID 2 83 92% 21%":
+          - cell "MID"
+          - cell "2"
+          - cell "83"
+          - cell "92%"
+          - cell "21%"
+        - row "ATT 4 83 64% 29%":
+          - cell "ATT"
+          - cell "4"
+          - cell "83"
+          - cell "64%"
+          - cell "29%"
+  - generic: ATAQUE
+  - generic: MEDIO
+  - generic: DEFENSA
+  - generic: "1"
+  - generic: Andriy Lunin
+  - generic: GK
+  - generic: "2"
+  - generic: Éder Militão
+  - generic: LB
+  - generic: "3"
+  - generic: Trent Alexander-Arnold
+  - generic: CB
+  - generic: "4"
+  - generic: Antonio Rüdiger
+  - generic: CB
+  - generic: "5"
+  - generic: Denzel Dumfries
+  - generic: RB
+  - generic: "6"
+  - generic: Rodrygo
+  - generic: ST
+  - generic: "7"
+  - generic: Vinícius Júnior
+  - generic: ST
+  - generic: "8"
+  - generic: Jude Bellingham
+  - generic: LM
+  - generic: "9"
+  - generic: Raúl Asencio
+  - generic: CM
+  - generic: "10"
+  - generic: Kylian Mbappé
+  - generic: CM
+  - generic: "OFF"
+  - generic: "11"
+  - generic: Endrick
+  - generic: RM
+  - generic: "OFF"
+  - generic: Banca (13)
+  - generic: Gonzalo García
+  - generic: (ST)
+  - generic: Álvaro Carreras
+  - generic: (CB)
+  - generic: Ferland Mendy
+  - generic: (LB)
+  - generic: Federico Valverde
+  - generic: (CM)
+  - generic: Gonzalo
+  - generic: (ST)
+  - generic: Dean Huijsen
+  - generic: (CDM)
+  - generic: Thibaut Courtois
+  - generic: (GK)
+  - generic: Arda Güler
+  - generic: (CAM)
+  - generic: Bernardo Silva
+  - generic: (CDM)
+  - generic: Eduardo Camavinga
+  - generic: (CM)
+  - generic: Franco Mastantuono
+  - generic: (RW)
+  - generic: Brahim Díaz
+  - generic: (ST)
+  - generic: Aurélien Tchouaméni
+  - generic: (CDM)
+  - strong: Mi Equipo
+  - generic: 4-4-2
+  - generic: ↑ ATAQUE
+  - generic: "Slots: 11/11"

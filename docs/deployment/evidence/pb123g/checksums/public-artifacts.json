@@ -1,0 +1,26 @@
+﻿[
+    {
+        "file":  "index.html",
+        "publicSha256":  "d0a8064b6ef12dcfed504e7294feb89658c2735a673582474e5adfb367c13c1c",
+        "localSha256":  "d0a8064b6ef12dcfed504e7294feb89658c2735a673582474e5adfb367c13c1c",
+        "match":  true
+    },
+    {
+        "file":  "main-CKHV42BM.js",
+        "publicSha256":  "d0bf7170f58a89eeff2740342884e2543098815dc6a174a0a5e2e2d2655d5765",
+        "localSha256":  "d0bf7170f58a89eeff2740342884e2543098815dc6a174a0a5e2e2d2655d5765",
+        "match":  true
+    },
+    {
+        "file":  "polyfills-6ISPNSXF.js",
+        "publicSha256":  "ec6a265b48881798350d0f97891b538b43945015eb03394c42b42e9366bd2ed2",
+        "localSha256":  "ec6a265b48881798350d0f97891b538b43945015eb03394c42b42e9366bd2ed2",
+        "match":  true
+    },
+    {
+        "file":  "styles-MSEW3VNW.css",
+        "publicSha256":  "b1e13137a63b0c3f7f32d87a272cf9be053a48f9094698d202d0b75a08ecd1f7",
+        "localSha256":  "b1e13137a63b0c3f7f32d87a272cf9be053a48f9094698d202d0b75a08ecd1f7",
+        "match":  true
+    }
+]

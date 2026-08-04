@@ -1,0 +1,136 @@
+[
+  {
+    "route": "/",
+    "resolved": "https://manager-4f952.web.app/dashboard",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\"",
+      "- link \"➕ Crear club\":",
+      "- link \"👤 Crear jugador\":",
+      "- link \"⚽ Gestionar jugadores y equipos\":",
+      "- link \"⚙️ Gestionar ligas y equipos\":",
+      "- link \"🏟️ Ver partidos\":",
+      "- link \"🎯 Programar partido\":"
+    ]
+  },
+  {
+    "route": "/dashboard",
+    "resolved": "https://manager-4f952.web.app/dashboard",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\"",
+      "- link \"➕ Crear club\":",
+      "- link \"👤 Crear jugador\":",
+      "- link \"⚽ Gestionar jugadores y equipos\":",
+      "- link \"⚙️ Gestionar ligas y equipos\":",
+      "- link \"🏟️ Ver partidos\":",
+      "- link \"🎯 Programar partido\":"
+    ]
+  },
+  {
+    "route": "/squad",
+    "resolved": "https://manager-4f952.web.app/squad",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\"",
+      "- link \"← Volver\":"
+    ]
+  },
+  {
+    "route": "/standings",
+    "resolved": "https://manager-4f952.web.app/standings",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\"",
+      "- link \"Volver al inicio\":"
+    ]
+  },
+  {
+    "route": "/matches",
+    "resolved": "https://manager-4f952.web.app/matches",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\""
+    ]
+  },
+  {
+    "route": "/career/setup",
+    "resolved": "https://manager-4f952.web.app/career/setup",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\""
+    ]
+  },
+  {
+    "route": "/login",
+    "resolved": "https://manager-4f952.web.app/login",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\"",
+      "- button \"Entrar\" [disabled]",
+      "- link \"¿No tienes cuenta? Regístrate\":"
+    ]
+  },
+  {
+    "route": "/register",
+    "resolved": "https://manager-4f952.web.app/register",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\"",
+      "- button \"Registrarse\" [disabled]",
+      "- link \"¿Ya tienes cuenta? Inicia sesión\":"
+    ]
+  },
+  {
+    "route": "/players/manage",
+    "resolved": "https://manager-4f952.web.app/players/manage",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\""
+    ]
+  },
+  {
+    "route": "/careers/invalid/matches/invalid/detail",
+    "resolved": "https://manager-4f952.web.app/careers/invalid/matches/invalid/detail",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\""
+    ]
+  },
+  {
+    "route": "/debug/test-harness",
+    "resolved": "https://manager-4f952.web.app/dashboard",
+    "controls": [
+      "- link \"⚽ Football Manager\":",
+      "- link \"Inicio\":",
+      "- link \"Partidos\":",
+      "- button \"Salir\"",
+      "- link \"➕ Crear club\":",
+      "- link \"👤 Crear jugador\":",
+      "- link \"⚽ Gestionar jugadores y equipos\":",
+      "- link \"⚙️ Gestionar ligas y equipos\":",
+      "- link \"🏟️ Ver partidos\":",
+      "- link \"🎯 Programar partido\":"
+    ]
+  }
+]

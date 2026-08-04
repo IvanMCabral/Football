@@ -1,0 +1,31 @@
+{
+  "source": "public Chrome session, authenticated career snapshot, 2026-08-04",
+  "formationOptionsObserved": ["4-4-2", "4-3-3", "3-5-2", "4-2-3-1", "5-3-2", "4-1-4-1", "3-4-3", "3-5-2-CDM", "5-4-1", "3-4-1-2", "4-2-2-2", "4-1-2-3"],
+  "baseline": {
+    "formation": "4-4-2",
+    "slots": "11/11",
+    "chemistry": "74/99",
+    "effectiveTeam": "92%",
+    "attack": "120%",
+    "midfield": "111%",
+    "defense": "106%",
+    "penalizations": 0
+  },
+  "changedFormation": {
+    "formation": "4-3-3",
+    "slots": "11/11",
+    "chemistry": "68/99",
+    "effectiveTeam": "85%",
+    "attack": "134%",
+    "midfield": "85%",
+    "defense": "90%",
+    "penalizations": 1,
+    "offPosition": [{"natural": "ST", "slot": "CM", "impact": "-51%"}]
+  },
+  "reproducibility": {
+    "sameTab": true,
+    "publicUrl": "https://manager-4f952.web.app/squad",
+    "reloadAfterChange": "persisted lineup remained 11/11 with off-position roles",
+    "note": "The dropdown posts manual-select immediately; no separate confirmation was required for this preview change."
+  }
+}

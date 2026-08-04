@@ -1,0 +1,18 @@
+﻿{
+    "count":  22,
+    "paths":  [
+                  "src/main/java\\com\\footballmanager\\adapters\\in\\web\\career\\controllers\\DetailedMatchController.java",
+                  "src/main/java\\com\\footballmanager\\application\\service\\match\\TacticalChangeService.java",
+                  "src/main/java\\com\\footballmanager\\application\\service\\reactive\\ReactiveLifecycleExecutor.java",
+                  "src/main/java\\com\\footballmanager\\application\\service\\simulation\\detailed\\BaselineStateStoragePort.java",
+                  "src/main/java\\com\\footballmanager\\application\\service\\simulation\\detailed\\MatchComparisonService.java",
+                  "src/main/java\\com\\footballmanager\\application\\service\\simulation\\detailed\\stats\\PlayerSeasonStatsQueryService.java",
+                  "src/main/java\\com\\footballmanager\\application\\service\\simulation\\MatchDetailPersistenceCoordinator.java",
+                  "src/main/java\\com\\footballmanager\\infrastructure\\config\\ProductionStartupValidation.java",
+                  "src/main/java\\com\\footballmanager\\infrastructure\\persistence\\redis\\BaselineStateRedisAdapter.java",
+                  "src/main/java\\com\\footballmanager\\infrastructure\\security\\SecurityConfig.java",
+                  "src/main/java\\com\\footballmanager\\infrastructure\\world\\legacyseed\\LegacySeedPrincipalDatabaseGuard.java",
+                  "src/main/java\\com\\footballmanager\\infrastructure\\world\\legacyseed\\WorldSeedBatchWriter.java",
+                  "src/main/java\\com\\footballmanager\\infrastructure\\world\\legacyseed\\WorldTeamPostgresWriter.java"
+              ]
+}

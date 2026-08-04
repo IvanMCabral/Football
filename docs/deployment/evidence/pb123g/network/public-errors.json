@@ -1,0 +1,17 @@
+﻿[
+    {
+        "path":  "/api/v1/auth/me",
+        "status":  401,
+        "body":  ""
+    },
+    {
+        "path":  "/api/v1/career/status",
+        "status":  401,
+        "body":  "{\"code\":\"UNAUTHORIZED\",\"message\":\"No autenticado.\",\"status\":401,\"requestId\":\"unavailable\"}"
+    },
+    {
+        "path":  "/api/v1/careers/00000000-0000-0000-0000-000000000000/matches/00000000-0000-0000-0000-000000000000/detail",
+        "status":  401,
+        "body":  "{\"code\":\"UNAUTHORIZED\",\"message\":\"No autenticado.\",\"status\":401,\"requestId\":\"unavailable\"}"
+    }
+]
