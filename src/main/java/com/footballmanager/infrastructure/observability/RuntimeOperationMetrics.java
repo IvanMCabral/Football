@@ -4,8 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.LongAccumulator;
 
 /**
  * Low-overhead operation metrics for the public beta runtime.
@@ -37,6 +42,11 @@ public final class RuntimeOperationMetrics {
         Aggregate aggregate = AGGREGATES.computeIfAbsent(operation, ignored -> new Aggregate());
         aggregate.count.increment();
         aggregate.totalMillis.add(elapsedMillis);
+        aggregate.samples.add(elapsedMillis);
+        while (aggregate.samples.size() > 512) {
+            aggregate.samples.poll();
+        }
+        aggregate.maxMillis.accumulate(elapsedMillis);
         if (success) {
             aggregate.success.increment();
         } else {
@@ -44,9 +54,10 @@ public final class RuntimeOperationMetrics {
         }
         long count = aggregate.count.sum();
         if (count % 10 == 0 || !success) {
-            log.info("[RUNTIME-METRICS] operation={}, count={}, success={}, errors={}, avgMs={}",
+            log.info("[RUNTIME-METRICS] operation={}, count={}, success={}, errors={}, avgMs={}, p95Ms={}, maxMs={}",
                 operation, count, aggregate.success.sum(), aggregate.errors.sum(),
-                aggregate.totalMillis.sum() / (double) count);
+                aggregate.totalMillis.sum() / (double) count, percentile(aggregate.samples, .95),
+                aggregate.maxMillis.get());
         }
     }
 
@@ -58,7 +69,10 @@ public final class RuntimeOperationMetrics {
                 count,
                 aggregate.success.sum(),
                 aggregate.errors.sum(),
-                count == 0 ? 0d : aggregate.totalMillis.sum() / (double) count));
+                count == 0 ? 0d : aggregate.totalMillis.sum() / (double) count,
+                percentile(aggregate.samples, .50),
+                percentile(aggregate.samples, .95),
+                aggregate.maxMillis.get()));
         });
         return Map.copyOf(result);
     }
@@ -67,7 +81,8 @@ public final class RuntimeOperationMetrics {
         AGGREGATES.clear();
     }
 
-    public record Snapshot(long count, long success, long errors, double averageMillis) {
+    public record Snapshot(long count, long success, long errors, double averageMillis,
+                           double p50Millis, double p95Millis, long maxMillis) {
     }
 
     private static final class Aggregate {
@@ -75,5 +90,17 @@ public final class RuntimeOperationMetrics {
         private final LongAdder success = new LongAdder();
         private final LongAdder errors = new LongAdder();
         private final LongAdder totalMillis = new LongAdder();
+        private final ConcurrentLinkedQueue<Long> samples = new ConcurrentLinkedQueue<>();
+        private final LongAccumulator maxMillis = new LongAccumulator(Long::max, 0L);
+    }
+
+    private static double percentile(ConcurrentLinkedQueue<Long> samples, double percentile) {
+        List<Long> values = new ArrayList<>(samples);
+        if (values.isEmpty()) {
+            return 0d;
+        }
+        Collections.sort(values);
+        int index = (int) Math.ceil(percentile * values.size()) - 1;
+        return values.get(Math.max(0, Math.min(index, values.size() - 1)));
     }
 }

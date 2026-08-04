@@ -20,6 +20,7 @@ import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.application.service.simulation.detailed.LiveRoundMutationTracking;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
+import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.Match;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
@@ -91,7 +92,7 @@ public class RoundController {
             roundId,
             id -> startMatches(id, userId, request).cache());
 
-        return coordinatedStart
+        return RuntimeOperationMetrics.measure("http.match-engine.rounds.start", coordinatedStart)
             .map(initialState -> ResponseEntity.ok(initialState))
             .onErrorResume(e -> {
                 if (e instanceof IllegalStateException
@@ -116,7 +117,8 @@ public class RoundController {
         final AtomicInteger matchesFinished = new AtomicInteger(0);
         final List<MatchResultProcessor.MatchResultInfo> matchResults =
                 Collections.synchronizedList(new ArrayList<>());
-        return careerSessionService.getCareerFromCache(userId)
+        return RuntimeOperationMetrics.measure("match.start.career-load",
+            careerSessionService.getCareerFromCache(userId))
             .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
             .flatMapMany(career -> {
                 log.info("[ROUND-CONTROLLER] CareerSave loaded for detailed match context construction");
@@ -135,7 +137,15 @@ public class RoundController {
 
                     log.info("[ROUND-CONTROLLER] Processing match: {}", matchId);
 
-                    LiveSession detailedMatchSession = buildLiveSession(career, matchId, homeTeamId, awayTeamId);
+                    long contextStarted = System.nanoTime();
+                    LiveSession detailedMatchSession;
+                    try {
+                        detailedMatchSession = buildLiveSession(career, matchId, homeTeamId, awayTeamId);
+                        RuntimeOperationMetrics.record("match.start.context-build", contextStarted, true);
+                    } catch (RuntimeException error) {
+                        RuntimeOperationMetrics.record("match.start.context-build", contextStarted, false);
+                        throw error;
+                    }
 
                     if (detailedMatchSession != null) {
                         matchStarts.add(matchManagementService.startMatch(
@@ -183,7 +193,7 @@ public class RoundController {
 
                 roundEngineRegistry.register(roundId, roundEngine);
                 log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
-                return Mono.whenDelayError(matchStarts)
+                return RuntimeOperationMetrics.measure("match.start.initialization", Mono.whenDelayError(matchStarts))
                         .then(Mono.fromRunnable(() -> {
                             roundEngine.start();
                             log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}",

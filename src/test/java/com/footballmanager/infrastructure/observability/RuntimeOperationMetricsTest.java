@@ -23,6 +23,9 @@ class RuntimeOperationMetricsTest {
         assertThat(snapshot.success()).isEqualTo(1);
         assertThat(snapshot.errors()).isZero();
         assertThat(snapshot.averageMillis()).isGreaterThanOrEqualTo(0d);
+        assertThat(snapshot.p50Millis()).isGreaterThanOrEqualTo(0d);
+        assertThat(snapshot.p95Millis()).isGreaterThanOrEqualTo(0d);
+        assertThat(snapshot.maxMillis()).isGreaterThanOrEqualTo(0L);
         assertThat(RuntimeOperationMetrics.snapshot().keySet()).doesNotContain("payload");
     }
 
