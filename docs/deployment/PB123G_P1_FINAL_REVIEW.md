@@ -34,6 +34,11 @@ only npm audit with zero advisories, and a successful public tactical smoke.
 - Backend: 2,585 tests, 0 failures, 0 errors, 4 skipped; compile PASS.
 - Production npm audit: 0 production vulnerabilities.
 
+## Final commits
+
+- Frontend: `2c5f746` (`Polish live tactical modal responsiveness`).
+- Root: `2da73b14`, `80ca5615`, `f301d911`.
+
 ## Honest limitations
 
 The prior audit's broader P2 items (two complete seasons, full recovery drill,

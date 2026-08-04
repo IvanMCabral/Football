@@ -45,7 +45,10 @@ layout below 600px, eliminating the 7px horizontal overflow observed at
 
 - Frontend `c3ac4e2` — tactical draft/reflow and tests.
 - Frontend `ca90496` — Angular production dependency remediation.
+- Frontend `2c5f746` — live tactical modal labels and mobile grid guard.
 - Root `2da73b14` — public 429 encoding regression assertion.
+- Root `80ca5615` — remediation report and audit evidence.
+- Root `f301d911` — final public smoke and release evidence.
 
 ## Remaining independent checks
 
