@@ -83,7 +83,7 @@ public class MatchSimulationOrchestrator {
                 .then(careerSessionService.getCareerFromCache(userUUID))
                 .flatMap(career -> Mono.fromCallable(() -> processResultsInternal(userId, career, results))
                         .subscribeOn(orchestratorScheduler)
-                        .flatMap(processedCareer -> persistProcessedCareer(userUUID, processedCareer)))
+                        .flatMap(processedCareer -> persistProcessedCareer(userUUID, processedCareer, results)))
                 .doOnNext(career -> {
                     if (career != null) {
                         int currentRound = career.getTournamentState().getCurrentRound();
@@ -122,7 +122,7 @@ public class MatchSimulationOrchestrator {
                 .then(careerSessionService.getCareerFromCache(userUUID))
                 .flatMap(career -> Mono.fromCallable(() -> processByeRound(userId, userUUID, career))
                         .subscribeOn(orchestratorScheduler)
-                        .flatMap(processedCareer -> persistProcessedCareer(userUUID, processedCareer)))
+                        .flatMap(processedCareer -> persistProcessedCareer(userUUID, processedCareer, java.util.List.of())))
                 .doOnNext(career -> {
                     if (career != null) {
                         int currentRound = career.getTournamentState().getCurrentRound();
@@ -255,13 +255,42 @@ public class MatchSimulationOrchestrator {
         return career;
     }
 
-    private Mono<CareerSave> persistProcessedCareer(UUID userUUID, CareerSave career) {
+    private Mono<CareerSave> persistProcessedCareer(
+            UUID userUUID,
+            CareerSave career,
+            java.util.List<MatchResultProcessor.MatchResultInfo> results) {
         if (career == null) {
             return Mono.empty();
         }
+        UUID roundId = resolveRoundId(results);
         return careerSessionService.saveCareer(career)
                 .thenReturn(career)
-                .doOnSuccess(saved -> roundEngineRegistry.unregister(userUUID));
+                .doOnSuccess(saved -> {
+                    if (roundId != null) {
+                        roundEngineRegistry.unregister(roundId);
+                    }
+                });
+    }
+
+    private UUID resolveRoundId(java.util.List<MatchResultProcessor.MatchResultInfo> results) {
+        if (results == null) {
+            return null;
+        }
+        for (MatchResultProcessor.MatchResultInfo result : results) {
+            if (result == null || result.matchId() == null) {
+                continue;
+            }
+            try {
+                UUID roundId = roundEngineRegistry.getRoundIdByMatchId(UUID.fromString(result.matchId()));
+                if (roundId != null) {
+                    return roundId;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Invalid result IDs are handled by the result processor; they
+                // must not prevent the career save from completing.
+            }
+        }
+        return null;
     }
 
     private void finishTournament(CareerSave career, java.util.List<TournamentResult> allResults) {

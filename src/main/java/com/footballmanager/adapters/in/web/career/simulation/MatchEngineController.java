@@ -5,6 +5,7 @@ import com.footballmanager.application.engine.model.RoundState;
 import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.match.MatchManagementService;
+import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -86,6 +87,51 @@ public class MatchEngineController {
             log.error("[SSE-STREAM] Error streaming roundId {}: {}", roundId, e.getMessage());
             return Flux.error(e);
         }
+    }
+
+    /**
+     * Returns the authoritative snapshot for a match while its round is live
+     * or while the terminal snapshot is still retained by the round registry.
+     * This endpoint is intentionally distinct from the legacy versus state
+     * endpoint; the public live modal calls {@code /match-engine/{id}/state}.
+     */
+    @GetMapping(value = "/{matchId}/state", produces = "application/json;charset=UTF-8")
+    public Mono<ResponseEntity<MatchStateSnapshot>> getMatchState(
+            @PathVariable String matchId,
+            Authentication authentication) {
+        final UUID matchIdUuid;
+        try {
+            matchIdUuid = UUID.fromString(matchId);
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+
+        final UUID userId = controllerHelper.getUserId(authentication);
+        return Mono.defer(() -> {
+            RoundEngine roundEngine = roundEngineRegistry.getByMatchId(matchIdUuid);
+            if (roundEngine != null) {
+                MatchStateSnapshot snapshot = roundEngine.getCurrentMatchSnapshot(matchIdUuid);
+                if (snapshot == null) {
+                    return Mono.just(ResponseEntity.notFound().<MatchStateSnapshot>build());
+                }
+                return Mono.just(authorizedSnapshot(userId, snapshot));
+            }
+            // The round registry is intentionally in-memory and is cleared
+            // after final persistence. The session registry remains the
+            // short-lived source for a just-completed match, so a refresh
+            // must read that state instead of fabricating 0-0 or returning a
+            // misleading success response.
+            return matchManagementService.getMatchState(userId, matchIdUuid)
+                .map(snapshot -> authorizedSnapshot(userId, snapshot))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+        });
+    }
+
+    private ResponseEntity<MatchStateSnapshot> authorizedSnapshot(UUID userId, MatchStateSnapshot snapshot) {
+        if (snapshot.userId() == null || !snapshot.userId().equals(userId.toString())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(snapshot);
     }
 
     /**

@@ -207,7 +207,21 @@ public class RoundEngine {
      */
     public MatchStateSnapshot getCurrentMatchSnapshot(UUID matchId) {
         MatchEngine engine = matchEngines.get(matchId);
-        return engine != null ? engine.getCurrentState() : null;
+        if (engine != null) {
+            MatchStateSnapshot current = engine.getCurrentState();
+            if (current != null) {
+                return current;
+            }
+        }
+
+        // Once a round completes, stop() releases the live MatchEngine
+        // instances. Keep serving the immutable terminal snapshot retained in
+        // latestState so a refresh or the final persistence callback cannot
+        // fall back to an empty 0-0 state while the round is being cleaned up.
+        return latestState.getMatches().stream()
+            .filter(snapshot -> matchId.equals(snapshot.matchId()))
+            .findFirst()
+            .orElse(null);
     }
 
     public int getMatchCount() {

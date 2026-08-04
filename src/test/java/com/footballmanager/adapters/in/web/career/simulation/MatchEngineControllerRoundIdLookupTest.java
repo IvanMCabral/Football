@@ -243,4 +243,34 @@ class MatchEngineControllerRoundIdLookupTest extends AbstractIntegrationTest {
             .expectBody()
             .jsonPath("$.matchId").isEqualTo(matchId);
     }
+
+    @Test
+    @DisplayName("GET match state returns the live snapshot instead of a 404")
+    void getMatchState_liveMatch_returnsAuthoritativeSnapshot() {
+        String userId = uniqueUserId();
+        String careerId = seedCareerAndGameId(userId);
+        String[] live = seedLiveRoundAndMatch(userId, careerId);
+
+        webTestClient.mutateWith(mockUser(userId))
+            .get().uri("/api/v1/match-engine/{id}/state", live[1])
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.matchId").isEqualTo(live[1])
+            .jsonPath("$.userId").isEqualTo(userId)
+            .jsonPath("$.currentMinute").isNumber()
+            .jsonPath("$.score.home").isNumber()
+            .jsonPath("$.score.away").isNumber();
+    }
+
+    @Test
+    @DisplayName("GET match state for an unknown match returns 404, never a synthetic 0-0")
+    void getMatchState_unknownMatch_returns404() {
+        webTestClient.mutateWith(mockUser(SEED_USER_ID))
+            .get().uri("/api/v1/match-engine/{id}/state", UUID.randomUUID())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isNotFound();
+    }
 }
