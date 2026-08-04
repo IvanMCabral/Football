@@ -4,7 +4,7 @@
 
 **COMPLETED WITH ISSUES**
 
-El editor táctico y el flujo de temporada son jugables y coherentes en el despliegue público. La evidencia de seis fechas, la recomputación matemática, los marcadores 0-0, la transición de temporada 2 y la recuperación después de reload están comprobadas. La clasificación no es `COMPLETED` estricto porque no se archivó un payload SSE independiente por fecha y la evidencia visual queda en capturas sanitizadas locales de la ejecución.
+El editor táctico y el flujo de temporada son jugables y coherentes en el despliegue público. La evidencia de seis fechas, la recomputación matemática, los marcadores 0-0, la transición de temporada 2 y la recuperación después de reload están comprobadas. Las capturas sanitizadas están versionadas en `docs/deployment/evidence/pb123e/`. La clasificación no es `COMPLETED` estricto porque todavía no se archivó un payload SSE independiente por fecha.
 
 ## Qué puede probar un tester externo
 
@@ -21,7 +21,7 @@ El editor táctico y el flujo de temporada son jugables y coherentes en el despl
 ## Gates
 
 - P0: ninguno observado.
-- P1: archivar payloads SSE por fecha y publicar las capturas como artefactos versionados.
+- P1: archivar payloads SSE independientes por fecha.
 - P2: corregir la representación histórica genérica `Team` del endpoint fixture individual y normalizar encoding de mensajes históricos si se decide incluirlos en UI.
 
 ## Suites finales
