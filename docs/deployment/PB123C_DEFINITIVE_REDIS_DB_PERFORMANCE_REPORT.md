@@ -71,6 +71,12 @@ No se afirma que Redis sea el cuello sin medición de comandos. Tampoco se afirm
 - Registrar TTL, tamaño y round trips.
 - Completar restore/restart drill antes de clasificar LiveSession como durable.
 
+## Muestras warm posteriores al redeploy
+
+Con la revisión pública actual se obtuvieron diez muestras adicionales de health: liveness p50 `256 ms`, p95 `260 ms`, máximo `372 ms`, todas `200`; readiness p50 `747 ms`, p95 `791 ms`, máximo `793 ms`, todas `200`. No se atribuyen estos tiempos a Redis o PostgreSQL individualmente porque el runtime aún no expone timers por operación.
+
+El reporte mantiene `REJECTED`: no se agregó instrumentación productiva ni se alcanzaron diez muestras por cada operación de negocio solicitada.
+
 ## Conclusión
 
 El reporte es deliberadamente conservador: hay evidencia de funcionamiento público, pero no existe todavía la instrumentación ni la cantidad de muestras necesarias para certificar rendimiento profesional. Resultado: **REJECTED**.

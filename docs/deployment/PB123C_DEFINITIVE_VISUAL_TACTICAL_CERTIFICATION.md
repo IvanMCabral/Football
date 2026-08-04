@@ -52,3 +52,13 @@ Después de mover manualmente un jugador y cambiar a 4-4-2, la posición manual 
 ## Conclusión
 
 El drag individual y el cambio de formación funcionan visualmente en desktop y modifican los números tácticos. La certificación táctica completa queda **REJECTED/PARTIAL** hasta probar swap, banco, confirmación, reload/login y los dos viewports restantes.
+
+## Adenda de remediación pública (2026-08-04)
+
+- Frontend desplegado desde `dfed971`, que contiene `96ea9ba` y corrige el cierre del drag usando solamente el transform público del elemento.
+- Firebase Hosting finalizó el release `004a20` después de compilar el commit anterior; el índice público respondió `200` con SHA-256 `0a743ede203d6327ebf045b1fc93f9f286eee8f0d0a3de410c8db0d7b954f357`.
+- Inspección de los seis assets JavaScript públicos: URL Render presente, `localhost` ausente, `test-harness` ausente y `_dragRef`/`_pickupPositionInElement` ausentes.
+- Se repitió el drag en Chrome real tras hard reload. El movimiento actualizó la cancha y la química; no apareció un error nuevo de `_dragRef`. La traza con timestamp `13:42:46` corresponde al bundle anterior y queda conservada como evidencia de reproducción.
+- El intento titular→banco dejó correctamente el XI en `10/11` y mostró la validación pública de alineación incompleta; el alta de suplente y el guardado final siguen sin certificarse en esta sesión.
+
+El veredicto permanece **REJECTED/PARTIAL**: el fallo de reset del drag queda corregido y desplegado, pero no se convierten en PASS los escenarios que aún no tienen evidencia observable.

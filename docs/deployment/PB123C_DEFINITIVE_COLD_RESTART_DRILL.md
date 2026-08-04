@@ -61,6 +61,10 @@ El control de Render no permitió completar un restart verificable desde la sesi
 
 Hasta completar el drill, el sistema no puede prometer persistencia completa de una `LiveSession` durante reinicios. El comportamiento seguro requerido es mostrar estado no disponible/reintento controlado, nunca sintetizar un resultado final.
 
+## Verificación posterior al redeploy
+
+Tras publicar el frontend corregido desde `dfed971`, se repitieron diez muestras warm contra los endpoints públicos: liveness `10×200`, p50 `256 ms`, p95 `260 ms`, máximo `372 ms`; readiness `10×200`, p50 `747 ms`, p95 `791 ms`, máximo `793 ms`. Estas muestras no se presentan como cold start ni reemplazan el restart durante un partido.
+
 ## Conclusión
 
 El startup lento y la readiness intermitente son evidencia real de riesgo operativo. Falta el restart controlado y su recuperación observable; el gate permanece **REJECTED**.

@@ -12,11 +12,11 @@ La remediación corrigió y publicó el frontend y permitió completar el flujo 
 ## Revisiones y URLs
 
 - Backend/root: `6579a698` (`Optimize first world load for new accounts`).
-- Frontend: `b5f8906`, que contiene `96ea9ba` (`Fix public drag source integration`).
+- Frontend: `dfed971`, que contiene `96ea9ba` y la corrección posterior del reset público del drag.
 - Frontend público: <https://manager-4f952.web.app>.
 - Backend público: <https://manager-staging-api.onrender.com>.
 - Firebase CLI: deploy completo de 52 archivos, versión finalizada y release publicada.
-- Índice público comprobado con HTTP 200; SHA-256 observado el 2026-08-04T13:16:00Z: `d4df89f6cb7f54146a8c1f48db4a6463da0b1ef9dfa04d8927c627817411a3af`.
+- Índice público comprobado con HTTP 200; SHA-256 final observado el 2026-08-04T13:46: `0a743ede203d6327ebf045b1fc93f9f286eee8f0d0a3de410c8db0d7b954f357`.
 
 ## Cuenta nueva y flujo jugable
 
@@ -64,6 +64,10 @@ Por lo tanto, el gate de **dos temporadas nuevas, consecutivas y completas** que
 - Restart de Render durante un partido con recuperación clasificada: **FAIL**.
 - Instrumentación Redis/DB con p50/p95 por operación: **FAIL**.
 - Registro sin username: **WARNING/P1**, actualmente expone 500 ante contrato incompleto.
+
+## Adenda de redeploy
+
+La corrección visual se desplegó nuevamente desde `dfed971` antes de cerrar esta certificación, pero no altera el resultado: siguen faltando dos temporadas públicas nuevas y consecutivas.
 
 ## Conclusión
 
