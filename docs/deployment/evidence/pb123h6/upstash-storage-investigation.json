@@ -1,0 +1,29 @@
+{
+  "classification": "P - FREE-TIER STORAGE LIMIT EXCEEDED",
+  "providerDashboard": {
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "sa-east-1",
+    "commands": "52K / 500K per month",
+    "bandwidth": "0 B / 50 GB",
+    "storage": "257 MB / 256 MB",
+    "cost": "USD 0.00"
+  },
+  "operationalHealth": {
+    "liveness": 200,
+    "readiness": 503,
+    "database": "UP",
+    "redis": "DOWN"
+  },
+  "requestedReadOnlyInventory": {
+    "dbsize": "not obtained",
+    "memoryStats": "not obtained",
+    "sampledMemoryUsage": "not obtained",
+    "prefixDistribution": "not obtained",
+    "ttlAndNoTtlCounts": "not obtained",
+    "topKeySizes": "not obtained"
+  },
+  "whyNotObtained": "The workspace has no Upstash host/token and no connected provider dashboard/API session. No credentials were guessed or printed.",
+  "deletion": "none",
+  "secrets": "not recorded"
+}

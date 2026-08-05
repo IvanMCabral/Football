@@ -4,5 +4,15 @@
   "backend": "https://manager-staging-api.onrender.com",
   "root": {"status": 401, "body": "UNAUTHORIZED"},
   "liveness": {"status": 200, "body": {"status": "UP"}},
-  "readiness": {"status": 503, "body": {"status": "DOWN", "database": "UP", "redis": "DOWN"}}
+  "readiness": {"status": 503, "body": {"status": "DOWN", "database": "UP", "redis": "DOWN"}},
+  "upstashDashboardObservation": {
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "sa-east-1",
+    "commands": "52K / 500K per month",
+    "bandwidth": "0 B / 50 GB",
+    "storage": "257 MB / 256 MB",
+    "cost": "USD 0.00",
+    "source": "user-provided authenticated dashboard observation"
+  }
 }

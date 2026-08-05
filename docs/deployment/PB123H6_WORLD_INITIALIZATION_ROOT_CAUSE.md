@@ -37,6 +37,24 @@ Authenticated calls to `POST /api/v1/dashboard/reload-world` returned 500
 league or a synthetic-data fallback. It is a runtime dependency failure while
 the per-user world snapshot is being materialized and stored.
 
+### New provider evidence
+
+The authenticated Upstash dashboard reports the `Manager` database on Free
+Tier in `sa-east-1` at **257 MB / 256 MB** storage, with 52K / 500K monthly
+commands, 0 B bandwidth and USD 0.00 cost. This is consistent with the Redis
+health failure and is now the leading root-cause classification:
+
+**P — FREE-TIER STORAGE LIMIT EXCEEDED.**
+
+The dashboard observation is recorded, but it is not a substitute for the
+required key-level inventory. The current workspace has no Upstash host,
+username or provider token, and no authenticated provider connector is
+available in this session. Therefore `DBSIZE`, `MEMORY STATS`, per-key memory,
+TTL counts and prefix distribution are not claimed or fabricated.
+
+No key was deleted. No account, career, world snapshot, live-session or
+detailed-match data was modified.
+
 ## Evidence boundaries
 
 No database rows, Redis keys, tokens, passwords or administrative/debug
