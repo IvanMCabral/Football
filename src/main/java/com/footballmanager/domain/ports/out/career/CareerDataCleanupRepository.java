@@ -13,5 +13,5 @@ import java.util.UUID;
  */
 public interface CareerDataCleanupRepository {
 
-    Mono<Void> deleteOwnedData(UUID userId, String careerId);
+    Mono<CareerDataCleanupResult> deleteOwnedData(UUID userId, String careerId);
 }
