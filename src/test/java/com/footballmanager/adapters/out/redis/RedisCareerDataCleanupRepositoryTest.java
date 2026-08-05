@@ -39,7 +39,7 @@ class RedisCareerDataCleanupRepositoryTest {
         when(redisTemplate.opsForSet()).thenReturn(setOperations);
         when(setOperations.members("user:" + ownerA + ":career-ids"))
                 .thenReturn(Flux.just("career-a"));
-        lenient().when(redisTemplate.delete(any(Publisher.class))).thenAnswer(invocation -> {
+        lenient().when(redisTemplate.unlink(any(Publisher.class))).thenAnswer(invocation -> {
             @SuppressWarnings("unchecked") Publisher<String> publisher = invocation.getArgument(0);
             List<String> batch = Flux.from(publisher).collectList().block();
             deletedBatches.add(batch);
@@ -96,7 +96,7 @@ class RedisCareerDataCleanupRepositoryTest {
     @Test
     void redisDeleteShortCountIsReflectedInResult() {
         when(redisTemplate.scan(any(ScanOptions.class))).thenReturn(Flux.just("world:" + ownerA));
-        when(redisTemplate.delete(any(Publisher.class))).thenReturn(Mono.just(0L));
+        when(redisTemplate.unlink(any(Publisher.class))).thenReturn(Mono.just(0L));
 
         CareerDataCleanupResult result = repository.deleteOwnedData(ownerA, null).block();
 
@@ -113,7 +113,7 @@ class RedisCareerDataCleanupRepositoryTest {
                     ? Flux.just("world:" + ownerA)
                     : Flux.empty();
         });
-        when(redisTemplate.delete(any(Publisher.class))).thenReturn(Mono.error(new IllegalStateException("redis unavailable")));
+        when(redisTemplate.unlink(any(Publisher.class))).thenReturn(Mono.error(new IllegalStateException("redis unavailable")));
 
         CareerDataCleanupException failure = assertThrows(CareerDataCleanupException.class,
                 () -> repository.deleteOwnedData(ownerA, null).block());

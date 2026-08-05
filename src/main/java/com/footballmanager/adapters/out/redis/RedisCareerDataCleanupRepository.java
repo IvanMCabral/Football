@@ -58,7 +58,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                                 ? Mono.empty()
                                 : Mono.defer(() -> {
                                     accumulator.batchRequested(spec.family(), batch);
-                                    return redisTemplate.delete(Flux.fromIterable(batch));
+                                    return redisTemplate.unlink(Flux.fromIterable(batch));
                                 })
                                         .flatMap(deleted -> accumulator.batchDeleted(spec.family(), batch, deleted))))
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
