@@ -1,0 +1,12 @@
+{
+  "release": "51cd2a5",
+  "sampleCount": 1,
+  "perRound": {
+    "startPost": 1,
+    "sseTransports": 1,
+    "statusPolling": 0,
+    "http404": 0,
+    "http500": 0
+  },
+  "note": "Inventory is from the single captured final-release trace; N=10 evidence is still missing."
+}

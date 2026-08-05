@@ -1,0 +1,11 @@
+{
+  "release": "b54b748",
+  "source": "PB1.2.3H3 baseline",
+  "sampleCount": 3,
+  "clickToLiveMs": [1483, 1706, 1811],
+  "preStartTotalMs": [1364, 1929, 1989],
+  "statusWaitMs": [1364, 1635, 1759],
+  "fixturesWaitMs": [0, 294, 229],
+  "lineupWaitMs": [0, 0, 0],
+  "firstSseCaptured": false
+}

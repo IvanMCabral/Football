@@ -1,0 +1,27 @@
+{
+  "release": "51cd2a5",
+  "sampleCount": 1,
+  "rows": [
+    {
+      "roundId": "ab74147c-827d-413d-af62-72ff0bb29b69",
+      "clickToPostMs": 1312,
+      "postToResponseMs": 670,
+      "responseToLiveMs": 28,
+      "liveToFirstSseMs": 100,
+      "clickToLiveMs": 2010,
+      "clickToFirstSseMs": 2313,
+      "statusWaitMs": 0,
+      "fixturesWaitMs": 0,
+      "statusSnapshotAvailableAtClick": true,
+      "statusSnapshotAgeMs": 0,
+      "statusHttpTriggeredByClick": false,
+      "fixtureSnapshotAvailableAtClick": true,
+      "startPayloadReadyMs": 0,
+      "startPostCount": 1,
+      "sseCount": 1,
+      "pollingCount": 0,
+      "httpErrors": 0
+    }
+  ],
+  "certification": "REJECTED_N10_INCOMPLETE"
+}

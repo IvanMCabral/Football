@@ -1,0 +1,21 @@
+{
+  "release": "51cd2a5",
+  "traces": [
+    {
+      "roundId": "ab74147c-827d-413d-af62-72ff0bb29b69",
+      "statusWaitMs": 0,
+      "fixturesWaitMs": 0,
+      "preStartTotalMs": 1312,
+      "postResponseNavigationMs": 0,
+      "firstRenderMs": 28,
+      "streamConnectMs": 100,
+      "statusSnapshotAvailableAtClick": true,
+      "statusSnapshotAgeMs": 0,
+      "statusHttpTriggeredByClick": false,
+      "fixtureSnapshotAvailableAtClick": true,
+      "startPayloadReadyMs": 0,
+      "startPostSentMs": 1312,
+      "firstSseMs": 2313
+    }
+  ]
+}
