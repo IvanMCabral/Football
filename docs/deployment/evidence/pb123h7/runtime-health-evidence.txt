@@ -1,0 +1,8 @@
+PB1.2.3H7 runtime evidence (sanitized)
+
+Public backend host: manager-staging-api.onrender.com
+GET /api/v1/health/liveness: request timed out after 20 seconds in this run
+GET /api/v1/health/readiness: request timed out after 30 seconds in this run
+GET /: request timed out after 30 seconds in this run
+No retry loop, credentials, tokens or response payload was recorded.
+No recovery smoke was started while the service was not responding.

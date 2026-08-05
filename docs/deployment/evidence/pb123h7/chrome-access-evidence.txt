@@ -1,0 +1,10 @@
+PB1.2.3H7 Chrome access evidence (sanitized)
+
+Profile: Chrome.UserData.Profile1
+Provider tab: Upstash Manager console and CLI
+Access: authenticated dashboard and CLI were reached
+Bridge: connected; no stale-window ownership error in this run
+Data Browser/CLI: attempted
+Provider CLI limitation: MEMORY STATS unsupported; subsequent CLI input locator
+timed out while the console was reloading
+Sensitive values: not recorded

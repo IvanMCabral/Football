@@ -1,0 +1,13 @@
+PB1.2.3H7 read-only evidence (sanitized)
+Captured through authenticated Chrome profile Chrome.UserData.Profile1.
+
+Provider dashboard: Manager / Free Tier / sa-east-1
+Dashboard storage: 257 MB / 256 MB
+DBSIZE: 7380
+MEMORY STATS: unsupported by provider
+INFO MEMORY: no usable memory section returned
+EVAL aggregation: rejected: ERR DB capacity quota exceeded (threshold 268435456 bytes; usage 268979370 bytes)
+Validated SCAN MATCH career:*:match-baseline:* count: 271
+Representative MEMORY USAGE sample: 43380 bytes (single key; not extrapolated)
+Deletion commands issued: none
+Payloads, credentials, tokens and full identifiers: not recorded
