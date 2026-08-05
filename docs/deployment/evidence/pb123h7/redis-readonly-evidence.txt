@@ -11,3 +11,9 @@ Validated SCAN MATCH career:*:match-baseline:* count: 271
 Representative MEMORY USAGE sample: 43380 bytes (single key; not extrapolated)
 Deletion commands issued: none
 Payloads, credentials, tokens and full identifiers: not recorded
+
+Post-recovery owner-driven evidence (2026-08-05):
+Proven rooted owners: 37; orphan-only owners: 16; exact deletion set foreign keys: 0.
+Rooted batches: 100x12, 99, 33. Orphan batches: 100, 100, 40.
+Provider usage after cleanup: 127 MiB / 256 MiB. DBSIZE after cleanup: 6144.
+PING/read/SET/UNLINK probe: accepted. No PostgreSQL rows were deleted.

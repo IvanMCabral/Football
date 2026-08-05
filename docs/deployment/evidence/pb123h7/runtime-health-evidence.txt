@@ -6,3 +6,11 @@ GET /api/v1/health/readiness: request timed out after 30 seconds in this run
 GET /: request timed out after 30 seconds in this run
 No retry loop, credentials, tokens or response payload was recorded.
 No recovery smoke was started while the service was not responding.
+
+Post-recovery validation (2026-08-05):
+Three consecutive liveness/readiness pairs returned 200/200 with database=UP and redis=UP.
+Authenticated reload-world returned 200. A disposable account completed the
+register, auth/me, world, career, squad, auto-select, lineup, confirmation,
+standings, fixtures and reset flow. A separate round start returned 200 and
+reset returned 204. SSE remained an open stream without a first event during
+a six-second bounded probe and is therefore inconclusive.
