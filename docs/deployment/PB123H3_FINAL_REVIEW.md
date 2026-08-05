@@ -5,7 +5,7 @@
 The remediation materially reduced the measured public click-to-live path from
 4,050 ms p50 / 5,673 ms p95 to 1,706 ms p50 / 1,811 ms p95 in the three real
 H3 observations. However, the requested final evidence gate requires N=10
-warm samples on the exact deployed release, isolated click-to-POST and
+warm samples on the exact deployed release (`b54b748`), isolated click-to-POST and
 click-to-first-SSE timings, and complete per-click request inventory. Only
 three after observations were available, and the connected browser did not
 expose resource timing or payload-size data.
@@ -22,7 +22,7 @@ expose resource timing or payload-size data.
 
 ## Remaining gates
 
-- repeat the public warm run N=10 on `d1bdedc`;
+- repeat the public warm run N=10 on `b54b748`;
 - record raw click-to-POST and click-to-first-SSE samples;
 - capture a complete request inventory per click;
 - separate a cold sample from warm percentiles.

@@ -7,7 +7,7 @@
     {"releaseBehavior": "1c427ed", "clickToLiveMs": 1811, "postResponseMs": 249, "responseToFirstSseMs": "not emitted"}
   ],
   "summary": {"clickToLiveMs": {"p50": 1706, "p95": 1811, "max": 1811}},
-  "finalRelease": "d1bdedc",
-  "finalReleaseDelta": "trace-only T16_FIRST_SSE marker; no gameplay or request-path change",
+  "finalRelease": "b54b748",
+  "finalReleaseDelta": "trace-only T16_FIRST_SSE marker plus a test-double-safe warm-up guard; no gameplay or request-path change",
   "status": "insufficient_for_N10"
 }

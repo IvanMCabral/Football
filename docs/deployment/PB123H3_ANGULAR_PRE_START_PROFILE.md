@@ -4,7 +4,7 @@
 
 This report profiles the public Angular path from the user action to the live
 route. Gameplay, simulation, fixtures and backend contracts were not changed.
-The final frontend revision is `d1bdedc` on branch
+The final frontend revision is `b54b748` on branch
 `feat/v25d99.20.3.1-runtime-fixes`; Firebase Hosting was deployed from that
 revision at `https://manager-4f952.web.app`.
 
@@ -20,7 +20,7 @@ response-to-first-SSE was 305/515 ms. Raw data is in
 Three public observations were obtained while the frontend remediation was
 being promoted: click-to-live 1,483 ms, 1,706 ms and 1,811 ms. Their median is
 1,706 ms and nearest-rank p95 is 1,811 ms. These samples are real, but they are
-not a qualifying N=10 set for the final release. The final `d1bdedc` change
+not a qualifying N=10 set for the final release. The final `b54b748` change
 adds the missing T16 first-SSE marker only; it does not change the request
 path, so the three behavior samples remain representative but are not relabeled
 as N=10.
