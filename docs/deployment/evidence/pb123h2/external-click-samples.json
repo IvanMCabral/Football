@@ -1,0 +1,9 @@
+{
+  "schema": "pb123h2-external-click-v1",
+  "units": "ms",
+  "sampleCount": 10,
+  "samples": [519,1489,4050,4431,5673,5591,5164,3981,4388,1912],
+  "percentilesNearestRank": {"p50":4050,"p95":5673,"max":5673},
+  "definition": "career screen action to /live route visible",
+  "note": "This includes pre-request Angular navigation and lineup/status/fixtures gating; it is not the backend start duration."
+}

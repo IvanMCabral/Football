@@ -1,0 +1,20 @@
+{
+  "schema": "pb123h2-public-e2e-v1",
+  "frontend": "https://manager-4f952.web.app",
+  "backend": "https://manager-staging-api.onrender.com",
+  "seasonsCompleted": 2,
+  "warmStartsMeasured": 10,
+  "stateImmediatelyConsultable": true,
+  "sseConnected": true,
+  "firstEventObserved": true,
+  "minuteMonotonic": true,
+  "hardReloadRecovery": true,
+  "summaryObserved": true,
+  "nextDateStarted": true,
+  "duplicateStartPosts": 0,
+  "duplicateStreams": 0,
+  "transient404": 0,
+  "http500": 0,
+  "consoleOwnErrors": 0,
+  "identifiers": "account and career identifiers omitted"
+}

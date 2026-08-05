@@ -1,0 +1,9 @@
+{
+  "schema": "pb123h2-validation-v1",
+  "backend": {"testCompile":"PASS","tests":2586,"failures":0,"errors":0,"skipped":4},
+  "frontend": {"developmentBuild":"PASS","productionBuild":"PASS","testsSuccess":1053,"failures":0,"skipped":2},
+  "npmAuditOmitDev": {"critical":0,"high":0,"moderate":0,"low":0},
+  "productionArtifact": {"files":53,"sourceMaps":0,"testHarnessReferences":0},
+  "deployments": {"backendRevision":"9a686e70","frontendRevision":"79f772d"},
+  "health": {"frontend":200,"liveness":200,"readiness":200,"database":"UP","redis":"UP"}
+}

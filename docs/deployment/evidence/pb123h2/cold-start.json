@@ -1,0 +1,9 @@
+{
+  "schema": "pb123h2-cold-observation-v1",
+  "source": "public Render probe",
+  "readinessFirstProbe": {"result": "timeout", "timeoutSeconds": 30},
+  "readinessWarmProbe": {"status": 200,"elapsedMs":860,"body": {"status":"UP","database":"UP","redis":"UP"}},
+  "livenessWarmProbe": {"status": 200},
+  "warmRecovery": "successful after readiness became UP",
+  "note": "Cold wake-up is kept separate from warm percentiles."
+}

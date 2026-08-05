@@ -1,0 +1,26 @@
+{
+  "schema": "pb123h2-client-trace-v1",
+  "revision": "79f772d",
+  "sampleCount": 10,
+  "units": "ms",
+  "samples": [
+    {"n":1,"clickToLive":519,"postToResponse":519,"responseToStream":304,"responseToFirstSse":305},
+    {"n":2,"clickToLive":367,"postToResponse":367,"responseToStream":319,"responseToFirstSse":320},
+    {"n":3,"clickToLive":284,"postToResponse":284,"responseToStream":413,"responseToFirstSse":414},
+    {"n":4,"clickToLive":302,"postToResponse":302,"responseToStream":515,"responseToFirstSse":515},
+    {"n":5,"clickToLive":275,"postToResponse":275,"responseToStream":421,"responseToFirstSse":421},
+    {"n":6,"clickToLive":1007,"postToResponse":1007,"responseToStream":288,"responseToFirstSse":288},
+    {"n":7,"clickToLive":302,"postToResponse":301,"responseToStream":422,"responseToFirstSse":422},
+    {"n":8,"clickToLive":373,"postToResponse":373,"responseToStream":302,"responseToFirstSse":302},
+    {"n":9,"clickToLive":327,"postToResponse":327,"responseToStream":218,"responseToFirstSse":218},
+    {"n":10,"clickToLive":290,"postToResponse":290,"responseToStream":262,"responseToFirstSse":263}
+  ],
+  "percentilesNearestRank": {
+    "clickToLive": {"p50":302,"p95":1007,"max":1007},
+    "postToResponse": {"p50":302,"p95":1007,"max":1007},
+    "responseToStream": {"p50":304,"p95":515,"max":515},
+    "responseToFirstSse": {"p50":305,"p95":515,"max":515}
+  },
+  "requestsPerClick": {"startPost":1,"stateGet":0,"roundStream":1,"pollingWhileSseHealthy":0},
+  "identifiers": "request IDs and account identifiers omitted from evidence"
+}
