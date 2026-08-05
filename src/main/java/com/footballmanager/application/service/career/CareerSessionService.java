@@ -45,6 +45,11 @@ public class CareerSessionService {
             });
     }
 
+    /** Indicates whether the request can reuse the in-process career snapshot. */
+    public boolean isCareerCached(UUID userId) {
+        return userId != null && careerCache.containsKey(userId.toString());
+    }
+
     public void invalidateCache(UUID userId) {
         careerCache.remove(userId.toString());
     }

@@ -21,6 +21,7 @@ import com.footballmanager.application.service.simulation.detailed.MatchContextF
 import com.footballmanager.application.service.simulation.detailed.LiveRoundMutationTracking;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
 import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
+import com.footballmanager.infrastructure.observability.MatchStartRequestTrace;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.Match;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
@@ -72,28 +73,51 @@ public class RoundController {
     @Value("${simulation.use-detailed-match-engine:true}")
     private boolean useDetailedMatchEngine;
 
+    public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request,
+                                                       Authentication authentication) {
+        return startRound(request, authentication, null);
+    }
+
     @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json;charset=UTF-8")
-    public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request, Authentication authentication) {
+    public Mono<ResponseEntity<RoundState>> startRound(@RequestBody StartRoundRequest request,
+                                                       Authentication authentication,
+                                                       @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
+        MatchStartRequestTrace trace = MatchStartRequestTrace.create(requestId);
+        long authStarted = System.nanoTime();
         UUID userId = controllerHelper.getUserId(authentication);
+        trace.mark("authMs", authStarted);
         if (request == null || request.roundId() == null || request.roundId().isBlank()) {
+            trace.complete(false);
             return Mono.error(new IllegalArgumentException(
                 "roundId is required and must be a non-blank UUID string"));
         }
         UUID roundId = UUID.fromString(request.roundId());
+        trace.roundId(roundId);
+        trace.metadataCacheHit(careerSessionService.isCareerCached(userId));
 
         log.info("[ROUND-CONTROLLER] Starting round {} for user {}", roundId, userId);
 
         RoundEngine existing = roundEngineRegistry.get(roundId);
         if (existing != null) {
+            trace.motorConsultable();
+            trace.streamAvailable();
+            trace.duration("responseMappingMs", 0);
+            trace.complete(true);
             return Mono.just(ResponseEntity.ok(existing.getLatestState()));
         }
 
         Mono<RoundState> coordinatedStart = inFlightStarts.computeIfAbsent(
             roundId,
-            id -> startMatches(id, userId, request).cache());
+            id -> startMatches(id, userId, request, trace).cache());
 
         return RuntimeOperationMetrics.measure("http.match-engine.rounds.start", coordinatedStart)
-            .map(initialState -> ResponseEntity.ok(initialState))
+            .map(initialState -> {
+                long mappingStarted = System.nanoTime();
+                ResponseEntity<RoundState> response = ResponseEntity.ok(initialState);
+                trace.mark("responseMappingMs", mappingStarted);
+                trace.responseBytes(-1);
+                return response;
+            })
             .onErrorResume(e -> {
                 if (e instanceof IllegalStateException
                         || e instanceof IllegalArgumentException) {
@@ -102,6 +126,8 @@ public class RoundController {
                 log.error("[ROUND-CONTROLLER] Unexpected error starting round {}: {}", request.roundId(), e.getMessage(), e);
                 return Mono.just(ResponseEntity.internalServerError().build());
             })
+            .doOnSuccess(response -> trace.complete(response != null && response.getStatusCode().is2xxSuccessful()))
+            .doOnError(error -> trace.complete(false))
             .doFinally(signal -> {
                 if (signal != SignalType.CANCEL) {
                     inFlightStarts.remove(roundId, coordinatedStart);
@@ -109,7 +135,8 @@ public class RoundController {
             });
     }
 
-    private Mono<RoundState> startMatches(UUID roundId, UUID userId, StartRoundRequest request) {
+    private Mono<RoundState> startMatches(UUID roundId, UUID userId, StartRoundRequest request,
+                                           MatchStartRequestTrace trace) {
         RoundEngine roundEngine = new RoundEngine(roundId);
         log.info("[ROUND-CONTROLLER] Created RoundEngine for roundId: {}", roundId);
 
@@ -117,8 +144,16 @@ public class RoundController {
         final AtomicInteger matchesFinished = new AtomicInteger(0);
         final List<MatchResultProcessor.MatchResultInfo> matchResults =
                 Collections.synchronizedList(new ArrayList<>());
+        long careerLoadStarted = System.nanoTime();
         return RuntimeOperationMetrics.measure("match.start.career-load",
             careerSessionService.getCareerFromCache(userId))
+            .doOnEach(signal -> {
+                if (signal.isOnNext()) {
+                    trace.mark("careerLoadMs", careerLoadStarted);
+                } else if (signal.isOnError()) {
+                    trace.mark("careerLoadMs", careerLoadStarted);
+                }
+            })
             .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
             .flatMapMany(career -> {
                 log.info("[ROUND-CONTROLLER] CareerSave loaded for detailed match context construction");
@@ -140,10 +175,12 @@ public class RoundController {
                     long contextStarted = System.nanoTime();
                     LiveSession detailedMatchSession;
                     try {
-                        detailedMatchSession = buildLiveSession(career, matchId, homeTeamId, awayTeamId);
+                        detailedMatchSession = buildLiveSession(career, matchId, homeTeamId, awayTeamId, trace);
                         RuntimeOperationMetrics.record("match.start.context-build", contextStarted, true);
+                        trace.mark("contextBuildMs", contextStarted);
                     } catch (RuntimeException error) {
                         RuntimeOperationMetrics.record("match.start.context-build", contextStarted, false);
+                        trace.mark("contextBuildMs", contextStarted);
                         throw error;
                     }
 
@@ -186,12 +223,18 @@ public class RoundController {
                             .then());
                     }
 
+                    long engineStarted = System.nanoTime();
                     MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId);
+                    trace.mark("engineCreationMs", engineStarted);
                     log.info("[ROUND-CONTROLLER] Got MatchEngine for match {}: {}", matchId, matchEngine != null ? "OK" : "NULL");
+                    long registrationStarted = System.nanoTime();
                     roundEngine.registerMatch(matchId, matchEngine);
+                    trace.mark("engineRegistrationMs", registrationStarted);
                 }
 
                 roundEngineRegistry.register(roundId, roundEngine);
+                trace.motorConsultable();
+                trace.streamAvailable();
                 log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
                 return RuntimeOperationMetrics.measure("match.start.initialization", Mono.whenDelayError(matchStarts))
                         .then(Mono.fromRunnable(() -> {
@@ -218,7 +261,8 @@ public class RoundController {
             });
     }
 
-    private LiveSession buildLiveSession(CareerSave career, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
+    private LiveSession buildLiveSession(CareerSave career, UUID matchId, UUID homeTeamId, UUID awayTeamId,
+                                          MatchStartRequestTrace trace) {
         if (!useDetailedMatchEngine) {
             log.debug("[ROUND-CONTROLLER] DetailedMatchEngine disabled, using legacy path for match {}", matchId);
             return null;
@@ -226,10 +270,12 @@ public class RoundController {
 
         try {
             String matchIdStr = matchId.toString();
+            long fixturesStarted = System.nanoTime();
             MatchFixture fixture = career.getTournamentState().getFixtures().stream()
                     .filter(f -> f.getMatchId().equals(matchIdStr))
                     .findFirst()
                     .orElse(null);
+            trace.mark("fixturesLoadMs", fixturesStarted);
 
             if (fixture == null) {
                 log.warn("[ROUND-CONTROLLER] MatchFixture not found for match {}, using legacy path", matchId);
@@ -239,15 +285,19 @@ public class RoundController {
             String homeTeamIdStr = homeTeamId.toString();
             String awayTeamIdStr = awayTeamId.toString();
 
+            long teamsStarted = System.nanoTime();
             var homeTeam = career.getSessionTeam(homeTeamIdStr);
             var awayTeam = career.getSessionTeam(awayTeamIdStr);
+            trace.mark("teamsLoadMs", teamsStarted);
             if (homeTeam == null || awayTeam == null) {
                 log.warn("[ROUND-CONTROLLER] SessionTeam not found for match {}, using legacy path", matchId);
                 return null;
             }
 
             long seed = matchId.getLeastSignificantBits();
+            long playersStarted = System.nanoTime();
             MatchContext context = matchContextFactory.build(career, fixture, homeTeam, awayTeam, seed);
+            trace.mark("playersLoadMs", playersStarted);
 
             LiveSession session = new LiveSession(context, seed);
             log.info("[ROUND-CONTROLLER] LiveSession created for match {} with seed {}", matchId, seed);
@@ -263,6 +313,7 @@ public class RoundController {
                                 matchId, e.getMessage());
                         return reactor.core.publisher.Mono.empty();
                     }));
+            trace.duration("initialStatePersistenceMs", 0);
 
             return session;
         } catch (Exception e) {
