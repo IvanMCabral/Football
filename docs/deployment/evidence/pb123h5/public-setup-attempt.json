@@ -1,0 +1,22 @@
+{
+  "release": "267053e",
+  "frontend": "https://manager-4f952.web.app",
+  "backend": "https://manager-staging-api.onrender.com",
+  "readiness": {
+    "liveness": 200,
+    "readiness": 200,
+    "database": "UP",
+    "redis": "UP"
+  },
+  "flow": [
+    "fresh registration through public UI",
+    "authenticated dashboard reached",
+    "career setup opened",
+    "world load retried through public UI",
+    "world initialization failed before career creation"
+  ],
+  "observedPublicError": "El recurso solicitado no existe.",
+  "validMatchSamples": 0,
+  "inventedEvidence": false,
+  "note": "No direct database, Redis, debug endpoint or synthetic round was used."
+}
