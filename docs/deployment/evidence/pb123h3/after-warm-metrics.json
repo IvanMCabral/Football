@@ -1,0 +1,13 @@
+{
+  "source": "public observations during H3 remediation",
+  "n": 3,
+  "samples": [
+    {"releaseBehavior": "dbd9b58", "clickToLiveMs": 1483, "postResponseMs": 207, "responseToFirstSseMs": "not emitted"},
+    {"releaseBehavior": "dbd9b58", "clickToLiveMs": 1706, "postResponseMs": 233, "responseToFirstSseMs": "not emitted"},
+    {"releaseBehavior": "1c427ed", "clickToLiveMs": 1811, "postResponseMs": 249, "responseToFirstSseMs": "not emitted"}
+  ],
+  "summary": {"clickToLiveMs": {"p50": 1706, "p95": 1811, "max": 1811}},
+  "finalRelease": "d1bdedc",
+  "finalReleaseDelta": "trace-only T16_FIRST_SSE marker; no gameplay or request-path change",
+  "status": "insufficient_for_N10"
+}

@@ -1,0 +1,10 @@
+{
+  "source": "PB123H2 public warm run",
+  "n": 10,
+  "samplesMs": [519, 1489, 4050, 4431, 5673, 5591, 5164, 3981, 4388, 1912],
+  "clickToLive": {"p50": 4050, "p95": 5673, "max": 5673},
+  "clickToPost": "not instrumented",
+  "postToResponse": {"p50": 302, "p95": 1007, "max": 1007},
+  "responseToFirstSse": {"p50": 305, "p95": 515, "max": 515},
+  "frontendRevision": "79f772d"
+}

@@ -1,0 +1,16 @@
+{
+  "publicObservedLogicalInventory": {
+    "careerStatus": "one logical read; short-lived replay and eager warm added",
+    "fixtures": "one logical read; 30 second round-keyed replay",
+    "lineup": "one confirm command; no second lineup read on live route",
+    "startRound": 1,
+    "sse": 1,
+    "statePollingWhileSseHealthy": 0,
+    "duplicateStart": 0,
+    "duplicateSse": 0,
+    "404Or500": 0
+  },
+  "requestLevelResourceTiming": "not exposed by the connected browser surface",
+  "payloadBytes": "not measured",
+  "cacheHitMiss": "verified by unit tests, not claimed as public resource timing"
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "release": "dbd9b58",
+    "clickToLiveMs": 1483,
+    "preStartTotalMs": 1364,
+    "statusWaitMs": 1364,
+    "fixturesWaitMs": 0,
+    "lineupWaitMs": 0,
+    "postResponseNavigationMs": null,
+    "liveComponentInitMs": 1093,
+    "streamConnectMs": null,
+    "firstSse": "not emitted before trace capture"
+  },
+  {
+    "release": "dbd9b58",
+    "clickToLiveMs": 1706,
+    "preStartTotalMs": 1929,
+    "statusWaitMs": 1635,
+    "fixturesWaitMs": 294,
+    "lineupWaitMs": 0,
+    "postResponseNavigationMs": null,
+    "liveComponentInitMs": 296,
+    "streamConnectMs": null,
+    "firstSse": "not emitted before trace capture"
+  },
+  {
+    "release": "1c427ed",
+    "clickToLiveMs": 1811,
+    "preStartTotalMs": 1989,
+    "statusWaitMs": 1759,
+    "fixturesWaitMs": 229,
+    "lineupWaitMs": 0,
+    "postResponseNavigationMs": null,
+    "liveComponentInitMs": 232,
+    "streamConnectMs": null,
+    "firstSse": "not emitted before trace capture"
+  }
+]
