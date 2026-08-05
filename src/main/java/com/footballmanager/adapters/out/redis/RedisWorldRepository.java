@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,8 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    @Value("${app.redis.world-ttl:30d}")
+    private java.time.Duration worldTtl;
 
     public RedisWorldRepository(@Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
                                 ObjectMapper objectMapper) {
@@ -45,7 +48,9 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
         String key = generateKey(snapshot.getUserId());
 
         return Mono.fromCallable(() -> objectMapper.writeValueAsString(snapshot))
-                .flatMap(json -> redisTemplate.opsForValue().set(key, json))
+                .flatMap(json -> worldTtl == null
+                        ? redisTemplate.opsForValue().set(key, json)
+                        : redisTemplate.opsForValue().set(key, json, worldTtl))
                 .thenReturn(snapshot)
                 .onErrorResume(e -> {
                     return Mono.error(e);

@@ -94,6 +94,9 @@ app:
   name: Football Manager
   version: 1.0.0
   description: Turn-based football team management and match simulation system
+  redis:
+    world-ttl: ${REDIS_WORLD_TTL:30d}
+    match-detail-ttl: ${REDIS_MATCH_DETAIL_TTL:30d}
   world:
     import:
       three-league: ${APP_WORLD_IMPORT_THREE_LEAGUE:false}

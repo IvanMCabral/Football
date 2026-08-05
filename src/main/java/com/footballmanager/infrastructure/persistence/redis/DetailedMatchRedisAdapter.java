@@ -4,6 +4,7 @@ import com.footballmanager.application.service.simulation.detailed.DetailedMatch
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -19,6 +20,8 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
     private static final String KEY_MATCH_DETAIL = ":match-detail:";
 
     private final ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate;
+    @Value("${app.redis.match-detail-ttl:30d}")
+    private java.time.Duration matchDetailTtl;
 
     public DetailedMatchRedisAdapter(
             @Qualifier("detailedMatchDataRedisTemplate") ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate) {
@@ -32,7 +35,10 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
                     String key = buildKey(careerId, detail.matchId());
                     log.info("[DETAIL-PERSIST] save key={}, careerId={}, matchId={}, homeGoals={}, awayGoals={}",
                             key, careerId, detail.matchId(), detail.homeGoals(), detail.awayGoals());
-                    return redisTemplate.opsForValue().set(key, detail)
+                    Mono<Boolean> save = matchDetailTtl == null
+                            ? redisTemplate.opsForValue().set(key, detail)
+                            : redisTemplate.opsForValue().set(key, detail, matchDetailTtl);
+                    return save
                             .doOnSuccess(saved -> log.info("[DETAIL-PERSIST-SUCCESS] key={}, careerId={}, matchId={}",
                                     key, careerId, detail.matchId()))
                             .doOnError(error -> log.error("[DETAIL-REDIS] Failed to save match detail key={}, careerId={}, matchId={}: {}",

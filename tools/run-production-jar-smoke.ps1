@@ -326,7 +326,9 @@ function Set-AppEnvironment($port, $mode) {
     $env:LOG_LEVEL_ROOT = 'INFO'
     $env:LOG_LEVEL_APP = 'INFO'
     $env:SHUTDOWN_TIMEOUT = "${ShutdownTimeoutSeconds}s"
-    $env:JAVA_TOOL_OPTIONS = '-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=20 -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=UTC'
+    # Bound local smoke heap explicitly: percentage-based sizing can reserve
+    # several gigabytes on Windows hosts without container memory limits.
+    $env:JAVA_TOOL_OPTIONS = '-Xmx512m -Xms128m -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=UTC'
 }
 
 function Start-AppRun($index, $portMode) {

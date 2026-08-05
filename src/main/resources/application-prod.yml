@@ -46,6 +46,9 @@ logging:
     io.r2dbc.postgresql: WARN
 
 app:
+  redis:
+    world-ttl: ${REDIS_WORLD_TTL:30d}
+    match-detail-ttl: ${REDIS_MATCH_DETAIL_TTL:30d}
   simulation:
     detailed:
       mutate-career-state: false
