@@ -19,7 +19,8 @@ public class CorsConfig {
         HttpHeaders.CONTENT_TYPE,
         HttpHeaders.ACCEPT,
         HttpHeaders.ORIGIN,
-        "X-Requested-With");
+        "X-Requested-With",
+        "X-Request-Id");
 
     private final List<String> allowedOrigins;
 

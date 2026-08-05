@@ -26,4 +26,11 @@ class CorsConfigTest {
         assertFalse(corsConfig.isAllowedOrigin("http://localhost:4200"));
         assertFalse(corsConfig.allowedOrigins().contains("*"));
     }
+
+    @Test
+    void requestCorrelationHeaderIsAllowedForTheInstrumentedStartRequest() {
+        CorsConfig corsConfig = new CorsConfig("https://manager-4f952.web.app");
+
+        assertTrue(corsConfig.allowedHeaders().contains("X-Request-Id"));
+    }
 }
