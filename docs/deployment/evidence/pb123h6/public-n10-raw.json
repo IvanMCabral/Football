@@ -1,0 +1,62 @@
+{
+  "run": "PB1.2.3H6",
+  "frontendRevision": "0830966",
+  "backendRevision": "not exposed by the public API",
+  "classification": "warm-observed-but-not-release-gate-valid",
+  "rows": [
+    {
+      "sampleId": "H6-01",
+      "careerId": "0bfb2253-4d36-4fbe-89bc-cc927f84d8a1",
+      "requestId": "ms-x2711kr746t",
+      "clickToLiveMs": 3004,
+      "postToResponseMs": 3004,
+      "responseToFirstSseMs": 1888,
+      "postCount": 1,
+      "sseCount": 1,
+      "polling": 0,
+      "firstSse": true
+    },
+    {
+      "sampleId": "H6-02",
+      "careerId": "880cecbb-fd79-4478-bdd2-02de17e86901",
+      "requestId": "ms-i02lptn6qil",
+      "clickToLiveMs": 1002,
+      "postToResponseMs": 1001,
+      "responseToFirstSseMs": 928,
+      "postCount": 1,
+      "sseCount": 1,
+      "polling": 0,
+      "firstSse": true
+    },
+    {
+      "sampleId": "H6-03",
+      "careerId": "06cc9c24-f1a6-4aa9-ad48-6567678da5d6",
+      "requestId": "ms-6n2kazjb2ca",
+      "clickToLiveMs": 897,
+      "postToResponseMs": 897,
+      "responseToFirstSseMs": 743,
+      "postCount": 1,
+      "sseCount": 1,
+      "polling": 0,
+      "firstSse": true
+    },
+    {
+      "sampleId": "H6-04",
+      "careerId": "bc0342b8-8e8a-44db-ba45-17bb696efd37",
+      "requestId": "ms-uugo0zirw1",
+      "clickToLiveMs": 486,
+      "postToResponseMs": 486,
+      "responseToFirstSseMs": 1373,
+      "postCount": 1,
+      "sseCount": 1,
+      "polling": 0,
+      "firstSse": true
+    }
+  ],
+  "strictGate": {
+    "requiredRows": 10,
+    "validRows": 0,
+    "reason": "The required readiness=200 precondition was not maintained and six further account setups failed while Redis was DOWN. These four observed rows are retained as evidence, not counted as an H5 certification."
+  },
+  "secrets": "not recorded"
+}

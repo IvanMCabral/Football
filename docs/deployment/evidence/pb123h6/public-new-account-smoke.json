@@ -1,0 +1,31 @@
+{
+  "run": "PB1.2.3H6",
+  "frontendRevision": "0830966",
+  "accounts": [
+    {
+      "sample": "account-1",
+      "careerId": "0bfb2253-4d36-4fbe-89bc-cc927f84d8a1",
+      "worldCatalog": "3 leagues; 20 Spanish teams visible",
+      "career": "created",
+      "lineup": "11/11",
+      "firstRound": "live and first SSE observed"
+    },
+    {
+      "sample": "account-2",
+      "careerId": "880cecbb-fd79-4478-bdd2-02de17e86901",
+      "worldCatalog": "3 leagues; 20 Spanish teams visible",
+      "career": "created",
+      "lineup": "11/11",
+      "firstRound": "live and first SSE observed"
+    },
+    {
+      "sample": "account-3",
+      "careerId": "06cc9c24-f1a6-4aa9-ad48-6567678da5d6",
+      "worldCatalog": "3 leagues; 20 Spanish teams visible",
+      "career": "created",
+      "lineup": "11/11",
+      "firstRound": "live and first SSE observed"
+    }
+  ],
+  "result": "3/3 passed before the later Redis outage. No email, password or token is stored."
+}

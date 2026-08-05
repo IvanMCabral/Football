@@ -1,0 +1,41 @@
+{
+  "run": "PB1.2.3H6",
+  "timestampUtc": "2026-08-05",
+  "frontendUrl": "https://manager-4f952.web.app",
+  "backendUrl": "https://manager-staging-api.onrender.com",
+  "historicalFailure": {
+    "frontendRevision": "267053e",
+    "request": "POST /api/v1/world/seed-la-liga?userId=<authenticated-user>",
+    "profile": "prod",
+    "result": "The endpoint is not mapped in prod because the seed controller is non-production."
+  },
+  "remediatedContract": {
+    "frontendRevision": "0830966",
+    "productionRequest": "POST /api/v1/dashboard/reload-world",
+    "authentication": "JWT authentication only; user id is taken from Authentication",
+    "result": "The public flow reached catalog, career setup, lineup and the first live round for four independent accounts before Redis became unavailable."
+  },
+  "publicApiReproduction": [
+    {
+      "request": "POST /api/v1/dashboard/reload-world",
+      "status": 500,
+      "requestId": "6f974d4f-c374-4049-b678-143eb4edff69",
+      "publicCode": "INTERNAL_ERROR",
+      "publicMessage": "Ocurrió un error inesperado."
+    },
+    {
+      "request": "POST /api/v1/dashboard/reload-world",
+      "status": 500,
+      "requestId": "199d168d-2700-4d04-8f7e-5d7141ba1d83",
+      "publicCode": "INTERNAL_ERROR",
+      "publicMessage": "Ocurrió un error inesperado."
+    }
+  ],
+  "healthAtFailure": {
+    "liveness": 200,
+    "readiness": 503,
+    "database": "UP",
+    "redis": "DOWN"
+  },
+  "secrets": "not recorded"
+}
