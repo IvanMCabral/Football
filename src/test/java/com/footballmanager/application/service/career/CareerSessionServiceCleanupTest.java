@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class CareerSessionServiceCleanupTest {
@@ -44,6 +45,8 @@ class CareerSessionServiceCleanupTest {
         StepVerifier.create(newService().deleteCareer(userId)).verifyComplete();
 
         verify(cleanupRepository).deleteOwnedData(userId, "career-1");
+        verify(roundEngineRegistry).stopEnginesForOwner(userId, "career-1");
+        verify(matchSessionRegistry).clearSessionsForOwner(userId, "career-1");
         verify(careerRepository).deleteById(userId.toString());
     }
 
@@ -57,6 +60,21 @@ class CareerSessionServiceCleanupTest {
         StepVerifier.create(newService().deleteCareer(userId)).verifyComplete();
 
         verify(cleanupRepository).deleteOwnedData(userId, null);
+    }
+
+    @Test
+    void cleanupFailurePreventsCareerRootDelete() {
+        UUID userId = UUID.randomUUID();
+        when(careerRepository.findById(userId.toString())).thenReturn(Mono.just(Optional.of(career)));
+        when(career.getCareerId()).thenReturn("career-failing");
+        when(cleanupRepository.deleteOwnedData(userId, "career-failing"))
+                .thenReturn(Mono.error(new IllegalStateException("quota")));
+
+        StepVerifier.create(newService().deleteCareer(userId))
+                .expectErrorMessage("quota")
+                .verify();
+
+        verify(careerRepository, never()).deleteById(userId.toString());
     }
 
     private CareerSessionService newService() {
