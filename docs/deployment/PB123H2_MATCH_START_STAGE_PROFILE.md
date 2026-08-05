@@ -61,6 +61,11 @@ Los valores client-side (ms) fueron:
 Con percentil nearest-rank, POST p50/p95/máximo = **302/1007/1007 ms**,
 stream = **304/515/515 ms**, primer SSE = **305/515/515 ms**.
 
+El inventario lógico correlacionado con la traza está en
+`evidence/pb123h2/request-inventory.json`. El navegador conectado no expuso
+timings de recursos individuales para los GET previos; esos campos quedan
+explícitamente sin medir y no se rellenan con estimaciones.
+
 ## Conclusión de etapa
 
 El cuello restante no está en el POST ni en SSE warm: está antes de T1, en la

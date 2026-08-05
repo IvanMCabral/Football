@@ -1,0 +1,15 @@
+{
+  "schema": "pb123h2-request-inventory-v1",
+  "measurementStatus": "logical-sequence-correlated-with-client-trace",
+  "singleStart": [
+    {"method":"GET","logicalPath":"/api/v1/career/status","causal":"live view model gate","duplicate":false},
+    {"method":"GET","logicalPath":"/api/v1/career/fixtures/round/{round}","causal":"live fixtures","duplicate":false},
+    {"method":"GET","logicalPath":"/api/v1/career/teams/{career}","causal":"non-critical labels; startWith allows POST before completion","duplicate":false},
+    {"method":"POST","logicalPath":"/api/v1/match-engine/rounds/start","causal":"one round start","duplicate":false},
+    {"method":"GET","logicalPath":"/api/v1/match-engine/rounds/{round}/stream","causal":"single SSE after roundId","duplicate":false}
+  ],
+  "pollingWhileSseHealthy": false,
+  "duplicateStartPosts": 0,
+  "duplicateStreams": 0,
+  "note": "The connected browser exposed client traces but not resource-timing payloads; durations for pre-request GETs are intentionally not fabricated."
+}
