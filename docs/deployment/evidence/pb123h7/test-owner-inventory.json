@@ -1,0 +1,46 @@
+{
+  "schema": "pb123h7-owner-inventory-v1",
+  "generatedAt": "2026-08-05",
+  "source": {
+    "postgres": "Neon manager-staging, SELECT-only ownership queries",
+    "redis": "Upstash Manager, exact owner-derived SCAN and per-key metadata",
+    "sensitiveValuesOmitted": true
+  },
+  "ownerDiscovery": {
+    "controlledPatternRowsInspected": 116,
+    "provenTestOwnersWithCareerRoot": 37,
+    "provenTestOwnersOrphanOnly": 16,
+    "protectedUnknownOrRealOwners": "all other users",
+    "proof": ["controlled audit username/prefix", "exact PostgreSQL UUID ownership", "no human identity evidence", "exact UUID namespace attribution"]
+  },
+  "inventory": {
+    "rootedOwnerKeys": 1333,
+    "orphanOnlyOwnerKeys": 240,
+    "temporarySmokeWorldKeys": 5,
+    "runtimeMatchKeys": 0,
+    "matchStateKeys": 0,
+    "matchCommandKeys": 0,
+    "foreignKeysInDeletionSet": 0,
+    "keyFamilies": ["career", "world", "user", "match-detail", "match-baseline"]
+  },
+  "sampledSizesBytes": {
+    "worldSnapshotSample": 2483493,
+    "careerRootSample": 981877,
+    "careerChildSamples": [41572, 43079, 41534]
+  },
+  "sanitizedOwners": [
+    {"idHash": "31691b88", "careerHash": "ff849cce", "evidence": "controlled pb123 audit owner; no active runtime/state/commands"},
+    {"idHash": "additional-owner-set", "count": 52, "evidence": "controlled PB123 audit labels; exact namespace attribution"}
+  ],
+  "execution": {
+    "rootedBatches": [100,100,100,100,100,100,100,100,100,100,100,100,99,33],
+    "orphanBatches": [100,100,40],
+    "method": "exact-key UNLINK batches of at most 100",
+    "postgresqlRowsDeleted": 0
+  },
+  "postCleanup": {
+    "upstashReportedUsage": "127 MiB / 256 MiB",
+    "dbsize": 6144,
+    "foreignOwnerKeysObserved": 0
+  }
+}

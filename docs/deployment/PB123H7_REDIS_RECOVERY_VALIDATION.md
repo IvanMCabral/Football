@@ -1,28 +1,32 @@
 # PB1.2.3H7 - Redis recovery validation
 
-## Current state
+## Provider recovery
 
-Recovery was not reached. Public requests to the Render service timed out with
-no response during this run; therefore no new readiness-qualified smoke was
-started and no readiness result is fabricated.
+After owner-driven cleanup, Upstash accepted PING, read, SET and UNLINK.
+Reported usage was 127 MiB of 256 MiB and DBSIZE was 6,144. No global flush or
+plan change was used.
 
-Historical H6 evidence recorded liveness 200, readiness 503 with PostgreSQL UP
-and Redis DOWN, and authenticated `reload-world` responses of 500. The current
-run confirms that the storage condition remains unresolved; it does not claim
-that the historical HTTP values are current.
+## Render health
 
-## Required post-cleanup gates
+Three consecutive readiness pairs were green:
 
-After storage is safely below quota:
+| Probe | Liveness | Readiness | Database | Redis |
+|---:|---:|---:|---|---|
+| 1 | 200 | 200 | UP | UP |
+| 2 | 200 | 200 | UP | UP |
+| 3 | 200 | 200 | UP | UP |
 
-1. verify Upstash is active;
-2. obtain three consecutive Render liveness 200 and readiness 200 responses,
-   with both database and Redis UP;
-3. run authenticated `POST /api/v1/dashboard/reload-world`;
-4. create one disposable account and verify leagues, teams, career, squad,
-   lineup 11/11, round, first SSE, reload, and recovery;
-5. only then resume the N=10 performance run.
+Authenticated `POST /api/v1/dashboard/reload-world` returned 200.
 
-Current status: Redis DOWN/unavailable, readiness not qualified, reload-world
-not re-run, new-account smoke not run, N=10 not prepared, controlled testers not
-prepared.
+## Disposable-account smoke
+
+One controlled account completed registration (200), authentication/me (200),
+world reload (200), league/team loading (200), career creation (201), career
+status, squad, auto-select, lineup, confirmation, standings and fixtures. The
+career reset returned 204 and removed its owner data. A separate round smoke
+started a round with 200 and reset successfully. The SSE request remained an
+open stream without a first event during a six-second bounded probe; this is
+recorded as **inconclusive**, not as a false green.
+
+N=10 was not resumed. A follow-up must capture a first SSE event and a full
+recovery/reconnect drill before controlled external testers are admitted.
