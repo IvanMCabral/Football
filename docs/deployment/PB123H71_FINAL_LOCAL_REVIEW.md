@@ -21,7 +21,7 @@ public N=10 run, provider migration, Render deploy, or global H7 approval.
 
 ## Remaining issues
 
-1. The complete backend suite passed after the final code change: 2,596 tests,
+1. The complete backend suite passed after the final code change: 2,597 tests,
    0 failures, 0 errors, and 4 skipped. The production smoke runner uses an
    explicit 512 MB heap cap so the same lifecycle check is reproducible on
    Windows hosts without reserving the entire machine pagefile.
