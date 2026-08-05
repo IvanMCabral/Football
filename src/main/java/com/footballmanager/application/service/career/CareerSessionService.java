@@ -8,6 +8,7 @@ import com.footballmanager.domain.port.in.career.StartCareerUseCase;
 import com.footballmanager.domain.port.in.career.ContinueCareerUseCase;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CareerSessionService {
 
     private final CareerRepository careerRepository;
@@ -95,15 +97,21 @@ public class CareerSessionService {
 
     public Mono<Void> deleteCareer(UUID userId) {
         invalidateCache(userId);
-        roundEngineRegistry.stopAllEngines();
-        matchSessionRegistry.clearAllSessions();
         return careerRepository.findById(userId.toString())
                 .defaultIfEmpty(java.util.Optional.empty())
                 .flatMap(existing -> {
                     String careerId = existing.map(CareerSave::getCareerId).orElse(null);
-                    return careerDataCleanupRepository.deleteOwnedData(userId, careerId);
+                    roundEngineRegistry.stopEnginesForOwner(userId, careerId);
+                    matchSessionRegistry.clearSessionsForOwner(userId, careerId);
+                    return careerDataCleanupRepository.deleteOwnedData(userId, careerId)
+                            .doOnNext(result -> log.info(
+                                    "[CAREER-CLEANUP] ownerHash={} careers={} discovered={} unique={} requested={} deleted={} batches={} maxBatch={} partialFailure={}",
+                                    result.ownerHash(), result.careerCount(), result.keysDiscovered(),
+                                    result.uniqueKeys(), result.keysRequestedForDeletion(),
+                                    result.keysActuallyDeleted(), result.batchCount(), result.maxBatchSize(),
+                                    result.partialFailure()));
                 })
-                .then(careerRepository.deleteById(userId.toString()));
+                .then(Mono.defer(() -> careerRepository.deleteById(userId.toString())));
     }
 
     @Deprecated

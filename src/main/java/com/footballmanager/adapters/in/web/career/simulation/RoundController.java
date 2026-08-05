@@ -158,6 +158,7 @@ public class RoundController {
             .flatMapMany(career -> {
                 log.info("[ROUND-CONTROLLER] CareerSave loaded for detailed match context construction");
                 String traceCareerId = career.getData().getCareerId();
+                roundEngine.setOwner(userId, traceCareerId);
                 log.info("RoundController careerId={}, roundId={}", traceCareerId, roundId);
 
                 int currentRound = career.getTournamentState().getCurrentRound();

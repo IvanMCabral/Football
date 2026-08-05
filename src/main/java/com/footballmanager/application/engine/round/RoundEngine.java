@@ -30,6 +30,8 @@ public class RoundEngine {
     private static final Duration ROUND_TICK_INTERVAL = Duration.ofMillis(500);
 
     private final UUID roundId;
+    private volatile UUID ownerId;
+    private volatile String careerId;
     private final Map<UUID, MatchEngine> matchEngines;
     private final RoundStatusCalculator statusCalculator;
     private final Sinks.Many<RoundState> stateSink;
@@ -154,6 +156,20 @@ public class RoundEngine {
             statusCalculator.calculate(matchStates));
         latestState = roundState;
         stateSink.tryEmitNext(roundState);
+    }
+
+    /** Assigns the exact owner metadata before the engine is published. */
+    public void setOwner(UUID ownerId, String careerId) {
+        this.ownerId = ownerId;
+        this.careerId = careerId;
+    }
+
+    public boolean belongsTo(UUID requestedOwnerId, String requestedCareerId) {
+        if (ownerId == null || requestedOwnerId == null || !ownerId.equals(requestedOwnerId)) {
+            return false;
+        }
+        return requestedCareerId == null || requestedCareerId.isBlank()
+                || requestedCareerId.equals(careerId);
     }
 
     public void emitCompletedState() {

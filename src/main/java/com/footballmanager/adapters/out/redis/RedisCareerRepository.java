@@ -25,6 +25,7 @@ import java.util.UUID;
 public class RedisCareerRepository implements CareerRepository {
 
     private static final String KEY_PREFIX = "career:";
+    private static final String CAREER_INDEX_SUFFIX = ":career-ids";
     private static final Duration CACHE_TTL = Duration.ofDays(30); // 30 días de inactividad
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
@@ -54,7 +55,9 @@ public class RedisCareerRepository implements CareerRepository {
             int palmaresSize = careerSave.getSeasonManager().getPalmares() != null ? careerSave.getSeasonManager().getPalmares().size() : 0;
             log.info("[REDIS-SAVE] userId={}, palmaresSize={}", careerSave.getUserId(), palmaresSize);
             return RuntimeOperationMetrics.measure("redis.career.save",
-                redisTemplate.opsForValue().set(key, json, CACHE_TTL).then());
+                redisTemplate.opsForValue().set(key, json, CACHE_TTL)
+                    .then(indexCareer(careerSave))
+                    .then());
         } catch (Exception e) {
             return RuntimeOperationMetrics.measure("redis.career.save", Mono.error(e));
         }
@@ -82,7 +85,32 @@ public class RedisCareerRepository implements CareerRepository {
                         return Optional.<CareerSave>empty();
                     }
                 })
-                .defaultIfEmpty(Optional.empty()));
+                .defaultIfEmpty(Optional.empty())
+                .flatMap(this::ensureCareerIndex));
+    }
+
+    private Mono<Optional<CareerSave>> ensureCareerIndex(Optional<CareerSave> career) {
+        if (career.isEmpty()) {
+            return Mono.just(career);
+        }
+        CareerSave value = career.get();
+        String index = indexKey(value.getUserId());
+        return redisTemplate.opsForSet().isMember(index, value.getCareerId())
+                .flatMap(indexed -> indexed
+                        ? Mono.just(career)
+                        : redisTemplate.opsForSet().add(index, value.getCareerId())
+                                .then(redisTemplate.expire(index, CACHE_TTL))
+                                .thenReturn(career));
+    }
+
+    private Mono<Void> indexCareer(CareerSave career) {
+        if (career.getCareerId() == null || career.getCareerId().isBlank()) {
+            return Mono.empty();
+        }
+        String index = indexKey(career.getUserId());
+        return redisTemplate.opsForSet().add(index, career.getCareerId())
+                .then(redisTemplate.expire(index, CACHE_TTL))
+                .then();
     }
 
     /**
@@ -102,6 +130,10 @@ public class RedisCareerRepository implements CareerRepository {
         String key = getKey(id);
         return RuntimeOperationMetrics.measure("redis.career.delete",
             redisTemplate.delete(key).then());
+    }
+
+    private String indexKey(UUID userId) {
+        return "user:" + userId + CAREER_INDEX_SUFFIX;
     }
 
     /**

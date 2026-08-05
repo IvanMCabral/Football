@@ -65,6 +65,26 @@ public class RoundEngineRegistry {
         return engines.size();
     }
 
+    /** Stops only rounds explicitly registered for the requested owner. */
+    public int stopEnginesForOwner(UUID userId, String careerId) {
+        int stopped = 0;
+        for (Map.Entry<UUID, RoundEngine> entry : engines.entrySet()) {
+            if (entry.getValue().belongsTo(userId, careerId) && engines.remove(entry.getKey(), entry.getValue())) {
+                Set<UUID> matchIds = Set.copyOf(entry.getValue().getMatchIds());
+                try {
+                    entry.getValue().stop();
+                } catch (Exception ignored) {
+                    // cleanup remains scoped even if one engine fails to stop
+                }
+                for (UUID matchId : matchIds) {
+                    matchToRoundMap.remove(matchId, entry.getKey());
+                }
+                stopped++;
+            }
+        }
+        return stopped;
+    }
+
     public Set<UUID> getAllRoundIds() {
         return engines.keySet();
     }

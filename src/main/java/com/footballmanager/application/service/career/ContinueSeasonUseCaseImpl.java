@@ -32,11 +32,6 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
 
     @Override
     public Mono<ContinueResult> continueToNewSeason(UUID userId) {
-        // LIMPIEZA TOTAL DE REGISTROS ANTES de nueva temporada
-        log.info("[ContinueSeason] Cleaning up all registries before new season for userId={}", userId);
-        matchSessionRegistry.clearAllSessions();
-        roundEngineRegistry.stopAllEngines();
-
         // Invalidar cache ANTES de leer para asegurar datos frescos de Redis
         careerSessionService.invalidateCache(userId);
         log.info("[ContinueSeason] Cache invalidated for userId={}, loading fresh career from Redis", userId);
@@ -47,6 +42,11 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
                 if (career == null) {
                     return Mono.just(ContinueResult.error("CARRERA_NO_ENCONTRADA", "Career no encontrado"));
                 }
+
+                String careerId = career.getCareerId();
+                log.info("[ContinueSeason] Cleaning owner-scoped registries for userId={}, careerId={}", userId, careerId);
+                matchSessionRegistry.clearSessionsForOwner(userId, careerId);
+                roundEngineRegistry.stopEnginesForOwner(userId, careerId);
 
                 TournamentState tournament = career.getTournamentState();
 

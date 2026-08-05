@@ -83,6 +83,23 @@ public class MatchSessionRegistry {
         return activeSessions.size();
     }
 
+    /** Stops and removes only sessions owned by the requested account/career. */
+    public int clearSessionsForOwner(UUID userId, String careerId) {
+        int cleared = 0;
+        for (Map.Entry<String, MatchSession> entry : activeSessions.entrySet()) {
+            MatchSession session = entry.getValue();
+            if (session.belongsTo(userId, careerId) && activeSessions.remove(entry.getKey(), session)) {
+                try {
+                    session.stop();
+                } catch (Exception e) {
+                    log.warn("Error stopping owner-scoped match session", e);
+                }
+                cleared++;
+            }
+        }
+        return cleared;
+    }
+
     /**
      * Verifica si existe una sesión para un partido.
      */

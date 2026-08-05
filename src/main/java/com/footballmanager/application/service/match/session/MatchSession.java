@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 public class MatchSession {
 
     public final UUID matchId;
+    private final UUID userId;
     private volatile MatchStateSnapshot currentState;
     private final MatchTickHandler tickHandler;
     private final ConcurrentLinkedQueue<MatchCommand> commandQueue;
@@ -71,6 +72,7 @@ public class MatchSession {
      */
     public MatchSession(UUID userId, UUID matchId, MatchState state,
                         MatchTickHandler tickHandler, LiveSession detailedMatchSession) {
+        this.userId = userId;
         this.matchId = matchId;
         this.currentState = convertToSnapshot(matchId, state);
         this.tickHandler = tickHandler;
@@ -204,6 +206,14 @@ public class MatchSession {
 
     public void stop() {
         emitState();
+    }
+
+    public boolean belongsTo(UUID requestedUserId, String careerId) {
+        if (userId == null || requestedUserId == null || !userId.equals(requestedUserId)) {
+            return false;
+        }
+        String sessionCareerId = currentState == null ? null : currentState.careerId();
+        return careerId == null || careerId.isBlank() || careerId.equals(sessionCareerId);
     }
 
     public boolean isRunning() {
