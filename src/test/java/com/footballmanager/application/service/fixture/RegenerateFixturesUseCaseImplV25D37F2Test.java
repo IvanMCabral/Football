@@ -9,6 +9,7 @@ import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.career.ContinueCareerUseCase;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
+import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
 import com.footballmanager.domain.service.FixtureGenerator;
 import com.footballmanager.domain.service.FixtureGenerator.FixtureRound;
 import com.footballmanager.domain.service.FixtureGenerator.FixtureSlot;
@@ -69,6 +70,9 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
     @Mock
     private MatchSessionRegistry matchSessionRegistry;
 
+    @Mock
+    private CareerDataCleanupRepository careerDataCleanupRepository;
+
     @Test
     @DisplayName("regenerate invalidates CareerSessionService cache after save")
     void regenerateInvalidatesCareerSessionCache() {
@@ -82,7 +86,7 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
         // careerCache) and a CareerSave that will be returned by the repo.
         CareerSessionService realCareerSessionService = new CareerSessionService(
                 careerRepository, startCareerUseCase, continueCareerUseCase,
-                roundEngineRegistry, matchSessionRegistry);
+                roundEngineRegistry, matchSessionRegistry, careerDataCleanupRepository);
 
         UUID userId = UUID.randomUUID();
         CareerSave career = buildCareerWithTwoTeams(userId);
@@ -139,7 +143,7 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
 
         CareerSessionService realCareerSessionService = new CareerSessionService(
                 careerRepository, startCareerUseCase, continueCareerUseCase,
-                roundEngineRegistry, matchSessionRegistry);
+                roundEngineRegistry, matchSessionRegistry, careerDataCleanupRepository);
 
         UUID userId = UUID.randomUUID();
         CareerSave career = buildCareerWithTwoTeams(userId);

@@ -6,6 +6,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
 import com.footballmanager.domain.port.in.career.ContinueCareerUseCase;
+import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -26,6 +27,7 @@ public class CareerSessionService {
     private final ContinueCareerUseCase continueCareerUseCase;
     private final RoundEngineRegistry roundEngineRegistry;
     private final MatchSessionRegistry matchSessionRegistry;
+    private final CareerDataCleanupRepository careerDataCleanupRepository;
 
     private final Map<String, CareerSave> careerCache = new ConcurrentHashMap<>();
 
@@ -95,7 +97,13 @@ public class CareerSessionService {
         invalidateCache(userId);
         roundEngineRegistry.stopAllEngines();
         matchSessionRegistry.clearAllSessions();
-        return careerRepository.deleteById(userId.toString());
+        return careerRepository.findById(userId.toString())
+                .defaultIfEmpty(java.util.Optional.empty())
+                .flatMap(existing -> {
+                    String careerId = existing.map(CareerSave::getCareerId).orElse(null);
+                    return careerDataCleanupRepository.deleteOwnedData(userId, careerId);
+                })
+                .then(careerRepository.deleteById(userId.toString()));
     }
 
     @Deprecated
