@@ -44,9 +44,13 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
 
     @Override
     public Mono<Void> saveCommand(UUID userId, UUID matchId, MatchCommand command) {
-        String key = buildKey(userId, matchId);
+        return saveCommand(userId, matchId, command, null);
+    }
 
-        return findPendingCommands(userId, matchId)
+    @Override
+    public Mono<Void> saveCommand(UUID userId, UUID matchId, MatchCommand command, String careerId) {
+        String key = buildKey(userId, matchId);
+        Mono<Void> operation = findPendingCommands(userId, matchId)
                 .defaultIfEmpty(new ArrayList<>())
                 .map(commands -> {
                     commands.add(command);
@@ -55,16 +59,17 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                 .flatMap(commands -> {
                     try {
                         String json = objectMapper.writeValueAsString(commands);
-                        Mono<Void> persist = redisTemplate.opsForValue()
-                                .set(key, json, TTL)
-                                .then();
-                        return ownershipTouchService == null
-                                ? persist
-                                : ownershipTouchService.touchOwnerBeforeWrite(userId, () -> persist);
+                        return redisTemplate.opsForValue().set(key, json, TTL).then();
                     } catch (Exception e) {
                         return Mono.error(e);
                     }
-                })
+                });
+        Mono<Void> coordinated = ownershipTouchService == null
+                ? operation
+                : careerId == null || careerId.isBlank()
+                        ? ownershipTouchService.touchOwnerBeforeWrite(userId, () -> operation)
+                        : ownershipTouchService.touchBeforeWrite(careerId, () -> operation);
+        return coordinated
                 .onErrorMap(e -> e instanceof RedisStateAccessException ? e
                         : new RedisStateAccessException(
                                 "Failed to save pending match command for matchId=" + matchId, e));

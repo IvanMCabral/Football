@@ -68,9 +68,9 @@ public class RedisMatchStateRepository implements MatchStateRepository {
             Mono<MatchState> persist = redisTemplate.opsForValue()
                     .set(key, json, TTL)
                     .thenReturn(matchState);
-            return ownershipTouchService == null
+            return ownershipTouchService == null || matchState.getCareerId() == null
                     ? persist
-                    : ownershipTouchService.touchOwnerBeforeWrite(userId, () -> persist);
+                    : ownershipTouchService.touchBeforeWrite(matchState.getCareerId(), () -> persist);
         } catch (Exception e) {
             return Mono.error(e);
         }

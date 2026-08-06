@@ -21,6 +21,11 @@ public interface MatchCommandRepository {
      */
     Mono<Void> saveCommand(UUID userId, UUID matchId, MatchCommand command);
 
+    /** Career-aware write used to fence late callbacks after a reset. */
+    default Mono<Void> saveCommand(UUID userId, UUID matchId, MatchCommand command, String careerId) {
+        return saveCommand(userId, matchId, command);
+    }
+
     /**
      * Recupera todos los comandos pendientes de un partido.
      * @param userId ID del usuario

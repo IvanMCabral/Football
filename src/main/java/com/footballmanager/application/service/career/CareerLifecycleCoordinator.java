@@ -45,6 +45,18 @@ public final class CareerLifecycleCoordinator {
         return enqueue(ownerId, operation, true);
     }
 
+    /**
+     * Serializes all writes for one career identity.  Owner coordination alone
+     * is not enough: a late callback for an old career must wait behind reset
+     * cleanup for that exact career before it can validate ownership.
+     */
+    public <T> Mono<T> serializeCareer(String careerId, Mono<T> operation) {
+        if (careerId == null || careerId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("careerId must not be blank"));
+        }
+        return enqueue("career:" + careerId, operation, false);
+    }
+
     public boolean isBusy(UUID ownerId) {
         return ownerId != null && queues.containsKey(ownerId.toString());
     }
@@ -61,11 +73,14 @@ public final class CareerLifecycleCoordinator {
         if (ownerId == null) {
             return Mono.error(new IllegalArgumentException("ownerId must not be null"));
         }
+        return enqueue(ownerId.toString(), operation, reset);
+    }
+
+    private <T> Mono<T> enqueue(String ownerKey, Mono<T> operation, boolean reset) {
         if (operation == null) {
             return Mono.error(new IllegalArgumentException("operation must not be null"));
         }
         return Mono.deferContextual(context -> {
-            String ownerKey = ownerId.toString();
             if (ownerKey.equals(context.getOrDefault(COORDINATED_OWNER_CONTEXT, ""))) {
                 // Re-entrant calls are part of the same owner transaction
                 // (for example, a world refresh triggered while starting a

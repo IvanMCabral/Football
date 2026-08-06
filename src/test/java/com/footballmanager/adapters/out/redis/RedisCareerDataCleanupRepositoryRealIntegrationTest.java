@@ -144,6 +144,7 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
         String careerId = "career-touch";
         reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId)
                 .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-touch"))
                 .block(Duration.ofSeconds(5));
         reactiveRedisTemplate.opsForValue().set("career:" + owner, "root")
                 .then(reactiveRedisTemplate.expire("career:" + owner, Duration.ofSeconds(1)))
@@ -161,6 +162,31 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
                 .compareTo(Duration.ofSeconds(1)) > 0);
         assertTrue(reactiveRedisTemplate.getExpire("user:" + owner + ":career-ids").block(Duration.ofSeconds(5))
                 .compareTo(Duration.ofSeconds(1)) > 0);
+    }
+
+    @Test
+    void staleGenerationCannotWriteAfterResetAndNewCareerGeneration() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-generation-stale";
+        reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId)
+                .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-old"))
+                .then(reactiveRedisTemplate.opsForValue().set("career:" + owner, "root"))
+                .block(Duration.ofSeconds(5));
+
+        reactiveRedisTemplate.delete("career-owner:" + careerId, "career-generation:" + careerId,
+                        "career:" + owner, "user:" + owner + ":career-ids")
+                .then(reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId))
+                .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-new"))
+                .then(reactiveRedisTemplate.opsForValue().set("career:" + owner, "root-new"))
+                .block(Duration.ofSeconds(5));
+
+        assertThrows(RuntimeException.class, () -> ownershipTouchService
+                .touchBeforeWrite(careerId, "generation-old", () -> Mono.just("must-not-write"))
+                .block(Duration.ofSeconds(10)));
+        assertEquals("generation-new", reactiveRedisTemplate.opsForValue()
+                .get("career-generation:" + careerId).block(Duration.ofSeconds(5)));
     }
 
     @Test
@@ -182,6 +208,7 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
         assertTrue(result.batchCount() >= 3);
         assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
         assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career:" + careerA).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career-cleanup:" + ownerA).block()));
         assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career:" + careerA + ":match-detail:detail-a").block()));
         assertTrue(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career:" + careerB + ":match-detail:detail-b").block()));
         assertTrue(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career-owner:" + careerB).block()));
@@ -210,6 +237,7 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
         String index = "user:" + owner + ":career-ids";
         reactiveRedisTemplate.opsForSet().add(index, careerId)
                 .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-" + careerId))
                 .then(reactiveRedisTemplate.opsForValue().set("career:" + owner, "root"))
                 .then(reactiveRedisTemplate.opsForValue().set("world:" + owner, "world"))
                 .then(reactiveRedisTemplate.opsForValue().set("career:" + careerId + ":match-detail:" + detailId, "detail"))

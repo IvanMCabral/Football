@@ -51,7 +51,11 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
 
     @Override
     public Mono<MatchState> applyCommand(UUID userId, UUID matchId, MatchCommand command) {
-        return matchCommandRepository.saveCommand(userId, matchId, command)
+        Mono<Void> save = matchStateRepository.findById(userId, matchId)
+                .flatMap(state -> matchCommandRepository.saveCommand(
+                        userId, matchId, command, state.getCareerId()))
+                .switchIfEmpty(matchCommandRepository.saveCommand(userId, matchId, command));
+        return save
                 .then(matchStateRepository.findById(userId, matchId));
     }
 

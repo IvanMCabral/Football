@@ -53,9 +53,9 @@ public class RedisMatchRuntimeRepository implements MatchRuntimeRepository {
         Mono<RuntimeMatch> persist = Mono.fromCallable(() -> objectMapper.writeValueAsString(runtimeMatch))
                 .flatMap(json -> redisTemplate.opsForValue().set(key, json, TTL))
                 .thenReturn(runtimeMatch);
-        return ownershipTouchService == null
+        return ownershipTouchService == null || runtimeMatch.getCareerId() == null
                 ? persist
-                : ownershipTouchService.touchOwnerBeforeWrite(userId, () -> persist);
+                : ownershipTouchService.touchBeforeWrite(runtimeMatch.getCareerId(), () -> persist);
     }
 
     @Override
