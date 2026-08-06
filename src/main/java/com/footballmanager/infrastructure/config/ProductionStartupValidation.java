@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.time.Duration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -59,6 +60,8 @@ public class ProductionStartupValidation {
         validatePositiveLong("JWT_REFRESH_EXPIRATION", 60_000L, 2_592_000_000L);
         validatePositiveInt("DB_PORT");
         validatePositiveInt("REDIS_PORT");
+        validateRedisTtl("REDIS_WORLD_TTL", "app.redis.world-ttl", Duration.ofHours(1), Duration.ofDays(90));
+        validateRedisTtl("REDIS_MATCH_DETAIL_TTL", "app.redis.match-detail-ttl", Duration.ofDays(1), Duration.ofDays(90));
     }
 
     private boolean isProdProfileActive() {
@@ -138,6 +141,25 @@ public class ProductionStartupValidation {
             }
         } catch (NumberFormatException e) {
             throw new IllegalStateException("Production startup blocked. Invalid numeric variable: " + name);
+        }
+    }
+
+    private void validateRedisTtl(String environmentName, String propertyName, Duration min, Duration max) {
+        String raw = environment.getProperty(environmentName);
+        if (raw == null || raw.isBlank()) {
+            raw = environment.getProperty(propertyName, "30d");
+        }
+        try {
+            Duration ttl = org.springframework.boot.convert.DurationStyle.detectAndParse(raw.trim());
+            if (ttl.compareTo(min) < 0 || ttl.compareTo(max) > 0) {
+                throw new IllegalStateException("Production startup blocked. Invalid Redis retention: " + environmentName);
+            }
+        } catch (RuntimeException e) {
+            if (e instanceof IllegalStateException && e.getMessage() != null
+                    && e.getMessage().contains("Invalid Redis retention")) {
+                throw e;
+            }
+            throw new IllegalStateException("Production startup blocked. Invalid Redis retention: " + environmentName);
         }
     }
 
