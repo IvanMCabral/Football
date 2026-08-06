@@ -74,7 +74,7 @@ public class RegenerateFixturesUseCaseImpl implements RegenerateFixturesUseCase 
         // Resetear standings
         career.getTournamentState().initializeStandings(career.getAllSessionTeams());
 
-        return careerRepository.save(career)
+        return careerSessionService.saveCareer(career)
                 .then(Mono.fromRunnable(() ->
                         careerSessionService.invalidateCache(career.getUserId())));
     }

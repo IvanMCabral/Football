@@ -3,6 +3,7 @@ package com.footballmanager.application.service.match;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.match.FinalizeMatchUseCase;
 import com.footballmanager.domain.ports.out.match.MatchRuntimeRepository;
+import com.footballmanager.application.service.career.CareerSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -19,6 +20,7 @@ public class FinalizeMatchUseCaseImpl implements FinalizeMatchUseCase {
 
     private final MatchRuntimeRepository runtimeRepository;
     private final CareerRepository careerRepository;
+    private final CareerSessionService careerSessionService;
 
     @Override
     public Mono<Void> finalizeMatch(UUID userId, String matchId) {
@@ -47,7 +49,7 @@ public class FinalizeMatchUseCaseImpl implements FinalizeMatchUseCase {
                                 runtimeMatch.getEvents()
                             );
 
-                            return careerRepository.save(career).thenReturn(career);
+                            return careerSessionService.saveCareer(career).thenReturn(career);
                         } catch (IllegalStateException | IllegalArgumentException e) {
                             return Mono.error(e);
                         }

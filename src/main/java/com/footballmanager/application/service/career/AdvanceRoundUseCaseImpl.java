@@ -23,6 +23,7 @@ import java.util.List;
 public class AdvanceRoundUseCaseImpl implements AdvanceRoundUseCase {
 
     private final CareerRepository careerRepository;
+    private final CareerSessionService careerSessionService;
 
     @Override
     public Mono<AdvanceResult> advanceToNextRound(java.util.UUID userId, String careerId) {
@@ -74,7 +75,7 @@ public class AdvanceRoundUseCaseImpl implements AdvanceRoundUseCase {
                     List.of()
                 );
 
-                return careerRepository.save(career).thenReturn(result);
+                return careerSessionService.saveCareer(career).thenReturn(result);
             })
             .onErrorResume(e -> {
                 log.error("[AdvanceRound] Failed to advance careerId={} for userId={}", careerId, userId, e);

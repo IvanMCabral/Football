@@ -29,6 +29,7 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
     private final CareerSessionService careerSessionService;
     private final MatchSessionRegistry matchSessionRegistry;
     private final RoundEngineRegistry roundEngineRegistry;
+    private final CareerLifecycleCoordinator lifecycleCoordinator;
 
     @Override
     public Mono<ContinueResult> continueToNewSeason(UUID userId) {
@@ -37,7 +38,7 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
         log.info("[ContinueSeason] Cache invalidated for userId={}, loading fresh career from Redis", userId);
 
         // Obtener carrera fresca del cache (que ahora leerá de Redis)
-        return careerSessionService.getCareerFromCache(userId)
+        return lifecycleCoordinator.serialize(userId, careerSessionService.getCareerFromCache(userId)
             .flatMap(career -> {
                 if (career == null) {
                     return Mono.just(ContinueResult.error("CARRERA_NO_ENCONTRADA", "Career no encontrado"));
@@ -99,11 +100,11 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
 
                 // Invalidar cache antes de guardar y guardar carrera
                 careerSessionService.invalidateCache(userId);
-                return careerRepository.save(career).thenReturn(result);
+                return careerSessionService.saveCareer(career).thenReturn(result);
             })
             .onErrorResume(e -> {
                 log.error("[ContinueSeason] Error continuing season for userId={}", userId, e);
                 return Mono.just(ContinueResult.error("ERROR_INTERNO", "No se pudo continuar la temporada."));
-            });
+            }));
     }
 }

@@ -6,6 +6,7 @@ import com.footballmanager.domain.model.entity.TournamentState;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.fixture.MigrateFixturesUseCase;
+import com.footballmanager.application.service.career.CareerSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,7 @@ public class MigrateFixturesUseCaseImpl implements MigrateFixturesUseCase {
 
     private final CareerRepository careerRepository;
     private final CareerFixtureService careerFixtureService;
+    private final CareerSessionService careerSessionService;
 
     @Override
     public Mono<Void> migrate(String userId) {
@@ -63,6 +65,6 @@ public class MigrateFixturesUseCaseImpl implements MigrateFixturesUseCase {
             state.setTotalRounds(totalRounds);
         }
 
-        return careerRepository.save(career);
+        return careerSessionService.saveCareer(career).then();
     }
 }

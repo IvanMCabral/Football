@@ -32,6 +32,7 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
     private final BuildWorldViewUseCase buildWorldViewUseCase;
     private final CreateCareerSnapshotUseCase createCareerSnapshotUseCase;
     private final CareerRepository careerRepository;
+    private final CareerLifecycleCoordinator lifecycleCoordinator;
 
     @Override
     public Mono<CareerSave> start(UUID userId, String worldLeagueId, String worldTeamId,
@@ -39,7 +40,7 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
         UUID leagueId = UUID.fromString(worldLeagueId);
 
         // Paso 0: Eliminar carrera anterior para evitar duplicación de datos
-        return careerRepository.deleteById(userId.toString())
+        return lifecycleCoordinator.serializeReset(userId, careerRepository.deleteById(userId.toString())
                 // Paso 1: Construir WorldView
                 .then(buildWorldViewUseCase.build(userId))
                 .flatMap(worldView -> {
@@ -57,6 +58,6 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
                     // Paso 3: Persistir CareerSave
                     return careerRepository.save(career)
                             .thenReturn(career);
-                });
+                }));
     }
 }

@@ -7,8 +7,8 @@ import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
 import com.footballmanager.domain.port.in.career.ContinueCareerUseCase;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * CareerSessionService - Facade para gestión de sesión Career.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class CareerSessionService {
 
@@ -30,8 +29,37 @@ public class CareerSessionService {
     private final RoundEngineRegistry roundEngineRegistry;
     private final MatchSessionRegistry matchSessionRegistry;
     private final CareerDataCleanupRepository careerDataCleanupRepository;
+    private final CareerLifecycleCoordinator lifecycleCoordinator;
 
     private final Map<String, CareerSave> careerCache = new ConcurrentHashMap<>();
+
+    @Autowired
+    public CareerSessionService(CareerRepository careerRepository,
+                                StartCareerUseCase startCareerUseCase,
+                                ContinueCareerUseCase continueCareerUseCase,
+                                RoundEngineRegistry roundEngineRegistry,
+                                MatchSessionRegistry matchSessionRegistry,
+                                CareerDataCleanupRepository careerDataCleanupRepository,
+                                CareerLifecycleCoordinator lifecycleCoordinator) {
+        this.careerRepository = careerRepository;
+        this.startCareerUseCase = startCareerUseCase;
+        this.continueCareerUseCase = continueCareerUseCase;
+        this.roundEngineRegistry = roundEngineRegistry;
+        this.matchSessionRegistry = matchSessionRegistry;
+        this.careerDataCleanupRepository = careerDataCleanupRepository;
+        this.lifecycleCoordinator = lifecycleCoordinator;
+    }
+
+    /** Compatibility constructor for isolated unit tests and tooling. */
+    public CareerSessionService(CareerRepository careerRepository,
+                                StartCareerUseCase startCareerUseCase,
+                                ContinueCareerUseCase continueCareerUseCase,
+                                RoundEngineRegistry roundEngineRegistry,
+                                MatchSessionRegistry matchSessionRegistry,
+                                CareerDataCleanupRepository careerDataCleanupRepository) {
+        this(careerRepository, startCareerUseCase, continueCareerUseCase, roundEngineRegistry,
+                matchSessionRegistry, careerDataCleanupRepository, new CareerLifecycleCoordinator(null));
+    }
 
     public Mono<CareerSave> getCareerFromCache(UUID userId) {
         String key = userId.toString();
@@ -87,7 +115,7 @@ public class CareerSessionService {
     public Mono<CareerSave> saveCareer(CareerSave career) {
         String key = career.getUserId().toString();
 
-        return careerRepository.save(career)
+        return lifecycleCoordinator.serialize(career.getUserId(), careerRepository.save(career))
             .doOnSuccess(saved -> careerCache.put(key, career))
             .doOnError(error -> {
                 // Log error silently
@@ -96,8 +124,9 @@ public class CareerSessionService {
     }
 
     public Mono<Void> deleteCareer(UUID userId) {
-        invalidateCache(userId);
-        return careerRepository.findById(userId.toString())
+        return lifecycleCoordinator.serializeReset(userId, Mono.defer(() -> {
+            invalidateCache(userId);
+            return careerRepository.findById(userId.toString())
                 .defaultIfEmpty(java.util.Optional.empty())
                 .flatMap(existing -> {
                     String careerId = existing.map(CareerSave::getCareerId).orElse(null);
@@ -112,6 +141,7 @@ public class CareerSessionService {
                                     result.partialFailure()));
                 })
                 .then(Mono.defer(() -> careerRepository.deleteById(userId.toString())));
+        }));
     }
 
     @Deprecated
