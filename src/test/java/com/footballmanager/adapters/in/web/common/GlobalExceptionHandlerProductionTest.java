@@ -3,6 +3,9 @@ package com.footballmanager.adapters.in.web.common;
 import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthCredentialsException;
 import com.footballmanager.application.exception.AuthValidationException;
+import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
+import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
+import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
 import com.footballmanager.infrastructure.security.RequestCorrelationWebFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -144,6 +147,34 @@ class GlobalExceptionHandlerProductionTest {
         assertThat(conflict.status()).isEqualTo(409);
         assertThat(conflict.requestId()).isEqualTo("req-409");
         assertThat(conflict.toString()).doesNotContain("internal-db", "LettuceConnectionException", "C:\\secret");
+    }
+
+    @Test
+    void exposesStableCleanupCodesWithoutInternalDetails() {
+        CareerDataCleanupResult rejected = result(CareerDataCleanupResult.Status.REJECTED_OWNERSHIP);
+        ErrorResponseBody rejectedBody = handler.handleCareerCleanup(
+                new CareerDataCleanupException(rejected, new IllegalStateException("redis key leaked")),
+                exchangeWithRequestId("req-rejected")).block().getBody();
+        assertThat(rejectedBody.code()).isEqualTo("CAREER_CLEANUP_OWNERSHIP_REJECTED");
+        assertThat(rejectedBody.status()).isEqualTo(422);
+        assertThat(rejectedBody.toString()).doesNotContain("redis", "ownerHash");
+
+        CareerDataCleanupResult retryable = result(CareerDataCleanupResult.Status.PARTIAL_RETRYABLE);
+        ErrorResponseBody retryableBody = handler.handleCareerCleanup(
+                new CareerDataCleanupException(retryable, new IllegalStateException("internal")),
+                exchangeWithRequestId("req-retry")).block().getBody();
+        assertThat(retryableBody.code()).isEqualTo("CAREER_CLEANUP_RETRYABLE");
+        assertThat(retryableBody.status()).isEqualTo(503);
+
+        ErrorResponseBody limitBody = handler.handleCareerIndexLimit(
+                new CareerIndexLimitException(), exchangeWithRequestId("req-limit")).block().getBody();
+        assertThat(limitBody.code()).isEqualTo("CAREER_INDEX_LIMIT_REACHED");
+        assertThat(limitBody.status()).isEqualTo(409);
+    }
+
+    private static CareerDataCleanupResult result(CareerDataCleanupResult.Status status) {
+        return new CareerDataCleanupResult(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                "owner-hash", 0, 0, Map.of(), false, "", "", status, 1);
     }
 
     private static MockServerWebExchange exchangeWithRequestId(String requestId) {

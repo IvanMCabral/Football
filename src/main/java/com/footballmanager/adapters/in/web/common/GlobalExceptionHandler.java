@@ -5,6 +5,9 @@ import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthCredentialsException;
 import com.footballmanager.application.exception.AuthValidationException;
+import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
+import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
+import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
 import com.footballmanager.infrastructure.security.RequestCorrelationWebFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -118,6 +121,45 @@ public class GlobalExceptionHandler {
             IllegalArgumentException ex,
             ServerWebExchange exchange) {
         return validationError(ex, exchange);
+    }
+
+    @ExceptionHandler(CareerDataCleanupException.class)
+    public Mono<ResponseEntity<ErrorResponseBody>> handleCareerCleanup(
+            CareerDataCleanupException ex,
+            ServerWebExchange exchange) {
+        CareerDataCleanupResult.Status status = ex.result().status();
+        HttpStatus httpStatus;
+        String code;
+        String message;
+        if (status == CareerDataCleanupResult.Status.REJECTED_OWNERSHIP) {
+            httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
+            code = "CAREER_CLEANUP_OWNERSHIP_REJECTED";
+            message = "La carrera no puede eliminarse porque su ownership no pudo validarse.";
+        } else if (status == CareerDataCleanupResult.Status.PARTIAL_RETRYABLE) {
+            httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
+            code = "CAREER_CLEANUP_RETRYABLE";
+            message = "La limpieza no terminó. Podés reintentar más tarde.";
+        } else {
+            httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
+            code = "CAREER_CLEANUP_FAILED";
+            message = "La carrera no pudo eliminarse por un problema temporal.";
+        }
+        return Mono.just(ResponseEntity.status(httpStatus)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorResponseBody(code, message, httpStatus.value(), requestId(exchange))));
+    }
+
+    @ExceptionHandler(CareerIndexLimitException.class)
+    public Mono<ResponseEntity<ErrorResponseBody>> handleCareerIndexLimit(
+            CareerIndexLimitException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorResponseBody(
+                        "CAREER_INDEX_LIMIT_REACHED",
+                        "La carrera alcanzó el límite de historial permitido.",
+                        HttpStatus.CONFLICT.value(),
+                        requestId(exchange))));
     }
 
     @ExceptionHandler(ServerWebInputException.class)
