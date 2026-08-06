@@ -191,6 +191,7 @@ public class RoundController {
                                 matchId,
                                 homeTeamId,
                                 awayTeamId,
+                                traceCareerId,
                                 result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
                                 detailedMatchSession)
                             .take(1)
@@ -201,6 +202,7 @@ public class RoundController {
                                 matchId,
                                 homeTeamId,
                                 awayTeamId,
+                                traceCareerId,
                                 finalState -> {
                                     matchResults.add(new MatchResultProcessor.MatchResultInfo(
                                             matchId.toString(),

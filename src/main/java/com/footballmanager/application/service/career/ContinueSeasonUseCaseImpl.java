@@ -44,7 +44,7 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
                 }
 
                 String careerId = career.getCareerId();
-                log.info("[ContinueSeason] Cleaning owner-scoped registries for userId={}, careerId={}", userId, careerId);
+                log.info("[ContinueSeason] Cleaning owner-scoped registries before continuing season");
                 matchSessionRegistry.clearSessionsForOwner(userId, careerId);
                 roundEngineRegistry.stopEnginesForOwner(userId, careerId);
 

@@ -34,15 +34,27 @@ public class MatchSessionRegistry {
      * Obtiene una sesión existente o crea una nueva si no existe (legacy path).
      */
     public Optional<MatchSession> getOrCreateSession(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
+        return getOrCreateSession(userId, matchId, homeTeamId, awayTeamId, null);
+    }
+
+    public Optional<MatchSession> getOrCreateSession(UUID userId, UUID matchId, UUID homeTeamId,
+                                                      UUID awayTeamId, String careerId) {
         String key = buildKey(userId, matchId);
         return Optional.ofNullable(activeSessions.computeIfAbsent(key, id -> {
             MatchState initialState = new MatchState(matchId);
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
+            initialState.setCareerId(careerId);
             return new MatchSession(userId, matchId, initialState, tickHandler);
         }));
     }
     public MatchSession getOrCreateDetailedSession(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, LiveSession detailedMatchSession) {
+        return getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId, null, detailedMatchSession);
+    }
+
+    public MatchSession getOrCreateDetailedSession(UUID userId, UUID matchId, UUID homeTeamId,
+                                                    UUID awayTeamId, String careerId,
+                                                    LiveSession detailedMatchSession) {
         String key = buildKey(userId, matchId);
         return activeSessions.computeIfAbsent(key, id -> {
             MatchState initialState = new MatchState(matchId);
@@ -56,6 +68,7 @@ public class MatchSessionRegistry {
             initialState.setUserId(userId != null ? userId.toString() : null);
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
+            initialState.setCareerId(careerId);
             return new MatchSession(userId, matchId, initialState, tickHandler, detailedMatchSession);
         });
     }

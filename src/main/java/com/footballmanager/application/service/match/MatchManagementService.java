@@ -45,7 +45,18 @@ public class MatchManagementService {
             UUID awayTeamId,
             Consumer<MatchStateSnapshot> onFinishCallback) {
 
-        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId);
+        return startMatch(userId, matchId, homeTeamId, awayTeamId, null, onFinishCallback);
+    }
+
+    public Flux<MatchStateSnapshot> startMatch(
+            UUID userId,
+            UUID matchId,
+            UUID homeTeamId,
+            UUID awayTeamId,
+            String careerId,
+            Consumer<MatchStateSnapshot> onFinishCallback) {
+
+        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId, careerId);
         return startMatchUseCase.execute(userId, matchId, onFinishCallback);
     }
     public Flux<MatchStateSnapshot> startMatch(
@@ -56,7 +67,20 @@ public class MatchManagementService {
             Consumer<MatchFinishedResult> onFinishCallback,
             LiveSession detailedMatchSession) {
 
-        sessionRegistry.getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId, detailedMatchSession);
+        return startMatch(userId, matchId, homeTeamId, awayTeamId, null, onFinishCallback, detailedMatchSession);
+    }
+
+    public Flux<MatchStateSnapshot> startMatch(
+            UUID userId,
+            UUID matchId,
+            UUID homeTeamId,
+            UUID awayTeamId,
+            String careerId,
+            Consumer<MatchFinishedResult> onFinishCallback,
+            LiveSession detailedMatchSession) {
+
+        sessionRegistry.getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId,
+                careerId, detailedMatchSession);
 
         return startMatchUseCaseImpl.executeDetailedMatch(userId, matchId, onFinishCallback, detailedMatchSession);
     }
