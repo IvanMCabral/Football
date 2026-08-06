@@ -25,6 +25,8 @@ import java.util.UUID;
 public class RedisCareerDataCleanupRepository implements CareerDataCleanupRepository {
 
     private static final int MAX_BATCH_SIZE = 100;
+    private static final int MAX_INDEX_CARDINALITY = 256;
+    private static final String CAREER_OWNER_PREFIX = "career-owner:";
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     public RedisCareerDataCleanupRepository(
@@ -41,17 +43,25 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         CleanupAccumulator accumulator = new CleanupAccumulator(userId, careerId);
         return redisTemplate.opsForSet()
                 .members(indexKey(userId))
+                .take(MAX_INDEX_CARDINALITY + 1L)
                 .collectList()
-                .flatMapMany(indexedCareerIds -> {
-                    accumulator.setCareerCount(indexedCareerIds, careerId);
-                    return Flux.fromIterable(patterns(userId, careerId, indexedCareerIds));
+                .flatMap(indexedCareerIds -> {
+                    if (indexedCareerIds.size() > MAX_INDEX_CARDINALITY) {
+                        accumulator.fail("CAREER_INDEX_CARDINALITY_EXCEEDED");
+                        return Mono.error(new IllegalStateException("career index cardinality exceeded"));
+                    }
+                    return validateOwnership(userId, careerId, indexedCareerIds, accumulator);
+                })
+                .flatMapMany(ownedCareerIds -> {
+                    accumulator.setCareerCount(ownedCareerIds, careerId);
+                    return Flux.fromIterable(patterns(userId, careerId, ownedCareerIds));
                 })
                 .doOnNext(accumulator::patternEvaluated)
                 .concatMap(spec -> scanKeys(spec)
                         .doOnSubscribe(subscription -> accumulator.activeFamily(spec.family()))
                         .map(key -> new KeyHit(spec.family(), key))
                         .doOnNext(accumulator::discovered)
-                        .filter(hit -> accumulator.markUnique(hit.key()))
+                        .filter(hit -> accumulator.markUnique(hit.key(), hit.family()))
                         .map(KeyHit::key)
                         .buffer(MAX_BATCH_SIZE)
                         .concatMap(batch -> batch.isEmpty()
@@ -60,11 +70,45 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                                     accumulator.batchRequested(spec.family(), batch);
                                     return redisTemplate.unlink(Flux.fromIterable(batch));
                                 })
-                                        .flatMap(deleted -> accumulator.batchDeleted(spec.family(), batch, deleted))))
+                                        .flatMap(deleted -> accumulator.batchDeleted(redisTemplate, spec.family(), batch, deleted))))
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
-                .onErrorMap(error -> error instanceof CareerDataCleanupException
-                        ? error
-                        : new CareerDataCleanupException(accumulator.result(true, accumulator.failedFamily()), error));
+                .onErrorMap(error -> {
+                    if (error instanceof CareerDataCleanupException) {
+                        return error;
+                    }
+                    accumulator.fail(accumulator.failureReasonFor(error));
+                    return new CareerDataCleanupException(accumulator.result(true, accumulator.failedFamily()), error);
+                });
+    }
+
+    private Mono<List<String>> validateOwnership(UUID userId, String explicitCareerId,
+                                                   List<String> indexedCareerIds,
+                                                   CleanupAccumulator accumulator) {
+        if (indexedCareerIds.stream().anyMatch(id -> id == null || id.isBlank())) {
+            accumulator.rejectOwnership("OWNER_INDEX_ENTRY_INVALID");
+            return Mono.error(new OwnershipRejectedException());
+        }
+        java.util.LinkedHashSet<String> candidates = new java.util.LinkedHashSet<>();
+        indexedCareerIds.stream()
+                .filter(id -> id != null && !id.isBlank())
+                .forEach(candidates::add);
+        if (explicitCareerId != null && !explicitCareerId.isBlank()) {
+            candidates.add(explicitCareerId);
+        }
+        return Flux.fromIterable(candidates)
+                .concatMap(candidate -> redisTemplate.opsForValue()
+                        .get(ownerMappingKey(candidate))
+                        .switchIfEmpty(Mono.defer(() -> {
+                            accumulator.rejectOwnership("OWNER_MAPPING_MISSING");
+                            return Mono.error(new OwnershipRejectedException());
+                        }))
+                        .flatMap(mappedOwner -> mappedOwner.equals(userId.toString())
+                                ? Mono.just(candidate)
+                                : Mono.defer(() -> {
+                                    accumulator.rejectOwnership("OWNER_MAPPING_MISMATCH");
+                                    return Mono.error(new OwnershipRejectedException());
+                                })))
+                .collectList();
     }
 
     private List<PatternSpec> patterns(UUID userId, String careerId, List<String> indexedCareerIds) {
@@ -83,6 +127,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         }
         for (String indexedCareerId : careerIds) {
             if (indexedCareerId != null && !indexedCareerId.isBlank()) {
+                patterns.add(new PatternSpec("career-owner-mapping", ownerMappingKey(indexedCareerId)));
                 patterns.add(new PatternSpec("match-detail", "career:" + indexedCareerId + ":match-detail:*"));
                 patterns.add(new PatternSpec("match-baseline", "career:" + indexedCareerId + ":match-baseline:*"));
             }
@@ -101,6 +146,13 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         return "user:" + userId + ":career-ids";
     }
 
+    private String ownerMappingKey(String careerId) {
+        return CAREER_OWNER_PREFIX + careerId;
+    }
+
+    private static final class OwnershipRejectedException extends RuntimeException {
+    }
+
     private record PatternSpec(String family, String pattern) { }
     private record KeyHit(String family, String key) { }
 
@@ -113,10 +165,15 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         private long discovered;
         private long requested;
         private long deleted;
+        private long missingAtDelete;
+        private long unexplainedShortfall;
         private int patterns;
         private int batches;
         private int maxBatch;
+        private int ownershipMismatchCount;
         private String activeFamily = "unknown";
+        private CareerDataCleanupResult.Status status = CareerDataCleanupResult.Status.IN_PROGRESS;
+        private String failureReason = "";
 
         private CleanupAccumulator(UUID userId, String careerId) {
             this.ownerHash = shortHash(userId.toString());
@@ -149,8 +206,8 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             families.computeIfAbsent(hit.family(), ignored -> new MutableFamily()).discovered++;
         }
 
-        boolean markUnique(String key) {
-            return uniqueKeyFamilies.putIfAbsent(key, activeFamily) == null;
+        boolean markUnique(String key, String family) {
+            return uniqueKeyFamilies.putIfAbsent(key, family) == null;
         }
 
         void batchRequested(String familyName, List<String> batch) {
@@ -161,26 +218,76 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             family.requested += batch.size();
         }
 
-        Mono<Long> batchDeleted(String familyName, List<String> batch, long count) {
+        Mono<Long> batchDeleted(ReactiveRedisTemplate<String, String> redis,
+                                String familyName, List<String> batch, long count) {
             if (count > batch.size()) {
+                fail("REDIS_DELETE_COUNT_INVALID");
                 return Mono.error(new IllegalStateException("Redis deleted more keys than requested"));
             }
+            long shortfall = batch.size() - count;
+            if (shortfall == 0) {
+                recordDeleted(familyName, count);
+                return Mono.just(count);
+            }
+            return Flux.fromIterable(batch)
+                    .concatMap(redis::hasKey)
+                    .filter(Boolean::booleanValue)
+                    .count()
+                    .flatMap(stillPresent -> {
+                        missingAtDelete += shortfall - stillPresent;
+                        if (stillPresent > 0) {
+                            unexplainedShortfall += stillPresent;
+                            fail("UNEXPLAINED_SHORTFALL");
+                            return Mono.error(new IllegalStateException("Redis cleanup shortfall remains"));
+                        }
+                        recordDeleted(familyName, count);
+                        return Mono.just(count);
+                    });
+        }
+
+        private void recordDeleted(String familyName, long count) {
             deleted += count;
             MutableFamily family = families.computeIfAbsent(familyName, ignored -> new MutableFamily());
             family.deleted += count;
-            return Mono.just(count);
         }
 
         String failedFamily() {
             return activeFamily;
         }
 
+        void rejectOwnership(String reason) {
+            ownershipMismatchCount++;
+            status = CareerDataCleanupResult.Status.REJECTED_OWNERSHIP;
+            failureReason = reason;
+        }
+
+        void fail(String reason) {
+            if (status == CareerDataCleanupResult.Status.REJECTED_OWNERSHIP) {
+                return;
+            }
+            status = requested > 0
+                    ? CareerDataCleanupResult.Status.PARTIAL_RETRYABLE
+                    : CareerDataCleanupResult.Status.FAILED;
+            failureReason = reason;
+        }
+
+        String failureReasonFor(Throwable error) {
+            if (!failureReason.isBlank()) {
+                return failureReason;
+            }
+            return error instanceof OwnershipRejectedException ? "OWNER_MAPPING_REJECTED" : "REDIS_OPERATION_FAILED";
+        }
+
         CareerDataCleanupResult result(boolean partialFailure, String failedFamily) {
             Map<String, CareerDataCleanupResult.FamilyCleanupResult> counts = new LinkedHashMap<>();
             families.forEach((family, values) -> counts.put(family,
                     new CareerDataCleanupResult.FamilyCleanupResult(values.discovered, values.requested, values.deleted)));
+            CareerDataCleanupResult.Status resultStatus = partialFailure
+                    ? status
+                    : CareerDataCleanupResult.Status.COMPLETED;
             return new CareerDataCleanupResult(patterns, discovered, uniqueKeyFamilies.size(), requested, deleted,
-                    batches, maxBatch, ownerHash, careerCount, counts, partialFailure, failedFamily,
+                    missingAtDelete, unexplainedShortfall, batches, maxBatch, ownerHash, careerCount,
+                    ownershipMismatchCount, counts, partialFailure, failedFamily, failureReason, resultStatus,
                     java.time.Duration.between(started, Instant.now()).toMillis());
         }
 

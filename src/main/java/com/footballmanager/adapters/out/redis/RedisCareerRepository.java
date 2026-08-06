@@ -26,7 +26,9 @@ public class RedisCareerRepository implements CareerRepository {
 
     private static final String KEY_PREFIX = "career:";
     private static final String CAREER_INDEX_SUFFIX = ":career-ids";
+    private static final String CAREER_OWNER_PREFIX = "career-owner:";
     private static final Duration CACHE_TTL = Duration.ofDays(30); // 30 días de inactividad
+    private static final Duration CAREER_INDEX_TTL = Duration.ofDays(31);
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -53,11 +55,14 @@ public class RedisCareerRepository implements CareerRepository {
         try {
             String json = objectMapper.writeValueAsString(careerSave);
             int palmaresSize = careerSave.getSeasonManager().getPalmares() != null ? careerSave.getSeasonManager().getPalmares().size() : 0;
-            log.info("[REDIS-SAVE] userId={}, palmaresSize={}", careerSave.getUserId(), palmaresSize);
+            log.info("[REDIS-SAVE] career state persisted, palmaresSize={}", palmaresSize);
             return RuntimeOperationMetrics.measure("redis.career.save",
-                redisTemplate.opsForValue().set(key, json, CACHE_TTL)
-                    .then(indexCareer(careerSave))
-                    .then());
+                ensureOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
+                    .flatMap(mapping -> redisTemplate.opsForValue().set(key, json, CACHE_TTL)
+                        .onErrorResume(error -> mapping.created()
+                                ? redisTemplate.delete(mapping.key()).then(Mono.error(error))
+                                : Mono.error(error))
+                        .then(indexCareer(careerSave))));
         } catch (Exception e) {
             return RuntimeOperationMetrics.measure("redis.career.save", Mono.error(e));
         }
@@ -77,11 +82,11 @@ public class RedisCareerRepository implements CareerRepository {
                         CareerSave career = objectMapper.readValue(json, CareerSave.class);
                         int palmaresSize = career.getSeasonManager() != null && career.getSeasonManager().getPalmares() != null
                             ? career.getSeasonManager().getPalmares().size() : 0;
-                        log.info("[REDIS-LOAD] userId={}, palmaresSize={}, seasonManagerNull={}",
-                            id, palmaresSize, career.getSeasonManager() == null);
+                        log.info("[REDIS-LOAD] career state loaded, palmaresSize={}, seasonManagerNull={}",
+                            palmaresSize, career.getSeasonManager() == null);
                         return Optional.of(career);
                     } catch (Exception e) {
-                        log.error("[REDIS-LOAD] Error deserializing career for userId={}: {}", id, e.getMessage());
+                        log.error("[REDIS-LOAD] Error deserializing career state", e);
                         return Optional.<CareerSave>empty();
                     }
                 })
@@ -99,7 +104,7 @@ public class RedisCareerRepository implements CareerRepository {
                 .flatMap(indexed -> indexed
                         ? Mono.just(career)
                         : redisTemplate.opsForSet().add(index, value.getCareerId())
-                                .then(redisTemplate.expire(index, CACHE_TTL))
+                                .then(redisTemplate.expire(index, CAREER_INDEX_TTL))
                                 .thenReturn(career));
     }
 
@@ -109,8 +114,24 @@ public class RedisCareerRepository implements CareerRepository {
         }
         String index = indexKey(career.getUserId());
         return redisTemplate.opsForSet().add(index, career.getCareerId())
-                .then(redisTemplate.expire(index, CACHE_TTL))
+                .then(redisTemplate.expire(index, CAREER_INDEX_TTL))
                 .then();
+    }
+
+    private Mono<MappingState> ensureOwnerMapping(String careerId, UUID ownerId) {
+        if (careerId == null || careerId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("careerId must not be blank"));
+        }
+        String key = ownerMappingKey(careerId);
+        return redisTemplate.opsForValue().setIfAbsent(key, ownerId.toString(), CAREER_INDEX_TTL)
+                .flatMap(created -> created
+                        ? Mono.just(new MappingState(key, true))
+                        : redisTemplate.opsForValue().get(key)
+                                .flatMap(existing -> existing.equals(ownerId.toString())
+                                        ? redisTemplate.expire(key, CAREER_INDEX_TTL)
+                                                .thenReturn(new MappingState(key, false))
+                                        : Mono.error(new IllegalStateException("career ownership mapping conflict")))
+                                .switchIfEmpty(Mono.error(new IllegalStateException("career ownership mapping missing"))));
     }
 
     /**
@@ -134,6 +155,13 @@ public class RedisCareerRepository implements CareerRepository {
 
     private String indexKey(UUID userId) {
         return "user:" + userId + CAREER_INDEX_SUFFIX;
+    }
+
+    private String ownerMappingKey(String careerId) {
+        return CAREER_OWNER_PREFIX + careerId;
+    }
+
+    private record MappingState(String key, boolean created) {
     }
 
     /**
