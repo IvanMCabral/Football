@@ -139,6 +139,10 @@ public class GlobalExceptionHandler {
             httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
             code = "CAREER_CLEANUP_RETRYABLE";
             message = "La limpieza no terminó. Podés reintentar más tarde.";
+        } else if ("CLEANUP_TIMEOUT".equals(ex.result().failureReason())) {
+            httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
+            code = "CAREER_CLEANUP_TIMEOUT";
+            message = "La limpieza excediÃ³ el tiempo permitido. PodÃ©s reintentar mÃ¡s tarde.";
         } else {
             httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
             code = "CAREER_CLEANUP_FAILED";
@@ -174,12 +178,20 @@ public class GlobalExceptionHandler {
             IllegalStateException ex,
             ServerWebExchange exchange) {
         Map<String, Object> body = new HashMap<>();
-        body.put("code", "LINEUP_STATE_ERROR");
-        body.put("message", messageResolver.clientMessage(ex, INVALID_STATE_MESSAGE));
-        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        String internal = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase(java.util.Locale.ROOT);
+        boolean lifecycleConflict = internal.contains("lifecycle") || internal.contains("generation")
+                || internal.contains("ownership index");
+        HttpStatus status = lifecycleConflict ? HttpStatus.CONFLICT : HttpStatus.UNPROCESSABLE_ENTITY;
+        body.put("code", lifecycleConflict
+                ? (internal.contains("stale") ? "CAREER_STALE_GENERATION" : "CAREER_OPERATION_CONFLICT")
+                : "LINEUP_STATE_ERROR");
+        body.put("message", lifecycleConflict
+                ? "La operaciÃ³n de carrera ya no estÃ¡ vigente."
+                : messageResolver.clientMessage(ex, INVALID_STATE_MESSAGE));
+        body.put("status", status.value());
         body.put("requestId", requestId(exchange));
         return Mono.just(
-            ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            ResponseEntity.status(status)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
         );

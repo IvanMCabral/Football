@@ -60,8 +60,18 @@ public class ProductionStartupValidation {
         validatePositiveLong("JWT_REFRESH_EXPIRATION", 60_000L, 2_592_000_000L);
         validatePositiveInt("DB_PORT");
         validatePositiveInt("REDIS_PORT");
+        validateLifecycleCoordinationMode();
         validateRedisTtl("REDIS_WORLD_TTL", "app.redis.world-ttl", Duration.ofHours(1), Duration.ofDays(90));
         validateRedisTtl("REDIS_MATCH_DETAIL_TTL", "app.redis.match-detail-ttl", Duration.ofDays(1), Duration.ofDays(90));
+    }
+
+    private void validateLifecycleCoordinationMode() {
+        String mode = environment.getProperty("APP_REDIS_LIFECYCLE_MODE",
+                environment.getProperty("app.redis.lifecycle-mode", "single-instance"));
+        if (!"single-instance".equalsIgnoreCase(mode.trim())) {
+            throw new IllegalStateException(
+                    "Production startup blocked. Redis lifecycle mode requires a distributed lock: " + mode);
+        }
     }
 
     private boolean isProdProfileActive() {
