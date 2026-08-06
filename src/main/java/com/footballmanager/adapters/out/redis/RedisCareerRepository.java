@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.footballmanager.domain.model.repository.CareerRepository;
+import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
 import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -15,6 +16,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
+import reactor.core.publisher.Sinks;
 
 /**
  * Repositorio para guardar y cargar CareerSave en Redis.
@@ -29,6 +34,8 @@ public class RedisCareerRepository implements CareerRepository {
     private static final String CAREER_OWNER_PREFIX = "career-owner:";
     private static final Duration CACHE_TTL = Duration.ofDays(30); // 30 días de inactividad
     private static final Duration CAREER_INDEX_TTL = Duration.ofDays(31);
+    private static final int MAX_CAREER_INDEX_SIZE = 256;
+    private static final ConcurrentMap<String, OwnerSaveQueue> SAVE_QUEUES = new ConcurrentHashMap<>();
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -57,12 +64,11 @@ public class RedisCareerRepository implements CareerRepository {
             int palmaresSize = careerSave.getSeasonManager().getPalmares() != null ? careerSave.getSeasonManager().getPalmares().size() : 0;
             log.info("[REDIS-SAVE] career state persisted, palmaresSize={}", palmaresSize);
             return RuntimeOperationMetrics.measure("redis.career.save",
-                ensureOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
-                    .flatMap(mapping -> redisTemplate.opsForValue().set(key, json, CACHE_TTL)
-                        .onErrorResume(error -> mapping.created()
-                                ? redisTemplate.delete(mapping.key()).then(Mono.error(error))
-                                : Mono.error(error))
-                        .then(indexCareer(careerSave))));
+                    serializeSave(careerSave.getUserId(), ensureOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
+                            .flatMap(mapping -> redisTemplate.hasKey(key)
+                                    .flatMap(rootExisted -> redisTemplate.opsForValue().set(key, json, CACHE_TTL)
+                                            .then(indexCareer(careerSave))
+                                            .onErrorResume(error -> compensateFailedSave(mapping, key, rootExisted, error))))));
         } catch (Exception e) {
             return RuntimeOperationMetrics.measure("redis.career.save", Mono.error(e));
         }
@@ -91,7 +97,9 @@ public class RedisCareerRepository implements CareerRepository {
                     }
                 })
                 .defaultIfEmpty(Optional.empty())
-                .flatMap(this::ensureCareerIndex));
+                .flatMap(career -> career.isEmpty()
+                        ? Mono.just(career)
+                        : serializeSave(career.get().getUserId(), ensureCareerIndex(career))));
     }
 
     private Mono<Optional<CareerSave>> ensureCareerIndex(Optional<CareerSave> career) {
@@ -99,13 +107,7 @@ public class RedisCareerRepository implements CareerRepository {
             return Mono.just(career);
         }
         CareerSave value = career.get();
-        String index = indexKey(value.getUserId());
-        return redisTemplate.opsForSet().isMember(index, value.getCareerId())
-                .flatMap(indexed -> indexed
-                        ? Mono.just(career)
-                        : redisTemplate.opsForSet().add(index, value.getCareerId())
-                                .then(redisTemplate.expire(index, CAREER_INDEX_TTL))
-                                .thenReturn(career));
+        return indexCareer(value).thenReturn(career);
     }
 
     private Mono<Void> indexCareer(CareerSave career) {
@@ -113,9 +115,15 @@ public class RedisCareerRepository implements CareerRepository {
             return Mono.empty();
         }
         String index = indexKey(career.getUserId());
-        return redisTemplate.opsForSet().add(index, career.getCareerId())
-                .then(redisTemplate.expire(index, CAREER_INDEX_TTL))
-                .then();
+        return redisTemplate.opsForSet().isMember(index, career.getCareerId())
+                .flatMap(existing -> existing
+                        ? redisTemplate.expire(index, CAREER_INDEX_TTL).then()
+                        : redisTemplate.opsForSet().size(index)
+                                .flatMap(size -> size >= MAX_CAREER_INDEX_SIZE
+                                        ? Mono.error(new CareerIndexLimitException())
+                                        : redisTemplate.opsForSet().add(index, career.getCareerId())
+                                                .then(redisTemplate.expire(index, CAREER_INDEX_TTL))
+                                                .then()));
     }
 
     private Mono<MappingState> ensureOwnerMapping(String careerId, UUID ownerId) {
@@ -125,11 +133,11 @@ public class RedisCareerRepository implements CareerRepository {
         String key = ownerMappingKey(careerId);
         return redisTemplate.opsForValue().setIfAbsent(key, ownerId.toString(), CAREER_INDEX_TTL)
                 .flatMap(created -> created
-                        ? Mono.just(new MappingState(key, true))
+                        ? Mono.just(new MappingState(key, true, ownerId.toString()))
                         : redisTemplate.opsForValue().get(key)
                                 .flatMap(existing -> existing.equals(ownerId.toString())
                                         ? redisTemplate.expire(key, CAREER_INDEX_TTL)
-                                                .thenReturn(new MappingState(key, false))
+                                                .thenReturn(new MappingState(key, false, ownerId.toString()))
                                         : Mono.error(new IllegalStateException("career ownership mapping conflict")))
                                 .switchIfEmpty(Mono.error(new IllegalStateException("career ownership mapping missing"))));
     }
@@ -161,14 +169,70 @@ public class RedisCareerRepository implements CareerRepository {
         return CAREER_OWNER_PREFIX + careerId;
     }
 
-    private record MappingState(String key, boolean created) {
+    private Mono<Void> compensateFailedSave(MappingState mapping, String rootKey,
+                                            boolean rootExisted, Throwable error) {
+        Mono<Void> cleanupMapping = mapping.created()
+                ? redisTemplate.opsForValue().get(mapping.key())
+                        .filter(mapping.ownerId()::equals)
+                        .flatMap(ignored -> redisTemplate.delete(mapping.key()).then())
+                : Mono.empty();
+        Mono<Void> cleanupRoot = !rootExisted
+                ? redisTemplate.delete(rootKey).then()
+                : Mono.empty();
+        return Mono.whenDelayError(cleanupMapping, cleanupRoot)
+                .onErrorResume(ignored -> Mono.empty())
+                .then(Mono.error(error));
     }
+
+    private <T> Mono<T> serializeSave(UUID ownerId, Mono<T> operation) {
+        OwnerSaveQueue queue = SAVE_QUEUES.computeIfAbsent(ownerId.toString(), ignored -> new OwnerSaveQueue());
+        return Mono.defer(() -> {
+            Sinks.One<Void> released = Sinks.one();
+            Mono<Void> marker = released.asMono().cache();
+            Mono<Void> predecessor = queue.tail.getAndSet(marker);
+            return predecessor.onErrorResume(ignored -> Mono.empty())
+                    .then(operation)
+                    .doFinally(signal -> {
+                        released.tryEmitEmpty();
+                        Mono<Void> idle = Mono.empty();
+                        queue.tail.compareAndSet(marker, idle);
+                        if (queue.tail.get() == idle) {
+                            SAVE_QUEUES.remove(ownerId.toString(), queue);
+                        }
+                    });
+        });
+    }
+
+    private record MappingState(String key, boolean created, String ownerId) {
+    }
+
+    private static final class OwnerSaveQueue {
+        private final AtomicReference<Mono<Void>> tail = new AtomicReference<>(Mono.empty());
+    }
+
 
     /**
      * Extiende el TTL de una carrera (para mantenerla activa)
      */
     public Mono<Boolean> extendTTL(UUID userId) {
         String key = getKey(userId.toString());
-        return RuntimeOperationMetrics.measure("redis.career.ttl", redisTemplate.expire(key, CACHE_TTL));
+        return RuntimeOperationMetrics.measure("redis.career.ttl",
+                redisTemplate.opsForValue().get(key)
+                        .flatMap(json -> {
+                            try {
+                                CareerSave career = objectMapper.readValue(json, CareerSave.class);
+                                return redisTemplate.opsForValue().get(ownerMappingKey(career.getCareerId()))
+                                        .filter(userId.toString()::equals)
+                                        .switchIfEmpty(Mono.error(new IllegalStateException(
+                                                "career ownership mapping missing")))
+                                        .then(indexCareer(career))
+                                        .then(redisTemplate.expire(key, CACHE_TTL))
+                                        .then(redisTemplate.expire(ownerMappingKey(career.getCareerId()), CAREER_INDEX_TTL))
+                                        .thenReturn(true);
+                            } catch (Exception error) {
+                                return Mono.error(new IllegalStateException("career state unavailable", error));
+                            }
+                        })
+                        .defaultIfEmpty(false));
     }
 }

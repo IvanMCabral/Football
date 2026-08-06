@@ -4,10 +4,13 @@ import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
+import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -31,6 +34,9 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
 
     @Autowired
     private RedisWorldRepository worldRepository;
+
+    @Autowired
+    private CareerOwnershipTouchService ownershipTouchService;
 
     @Test
     void worldTtlExpiresWithoutDeletingCareerRoot() throws InterruptedException {
@@ -89,6 +95,72 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
                 () -> careerRepository.save(conflicting).block(Duration.ofSeconds(10)));
         assertEquals(ownerA.toString(), reactiveRedisTemplate.opsForValue()
                 .get("career-owner:" + careerId).block(Duration.ofSeconds(5)));
+    }
+
+    @Test
+    void indexCardinalityAllows256AndRejects257WithoutPartialState() {
+        UUID owner = UUID.randomUUID();
+        seedCareerIndex(owner, 255, "cardinality");
+
+        careerRepository.save(career(owner, "cardinality-accepted")).block(Duration.ofSeconds(10));
+        assertEquals(256, indexSize(owner));
+
+        assertThrows(RuntimeException.class,
+                () -> careerRepository.save(career(owner, "cardinality-rejected"))
+                        .block(Duration.ofSeconds(10)));
+
+        assertEquals(256, indexSize(owner));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(
+                "career-owner:cardinality-rejected").block()));
+    }
+
+    @Test
+    void existingEntryAt256RenewsAndConcurrentNewSavesAllowExactlyOne() {
+        UUID owner = UUID.randomUUID();
+        seedCareerIndex(owner, 256, "existing");
+
+        careerRepository.save(career(owner, "existing-0")).block(Duration.ofSeconds(10));
+        assertEquals(256, indexSize(owner));
+
+        UUID concurrentOwner = UUID.randomUUID();
+        seedCareerIndex(concurrentOwner, 255, "concurrent");
+        Mono<Boolean> first = careerRepository.save(career(concurrentOwner, "concurrent-256"))
+                .thenReturn(true).onErrorReturn(false);
+        Mono<Boolean> second = careerRepository.save(career(concurrentOwner, "concurrent-257"))
+                .thenReturn(true).onErrorReturn(false);
+
+        long successes = Flux.merge(first, second)
+                .filter(Boolean::booleanValue)
+                .count()
+                .block(Duration.ofSeconds(20));
+
+        assertEquals(1, successes);
+        assertEquals(256, indexSize(concurrentOwner));
+    }
+
+    @Test
+    void ownershipTouchRenewsRootMappingAndIndexBeforeDerivedWrite() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-touch";
+        reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId)
+                .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .block(Duration.ofSeconds(5));
+        reactiveRedisTemplate.opsForValue().set("career:" + owner, "root")
+                .then(reactiveRedisTemplate.expire("career:" + owner, Duration.ofSeconds(1)))
+                .then(reactiveRedisTemplate.expire("career-owner:" + careerId, Duration.ofSeconds(1)))
+                .then(reactiveRedisTemplate.expire("user:" + owner + ":career-ids", Duration.ofSeconds(1)))
+                .block(Duration.ofSeconds(5));
+
+        String written = ownershipTouchService.touchBeforeWrite(careerId,
+                () -> Mono.just("derived-written")).block(Duration.ofSeconds(10));
+
+        assertEquals("derived-written", written);
+        assertTrue(reactiveRedisTemplate.getExpire("career:" + owner).block(Duration.ofSeconds(5))
+                .compareTo(Duration.ofSeconds(1)) > 0);
+        assertTrue(reactiveRedisTemplate.getExpire("career-owner:" + careerId).block(Duration.ofSeconds(5))
+                .compareTo(Duration.ofSeconds(1)) > 0);
+        assertTrue(reactiveRedisTemplate.getExpire("user:" + owner + ":career-ids").block(Duration.ofSeconds(5))
+                .compareTo(Duration.ofSeconds(1)) > 0);
     }
 
     @Test
@@ -153,6 +225,29 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
             reactiveRedisTemplate.opsForValue().set("user:" + owner + ":projection:" + i, "projection")
                     .block(Duration.ofSeconds(5));
         }
+    }
+
+    private CareerSave career(UUID owner, String careerId) {
+        CareerSave career = new CareerSave();
+        career.setUserId(owner);
+        career.getData().setCareerId(careerId);
+        return career;
+    }
+
+    private void seedCareerIndex(UUID owner, int count, String prefix) {
+        String index = "user:" + owner + ":career-ids";
+        for (int i = 0; i < count; i++) {
+            String careerId = prefix + "-" + i;
+            reactiveRedisTemplate.opsForSet().add(index, careerId)
+                    .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                    .block(Duration.ofSeconds(5));
+        }
+        reactiveRedisTemplate.expire(index, Duration.ofDays(31)).block(Duration.ofSeconds(5));
+    }
+
+    private long indexSize(UUID owner) {
+        return reactiveRedisTemplate.opsForSet().size("user:" + owner + ":career-ids")
+                .block(Duration.ofSeconds(5));
     }
 
     private long dbSize() {
