@@ -4,7 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.ports.out.match.MatchCommandRepository;
-import lombok.RequiredArgsConstructor;
+import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -18,7 +19,6 @@ import java.util.UUID;
  * Reactive Redis implementation for pending match commands.
  */
 @Repository
-@RequiredArgsConstructor
 public class RedisMatchCommandRepository implements MatchCommandRepository {
 
     private static final String KEY_PREFIX = "match:commands:";
@@ -26,6 +26,21 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final CareerOwnershipTouchService ownershipTouchService;
+
+    @Autowired
+    public RedisMatchCommandRepository(ReactiveRedisTemplate<String, String> redisTemplate,
+                                       ObjectMapper objectMapper,
+                                       CareerOwnershipTouchService ownershipTouchService) {
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.ownershipTouchService = ownershipTouchService;
+    }
+
+    public RedisMatchCommandRepository(ReactiveRedisTemplate<String, String> redisTemplate,
+                                       ObjectMapper objectMapper) {
+        this(redisTemplate, objectMapper, null);
+    }
 
     @Override
     public Mono<Void> saveCommand(UUID userId, UUID matchId, MatchCommand command) {
@@ -40,9 +55,12 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                 .flatMap(commands -> {
                     try {
                         String json = objectMapper.writeValueAsString(commands);
-                        return redisTemplate.opsForValue()
+                        Mono<Void> persist = redisTemplate.opsForValue()
                                 .set(key, json, TTL)
                                 .then();
+                        return ownershipTouchService == null
+                                ? persist
+                                : ownershipTouchService.touchOwnerBeforeWrite(userId, () -> persist);
                     } catch (Exception e) {
                         return Mono.error(e);
                     }

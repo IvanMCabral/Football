@@ -3,8 +3,9 @@ package com.footballmanager.infrastructure.adapter.out.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.ports.out.match.MatchStateRepository;
-import lombok.RequiredArgsConstructor;
+import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -16,7 +17,6 @@ import java.util.UUID;
  * Implementación reactiva del repositorio de estados de partido usando Redis.
  */
 @Repository
-@RequiredArgsConstructor
 public class RedisMatchStateRepository implements MatchStateRepository {
 
     private static final String KEY_PREFIX = "match:state:";
@@ -24,6 +24,23 @@ public class RedisMatchStateRepository implements MatchStateRepository {
 
     private final @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final CareerOwnershipTouchService ownershipTouchService;
+
+    @Autowired
+    public RedisMatchStateRepository(
+            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
+            ObjectMapper objectMapper,
+            CareerOwnershipTouchService ownershipTouchService) {
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.ownershipTouchService = ownershipTouchService;
+    }
+
+    public RedisMatchStateRepository(
+            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
+            ObjectMapper objectMapper) {
+        this(redisTemplate, objectMapper, null);
+    }
 
     @Override
     public Mono<MatchState> findById(UUID userId, UUID matchId) {
@@ -48,9 +65,12 @@ public class RedisMatchStateRepository implements MatchStateRepository {
         try {
             String json = objectMapper.writeValueAsString(matchState);
 
-            return redisTemplate.opsForValue()
+            Mono<MatchState> persist = redisTemplate.opsForValue()
                     .set(key, json, TTL)
                     .thenReturn(matchState);
+            return ownershipTouchService == null
+                    ? persist
+                    : ownershipTouchService.touchOwnerBeforeWrite(userId, () -> persist);
         } catch (Exception e) {
             return Mono.error(e);
         }

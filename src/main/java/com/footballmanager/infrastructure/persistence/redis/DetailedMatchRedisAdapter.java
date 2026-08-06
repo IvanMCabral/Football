@@ -5,6 +5,7 @@ import com.footballmanager.application.service.simulation.detailed.DetailedMatch
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -20,12 +21,21 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
     private static final String KEY_MATCH_DETAIL = ":match-detail:";
 
     private final ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate;
+    private final CareerOwnershipTouchService ownershipTouchService;
     @Value("${app.redis.match-detail-ttl:30d}")
     private java.time.Duration matchDetailTtl;
 
+    @Autowired
+    public DetailedMatchRedisAdapter(
+            @Qualifier("detailedMatchDataRedisTemplate") ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate,
+            CareerOwnershipTouchService ownershipTouchService) {
+        this.redisTemplate = redisTemplate;
+        this.ownershipTouchService = ownershipTouchService;
+    }
+
     public DetailedMatchRedisAdapter(
             @Qualifier("detailedMatchDataRedisTemplate") ReactiveRedisTemplate<String, DetailedMatchData> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+        this(redisTemplate, null);
     }
 
     @Override
@@ -38,12 +48,15 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
                     Mono<Boolean> save = matchDetailTtl == null
                             ? redisTemplate.opsForValue().set(key, detail)
                             : redisTemplate.opsForValue().set(key, detail, matchDetailTtl);
-                    return save
+                    Mono<Void> persist = save
                             .doOnSuccess(saved -> log.info("[DETAIL-PERSIST-SUCCESS] key={}, careerId={}, matchId={}",
                                     key, careerId, detail.matchId()))
                             .doOnError(error -> log.error("[DETAIL-REDIS] Failed to save match detail key={}, careerId={}, matchId={}: {}",
                                     key, careerId, detail.matchId(), error.getMessage()))
                             .then();
+                    return ownershipTouchService == null
+                            ? persist
+                            : ownershipTouchService.touchBeforeWrite(careerId, () -> persist);
                 }));
     }
 

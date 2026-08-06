@@ -5,6 +5,7 @@ import com.footballmanager.application.service.simulation.detailed.BaselineState
 import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -67,11 +68,21 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
     private static final Duration WRITE_TIMEOUT = Duration.ofSeconds(10);
 
     private final ReactiveRedisTemplate<String, BaselineState> redisTemplate;
+    private final CareerOwnershipTouchService ownershipTouchService;
+
+    @Autowired
+    public BaselineStateRedisAdapter(
+            @Qualifier("matchBaselineStateRedisTemplate")
+            ReactiveRedisTemplate<String, BaselineState> redisTemplate,
+            CareerOwnershipTouchService ownershipTouchService) {
+        this.redisTemplate = redisTemplate;
+        this.ownershipTouchService = ownershipTouchService;
+    }
 
     public BaselineStateRedisAdapter(
             @Qualifier("matchBaselineStateRedisTemplate")
             ReactiveRedisTemplate<String, BaselineState> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+        this(redisTemplate, null);
     }
 
     private String buildKey(String careerId, String matchId) {
@@ -107,7 +118,7 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
         }
         String key = buildKey(careerId, matchId);
 
-        return redisTemplate.opsForValue()
+        Mono<Void> persist = redisTemplate.opsForValue()
                 .set(key, state, BASELINE_TTL)
                 .timeout(WRITE_TIMEOUT)
                 .retryWhen(Retry.backoff(MAX_RETRIES, INITIAL_BACKOFF)
@@ -141,6 +152,9 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
                         : new BaselinePersistenceException(careerId, matchId, e))
                 .subscribeOn(Schedulers.boundedElastic())
                 .then();
+        return ownershipTouchService == null
+                ? persist
+                : ownershipTouchService.touchBeforeWrite(careerId, () -> persist);
     }
 
     @Override

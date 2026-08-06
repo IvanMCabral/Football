@@ -97,6 +97,7 @@ app:
   redis:
     world-ttl: ${REDIS_WORLD_TTL:30d}
     match-detail-ttl: ${REDIS_MATCH_DETAIL_TTL:30d}
+    lifecycle-coordination-timeout: ${REDIS_LIFECYCLE_COORDINATION_TIMEOUT:30s}
   world:
     import:
       three-league: ${APP_WORLD_IMPORT_THREE_LEAGUE:false}

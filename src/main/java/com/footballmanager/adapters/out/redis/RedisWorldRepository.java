@@ -3,8 +3,10 @@ package com.footballmanager.adapters.out.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
+import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -25,13 +27,22 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final CareerOwnershipTouchService ownershipTouchService;
     @Value("${app.redis.world-ttl:30d}")
     private java.time.Duration worldTtl;
 
+    @Autowired
     public RedisWorldRepository(@Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
-                                ObjectMapper objectMapper) {
+                                ObjectMapper objectMapper,
+                                CareerOwnershipTouchService ownershipTouchService) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.ownershipTouchService = ownershipTouchService;
+    }
+
+    public RedisWorldRepository(@Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
+                                ObjectMapper objectMapper) {
+        this(redisTemplate, objectMapper, null);
     }
 
     /**
@@ -47,7 +58,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
     public Mono<WorldSnapshot> save(WorldSnapshot snapshot) {
         String key = generateKey(snapshot.getUserId());
 
-        return Mono.fromCallable(() -> objectMapper.writeValueAsString(snapshot))
+        Mono<WorldSnapshot> persist = Mono.fromCallable(() -> objectMapper.writeValueAsString(snapshot))
                 .flatMap(json -> worldTtl == null
                         ? redisTemplate.opsForValue().set(key, json)
                         : redisTemplate.opsForValue().set(key, json, worldTtl))
@@ -55,6 +66,9 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
                 .onErrorResume(e -> {
                     return Mono.error(e);
                 });
+        return ownershipTouchService == null
+                ? persist
+                : ownershipTouchService.touchOwnerBeforeWriteIfCareerExists(snapshot.getUserId(), () -> persist);
     }
 
     /**
