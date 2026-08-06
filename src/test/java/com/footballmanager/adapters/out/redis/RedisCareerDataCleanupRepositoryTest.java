@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Publisher;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveSetOperations;
+import org.springframework.data.redis.core.ReactiveValueOperations;
 import org.springframework.data.redis.core.ScanOptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,6 +28,7 @@ class RedisCareerDataCleanupRepositoryTest {
 
     @Mock ReactiveRedisTemplate<String, String> redisTemplate;
     @Mock ReactiveSetOperations<String, String> setOperations;
+    @Mock ReactiveValueOperations<String, String> valueOperations;
 
     private UUID ownerA;
     private RedisCareerDataCleanupRepository repository;
@@ -36,9 +38,13 @@ class RedisCareerDataCleanupRepositoryTest {
     void setUp() {
         ownerA = UUID.randomUUID();
         repository = new RedisCareerDataCleanupRepository(redisTemplate);
-        when(redisTemplate.opsForSet()).thenReturn(setOperations);
-        when(setOperations.members("user:" + ownerA + ":career-ids"))
+        lenient().when(redisTemplate.opsForSet()).thenReturn(setOperations);
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(setOperations.members("user:" + ownerA + ":career-ids"))
                 .thenReturn(Flux.just("career-a"));
+        lenient().when(valueOperations.get("career-owner:career-a"))
+                .thenReturn(Mono.just(ownerA.toString()));
+        lenient().when(redisTemplate.hasKey(anyString())).thenReturn(Mono.just(false));
         lenient().when(redisTemplate.unlink(any(Publisher.class))).thenAnswer(invocation -> {
             @SuppressWarnings("unchecked") Publisher<String> publisher = invocation.getArgument(0);
             List<String> batch = Flux.from(publisher).collectList().block();
@@ -102,7 +108,47 @@ class RedisCareerDataCleanupRepositoryTest {
 
         assertEquals(1, result.keysRequestedForDeletion());
         assertEquals(0, result.keysActuallyDeleted());
+        assertEquals(1, result.missingAtDelete());
+        assertEquals(0, result.unexplainedShortfall());
         assertFalse(result.partialFailure());
+        assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+    }
+
+    @Test
+    void corruptOwnerIndexRejectsWithoutScanningOrDeletingForeignCareer() {
+        UUID ownerB = UUID.randomUUID();
+        when(setOperations.members("user:" + ownerA + ":career-ids"))
+                .thenReturn(Flux.just("career-b"));
+        when(valueOperations.get("career-owner:career-b"))
+                .thenReturn(Mono.just(ownerB.toString()));
+
+        CareerDataCleanupException failure = assertThrows(CareerDataCleanupException.class,
+                () -> repository.deleteOwnedData(ownerA, null).block());
+
+        assertEquals(CareerDataCleanupResult.Status.REJECTED_OWNERSHIP, failure.result().status());
+        assertEquals(1, failure.result().ownershipMismatchCount());
+        assertEquals(0, failure.result().keysRequestedForDeletion());
+        verify(redisTemplate, never()).scan(any(ScanOptions.class));
+        verify(redisTemplate, never()).unlink(any(Publisher.class));
+    }
+
+    @Test
+    void unexplainedShortfallFailsClosedAndPreservesRootPath() {
+        when(redisTemplate.scan(any(ScanOptions.class))).thenAnswer(invocation -> {
+            String pattern = invocation.<ScanOptions>getArgument(0).getPattern();
+            return pattern.equals("world:" + ownerA)
+                    ? Flux.just("world:" + ownerA)
+                    : Flux.empty();
+        });
+        when(redisTemplate.unlink(any(Publisher.class))).thenReturn(Mono.just(0L));
+        when(redisTemplate.hasKey("world:" + ownerA)).thenReturn(Mono.just(true));
+
+        CareerDataCleanupException failure = assertThrows(CareerDataCleanupException.class,
+                () -> repository.deleteOwnedData(ownerA, null).block());
+
+        assertEquals(CareerDataCleanupResult.Status.PARTIAL_RETRYABLE, failure.result().status());
+        assertEquals(1, failure.result().unexplainedShortfall());
+        assertEquals("UNEXPLAINED_SHORTFALL", failure.result().failureReason());
     }
 
     @Test

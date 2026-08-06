@@ -128,6 +128,34 @@ class ProductionStartupValidationTest {
     }
 
     @Test
+    void prodProfileRejectsNonPositiveWorldRetention() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("REDIS_WORLD_TTL", "0s");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileRejectsExcessiveMatchDetailRetention() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("REDIS_MATCH_DETAIL_TTL", "91d");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
+    void prodProfileAcceptsBoundedRedisRetention() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("REDIS_WORLD_TTL", "2h")
+            .withProperty("REDIS_MATCH_DETAIL_TTL", "30d");
+        environment.setActiveProfiles("prod");
+
+        assertDoesNotThrow(validation(environment)::validate);
+    }
+
+    @Test
     void nonProdProfileDoesNotRequireProductionSecrets() {
         MockEnvironment environment = new MockEnvironment();
         environment.setActiveProfiles("local");

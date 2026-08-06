@@ -3,6 +3,7 @@ package com.footballmanager.application.engine.round;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,5 +36,35 @@ class RoundEngineRegistryOwnershipTest {
 
         assertEquals(0, registry.stopEnginesForOwner(UUID.randomUUID(), null));
         assertTrue(registry.exists(roundId));
+    }
+
+    @Test
+    void concurrentResetsConvergeForAllOwnerARoundsAndKeepOwnerB() {
+        UUID ownerA = UUID.randomUUID();
+        UUID ownerB = UUID.randomUUID();
+        RoundEngineRegistry registry = new RoundEngineRegistry();
+        UUID roundA1 = UUID.randomUUID();
+        UUID roundA2 = UUID.randomUUID();
+        UUID roundB = UUID.randomUUID();
+        RoundEngine engineA1 = new RoundEngine(roundA1);
+        RoundEngine engineA2 = new RoundEngine(roundA2);
+        RoundEngine engineB = new RoundEngine(roundB);
+        engineA1.setOwner(ownerA, "career-a");
+        engineA2.setOwner(ownerA, "career-a");
+        engineB.setOwner(ownerB, "career-b");
+        registry.register(roundA1, engineA1);
+        registry.register(roundA2, engineA2);
+        registry.register(roundB, engineB);
+
+        int stopped = IntStream.range(0, 2)
+                .parallel()
+                .map(ignored -> registry.stopEnginesForOwner(ownerA, "career-a"))
+                .sum();
+
+        assertEquals(2, stopped);
+        assertEquals(1, registry.getActiveCount());
+        assertSame(engineB, registry.get(roundB));
+        assertNull(registry.get(roundA1));
+        assertNull(registry.get(roundA2));
     }
 }
