@@ -172,6 +172,56 @@ class RedisCareerDataCleanupRepositoryTest {
     }
 
     @Test
+    void deletedGreaterThanRequestedIsFailedAndNotRetryable() {
+        when(redisTemplate.scan(any(ScanOptions.class))).thenAnswer(invocation -> {
+            String pattern = invocation.<ScanOptions>getArgument(0).getPattern();
+            return pattern.equals("world:" + ownerA)
+                    ? Flux.just("world:" + ownerA)
+                    : Flux.empty();
+        });
+        when(redisTemplate.unlink(any(Publisher.class))).thenReturn(Mono.just(2L));
+
+        CareerDataCleanupException failure = assertThrows(CareerDataCleanupException.class,
+                () -> repository.deleteOwnedData(ownerA, null).block());
+
+        assertEquals(CareerDataCleanupResult.Status.FAILED, failure.result().status());
+        assertEquals("REDIS_DELETE_COUNT_INVALID", failure.result().failureReason());
+        assertEquals(1, failure.result().keysRequestedForDeletion());
+        assertEquals(0, failure.result().keysActuallyDeleted());
+    }
+
+    @Test
+    void careerRootIsTheLastDestructiveFamily() {
+        String worldKey = "world:" + ownerA;
+        String rootKey = "career:" + ownerA;
+        when(redisTemplate.scan(any(ScanOptions.class))).thenAnswer(invocation -> {
+            String pattern = invocation.<ScanOptions>getArgument(0).getPattern();
+            if (pattern.equals(worldKey)) {
+                return Flux.just(worldKey);
+            }
+            if (pattern.equals(rootKey)) {
+                return Flux.just(rootKey);
+            }
+            return Flux.empty();
+        });
+        when(redisTemplate.unlink(any(Publisher.class))).thenAnswer(invocation -> {
+            @SuppressWarnings("unchecked") Publisher<String> publisher = invocation.getArgument(0);
+            List<String> batch = Flux.from(publisher).collectList().block();
+            if (batch.contains(rootKey)) {
+                return Mono.error(new IllegalStateException("root delete unavailable"));
+            }
+            deletedBatches.add(batch);
+            return Mono.just((long) batch.size());
+        });
+
+        CareerDataCleanupException failure = assertThrows(CareerDataCleanupException.class,
+                () -> repository.deleteOwnedData(ownerA, null).block());
+
+        assertEquals(CareerDataCleanupResult.Status.PARTIAL_RETRYABLE, failure.result().status());
+        assertEquals(List.of(worldKey), deletedBatches.stream().flatMap(List::stream).toList());
+    }
+
+    @Test
     void missingRootAndMissingIndexReturnsSafeExplicitEmptyResult() {
         when(setOperations.members("user:" + ownerA + ":career-ids")).thenReturn(Flux.empty());
         when(redisTemplate.scan(any(ScanOptions.class))).thenReturn(Flux.empty());
