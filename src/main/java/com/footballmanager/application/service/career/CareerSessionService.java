@@ -127,20 +127,25 @@ public class CareerSessionService {
         return lifecycleCoordinator.serializeReset(userId, Mono.defer(() -> {
             invalidateCache(userId);
             return careerRepository.findById(userId.toString())
-                .defaultIfEmpty(java.util.Optional.empty())
-                .flatMap(existing -> {
-                    String careerId = existing.map(CareerSave::getCareerId).orElse(null);
-                    roundEngineRegistry.stopEnginesForOwner(userId, careerId);
-                    matchSessionRegistry.clearSessionsForOwner(userId, careerId);
-                    return careerDataCleanupRepository.deleteOwnedData(userId, careerId)
-                            .doOnNext(result -> log.info(
-                                    "[CAREER-CLEANUP] ownerHash={} careers={} discovered={} unique={} requested={} deleted={} batches={} maxBatch={} partialFailure={}",
-                                    result.ownerHash(), result.careerCount(), result.keysDiscovered(),
-                                    result.uniqueKeys(), result.keysRequestedForDeletion(),
-                                    result.keysActuallyDeleted(), result.batchCount(), result.maxBatchSize(),
-                                    result.partialFailure()));
-                })
-                .then(Mono.defer(() -> careerRepository.deleteById(userId.toString())));
+                    .defaultIfEmpty(java.util.Optional.empty())
+                    .flatMap(existing -> {
+                        String careerId = existing.map(CareerSave::getCareerId).orElse(null);
+                        roundEngineRegistry.stopEnginesForOwner(userId, careerId);
+                        matchSessionRegistry.clearSessionsForOwner(userId, careerId);
+                        Mono<com.footballmanager.domain.ports.out.career.CareerDataCleanupResult> cleanup =
+                                careerDataCleanupRepository.deleteOwnedData(userId, careerId);
+                        if (careerId != null) {
+                            cleanup = lifecycleCoordinator.serializeCareer(careerId, cleanup);
+                        }
+                        return cleanup
+                                .doOnNext(result -> log.info(
+                                        "[CAREER-CLEANUP] ownerHash={} careers={} discovered={} unique={} requested={} deleted={} batches={} maxBatch={} partialFailure={}",
+                                        result.ownerHash(), result.careerCount(), result.keysDiscovered(),
+                                        result.uniqueKeys(), result.keysRequestedForDeletion(),
+                                        result.keysActuallyDeleted(), result.batchCount(), result.maxBatchSize(),
+                                        result.partialFailure()))
+                                .then();
+                    });
         }));
     }
 

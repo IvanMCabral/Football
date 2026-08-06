@@ -40,14 +40,13 @@ class CareerSessionServiceCleanupTest {
                 .thenReturn(Mono.just(Optional.of(career)));
         when(career.getCareerId()).thenReturn("career-1");
         when(cleanupRepository.deleteOwnedData(userId, "career-1")).thenReturn(Mono.empty());
-        when(careerRepository.deleteById(userId.toString())).thenReturn(Mono.empty());
 
         StepVerifier.create(newService().deleteCareer(userId)).verifyComplete();
 
         verify(cleanupRepository).deleteOwnedData(userId, "career-1");
         verify(roundEngineRegistry).stopEnginesForOwner(userId, "career-1");
         verify(matchSessionRegistry).clearSessionsForOwner(userId, "career-1");
-        verify(careerRepository).deleteById(userId.toString());
+        verify(careerRepository, never()).deleteById(userId.toString());
     }
 
     @Test
@@ -55,7 +54,6 @@ class CareerSessionServiceCleanupTest {
         UUID userId = UUID.randomUUID();
         when(careerRepository.findById(userId.toString())).thenReturn(Mono.just(Optional.empty()));
         when(cleanupRepository.deleteOwnedData(userId, null)).thenReturn(Mono.empty());
-        when(careerRepository.deleteById(userId.toString())).thenReturn(Mono.empty());
 
         StepVerifier.create(newService().deleteCareer(userId)).verifyComplete();
 

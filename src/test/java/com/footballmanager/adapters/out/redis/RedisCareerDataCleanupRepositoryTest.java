@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -219,6 +220,7 @@ class RedisCareerDataCleanupRepositoryTest {
 
         assertEquals(CareerDataCleanupResult.Status.PARTIAL_RETRYABLE, failure.result().status());
         assertEquals(List.of(worldKey), deletedBatches.stream().flatMap(List::stream).toList());
+        verify(redisTemplate, never()).delete("career-cleanup:" + ownerA);
     }
 
     @Test
@@ -232,5 +234,27 @@ class RedisCareerDataCleanupRepositoryTest {
         assertEquals(0, result.uniqueKeys());
         assertEquals(0, result.keysActuallyDeleted());
         assertFalse(result.partialFailure());
+    }
+
+    @Test
+    void indexTimeoutLeavesRetryTombstoneAndDoesNotReportSuccess() {
+        when(valueOperations.set(anyString(), anyString(), any(Duration.class)))
+                .thenReturn(Mono.just(true));
+        when(setOperations.members("user:" + ownerA + ":career-ids"))
+                .thenReturn(Flux.never());
+        repository = new RedisCareerDataCleanupRepository(
+                redisTemplate,
+                Duration.ofMillis(20),
+                Duration.ofMillis(20),
+                Duration.ofMillis(20),
+                Duration.ofMillis(20),
+                Duration.ofMillis(80));
+
+        CareerDataCleanupException failure = assertThrows(CareerDataCleanupException.class,
+                () -> repository.deleteOwnedData(ownerA, null).block(Duration.ofSeconds(2)));
+
+        assertEquals(CareerDataCleanupResult.Status.FAILED, failure.result().status());
+        assertEquals("CLEANUP_TIMEOUT", failure.result().failureReason());
+        verify(redisTemplate, never()).delete("career-cleanup:" + ownerA);
     }
 }

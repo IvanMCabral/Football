@@ -33,11 +33,33 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private static final Duration UNLINK_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration EXISTS_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration TOTAL_TIMEOUT = Duration.ofSeconds(90);
+    private static final Duration TOMBSTONE_TTL = Duration.ofMinutes(15);
     private final ReactiveRedisTemplate<String, String> redisTemplate;
+    private final Duration indexTimeout;
+    private final Duration scanTimeout;
+    private final Duration unlinkTimeout;
+    private final Duration existsTimeout;
+    private final Duration totalTimeout;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public RedisCareerDataCleanupRepository(
             @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate) {
+        this(redisTemplate, INDEX_TIMEOUT, SCAN_TIMEOUT, UNLINK_TIMEOUT, EXISTS_TIMEOUT, TOTAL_TIMEOUT);
+    }
+
+    RedisCareerDataCleanupRepository(
+            ReactiveRedisTemplate<String, String> redisTemplate,
+            Duration indexTimeout,
+            Duration scanTimeout,
+            Duration unlinkTimeout,
+            Duration existsTimeout,
+            Duration totalTimeout) {
         this.redisTemplate = redisTemplate;
+        this.indexTimeout = indexTimeout;
+        this.scanTimeout = scanTimeout;
+        this.unlinkTimeout = unlinkTimeout;
+        this.existsTimeout = existsTimeout;
+        this.totalTimeout = totalTimeout;
     }
 
     @Override
@@ -47,9 +69,10 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         }
 
         CleanupAccumulator accumulator = new CleanupAccumulator(userId, careerId);
-        return redisTemplate.opsForSet()
-                .members(indexKey(userId))
-                .timeout(INDEX_TIMEOUT)
+        return writeTombstone(userId, careerId)
+                .thenMany(redisTemplate.opsForSet()
+                .members(indexKey(userId)))
+                .timeout(indexTimeout)
                 .take(MAX_INDEX_CARDINALITY + 1L)
                 .collectList()
                 .flatMap(indexedCareerIds -> {
@@ -65,6 +88,8 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 })
                 .doOnNext(accumulator::patternEvaluated)
                 .concatMap(spec -> scanKeys(spec)
+                        .transformDeferredContextual((scan, context) ->
+                                updateTombstone(userId, spec.family()).thenMany(scan))
                         .doOnSubscribe(subscription -> accumulator.activeFamily(spec.family()))
                         .map(key -> new KeyHit(spec.family(), key))
                         .doOnNext(accumulator::discovered)
@@ -76,13 +101,17 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                                 : Mono.defer(() -> {
                                     accumulator.batchRequested(spec.family(), batch);
                                     return redisTemplate.unlink(Flux.fromIterable(batch))
-                                            .timeout(UNLINK_TIMEOUT);
+                                            .timeout(unlinkTimeout);
                                 })
                                         .flatMap(deleted -> accumulator.batchDeleted(redisTemplate, spec.family(), batch, deleted))))
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
-                .timeout(TOTAL_TIMEOUT)
+                .flatMap(result -> clearTombstone(userId).thenReturn(result))
+                .timeout(totalTimeout)
                 .onErrorResume(error -> accumulator.restoreDiscovery(redisTemplate)
                         .onErrorResume(ignored -> Mono.empty())
+                        .then(accumulator.isOwnershipRejected()
+                                ? clearTombstone(userId)
+                                : Mono.empty())
                         .then(Mono.error(error)))
                 .onErrorMap(error -> {
                     if (error instanceof CareerDataCleanupException) {
@@ -110,7 +139,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         return Flux.fromIterable(candidates)
                 .concatMap(candidate -> redisTemplate.opsForValue()
                         .get(ownerMappingKey(candidate))
-                        .timeout(INDEX_TIMEOUT)
+                        .timeout(indexTimeout)
                         .switchIfEmpty(Mono.defer(() -> {
                             accumulator.rejectOwnership("OWNER_MAPPING_MISSING");
                             return Mono.error(new OwnershipRejectedException());
@@ -140,6 +169,8 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         for (String indexedCareerId : careerIds) {
             if (indexedCareerId != null && !indexedCareerId.isBlank()) {
                 patterns.add(new PatternSpec("career-owner-mapping", ownerMappingKey(indexedCareerId)));
+                patterns.add(new PatternSpec("career-generation", generationKey(indexedCareerId)));
+                patterns.add(new PatternSpec("career-mapping-token", mappingTokenKey(indexedCareerId)));
                 patterns.add(new PatternSpec("match-detail", "career:" + indexedCareerId + ":match-detail:*"));
                 patterns.add(new PatternSpec("match-baseline", "career:" + indexedCareerId + ":match-baseline:*"));
             }
@@ -155,7 +186,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 .match(spec.pattern())
                 .count(MAX_BATCH_SIZE)
                 .build())
-                .timeout(SCAN_TIMEOUT);
+                .timeout(scanTimeout);
     }
 
     private String indexKey(UUID userId) {
@@ -164,6 +195,36 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
 
     private String ownerMappingKey(String careerId) {
         return CAREER_OWNER_PREFIX + careerId;
+    }
+
+    private String generationKey(String careerId) {
+        return "career-generation:" + careerId;
+    }
+
+    private String mappingTokenKey(String careerId) {
+        return "career-mapping-token:" + careerId;
+    }
+
+    private Mono<Void> writeTombstone(UUID userId, String careerId) {
+        String payload = "ownerHash=" + shortHash(userId.toString())
+                + ";career=" + (careerId == null ? "" : careerId)
+                + ";state=RESETTING;phase=DISCOVERY";
+        Mono<Boolean> write = redisTemplate.opsForValue().set(
+                "career-cleanup:" + userId, payload, TOMBSTONE_TTL);
+        return write == null ? Mono.empty() : write.then();
+    }
+
+    private Mono<Void> clearTombstone(UUID userId) {
+        Mono<Long> delete = redisTemplate.delete("career-cleanup:" + userId);
+        return delete == null ? Mono.empty() : delete.then();
+    }
+
+    private Mono<Void> updateTombstone(UUID userId, String phase) {
+        String payload = "ownerHash=" + shortHash(userId.toString())
+                + ";state=RESETTING;phase=" + phase;
+        Mono<Boolean> update = redisTemplate.opsForValue().set(
+                "career-cleanup:" + userId, payload, TOMBSTONE_TTL);
+        return update == null ? Mono.empty() : update.timeout(existsTimeout).then();
     }
 
     private static final class OwnershipRejectedException extends RuntimeException {
@@ -224,7 +285,12 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                             .setIfAbsent("career-owner:" + careerId, ownerId.toString(), java.time.Duration.ofDays(31))
                             .then(redis.opsForSet().add(index, careerId)))
                     .then(redis.expire(index, java.time.Duration.ofDays(31)))
+                    .timeout(Duration.ofSeconds(10))
                     .then();
+        }
+
+        boolean isOwnershipRejected() {
+            return status == CareerDataCleanupResult.Status.REJECTED_OWNERSHIP;
         }
 
         void patternEvaluated(PatternSpec spec) {
