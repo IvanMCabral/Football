@@ -2,12 +2,12 @@ package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.infrastructure.persistence.entity.GameEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -16,24 +16,38 @@ import java.util.UUID;
  */
 @Repository
 public class GameRedisRepository {
+    private static final String GAME_INDEX_SUFFIX = ":game-ids";
     private final ReactiveRedisTemplate<String, GameEntity> redisTemplate;
+    private final ReactiveRedisTemplate<String, String> indexTemplate;
+
+    @Autowired
+    public GameRedisRepository(
+            @Qualifier("gameEntityRedisTemplate") ReactiveRedisTemplate<String, GameEntity> redisTemplate,
+            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> indexTemplate) {
+        this.redisTemplate = redisTemplate;
+        this.indexTemplate = indexTemplate;
+    }
 
     public GameRedisRepository(
             @Qualifier("gameEntityRedisTemplate") ReactiveRedisTemplate<String, GameEntity> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+        this(redisTemplate, null);
     }
 
     private String getKey(UUID userId, UUID gameId) {
         return "user:" + userId + ":game:" + gameId;
     }
 
-    private String getKeyPattern(UUID userId) {
-        return "user:" + userId + ":game:*";
+    private String getIndexKey(UUID userId) {
+        return "user:" + userId + GAME_INDEX_SUFFIX;
     }
 
     public Mono<Boolean> save(UUID userId, GameEntity game) {
         String key = getKey(userId, game.getId());
-        return redisTemplate.opsForValue().set(key, game);
+        return redisTemplate.opsForValue().set(key, game)
+                .flatMap(saved -> indexTemplate == null
+                        ? Mono.just(saved)
+                        : indexTemplate.opsForSet().add(getIndexKey(userId), game.getId().toString())
+                        .thenReturn(saved));
     }
 
     public Mono<GameEntity> findById(UUID userId, UUID gameId) {
@@ -42,39 +56,38 @@ public class GameRedisRepository {
     }
 
     public Flux<GameEntity> findAllByUserId(UUID userId) {
-        String pattern = getKeyPattern(userId);
-        return redisTemplate.keys(pattern)
-                .collectList()
-                .flatMapMany(keys -> {
-                    if (keys.isEmpty()) {
-                        return Flux.empty();
-                    }
-                    return redisTemplate.opsForValue().multiGet(keys)
-                            .map(list -> {
-                                if (list == null) {
-                                    return new ArrayList<GameEntity>();
-                                }
-                                ArrayList<GameEntity> filtered = new ArrayList<>();
-                                for (Object item : list) {
-                                    if (item instanceof GameEntity) {
-                                        filtered.add((GameEntity) item);
-                                    }
-                                }
-                                return filtered;
-                            })
-                            .flatMapMany(values -> Flux.fromIterable(values));
-                });
+        if (indexTemplate == null) {
+            return Flux.empty();
+        }
+        return indexTemplate.opsForSet().members(getIndexKey(userId))
+                .flatMap(gameId -> redisTemplate.opsForValue()
+                        .get(getKey(userId, UUID.fromString(gameId))));
     }
 
     public Mono<Boolean> deleteById(UUID userId, UUID gameId) {
         String key = getKey(userId, gameId);
-        return redisTemplate.delete(key).map(count -> count > 0);
+        return redisTemplate.delete(key)
+                .flatMap(count -> indexTemplate == null
+                        ? Mono.just(count > 0)
+                        : indexTemplate.opsForSet().remove(getIndexKey(userId), gameId.toString())
+                        .thenReturn(count > 0));
     }
 
     public Mono<Long> deleteAllByUserId(UUID userId) {
-        String pattern = getKeyPattern(userId);
-        return redisTemplate.keys(pattern)
+        if (indexTemplate == null) {
+            return Mono.just(0L);
+        }
+        return indexTemplate.opsForSet().members(getIndexKey(userId))
                 .collectList()
-                .flatMap(keys -> redisTemplate.delete(keys.toArray(new String[0])));
+                .flatMap(gameIds -> {
+                    if (gameIds.isEmpty()) {
+                        return indexTemplate.delete(getIndexKey(userId));
+                    }
+                    String[] keys = gameIds.stream()
+                            .map(gameId -> getKey(userId, UUID.fromString(gameId)))
+                            .toArray(String[]::new);
+                    return redisTemplate.delete(keys)
+                            .flatMap(deleted -> indexTemplate.delete(getIndexKey(userId)).thenReturn(deleted));
+                });
     }
 }
