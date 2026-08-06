@@ -4,6 +4,7 @@ import com.footballmanager.infrastructure.persistence.entity.GameEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -60,8 +61,27 @@ public class GameRedisRepository {
             return Flux.empty();
         }
         return indexTemplate.opsForSet().members(getIndexKey(userId))
+                .collectList()
+                .flatMapMany(gameIds -> gameIds.isEmpty()
+                        ? discoverLegacyGameIds(userId)
+                        : Flux.fromIterable(gameIds))
                 .flatMap(gameId -> redisTemplate.opsForValue()
                         .get(getKey(userId, UUID.fromString(gameId))));
+    }
+
+    /**
+     * One-time compatibility path for game keys written before the owner
+     * index existed. The pattern is scoped to the authenticated owner; it is
+     * never a database-wide enumeration. Discovered IDs are indexed so later
+     * reads stay on the bounded owner index.
+     */
+    private Flux<String> discoverLegacyGameIds(UUID userId) {
+        String pattern = "user:" + userId + ":game:*";
+        return redisTemplate.scan(ScanOptions.scanOptions().match(pattern).count(100).build())
+                .map(key -> key.substring(("user:" + userId + ":game:").length()))
+                .flatMap(gameId -> indexTemplate.opsForSet()
+                        .add(getIndexKey(userId), gameId)
+                        .thenReturn(gameId));
     }
 
     public Mono<Boolean> deleteById(UUID userId, UUID gameId) {

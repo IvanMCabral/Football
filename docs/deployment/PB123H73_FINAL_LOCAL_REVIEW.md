@@ -20,9 +20,10 @@ public cleanup errors are stable, and `deleted > requested` is hard failure.
   PASS.
 - `git diff --check`: PASS.
 
-The game list path now uses an owner-scoped Redis game-id index instead of a
-global key enumeration, preserving CRUD behavior while avoiding an unbounded
-Redis `KEYS` request in the WebFlux request path.
+The game list path now uses an owner-scoped Redis game-id index for new writes.
+A bounded, owner-specific `SCAN` compatibility path discovers legacy game keys
+once and backfills that index; no global Redis enumeration or `KEYS` request is
+used in the WebFlux path.
 
 ## Remaining external or non-local gates
 
