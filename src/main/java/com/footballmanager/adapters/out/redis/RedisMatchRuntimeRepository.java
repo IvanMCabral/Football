@@ -50,19 +50,15 @@ public class RedisMatchRuntimeRepository implements MatchRuntimeRepository {
 
     @Override
     public Mono<RuntimeMatch> save(UUID userId, RuntimeMatch runtimeMatch) {
-        if (ownershipTouchService != null && runtimeMatch.getCareerId() != null
-                && runtimeMatch.getLifecycleGeneration() == null) {
-            return Mono.error(new IllegalStateException("runtime writer requires lifecycle context"));
-        }
-        CareerWriteContext context = ownershipTouchService == null || runtimeMatch.getCareerId() == null ? null
-                : new CareerWriteContext(userId, runtimeMatch.getCareerId(), runtimeMatch.getLifecycleGeneration());
-        return saveInternal(userId, context, runtimeMatch);
+        return Mono.error(new IllegalStateException(
+                "runtime writer requires explicit lifecycle context"));
     }
 
     @Override
     public Mono<RuntimeMatch> save(UUID userId, RuntimeMatch runtimeMatch, CareerWriteContext context) {
         if (context == null || runtimeMatch == null || !context.ownerId().equals(userId)
-                || !context.careerId().equals(runtimeMatch.getCareerId())) {
+                || !context.careerId().equals(runtimeMatch.getCareerId())
+                || !context.expectedGeneration().equals(runtimeMatch.getLifecycleGeneration())) {
             return Mono.error(new IllegalArgumentException("runtime lifecycle context does not match runtime"));
         }
         return saveInternal(userId, context, runtimeMatch);
@@ -73,8 +69,8 @@ public class RedisMatchRuntimeRepository implements MatchRuntimeRepository {
         Mono<RuntimeMatch> persist = Mono.fromCallable(() -> objectMapper.writeValueAsString(runtimeMatch))
                 .flatMap(json -> redisTemplate.opsForValue().set(key, json, TTL))
                 .thenReturn(runtimeMatch);
-        return ownershipTouchService == null || runtimeMatch.getCareerId() == null
-                ? persist
+        return ownershipTouchService == null
+                ? Mono.error(new IllegalStateException("career ownership service is required"))
                 : ownershipTouchService.touchBeforeWrite(context, () -> persist);
     }
 

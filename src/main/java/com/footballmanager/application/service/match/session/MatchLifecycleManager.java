@@ -2,6 +2,7 @@ package com.footballmanager.application.service.match.session;
 
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import com.footballmanager.domain.ports.out.match.MatchStateRepository;
 import reactor.core.publisher.Mono;
 
@@ -23,12 +24,13 @@ public class MatchLifecycleManager {
     private boolean running = false;
     private boolean paused = false;
 
-    public MatchLifecycleManager(UUID userId, UUID matchId, MatchState state, MatchStateRepository stateRepository, MatchTickHandler tickHandler) {
+    public MatchLifecycleManager(UUID userId, UUID matchId, MatchState state, MatchStateRepository stateRepository,
+                                 MatchTickHandler tickHandler, CareerWriteContext lifecycleContext) {
         this.userId = userId;
         this.matchId = matchId;
         this.state = state;
         this.stateRepository = stateRepository;
-        this.persister = new MatchStatePersister(matchId, userId, stateRepository);
+        this.persister = new MatchStatePersister(matchId, userId, stateRepository, lifecycleContext);
         this.tickHandler = tickHandler;
     }
 

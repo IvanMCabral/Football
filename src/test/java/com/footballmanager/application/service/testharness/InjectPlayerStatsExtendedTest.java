@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,8 +69,10 @@ class InjectPlayerStatsExtendedTest {
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
             matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class))).thenReturn(Mono.empty());
 
         career = new CareerSave();
+        career.setLifecycleGeneration("test-generation");
         career.setUserId(USER_ID);
         career.setUserSessionTeamId("user-team-id");
 
@@ -102,7 +105,7 @@ class InjectPlayerStatsExtendedTest {
     void injectLegacy6StatsOnly_preservesHeightAndSkills() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         assertThat(player.getHeightCm()).isEqualTo(180);
@@ -128,7 +131,7 @@ class InjectPlayerStatsExtendedTest {
         assertThat(player.getSkillLevel(PlayerSkill.SPEEDSTER)).isEqualTo(50);
         assertThat(player.getSkillLevel(PlayerSkill.PASSER)).isEqualTo(60);
 
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
     }
 
     // ========== 2. heightCm: in-range applies, out-of-range rejects ==========
@@ -142,7 +145,7 @@ class InjectPlayerStatsExtendedTest {
         void injectHeightCmInRange_applies() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             useCase.injectPlayerStats(USER_ID, PLAYER_ID,
@@ -194,7 +197,7 @@ class InjectPlayerStatsExtendedTest {
         void injectHeightCmLowerBound_accepted() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             useCase.injectPlayerStats(USER_ID, PLAYER_ID,
@@ -211,7 +214,7 @@ class InjectPlayerStatsExtendedTest {
         void injectHeightCmUpperBound_accepted() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             useCase.injectPlayerStats(USER_ID, PLAYER_ID,
@@ -235,7 +238,7 @@ class InjectPlayerStatsExtendedTest {
         void injectSkillSingleEntry_applies() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             Map<PlayerSkill, Integer> skills = new HashMap<>();
@@ -259,7 +262,7 @@ class InjectPlayerStatsExtendedTest {
         void injectSkillMultipleEntries_appliesAll() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             Map<PlayerSkill, Integer> skills = new HashMap<>();
@@ -324,7 +327,7 @@ class InjectPlayerStatsExtendedTest {
         void injectEmptySkillLevels_isNoOp() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             Map<PlayerSkill, Integer> empty = new HashMap<>();
@@ -347,7 +350,7 @@ class InjectPlayerStatsExtendedTest {
         void injectNullSkillLevels_isNoOp() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             useCase.injectPlayerStats(USER_ID, PLAYER_ID,
@@ -365,7 +368,7 @@ class InjectPlayerStatsExtendedTest {
         void injectSkillWithNullKey_skipsNullAppliesRest() {
             when(careerRepository.findById(USER_ID.toString()))
                 .thenReturn(Mono.just(java.util.Optional.of(career)));
-            when(careerRepository.save(any(CareerSave.class)))
+            lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
             Map<PlayerSkill, Integer> skills = new HashMap<>();
@@ -391,7 +394,7 @@ class InjectPlayerStatsExtendedTest {
     void injectAllFieldsTogether_appliesAll() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(java.util.Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         Map<PlayerSkill, Integer> skills = new HashMap<>();
@@ -418,7 +421,7 @@ class InjectPlayerStatsExtendedTest {
         assertThat(player.getSkillLevel(PlayerSkill.SPEEDSTER)).isEqualTo(99);
         assertThat(player.getSkillLevel(PlayerSkill.PASSER)).isEqualTo(95);
 
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
     }
 
     // ========== 5. Error paths: player not found ==========

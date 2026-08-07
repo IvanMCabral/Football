@@ -9,7 +9,8 @@ public interface MatchStateRepository {
     Mono<MatchState> findById(UUID userId, UUID matchId);
     Mono<MatchState> save(UUID userId, MatchState matchState);
     default Mono<MatchState> save(UUID userId, MatchState matchState, CareerWriteContext context) {
-        return save(userId, matchState);
+        return Mono.error(new IllegalStateException(
+                "state writer requires an explicit lifecycle context"));
     }
     Mono<Void> deleteById(UUID userId, UUID matchId);
 }

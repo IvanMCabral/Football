@@ -280,7 +280,7 @@ class TestHarnessDefensiveDowngradeLabService {
     }
 
     private Mono<LabMutationResult> persistLabMutation(CareerSave career, LabMutationResult result) {
-        return careerRepository.save(career)
+      return careerSessionService.saveCareer(career).then()
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())))
             .thenReturn(result);

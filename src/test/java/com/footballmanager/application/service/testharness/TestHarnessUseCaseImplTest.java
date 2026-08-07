@@ -93,10 +93,12 @@ class TestHarnessUseCaseImplTest {
         useCase = new TestHarnessUseCaseImpl(
             careerRepository, careerSessionService,
             matchContextFactory, detailedMatchStoragePort, baselineStoragePort, matchEngineRegistry);
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class))).thenReturn(Mono.empty());
         lenient().when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
             .thenReturn(Mono.empty());
 
         career = new CareerSave();
+        career.setLifecycleGeneration("test-generation");
         career.setUserId(USER_ID);
         career.setUserSessionTeamId("user-team-id");
 
@@ -327,7 +329,7 @@ class TestHarnessUseCaseImplTest {
 
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
         useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
             .as(StepVerifier::create)
@@ -356,7 +358,7 @@ class TestHarnessUseCaseImplTest {
 
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
@@ -388,7 +390,7 @@ class TestHarnessUseCaseImplTest {
 
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
@@ -416,7 +418,7 @@ class TestHarnessUseCaseImplTest {
 
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.prepareOpponentWeakRightDefenderLab(USER_ID, "match-001")
@@ -445,7 +447,7 @@ class TestHarnessUseCaseImplTest {
 
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.prepareOpponentWeakLeftDefenderLab(USER_ID, "match-001")
@@ -465,7 +467,7 @@ class TestHarnessUseCaseImplTest {
     void replaceFixtures_withValidList_replacesAndSaves() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         List<CustomFixture> fixtures = List.of(
@@ -481,7 +483,7 @@ class TestHarnessUseCaseImplTest {
         assertThat(career.getTournamentState().getCurrentRound()).isEqualTo(1);
         assertThat(career.getTournamentState().getTotalRounds()).isEqualTo(2);
         assertThat(career.getTournamentState().getFinished()).isFalse();
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
     }
 
     @Test
@@ -526,7 +528,7 @@ class TestHarnessUseCaseImplTest {
     void replaceFixtures_totalRoundsEqualsFixtureCount() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         List<CustomFixture> fixtures = List.of(
@@ -553,7 +555,7 @@ class TestHarnessUseCaseImplTest {
     void resetInjuries_clearsAllFlags() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.resetInjuries(USER_ID)
@@ -571,7 +573,7 @@ class TestHarnessUseCaseImplTest {
             assertThat(p.getYellowCards()).isZero();
             assertThat(p.getRedCards()).isZero();
         }
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
     }
 
     // ========== setFormation (CRITICAL â€” sprint 1.7 regression guard) ==========
@@ -581,7 +583,7 @@ class TestHarnessUseCaseImplTest {
     void setFormation_persistsInBothSessionTeamAndFormationMap() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.setFormation(USER_ID, "3-5-2")
@@ -597,7 +599,7 @@ class TestHarnessUseCaseImplTest {
             .as("teamStarting11Formation map (the one the detailed match engine reads) MUST be updated")
             .isEqualTo("3-5-2");
 
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
     }
 
     @Test
@@ -626,7 +628,7 @@ class TestHarnessUseCaseImplTest {
             .thenReturn(Mono.just(career));
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.createCustom(USER_ID, "league-1", "team-1", "EASY", "NORMAL", 3)
@@ -639,7 +641,7 @@ class TestHarnessUseCaseImplTest {
             eq(USER_ID), eq("league-1"), eq("team-1"),
             eq("EASY"), eq("NORMAL"), eq(3));
         // save called twice: once for resetInjuries, once implicit from start
-        verify(careerRepository, times(1)).save(any(CareerSave.class));
+        verify(careerSessionService, times(1)).saveCareer(any(CareerSave.class));
     }
 
     @Test
@@ -687,7 +689,7 @@ class TestHarnessUseCaseImplTest {
     void setFormation_invalidatesCache() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.setFormation(USER_ID, "5-3-2")
@@ -702,7 +704,7 @@ class TestHarnessUseCaseImplTest {
     void replaceFixtures_invalidatesCache() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         List<CustomFixture> fixtures = List.of(
@@ -722,7 +724,7 @@ class TestHarnessUseCaseImplTest {
     void resetInjuries_invalidatesCache() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.resetInjuries(USER_ID)
@@ -744,7 +746,7 @@ class TestHarnessUseCaseImplTest {
             .thenReturn(Mono.just(career));
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.createCustom(USER_ID, "league-1", "team-1", "EASY", "NORMAL", 3)
@@ -789,7 +791,7 @@ class TestHarnessUseCaseImplTest {
     void replayMatch_withSeedOverride_resetsAndResimulates() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         // matchContextFactory is the REAL factory (not mocked) â€” see setUp().
@@ -819,11 +821,14 @@ class TestHarnessUseCaseImplTest {
         // Cache invalidated (BUG #1 follow-through)
         verify(careerSessionService, times(1)).invalidateCache(USER_ID);
         // Save called
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
         // Old detailed match detail cleared
-        verify(detailedMatchStoragePort, times(1)).deleteByMatchId(
-            org.mockito.ArgumentMatchers.anyString(), eq("match-001"));
-        verify(baselineStoragePort, times(1)).save(anyString(), any(BaselineState.class));
+        verify(detailedMatchStoragePort, times(1)).deleteByMatchIdWithContext(
+            org.mockito.ArgumentMatchers.anyString(), eq("match-001"),
+            any(com.footballmanager.domain.model.valueobject.CareerWriteContext.class));
+        verify(baselineStoragePort, times(1)).saveWithContext(
+            any(com.footballmanager.domain.model.valueobject.CareerWriteContext.class),
+            any(BaselineState.class));
     }
 
     @Test
@@ -831,7 +836,7 @@ class TestHarnessUseCaseImplTest {
     void replayMatch_nullSeed_stillCompletes() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.replayMatch(USER_ID, "match-001", null)
@@ -840,7 +845,7 @@ class TestHarnessUseCaseImplTest {
             .verifyComplete();
 
         // Save was called (proves the flow reached save + cache invalidation)
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
         verify(careerSessionService, times(1)).invalidateCache(USER_ID);
     }
 

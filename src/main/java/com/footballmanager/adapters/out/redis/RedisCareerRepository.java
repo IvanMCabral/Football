@@ -2,6 +2,7 @@ package com.footballmanager.adapters.out.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -79,28 +80,46 @@ public class RedisCareerRepository implements CareerRepository {
      * Guarda o actualiza una carrera en Redis
      */
     @Override
-    public Mono<Void> save(CareerSave careerSave) {
+    public Mono<Void> createInitialCareer(CareerSave careerSave) {
+        return saveInternal(null, careerSave, true);
+    }
+
+    @Override
+    public Mono<Void> saveExistingCareer(CareerWriteContext context, CareerSave careerSave) {
+        if (context == null || careerSave == null
+                || !context.ownerId().equals(careerSave.getUserId())
+                || !context.careerId().equals(careerSave.getCareerId())
+                || !context.expectedGeneration().equals(careerSave.getLifecycleGeneration())) {
+            return Mono.error(new IllegalArgumentException("career lifecycle context does not match career"));
+        }
+        return saveInternal(context, careerSave, false);
+    }
+
+    private Mono<Void> saveInternal(CareerWriteContext context, CareerSave careerSave, boolean initial) {
+        if (careerSave == null || careerSave.getUserId() == null
+                || careerSave.getCareerId() == null || careerSave.getCareerId().isBlank()) {
+            return Mono.error(new IllegalArgumentException("career identity is required"));
+        }
         String key = getKey(careerSave.getUserId().toString());
         try {
             String json = objectMapper.writeValueAsString(careerSave);
             int palmaresSize = careerSave.getSeasonManager().getPalmares() != null ? careerSave.getSeasonManager().getPalmares().size() : 0;
             log.info("[REDIS-SAVE] career state persisted, palmaresSize={}", palmaresSize);
-            boolean fencedWrite = careerSave.getLifecycleGeneration() != null
-                    && !careerSave.getLifecycleGeneration().isBlank();
-            Mono<Void> operation = (fencedWrite
-                    ? requireGeneration(careerSave.getCareerId(), careerSave.getLifecycleGeneration())
-                    : ensureGeneration(careerSave.getCareerId()))
-                    .doOnNext(careerSave::setLifecycleGeneration)
-                    .flatMap(generation -> (fencedWrite
-                            ? requireOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
-                            : ensureOwnerMapping(careerSave.getCareerId(), careerSave.getUserId()))
-                            .flatMap(mapping -> redisTemplate.hasKey(key)
-                                    .flatMap(rootExisted -> redisTemplate.opsForValue().set(key, json, CACHE_TTL)
+            Mono<Void> operation = (initial
+                    ? createGenerationAndMapping(careerSave)
+                    : requireGeneration(careerSave.getCareerId(), context.expectedGeneration())
+                            .flatMap(generation -> requireOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
+                                    .map(mapping -> new GenerationMapping(generation, mapping))))
+                    .doOnNext(generationMapping -> careerSave.setLifecycleGeneration(generationMapping.generation()))
+                    .flatMap(generationMapping -> redisTemplate.hasKey(key)
+                            .flatMap(rootExisted -> {
+                                MappingState mapping = generationMapping.mapping();
+                                return redisTemplate.opsForValue().set(key, json, CACHE_TTL)
                                             .then(indexCareer(careerSave))
                                             .onErrorResume(error -> compensateFailedSave(
-                                                    mapping, generation, key, rootExisted, error)))));
-            Mono<Void> coordinated = lifecycleCoordinator == null
-                    ? operation
+                                                    mapping, generationMapping.generation(), key, rootExisted, error));
+                            }));
+            Mono<Void> coordinated = lifecycleCoordinator == null ? operation
                     : lifecycleCoordinator.serializeCareer(careerSave.getCareerId(), operation);
             return RuntimeOperationMetrics.measure("redis.career.save",
                     serializeSave(careerSave.getUserId(), coordinated));
@@ -135,6 +154,21 @@ public class RedisCareerRepository implements CareerRepository {
                 .flatMap(career -> career.isEmpty()
                         ? Mono.just(career)
                         : serializeSave(career.get().getUserId(), ensureCareerIndex(career))));
+    }
+
+    private Mono<GenerationMapping> createGenerationAndMapping(CareerSave career) {
+        return redisTemplate.hasKey(getKey(career.getUserId().toString()))
+                .flatMap(rootExists -> rootExists
+                        ? Mono.error(new IllegalStateException("career root already exists"))
+                        : redisTemplate.hasKey(ownerMappingKey(career.getCareerId())))
+                .flatMap(mappingExists -> mappingExists
+                        ? Mono.error(new IllegalStateException("career lifecycle mapping already exists"))
+                        : redisTemplate.hasKey(generationKey(career.getCareerId())))
+                .flatMap(generationExists -> generationExists
+                        ? Mono.error(new IllegalStateException("career lifecycle generation already exists"))
+                        : ensureGeneration(career.getCareerId())
+                                .flatMap(generation -> ensureOwnerMapping(career.getCareerId(), career.getUserId())
+                                        .map(mapping -> new GenerationMapping(generation, mapping))));
     }
 
     private Mono<Optional<CareerSave>> ensureCareerIndex(Optional<CareerSave> career) {
@@ -288,6 +322,9 @@ public class RedisCareerRepository implements CareerRepository {
 
     private static final class OwnerSaveQueue {
         private final AtomicReference<Mono<Void>> tail = new AtomicReference<>(Mono.empty());
+    }
+
+    private record GenerationMapping(String generation, MappingState mapping) {
     }
 
 

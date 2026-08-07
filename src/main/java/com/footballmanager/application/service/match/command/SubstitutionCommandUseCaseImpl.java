@@ -256,10 +256,9 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                                     command.playerOnId(),
                                     command.minute()));
                             Mono<CareerWriteContext> context = ownershipTouchService == null
-                                    ? Mono.empty()
+                                    ? Mono.error(new IllegalStateException("baseline writer requires ownership service"))
                                     : ownershipTouchService.capture(command.userId(), command.careerId());
                             return context.flatMap(writeContext -> baselineStoragePort.saveWithContext(writeContext, updated))
-                                    .switchIfEmpty(baselineStoragePort.save(command.careerId(), updated))
                                     .doOnSuccess(v -> log.info(
                                             "[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
                                             matchId, command.minute(), updated.subs().size()));

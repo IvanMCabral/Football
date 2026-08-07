@@ -249,6 +249,8 @@ class DetailedLeagueDetailPersistenceTest {
                                           int homeStarterCount, int awayStarterCount) {
         String careerId = homeTeamId + "_" + awayTeamId;
         CareerSave save = new CareerSave();
+        save.setUserId(UUID.fromString("33333333-3333-3333-3333-333333333333"));
+        save.setLifecycleGeneration("test-generation");
         save.getData().setCareerId(careerId);
         CareerTeamManager tm = new CareerTeamManager();
         CareerPlayerManager pm = new CareerPlayerManager();

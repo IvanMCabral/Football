@@ -41,10 +41,15 @@ public class AdvanceMatchUseCaseImpl implements AdvanceMatchUseCase {
                         match.finish();
                     }
 
-                    Mono<RuntimeMatch> persisted = match.getCareerId() == null
-                            ? runtimeRepository.save(userId, match)
-                            : ownershipPort.capture(userId, match.getCareerId())
-                                .flatMap(context -> runtimeRepository.save(userId, match, context));
+                    if (match.getCareerId() == null || match.getCareerId().isBlank()) {
+                        return Mono.error(new IllegalStateException(
+                                "runtime match requires career lifecycle context"));
+                    }
+                    Mono<RuntimeMatch> persisted = ownershipPort.capture(userId, match.getCareerId())
+                            .flatMap(context -> {
+                                match.setLifecycleGeneration(context.expectedGeneration());
+                                return runtimeRepository.save(userId, match, context);
+                            });
                     return persisted.thenReturn(match);
 
                 } catch (IllegalStateException e) {

@@ -23,6 +23,14 @@ public class MatchEngineRegistry {
      * Si ya existe un motor para ese partido, lo retorna sin crear uno nuevo.
      */
     public synchronized MatchEngine startEngine(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
+        throw new IllegalStateException("match engine requires career lifecycle context");
+    }
+
+    public synchronized MatchEngine startEngine(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId,
+                                                String careerId, String lifecycleGeneration) {
+        if (careerId == null || careerId.isBlank() || lifecycleGeneration == null || lifecycleGeneration.isBlank()) {
+            throw new IllegalArgumentException("match engine requires careerId and lifecycle generation");
+        }
         if (sessionRegistry.hasSession(userId, matchId)) {
             return sessionRegistry.getSession(userId, matchId)
                 .map(MatchEngine::new)
@@ -30,7 +38,8 @@ public class MatchEngineRegistry {
         }
 
         // Crear sesión (el MatchEngine se crea a partir de la sesión)
-        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId);
+        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId,
+                careerId, lifecycleGeneration);
 
         return sessionRegistry.getSession(userId, matchId)
             .map(MatchEngine::new)

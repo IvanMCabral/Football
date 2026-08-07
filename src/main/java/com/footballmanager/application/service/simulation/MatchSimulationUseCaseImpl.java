@@ -26,12 +26,18 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
     private final CareerOwnershipPort ownershipTouchService;
 
     @Override
-    public Mono<MatchState> createMatchState(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
+    public Mono<MatchState> createMatchState(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId,
+                                             CareerWriteContext context) {
+        if (context == null || !userId.equals(context.ownerId())) {
+            return Mono.error(new IllegalArgumentException("match state lifecycle context does not match owner"));
+        }
         MatchState state = new MatchState(matchId);
         state.setHomeTeamId(homeTeamId);
         state.setAwayTeamId(awayTeamId);
-
-        return matchStateRepository.save(userId, state);
+        state.setUserId(userId.toString());
+        state.setCareerId(context.careerId());
+        state.setLifecycleGeneration(context.expectedGeneration());
+        return matchStateRepository.save(userId, state, context);
     }
 
     @Override

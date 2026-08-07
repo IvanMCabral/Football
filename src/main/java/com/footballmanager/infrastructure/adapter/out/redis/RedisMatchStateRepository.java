@@ -61,19 +61,16 @@ public class RedisMatchStateRepository implements MatchStateRepository {
 
     @Override
     public Mono<MatchState> save(UUID userId, MatchState matchState) {
-        if (ownershipTouchService != null && matchState.getCareerId() != null
-                && matchState.getLifecycleGeneration() == null) {
-            return Mono.error(new IllegalStateException("state writer requires lifecycle context"));
-        }
-        CareerWriteContext context = ownershipTouchService == null || matchState.getCareerId() == null ? null
-                : new CareerWriteContext(userId, matchState.getCareerId(), matchState.getLifecycleGeneration());
-        return saveInternal(userId, context, matchState);
+        return Mono.error(new IllegalStateException(
+                "state writer requires explicit lifecycle context"));
     }
 
     @Override
     public Mono<MatchState> save(UUID userId, MatchState matchState, CareerWriteContext context) {
-        if (context == null || matchState == null || !context.ownerId().toString().equals(matchState.getUserId())
-                || !context.careerId().equals(matchState.getCareerId())) {
+        if (context == null || matchState == null || !context.ownerId().equals(userId)
+                || !context.ownerId().toString().equals(matchState.getUserId())
+                || !context.careerId().equals(matchState.getCareerId())
+                || !context.expectedGeneration().equals(matchState.getLifecycleGeneration())) {
             return Mono.error(new IllegalArgumentException("state lifecycle context does not match state"));
         }
         return saveInternal(userId, context, matchState);
@@ -88,8 +85,8 @@ public class RedisMatchStateRepository implements MatchStateRepository {
             Mono<MatchState> persist = redisTemplate.opsForValue()
                     .set(key, json, TTL)
                     .thenReturn(matchState);
-            return ownershipTouchService == null || matchState.getCareerId() == null
-                    ? persist
+            return ownershipTouchService == null
+                    ? Mono.error(new IllegalStateException("career ownership service is required"))
                     : ownershipTouchService.touchBeforeWrite(context, () -> persist);
         } catch (Exception e) {
             return Mono.error(e);

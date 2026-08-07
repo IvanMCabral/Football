@@ -6,6 +6,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
+import com.footballmanager.domain.model.repository.CareerRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,6 +47,9 @@ class V25D81InjuryPersistenceDiagnosticTest {
     private CareerSessionService careerSessionService;
 
     @Autowired
+    private CareerRepository careerRepository;
+
+    @Autowired
     private ReactiveRedisTemplate<String, String> redisTemplate;
 
     @Test
@@ -57,6 +61,7 @@ class V25D81InjuryPersistenceDiagnosticTest {
         CareerSave save = new CareerSave();
         save.setUserId(userId);
         save.getData().setCareerId("test-injury-" + userId);
+        save.setLifecycleGeneration("test-generation-" + userId);
 
         CareerTeamManager tm = new CareerTeamManager();
         CareerPlayerManager pm = new CareerPlayerManager();
@@ -71,7 +76,7 @@ class V25D81InjuryPersistenceDiagnosticTest {
         pm.addSessionPlayer(p);
 
         // Save via service
-        careerSessionService.saveCareer(save).block();
+        careerRepository.createInitialCareer(save).block();
 
         // Clear in-memory cache
         careerSessionService.clearCache();

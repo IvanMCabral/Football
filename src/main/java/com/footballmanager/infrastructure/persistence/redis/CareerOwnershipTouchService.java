@@ -63,6 +63,9 @@ public final class CareerOwnershipTouchService implements CareerOwnershipPort {
         if (careerId == null || careerId.isBlank()) {
             return Mono.error(new IllegalArgumentException("careerId must not be blank"));
         }
+        if (expectedGeneration == null || expectedGeneration.isBlank()) {
+            return Mono.error(new IllegalStateException("career lifecycle generation is required"));
+        }
         // Ownership is deliberately read inside the career queue.  Reading it
         // before queue admission would allow a stale callback to validate an
         // old mapping, wait behind reset, and then write after the reset.

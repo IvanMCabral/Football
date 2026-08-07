@@ -28,8 +28,7 @@ public class LeagueTeamCommandService {
         String worldTeamId = teamId.toString(); // worldTeamId = realTeamId para equipos reales
 
         return leagueTeamRepository.addTeamToLeague(userId, leagueId, teamId)
-                .then(updateSnapshotRealLeagueId(userId, worldTeamId, leagueId))
-                .onErrorResume(e -> Mono.empty());
+                .then(updateSnapshotRealLeagueId(userId, worldTeamId, leagueId));
     }
 
     /**
@@ -40,8 +39,7 @@ public class LeagueTeamCommandService {
         String worldTeamId = teamId.toString();
 
         return leagueTeamRepository.removeTeamFromLeague(userId, leagueId, teamId)
-                .then(updateSnapshotRealLeagueId(userId, worldTeamId, null))
-                .onErrorResume(e -> Mono.empty());
+                .then(updateSnapshotRealLeagueId(userId, worldTeamId, null));
     }
 
     /**
@@ -58,7 +56,7 @@ public class LeagueTeamCommandService {
                         return Mono.empty();
                     }
                 })
-                .onErrorResume(e -> Mono.empty());
+                .switchIfEmpty(Mono.error(new IllegalStateException("world snapshot not found")));
     }
 }
 

@@ -63,7 +63,7 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
                 })
                 .flatMap(career -> {
                     // Paso 3: Persistir CareerSave
-                    return careerRepository.save(career)
+                    return careerRepository.createInitialCareer(career)
                             .thenReturn(career);
                 }));
     }

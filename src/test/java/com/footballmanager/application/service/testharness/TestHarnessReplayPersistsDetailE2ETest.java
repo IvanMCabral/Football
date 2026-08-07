@@ -33,6 +33,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 /**
  *
@@ -80,12 +81,14 @@ class TestHarnessReplayPersistsDetailE2ETest {
     @BeforeEach
     void setUp() {
         matchContextFactory = new MatchContextFactory();
-        useCase = new TestHarnessUseCaseImpl(
-            careerRepository, careerSessionService,
-            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
+    useCase = new TestHarnessUseCaseImpl(
+        careerRepository, careerSessionService,
+        matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
+    lenient().when(careerSessionService.saveCareer(any(CareerSave.class))).thenReturn(Mono.empty());
 
-        career = new CareerSave();
-        career.setUserId(USER_ID);
+    career = new CareerSave();
+    career.setLifecycleGeneration("test-generation");
+    career.setUserId(USER_ID);
         career.setUserSessionTeamId("user-team-id");
 
         // 11 healthy players per team so the detailed match engine's
@@ -114,7 +117,7 @@ class TestHarnessReplayPersistsDetailE2ETest {
     void replayMatch_persistsDetailedSprintetailToStoragePort() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         useCase.replayMatch(USER_ID, MATCH_ID, 42L)
@@ -122,13 +125,14 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .expectNextCount(1)
             .verifyComplete();
 
-        ArgumentCaptor<String> careerIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<com.footballmanager.domain.model.valueobject.CareerWriteContext> contextCaptor =
+            ArgumentCaptor.forClass(com.footballmanager.domain.model.valueobject.CareerWriteContext.class);
         ArgumentCaptor<DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(DetailedMatchData.class);
 
-        verify(detailedMatchStoragePort, times(1)).save(careerIdCaptor.capture(), detailCaptor.capture());
+        verify(detailedMatchStoragePort, times(1)).saveWithContext(contextCaptor.capture(), detailCaptor.capture());
 
-        String savedCareerId = careerIdCaptor.getValue();
+        String savedCareerId = contextCaptor.getValue().careerId();
         DetailedMatchData savedDetail = detailCaptor.getValue();
 
         // The saved detail must be for the same careerId that the
@@ -168,7 +172,9 @@ class TestHarnessReplayPersistsDetailE2ETest {
         // Sanity: the existing best-effort deleteByMatchId is still called
         // (kept for backward compat â€” the new save() is idempotent, so the
         // delete is now harmless but not harmful either).
-        verify(detailedMatchStoragePort, times(1)).deleteByMatchId(eq(savedCareerId), eq(MATCH_ID));
+        verify(detailedMatchStoragePort, times(1)).deleteByMatchIdWithContext(
+            eq(savedCareerId), eq(MATCH_ID),
+            any(com.footballmanager.domain.model.valueobject.CareerWriteContext.class));
     }
 
     @Test
@@ -176,11 +182,13 @@ class TestHarnessReplayPersistsDetailE2ETest {
     void replayMatch_saveFailure_doesNotPropagate() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
         // Storage port save throws â€” replay must not fail the whole flow.
         org.mockito.Mockito.doThrow(new RuntimeException("Redis down (simulated)"))
-            .when(detailedMatchStoragePort).save(anyString(), any(DetailedMatchData.class));
+            .when(detailedMatchStoragePort).saveWithContext(
+                any(com.footballmanager.domain.model.valueobject.CareerWriteContext.class),
+                any(DetailedMatchData.class));
 
         useCase.replayMatch(USER_ID, MATCH_ID, 42L)
             .as(StepVerifier::create)
@@ -189,10 +197,12 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .verifyComplete();
 
         // Career save and cache invalidation still ran.
-        verify(careerRepository, times(1)).save(career);
+        verify(careerSessionService, times(1)).saveCareer(career);
         verify(careerSessionService, times(1)).invalidateCache(USER_ID);
         // And we DID attempt to persist the new detail (the bug was the opposite).
-        verify(detailedMatchStoragePort, times(1)).save(anyString(), any(DetailedMatchData.class));
+        verify(detailedMatchStoragePort, times(1)).saveWithContext(
+            any(com.footballmanager.domain.model.valueobject.CareerWriteContext.class),
+            any(DetailedMatchData.class));
     }
 
     @Test
@@ -207,7 +217,9 @@ class TestHarnessReplayPersistsDetailE2ETest {
             .verify();
 
         // Critical guard: never persist detail for a fixture that doesn't exist.
-        verify(detailedMatchStoragePort, never()).save(anyString(), any(DetailedMatchData.class));
+        verify(detailedMatchStoragePort, never()).saveWithContext(
+            any(com.footballmanager.domain.model.valueobject.CareerWriteContext.class),
+            any(DetailedMatchData.class));
         verify(careerRepository, never()).save(any());
     }
 

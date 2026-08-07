@@ -76,10 +76,11 @@ final class MatchDetailPersistenceCoordinator {
                     lineupSnapshot(context.awayStartingPlayers()),
                     lineupSnapshot(context.awayBenchPlayers())
             );
-            Mono<Void> detailWrite = career.getLifecycleGeneration() == null
-                    ? storagePort.save(careerId, detail) // pre-lifecycle batch fixture only
-                    : storagePort.saveWithContext(new CareerWriteContext(
-                            career.getUserId(), careerId, career.getLifecycleGeneration()), detail);
+            if (career.getLifecycleGeneration() == null || career.getLifecycleGeneration().isBlank()) {
+                throw new IllegalStateException("detail writer requires lifecycle generation");
+            }
+            Mono<Void> detailWrite = storagePort.saveWithContext(new CareerWriteContext(
+                    career.getUserId(), careerId, career.getLifecycleGeneration()), detail);
             detailWrite
                     .doOnSuccess(ignored -> log.debug(
                             "Detail saved for fixture {} in career {}",

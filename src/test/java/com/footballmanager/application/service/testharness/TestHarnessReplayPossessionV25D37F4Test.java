@@ -27,6 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 /**
  *
@@ -71,12 +72,14 @@ class TestHarnessReplayPossessionV25D37F4Test {
     @BeforeEach
     void setUp() {
         matchContextFactory = new MatchContextFactory();
-        useCase = new TestHarnessUseCaseImpl(
-            careerRepository, careerSessionService,
-            matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
+    useCase = new TestHarnessUseCaseImpl(
+        careerRepository, careerSessionService,
+        matchContextFactory, detailedMatchStoragePort, null, matchEngineRegistry);
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class))).thenReturn(Mono.empty());
 
-        career = new CareerSave();
-        career.setUserId(USER_ID);
+    career = new CareerSave();
+    career.setLifecycleGeneration("test-generation");
+    career.setUserId(USER_ID);
         career.setUserSessionTeamId("user-team-id");
 
         List<SessionPlayer> userPlayers = new java.util.ArrayList<>();
@@ -104,7 +107,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
     void replayMatch_forwardsDetailedPossessionAndShots() {
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         // Capture the fixture returned by replayMatch so we can inspect its result.
@@ -164,7 +167,7 @@ class TestHarnessReplayPossessionV25D37F4Test {
         // engine's possession must overwrite it â€” NOT keep 50/50.
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(Optional.of(career)));
-        when(careerRepository.save(any(CareerSave.class)))
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class)))
             .thenReturn(Mono.empty());
 
         // Run replay with seed 99

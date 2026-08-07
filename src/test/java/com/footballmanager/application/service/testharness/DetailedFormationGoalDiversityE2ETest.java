@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 /**
  *
@@ -101,9 +102,10 @@ class DetailedFormationGoalDiversityE2ETest {
     void setUp() {
         matchContextFactory = new MatchContextFactory();
         useCase = new TestHarnessUseCaseImpl(
-            careerRepository, careerSessionService,
-            matchContextFactory, detailedMatchStoragePort, baselineStoragePort, matchEngineRegistry);
-        when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
+        careerRepository, careerSessionService,
+        matchContextFactory, detailedMatchStoragePort, baselineStoragePort, matchEngineRegistry);
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class))).thenReturn(Mono.empty());
+        lenient().when(baselineStoragePort.save(anyString(), any(BaselineState.class)))
             .thenReturn(Mono.empty());
     }
 
@@ -211,7 +213,7 @@ class DetailedFormationGoalDiversityE2ETest {
         // Wipe injuries/yellows so the second replay sees a clean squad.
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(java.util.Optional.of(careerWithFreshSquad("4-3-3"))));
-        when(careerRepository.save(any(CareerSave.class))).thenReturn(Mono.empty());
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class))).thenReturn(Mono.empty());
         useCase.resetInjuries(USER_ID).block();
 
         DetailedMatchData resultB = replayWithFormation("4-3-3", 42L);
@@ -230,7 +232,7 @@ class DetailedFormationGoalDiversityE2ETest {
         CareerSave freshCareer = careerWithFreshSquad(formation);
         when(careerRepository.findById(USER_ID.toString()))
             .thenReturn(Mono.just(java.util.Optional.of(freshCareer)));
-        when(careerRepository.save(any(CareerSave.class))).thenReturn(Mono.empty());
+        lenient().when(careerSessionService.saveCareer(any(CareerSave.class))).thenReturn(Mono.empty());
 
         useCase.setFormation(USER_ID, formation).block();
         org.mockito.Mockito.clearInvocations(detailedMatchStoragePort);
@@ -238,13 +240,16 @@ class DetailedFormationGoalDiversityE2ETest {
 
         ArgumentCaptor<DetailedMatchData> detailCaptor =
             ArgumentCaptor.forClass(DetailedMatchData.class);
-        verify(detailedMatchStoragePort, times(1)).save(anyString(), detailCaptor.capture());
+        verify(detailedMatchStoragePort, times(1)).saveWithContext(
+            any(com.footballmanager.domain.model.valueobject.CareerWriteContext.class),
+            detailCaptor.capture());
 
         return detailCaptor.getValue();
     }
 
     private CareerSave careerWithFreshSquad(String userFormation) {
         CareerSave c = new CareerSave();
+        c.setLifecycleGeneration("test-generation");
         c.setUserId(USER_ID);
         c.setUserSessionTeamId("user-team-id");
         c.setCurrentSeason(1);

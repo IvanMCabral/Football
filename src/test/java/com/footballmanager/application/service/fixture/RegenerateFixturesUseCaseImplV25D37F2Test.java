@@ -14,6 +14,7 @@ import com.footballmanager.domain.service.FixtureGenerator;
 import com.footballmanager.domain.service.FixtureGenerator.FixtureRound;
 import com.footballmanager.domain.service.FixtureGenerator.FixtureSlot;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import com.footballmanager.domain.model.valueobject.TeamId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -79,7 +80,7 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
         // Stub the repo FIRST so any subsequent call (including the
         // saveCareer() pre-population below) goes through a defined Mono,
         // not the Mockito default-null return.
-        when(careerRepository.save(any(CareerSave.class)))
+        when(careerRepository.saveExistingCareer(any(CareerWriteContext.class), any(CareerSave.class)))
                 .thenReturn(Mono.empty());
 
         // GIVEN: a real CareerSessionService (uses its internal ConcurrentHashMap
@@ -123,7 +124,7 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
 
         // THEN 1: save was called exactly twice (once for pre-population + once for regenerate)
         //         — what we actually care about is that the regenerate path completed.
-        verify(careerRepository, atLeast(1)).save(any(CareerSave.class));
+        verify(careerRepository, atLeast(1)).saveExistingCareer(any(CareerWriteContext.class), any(CareerSave.class));
 
         // THEN 2: cache is EMPTY after regenerate — the stale entry was evicted.
         assertEquals(0, realCareerSessionService.getCacheSize(),
@@ -138,7 +139,7 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
         // invalidated (otherwise we lose both the new state AND the cached copy).
 
         // Stub save to fail so we can assert the cache is NOT invalidated.
-        when(careerRepository.save(any(CareerSave.class)))
+        when(careerRepository.saveExistingCareer(any(CareerWriteContext.class), any(CareerSave.class)))
                 .thenReturn(Mono.error(new RuntimeException("simulated redis failure")));
 
         CareerSessionService realCareerSessionService = new CareerSessionService(
@@ -197,6 +198,8 @@ class RegenerateFixturesUseCaseImplV25D37F2Test {
     private CareerSave buildCareerWithTwoTeams(UUID userId) {
         CareerSave career = new CareerSave();
         career.setUserId(userId);
+        career.getData().setCareerId("career-regenerate-" + userId);
+        career.setLifecycleGeneration("generation-regenerate");
 
         SessionTeam teamA = SessionTeam.fromRealTeam(
                 UUID.fromString("00000000-0000-0000-0000-00000000000a"),

@@ -10,7 +10,8 @@ public interface MatchRuntimeRepository {
     Mono<RuntimeMatch> findByMatchId(UUID userId, String matchId);
     Mono<RuntimeMatch> save(UUID userId, RuntimeMatch match);
     default Mono<RuntimeMatch> save(UUID userId, RuntimeMatch match, CareerWriteContext context) {
-        return save(userId, match);
+        return Mono.error(new IllegalStateException(
+                "runtime writer requires an explicit lifecycle context"));
     }
     Mono<Void> delete(UUID userId, String matchId);
 }

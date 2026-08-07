@@ -58,7 +58,7 @@ class TestHarnessReplayService {
             matchId, result.homeGoals(), result.awayGoals(), seed);
         return replaceStoredDetail(career, fixture, home, away, context, result)
             .then(persistBaseline(career, matchId, seed, context))
-            .then(careerRepository.save(career))
+            .then(careerSessionService.saveCareer(career).then())
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())))
             .thenReturn(fixture);
@@ -77,9 +77,10 @@ class TestHarnessReplayService {
             String careerId = career.getData().getCareerId();
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
             String generation = career.getLifecycleGeneration();
-            Mono<Void> save = generation == null || generation.isBlank()
-                ? baselineStoragePort.save(careerId, baseline)
-                : baselineStoragePort.saveWithContext(
+            if (generation == null || generation.isBlank()) {
+                return Mono.error(new IllegalStateException("baseline writer requires lifecycle generation"));
+            }
+            Mono<Void> save = baselineStoragePort.saveWithContext(
                     new CareerWriteContext(career.getUserId(), careerId, generation), baseline);
             return save
                 .doOnSuccess(ignored -> log.trace(
@@ -137,20 +138,18 @@ class TestHarnessReplayService {
             return Mono.empty();
         }
         String generation = career.getLifecycleGeneration();
-        Mono<Void> deleteDetail = detailedMatchStoragePort.deleteByMatchId(careerId, fixture.getMatchId());
-        if (generation != null && !generation.isBlank()) {
-            deleteDetail = detailedMatchStoragePort.deleteByMatchIdWithContext(careerId, fixture.getMatchId(),
-                new CareerWriteContext(career.getUserId(), careerId, generation));
+        if (generation == null || generation.isBlank()) {
+            return Mono.error(new IllegalStateException("detail writer requires lifecycle generation"));
         }
+        CareerWriteContext writeContext = new CareerWriteContext(career.getUserId(), careerId, generation);
+        Mono<Void> deleteDetail = detailedMatchStoragePort.deleteByMatchIdWithContext(careerId, fixture.getMatchId(),
+            writeContext);
         if (deleteDetail == null) {
             deleteDetail = Mono.empty();
         }
         Mono<Void> saveDetail;
         try {
-            saveDetail = generation == null || generation.isBlank()
-                ? detailedMatchStoragePort.save(careerId, newDetail)
-                : detailedMatchStoragePort.saveWithContext(
-                    new CareerWriteContext(career.getUserId(), careerId, generation), newDetail);
+            saveDetail = detailedMatchStoragePort.saveWithContext(writeContext, newDetail);
             if (saveDetail == null) {
                 saveDetail = Mono.empty();
             }

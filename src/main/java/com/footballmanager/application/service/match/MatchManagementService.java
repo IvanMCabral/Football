@@ -45,7 +45,7 @@ public class MatchManagementService {
             UUID awayTeamId,
             Consumer<MatchStateSnapshot> onFinishCallback) {
 
-        return startMatch(userId, matchId, homeTeamId, awayTeamId, null, onFinishCallback);
+        return Flux.error(new IllegalStateException("match start requires career lifecycle context"));
     }
 
     public Flux<MatchStateSnapshot> startMatch(
@@ -56,14 +56,19 @@ public class MatchManagementService {
             String careerId,
             Consumer<MatchStateSnapshot> onFinishCallback) {
 
-        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId, careerId, null);
-        return startMatchUseCase.execute(userId, matchId, onFinishCallback);
+        if (careerId == null || careerId.isBlank()) {
+            return Flux.error(new IllegalStateException("match start requires career lifecycle context"));
+        }
+        return Flux.error(new IllegalStateException("match start requires lifecycle generation"));
     }
 
     public Flux<MatchStateSnapshot> startMatch(UUID userId, UUID matchId, UUID homeTeamId,
                                                  UUID awayTeamId, String careerId,
                                                  String lifecycleGeneration,
                                                  Consumer<MatchStateSnapshot> onFinishCallback) {
+        if (careerId == null || careerId.isBlank() || lifecycleGeneration == null || lifecycleGeneration.isBlank()) {
+            return Flux.error(new IllegalStateException("match start requires career lifecycle context"));
+        }
         sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId,
                 careerId, lifecycleGeneration);
         return startMatchUseCase.execute(userId, matchId, onFinishCallback);
@@ -76,7 +81,7 @@ public class MatchManagementService {
             Consumer<MatchFinishedResult> onFinishCallback,
             LiveSession detailedMatchSession) {
 
-        return startMatch(userId, matchId, homeTeamId, awayTeamId, null, onFinishCallback, detailedMatchSession);
+        return Flux.error(new IllegalStateException("match start requires career lifecycle context"));
     }
 
     public Flux<MatchStateSnapshot> startMatch(
@@ -88,10 +93,10 @@ public class MatchManagementService {
             Consumer<MatchFinishedResult> onFinishCallback,
             LiveSession detailedMatchSession) {
 
-        sessionRegistry.getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId,
-                careerId, null, detailedMatchSession);
-
-        return startMatchUseCaseImpl.executeDetailedMatch(userId, matchId, onFinishCallback, detailedMatchSession);
+        if (careerId == null || careerId.isBlank()) {
+            return Flux.error(new IllegalStateException("match start requires career lifecycle context"));
+        }
+        return Flux.error(new IllegalStateException("match start requires lifecycle generation"));
     }
 
     public Flux<MatchStateSnapshot> startMatch(UUID userId, UUID matchId, UUID homeTeamId,
@@ -99,6 +104,9 @@ public class MatchManagementService {
                                                 String lifecycleGeneration,
                                                 Consumer<MatchFinishedResult> onFinishCallback,
                                                 LiveSession detailedMatchSession) {
+        if (careerId == null || careerId.isBlank() || lifecycleGeneration == null || lifecycleGeneration.isBlank()) {
+            return Flux.error(new IllegalStateException("match start requires career lifecycle context"));
+        }
         sessionRegistry.getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId,
                 careerId, lifecycleGeneration, detailedMatchSession);
         return startMatchUseCaseImpl.executeDetailedMatch(userId, matchId, onFinishCallback,

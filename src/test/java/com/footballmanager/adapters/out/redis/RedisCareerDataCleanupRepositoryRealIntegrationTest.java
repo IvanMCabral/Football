@@ -5,6 +5,10 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import com.footballmanager.infrastructure.adapter.out.redis.RedisMatchStateRepository;
+import com.footballmanager.adapters.out.redis.RedisMatchRuntimeRepository;
+import com.footballmanager.domain.model.entity.MatchState;
+import com.footballmanager.domain.model.entity.RuntimeMatch;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,17 +43,80 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
     @Autowired
     private CareerOwnershipTouchService ownershipTouchService;
 
+    @Autowired
+    private RedisMatchStateRepository matchStateRepository;
+
+    @Autowired
+    private RedisMatchRuntimeRepository runtimeMatchRepository;
+
+    @Test
+    void tokenlessCareerStateAndRuntimeWritersFailClosedAgainstRealRedis() {
+        UUID owner = UUID.randomUUID();
+        CareerSave career = career(owner, "career-tokenless");
+        assertThrows(RuntimeException.class,
+                () -> careerRepository.save(career).block(Duration.ofSeconds(5)));
+
+        MatchState state = new MatchState(UUID.randomUUID());
+        state.setCareerId("career-tokenless");
+        state.setLifecycleGeneration("generation-old");
+        assertThrows(RuntimeException.class,
+                () -> matchStateRepository.save(owner, state).block(Duration.ofSeconds(5)));
+
+        RuntimeMatch runtime = new RuntimeMatch("match-tokenless", "career-tokenless",
+                "home", "away", 1);
+        runtime.setLifecycleGeneration("generation-old");
+        assertThrows(RuntimeException.class,
+                () -> runtimeMatchRepository.save(owner, runtime).block(Duration.ofSeconds(5)));
+
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(
+                "match:state:" + owner + ":" + state.getMatchId()).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(
+                "runtime:match:" + owner + ":match-tokenless").block()));
+    }
+
+    @Test
+    void staleStateAndRuntimeContextsDoNotMutateGenerationTwo() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-state-runtime-stale";
+        CareerWriteContext stale = new CareerWriteContext(owner, careerId, "generation-one");
+        reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId)
+                .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-two"))
+                .then(reactiveRedisTemplate.opsForValue().set("career:" + owner, "generation-two-root"))
+                .block(Duration.ofSeconds(5));
+
+        MatchState state = new MatchState(UUID.randomUUID());
+        state.setCareerId(careerId);
+        state.setLifecycleGeneration(stale.expectedGeneration());
+        assertThrows(RuntimeException.class,
+                () -> matchStateRepository.save(owner, state, stale).block(Duration.ofSeconds(5)));
+
+        RuntimeMatch runtime = new RuntimeMatch("match-state-runtime-stale", careerId,
+                "home", "away", 1);
+        runtime.setLifecycleGeneration(stale.expectedGeneration());
+        assertThrows(RuntimeException.class,
+                () -> runtimeMatchRepository.save(owner, runtime, stale).block(Duration.ofSeconds(5)));
+
+        assertEquals("generation-two", reactiveRedisTemplate.opsForValue()
+                .get("career-generation:" + careerId).block(Duration.ofSeconds(5)));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(
+                "match:state:" + owner + ":" + state.getMatchId()).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(
+                "runtime:match:" + owner + ":match-state-runtime-stale").block()));
+    }
+
     @Test
     void worldTtlExpiresWithoutDeletingCareerRoot() throws InterruptedException {
         UUID owner = UUID.randomUUID();
         CareerSave career = new CareerSave();
         career.setUserId(owner);
+        career.getData().setCareerId("career-world-ttl");
         ReflectionTestUtils.setField(worldRepository, "worldTtl", Duration.ofMillis(250));
         com.footballmanager.domain.model.entity.WorldSnapshot world =
                 new com.footballmanager.domain.model.entity.WorldSnapshot();
         world.setUserId(owner);
         worldRepository.saveInitial(world).block(Duration.ofSeconds(10));
-        careerRepository.save(career).block(Duration.ofSeconds(10));
+        careerRepository.createInitialCareer(career).block(Duration.ofSeconds(10));
         Duration ttl = reactiveRedisTemplate.getExpire("world:" + owner).block(Duration.ofSeconds(5));
         assertTrue(ttl != null && !ttl.isNegative() && !ttl.isZero());
 
@@ -66,7 +133,7 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
         career.setUserId(ownerA);
         career.getData().setCareerId(careerId);
 
-        careerRepository.save(career).block(Duration.ofSeconds(10));
+        careerRepository.createInitialCareer(career).block(Duration.ofSeconds(10));
 
         assertEquals(ownerA.toString(), reactiveRedisTemplate.opsForValue()
                 .get("career-owner:" + careerId).block(Duration.ofSeconds(5)));
@@ -85,14 +152,14 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
         CareerSave first = new CareerSave();
         first.setUserId(ownerA);
         first.getData().setCareerId(careerId);
-        careerRepository.save(first).block(Duration.ofSeconds(10));
+        careerRepository.createInitialCareer(first).block(Duration.ofSeconds(10));
 
         CareerSave conflicting = new CareerSave();
         conflicting.setUserId(ownerB);
         conflicting.getData().setCareerId(careerId);
 
         assertThrows(RuntimeException.class,
-                () -> careerRepository.save(conflicting).block(Duration.ofSeconds(10)));
+                () -> careerRepository.createInitialCareer(conflicting).block(Duration.ofSeconds(10)));
         assertEquals(ownerA.toString(), reactiveRedisTemplate.opsForValue()
                 .get("career-owner:" + careerId).block(Duration.ofSeconds(5)));
     }
@@ -102,11 +169,11 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
         UUID owner = UUID.randomUUID();
         seedCareerIndex(owner, 255, "cardinality");
 
-        careerRepository.save(career(owner, "cardinality-accepted")).block(Duration.ofSeconds(10));
+        careerRepository.createInitialCareer(career(owner, "cardinality-accepted")).block(Duration.ofSeconds(10));
         assertEquals(256, indexSize(owner));
 
         assertThrows(RuntimeException.class,
-                () -> careerRepository.save(career(owner, "cardinality-rejected"))
+                () -> careerRepository.createInitialCareer(career(owner, "cardinality-rejected"))
                         .block(Duration.ofSeconds(10)));
 
         assertEquals(256, indexSize(owner));
@@ -117,16 +184,16 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
     @Test
     void existingEntryAt256RenewsAndConcurrentNewSavesAllowExactlyOne() {
         UUID owner = UUID.randomUUID();
-        seedCareerIndex(owner, 256, "existing");
+        seedCareerIndex(owner, 255, "existing");
 
-        careerRepository.save(career(owner, "existing-0")).block(Duration.ofSeconds(10));
+        careerRepository.createInitialCareer(career(owner, "existing-new")).block(Duration.ofSeconds(10));
         assertEquals(256, indexSize(owner));
 
         UUID concurrentOwner = UUID.randomUUID();
         seedCareerIndex(concurrentOwner, 255, "concurrent");
-        Mono<Boolean> first = careerRepository.save(career(concurrentOwner, "concurrent-256"))
+        Mono<Boolean> first = careerRepository.createInitialCareer(career(concurrentOwner, "concurrent-256"))
                 .thenReturn(true).onErrorReturn(false);
-        Mono<Boolean> second = careerRepository.save(career(concurrentOwner, "concurrent-257"))
+        Mono<Boolean> second = careerRepository.createInitialCareer(career(concurrentOwner, "concurrent-257"))
                 .thenReturn(true).onErrorReturn(false);
 
         long successes = Flux.merge(first, second)
@@ -240,7 +307,7 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
                 .block(Duration.ofSeconds(5));
 
         assertThrows(RuntimeException.class,
-                () -> careerRepository.save(oldCareer).block(Duration.ofSeconds(10)));
+                () -> careerRepository.saveExistingCareer(new CareerWriteContext(owner, careerId, "generation-old"), oldCareer).block(Duration.ofSeconds(10)));
         assertEquals("replacement", reactiveRedisTemplate.opsForValue()
                 .get("career:" + owner).block(Duration.ofSeconds(5)));
         assertEquals("generation-new", reactiveRedisTemplate.opsForValue()

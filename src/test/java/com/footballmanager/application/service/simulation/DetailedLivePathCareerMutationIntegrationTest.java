@@ -267,7 +267,9 @@ class DetailedLivePathCareerMutationIntegrationTest {
             String homeStartingTeamId, String awayStartingTeamId,
             String playerId) {
         CareerSave save = new CareerSave();
+        save.setUserId(UUID.fromString("33333333-3333-3333-3333-333333333333"));
         save.getData().setCareerId("test_live_" + playerId);
+        save.setLifecycleGeneration("test-generation");
         CareerTeamManager tm = new CareerTeamManager();
         CareerPlayerManager pm = new CareerPlayerManager();
 

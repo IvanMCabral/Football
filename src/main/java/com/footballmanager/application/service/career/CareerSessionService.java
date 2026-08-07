@@ -3,6 +3,7 @@ package com.footballmanager.application.service.career;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
 import com.footballmanager.domain.port.in.career.ContinueCareerUseCase;
@@ -113,9 +114,15 @@ public class CareerSessionService {
     }
 
     public Mono<CareerSave> saveCareer(CareerSave career) {
+        if (career == null || career.getUserId() == null || career.getCareerId() == null
+                || career.getLifecycleGeneration() == null || career.getLifecycleGeneration().isBlank()) {
+            return Mono.error(new IllegalStateException(
+                    "career update requires captured lifecycle generation"));
+        }
         String key = career.getUserId().toString();
-
-        return lifecycleCoordinator.serialize(career.getUserId(), careerRepository.save(career))
+        CareerWriteContext context = new CareerWriteContext(
+                career.getUserId(), career.getCareerId(), career.getLifecycleGeneration());
+        return lifecycleCoordinator.serialize(career.getUserId(), careerRepository.saveExistingCareer(context, career))
             .doOnSuccess(saved -> careerCache.put(key, career))
             .doOnError(error -> {
                 // Log error silently

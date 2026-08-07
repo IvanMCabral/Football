@@ -231,7 +231,8 @@ public class RoundController {
                     }
 
                     long engineStarted = System.nanoTime();
-                    MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId);
+                    MatchEngine matchEngine = engineRegistry.startEngine(userId, matchId, homeTeamId, awayTeamId,
+                            traceCareerId, lifecycleGeneration);
                     trace.mark("engineCreationMs", engineStarted);
                     log.info("[ROUND-CONTROLLER] Got MatchEngine for match {}: {}", matchId, matchEngine != null ? "OK" : "NULL");
                     long registrationStarted = System.nanoTime();
@@ -310,14 +311,13 @@ public class RoundController {
             log.info("[ROUND-CONTROLLER] LiveSession created for match {} with seed {}", matchId, seed);
             String careerId = career.getData().getCareerId();
             String generation = career.getLifecycleGeneration();
-            CareerWriteContext writeContext = generation == null || generation.isBlank()
-                    ? null
-                    : new CareerWriteContext(career.getUserId(), careerId, generation);
+            if (generation == null || generation.isBlank()) {
+                throw new IllegalStateException("round baseline requires lifecycle generation");
+            }
+            CareerWriteContext writeContext = new CareerWriteContext(career.getUserId(), careerId, generation);
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
             lifecycleExecutor.execute("save baseline state",
-                    (writeContext == null
-                            ? baselineStoragePort.save(careerId, baseline)
-                            : baselineStoragePort.saveWithContext(writeContext, baseline))
+                    baselineStoragePort.saveWithContext(writeContext, baseline)
                     .doOnSuccess(v -> log.info(
                             "[F6-MATCH-COMPARE] BaselineState saved for matchId={}, careerId={}, seed={}",
                             matchId, careerId, seed))

@@ -81,10 +81,11 @@ final class LiveDetailPersister {
                     result,
                     ratings);
 
-            Mono<Void> detailWrite = career.getLifecycleGeneration() == null
-                    ? storagePort.save(careerId, detail) // pre-lifecycle unit fixtures only
-                    : storagePort.saveWithContext(new CareerWriteContext(
-                            career.getUserId(), careerId, career.getLifecycleGeneration()), detail);
+            if (career.getLifecycleGeneration() == null || career.getLifecycleGeneration().isBlank()) {
+                return Mono.error(new IllegalStateException("detail writer requires lifecycle generation"));
+            }
+            Mono<Void> detailWrite = storagePort.saveWithContext(new CareerWriteContext(
+                    career.getUserId(), careerId, career.getLifecycleGeneration()), detail);
             return detailWrite
                     .doOnSuccess(ignored -> {
                         log.info("persistDetailedMatchDetail careerId={}, matchId={}, season={}, round={}, timeline={}, playerRatings={}, key=career:{}:match-detail:{}",

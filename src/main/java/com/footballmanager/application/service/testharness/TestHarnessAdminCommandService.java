@@ -121,7 +121,7 @@ private Mono<Void> executeReplaceFixtures(CareerSave career, List<CustomFixture>
 
         log.info("replaceFixtures userId={} count={} maxRound={}",
             career.getUserId(), fixtures.size(), maxRound);
-        return careerRepository.save(career)
+        return careerSessionService.saveCareer(career).then()
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())));
     }
@@ -155,7 +155,7 @@ private Mono<Void> executeResetInjuries(CareerSave career) {
         log.trace("resetInjuries userId={} squadSize={} cleared={}",
             career.getUserId(), squad.size(), cleared);
 
-        return careerRepository.save(career)
+        return careerSessionService.saveCareer(career).then()
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())));
     }
@@ -183,7 +183,7 @@ private Mono<Void> executeSetFormation(CareerSave career, String formation) {
         log.trace("setFormation userId={} team={} formation={}",
             career.getUserId(), userSessionTeamId, formation);
 
-        return careerRepository.save(career)
+        return careerSessionService.saveCareer(career).then()
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())));
     }
@@ -210,7 +210,7 @@ private Mono<Void> executeSetStyle(CareerSave career, TeamStyle style) {
         log.info("setStyle userId={} team={} style={}",
             career.getUserId(), userSessionTeamId, style);
 
-        return careerRepository.save(career)
+        return careerSessionService.saveCareer(career).then()
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())));
     }
@@ -310,7 +310,7 @@ private Mono<Void> executeInjectPlayerStats(CareerSave career, String playerId,
         log.info("injectPlayerStats userId={} player={} ({}){}",
             career.getUserId(), playerId, target.getName(), logMsg);
 
-        return careerRepository.save(career)
+        return careerSessionService.saveCareer(career).then()
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())));
     }
@@ -407,7 +407,7 @@ private Mono<Void> executeResetRound(CareerSave career, String roundId) {
             careerId, roundId, round, resetCount, removedEngines, detailDeletes.size(), previousCurrentRound);
 
         return Mono.whenDelayError(detailDeletes)
-            .then(careerRepository.save(career))
+            .then(careerSessionService.saveCareer(career).then())
             .then(Mono.fromRunnable(() ->
                 careerSessionService.invalidateCache(career.getUserId())));
     }
