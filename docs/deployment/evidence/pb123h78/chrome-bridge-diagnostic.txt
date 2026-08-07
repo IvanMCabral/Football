@@ -1,0 +1,8 @@
+browser-client selection: Browser is not available: chrome
+retry: Browser is not available: chrome
+chrome-is-running: running=false
+extension: installed=true, enabled=true, selected profile=Profile 1
+native-host manifest: exists=true
+native-host registry key: absent
+native-host diagnostic: correct=false
+No window IDs, tabs, cookies, tokens, credentials or session contents were collected.

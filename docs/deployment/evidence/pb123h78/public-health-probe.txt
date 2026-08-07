@@ -1,0 +1,8 @@
+Backend URL: https://manager-staging-api.onrender.com
+Initial GET /api/v1/health/liveness: timeout (cold-start attempt)
+Initial GET /api/v1/health/readiness: timeout (cold-start attempt)
+Retry GET /api/v1/health/liveness: 200 {"status":"UP"}
+Retry GET /api/v1/health/readiness: 200 {"status":"UP","database":"UP","redis":"UP"}
+Readiness stabilization: 3 consecutive 200 responses with database=UP and redis=UP
+Probe method: read-only PowerShell HTTPS request; request IDs omitted
+Credentials: none supplied or printed
