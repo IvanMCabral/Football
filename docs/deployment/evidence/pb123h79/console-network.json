@@ -1,0 +1,12 @@
+{
+  "capturedAt": "2026-08-07",
+  "applicationErrors": 0,
+  "applicationWarnings": 0,
+  "externalExtensionWarnings": "present and excluded; chrome-extension:// source only",
+  "corsFailures": 0,
+  "http5xxObservedInPublicFlow": 0,
+  "streamDuplicationObserved": false,
+  "pollingUnexpectedlyObserved": false,
+  "matchStartTraces": 6,
+  "note": "Only sanitized categories are retained; no tokens, cookies or personal identifiers are stored."
+}
