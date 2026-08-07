@@ -24,6 +24,9 @@ performed. It does not replace the required two-season certification.
 - Round 3: FINISHED at minute 90, 0–0, with a non-empty timeline. The live
   formation modal paused the round at a live minute and the close path resumed
   it before completion.
+- Round 4: FINISHED at minute 90, Levante UD 1–0 Real Madrid, non-empty
+  timeline. A live reload recovered the same round and it completed after the
+  user-facing resume control.
 - Console errors from the app: none observed after deployment. Extension-only
   warnings were excluded.
 

@@ -26,6 +26,8 @@ paths.
   then finished at minute 90.
 - Round 3 started at `/round/3/live`, advanced to minute 31 while the modal
   was exercised, and finished at minute 90 with a non-empty timeline.
+- Round 4 was reloaded while live; the route recovered the same round and
+  resumed to minute 90, finishing 1–0 with a non-empty timeline.
 - A live formation modal paused the whole round and resumed after close.
 - The stale injury dialog was closed after the original reproduction; a new
   terminal dialog was not opened.
@@ -33,5 +35,6 @@ paths.
 ## Remaining gates
 
 The C1/C2 stale-callback drill, owner-B isolation, full recovery matrix and
-two complete seasons were not re-certified in this run. No public approval is
-claimed for those gates.
+two complete seasons were not re-certified in this run. The single round-4
+reload/recovery path passed; no public approval is claimed for the remaining
+gates.

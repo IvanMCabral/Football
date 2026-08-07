@@ -23,11 +23,22 @@
     {
       "round": 3,
       "route": "/games/{career}/round/3/live",
-      "status": "IN_PROGRESS",
-      "minuteAtCapture": 31,
-      "tacticalModal": "opened, round visibly paused, confirmation path exercised"
+      "status": "FINISHED",
+      "minute": 90,
+      "score": "Athletic Club 0 - 0 Real Madrid",
+      "events": "non-empty",
+      "tacticalModal": "opened at a live minute, round visibly paused, close path exercised"
+    },
+    {
+      "round": 4,
+      "route": "/games/{career}/round/4/live",
+      "status": "FINISHED",
+      "minute": 90,
+      "score": "Levante UD 1 - 0 Real Madrid",
+      "events": "non-empty",
+      "reloadRecovery": "PASS; reload restored the live round and it completed after resume"
     }
   ],
   "seasonCompletion": "NOT_CERTIFIED",
-  "reason": "H7.9 certification was interrupted after reproducing and fixing the round identity collision; no full-season claim is made."
+  "reason": "Only the first four of 38 season-one rounds were executed; no full-season claim is made."
 }
