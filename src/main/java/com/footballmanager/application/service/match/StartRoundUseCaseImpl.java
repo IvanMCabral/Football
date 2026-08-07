@@ -5,6 +5,8 @@ import com.footballmanager.domain.model.entity.RuntimeMatch;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.port.in.match.StartRoundUseCase;
 import com.footballmanager.domain.ports.out.match.MatchRuntimeRepository;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.application.port.out.CareerOwnershipPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class StartRoundUseCaseImpl implements StartRoundUseCase {
 
     private final CareerSessionService careerSessionService;
     private final MatchRuntimeRepository runtimeRepository;
+    private final CareerOwnershipPort ownershipTouchService;
 
     @Override
     public Mono<List<RuntimeMatch>> startRound(UUID userId, String careerId, int round) {
@@ -56,7 +59,8 @@ public class StartRoundUseCaseImpl implements StartRoundUseCase {
 
                 log.info("[START-ROUND] Found {} fixtures for round {}", fixtures.size(), round);
 
-                return Flux.fromIterable(fixtures)
+                return ownershipTouchService.capture(userId, careerId)
+                    .flatMap(context -> Flux.fromIterable(fixtures)
                     .filter(MatchFixture::canBeSimulated)
                     .map(fixture -> new RuntimeMatch(
                         fixture.getMatchId(),
@@ -65,9 +69,10 @@ public class StartRoundUseCaseImpl implements StartRoundUseCase {
                         fixture.getAwayTeamId(),
                         round
                     ))
+                    .doOnNext(runtime -> runtime.setLifecycleGeneration(context.expectedGeneration()))
                     .flatMap(runtime ->
-                        runtimeRepository.save(userId, runtime).thenReturn(runtime))
-                    .collectList();
+                        runtimeRepository.save(userId, runtime, context).thenReturn(runtime))
+                    .collectList());
             });
     }
 }

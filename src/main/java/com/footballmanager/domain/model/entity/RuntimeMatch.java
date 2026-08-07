@@ -6,6 +6,8 @@ import com.footballmanager.domain.model.valueobject.MatchEvent;
 import com.footballmanager.domain.model.valueobject.MatchEventType;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ import java.util.UUID;
  */
 @Getter
 public class RuntimeMatch {
+    @JsonIgnore
+    private String lifecycleGeneration;
     private final String matchId;         // ID del MatchFixture original
     private final String careerId;        // Career a la que pertenece
     private final String homeTeamId;      // sessionTeamId
@@ -162,6 +166,10 @@ public class RuntimeMatch {
     public boolean isInProgress() {
         return status == MatchStatus.IN_PROGRESS;
     }
+
+    @JsonIgnore
+    public String getLifecycleGeneration() { return lifecycleGeneration; }
+    public void setLifecycleGeneration(String lifecycleGeneration) { this.lifecycleGeneration = lifecycleGeneration; }
 
     /**
      * NO hay getMatchResult() - TournamentState construye el resultado.

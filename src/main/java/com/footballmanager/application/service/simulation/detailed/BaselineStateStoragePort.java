@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import reactor.core.publisher.Mono;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 
 /**
  * {@link BaselineState} snapshots captured at detailed match start.
@@ -50,6 +51,10 @@ public interface BaselineStateStoragePort {
      *         with {@link BaselinePersistenceException} on persistent failure
      */
     Mono<Void> save(String careerId, BaselineState state);
+
+    default Mono<Void> saveWithContext(CareerWriteContext context, BaselineState state) {
+        return save(context.careerId(), state);
+    }
 
 /**
      * Retrieve the baseline state for a match.

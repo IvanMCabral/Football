@@ -45,6 +45,7 @@ public class MatchSession {
     private final Sinks.Many<MatchStateSnapshot> stateSink;
     /** detailed live session — null means legacy path (use MatchTickHandler). */
     private final LiveSession detailedMatchSession;
+    private final String lifecycleGeneration;
 
     /**
      * Returns null if this session is on the legacy (classic) path.
@@ -72,8 +73,16 @@ public class MatchSession {
      */
     public MatchSession(UUID userId, UUID matchId, MatchState state,
                         MatchTickHandler tickHandler, LiveSession detailedMatchSession) {
+        this(userId, matchId, state, tickHandler, detailedMatchSession, null);
+    }
+
+    public MatchSession(UUID userId, UUID matchId, MatchState state,
+                        MatchTickHandler tickHandler, LiveSession detailedMatchSession,
+                        String lifecycleGeneration) {
         this.userId = userId;
         this.matchId = matchId;
+        this.lifecycleGeneration = lifecycleGeneration;
+        state.setLifecycleGeneration(lifecycleGeneration);
         this.currentState = convertToSnapshot(matchId, state);
         this.tickHandler = tickHandler;
         this.commandQueue = new ConcurrentLinkedQueue<>();
@@ -82,6 +91,10 @@ public class MatchSession {
         // consumed by startMatchUseCase / live components.
         this.stateSink = Sinks.many().replay().latest();
         this.detailedMatchSession = detailedMatchSession;
+    }
+
+    public String getLifecycleGeneration() {
+        return lifecycleGeneration;
     }
 
     private MatchStateSnapshot convertToSnapshot(UUID matchId, MatchState state) {

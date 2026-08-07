@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.ports.out.match.MatchCommandRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -44,11 +45,26 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
 
     @Override
     public Mono<Void> saveCommand(UUID userId, UUID matchId, MatchCommand command) {
-        return saveCommand(userId, matchId, command, null);
+        return saveCommand(userId, matchId, command, (String) null);
     }
 
     @Override
     public Mono<Void> saveCommand(UUID userId, UUID matchId, MatchCommand command, String careerId) {
+        if (ownershipTouchService != null && careerId != null && !careerId.isBlank()) {
+            return Mono.error(new IllegalStateException("command writer requires lifecycle context"));
+        }
+        return saveCommandInternal(userId, matchId, command, null);
+    }
+
+    @Override
+    public Mono<Void> saveCommandWithContext(UUID userId, UUID matchId, MatchCommand command, CareerWriteContext context) {
+        if (context == null) {
+            return Mono.error(new IllegalArgumentException("career lifecycle context is required"));
+        }
+        return saveCommandInternal(userId, matchId, command, context);
+    }
+
+    private Mono<Void> saveCommandInternal(UUID userId, UUID matchId, MatchCommand command, CareerWriteContext context) {
         String key = buildKey(userId, matchId);
         Mono<Void> operation = findPendingCommands(userId, matchId)
                 .defaultIfEmpty(new ArrayList<>())
@@ -66,9 +82,9 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                 });
         Mono<Void> coordinated = ownershipTouchService == null
                 ? operation
-                : careerId == null || careerId.isBlank()
-                        ? ownershipTouchService.touchOwnerBeforeWrite(userId, () -> operation)
-                        : ownershipTouchService.touchBeforeWrite(careerId, () -> operation);
+                : context == null
+                        ? Mono.error(new IllegalStateException("command writer requires active career context"))
+                        : ownershipTouchService.touchBeforeWrite(context, () -> operation);
         return coordinated
                 .onErrorMap(e -> e instanceof RedisStateAccessException ? e
                         : new RedisStateAccessException(
@@ -102,12 +118,29 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
 
     @Override
     public Mono<Void> deleteCommands(UUID userId, UUID matchId) {
-        String key = buildKey(userId, matchId);
+        if (ownershipTouchService != null) {
+            return Mono.error(new IllegalStateException("command deletion requires lifecycle context"));
+        }
+        return deleteCommandsInternal(userId, matchId, null);
+    }
 
-        return redisTemplate.delete(key)
+    @Override
+    public Mono<Void> deleteCommandsWithContext(UUID userId, UUID matchId, CareerWriteContext context) {
+        if (context == null) {
+            return Mono.error(new IllegalArgumentException("career lifecycle context is required"));
+        }
+        return deleteCommandsInternal(userId, matchId, context);
+    }
+
+    private Mono<Void> deleteCommandsInternal(UUID userId, UUID matchId, CareerWriteContext context) {
+        String key = buildKey(userId, matchId);
+        Mono<Void> operation = redisTemplate.delete(key)
                 .then()
                 .onErrorMap(e -> new RedisStateAccessException(
                         "Failed to delete pending match commands for matchId=" + matchId, e));
+        return ownershipTouchService == null || context == null
+                ? operation
+                : ownershipTouchService.touchBeforeWrite(context, () -> operation);
     }
 
     private String buildKey(UUID userId, UUID matchId) {

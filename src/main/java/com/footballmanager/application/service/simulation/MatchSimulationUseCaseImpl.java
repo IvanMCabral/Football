@@ -7,6 +7,8 @@ import com.footballmanager.domain.ports.out.match.MatchCommandRepository;
 import com.footballmanager.domain.ports.out.match.MatchStateRepository;
 import com.footballmanager.domain.service.MatchCommandApplier;
 import com.footballmanager.domain.service.MatchSimulator;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.application.port.out.CareerOwnershipPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -21,6 +23,7 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
     private final MatchCommandRepository matchCommandRepository;
     private final MatchCommandApplier commandApplier;
     private final MatchSimulator matchSimulator;
+    private final CareerOwnershipPort ownershipTouchService;
 
     @Override
     public Mono<MatchState> createMatchState(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId) {
@@ -42,19 +45,18 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
                     return commandApplier.apply(state, commands);
                 })
                 .map(state -> matchSimulator.simulateReal(state, toMinute))
-                .flatMap(state ->
-                        matchStateRepository.save(userId, state)
-                                .then(matchCommandRepository.deleteCommands(userId, matchId))
-                                .thenReturn(state)
-                );
+                .flatMap(state -> writeContext(userId, state)
+                        .flatMap(context -> matchStateRepository.save(userId, state, context)
+                                .then(matchCommandRepository.deleteCommandsWithContext(userId, matchId, context))
+                                .thenReturn(state)));
     }
 
     @Override
     public Mono<MatchState> applyCommand(UUID userId, UUID matchId, MatchCommand command) {
         Mono<Void> save = matchStateRepository.findById(userId, matchId)
-                .flatMap(state -> matchCommandRepository.saveCommand(
-                        userId, matchId, command, state.getCareerId()))
-                .switchIfEmpty(matchCommandRepository.saveCommand(userId, matchId, command));
+                .flatMap(state -> writeContext(userId, state)
+                        .flatMap(context -> matchCommandRepository.saveCommandWithContext(userId, matchId, command, context)))
+                .switchIfEmpty(Mono.error(new IllegalStateException("match command requires an active career state")));
         return save
                 .then(matchStateRepository.findById(userId, matchId));
     }
@@ -62,5 +64,12 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
     @Override
     public Mono<MatchState> getMatchState(UUID userId, UUID matchId) {
         return matchStateRepository.findById(userId, matchId);
+    }
+
+    private Mono<CareerWriteContext> writeContext(UUID userId, MatchState state) {
+        if (state == null || state.getCareerId() == null || state.getCareerId().isBlank()) {
+            return Mono.error(new IllegalStateException("career lifecycle context is required"));
+        }
+        return ownershipTouchService.capture(userId, state.getCareerId());
     }
 }

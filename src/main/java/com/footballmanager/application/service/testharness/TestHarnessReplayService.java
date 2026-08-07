@@ -14,6 +14,7 @@ import com.footballmanager.application.service.simulation.detailed.PlayerMatchRa
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +76,12 @@ class TestHarnessReplayService {
         try {
             String careerId = career.getData().getCareerId();
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
-            return baselineStoragePort.save(careerId, baseline)
+            String generation = career.getLifecycleGeneration();
+            Mono<Void> save = generation == null || generation.isBlank()
+                ? baselineStoragePort.save(careerId, baseline)
+                : baselineStoragePort.saveWithContext(
+                    new CareerWriteContext(career.getUserId(), careerId, generation), baseline);
+            return save
                 .doOnSuccess(ignored -> log.trace(
                     "replayMatch: persisted baseline for matchId={}, careerId={}, seed={}",
                     matchId, careerId, seed))
@@ -130,13 +136,21 @@ class TestHarnessReplayService {
                 fixture.getMatchId(), e.getMessage());
             return Mono.empty();
         }
+        String generation = career.getLifecycleGeneration();
         Mono<Void> deleteDetail = detailedMatchStoragePort.deleteByMatchId(careerId, fixture.getMatchId());
+        if (generation != null && !generation.isBlank()) {
+            deleteDetail = detailedMatchStoragePort.deleteByMatchIdWithContext(careerId, fixture.getMatchId(),
+                new CareerWriteContext(career.getUserId(), careerId, generation));
+        }
         if (deleteDetail == null) {
             deleteDetail = Mono.empty();
         }
         Mono<Void> saveDetail;
         try {
-            saveDetail = detailedMatchStoragePort.save(careerId, newDetail);
+            saveDetail = generation == null || generation.isBlank()
+                ? detailedMatchStoragePort.save(careerId, newDetail)
+                : detailedMatchStoragePort.saveWithContext(
+                    new CareerWriteContext(career.getUserId(), careerId, generation), newDetail);
             if (saveDetail == null) {
                 saveDetail = Mono.empty();
             }

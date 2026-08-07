@@ -50,7 +50,7 @@ public class WorldSnapshotCreator {
         }
         snapshot.setWorldPlayers(playersMap);
 
-        return WorldSnapshotRepository.save(snapshot);
+        return WorldSnapshotRepository.saveInitial(snapshot);
     }
 }
 

@@ -3,6 +3,7 @@ package com.footballmanager.infrastructure.persistence.redis;
 import com.footballmanager.application.service.simulation.detailed.BaselinePersistenceException;
 import com.footballmanager.application.service.simulation.detailed.BaselineState;
 import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +102,21 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
      */
     @Override
     public Mono<Void> save(String careerId, BaselineState state) {
+        if (ownershipTouchService != null) {
+            return Mono.error(new IllegalStateException("baseline writer requires lifecycle context"));
+        }
+        return saveInternal(careerId, null, state);
+    }
+
+    @Override
+    public Mono<Void> saveWithContext(CareerWriteContext context, BaselineState state) {
+        if (context == null) {
+            return Mono.error(new IllegalArgumentException("career lifecycle context is required"));
+        }
+        return saveInternal(context.careerId(), context, state);
+    }
+
+    private Mono<Void> saveInternal(String careerId, CareerWriteContext context, BaselineState state) {
         if (careerId == null || careerId.isBlank()) {
             return Mono.error(new IllegalArgumentException("careerId must not be blank"));
         }
@@ -154,7 +170,7 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
                 .then();
         return ownershipTouchService == null
                 ? persist
-                : ownershipTouchService.touchBeforeWrite(careerId, () -> persist);
+                : ownershipTouchService.touchBeforeWrite(context, () -> persist);
     }
 
     @Override

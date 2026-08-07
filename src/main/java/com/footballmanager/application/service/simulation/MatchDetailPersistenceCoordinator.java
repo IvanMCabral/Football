@@ -11,6 +11,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.slf4j.Logger;
 import reactor.core.publisher.Mono;
 
@@ -75,7 +76,11 @@ final class MatchDetailPersistenceCoordinator {
                     lineupSnapshot(context.awayStartingPlayers()),
                     lineupSnapshot(context.awayBenchPlayers())
             );
-            storagePort.save(careerId, detail)
+            Mono<Void> detailWrite = career.getLifecycleGeneration() == null
+                    ? storagePort.save(careerId, detail) // pre-lifecycle batch fixture only
+                    : storagePort.saveWithContext(new CareerWriteContext(
+                            career.getUserId(), careerId, career.getLifecycleGeneration()), detail);
+            detailWrite
                     .doOnSuccess(ignored -> log.debug(
                             "Detail saved for fixture {} in career {}",
                             fixture.getMatchId(), careerId))

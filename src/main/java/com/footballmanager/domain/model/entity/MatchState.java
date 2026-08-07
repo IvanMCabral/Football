@@ -3,8 +3,12 @@ package com.footballmanager.domain.model.entity;
 import com.footballmanager.domain.model.valueobject.*;
 import java.io.Serializable;
 import java.util.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class MatchState implements Serializable {
+    @JsonIgnore
+    private String lifecycleGeneration;
     private UUID matchId;
     private UUID homeTeamId;
     private UUID awayTeamId;
@@ -40,6 +44,9 @@ public class MatchState implements Serializable {
     public void setAwayTeamId(UUID awayTeamId) { this.awayTeamId = awayTeamId; }
     public String getCareerId() { return careerId; }
     public void setCareerId(String careerId) { this.careerId = careerId; }
+    @JsonIgnore
+    public String getLifecycleGeneration() { return lifecycleGeneration; }
+    public void setLifecycleGeneration(String lifecycleGeneration) { this.lifecycleGeneration = lifecycleGeneration; }
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
     public int getCurrentMinute() { return currentMinute; }

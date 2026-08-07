@@ -32,6 +32,7 @@ public class RoundEngine {
     private final UUID roundId;
     private volatile UUID ownerId;
     private volatile String careerId;
+    private volatile String lifecycleGeneration;
     private final Map<UUID, MatchEngine> matchEngines;
     private final RoundStatusCalculator statusCalculator;
     private final Sinks.Many<RoundState> stateSink;
@@ -160,8 +161,18 @@ public class RoundEngine {
 
     /** Assigns the exact owner metadata before the engine is published. */
     public void setOwner(UUID ownerId, String careerId) {
+        setOwner(ownerId, careerId, null);
+    }
+
+    /** Assigns owner and fencing generation before publication. */
+    public void setOwner(UUID ownerId, String careerId, String lifecycleGeneration) {
         this.ownerId = ownerId;
         this.careerId = careerId;
+        this.lifecycleGeneration = lifecycleGeneration;
+    }
+
+    public String getLifecycleGeneration() {
+        return lifecycleGeneration;
     }
 
     public boolean belongsTo(UUID requestedOwnerId, String requestedCareerId) {

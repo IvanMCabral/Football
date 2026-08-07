@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.RuntimeMatch;
 import com.footballmanager.domain.ports.out.match.MatchRuntimeRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -49,13 +50,32 @@ public class RedisMatchRuntimeRepository implements MatchRuntimeRepository {
 
     @Override
     public Mono<RuntimeMatch> save(UUID userId, RuntimeMatch runtimeMatch) {
+        if (ownershipTouchService != null && runtimeMatch.getCareerId() != null
+                && runtimeMatch.getLifecycleGeneration() == null) {
+            return Mono.error(new IllegalStateException("runtime writer requires lifecycle context"));
+        }
+        CareerWriteContext context = ownershipTouchService == null || runtimeMatch.getCareerId() == null ? null
+                : new CareerWriteContext(userId, runtimeMatch.getCareerId(), runtimeMatch.getLifecycleGeneration());
+        return saveInternal(userId, context, runtimeMatch);
+    }
+
+    @Override
+    public Mono<RuntimeMatch> save(UUID userId, RuntimeMatch runtimeMatch, CareerWriteContext context) {
+        if (context == null || runtimeMatch == null || !context.ownerId().equals(userId)
+                || !context.careerId().equals(runtimeMatch.getCareerId())) {
+            return Mono.error(new IllegalArgumentException("runtime lifecycle context does not match runtime"));
+        }
+        return saveInternal(userId, context, runtimeMatch);
+    }
+
+    private Mono<RuntimeMatch> saveInternal(UUID userId, CareerWriteContext context, RuntimeMatch runtimeMatch) {
         String key = buildKey(userId, runtimeMatch.getMatchId());
         Mono<RuntimeMatch> persist = Mono.fromCallable(() -> objectMapper.writeValueAsString(runtimeMatch))
                 .flatMap(json -> redisTemplate.opsForValue().set(key, json, TTL))
                 .thenReturn(runtimeMatch);
         return ownershipTouchService == null || runtimeMatch.getCareerId() == null
                 ? persist
-                : ownershipTouchService.touchBeforeWrite(runtimeMatch.getCareerId(), () -> persist);
+                : ownershipTouchService.touchBeforeWrite(context, () -> persist);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.ports.out.match.MatchStateRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -60,6 +61,25 @@ public class RedisMatchStateRepository implements MatchStateRepository {
 
     @Override
     public Mono<MatchState> save(UUID userId, MatchState matchState) {
+        if (ownershipTouchService != null && matchState.getCareerId() != null
+                && matchState.getLifecycleGeneration() == null) {
+            return Mono.error(new IllegalStateException("state writer requires lifecycle context"));
+        }
+        CareerWriteContext context = ownershipTouchService == null || matchState.getCareerId() == null ? null
+                : new CareerWriteContext(userId, matchState.getCareerId(), matchState.getLifecycleGeneration());
+        return saveInternal(userId, context, matchState);
+    }
+
+    @Override
+    public Mono<MatchState> save(UUID userId, MatchState matchState, CareerWriteContext context) {
+        if (context == null || matchState == null || !context.ownerId().toString().equals(matchState.getUserId())
+                || !context.careerId().equals(matchState.getCareerId())) {
+            return Mono.error(new IllegalArgumentException("state lifecycle context does not match state"));
+        }
+        return saveInternal(userId, context, matchState);
+    }
+
+    private Mono<MatchState> saveInternal(UUID userId, CareerWriteContext context, MatchState matchState) {
         String key = buildKey(userId, matchState.getMatchId());
 
         try {
@@ -70,7 +90,7 @@ public class RedisMatchStateRepository implements MatchStateRepository {
                     .thenReturn(matchState);
             return ownershipTouchService == null || matchState.getCareerId() == null
                     ? persist
-                    : ownershipTouchService.touchBeforeWrite(matchState.getCareerId(), () -> persist);
+                    : ownershipTouchService.touchBeforeWrite(context, () -> persist);
         } catch (Exception e) {
             return Mono.error(e);
         }

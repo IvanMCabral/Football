@@ -2,6 +2,7 @@ package com.footballmanager.application.service.simulation.detailed;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 
 import java.util.Optional;
 
@@ -12,6 +13,10 @@ public interface DetailedMatchStoragePort {
      * Idempotent: subsequent calls for the same matchId overwrite.
      */
     Mono<Void> save(String careerId, DetailedMatchData detail);
+
+    default Mono<Void> saveWithContext(CareerWriteContext context, DetailedMatchData detail) {
+        return save(context.careerId(), detail);
+    }
 
     /**
      * Retrieve detailed match data by matchId.
@@ -39,5 +44,10 @@ public interface DetailedMatchStoragePort {
             return Mono.error(new IllegalArgumentException("matchId must not be blank"));
         }
         return Mono.empty();
+    }
+
+    default Mono<Void> deleteByMatchIdWithContext(String careerId, String matchId,
+                                                    CareerWriteContext context) {
+        return deleteByMatchId(careerId, matchId);
     }
 }

@@ -23,6 +23,7 @@ import com.footballmanager.application.service.simulation.detailed.DetailedMatch
 import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
 import com.footballmanager.infrastructure.observability.MatchStartRequestTrace;
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import com.footballmanager.domain.model.entity.Match;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
 import com.footballmanager.domain.model.entity.MatchResult;
@@ -158,7 +159,8 @@ public class RoundController {
             .flatMapMany(career -> {
                 log.info("[ROUND-CONTROLLER] CareerSave loaded for detailed match context construction");
                 String traceCareerId = career.getData().getCareerId();
-                roundEngine.setOwner(userId, traceCareerId);
+                String lifecycleGeneration = career.getLifecycleGeneration();
+                roundEngine.setOwner(userId, traceCareerId, lifecycleGeneration);
                 log.info("RoundController careerId={}, roundId={}", traceCareerId, roundId);
 
                 int currentRound = career.getTournamentState().getCurrentRound();
@@ -192,6 +194,7 @@ public class RoundController {
                                 homeTeamId,
                                 awayTeamId,
                                 traceCareerId,
+                                lifecycleGeneration,
                                 result -> handleMatchFinished(result, matchResults, matchesFinished, totalMatches, roundEngine, userId, career, tracking),
                                 detailedMatchSession)
                             .take(1)
@@ -203,6 +206,7 @@ public class RoundController {
                                 homeTeamId,
                                 awayTeamId,
                                 traceCareerId,
+                                lifecycleGeneration,
                                 finalState -> {
                                     matchResults.add(new MatchResultProcessor.MatchResultInfo(
                                             matchId.toString(),
@@ -305,9 +309,15 @@ public class RoundController {
             LiveSession session = new LiveSession(context, seed);
             log.info("[ROUND-CONTROLLER] LiveSession created for match {} with seed {}", matchId, seed);
             String careerId = career.getData().getCareerId();
+            String generation = career.getLifecycleGeneration();
+            CareerWriteContext writeContext = generation == null || generation.isBlank()
+                    ? null
+                    : new CareerWriteContext(career.getUserId(), careerId, generation);
             BaselineState baseline = BaselineState.empty(careerId, seed, context);
             lifecycleExecutor.execute("save baseline state",
-                    baselineStoragePort.save(careerId, baseline)
+                    (writeContext == null
+                            ? baselineStoragePort.save(careerId, baseline)
+                            : baselineStoragePort.saveWithContext(writeContext, baseline))
                     .doOnSuccess(v -> log.info(
                             "[F6-MATCH-COMPARE] BaselineState saved for matchId={}, careerId={}, seed={}",
                             matchId, careerId, seed))

@@ -56,7 +56,16 @@ public class MatchManagementService {
             String careerId,
             Consumer<MatchStateSnapshot> onFinishCallback) {
 
-        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId, careerId);
+        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId, careerId, null);
+        return startMatchUseCase.execute(userId, matchId, onFinishCallback);
+    }
+
+    public Flux<MatchStateSnapshot> startMatch(UUID userId, UUID matchId, UUID homeTeamId,
+                                                 UUID awayTeamId, String careerId,
+                                                 String lifecycleGeneration,
+                                                 Consumer<MatchStateSnapshot> onFinishCallback) {
+        sessionRegistry.getOrCreateSession(userId, matchId, homeTeamId, awayTeamId,
+                careerId, lifecycleGeneration);
         return startMatchUseCase.execute(userId, matchId, onFinishCallback);
     }
     public Flux<MatchStateSnapshot> startMatch(
@@ -80,9 +89,20 @@ public class MatchManagementService {
             LiveSession detailedMatchSession) {
 
         sessionRegistry.getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId,
-                careerId, detailedMatchSession);
+                careerId, null, detailedMatchSession);
 
         return startMatchUseCaseImpl.executeDetailedMatch(userId, matchId, onFinishCallback, detailedMatchSession);
+    }
+
+    public Flux<MatchStateSnapshot> startMatch(UUID userId, UUID matchId, UUID homeTeamId,
+                                                UUID awayTeamId, String careerId,
+                                                String lifecycleGeneration,
+                                                Consumer<MatchFinishedResult> onFinishCallback,
+                                                LiveSession detailedMatchSession) {
+        sessionRegistry.getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId,
+                careerId, lifecycleGeneration, detailedMatchSession);
+        return startMatchUseCaseImpl.executeDetailedMatch(userId, matchId, onFinishCallback,
+                detailedMatchSession);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.entity.career.*;
 import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
@@ -23,6 +24,10 @@ import java.util.*;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CareerSave {
+
+    /** Captured at load/start boundary; never serialized or exposed over HTTP. */
+    @JsonIgnore
+    private transient String lifecycleGeneration;
 
     private CareerData data = new CareerData();
     private CareerTeamManager teamManager = new CareerTeamManager();
@@ -247,6 +252,9 @@ public class CareerSave {
     // ========== Metadata convenience ==========
 
     public String getCareerId() { return data.getCareerId(); }
+    @JsonIgnore
+    public String getLifecycleGeneration() { return lifecycleGeneration; }
+    public void setLifecycleGeneration(String lifecycleGeneration) { this.lifecycleGeneration = lifecycleGeneration; }
     public UUID getUserId() { return data.getUserId(); }
     public void setUserId(UUID userId) { data.setUserId(userId); }
     public UUID getUserTeamId() { return data.getUserTeamId(); }

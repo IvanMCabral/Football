@@ -41,7 +41,7 @@ public class RealLeagueIdUpdater {
                 .flatMap(updatedTeams -> {
                     WorldSnapshot updated = buildUpdatedSnapshot(snapshot, updatedTeams);
                     int count = countUpdates(teams, updatedTeams);
-                    return WorldSnapshotRepository.save(updated)
+                    return WorldSnapshotRepository.saveInitial(updated)
                             .map(saved -> new UpdateResult(saved, count));
                 });
     }

@@ -39,13 +39,19 @@ public class MatchSessionRegistry {
 
     public Optional<MatchSession> getOrCreateSession(UUID userId, UUID matchId, UUID homeTeamId,
                                                       UUID awayTeamId, String careerId) {
+        return getOrCreateSession(userId, matchId, homeTeamId, awayTeamId, careerId, null);
+    }
+
+    public Optional<MatchSession> getOrCreateSession(UUID userId, UUID matchId, UUID homeTeamId,
+                                                      UUID awayTeamId, String careerId,
+                                                      String lifecycleGeneration) {
         String key = buildKey(userId, matchId);
         return Optional.ofNullable(activeSessions.computeIfAbsent(key, id -> {
             MatchState initialState = new MatchState(matchId);
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
             initialState.setCareerId(careerId);
-            return new MatchSession(userId, matchId, initialState, tickHandler);
+            return new MatchSession(userId, matchId, initialState, tickHandler, null, lifecycleGeneration);
         }));
     }
     public MatchSession getOrCreateDetailedSession(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId, LiveSession detailedMatchSession) {
@@ -54,6 +60,14 @@ public class MatchSessionRegistry {
 
     public MatchSession getOrCreateDetailedSession(UUID userId, UUID matchId, UUID homeTeamId,
                                                     UUID awayTeamId, String careerId,
+                                                    LiveSession detailedMatchSession) {
+        return getOrCreateDetailedSession(userId, matchId, homeTeamId, awayTeamId,
+                careerId, null, detailedMatchSession);
+    }
+
+    public MatchSession getOrCreateDetailedSession(UUID userId, UUID matchId, UUID homeTeamId,
+                                                    UUID awayTeamId, String careerId,
+                                                    String lifecycleGeneration,
                                                     LiveSession detailedMatchSession) {
         String key = buildKey(userId, matchId);
         return activeSessions.computeIfAbsent(key, id -> {
@@ -69,7 +83,8 @@ public class MatchSessionRegistry {
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
             initialState.setCareerId(careerId);
-            return new MatchSession(userId, matchId, initialState, tickHandler, detailedMatchSession);
+            return new MatchSession(userId, matchId, initialState, tickHandler,
+                    detailedMatchSession, lifecycleGeneration);
         });
     }
 

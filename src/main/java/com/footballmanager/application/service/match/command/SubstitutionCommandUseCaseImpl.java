@@ -12,10 +12,13 @@ import com.footballmanager.application.service.simulation.detailed.LiveSessionCo
 import com.footballmanager.application.service.simulation.detailed.PlayerMatchState;
 import com.footballmanager.application.service.simulation.detailed.SubstitutionEngine;
 import com.footballmanager.application.service.simulation.detailed.TeamMatchState;
+import com.footballmanager.application.port.out.CareerOwnershipPort;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import com.footballmanager.domain.port.in.match.SubstitutionCommandUseCase;
 import com.footballmanager.domain.port.in.match.SubstitutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -66,13 +69,23 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
 
     private final MatchSessionRegistry matchSessionRegistry;
     private final BaselineStateStoragePort baselineStoragePort;
+    private final CareerOwnershipPort ownershipTouchService;
     private final Map<UUID, SubstitutionEngine> enginesByMatchId = new ConcurrentHashMap<>();
+
+    @Autowired
+    public SubstitutionCommandUseCaseImpl(
+            MatchSessionRegistry matchSessionRegistry,
+            BaselineStateStoragePort baselineStoragePort,
+            CareerOwnershipPort ownershipTouchService) {
+        this.matchSessionRegistry = matchSessionRegistry;
+        this.baselineStoragePort = baselineStoragePort;
+        this.ownershipTouchService = ownershipTouchService;
+    }
 
     public SubstitutionCommandUseCaseImpl(
             MatchSessionRegistry matchSessionRegistry,
             BaselineStateStoragePort baselineStoragePort) {
-        this.matchSessionRegistry = matchSessionRegistry;
-        this.baselineStoragePort = baselineStoragePort;
+        this(matchSessionRegistry, baselineStoragePort, null);
     }
 
     @Override
@@ -206,6 +219,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
             BaselineAppendCommand baselineAppend = null;
             if (careerId != null && !careerId.isBlank()) {
                 baselineAppend = new BaselineAppendCommand(
+                        userId,
                         careerId,
                         resolvedTeamId,
                         playerOffId,
@@ -241,7 +255,11 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                                     command.playerOffId(),
                                     command.playerOnId(),
                                     command.minute()));
-                            return baselineStoragePort.save(command.careerId(), updated)
+                            Mono<CareerWriteContext> context = ownershipTouchService == null
+                                    ? Mono.empty()
+                                    : ownershipTouchService.capture(command.userId(), command.careerId());
+                            return context.flatMap(writeContext -> baselineStoragePort.saveWithContext(writeContext, updated))
+                                    .switchIfEmpty(baselineStoragePort.save(command.careerId(), updated))
                                     .doOnSuccess(v -> log.info(
                                             "[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
                                             matchId, command.minute(), updated.subs().size()));
@@ -265,6 +283,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     }
 
     private record BaselineAppendCommand(
+            UUID userId,
             String careerId,
             String resolvedTeamId,
             String playerOffId,

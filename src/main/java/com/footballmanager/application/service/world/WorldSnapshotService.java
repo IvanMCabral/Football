@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 
 /**
  * Servicio de gestión del WorldSnapshot.
@@ -53,7 +54,11 @@ public class WorldSnapshotService {
      * Guarda el WorldSnapshot en Redis.
      */
     public Mono<WorldSnapshot> saveSnapshot(WorldSnapshot snapshot) {
-        return worldRepository.save(snapshot);
+        return worldRepository.saveInitial(snapshot);
+    }
+
+    public Mono<WorldSnapshot> saveSnapshot(CareerWriteContext context, WorldSnapshot snapshot) {
+        return worldRepository.saveWithContext(context, snapshot);
     }
 
     /**

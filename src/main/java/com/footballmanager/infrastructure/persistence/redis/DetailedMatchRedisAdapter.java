@@ -2,6 +2,7 @@ package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,21 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
 
     @Override
     public Mono<Void> save(String careerId, DetailedMatchData detail) {
+        if (ownershipTouchService != null) {
+            return Mono.error(new IllegalStateException("career detail writer requires lifecycle context"));
+        }
+        return saveInternal(careerId, null, detail);
+    }
+
+    @Override
+    public Mono<Void> saveWithContext(CareerWriteContext context, DetailedMatchData detail) {
+        if (context == null) {
+            return Mono.error(new IllegalArgumentException("career lifecycle context is required"));
+        }
+        return saveInternal(context.careerId(), context, detail);
+    }
+
+    private Mono<Void> saveInternal(String careerId, CareerWriteContext context, DetailedMatchData detail) {
         return validateSave(careerId, detail)
                 .then(Mono.defer(() -> {
                     String key = buildKey(careerId, detail.matchId());
@@ -56,7 +72,7 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
                             .then();
                     return ownershipTouchService == null
                             ? persist
-                            : ownershipTouchService.touchBeforeWrite(careerId, () -> persist);
+                            : ownershipTouchService.touchBeforeWrite(context, () -> persist);
                 }));
     }
 
@@ -107,6 +123,25 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
 
     @Override
     public Mono<Void> deleteByMatchId(String careerId, String matchId) {
+        if (ownershipTouchService != null) {
+            return Mono.error(new IllegalStateException("detail deletion requires lifecycle context"));
+        }
+        return deleteByMatchIdInternal(careerId, matchId);
+    }
+
+    @Override
+    public Mono<Void> deleteByMatchIdWithContext(String careerId, String matchId,
+                                                  CareerWriteContext context) {
+        if (context == null || !context.careerId().equals(careerId)) {
+            return Mono.error(new IllegalArgumentException("detail lifecycle context does not match detail"));
+        }
+        return ownershipTouchService == null
+                ? Mono.error(new IllegalStateException("career ownership service is required"))
+                : ownershipTouchService.touchBeforeWrite(context,
+                        () -> deleteByMatchIdInternal(careerId, matchId));
+    }
+
+    private Mono<Void> deleteByMatchIdInternal(String careerId, String matchId) {
         return validateIds(careerId, matchId)
                 .then(Mono.defer(() -> {
                     String key = buildKey(careerId, matchId);

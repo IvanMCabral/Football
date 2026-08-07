@@ -9,6 +9,7 @@ import com.footballmanager.application.service.simulation.detailed.PlayerRatings
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.slf4j.Logger;
 import reactor.core.publisher.Mono;
 
@@ -80,7 +81,11 @@ final class LiveDetailPersister {
                     result,
                     ratings);
 
-            return storagePort.save(careerId, detail)
+            Mono<Void> detailWrite = career.getLifecycleGeneration() == null
+                    ? storagePort.save(careerId, detail) // pre-lifecycle unit fixtures only
+                    : storagePort.saveWithContext(new CareerWriteContext(
+                            career.getUserId(), careerId, career.getLifecycleGeneration()), detail);
+            return detailWrite
                     .doOnSuccess(ignored -> {
                         log.info("persistDetailedMatchDetail careerId={}, matchId={}, season={}, round={}, timeline={}, playerRatings={}, key=career:{}:match-detail:{}",
                                 careerId, matchId, seasonNumber, round,

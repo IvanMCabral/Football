@@ -5,6 +5,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 
 /**
  * Puerto para persistencia de comandos pendientes de partidos.
@@ -26,6 +27,10 @@ public interface MatchCommandRepository {
         return saveCommand(userId, matchId, command);
     }
 
+    default Mono<Void> saveCommandWithContext(UUID userId, UUID matchId, MatchCommand command, CareerWriteContext context) {
+        return saveCommand(userId, matchId, command, context == null ? null : context.careerId());
+    }
+
     /**
      * Recupera todos los comandos pendientes de un partido.
      * @param userId ID del usuario
@@ -41,4 +46,9 @@ public interface MatchCommandRepository {
      * @return Mono vacío cuando se completa la operación
      */
     Mono<Void> deleteCommands(UUID userId, UUID matchId);
+
+    default Mono<Void> deleteCommandsWithContext(UUID userId, UUID matchId,
+                                                   CareerWriteContext context) {
+        return deleteCommands(userId, matchId);
+    }
 }

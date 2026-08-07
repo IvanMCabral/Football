@@ -1,6 +1,8 @@
 package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.application.service.career.CareerLifecycleCoordinator;
+import com.footballmanager.application.port.out.CareerOwnershipPort;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -13,7 +15,7 @@ import java.util.function.Supplier;
 
 /** Renews the ownership discovery keys before writing career-derived data. */
 @Component
-public final class CareerOwnershipTouchService {
+public final class CareerOwnershipTouchService implements CareerOwnershipPort {
 
     private static final Duration ROOT_TTL = Duration.ofDays(30);
     private static final Duration OWNERSHIP_TTL = Duration.ofDays(31);
@@ -31,7 +33,25 @@ public final class CareerOwnershipTouchService {
     }
 
     public <T> Mono<T> touchBeforeWrite(String careerId, Supplier<Mono<T>> write) {
-        return touchBeforeWrite(careerId, null, write);
+        return Mono.error(new IllegalStateException("career writer requires captured lifecycle generation"));
+    }
+
+    /** Captures the fencing token at the operation boundary, never at write time. */
+    public Mono<CareerWriteContext> capture(UUID ownerId, String careerId) {
+        return lifecycleCoordinator.serializeCareer(careerId,
+                redisTemplate.opsForValue().get(mappingKey(careerId)).timeout(OPERATION_TIMEOUT)
+                        .switchIfEmpty(Mono.error(new IllegalStateException("career ownership mapping missing")))
+                        .flatMap(mappedOwner -> {
+                            if (ownerId == null || !ownerId.toString().equals(mappedOwner)) {
+                                return Mono.error(new IllegalStateException("career ownership mapping conflict"));
+                            }
+                            return redisTemplate.opsForSet().isMember(indexKey(ownerId), careerId)
+                                    .timeout(OPERATION_TIMEOUT)
+                                    .filter(Boolean.TRUE::equals)
+                                    .switchIfEmpty(Mono.error(new IllegalStateException("career ownership index missing")))
+                                    .then(currentGeneration(careerId))
+                                    .map(generation -> new CareerWriteContext(ownerId, careerId, generation));
+                        }));
     }
 
     /**
@@ -64,6 +84,31 @@ public final class CareerOwnershipTouchService {
                                                     .then(touch(owner, careerId))
                                                     .then(Mono.defer(write)));
                                 }))));
+    }
+
+    public <T> Mono<T> touchBeforeWrite(CareerWriteContext context, Supplier<Mono<T>> write) {
+        if (context == null) {
+            return Mono.error(new IllegalArgumentException("career write context is required"));
+        }
+        return touchBeforeWrite(context.careerId(), context.expectedGeneration(),
+                context.ownerId(), write);
+    }
+
+    private <T> Mono<T> touchBeforeWrite(String careerId, String expectedGeneration,
+                                          UUID expectedOwner, Supplier<Mono<T>> write) {
+        return lifecycleCoordinator.serializeCareer(careerId, Mono.defer(() ->
+                redisTemplate.opsForValue().get(tombstoneKey(careerId)).timeout(OPERATION_TIMEOUT)
+                        .flatMap(ignored -> Mono.<T>error(new IllegalStateException("career lifecycle is resetting")))
+                        .switchIfEmpty(redisTemplate.opsForValue().get(mappingKey(careerId)).timeout(OPERATION_TIMEOUT)
+                        .switchIfEmpty(Mono.error(new IllegalStateException("career ownership mapping missing")))
+                        .flatMap(ownerValue -> {
+                            if (expectedOwner != null && !expectedOwner.toString().equals(ownerValue)) {
+                                return Mono.error(new IllegalStateException("career ownership mapping conflict"));
+                            }
+                            return validateGeneration(careerId, expectedGeneration)
+                                    .then(touch(UUID.fromString(ownerValue), careerId))
+                                    .then(Mono.defer(write));
+                        }))));
     }
 
     public <T> Mono<T> touchOwnerBeforeWrite(UUID owner, Supplier<Mono<T>> write) {
@@ -106,6 +151,18 @@ public final class CareerOwnershipTouchService {
                                         : validateAndRenewOwner(owner, write, index)))));
     }
 
+    /** Explicit pre-career world initialization. Runtime writers must not use this path. */
+    public <T> Mono<T> initializeWorld(UUID owner, Supplier<Mono<T>> write) {
+        return lifecycleCoordinator.serialize(owner, Mono.defer(() ->
+                redisTemplate.opsForValue().get(tombstoneOwnerKey(owner)).timeout(OPERATION_TIMEOUT)
+                        .flatMap(ignored -> Mono.<T>error(new IllegalStateException("career lifecycle is resetting")))
+                        .switchIfEmpty(redisTemplate.opsForValue().get(rootKey(owner)).timeout(OPERATION_TIMEOUT)
+                                .flatMap(ignored -> Mono.<T>error(new IllegalStateException("career-owned world requires lifecycle context")))
+                                .switchIfEmpty(redisTemplate.opsForSet().size(indexKey(owner)).timeout(OPERATION_TIMEOUT)
+                                        .flatMap(size -> size == null || size == 0 ? Mono.defer(write)
+                                                : Mono.error(new IllegalStateException("career-owned world requires lifecycle context")))))));
+    }
+
     private Mono<Void> touch(UUID owner, String careerId) {
         String index = indexKey(owner);
         return redisTemplate.opsForSet().isMember(index, careerId).timeout(OPERATION_TIMEOUT)
@@ -116,6 +173,7 @@ public final class CareerOwnershipTouchService {
 
     private Mono<Void> renew(UUID owner, String careerId, String index) {
         return redisTemplate.expire(mappingKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT)
+                .then(redisTemplate.expire(generationKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT))
                 .then(redisTemplate.expire(index, OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT))
                 .then(redisTemplate.expire(rootKey(owner), ROOT_TTL).timeout(OPERATION_TIMEOUT))
                 .then();
@@ -124,7 +182,9 @@ public final class CareerOwnershipTouchService {
     private Mono<Void> renewOwner(UUID owner, java.util.List<String> careerIds, String index) {
         return Flux.fromIterable(careerIds)
                 .concatMap(careerId -> redisTemplate.expire(mappingKey(careerId), OWNERSHIP_TTL)
+                        .then(redisTemplate.expire(generationKey(careerId), OWNERSHIP_TTL)
                         .timeout(OPERATION_TIMEOUT))
+                        )
                 .then(redisTemplate.expire(index, OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT))
                 .then(redisTemplate.expire(rootKey(owner), ROOT_TTL).timeout(OPERATION_TIMEOUT))
                 .then();

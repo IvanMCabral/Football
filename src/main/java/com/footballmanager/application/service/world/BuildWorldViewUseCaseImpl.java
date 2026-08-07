@@ -68,7 +68,7 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
         }
         newSnapshot.setWorldPlayers(playersMap);
 
-        return WorldSnapshotRepository.save(newSnapshot);
+        return WorldSnapshotRepository.saveInitial(newSnapshot);
     }
 
     private Mono<WorldSnapshot> updateRealLeagueIds(WorldSnapshot snapshot, UUID userId) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,14 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
      * Guarda o actualiza el WorldSnapshot
      */
     public Mono<WorldSnapshot> save(WorldSnapshot snapshot) {
+        if (ownershipTouchService != null) {
+            return Mono.error(new IllegalStateException("career world writer requires lifecycle context"));
+        }
+        return saveInitial(snapshot);
+    }
+
+    @Override
+    public Mono<WorldSnapshot> saveInitial(WorldSnapshot snapshot) {
         String key = generateKey(snapshot.getUserId());
 
         Mono<WorldSnapshot> persist = Mono.fromCallable(() -> objectMapper.writeValueAsString(snapshot))
@@ -68,7 +77,24 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
                 });
         return ownershipTouchService == null
                 ? persist
-                : ownershipTouchService.touchOwnerBeforeWriteIfCareerExists(snapshot.getUserId(), () -> persist);
+                : ownershipTouchService.initializeWorld(snapshot.getUserId(), () -> persist);
+    }
+
+    /** Career-derived world update. It cannot degrade to first-time initialization. */
+    @Override
+    public Mono<WorldSnapshot> saveWithContext(CareerWriteContext context, WorldSnapshot snapshot) {
+        if (context == null || snapshot == null || !context.ownerId().equals(snapshot.getUserId())) {
+            return Mono.error(new IllegalArgumentException("career world context does not match snapshot"));
+        }
+        String key = generateKey(snapshot.getUserId());
+        Mono<WorldSnapshot> persist = Mono.fromCallable(() -> objectMapper.writeValueAsString(snapshot))
+                .flatMap(json -> worldTtl == null
+                        ? redisTemplate.opsForValue().set(key, json)
+                        : redisTemplate.opsForValue().set(key, json, worldTtl))
+                .thenReturn(snapshot);
+        return ownershipTouchService == null
+                ? Mono.error(new IllegalStateException("career ownership service is required"))
+                : ownershipTouchService.touchBeforeWrite(context, () -> persist);
     }
 
     /**
