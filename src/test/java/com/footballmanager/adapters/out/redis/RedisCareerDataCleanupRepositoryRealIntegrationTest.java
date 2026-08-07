@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -43,13 +44,12 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
         UUID owner = UUID.randomUUID();
         CareerSave career = new CareerSave();
         career.setUserId(owner);
-        careerRepository.save(career).block(Duration.ofSeconds(10));
-
         ReflectionTestUtils.setField(worldRepository, "worldTtl", Duration.ofMillis(250));
         com.footballmanager.domain.model.entity.WorldSnapshot world =
                 new com.footballmanager.domain.model.entity.WorldSnapshot();
         world.setUserId(owner);
-        worldRepository.save(world).block(Duration.ofSeconds(10));
+        worldRepository.saveInitial(world).block(Duration.ofSeconds(10));
+        careerRepository.save(career).block(Duration.ofSeconds(10));
         Duration ttl = reactiveRedisTemplate.getExpire("world:" + owner).block(Duration.ofSeconds(5));
         assertTrue(ttl != null && !ttl.isNegative() && !ttl.isZero());
 
@@ -152,7 +152,7 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
                 .then(reactiveRedisTemplate.expire("user:" + owner + ":career-ids", Duration.ofSeconds(1)))
                 .block(Duration.ofSeconds(5));
 
-        String written = ownershipTouchService.touchBeforeWrite(careerId,
+        String written = ownershipTouchService.touchBeforeWrite(careerId, "generation-touch",
                 () -> Mono.just("derived-written")).block(Duration.ofSeconds(10));
 
         assertEquals("derived-written", written);
@@ -187,6 +187,91 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
                 .block(Duration.ofSeconds(10)));
         assertEquals("generation-new", reactiveRedisTemplate.opsForValue()
                 .get("career-generation:" + careerId).block(Duration.ofSeconds(5)));
+    }
+
+    @Test
+    void staleWorldWriterCannotRecreateWorldAfterReset() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-world-stale";
+        CareerWriteContext oldContext = new CareerWriteContext(owner, careerId, "generation-old");
+        reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId)
+                .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-new"))
+                .then(reactiveRedisTemplate.delete("world:" + owner, "career:" + owner,
+                        "career-owner:" + careerId, "career-generation:" + careerId,
+                        "user:" + owner + ":career-ids"))
+                .block(Duration.ofSeconds(5));
+
+        com.footballmanager.domain.model.entity.WorldSnapshot world =
+                new com.footballmanager.domain.model.entity.WorldSnapshot();
+        world.setUserId(owner);
+        assertThrows(RuntimeException.class,
+                () -> worldRepository.saveWithContext(oldContext, world).block(Duration.ofSeconds(5)));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("world:" + owner).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career:" + owner).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career-generation:" + careerId).block()));
+    }
+
+    @Test
+    void initialWorldWriterCannotOverwriteOwnerWithCareerRoot() {
+        UUID owner = UUID.randomUUID();
+        reactiveRedisTemplate.opsForValue().set("career:" + owner, "active-career")
+                .block(Duration.ofSeconds(5));
+        com.footballmanager.domain.model.entity.WorldSnapshot world =
+                new com.footballmanager.domain.model.entity.WorldSnapshot();
+        world.setUserId(owner);
+
+        assertThrows(RuntimeException.class,
+                () -> worldRepository.saveInitial(world).block(Duration.ofSeconds(5)));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("world:" + owner).block()));
+    }
+
+    @Test
+    void staleCareerWriterCannotRecreateRootAfterResetAndReplacement() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-root-stale";
+        CareerSave oldCareer = career(owner, careerId);
+        oldCareer.setLifecycleGeneration("generation-old");
+
+        reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-new")
+                .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId))
+                .then(reactiveRedisTemplate.opsForValue().set("career:" + owner, "replacement"))
+                .block(Duration.ofSeconds(5));
+
+        assertThrows(RuntimeException.class,
+                () -> careerRepository.save(oldCareer).block(Duration.ofSeconds(10)));
+        assertEquals("replacement", reactiveRedisTemplate.opsForValue()
+                .get("career:" + owner).block(Duration.ofSeconds(5)));
+        assertEquals("generation-new", reactiveRedisTemplate.opsForValue()
+                .get("career-generation:" + careerId).block(Duration.ofSeconds(5)));
+    }
+
+    @Test
+    void compensationCannotDeleteOwnershipAdvancedByConcurrentSave() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-compensation-race";
+        String tokenA = "save-a";
+        String tokenB = "save-b";
+        String mappingToken = "career-mapping-token:" + careerId;
+        String mapping = "career-owner:" + careerId;
+        String root = "career:" + owner;
+        String index = "user:" + owner + ":career-ids";
+        reactiveRedisTemplate.opsForValue().set(mappingToken, tokenB)
+                .then(reactiveRedisTemplate.opsForValue().set(mapping, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set(root, "root-b"))
+                .then(reactiveRedisTemplate.opsForSet().add(index, careerId))
+                .block(Duration.ofSeconds(5));
+
+        Long deleted = reactiveRedisTemplate.execute(RedisCareerRepository.COMPENSATE_SAVE_IF_OWNER,
+                java.util.List.of(mappingToken, mapping, root, index), tokenA, careerId)
+                .next().block(Duration.ofSeconds(5));
+
+        assertEquals(0L, deleted);
+        assertEquals(tokenB, reactiveRedisTemplate.opsForValue().get(mappingToken).block());
+        assertEquals(owner.toString(), reactiveRedisTemplate.opsForValue().get(mapping).block());
+        assertEquals("root-b", reactiveRedisTemplate.opsForValue().get(root).block());
+        assertTrue(Boolean.TRUE.equals(reactiveRedisTemplate.opsForSet().isMember(index, careerId).block()));
     }
 
     @Test

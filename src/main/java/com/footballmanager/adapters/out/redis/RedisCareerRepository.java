@@ -42,8 +42,15 @@ public class RedisCareerRepository implements CareerRepository {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
     private final CareerLifecycleCoordinator lifecycleCoordinator;
-    private static final RedisScript<Long> DELETE_MAPPING_IF_TOKEN = RedisScript.of(
-            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1], KEYS[2]) else return 0 end",
+    static final RedisScript<Long> COMPENSATE_SAVE_IF_OWNER = RedisScript.of(
+            "if redis.call('get', KEYS[1]) == ARGV[1] then "
+                    + "redis.call('del', KEYS[1], KEYS[2], KEYS[3]); "
+                    + "redis.call('srem', KEYS[4], ARGV[2]); return 1; else return 0 end",
+            Long.class);
+    private static final RedisScript<Long> COMPENSATE_MAPPING_IF_OWNER = RedisScript.of(
+            "if redis.call('get', KEYS[1]) == ARGV[1] then "
+                    + "redis.call('del', KEYS[1], KEYS[2]); redis.call('srem', KEYS[3], ARGV[2]); return 1; "
+                    + "else return 0 end",
             Long.class);
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -78,13 +85,25 @@ public class RedisCareerRepository implements CareerRepository {
             String json = objectMapper.writeValueAsString(careerSave);
             int palmaresSize = careerSave.getSeasonManager().getPalmares() != null ? careerSave.getSeasonManager().getPalmares().size() : 0;
             log.info("[REDIS-SAVE] career state persisted, palmaresSize={}", palmaresSize);
-            return RuntimeOperationMetrics.measure("redis.career.save",
-                    serializeSave(careerSave.getUserId(), ensureGeneration(careerSave.getCareerId())
-                            .flatMap(generation -> ensureOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
+            boolean fencedWrite = careerSave.getLifecycleGeneration() != null
+                    && !careerSave.getLifecycleGeneration().isBlank();
+            Mono<Void> operation = (fencedWrite
+                    ? requireGeneration(careerSave.getCareerId(), careerSave.getLifecycleGeneration())
+                    : ensureGeneration(careerSave.getCareerId()))
+                    .doOnNext(careerSave::setLifecycleGeneration)
+                    .flatMap(generation -> (fencedWrite
+                            ? requireOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
+                            : ensureOwnerMapping(careerSave.getCareerId(), careerSave.getUserId()))
                             .flatMap(mapping -> redisTemplate.hasKey(key)
                                     .flatMap(rootExisted -> redisTemplate.opsForValue().set(key, json, CACHE_TTL)
                                             .then(indexCareer(careerSave))
-                                            .onErrorResume(error -> compensateFailedSave(mapping, generation, key, rootExisted, error)))))));
+                                            .onErrorResume(error -> compensateFailedSave(
+                                                    mapping, generation, key, rootExisted, error)))));
+            Mono<Void> coordinated = lifecycleCoordinator == null
+                    ? operation
+                    : lifecycleCoordinator.serializeCareer(careerSave.getCareerId(), operation);
+            return RuntimeOperationMetrics.measure("redis.career.save",
+                    serializeSave(careerSave.getUserId(), coordinated));
         } catch (Exception e) {
             return RuntimeOperationMetrics.measure("redis.career.save", Mono.error(e));
         }
@@ -123,7 +142,10 @@ public class RedisCareerRepository implements CareerRepository {
             return Mono.just(career);
         }
         CareerSave value = career.get();
-        return indexCareer(value).thenReturn(career);
+        return redisTemplate.opsForValue().get(generationKey(value.getCareerId()))
+                .switchIfEmpty(Mono.error(new IllegalStateException("career lifecycle generation missing")))
+                .doOnNext(value::setLifecycleGeneration)
+                .then(indexCareer(value)).thenReturn(career);
     }
 
     private Mono<Void> indexCareer(CareerSave career) {
@@ -147,15 +169,15 @@ public class RedisCareerRepository implements CareerRepository {
             return Mono.error(new IllegalArgumentException("careerId must not be blank"));
         }
         String key = ownerMappingKey(careerId);
+        String operationToken = UUID.randomUUID().toString();
         return redisTemplate.opsForValue().setIfAbsent(key, ownerId.toString(), CAREER_INDEX_TTL)
                 .flatMap(created -> created
-                        ? createMappingToken(careerId).map(token -> new MappingState(key, true, ownerId.toString(), token))
+                        ? setMappingToken(careerId, operationToken).map(token -> new MappingState(careerId, key, true, ownerId.toString(), token))
                         : redisTemplate.opsForValue().get(key)
                                 .flatMap(existing -> existing.equals(ownerId.toString())
-                                        ? redisTemplate.opsForValue().get(mappingTokenKey(careerId))
-                                                .defaultIfEmpty("")
+                                        ? setMappingToken(careerId, operationToken)
                                                 .flatMap(token -> redisTemplate.expire(key, CAREER_INDEX_TTL)
-                                                        .thenReturn(new MappingState(key, false, ownerId.toString(), token)))
+                                                        .thenReturn(new MappingState(careerId, key, false, ownerId.toString(), token)))
                                         : Mono.error(new IllegalStateException("career ownership mapping conflict")))
                                 .switchIfEmpty(Mono.error(new IllegalStateException("career ownership mapping missing"))));
     }
@@ -169,10 +191,29 @@ public class RedisCareerRepository implements CareerRepository {
                                 .switchIfEmpty(Mono.error(new IllegalStateException("career lifecycle generation missing"))));
     }
 
-    private Mono<String> createMappingToken(String careerId) {
+    private Mono<String> requireGeneration(String careerId, String expectedGeneration) {
+        return redisTemplate.opsForValue().get(generationKey(careerId))
+                .filter(expectedGeneration::equals)
+                .switchIfEmpty(Mono.error(new IllegalStateException("career lifecycle generation is stale")));
+    }
+
+    private Mono<MappingState> requireOwnerMapping(String careerId, UUID ownerId) {
+        String key = ownerMappingKey(careerId);
+        return redisTemplate.opsForValue().get(key)
+                .filter(ownerId.toString()::equals)
+                .switchIfEmpty(Mono.error(new IllegalStateException("career ownership mapping is stale")))
+                .flatMap(ignored -> {
+                    String operationToken = UUID.randomUUID().toString();
+                    return setMappingToken(careerId, operationToken)
+                            .flatMap(token -> redisTemplate.expire(key, CAREER_INDEX_TTL)
+                                    .thenReturn(new MappingState(careerId, key, false,
+                                            ownerId.toString(), token)));
+                });
+    }
+
+    private Mono<String> setMappingToken(String careerId, String operationToken) {
         String key = mappingTokenKey(careerId);
-        String token = UUID.randomUUID().toString();
-        return redisTemplate.opsForValue().set(key, token, CAREER_INDEX_TTL).thenReturn(token);
+        return redisTemplate.opsForValue().set(key, operationToken, CAREER_INDEX_TTL).thenReturn(operationToken);
     }
 
     /**
@@ -205,31 +246,18 @@ public class RedisCareerRepository implements CareerRepository {
     private Mono<Void> compensateFailedSave(MappingState mapping, String generation,
                                             String rootKey,
                                             boolean rootExisted, Throwable error) {
-        Mono<Void> cleanupMapping = mapping.created()
-                ? deleteMappingIfToken(mapping, mapping.token())
-                : Mono.empty();
-        Mono<Void> cleanupGeneration = generation != null
-                ? deleteGenerationIfToken(rootKey, generation)
-                : Mono.empty();
-        Mono<Void> cleanupRoot = !rootExisted
-                ? redisTemplate.delete(rootKey).then()
-                : Mono.empty();
-        return Mono.whenDelayError(cleanupMapping, cleanupGeneration, cleanupRoot)
+        Mono<Void> cleanup = !rootExisted
+                ? redisTemplate.execute(COMPENSATE_SAVE_IF_OWNER,
+                        List.of(mappingTokenKeyFromMapping(mapping.key()), mapping.key(), rootKey,
+                                indexKey(UUID.fromString(mapping.ownerId()))),
+                        mapping.token(), mapping.careerId()).then()
+                : redisTemplate.execute(COMPENSATE_MAPPING_IF_OWNER,
+                        List.of(mappingTokenKeyFromMapping(mapping.key()), mapping.key(),
+                                indexKey(UUID.fromString(mapping.ownerId()))),
+                        mapping.token(), mapping.careerId()).then();
+        return cleanup
                 .onErrorResume(ignored -> Mono.empty())
                 .then(Mono.error(error));
-    }
-
-    private Mono<Void> deleteMappingIfToken(MappingState mapping, String token) {
-        if (token == null || token.isBlank()) {
-            return Mono.empty();
-        }
-        return redisTemplate.execute(DELETE_MAPPING_IF_TOKEN,
-                        List.of(mappingTokenKeyFromMapping(mapping.key()), mapping.key()), token)
-                .then();
-    }
-
-    private Mono<Void> deleteGenerationIfToken(String rootKey, String token) {
-        return Mono.empty(); // generation is retained for retry and invalidated by cleanup tombstone
     }
 
     private String mappingTokenKeyFromMapping(String mappingKey) {
@@ -255,7 +283,7 @@ public class RedisCareerRepository implements CareerRepository {
         });
     }
 
-    private record MappingState(String key, boolean created, String ownerId, String token) {
+    private record MappingState(String careerId, String key, boolean created, String ownerId, String token) {
     }
 
     private static final class OwnerSaveQueue {
@@ -280,9 +308,14 @@ public class RedisCareerRepository implements CareerRepository {
                                                 "career ownership mapping missing")))
                                         .then(redisTemplate.opsForValue().get(generationKey(career.getCareerId()))
                                                 .switchIfEmpty(Mono.error(new IllegalStateException("career lifecycle generation missing"))))
-                                        .then(indexCareer(career))
+                                        .then(redisTemplate.opsForSet().isMember(indexKey(userId), career.getCareerId())
+                                                .timeout(Duration.ofSeconds(5))
+                                                .filter(Boolean::booleanValue)
+                                                .switchIfEmpty(Mono.error(new IllegalStateException(
+                                                        "career ownership index missing"))))
                                         .then(redisTemplate.expire(key, CACHE_TTL).timeout(Duration.ofSeconds(5)))
                                         .then(redisTemplate.expire(ownerMappingKey(career.getCareerId()), CAREER_INDEX_TTL).timeout(Duration.ofSeconds(5)))
+                                        .then(redisTemplate.expire(generationKey(career.getCareerId()), CAREER_INDEX_TTL).timeout(Duration.ofSeconds(5)))
                                         .then(redisTemplate.expire(indexKey(userId), CAREER_INDEX_TTL).timeout(Duration.ofSeconds(5)))
                                         .thenReturn(true);
                             } catch (Exception error) {
@@ -303,4 +336,5 @@ public class RedisCareerRepository implements CareerRepository {
     private String mappingTokenKey(String careerId) {
         return "career-mapping-token:" + careerId;
     }
+
 }

@@ -64,6 +64,15 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
 
     @Override
     public Mono<CareerDataCleanupResult> deleteOwnedData(UUID userId, String careerId) {
+        return deleteOwnedData(userId, careerId, false);
+    }
+
+    @Override
+    public Mono<CareerDataCleanupResult> deleteOwnedDataPreservingWorld(UUID userId, String careerId) {
+        return deleteOwnedData(userId, careerId, true);
+    }
+
+    private Mono<CareerDataCleanupResult> deleteOwnedData(UUID userId, String careerId, boolean preserveWorld) {
         if (userId == null) {
             return Mono.error(new IllegalArgumentException("userId must not be null"));
         }
@@ -84,7 +93,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 })
                 .flatMapMany(ownedCareerIds -> {
                     accumulator.setCareerCount(ownedCareerIds, careerId);
-                    return Flux.fromIterable(patterns(userId, careerId, ownedCareerIds));
+                    return Flux.fromIterable(patterns(userId, careerId, ownedCareerIds, preserveWorld));
                 })
                 .doOnNext(accumulator::patternEvaluated)
                 .concatMap(spec -> scanKeys(spec)
@@ -153,14 +162,16 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 .collectList();
     }
 
-    private List<PatternSpec> patterns(UUID userId, String careerId, List<String> indexedCareerIds) {
+    private List<PatternSpec> patterns(UUID userId, String careerId, List<String> indexedCareerIds, boolean preserveWorld) {
         List<PatternSpec> patterns = new ArrayList<>(List.of(
-                new PatternSpec("world", "world:" + userId),
                 new PatternSpec("user-projection", "user:" + userId + ":*"),
                 new PatternSpec("career-index", indexKey(userId)),
                 new PatternSpec("runtime", "runtime:match:" + userId + ":*"),
                 new PatternSpec("match-state", "match:state:" + userId + ":*"),
                 new PatternSpec("match-commands", "match:commands:" + userId + ":*")));
+        if (!preserveWorld) {
+            patterns.add(0, new PatternSpec("world", "world:" + userId));
+        }
 
         List<String> careerIds = new ArrayList<>(indexedCareerIds);
         if (careerId != null && !careerId.isBlank() && !careerIds.contains(careerId)) {
@@ -182,11 +193,18 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     }
 
     private Flux<String> scanKeys(PatternSpec spec) {
-        return redisTemplate.scan(ScanOptions.scanOptions()
+        Flux<String> scanned = redisTemplate.scan(ScanOptions.scanOptions()
                 .match(spec.pattern())
                 .count(MAX_BATCH_SIZE)
                 .build())
                 .timeout(scanTimeout);
+        // Game entities and their index are independent user-owned resources;
+        // a career reset must not silently remove them. The broad legacy
+        // projection namespace remains for career projections, but game keys
+        // are explicitly protected here.
+        return "user-projection".equals(spec.family())
+                ? scanned.filter(key -> !key.contains(":game:") && !key.endsWith(":game-ids"))
+                : scanned;
     }
 
     private String indexKey(UUID userId) {

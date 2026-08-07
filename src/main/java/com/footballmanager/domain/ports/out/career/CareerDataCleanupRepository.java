@@ -14,4 +14,8 @@ import java.util.UUID;
 public interface CareerDataCleanupRepository {
 
     Mono<CareerDataCleanupResult> deleteOwnedData(UUID userId, String careerId);
+
+    default Mono<CareerDataCleanupResult> deleteOwnedDataPreservingWorld(UUID userId, String careerId) {
+        return deleteOwnedData(userId, careerId);
+    }
 }

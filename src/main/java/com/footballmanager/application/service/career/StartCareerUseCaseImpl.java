@@ -4,6 +4,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.ports.in.career.CreateCareerSnapshotUseCase;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
+import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
 import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
     private final CreateCareerSnapshotUseCase createCareerSnapshotUseCase;
     private final CareerRepository careerRepository;
     private final CareerLifecycleCoordinator lifecycleCoordinator;
+    private final CareerDataCleanupRepository careerDataCleanupRepository;
 
     @Override
     public Mono<CareerSave> start(UUID userId, String worldLeagueId, String worldTeamId,
@@ -40,7 +42,12 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
         UUID leagueId = UUID.fromString(worldLeagueId);
 
         // Paso 0: Eliminar carrera anterior para evitar duplicación de datos
-        return lifecycleCoordinator.serializeReset(userId, careerRepository.deleteById(userId.toString())
+        return lifecycleCoordinator.serializeReset(userId,
+                careerRepository.findById(userId.toString())
+                .flatMap(existing -> careerDataCleanupRepository
+                        .deleteOwnedDataPreservingWorld(userId,
+                                existing.map(CareerSave::getCareerId).orElse(null)))
+                .then()
                 // Paso 1: Construir WorldView
                 .then(buildWorldViewUseCase.build(userId))
                 .flatMap(worldView -> {
