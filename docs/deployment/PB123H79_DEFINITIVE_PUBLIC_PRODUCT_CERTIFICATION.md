@@ -7,7 +7,8 @@ performed. It does not replace the required two-season certification.
 
 ## Runtime identity
 
-- Root HEAD: `b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4`
+- Runtime source HEAD: `b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4`
+- Current root HEAD (documentation-only commits): `bda1898f`
 - Frontend deployed revision: `8f36ca7`
 - Render live SHA: `b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4` (`EXACT_HEAD`)
 - Render service: `manager-staging-api`, Free, one instance (`SINGLE_INSTANCE`)
