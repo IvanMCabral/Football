@@ -7,7 +7,6 @@ import com.footballmanager.domain.model.valueobject.MatchEventType;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import lombok.Getter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,7 +32,6 @@ import java.util.UUID;
  */
 @Getter
 public class RuntimeMatch {
-    @JsonIgnore
     private String lifecycleGeneration;
     private final String matchId;         // ID del MatchFixture original
     private final String careerId;        // Career a la que pertenece
@@ -65,7 +63,8 @@ public class RuntimeMatch {
             @JsonProperty("awayGoals") int awayGoals,
             @JsonProperty("events") List<MatchEvent> events,
             @JsonProperty("startedAt") LocalDateTime startedAt,
-            @JsonProperty("finishedAt") LocalDateTime finishedAt) {
+            @JsonProperty("finishedAt") LocalDateTime finishedAt,
+            @JsonProperty("lifecycleGeneration") String lifecycleGeneration) {
         this.matchId = matchId;
         this.careerId = careerId;
         this.homeTeamId = homeTeamId;
@@ -78,6 +77,7 @@ public class RuntimeMatch {
         this.events = events != null ? events : new ArrayList<>();
         this.startedAt = startedAt;
         this.finishedAt = finishedAt;
+        this.lifecycleGeneration = lifecycleGeneration;
     }
 
     /**
@@ -91,7 +91,20 @@ public class RuntimeMatch {
             int round) {
         this(matchId, careerId, homeTeamId, awayTeamId, round,
                 0, MatchStatus.IN_PROGRESS, 0, 0, new ArrayList<>(),
-                LocalDateTime.now(), null);
+                LocalDateTime.now(), null, null);
+    }
+
+    /** Creates a runtime job with its fencing generation captured at birth. */
+    public RuntimeMatch(
+            String matchId,
+            String careerId,
+            String homeTeamId,
+            String awayTeamId,
+            int round,
+            String lifecycleGeneration) {
+        this(matchId, careerId, homeTeamId, awayTeamId, round,
+                0, MatchStatus.IN_PROGRESS, 0, 0, new ArrayList<>(),
+                LocalDateTime.now(), null, lifecycleGeneration);
     }
 
     // ============ COMANDOS ============
@@ -159,15 +172,16 @@ public class RuntimeMatch {
 
     // ============ QUERIES (datos raw para TournamentState) ============
     
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isFinished() {
         return status == MatchStatus.FINISHED;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isInProgress() {
         return status == MatchStatus.IN_PROGRESS;
     }
 
-    @JsonIgnore
     public String getLifecycleGeneration() { return lifecycleGeneration; }
     public void setLifecycleGeneration(String lifecycleGeneration) { this.lifecycleGeneration = lifecycleGeneration; }
 

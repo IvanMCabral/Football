@@ -3,11 +3,8 @@ package com.footballmanager.domain.model.entity;
 import com.footballmanager.domain.model.valueobject.*;
 import java.io.Serializable;
 import java.util.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class MatchState implements Serializable {
-    @JsonIgnore
     private String lifecycleGeneration;
     private UUID matchId;
     private UUID homeTeamId;
@@ -24,6 +21,11 @@ public class MatchState implements Serializable {
     private List<Substitution> substitutions;
     private List<MatchEvent> events;
 
+    /** Jackson constructor for durable Redis round-trips. */
+    public MatchState() {
+        this(UUID.randomUUID());
+    }
+
     public MatchState(UUID matchId) {
         this.matchId = matchId;
         this.currentMinute = 0;
@@ -37,6 +39,14 @@ public class MatchState implements Serializable {
         this.events = new ArrayList<>();
     }
 
+    /** Creates a durable match state with its lifecycle identity captured. */
+    public MatchState(UUID matchId, UUID ownerId, String careerId, String lifecycleGeneration) {
+        this(matchId);
+        this.userId = ownerId == null ? null : ownerId.toString();
+        this.careerId = careerId;
+        this.lifecycleGeneration = lifecycleGeneration;
+    }
+
     public UUID getMatchId() { return matchId; }
     public UUID getHomeTeamId() { return homeTeamId; }
     public void setHomeTeamId(UUID homeTeamId) { this.homeTeamId = homeTeamId; }
@@ -44,7 +54,6 @@ public class MatchState implements Serializable {
     public void setAwayTeamId(UUID awayTeamId) { this.awayTeamId = awayTeamId; }
     public String getCareerId() { return careerId; }
     public void setCareerId(String careerId) { this.careerId = careerId; }
-    @JsonIgnore
     public String getLifecycleGeneration() { return lifecycleGeneration; }
     public void setLifecycleGeneration(String lifecycleGeneration) { this.lifecycleGeneration = lifecycleGeneration; }
     public String getUserId() { return userId; }

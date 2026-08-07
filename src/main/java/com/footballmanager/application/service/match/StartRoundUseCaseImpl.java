@@ -67,9 +67,9 @@ public class StartRoundUseCaseImpl implements StartRoundUseCase {
                         careerId,
                         fixture.getHomeTeamId(),
                         fixture.getAwayTeamId(),
-                        round
+                        round,
+                        context.expectedGeneration()
                     ))
-                    .doOnNext(runtime -> runtime.setLifecycleGeneration(context.expectedGeneration()))
                     .flatMap(runtime ->
                         runtimeRepository.save(userId, runtime, context).thenReturn(runtime))
                     .collectList());

@@ -10,6 +10,8 @@ import com.footballmanager.adapters.out.redis.RedisMatchRuntimeRepository;
 import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.RuntimeMatch;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.domain.port.in.match.AdvanceMatchUseCase;
+import com.footballmanager.domain.port.in.match.MatchSimulationUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -49,6 +51,12 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
     @Autowired
     private RedisMatchRuntimeRepository runtimeMatchRepository;
 
+    @Autowired
+    private AdvanceMatchUseCase advanceMatchUseCase;
+
+    @Autowired
+    private MatchSimulationUseCase matchSimulationUseCase;
+
     @Test
     void tokenlessCareerStateAndRuntimeWritersFailClosedAgainstRealRedis() {
         UUID owner = UUID.randomUUID();
@@ -72,6 +80,72 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
                 "match:state:" + owner + ":" + state.getMatchId()).block()));
         assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(
                 "runtime:match:" + owner + ":match-tokenless").block()));
+    }
+
+    @Test
+    void productiveAdvanceRejectsRuntimeGenerationCapturedBeforeReset() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-productive-runtime-fence";
+        String matchId = "match-productive-runtime-fence";
+        seedOwnership(owner, careerId, "generation-one");
+        CareerWriteContext first = new CareerWriteContext(owner, careerId, "generation-one");
+        RuntimeMatch runtime = new RuntimeMatch(matchId, careerId, "home", "away", 1,
+                first.expectedGeneration());
+        runtimeMatchRepository.save(owner, runtime, first).block(Duration.ofSeconds(5));
+        String before = reactiveRedisTemplate.opsForValue()
+                .get("runtime:match:" + owner + ":" + matchId).block(Duration.ofSeconds(5));
+        long dbSizeBeforeStale = dbSize();
+
+        reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-two")
+                .block(Duration.ofSeconds(5));
+
+        assertThrows(RuntimeException.class,
+                () -> advanceMatchUseCase.advanceMatch(owner, matchId).block(Duration.ofSeconds(5)));
+        assertEquals(before, reactiveRedisTemplate.opsForValue()
+                .get("runtime:match:" + owner + ":" + matchId).block(Duration.ofSeconds(5)));
+        assertEquals("generation-two", reactiveRedisTemplate.opsForValue()
+                .get("career-generation:" + careerId).block(Duration.ofSeconds(5)));
+        assertEquals(dbSizeBeforeStale, dbSize());
+
+        RuntimeMatch current = new RuntimeMatch(matchId, careerId, "home", "away", 1, "generation-two");
+        runtimeMatchRepository.save(owner, current,
+                new CareerWriteContext(owner, careerId, "generation-two"))
+                .block(Duration.ofSeconds(5));
+        assertEquals("generation-two", advanceMatchUseCase.advanceMatch(owner, matchId)
+                .block(Duration.ofSeconds(5)).getLifecycleGeneration());
+    }
+
+    @Test
+    void productiveAdvanceRejectsMatchStateGenerationCapturedBeforeReset() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-productive-state-fence";
+        UUID matchId = UUID.randomUUID();
+        seedOwnership(owner, careerId, "generation-one");
+        CareerWriteContext first = new CareerWriteContext(owner, careerId, "generation-one");
+        MatchState state = new MatchState(matchId, owner, careerId, first.expectedGeneration());
+        matchStateRepository.save(owner, state, first).block(Duration.ofSeconds(5));
+        String before = reactiveRedisTemplate.opsForValue()
+                .get("match:state:" + owner + ":" + matchId).block(Duration.ofSeconds(5));
+        long dbSizeBeforeStale = dbSize();
+
+        reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, "generation-two")
+                .block(Duration.ofSeconds(5));
+
+        assertThrows(RuntimeException.class,
+                () -> matchSimulationUseCase.advanceMatch(owner, matchId, 1)
+                        .block(Duration.ofSeconds(5)));
+        assertEquals(before, reactiveRedisTemplate.opsForValue()
+                .get("match:state:" + owner + ":" + matchId).block(Duration.ofSeconds(5)));
+        assertEquals("generation-two", reactiveRedisTemplate.opsForValue()
+                .get("career-generation:" + careerId).block(Duration.ofSeconds(5)));
+        assertEquals(dbSizeBeforeStale, dbSize());
+
+        MatchState current = new MatchState(matchId, owner, careerId, "generation-two");
+        matchStateRepository.save(owner, current,
+                new CareerWriteContext(owner, careerId, "generation-two"))
+                .block(Duration.ofSeconds(5));
+        assertEquals("generation-two", matchSimulationUseCase.advanceMatch(owner, matchId, 1)
+                .block(Duration.ofSeconds(5)).getLifecycleGeneration());
     }
 
     @Test
@@ -427,6 +501,14 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
 
     private long indexSize(UUID owner) {
         return reactiveRedisTemplate.opsForSet().size("user:" + owner + ":career-ids")
+                .block(Duration.ofSeconds(5));
+    }
+
+    private void seedOwnership(UUID owner, String careerId, String generation) {
+        reactiveRedisTemplate.opsForSet().add("user:" + owner + ":career-ids", careerId)
+                .then(reactiveRedisTemplate.opsForValue().set("career-owner:" + careerId, owner.toString()))
+                .then(reactiveRedisTemplate.opsForValue().set("career-generation:" + careerId, generation))
+                .then(reactiveRedisTemplate.opsForValue().set("career:" + owner, "root-" + generation))
                 .block(Duration.ofSeconds(5));
     }
 

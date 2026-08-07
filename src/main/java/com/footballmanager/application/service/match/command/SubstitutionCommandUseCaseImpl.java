@@ -218,9 +218,14 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                     ? session.getCurrentState().careerId() : null;
             BaselineAppendCommand baselineAppend = null;
             if (careerId != null && !careerId.isBlank()) {
+                String lifecycleGeneration = session.getLifecycleGeneration();
+                if (lifecycleGeneration == null || lifecycleGeneration.isBlank()) {
+                    throw new IllegalStateException("substitution baseline requires stored lifecycle generation");
+                }
                 baselineAppend = new BaselineAppendCommand(
                         userId,
                         careerId,
+                        lifecycleGeneration,
                         resolvedTeamId,
                         playerOffId,
                         playerOnId,
@@ -255,10 +260,9 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                                     command.playerOffId(),
                                     command.playerOnId(),
                                     command.minute()));
-                            Mono<CareerWriteContext> context = ownershipTouchService == null
-                                    ? Mono.error(new IllegalStateException("baseline writer requires ownership service"))
-                                    : ownershipTouchService.capture(command.userId(), command.careerId());
-                            return context.flatMap(writeContext -> baselineStoragePort.saveWithContext(writeContext, updated))
+                            CareerWriteContext context = new CareerWriteContext(
+                                    command.userId(), command.careerId(), command.lifecycleGeneration());
+                            return baselineStoragePort.saveWithContext(context, updated)
                                     .doOnSuccess(v -> log.info(
                                             "[F6-MATCH-COMPARE] BaselineState updated for matchId={}, sub at minute {} (total subs: {})",
                                             matchId, command.minute(), updated.subs().size()));
@@ -284,6 +288,7 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
     private record BaselineAppendCommand(
             UUID userId,
             String careerId,
+            String lifecycleGeneration,
             String resolvedTeamId,
             String playerOffId,
             String playerOnId,

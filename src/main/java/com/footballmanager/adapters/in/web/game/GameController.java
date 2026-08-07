@@ -187,7 +187,7 @@ public class GameController {
     }
 
     @PostMapping("/round/{round}/start")
-    public Mono<ResponseEntity<List<RuntimeMatch>>> startRound(
+    public Mono<ResponseEntity<List<RuntimeMatchResponse>>> startRound(
             @RequestParam String careerId,
             @PathVariable int round,
             Authentication authentication) {
@@ -198,6 +198,7 @@ public class GameController {
         UUID userId = UUID.fromString(userIdStr);
 
         return startRoundUseCase.startRound(userId, careerId, round)
+                .map(matches -> matches.stream().map(RuntimeMatchResponse::from).toList())
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
                     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
@@ -263,7 +264,7 @@ public class GameController {
     }
 
     @PostMapping("/match/{matchId}/advance")
-    public Mono<ResponseEntity<RuntimeMatch>> advanceMatch(@PathVariable String matchId, Authentication authentication) {
+    public Mono<ResponseEntity<RuntimeMatchResponse>> advanceMatch(@PathVariable String matchId, Authentication authentication) {
         String userIdStr = authentication != null ? authentication.getName() : null;
         if (userIdStr == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
@@ -271,6 +272,7 @@ public class GameController {
         UUID userId = UUID.fromString(userIdStr);
 
         return advanceMatchUseCase.advanceMatch(userId, matchId)
+                .map(RuntimeMatchResponse::from)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
                     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());

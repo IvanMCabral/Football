@@ -3,7 +3,7 @@ package com.footballmanager.application.service.match;
 import com.footballmanager.domain.model.entity.RuntimeMatch;
 import com.footballmanager.domain.port.in.match.AdvanceMatchUseCase;
 import com.footballmanager.domain.ports.out.match.MatchRuntimeRepository;
-import com.footballmanager.application.port.out.CareerOwnershipPort;
+import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -19,7 +19,6 @@ import java.util.UUID;
 public class AdvanceMatchUseCaseImpl implements AdvanceMatchUseCase {
 
     private final MatchRuntimeRepository runtimeRepository;
-    private final CareerOwnershipPort ownershipPort;
 
     @Override
     public Mono<RuntimeMatch> advanceMatch(UUID userId, String matchId) {
@@ -45,12 +44,13 @@ public class AdvanceMatchUseCaseImpl implements AdvanceMatchUseCase {
                         return Mono.error(new IllegalStateException(
                                 "runtime match requires career lifecycle context"));
                     }
-                    Mono<RuntimeMatch> persisted = ownershipPort.capture(userId, match.getCareerId())
-                            .flatMap(context -> {
-                                match.setLifecycleGeneration(context.expectedGeneration());
-                                return runtimeRepository.save(userId, match, context);
-                            });
-                    return persisted.thenReturn(match);
+                    if (match.getLifecycleGeneration() == null || match.getLifecycleGeneration().isBlank()) {
+                        return Mono.error(new IllegalStateException(
+                                "runtime match requires stored lifecycle generation"));
+                    }
+                    CareerWriteContext context = new CareerWriteContext(
+                            userId, match.getCareerId(), match.getLifecycleGeneration());
+                    return runtimeRepository.save(userId, match, context).thenReturn(match);
 
                 } catch (IllegalStateException e) {
                     return Mono.error(e);

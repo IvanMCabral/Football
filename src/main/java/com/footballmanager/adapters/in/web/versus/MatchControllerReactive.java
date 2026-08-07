@@ -49,9 +49,10 @@ public class MatchControllerReactive {
     private final DetailedMatchQueryService detailedMatchQueryService;
 
     @PostMapping("/{matchId}/advance")
-    public Mono<ResponseEntity<RuntimeMatch>> advanceMatch(@PathVariable String matchId, @RequestBody AdvanceRequest req, Authentication authentication) {
+    public Mono<ResponseEntity<RuntimeMatchResponse>> advanceMatch(@PathVariable String matchId, @RequestBody AdvanceRequest req, Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
         return advanceMatchUseCase.advanceMatch(userId, matchId)
+            .map(RuntimeMatchResponse::from)
             .map(ResponseEntity::ok)
             .onErrorResume(e -> {
                 return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
@@ -77,9 +78,10 @@ public class MatchControllerReactive {
     }
 
     @GetMapping("/{matchId}/state")
-    public Mono<ResponseEntity<RuntimeMatch>> getMatchState(@PathVariable String matchId, Authentication authentication) {
+    public Mono<ResponseEntity<RuntimeMatchResponse>> getMatchState(@PathVariable String matchId, Authentication authentication) {
         UUID userId = controllerHelper.getUserId(authentication);
         return getMatchStateQueryUseCase.getMatchState(userId, matchId)
+            .map(RuntimeMatchResponse::from)
             .map(ResponseEntity::ok)
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()))
             .onErrorResume(e -> {

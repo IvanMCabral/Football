@@ -8,7 +8,6 @@ import com.footballmanager.domain.ports.out.match.MatchStateRepository;
 import com.footballmanager.domain.service.MatchCommandApplier;
 import com.footballmanager.domain.service.MatchSimulator;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
-import com.footballmanager.application.port.out.CareerOwnershipPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -23,7 +22,6 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
     private final MatchCommandRepository matchCommandRepository;
     private final MatchCommandApplier commandApplier;
     private final MatchSimulator matchSimulator;
-    private final CareerOwnershipPort ownershipTouchService;
 
     @Override
     public Mono<MatchState> createMatchState(UUID userId, UUID matchId, UUID homeTeamId, UUID awayTeamId,
@@ -31,12 +29,9 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
         if (context == null || !userId.equals(context.ownerId())) {
             return Mono.error(new IllegalArgumentException("match state lifecycle context does not match owner"));
         }
-        MatchState state = new MatchState(matchId);
+        MatchState state = new MatchState(matchId, userId, context.careerId(), context.expectedGeneration());
         state.setHomeTeamId(homeTeamId);
         state.setAwayTeamId(awayTeamId);
-        state.setUserId(userId.toString());
-        state.setCareerId(context.careerId());
-        state.setLifecycleGeneration(context.expectedGeneration());
         return matchStateRepository.save(userId, state, context);
     }
 
@@ -76,6 +71,10 @@ public class MatchSimulationUseCaseImpl implements MatchSimulationUseCase {
         if (state == null || state.getCareerId() == null || state.getCareerId().isBlank()) {
             return Mono.error(new IllegalStateException("career lifecycle context is required"));
         }
-        return ownershipTouchService.capture(userId, state.getCareerId());
+        if (state.getUserId() == null || !userId.toString().equals(state.getUserId())
+                || state.getLifecycleGeneration() == null || state.getLifecycleGeneration().isBlank()) {
+            return Mono.error(new IllegalStateException("match state requires stored lifecycle context"));
+        }
+        return Mono.just(new CareerWriteContext(userId, state.getCareerId(), state.getLifecycleGeneration()));
     }
 }

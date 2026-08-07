@@ -47,10 +47,9 @@ public class MatchSessionRegistry {
                                                       String lifecycleGeneration) {
         String key = buildKey(userId, matchId);
         return Optional.ofNullable(activeSessions.computeIfAbsent(key, id -> {
-            MatchState initialState = new MatchState(matchId);
+            MatchState initialState = new MatchState(matchId, userId, careerId, lifecycleGeneration);
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
-            initialState.setCareerId(careerId);
             return new MatchSession(userId, matchId, initialState, tickHandler, null, lifecycleGeneration);
         }));
     }
@@ -71,7 +70,7 @@ public class MatchSessionRegistry {
                                                     LiveSession detailedMatchSession) {
         String key = buildKey(userId, matchId);
         return activeSessions.computeIfAbsent(key, id -> {
-            MatchState initialState = new MatchState(matchId);
+            MatchState initialState = new MatchState(matchId, userId, careerId, lifecycleGeneration);
             // downstream MatchStateSnapshot carries it (used by
             // RoundController.persistFinishedMatch as a secondary fallback
             // for the userId namespace). Without this, the detailed match path
@@ -79,7 +78,6 @@ public class MatchSessionRegistry {
             // extractUserIdForMatchPersistence to fall back to
             // UUID.randomUUID() — which persisted the match under an
             // orphan key that GET /api/v1/matches could never find.
-            initialState.setUserId(userId != null ? userId.toString() : null);
             initialState.setHomeTeamId(homeTeamId);
             initialState.setAwayTeamId(awayTeamId);
             initialState.setCareerId(careerId);
