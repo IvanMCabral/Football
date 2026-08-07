@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-08-07",
+  "backend": "https://manager-staging-api.onrender.com",
+  "liveness": [
+    { "httpStatus": 200 },
+    { "httpStatus": 200 },
+    { "httpStatus": 200 }
+  ],
+  "readinessWarm": [
+    { "httpStatus": 200, "database": "UP", "redis": "UP", "elapsedMs": 847 },
+    { "httpStatus": 200, "database": "UP", "redis": "UP", "elapsedMs": 748 },
+    { "httpStatus": 200, "database": "UP", "redis": "UP", "elapsedMs": 1219 }
+  ],
+  "coldObservation": {
+    "httpStatus": 503,
+    "classification": "FREE_TIER_COLD_START",
+    "followUpWarmReadiness": "200"
+  }
+}

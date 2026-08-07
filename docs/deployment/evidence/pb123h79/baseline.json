@@ -1,0 +1,38 @@
+{
+  "phase": "PB1.2.3H7.9",
+  "capturedAtUtc": "2026-08-07T23:42:46Z",
+  "rootHead": "b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4",
+  "frontendHead": "8f36ca7b66ff5519722cbd1e7a7675d430eb6f18",
+  "branch": "feat/v25d99.20.3.1-runtime-fixes",
+  "render": {
+    "service": "manager-staging-api",
+    "liveSha": "b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4",
+    "shaClassification": "EXACT_HEAD",
+    "plan": "Free",
+    "instances": 1,
+    "instanceClassification": "SINGLE_INSTANCE",
+    "database": "UP",
+    "redis": "UP"
+  },
+  "firebase": {
+    "hostingUrl": "https://manager-4f952.web.app",
+    "deployment": "successful",
+    "frontendRevision": "8f36ca7"
+  },
+  "health": {
+    "liveness": [200, 200, 200],
+    "readinessWarm": [200, 200, 200],
+    "readinessColdObservation": 503,
+    "readinessColdClassification": "FREE_TIER_COLD_START"
+  },
+  "redisReadOnly": {
+    "provider": "Upstash",
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "sa-east-1",
+    "storage": "121 MB / 256 MB",
+    "dbsize": 6227,
+    "commands": "59K / 500K",
+    "mutationsPerformed": false
+  }
+}

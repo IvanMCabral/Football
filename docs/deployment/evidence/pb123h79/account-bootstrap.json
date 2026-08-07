@@ -1,0 +1,21 @@
+{
+  "account": "ephemeral-h7.9-ui-account",
+  "createdThrough": "Firebase public UI",
+  "credentialsRecorded": false,
+  "register": "PASS",
+  "login": "PASS",
+  "dashboard": "PASS",
+  "worldCatalog": "PASS",
+  "careerCreation": "PASS",
+  "selectedLeague": "Spain / Primera",
+  "selectedClub": "Real Madrid",
+  "squad": "PASS",
+  "lineup": "PASS",
+  "autoSelect": "11/11, chemistry 80/99",
+  "preMatchFormationEditor": "PASS",
+  "confirmedFormation": "4-4-2",
+  "notes": [
+    "A fresh-account world snapshot initially reproduced an empty-team loading state; the frontend retry/seed prompt fix was covered by unit tests and deployed before this account completed bootstrap.",
+    "No debug endpoint, direct database write, or manual Redis mutation was used."
+  ]
+}

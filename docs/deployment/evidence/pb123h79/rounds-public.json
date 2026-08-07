@@ -1,0 +1,33 @@
+{
+  "account": "ephemeral-h7.9-ui-account",
+  "season": 1,
+  "roundsExecuted": [
+    {
+      "round": 1,
+      "route": "/games/{career}/round/1/live",
+      "status": "FINISHED",
+      "minute": 90,
+      "score": "Rayo Vallecano 3 - 1 Real Madrid",
+      "events": "non-empty",
+      "injuryModal": "opened from an injury event; stale snapshot defect reproduced"
+    },
+    {
+      "round": 2,
+      "route": "/games/{career}/round/2/live",
+      "status": "FINISHED",
+      "minute": 90,
+      "score": "CA Osasuna 0 - 0 Real Madrid",
+      "events": "non-empty",
+      "uniqueRoundRegistryId": "PASS after frontend fix"
+    },
+    {
+      "round": 3,
+      "route": "/games/{career}/round/3/live",
+      "status": "IN_PROGRESS",
+      "minuteAtCapture": 31,
+      "tacticalModal": "opened, round visibly paused, confirmation path exercised"
+    }
+  ],
+  "seasonCompletion": "NOT_CERTIFIED",
+  "reason": "H7.9 certification was interrupted after reproducing and fixing the round identity collision; no full-season claim is made."
+}

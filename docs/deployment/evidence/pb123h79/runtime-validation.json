@@ -1,0 +1,25 @@
+{
+  "rootHead": "b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4",
+  "frontendRevision": "8f36ca7b66ff5519722cbd1e7a7675d430eb6f18",
+  "branch": "feat/v25d99.20.3.1-runtime-fixes",
+  "render": {
+    "service": "manager-staging-api",
+    "plan": "Free",
+    "liveSha": "b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4",
+    "shaClassification": "EXACT_HEAD",
+    "instances": 1,
+    "instanceClassification": "SINGLE_INSTANCE"
+  },
+  "firebase": {
+    "url": "https://manager-4f952.web.app",
+    "revision": "8f36ca7"
+  },
+  "frontendProduction": {
+    "testHarnessIdentifiers": "absent"
+  },
+  "localSuites": {
+    "backend": { "tests": 2632, "failures": 0, "errors": 0, "skipped": 4 },
+    "frontend": { "success": 1069, "failures": 0, "skipped": 2 },
+    "productionAudit": { "low": 0, "moderate": 0, "high": 0, "critical": 0 }
+  }
+}
