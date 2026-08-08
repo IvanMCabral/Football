@@ -1,0 +1,7 @@
+{
+  "r0": {"storageMb": 115, "quotaMb": 256, "dbsize": 6227, "source": "retained Upstash dashboard observation"},
+  "r1": null,
+  "r2": null,
+  "r3": null,
+  "reason": "Provider dashboard read was unavailable during this execution; no Redis mutation or global scan was performed."
+}

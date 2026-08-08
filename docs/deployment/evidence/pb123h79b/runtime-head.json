@@ -1,0 +1,16 @@
+{
+  "runtimeSha": "b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4",
+  "rootHead": "2b2ece36c74c6b3e822a13307bd6c151d34b6efd",
+  "runtimeEquivalent": true,
+  "runtimeDiffClassification": "documentation-and-evidence-only",
+  "renderInstances": 1,
+  "frontendHead": "8f36ca7b66ff5519722cbd1e7a7675d430eb6f18",
+  "firebase": {
+    "indexBytes": 1185,
+    "indexSha256": "90CE00631331AA407DEA4875E67290F3E1AEBBD77C8F4D359F4B9206233D2C39",
+    "mainBytes": 76975,
+    "mainSha256": "B30C6DD2C6D892C17B6F152828FF174F0C179830FD99C8DFE98EFDA290077DAF",
+    "chunkBytes": 2722,
+    "chunkSha256": "FE8D1317ED5B7AC871EA98BCCC35BDA6FCF3BF354103A3180B6C199A14D6EEEB"
+  }
+}

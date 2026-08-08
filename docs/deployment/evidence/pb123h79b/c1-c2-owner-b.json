@@ -1,0 +1,7 @@
+{
+  "c1": {"startStatus": 201, "roundId": "ec468091-39b2-42ff-a427-0c23a95fec5b", "resetStatus": 204, "postResetPhase": "NO_CAREER"},
+  "c2": {"startStatus": 201, "roundId": "09354aac-9aea-42c8-b13c-7fd2bf92eb1e", "sseMinutes": [0, 1, 2], "status": "IN_PROGRESS"},
+  "roundIdsDistinct": true,
+  "staleC1Reappeared": false,
+  "ownerB": {"careerStatusBefore": "PRE_MATCH", "statusAfterOwnerAReset": 200, "careerPreserved": true}
+}

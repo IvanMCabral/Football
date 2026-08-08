@@ -1,0 +1,8 @@
+[
+  {"check":"liveness","status":200,"sample":1},
+  {"check":"readiness","status":200,"sample":1,"database":"UP","redis":"UP"},
+  {"check":"liveness","status":200,"sample":2},
+  {"check":"readiness","status":200,"sample":2,"database":"UP","redis":"UP"},
+  {"check":"liveness","status":200,"sample":3},
+  {"check":"readiness","status":200,"sample":3,"database":"UP","redis":"UP"}
+]

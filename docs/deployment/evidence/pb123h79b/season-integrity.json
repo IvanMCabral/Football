@@ -1,0 +1,7 @@
+{
+  "teamsPerDivision": 4,
+  "roundsPerSeason": 6,
+  "season1": {"rounds": 6, "fixtures": 12, "completed": 12, "lastMinute": 90, "champion": "FC Barcelona", "userTeam": "Real Madrid", "userPoints": 5, "math": "PASS", "globalGoals": 12},
+  "season2": {"rounds": 6, "fixtures": 12, "completed": 12, "lastMinute": 90, "champion": "Villarreal CF", "userTeam": "Real Madrid", "userPoints": 4, "math": "PASS", "globalGoals": 9},
+  "season3": {"season": 3, "currentRound": 1, "phase": "PRE_MATCH", "fixtures": 2, "standingsPlayed": 0}
+}

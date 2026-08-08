@@ -1,0 +1,15 @@
+{
+  "source": "public API timing, warm runtime",
+  "n": 10,
+  "summaryMs": {
+    "dashboard": {"p50": 1163, "p95": 1952.2},
+    "squad": {"p50": 206.7, "p95": 245},
+    "lineup": {"p50": 207.1, "p95": 909.8},
+    "fixtures": {"p50": 244.2, "p95": 314.2},
+    "standings": {"p50": 204, "p95": 282.9},
+    "autoSelect": {"p50": 2718.6, "p95": 3183.3},
+    "confirm": {"p50": 2538.7, "p95": 2590.5}
+  },
+  "allResponsesHttp200": true,
+  "browserHandlerTrace": "not-available"
+}
