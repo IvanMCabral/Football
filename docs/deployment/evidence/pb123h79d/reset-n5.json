@@ -1,0 +1,16 @@
+{
+  "samples": [
+    {"sample":1,"http":204,"durationMs":8160},
+    {"sample":2,"http":204,"durationMs":8185},
+    {"sample":3,"http":204,"durationMs":8207},
+    {"sample":4,"http":204,"durationMs":8121},
+    {"sample":5,"http":204,"durationMs":8143}
+  ],
+  "p50Ms": 8160,
+  "p95Ms": 8207,
+  "maxMs": 8207,
+  "status503Count": 0,
+  "targetMet": false,
+  "requestIdsStored": false,
+  "payloadsStored": false
+}

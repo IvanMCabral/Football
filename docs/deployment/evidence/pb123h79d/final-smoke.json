@@ -1,0 +1,20 @@
+{
+  "health": {"liveness": "3/3 200", "readiness": "3/3 200 after warm-up", "database": "UP", "redis": "UP", "additionalWarmSamples": "5/5 200"},
+  "register": 200,
+  "worldReload": 200,
+  "careerStart": 201,
+  "autoSelect": 200,
+  "confirm": 200,
+  "roundStart": 200,
+  "sseHttp": 200,
+  "sseContentType": "text/event-stream;charset=UTF-8",
+  "matchFinish": "FINISHED minute 90",
+  "primaryReset": 204,
+  "c2Created": true,
+  "ownerBIntact": true,
+  "resetN5": "5/5 HTTP 204",
+  "performanceRegression": "reset latency target not met",
+  "codeChanges": false,
+  "frontendChanges": false,
+  "remoteMutations": false
+}

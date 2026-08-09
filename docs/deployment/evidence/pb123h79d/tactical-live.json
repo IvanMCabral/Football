@@ -1,0 +1,11 @@
+{
+  "authenticatedDashboard": "OBSERVED",
+  "liveFormationMutation": "NOT_OBSERVED",
+  "pixelMovement": "NOT_OBSERVED",
+  "starterSwap": "NOT_OBSERVED",
+  "starterToBench": "NOT_OBSERVED",
+  "substituteToXi": "NOT_OBSERVED",
+  "reason": "Chrome bridge stopped responding while reclaiming the existing authenticated app tab",
+  "previousTerminalFormationResponse": 400,
+  "frontendChanged": false
+}

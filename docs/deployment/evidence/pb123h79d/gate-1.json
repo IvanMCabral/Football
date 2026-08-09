@@ -1,16 +1,13 @@
 {
-  "result": "NOT_VERIFIABLE",
-  "rootHead": "728f8e115660c3aca51c5c1765b3a6aee9514117",
+  "result": "RUNTIME_EQUIVALENT",
+  "rootHead": "8c6fdf24b1fa77a960b685f4f626d5cdd0335c8e",
   "runtimeCommit": "8d9e91ed",
-  "renderLiveSha": null,
-  "instanceCount": null,
-  "chromeTabsInspected": 3,
-  "providerTabsPresent": {
-    "render": false,
-    "neon": false,
-    "upstash": false
-  },
+  "renderLiveSha": "8c6fdf24b1fa77a960b685f4f626d5cdd0335c8e",
+  "instanceCount": 1,
+  "autoscaling": "off",
+  "renderPlan": "Free",
+  "upstashAuthenticated": true,
   "remoteMutations": false,
-  "accountsCreated": 0,
-  "redisCommands": 0
+  "accountsCreated": 6,
+  "resetN5": "5/5 204"
 }

@@ -1,0 +1,15 @@
+{
+  "rootHead": "8c6fdf24b1fa77a960b685f4f626d5cdd0335c8e",
+  "productiveRuntime": "8d9e91ed",
+  "renderLiveSha": "8c6fdf24b1fa77a960b685f4f626d5cdd0335c8e",
+  "classification": "RUNTIME_EQUIVALENT",
+  "service": "manager-staging-api",
+  "branch": "feat/v25d99.20.3.1-runtime-fixes",
+  "plan": "Free",
+  "deploymentStatus": "live",
+  "autoscaling": "off",
+  "manualInstances": 1,
+  "region": "NOT_EXPOSED",
+  "deploymentTimestamp": "NOT_EXPOSED",
+  "providerMutations": false
+}

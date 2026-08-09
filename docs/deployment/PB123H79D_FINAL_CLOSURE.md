@@ -2,19 +2,23 @@
 
 ## Verdict
 
-**PB1.2.3H7.9D BLOCKED**
+**PB1.2.3H7.9D APPROVED WITH ISSUES**
 
-The concrete external blocker is provider-session access, not code or tests:
-the authenticated Chrome session available to this run has no Render, Neon or
-Upstash tabs, and no provider API credentials are configured locally. Exact
-Render SHA and single-instance status therefore cannot be verified. The gate
-explicitly forbids proceeding to account creation, Redis measurements and
-public smoke when identity is `NOT_VERIFIABLE`.
+Gate 1 passed as `RUNTIME_EQUIVALENT`: Render live commit
+`8c6fdf24b1fa77a960b685f4f626d5cdd0335c8e` contains only documentation after
+productive runtime `8d9e91ed`; autoscaling is off and manual instances is `1`.
+Upstash remained Free Tier and read-only. Fresh R0–R3, one finished round,
+SSE, reset convergence, C1 → C2 and Owner B isolation were evidenced.
 
-No production code, frontend, gameplay, database, Redis data, infrastructure,
-billing or plan was changed. No H7.9D account was created and no cleanup was
-executed.
+The approval is qualified by two P1 issues:
 
-The next run can resume without reopening H7.7–H7.9C after an authenticated
-Render dashboard tab and authenticated Upstash tab are available in the same
-Chrome session.
+1. reset N=5 is correct but slow (p50 `8160 ms`, p95 `8207 ms`, target
+   p50 <= 1500 ms and p95 <= 4000 ms);
+2. authenticated tactical modal and responsive six-viewport evidence could
+   not be completed because the existing Chrome bridge stopped responding while
+   reclaiming the authenticated app tab. The previously certified shell check
+   is not a substitute for this evidence.
+
+No gameplay, simulation, probabilities, fixtures, datasets, frontend code,
+database rows, Redis data, provider plans, infrastructure or billing changed.
+No new H7.9E gate is introduced.

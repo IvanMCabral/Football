@@ -1,0 +1,16 @@
+{
+  "provider": "Upstash",
+  "database": "Manager",
+  "plan": "Free Tier",
+  "region": "sa-east-1",
+  "quotaMb": 256,
+  "samples": [
+    {"name":"R0","storageMb":124,"dbsize":6380},
+    {"name":"R1","storageMb":124,"dbsize":6388},
+    {"name":"R2","storageMb":127,"dbsize":6391},
+    {"name":"R3","storageMb":127,"dbsize":6381}
+  ],
+  "deltas": {"r1MinusR0Dbsize":8,"r2MinusR1Dbsize":3,"r3MinusR2Dbsize":-10,"r3MinusR0Dbsize":1},
+  "mutations": false,
+  "globalScan": false
+}

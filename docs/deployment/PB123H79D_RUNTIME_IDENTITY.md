@@ -1,19 +1,21 @@
 # PB1.2.3H7.9D — Runtime identity
 
-## Result
+## Gate result
 
-**NOT_VERIFIABLE**
+**PASS — RUNTIME_EQUIVALENT**
 
-Root HEAD at the start of this gate was `728f8e115660c3aca51c5c1765b3a6aee9514117`.
-The last production-runtime commit remains `8d9e91ed` (the later commits are
-documentation only). The public health endpoints were healthy in H7.9C, but
-that does not prove the live commit.
+Render was inspected read-only through the existing authenticated Chrome
+profile. The service is `manager-staging-api`, on branch
+`feat/v25d99.20.3.1-runtime-fixes`, Free plan, live status `live`, with
+autoscaling disabled and manual scaling set to one instance.
 
-The existing Chrome session was inspected read-only. Its current tabs were
-unrelated public pages and contained no Render, Neon or Upstash dashboard.
-No local Render token or provider API credential was present. Consequently
-the deployment SHA, instance count, plan, region and rolling-instance state
-could not be verified from an authenticated provider surface.
+The live deployment exposes commit
+`8c6fdf24b1fa77a960b685f4f626d5cdd0335c8e`. The productive runtime commit is
+`8d9e91ed`; the intervening root commits contain documentation/evidence only.
+The deployment is therefore classified `RUNTIME_EQUIVALENT`, not an exact
+runtime-head match. Render did not expose a region or deployment timestamp in
+the inspected surface.
 
-Per the H7.9D gate, no disposable account, Redis measurement or public smoke
-was started after this result.
+The single-instance contract is **PASS**: autoscaling is off and manual
+instances is `1`. No provider settings, plans, credentials or billing were
+changed.
