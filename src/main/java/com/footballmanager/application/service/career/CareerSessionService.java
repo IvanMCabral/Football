@@ -115,6 +115,17 @@ public class CareerSessionService {
         return getCareerFromCache(userId);
     }
 
+    /** Seeds the owner-scoped snapshot immediately after a successful career start. */
+    public void cacheCareer(CareerSave career) {
+        if (career == null || career.getUserId() == null) {
+            return;
+        }
+        String key = career.getUserId().toString();
+        careerCache.put(key, career);
+        lastPersistedSnapshot.put(key, career);
+        dirtyOwners.remove(key);
+    }
+
     public Mono<CareerSave> getCareer(UUID userId) {
         return continueCareerUseCase.getCareer(userId);
     }
