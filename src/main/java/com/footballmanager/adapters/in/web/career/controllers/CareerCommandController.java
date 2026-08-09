@@ -113,6 +113,11 @@ public class CareerCommandController {
     public Mono<Void> resetCareer(Authentication authentication, ServerHttpResponse response) {
         UUID userId = controllerHelper.getUserId(authentication);
         long startedNanos = System.nanoTime();
+        response.beforeCommit(() -> {
+            response.getHeaders().set("X-Reset-Server-Ms",
+                    Long.toString((System.nanoTime() - startedNanos) / 1_000_000L));
+            return Mono.empty();
+        });
         return sessionService.deleteCareer(userId)
                 // Game entity that mirrors the career. Best-effort â€” we
                 // already cleared the CareerSave; deleting the Game is
@@ -132,9 +137,7 @@ public class CareerCommandController {
                                     err.getClass().getSimpleName()))
                             .onErrorResume(err -> Mono.empty());
                 }))
-                .then()
-                .doOnSuccess(ignored -> response.getHeaders().add("X-Reset-Server-Ms",
-                        Long.toString((System.nanoTime() - startedNanos) / 1_000_000L)));
+                .then();
     }
 
     /**
