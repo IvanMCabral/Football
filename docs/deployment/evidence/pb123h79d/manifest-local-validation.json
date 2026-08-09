@@ -1,0 +1,30 @@
+{
+  "modernCareerMarker": "1",
+  "manifestKey": "career-cleanup-members:<careerId>",
+  "hardMaxEntries": 1024,
+  "ttlSeconds": 2678400,
+  "writerRegistration": "real-redis-pass",
+  "modernReset": {
+    "projectionScanFamilies": 1,
+    "careerSpecificScanFamilies": 0,
+    "globalScan": false,
+    "keysCommand": false,
+    "batchMax": 100,
+    "rootLast": true
+  },
+  "legacyReset": {
+    "fallbackScanFamilies": 12,
+    "markerRequired": true
+  },
+  "storageModel": {
+    "estimatedBytesPerEntry": 112,
+    "maxManifestBytesPerCareer": 114688,
+    "worstCase256CareersBytes": 29360128,
+    "payloadsDuplicated": false
+  },
+  "latencyModelMs": {
+    "25": {"legacyLowerBound": 500, "modernLowerBound": 225},
+    "50": {"legacyLowerBound": 1000, "modernLowerBound": 450},
+    "75": {"legacyLowerBound": 1500, "modernLowerBound": 675}
+  }
+}
