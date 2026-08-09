@@ -48,7 +48,9 @@ marker.
 ## Public rollout evidence
 
 - Render service: `manager-staging-api`;
-- live commit: `5ff5870d9d25ecb65b51121f2ce06ebec5ab7a9d`;
+- live commit: not exposed by the public service; the tested backend branch
+  revision was `0aa54436` (the documentation-only evidence commit followed
+  afterward);
 - Render deployment: live after the manual rollout;
 - liveness: 3/3 HTTP 200;
 - readiness: 3/3 HTTP 200 (`database=UP`, `redis=UP`);
