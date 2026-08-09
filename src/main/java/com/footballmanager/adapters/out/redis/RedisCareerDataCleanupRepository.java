@@ -81,12 +81,14 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         }
 
         CleanupAccumulator accumulator = new CleanupAccumulator(userId, careerId);
-        Mono<List<String>> indexedCareerIds = redisTemplate.opsForSet()
-                .members(indexKey(userId))
-                .timeout(indexTimeout)
-                .take(MAX_INDEX_CARDINALITY + 1L)
-                .collectList()
-                .cache();
+        Mono<List<String>> indexedCareerIds = careerId != null && !careerId.isBlank()
+                ? Mono.just(List.of(careerId))
+                : redisTemplate.opsForSet()
+                        .members(indexKey(userId))
+                        .timeout(indexTimeout)
+                        .take(MAX_INDEX_CARDINALITY + 1L)
+                        .collectList()
+                        .cache();
         // The tombstone must be durable before any destructive operation, but
         // it does not depend on the read-only owner index. Start both in the
         // same subscription to remove one provider round-trip from reset.
