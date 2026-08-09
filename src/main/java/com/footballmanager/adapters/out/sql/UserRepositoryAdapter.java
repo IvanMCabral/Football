@@ -7,7 +7,7 @@ import com.footballmanager.domain.model.aggregate.User;
 import com.footballmanager.domain.ports.out.user.UserRepository;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 
 @Component
 public class UserRepositoryAdapter implements UserRepository {

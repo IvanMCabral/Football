@@ -15,6 +15,7 @@ import com.footballmanager.domain.service.LineupRules;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +35,21 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
     @Override
     public Mono<LineupView> autoSelectLineup(UUID userId, String formationCode) {
         Formation formation = Formation.fromString(formationCode);
-        return careerSessionService.continueCareer(userId)
+        return RuntimeOperationMetrics.measure("lineup.autoSelect.total",
+            RuntimeOperationMetrics.measure("lineup.autoSelect.loadCareer",
+                careerSessionService.continueCareer(userId))
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
-                LineupAutoSelector.AutoSelectResult result = new LineupAutoSelector(lineupHelper, formationService).performAutoSelect(career, userTeamId, formation);
+                long algorithmStarted = System.nanoTime();
+                LineupAutoSelector.AutoSelectResult result;
+                try {
+                    result = new LineupAutoSelector(lineupHelper, formationService)
+                        .performAutoSelect(career, userTeamId, formation);
+                    RuntimeOperationMetrics.record("lineup.autoSelect.algorithm", algorithmStarted, true);
+                } catch (RuntimeException error) {
+                    RuntimeOperationMetrics.record("lineup.autoSelect.algorithm", algorithmStarted, false);
+                    throw error;
+                }
                 List<SessionPlayer> lineup = result.lineup();
                 List<LineupWarning> warnings = result.warnings();
 
@@ -57,9 +69,10 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
                 syncSessionTeamFormation(career, userTeamId, formation.getCode());
 
-                return careerSessionService.saveCareer(career)
+                return RuntimeOperationMetrics.measure("lineup.autoSelect.save",
+                    careerSessionService.saveCareer(career))
                     .thenReturn(new LineupDtoAssembler(formationService, lineupHelper).buildLineupDTO(lineup, formation, warnings, slotMap));
-            });
+            }));
     }
 
     @Override
@@ -156,7 +169,9 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
 
     @Override
     public Mono<Void> confirmLineup(UUID userId) {
-        return careerSessionService.continueCareer(userId)
+        return RuntimeOperationMetrics.measure("lineup.confirm.total",
+            RuntimeOperationMetrics.measure("lineup.confirm.loadCareer",
+                careerSessionService.continueCareer(userId))
             .flatMap(career -> {
                 String userTeamId = career.getUserSessionTeamId();
                 List<String> lineupIds = career.getTeamStarting11().get(userTeamId);
@@ -178,8 +193,9 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         + LineupRules.MAX_LINEUP_PLAYERS + " allowed."));
                 }
 
-                return careerSessionService.saveCareer(career).then();
-            });
+                return RuntimeOperationMetrics.measure("lineup.confirm.save",
+                    careerSessionService.saveCareer(career)).then();
+            }));
     }
 
 

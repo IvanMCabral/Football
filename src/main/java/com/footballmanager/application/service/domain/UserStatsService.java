@@ -7,8 +7,12 @@ import com.footballmanager.domain.ports.out.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.time.Duration;
 
 /**
  * UserStatsService - Servicio de estadísticas de usuario.
@@ -22,15 +26,20 @@ public class UserStatsService {
 
     private final UserRepository userRepository;
     private final CareerSessionService careerSessionService;
+    private final ConcurrentMap<UUID, Mono<String>> userNameCache = new ConcurrentHashMap<>();
 
     public Mono<UserStatsSummary> getUserStats(UUID userId) {
-        // Obtener nombre del usuario
-        Mono<String> userNameMono = userRepository.findById(userId)
-            .map(userEntity -> userEntity.getUsername())
-            .defaultIfEmpty("Unknown");
+        Mono<String> userNameMono = userNameCache.computeIfAbsent(userId, id ->
+            RuntimeOperationMetrics.measure("dashboard.userStats.userName",
+                userRepository.findById(id)
+                    .map(userEntity -> userEntity.getUsername())
+                    .defaultIfEmpty("Unknown"))
+                .cache(Duration.ofMinutes(10)));
 
         // Obtener stats desde CareerSave (Redis)
-        Mono<TeamStandings> standingsMono = careerSessionService.continueCareer(userId)
+        Mono<TeamStandings> standingsMono = RuntimeOperationMetrics.measure(
+            "dashboard.userStats.loadCareer",
+            careerSessionService.getCareerFromCache(userId))
             .map(career -> {
                 String userTeamId = career.getUserSessionTeamId();
                 if (userTeamId == null) {
@@ -44,7 +53,8 @@ public class UserStatsService {
             })
             .switchIfEmpty(Mono.empty());
 
-        return Mono.zip(userNameMono, standingsMono)
+        return RuntimeOperationMetrics.measure("dashboard.userStats.total",
+            Mono.zip(userNameMono, standingsMono))
             .map(tuple -> {
                 String userName = tuple.getT1();
                 TeamStandings standing = tuple.getT2();

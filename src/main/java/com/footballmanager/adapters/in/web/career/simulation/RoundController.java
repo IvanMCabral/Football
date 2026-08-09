@@ -20,7 +20,7 @@ import com.footballmanager.application.service.simulation.detailed.MatchContext;
 import com.footballmanager.application.service.simulation.detailed.MatchContextFactory;
 import com.footballmanager.application.service.simulation.detailed.LiveRoundMutationTracking;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
-import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import com.footballmanager.infrastructure.observability.MatchStartRequestTrace;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;

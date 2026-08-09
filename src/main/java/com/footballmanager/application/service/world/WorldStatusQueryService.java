@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 
 import java.util.UUID;
 
@@ -35,11 +36,13 @@ public class WorldStatusQueryService {
      * with a non-null {@code result} are considered played.
      */
     public Mono<WorldStatusSummary> getWorldStatus(UUID userId) {
-        Mono<Integer> matchesMono = careerSessionService.getCareerFromCache(userId)
+        Mono<Integer> matchesMono = RuntimeOperationMetrics.measure("dashboard.loadCareer",
+            careerSessionService.getCareerFromCache(userId))
                 .map(this::countPlayedFixtures)
                 .defaultIfEmpty(0);
 
-        return worldService.getWorldSnapshot(userId)
+        return RuntimeOperationMetrics.measure("dashboard.loadWorld",
+                worldService.getWorldSnapshot(userId))
                 .zipWith(matchesMono)
                 .map(tuple -> new WorldStatusSummary(
                         tuple.getT1().getAllWorldTeams() != null ? tuple.getT1().getAllWorldTeams().size() : 0,

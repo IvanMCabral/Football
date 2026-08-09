@@ -102,7 +102,11 @@ public class CareerSessionService {
     }
 
     public Mono<CareerSave> continueCareer(UUID userId) {
-        return continueCareerUseCase.continueCareer(userId);
+        // Reuse the owner-scoped in-process snapshot when the request path has
+        // already loaded it. All writes refresh this cache after the lifecycle
+        // coordinator accepts them, so this is a read de-duplication only; the
+        // Redis career remains the durable authority and reset invalidates it.
+        return getCareerFromCache(userId);
     }
 
     public Mono<CareerSave> getCareer(UUID userId) {

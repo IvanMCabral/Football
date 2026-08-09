@@ -1,106 +1,43 @@
 package com.footballmanager.infrastructure.observability;
 
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.concurrent.atomic.LongAccumulator;
 
 /**
- * Low-overhead operation metrics for the public beta runtime.
- *
- * <p>The registry intentionally stores only aggregate timings and counters.
- * It never records keys, payloads, tokens or personal data.  Every tenth
- * observation is logged so production logs can provide evidence without a
- * line per player or database row.</p>
+ * Compatibility facade for infrastructure tests and integrations.
+ * Runtime ownership lives in the application observability package so
+ * application services do not depend on infrastructure.
  */
-@Slf4j
 public final class RuntimeOperationMetrics {
-
-    private static final Map<String, Aggregate> AGGREGATES = new ConcurrentHashMap<>();
 
     private RuntimeOperationMetrics() {
     }
 
     public static <T> Mono<T> measure(String operation, Mono<T> publisher) {
-        return Mono.defer(() -> {
-            long started = System.nanoTime();
-            return publisher
-                .doOnSuccess(value -> record(operation, started, true))
-                .doOnError(error -> record(operation, started, false));
-        });
+        return com.footballmanager.application.observability.RuntimeOperationMetrics.measure(operation, publisher);
     }
 
     public static void record(String operation, long startedNanos, boolean success) {
-        long elapsedMillis = Math.max(0L, (System.nanoTime() - startedNanos) / 1_000_000L);
-        Aggregate aggregate = AGGREGATES.computeIfAbsent(operation, ignored -> new Aggregate());
-        aggregate.count.increment();
-        aggregate.totalMillis.add(elapsedMillis);
-        aggregate.samples.add(elapsedMillis);
-        while (aggregate.samples.size() > 512) {
-            aggregate.samples.poll();
-        }
-        aggregate.maxMillis.accumulate(elapsedMillis);
-        if (success) {
-            aggregate.success.increment();
-        } else {
-            aggregate.errors.increment();
-        }
-        long count = aggregate.count.sum();
-        if (count % 10 == 0 || !success) {
-            log.info("[RUNTIME-METRICS] operation={}, count={}, success={}, errors={}, avgMs={}, p95Ms={}, maxMs={}",
-                operation, count, aggregate.success.sum(), aggregate.errors.sum(),
-                aggregate.totalMillis.sum() / (double) count, percentile(aggregate.samples, .95),
-                aggregate.maxMillis.get());
-        }
+        com.footballmanager.application.observability.RuntimeOperationMetrics.record(operation, startedNanos, success);
     }
 
     public static Map<String, Snapshot> snapshot() {
-        Map<String, Snapshot> result = new java.util.TreeMap<>();
-        AGGREGATES.forEach((operation, aggregate) -> {
-            long count = aggregate.count.sum();
-            result.put(operation, new Snapshot(
-                count,
-                aggregate.success.sum(),
-                aggregate.errors.sum(),
-                count == 0 ? 0d : aggregate.totalMillis.sum() / (double) count,
-                percentile(aggregate.samples, .50),
-                percentile(aggregate.samples, .95),
-                aggregate.maxMillis.get()));
-        });
-        return Map.copyOf(result);
+        return com.footballmanager.application.observability.RuntimeOperationMetrics.snapshot().entrySet().stream()
+            .collect(java.util.stream.Collectors.toUnmodifiableMap(Map.Entry::getKey,
+                entry -> Snapshot.from(entry.getValue())));
     }
 
     public static void reset() {
-        AGGREGATES.clear();
+        com.footballmanager.application.observability.RuntimeOperationMetrics.reset();
     }
 
     public record Snapshot(long count, long success, long errors, double averageMillis,
                            double p50Millis, double p95Millis, long maxMillis) {
-    }
-
-    private static final class Aggregate {
-        private final LongAdder count = new LongAdder();
-        private final LongAdder success = new LongAdder();
-        private final LongAdder errors = new LongAdder();
-        private final LongAdder totalMillis = new LongAdder();
-        private final ConcurrentLinkedQueue<Long> samples = new ConcurrentLinkedQueue<>();
-        private final LongAccumulator maxMillis = new LongAccumulator(Long::max, 0L);
-    }
-
-    private static double percentile(ConcurrentLinkedQueue<Long> samples, double percentile) {
-        List<Long> values = new ArrayList<>(samples);
-        if (values.isEmpty()) {
-            return 0d;
+        private static Snapshot from(
+                com.footballmanager.application.observability.RuntimeOperationMetrics.Snapshot source) {
+            return new Snapshot(source.count(), source.success(), source.errors(), source.averageMillis(),
+                source.p50Millis(), source.p95Millis(), source.maxMillis());
         }
-        Collections.sort(values);
-        int index = (int) Math.ceil(percentile * values.size()) - 1;
-        return values.get(Math.max(0, Math.min(index, values.size() - 1)));
     }
 }

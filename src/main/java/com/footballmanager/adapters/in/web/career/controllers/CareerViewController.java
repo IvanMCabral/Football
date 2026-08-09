@@ -5,7 +5,7 @@ import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.query.*;
 import com.footballmanager.domain.model.entity.Division;
 import com.footballmanager.domain.port.in.career.GetCareerStatusUseCase;
-import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;

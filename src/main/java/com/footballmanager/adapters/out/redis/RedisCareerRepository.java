@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
-import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -111,14 +111,18 @@ public class RedisCareerRepository implements CareerRepository {
                             .flatMap(generation -> requireOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
                                     .map(mapping -> new GenerationMapping(generation, mapping))))
                     .doOnNext(generationMapping -> careerSave.setLifecycleGeneration(generationMapping.generation()))
-                    .flatMap(generationMapping -> redisTemplate.hasKey(key)
-                            .flatMap(rootExisted -> {
-                                MappingState mapping = generationMapping.mapping();
-                                return redisTemplate.opsForValue().set(key, json, CACHE_TTL)
-                                            .then(indexCareer(careerSave))
-                                            .onErrorResume(error -> compensateFailedSave(
-                                                    mapping, generationMapping.generation(), key, rootExisted, error));
-                            }));
+                    .flatMap(generationMapping -> {
+                        // createGenerationAndMapping already rejects an
+                        // existing root. For an existing career, generation +
+                        // owner mapping validation proves the root is present;
+                        // the extra hasKey round trip only fed compensation.
+                        boolean rootExisted = !initial;
+                        MappingState mapping = generationMapping.mapping();
+                        return redisTemplate.opsForValue().set(key, json, CACHE_TTL)
+                                    .then(indexCareer(careerSave))
+                                    .onErrorResume(error -> compensateFailedSave(
+                                            mapping, generationMapping.generation(), key, rootExisted, error));
+                    });
             Mono<Void> coordinated = lifecycleCoordinator == null ? operation
                     : lifecycleCoordinator.serializeCareer(careerSave.getCareerId(), operation);
             return RuntimeOperationMetrics.measure("redis.career.save",

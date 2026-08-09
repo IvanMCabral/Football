@@ -8,7 +8,7 @@ import com.footballmanager.application.service.domain.UserStatsService;
 import com.footballmanager.application.service.world.WorldSnapshotService;
 import com.footballmanager.application.service.world.WorldStatusQueryService;
 import com.footballmanager.application.service.world.WorldStatusSummary;
-import com.footballmanager.infrastructure.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
