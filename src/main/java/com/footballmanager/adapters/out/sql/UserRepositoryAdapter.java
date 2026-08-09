@@ -8,6 +8,7 @@ import com.footballmanager.domain.ports.out.user.UserRepository;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import com.footballmanager.application.observability.RuntimeOperationMetrics;
+import java.util.UUID;
 
 @Component
 public class UserRepositoryAdapter implements UserRepository {
@@ -47,7 +48,10 @@ public class UserRepositoryAdapter implements UserRepository {
             null
         );
         return RuntimeOperationMetrics.measure("postgres.user.create",
-            r2dbcRepository.save(entity).map(UserEntity::toDomain));
+            r2dbcRepository.insertNew(
+                UUID.randomUUID(), email, username, passwordHash, "USER",
+                entity.getCreatedAt(), entity.getUpdatedAt())
+                .map(UserEntity::toDomain));
     }
 
     @Override
