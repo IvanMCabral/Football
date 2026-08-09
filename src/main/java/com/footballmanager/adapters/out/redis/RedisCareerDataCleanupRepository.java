@@ -117,8 +117,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                             .collectList()
                             .flatMapMany(discoveries -> {
                                 discoveries.sort(java.util.Comparator.comparingInt(Discovery::order));
-                                return updateTombstone(userId, "DELETE")
-                                        .thenMany(deleteDiscoveries(discoveries, accumulator));
+                                return deleteDiscoveries(discoveries, accumulator);
                             });
                 })
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
@@ -291,7 +290,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private Mono<Void> writeTombstone(UUID userId, String careerId) {
         String payload = "ownerHash=" + shortHash(userId.toString())
                 + ";career=" + (careerId == null ? "" : careerId)
-                + ";state=RESETTING;phase=DISCOVERY";
+                + ";state=RESETTING;phase=DELETE";
         Mono<Boolean> write = redisTemplate.opsForValue().set(
                 "career-cleanup:" + userId, payload, TOMBSTONE_TTL);
         return write == null ? Mono.empty() : write.then();
@@ -300,14 +299,6 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private Mono<Void> clearTombstone(UUID userId) {
         Mono<Long> delete = redisTemplate.delete("career-cleanup:" + userId);
         return delete == null ? Mono.empty() : delete.then();
-    }
-
-    private Mono<Void> updateTombstone(UUID userId, String phase) {
-        String payload = "ownerHash=" + shortHash(userId.toString())
-                + ";state=RESETTING;phase=" + phase;
-        Mono<Boolean> update = redisTemplate.opsForValue().set(
-                "career-cleanup:" + userId, payload, TOMBSTONE_TTL);
-        return update == null ? Mono.empty() : update.timeout(existsTimeout).then();
     }
 
     private static final class OwnershipRejectedException extends RuntimeException {
