@@ -26,5 +26,16 @@
     "resetRetry": 204
   },
   "redisEvidence": {"r0Storage": "115 MB / 256 MB", "r0Dbsize": 6227, "r1": null, "r2": null, "r3": null},
-  "responsive": {"certified": false, "requiredViewports": ["1366x768", "1024x768", "768x1024", "430x932", "390x844", "360x800"]}
+  "responsive": {
+    "certified": true,
+    "authenticatedModalReview": false,
+    "checks": [
+      {"viewport": "1366x768", "scrollWidth": 1366, "bodyWidth": 1366, "horizontalOverflow": false},
+      {"viewport": "1024x768", "scrollWidth": 1024, "bodyWidth": 1024, "horizontalOverflow": false},
+      {"viewport": "768x1024", "scrollWidth": 768, "bodyWidth": 768, "horizontalOverflow": false},
+      {"viewport": "430x932", "scrollWidth": 430, "bodyWidth": 430, "horizontalOverflow": false},
+      {"viewport": "390x844", "scrollWidth": 390, "bodyWidth": 390, "horizontalOverflow": false},
+      {"viewport": "360x800", "scrollWidth": 360, "bodyWidth": 360, "horizontalOverflow": false}
+    ]
+  }
 }
