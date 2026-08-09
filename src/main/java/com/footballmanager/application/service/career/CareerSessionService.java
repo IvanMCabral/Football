@@ -161,11 +161,20 @@ public class CareerSessionService {
 
     public Mono<Void> deleteCareer(UUID userId, ResetTiming timing) {
         return lifecycleCoordinator.serializeReset(userId, Mono.defer(() -> {
+            String ownerKey = userId.toString();
+            CareerSave cachedCareer = careerCache.get(ownerKey);
             invalidateCache(userId);
-            long lookupStarted = System.nanoTime();
-            return careerRepository.findById(userId.toString())
-                    .doFinally(signal -> { if (timing != null) timing.careerLookup(System.nanoTime() - lookupStarted); })
-                    .defaultIfEmpty(java.util.Optional.empty())
+            Mono<java.util.Optional<CareerSave>> existingCareer;
+            if (cachedCareer != null) {
+                existingCareer = Mono.just(java.util.Optional.of(cachedCareer));
+                if (timing != null) timing.careerLookup(0);
+            } else {
+                long lookupStarted = System.nanoTime();
+                existingCareer = careerRepository.findById(userId.toString())
+                        .doFinally(signal -> { if (timing != null) timing.careerLookup(System.nanoTime() - lookupStarted); })
+                        .defaultIfEmpty(java.util.Optional.empty());
+            }
+            return existingCareer
                     .flatMap(existing -> {
                         String careerId = existing.map(CareerSave::getCareerId).orElse(null);
                         long registryStarted = System.nanoTime();
