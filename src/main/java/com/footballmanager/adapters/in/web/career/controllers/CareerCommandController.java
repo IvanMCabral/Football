@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * CareerCommandController - Command endpoints para Career (escritura).
@@ -113,12 +114,20 @@ public class CareerCommandController {
     public Mono<Void> resetCareer(Authentication authentication, ServerHttpResponse response) {
         UUID userId = controllerHelper.getUserId(authentication);
         long startedNanos = System.nanoTime();
+        AtomicLong careerNanos = new AtomicLong();
+        AtomicLong gameNanos = new AtomicLong();
         response.beforeCommit(() -> {
             response.getHeaders().set("X-Reset-Server-Ms",
                     Long.toString((System.nanoTime() - startedNanos) / 1_000_000L));
+            response.getHeaders().set("X-Reset-Career-Ms",
+                    Long.toString(careerNanos.get() / 1_000_000L));
+            response.getHeaders().set("X-Reset-Game-Ms",
+                    Long.toString(gameNanos.get() / 1_000_000L));
             return Mono.empty();
         });
+        long careerStarted = System.nanoTime();
         return sessionService.deleteCareer(userId)
+                .doFinally(signal -> careerNanos.set(System.nanoTime() - careerStarted))
                 // Game entity that mirrors the career. Best-effort â€” we
                 // already cleared the CareerSave; deleting the Game is
                 // housekeeping so the dashboard does not show a phantom
@@ -129,7 +138,9 @@ public class CareerCommandController {
                     // the Game entity by userId only (the Game has the
                     // same UUID as the career that was just deleted â€” so
                     // findByUserId should return at most one entry).
+                    long gameStarted = System.nanoTime();
                     return gameService.deleteAllGames(userId)
+                            .doFinally(signal -> gameNanos.set(System.nanoTime() - gameStarted))
                             .then()
                             .doOnError(err -> log.warn(
                                     "Failed to delete Game entity "
