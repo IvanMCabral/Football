@@ -4,6 +4,7 @@ import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.application.observability.ResetTiming;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
 import com.footballmanager.domain.port.in.career.ContinueCareerUseCase;
@@ -155,20 +156,30 @@ public class CareerSessionService {
     }
 
     public Mono<Void> deleteCareer(UUID userId) {
+        return deleteCareer(userId, null);
+    }
+
+    public Mono<Void> deleteCareer(UUID userId, ResetTiming timing) {
         return lifecycleCoordinator.serializeReset(userId, Mono.defer(() -> {
             invalidateCache(userId);
+            long lookupStarted = System.nanoTime();
             return careerRepository.findById(userId.toString())
+                    .doFinally(signal -> { if (timing != null) timing.careerLookup(System.nanoTime() - lookupStarted); })
                     .defaultIfEmpty(java.util.Optional.empty())
                     .flatMap(existing -> {
                         String careerId = existing.map(CareerSave::getCareerId).orElse(null);
+                        long registryStarted = System.nanoTime();
                         roundEngineRegistry.stopEnginesForOwner(userId, careerId);
                         matchSessionRegistry.clearSessionsForOwner(userId, careerId);
+                        if (timing != null) timing.registry(System.nanoTime() - registryStarted);
+                        long cleanupStarted = System.nanoTime();
                         Mono<com.footballmanager.domain.ports.out.career.CareerDataCleanupResult> cleanup =
                                 careerDataCleanupRepository.deleteOwnedData(userId, careerId);
                         if (careerId != null) {
                             cleanup = lifecycleCoordinator.serializeCareer(careerId, cleanup);
                         }
                         return cleanup
+                                .doFinally(signal -> { if (timing != null) timing.cleanup(System.nanoTime() - cleanupStarted); })
                                 .doOnNext(result -> log.info(
                                         "[CAREER-CLEANUP] ownerHash={} careers={} discovered={} unique={} requested={} deleted={} batches={} maxBatch={} partialFailure={}",
                                         result.ownerHash(), result.careerCount(), result.keysDiscovered(),

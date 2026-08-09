@@ -7,6 +7,7 @@ import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.career.SeasonAdvancementService;
 import com.footballmanager.application.service.domain.GameService;
+import com.footballmanager.application.observability.ResetTiming;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.port.in.career.AdvanceRoundUseCase;
 import com.footballmanager.domain.port.in.career.ContinueSeasonUseCase;
@@ -114,6 +115,7 @@ public class CareerCommandController {
     public Mono<Void> resetCareer(Authentication authentication, ServerHttpResponse response) {
         UUID userId = controllerHelper.getUserId(authentication);
         long startedNanos = System.nanoTime();
+        ResetTiming timing = new ResetTiming();
         AtomicLong careerNanos = new AtomicLong();
         AtomicLong gameNanos = new AtomicLong();
         response.beforeCommit(() -> {
@@ -123,10 +125,13 @@ public class CareerCommandController {
                     Long.toString(careerNanos.get() / 1_000_000L));
             response.getHeaders().set("X-Reset-Game-Ms",
                     Long.toString(gameNanos.get() / 1_000_000L));
+            response.getHeaders().set("X-Reset-Lookup-Ms", Long.toString(timing.careerLookupMs()));
+            response.getHeaders().set("X-Reset-Registry-Ms", Long.toString(timing.registryMs()));
+            response.getHeaders().set("X-Reset-Cleanup-Ms", Long.toString(timing.cleanupMs()));
             return Mono.empty();
         });
         long careerStarted = System.nanoTime();
-        return sessionService.deleteCareer(userId)
+        return sessionService.deleteCareer(userId, timing)
                 .doFinally(signal -> careerNanos.set(System.nanoTime() - careerStarted))
                 // Game entity that mirrors the career. Best-effort â€” we
                 // already cleared the CareerSave; deleting the Game is
@@ -154,6 +159,9 @@ public class CareerCommandController {
                             Long.toString(careerNanos.get() / 1_000_000L));
                     response.getHeaders().set("X-Reset-Game-Ms",
                             Long.toString(gameNanos.get() / 1_000_000L));
+                    response.getHeaders().set("X-Reset-Lookup-Ms", Long.toString(timing.careerLookupMs()));
+                    response.getHeaders().set("X-Reset-Registry-Ms", Long.toString(timing.registryMs()));
+                    response.getHeaders().set("X-Reset-Cleanup-Ms", Long.toString(timing.cleanupMs()));
                 });
     }
 
