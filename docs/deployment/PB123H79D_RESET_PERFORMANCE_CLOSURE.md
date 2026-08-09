@@ -96,8 +96,9 @@ account flow and reset still completed with 204 and no reset 5xx response.
 - `mvn -q -DskipTests test-compile`: PASS.
 - Focused cleanup unit and real-Redis tests: PASS.
 - Full backend suite: **2,633 tests, 0 failures, 0 errors, 4 skipped**.
-- Public health after each deploy: liveness 200 and readiness 200 with
-  database/Redis UP in the observed samples.
+- Public health: the first post-restart readiness probe briefly returned 503
+  while the database dependency warmed; the retry gate then returned 5/5
+  liveness 200 and readiness 200 with database/Redis UP.
 - Render deployment commits: `077e7cb0`, `deaf8713`, `40fa1295`, `fb99976f`,
   `a59ecc11`, `3eba339e` (latest pushed head `3eba339e`).
 - Public Redis provider storage/DBSIZE before and after N=10: not observable
