@@ -1,0 +1,30 @@
+{
+  "runtimeBranch": "feat/v25d99.20.3.1-runtime-fixes",
+  "codeCommits": ["7010074f", "8d9e91ed"],
+  "frontendCommit": "8f36ca7b66ff5519722cbd1e7a7675d430eb6f18",
+  "warmN": 20,
+  "dashboard": {"p50Ms": 209, "p95Ms": 261, "minMs": 205, "maxMs": 724, "status": 200},
+  "autoSelectIsolated": {"p50Ms": 790, "p95Ms": 1230, "minMs": 401, "maxMs": 1550, "status": 200},
+  "confirmNoOp": {"p50Ms": 388, "p95Ms": 495, "minMs": 212, "maxMs": 495, "status": 200},
+  "readiness": [
+    {"status": 200, "database": "UP", "redis": "UP"},
+    {"status": 200, "database": "UP", "redis": "UP"},
+    {"status": 200, "database": "UP", "redis": "UP"}
+  ],
+  "publicSmoke": {
+    "register": 200,
+    "reloadWorld": 200,
+    "careerStart": 201,
+    "lineupAutoSelect": 200,
+    "lineupConfirm": 200,
+    "roundStart": 200,
+    "sseHttp": 200,
+    "sseDataObserved": true,
+    "minuteAdvanced": true,
+    "matchFinished": true,
+    "resetFirstAttempt": 503,
+    "resetRetry": 204
+  },
+  "redisEvidence": {"r0Storage": "115 MB / 256 MB", "r0Dbsize": 6227, "r1": null, "r2": null, "r3": null},
+  "responsive": {"certified": false, "requiredViewports": ["1366x768", "1024x768", "768x1024", "430x932", "390x844", "360x800"]}
+}
