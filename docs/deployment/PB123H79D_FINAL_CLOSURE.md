@@ -22,3 +22,14 @@ The approval is qualified by two P1 issues:
 No gameplay, simulation, probabilities, fixtures, datasets, frontend code,
 database rows, Redis data, provider plans, infrastructure or billing changed.
 No new H7.9E gate is introduced.
+
+## Validation references
+
+- Backend: previous certified suite `2632 tests, 0 failures, 0 errors, 4 skipped`;
+  not rerun because this H7.9D change set is documentation/evidence only.
+- Frontend: previous certified suite `1022 SUCCESS, 0 failures, 2 skipped`;
+  not rerun because no frontend files changed.
+- Production npm audit: previous certified production graph had zero
+  vulnerabilities; no dependency operation was executed in this evidence gate.
+- `git diff --check`: clean for the committed H7.9D change set.
+- Commit: `f21db9a5` pushed to `origin/feat/v25d99.20.3.1-runtime-fixes`.
