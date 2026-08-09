@@ -80,18 +80,23 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         }
 
         CleanupAccumulator accumulator = new CleanupAccumulator(userId, careerId);
-        return writeTombstone(userId, careerId)
-                .thenMany(redisTemplate.opsForSet()
-                .members(indexKey(userId)))
+        Mono<List<String>> indexedCareerIds = redisTemplate.opsForSet()
+                .members(indexKey(userId))
                 .timeout(indexTimeout)
                 .take(MAX_INDEX_CARDINALITY + 1L)
                 .collectList()
-                .flatMap(indexedCareerIds -> {
-                    if (indexedCareerIds.size() > MAX_INDEX_CARDINALITY) {
+                .cache();
+        // The tombstone must be durable before any destructive operation, but
+        // it does not depend on the read-only owner index. Start both in the
+        // same subscription to remove one provider round-trip from reset.
+        return Mono.when(writeTombstone(userId, careerId), indexedCareerIds)
+                .then(indexedCareerIds)
+                .flatMap(indexedIds -> {
+                    if (indexedIds.size() > MAX_INDEX_CARDINALITY) {
                         accumulator.fail("CAREER_INDEX_CARDINALITY_EXCEEDED");
                         return Mono.error(new IllegalStateException("career index cardinality exceeded"));
                     }
-                    return validateOwnership(userId, careerId, indexedCareerIds, accumulator);
+                    return validateOwnership(userId, careerId, indexedIds, accumulator);
                 })
                 .flatMapMany(ownedCareerIds -> {
                     accumulator.setCareerCount(ownedCareerIds, careerId);
