@@ -132,6 +132,20 @@ public final class CareerOwnershipTouchService implements CareerOwnershipPort {
                                 .then(Mono.error(error))));
     }
 
+    /**
+     * Fenced deletion for a lifecycle-owned key.  Deletions must not add a
+     * non-existent child to the cleanup manifest; remove the exact member only
+     * after the delete operation has completed successfully.
+     */
+    public Mono<Void> touchBeforeDelete(CareerWriteContext context, String ownedKey,
+                                        Supplier<Mono<Void>> delete) {
+        if (ownedKey == null || ownedKey.isBlank()) {
+            return Mono.error(new IllegalArgumentException("owned Redis key is required"));
+        }
+        return touchBeforeWrite(context,
+                () -> Mono.defer(delete).then(unregisterManifestKey(context, ownedKey)));
+    }
+
     private Mono<Void> registerManifestKey(CareerWriteContext context, String ownedKey) {
         List<String> keys = java.util.List.of(
                 manifestKey(context.careerId()),

@@ -137,7 +137,8 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
         }
         return ownershipTouchService == null
                 ? Mono.error(new IllegalStateException("career ownership service is required"))
-                : ownershipTouchService.touchBeforeWrite(context,
+                : ownershipTouchService.touchBeforeDelete(context,
+                        buildKey(careerId, matchId),
                         () -> deleteByMatchIdInternal(careerId, matchId));
     }
 

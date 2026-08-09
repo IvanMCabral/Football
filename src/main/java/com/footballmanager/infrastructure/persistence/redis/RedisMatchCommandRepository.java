@@ -140,7 +140,7 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                         "Failed to delete pending match commands for matchId=" + matchId, e));
         return ownershipTouchService == null || context == null
                 ? operation
-                : ownershipTouchService.touchBeforeWrite(context, key, () -> operation);
+                : ownershipTouchService.touchBeforeDelete(context, key, () -> operation);
     }
 
     private String buildKey(UUID userId, UUID matchId) {
