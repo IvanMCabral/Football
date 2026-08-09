@@ -106,8 +106,10 @@ public class GameRedisRepository {
                     String[] keys = gameIds.stream()
                             .map(gameId -> getKey(userId, UUID.fromString(gameId)))
                             .toArray(String[]::new);
-                    return redisTemplate.delete(keys)
-                            .flatMap(deleted -> indexTemplate.delete(getIndexKey(userId)).thenReturn(deleted));
+                    Mono<Long> deleteGames = redisTemplate.unlink(keys);
+                    Mono<Long> deleteIndex = indexTemplate.unlink(getIndexKey(userId));
+                    return Mono.zip(deleteGames, deleteIndex)
+                            .map(results -> results.getT1());
                 });
     }
 }
