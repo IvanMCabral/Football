@@ -181,7 +181,7 @@ public class GlobalExceptionHandler {
         log.warn("Public request decoding failure: path={}, exception={}, cause={}",
                 exchange.getRequest().getPath().pathWithinApplication().value(),
                 ex.getClass().getName(),
-                cause == null ? "none" : cause.getClass().getName());
+                causeChain(cause));
         return validationError(ex, exchange);
     }
 
@@ -300,6 +300,23 @@ public class GlobalExceptionHandler {
             current = current.getCause();
         }
         return null;
+    }
+
+    private static String causeChain(Throwable cause) {
+        if (cause == null) {
+            return "none";
+        }
+        StringBuilder chain = new StringBuilder();
+        Throwable current = cause;
+        int depth = 0;
+        while (current != null && depth++ < 4) {
+            if (chain.length() > 0) {
+                chain.append(" -> ");
+            }
+            chain.append(current.getClass().getName());
+            current = current.getCause();
+        }
+        return chain.toString();
     }
 
     private Mono<ResponseEntity<Map<String, Object>>> validationError(
