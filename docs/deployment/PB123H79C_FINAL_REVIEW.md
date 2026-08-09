@@ -15,6 +15,7 @@
   and `FINISHED` with a non-zero final score.
 - Reset returned `204` on the retry after one transient cleanup timeout.
 - Readiness 3/3: `200`, database UP, Redis UP.
+- Liveness 3/3: `200`, status UP.
 - Backend suite: 2632 tests, 0 failures, 0 errors, 4 skipped.
 - No gameplay, simulation, probability, fixture, dataset, frontend or remote
   infrastructure changes.

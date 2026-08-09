@@ -11,6 +11,11 @@
     {"status": 200, "database": "UP", "redis": "UP"},
     {"status": 200, "database": "UP", "redis": "UP"}
   ],
+  "liveness": [
+    {"status": 200, "value": "UP"},
+    {"status": 200, "value": "UP"},
+    {"status": 200, "value": "UP"}
+  ],
   "publicSmoke": {
     "register": 200,
     "reloadWorld": 200,
