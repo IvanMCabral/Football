@@ -2,10 +2,11 @@
 
 ## Current status
 
-`RESET PERFORMANCE P1 NOT CLOSED` until a fresh public N=10 proves the
-latency gate. The local fast path is implemented and validated; public
-deployment evidence is intentionally recorded separately after the runtime
-has been rebuilt.
+`RESET PERFORMANCE P1 NOT CLOSED`. The local fast path is implemented and
+validated, and Render is now running the final commit. A fresh public N=10
+could not be started because public registration still returns a controlled
+422 `LINEUP_VALIDATION_ERROR`; no public career was created and no latency
+gate is claimed.
 
 ## Design
 
@@ -42,6 +43,18 @@ marker.
 - latency model at 25/50/75 ms command delay: PASS;
 - bounded storage budget test: PASS;
 - local real Redis cleanup profile remains within the existing gate.
+
+## Public rollout evidence
+
+- Render service: `manager-staging-api`;
+- live commit: `5ff5870d9d25ecb65b51121f2ce06ebec5ab7a9d`;
+- Render deployment: live after the manual rollout;
+- liveness: 3/3 HTTP 200;
+- readiness: 3/3 HTTP 200 (`database=UP`, `redis=UP`);
+- registration probe: 422 `LINEUP_VALIDATION_ERROR` for a fresh disposable
+  payload; this pre-existing public authentication blocker prevents the
+  required fresh modern-career N=10 measurement.
+- public remote services were not otherwise modified.
 
 The previous public baseline was client p50 1764.5 ms / p95 2028 ms and
 server p50 1535 ms / p95 1706 ms. That baseline remains open until a fresh

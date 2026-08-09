@@ -1,0 +1,21 @@
+{
+  "service": "manager-staging-api",
+  "liveCommit": "5ff5870d9d25ecb65b51121f2ce06ebec5ab7a9d",
+  "deployment": "live",
+  "health": {
+    "liveness": [200, 200, 200],
+    "readiness": [200, 200, 200],
+    "database": "UP",
+    "redis": "UP"
+  },
+  "registrationProbe": {
+    "status": 422,
+    "code": "LINEUP_VALIDATION_ERROR",
+    "careerCreated": false
+  },
+  "publicN10": {
+    "status": "not executed",
+    "reason": "registration probe failed before authentication"
+  },
+  "secretsPrinted": false
+}
