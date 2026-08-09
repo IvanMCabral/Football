@@ -3,6 +3,7 @@ package com.footballmanager.adapters.out.redis;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
@@ -26,6 +27,7 @@ import java.util.UUID;
 public class RedisCareerDataCleanupRepository implements CareerDataCleanupRepository {
 
     private static final int MAX_BATCH_SIZE = 100;
+    private static final int DISCOVERY_CONCURRENCY = 8;
     private static final int MAX_INDEX_CARDINALITY = 256;
     private static final String CAREER_OWNER_PREFIX = "career-owner:";
     private static final Duration INDEX_TIMEOUT = Duration.ofSeconds(5);
@@ -93,26 +95,26 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 })
                 .flatMapMany(ownedCareerIds -> {
                     accumulator.setCareerCount(ownedCareerIds, careerId);
-                    return Flux.fromIterable(patterns(userId, careerId, ownedCareerIds, preserveWorld));
+                    List<PatternSpec> specs = patterns(userId, careerId, ownedCareerIds, preserveWorld);
+                    specs.forEach(accumulator::patternEvaluated);
+
+                    // Discovery is read-only. Running independent SCANs in a
+                    // bounded merge removes the deterministic provider RTT
+                    // multiplied by every empty family while leaving all
+                    // destructive operations ordered below.
+                    return updateTombstone(userId, "DISCOVERY")
+                            .thenMany(Flux.range(0, specs.size())
+                                    .flatMap(index -> discoverKeys(specs.get(index))
+                                            .map(keys -> new Discovery(index, specs.get(index), keys)),
+                                            DISCOVERY_CONCURRENCY)
+                                    .collectList()
+                                    .flatMapMany(discoveries -> {
+                                        discoveries.sort(java.util.Comparator.comparingInt(Discovery::order));
+                                        return updateTombstone(userId, "DELETE")
+                                                .thenMany(Flux.fromIterable(discoveries)
+                                                        .concatMap(discovery -> deleteDiscoveredKeys(discovery, accumulator)));
+                                    }));
                 })
-                .doOnNext(accumulator::patternEvaluated)
-                .concatMap(spec -> scanKeys(spec)
-                        .transformDeferredContextual((scan, context) ->
-                                updateTombstone(userId, spec.family()).thenMany(scan))
-                        .doOnSubscribe(subscription -> accumulator.activeFamily(spec.family()))
-                        .map(key -> new KeyHit(spec.family(), key))
-                        .doOnNext(accumulator::discovered)
-                        .filter(hit -> accumulator.markUnique(hit.key(), hit.family()))
-                        .map(KeyHit::key)
-                        .buffer(MAX_BATCH_SIZE)
-                        .concatMap(batch -> batch.isEmpty()
-                                ? Mono.empty()
-                                : Mono.defer(() -> {
-                                    accumulator.batchRequested(spec.family(), batch);
-                                    return redisTemplate.unlink(Flux.fromIterable(batch))
-                                            .timeout(unlinkTimeout);
-                                })
-                                        .flatMap(deleted -> accumulator.batchDeleted(redisTemplate, spec.family(), batch, deleted))))
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
                 .flatMap(result -> clearTombstone(userId).thenReturn(result))
                 .timeout(totalTimeout)
@@ -207,6 +209,33 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 : scanned;
     }
 
+    private Mono<List<String>> discoverKeys(PatternSpec spec) {
+        return RuntimeOperationMetrics.measure(
+                "career.cleanup.discovery." + spec.family(),
+                scanKeys(spec).collectList());
+    }
+
+    private Flux<Long> deleteDiscoveredKeys(Discovery discovery, CleanupAccumulator accumulator) {
+        PatternSpec spec = discovery.spec();
+        accumulator.activeFamily(spec.family());
+        discovery.keys().forEach(key -> accumulator.discovered(new KeyHit(spec.family(), key)));
+        return Flux.fromIterable(discovery.keys())
+                .map(key -> new KeyHit(spec.family(), key))
+                .filter(hit -> accumulator.markUnique(hit.key(), hit.family()))
+                .map(KeyHit::key)
+                .buffer(MAX_BATCH_SIZE)
+                .concatMap(batch -> batch.isEmpty()
+                        ? Mono.empty()
+                        : Mono.defer(() -> {
+                            accumulator.batchRequested(spec.family(), batch);
+                            return RuntimeOperationMetrics.measure(
+                                    "career.cleanup.unlink." + spec.family(),
+                                    redisTemplate.unlink(Flux.fromIterable(batch))
+                                            .timeout(unlinkTimeout));
+                        }).flatMap(deleted -> accumulator.batchDeleted(
+                                redisTemplate, spec.family(), batch, deleted)));
+    }
+
     private String indexKey(UUID userId) {
         return "user:" + userId + ":career-ids";
     }
@@ -249,6 +278,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     }
 
     private record PatternSpec(String family, String pattern) { }
+    private record Discovery(int order, PatternSpec spec, List<String> keys) { }
     private record KeyHit(String family, String key) { }
 
     private static final class CleanupAccumulator {

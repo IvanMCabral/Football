@@ -20,6 +20,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,6 +59,31 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
 
     @Autowired
     private MatchSimulationUseCase matchSimulationUseCase;
+
+    @Test
+    void cleanupPerformanceProfileTwentyRealRedisSamples() {
+        List<Long> durations = new ArrayList<>();
+        for (int sample = 0; sample < 20; sample++) {
+            UUID owner = UUID.randomUUID();
+            seedOwner(owner, "career-perf-" + sample, "detail-" + sample, 2);
+            long started = System.nanoTime();
+            CareerDataCleanupResult result = cleanupRepository
+                    .deleteOwnedData(owner, null)
+                    .block(Duration.ofSeconds(15));
+            long elapsed = (System.nanoTime() - started) / 1_000_000L;
+            assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+            durations.add(elapsed);
+        }
+        List<Long> sorted = new ArrayList<>(durations);
+        Collections.sort(sorted);
+        long p50 = sorted.get(sorted.size() / 2);
+        long p95 = sorted.get((int) Math.ceil(sorted.size() * .95) - 1);
+        long max = sorted.get(sorted.size() - 1);
+        System.out.printf("[CLEANUP-PERF] n=20 p50Ms=%d p95Ms=%d maxMs=%d samples=%s%n",
+                p50, p95, max, sorted);
+        assertTrue(p50 <= 1500, "local cleanup p50 exceeded target: " + p50);
+        assertTrue(p95 <= 3000, "local cleanup p95 exceeded target: " + p95);
+    }
 
     @Test
     void tokenlessCareerStateAndRuntimeWritersFailClosedAgainstRealRedis() {
