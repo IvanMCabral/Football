@@ -13,6 +13,7 @@ import com.footballmanager.domain.port.in.career.ContinueSeasonUseCase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -109,8 +110,9 @@ public class CareerCommandController {
      */
     @DeleteMapping("/reset")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> resetCareer(Authentication authentication) {
+    public Mono<Void> resetCareer(Authentication authentication, ServerHttpResponse response) {
         UUID userId = controllerHelper.getUserId(authentication);
+        long startedNanos = System.nanoTime();
         return sessionService.deleteCareer(userId)
                 // Game entity that mirrors the career. Best-effort â€” we
                 // already cleared the CareerSave; deleting the Game is
@@ -122,27 +124,17 @@ public class CareerCommandController {
                     // the Game entity by userId only (the Game has the
                     // same UUID as the career that was just deleted â€” so
                     // findByUserId should return at most one entry).
-                    return gameService.getAllGames(userId)
-                            .collectList()
-                            .flatMap(games -> {
-                                if (games.isEmpty()) {
-                                    return Mono.empty();
-                                }
-                                // Delete each Game entity (typically one).
-                                return reactor.core.publisher.Flux.fromIterable(games)
-                                        .flatMap(game -> gameService.deleteGame(
-                                                userId,
-                                                com.footballmanager.domain.model.valueobject.GameId.of(
-                                                        game.getId().getValue())))
-                                        .then();
-                            })
+                    return gameService.deleteAllGames(userId)
+                            .then()
                             .doOnError(err -> log.warn(
                                     "Failed to delete Game entity "
-                                            + "after career reset for userId={}: {}",
-                                    userId, err.getMessage()))
+                                            + "after career reset: type={}",
+                                    err.getClass().getSimpleName()))
                             .onErrorResume(err -> Mono.empty());
                 }))
-                .then();
+                .then()
+                .doOnSuccess(ignored -> response.getHeaders().add("X-Reset-Server-Ms",
+                        Long.toString((System.nanoTime() - startedNanos) / 1_000_000L)));
     }
 
     /**

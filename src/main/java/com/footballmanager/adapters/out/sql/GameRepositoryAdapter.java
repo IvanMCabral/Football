@@ -56,4 +56,9 @@ public class GameRepositoryAdapter implements GameRepository {
     public Mono<Void> deleteById(UUID userId, GameId id) {
         return redisRepository.deleteById(userId, id.getValue()).then();
     }
+
+    @Override
+    public Mono<Long> deleteAllByUserId(UUID userId) {
+        return redisRepository.deleteAllByUserId(userId);
+    }
 }

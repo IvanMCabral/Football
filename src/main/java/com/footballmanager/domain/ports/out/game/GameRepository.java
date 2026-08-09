@@ -14,4 +14,5 @@ public interface GameRepository {
     Flux<Game> findByUserId(UUID userId, UserId userIdParam);
     Flux<Game> findAll(UUID userId);
     Mono<Void> deleteById(UUID userId, GameId id);
+    Mono<Long> deleteAllByUserId(UUID userId);
 }

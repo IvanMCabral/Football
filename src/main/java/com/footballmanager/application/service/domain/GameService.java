@@ -150,4 +150,8 @@ public class GameService {
     public Mono<Void> deleteGame(UUID userId, GameId id) {
         return gameRepository.deleteById(userId, id);
     }
+
+    public Mono<Long> deleteAllGames(UUID userId) {
+        return gameRepository.deleteAllByUserId(userId);
+    }
 }
