@@ -27,6 +27,7 @@ import java.util.UUID;
 public class RedisCareerDataCleanupRepository implements CareerDataCleanupRepository {
 
     private static final int MAX_BATCH_SIZE = 100;
+    private static final int SCAN_COUNT_HINT = 1_000;
     private static final int DISCOVERY_CONCURRENCY = 8;
     private static final int MAX_INDEX_CARDINALITY = 256;
     private static final String CAREER_OWNER_PREFIX = "career-owner:";
@@ -200,7 +201,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private Flux<String> scanKeys(PatternSpec spec) {
         Flux<String> scanned = redisTemplate.scan(ScanOptions.scanOptions()
                 .match(spec.pattern())
-                .count(MAX_BATCH_SIZE)
+                .count(SCAN_COUNT_HINT)
                 .build())
                 .timeout(scanTimeout);
         // Game entities and their index are independent user-owned resources;
