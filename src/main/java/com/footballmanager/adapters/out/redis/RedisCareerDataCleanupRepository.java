@@ -111,8 +111,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                                     .flatMapMany(discoveries -> {
                                         discoveries.sort(java.util.Comparator.comparingInt(Discovery::order));
                                         return updateTombstone(userId, "DELETE")
-                                                .thenMany(Flux.fromIterable(discoveries)
-                                                        .concatMap(discovery -> deleteDiscoveredKeys(discovery, accumulator)));
+                                                .thenMany(deleteDiscoveries(discoveries, accumulator));
                                     }));
                 })
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
@@ -215,25 +214,55 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 scanKeys(spec).collectList());
     }
 
-    private Flux<Long> deleteDiscoveredKeys(Discovery discovery, CleanupAccumulator accumulator) {
-        PatternSpec spec = discovery.spec();
-        accumulator.activeFamily(spec.family());
-        discovery.keys().forEach(key -> accumulator.discovered(new KeyHit(spec.family(), key)));
-        return Flux.fromIterable(discovery.keys())
-                .map(key -> new KeyHit(spec.family(), key))
-                .filter(hit -> accumulator.markUnique(hit.key(), hit.family()))
-                .map(KeyHit::key)
-                .buffer(MAX_BATCH_SIZE)
-                .concatMap(batch -> batch.isEmpty()
-                        ? Mono.empty()
-                        : Mono.defer(() -> {
-                            accumulator.batchRequested(spec.family(), batch);
-                            return RuntimeOperationMetrics.measure(
-                                    "career.cleanup.unlink." + spec.family(),
-                                    redisTemplate.unlink(Flux.fromIterable(batch))
-                                            .timeout(unlinkTimeout));
-                        }).flatMap(deleted -> accumulator.batchDeleted(
-                                redisTemplate, spec.family(), batch, deleted)));
+    private Flux<Long> deleteDiscoveries(List<Discovery> discoveries, CleanupAccumulator accumulator) {
+        List<KeyHit> children = new ArrayList<>();
+        List<KeyHit> roots = new ArrayList<>();
+        for (Discovery discovery : discoveries) {
+            String family = discovery.spec().family();
+            accumulator.activeFamily(family);
+            for (String key : discovery.keys()) {
+                KeyHit hit = new KeyHit(family, key);
+                accumulator.discovered(hit);
+                if ("career-root".equals(family)) {
+                    roots.add(hit);
+                } else {
+                    children.add(hit);
+                }
+            }
+        }
+        // Child deletion is safe to coalesce because ownership and generation
+        // were validated before discovery. The root remains a separate final
+        // batch so root-last and retry-anchor semantics are unchanged.
+        return deleteBatches(children, accumulator)
+                .concatWith(deleteBatches(roots, accumulator));
+    }
+
+    private Flux<Long> deleteBatches(List<KeyHit> hits, CleanupAccumulator accumulator) {
+        List<List<KeyHit>> batches = new ArrayList<>();
+        List<KeyHit> current = new ArrayList<>(MAX_BATCH_SIZE);
+        for (KeyHit hit : hits) {
+            if (!accumulator.markUnique(hit.key(), hit.family())) {
+                continue;
+            }
+            current.add(hit);
+            if (current.size() == MAX_BATCH_SIZE) {
+                batches.add(current);
+                current = new ArrayList<>(MAX_BATCH_SIZE);
+            }
+        }
+        if (!current.isEmpty()) {
+            batches.add(current);
+        }
+        return Flux.fromIterable(batches)
+                .concatMap(batch -> {
+                    accumulator.activeFamily(batch.get(0).family());
+                    accumulator.batchRequested(batch);
+                    List<String> keys = batch.stream().map(KeyHit::key).toList();
+                    return RuntimeOperationMetrics.measure(
+                            "career.cleanup.unlink.batch",
+                            redisTemplate.unlink(Flux.fromIterable(keys)).timeout(unlinkTimeout))
+                            .flatMap(deleted -> accumulator.batchDeleted(redisTemplate, batch, deleted));
+                });
     }
 
     private String indexKey(UUID userId) {
@@ -360,27 +389,26 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             return uniqueKeyFamilies.putIfAbsent(key, family) == null;
         }
 
-        void batchRequested(String familyName, List<String> batch) {
+        void batchRequested(List<KeyHit> batch) {
             requested += batch.size();
             batches++;
             maxBatch = Math.max(maxBatch, batch.size());
-            MutableFamily family = families.computeIfAbsent(familyName, ignored -> new MutableFamily());
-            family.requested += batch.size();
+            batch.forEach(hit -> families.computeIfAbsent(hit.family(), ignored -> new MutableFamily()).requested++);
         }
 
         Mono<Long> batchDeleted(ReactiveRedisTemplate<String, String> redis,
-                                String familyName, List<String> batch, long count) {
+                                List<KeyHit> batch, long count) {
             if (count > batch.size()) {
                 failHard("REDIS_DELETE_COUNT_INVALID");
                 return Mono.error(new IllegalStateException("Redis deleted more keys than requested"));
             }
             long shortfall = batch.size() - count;
             if (shortfall == 0) {
-                recordDeleted(familyName, count);
+                batch.forEach(hit -> recordDeleted(hit.family(), 1));
                 return Mono.just(count);
             }
             return Flux.fromIterable(batch)
-                    .concatMap(key -> redis.hasKey(key).timeout(EXISTS_TIMEOUT))
+                    .concatMap(hit -> redis.hasKey(hit.key()).timeout(EXISTS_TIMEOUT))
                     .filter(Boolean::booleanValue)
                     .count()
                     .flatMap(stillPresent -> {
@@ -390,7 +418,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                             fail("UNEXPLAINED_SHORTFALL");
                             return Mono.error(new IllegalStateException("Redis cleanup shortfall remains"));
                         }
-                        recordDeleted(familyName, count);
+                        batch.stream().limit((int) count).forEach(hit -> recordDeleted(hit.family(), 1));
                         return Mono.just(count);
                     });
         }
