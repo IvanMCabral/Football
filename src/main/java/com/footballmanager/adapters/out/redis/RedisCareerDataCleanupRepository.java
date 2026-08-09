@@ -102,17 +102,16 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     // bounded merge removes the deterministic provider RTT
                     // multiplied by every empty family while leaving all
                     // destructive operations ordered below.
-                    return updateTombstone(userId, "DISCOVERY")
-                            .thenMany(Flux.range(0, specs.size())
-                                    .flatMap(index -> discoverKeys(specs.get(index))
-                                            .map(keys -> new Discovery(index, specs.get(index), keys)),
-                                            DISCOVERY_CONCURRENCY)
-                                    .collectList()
-                                    .flatMapMany(discoveries -> {
-                                        discoveries.sort(java.util.Comparator.comparingInt(Discovery::order));
-                                        return updateTombstone(userId, "DELETE")
-                                                .thenMany(deleteDiscoveries(discoveries, accumulator));
-                                    }));
+                    return Flux.range(0, specs.size())
+                            .flatMap(index -> discoverKeys(specs.get(index))
+                                    .map(keys -> new Discovery(index, specs.get(index), keys)),
+                                    DISCOVERY_CONCURRENCY)
+                            .collectList()
+                            .flatMapMany(discoveries -> {
+                                discoveries.sort(java.util.Comparator.comparingInt(Discovery::order));
+                                return updateTombstone(userId, "DELETE")
+                                        .thenMany(deleteDiscoveries(discoveries, accumulator));
+                            });
                 })
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
                 .flatMap(result -> clearTombstone(userId).thenReturn(result))
