@@ -1,0 +1,14 @@
+{
+  "environment": "Render public staging",
+  "samples": 10,
+  "resetMs": [3559, 3087, 4111, 3907, 3248, 3254, 3033, 3396, 3064, 3130],
+  "http204": 10,
+  "http503": 0,
+  "http500": 0,
+  "p50Ms": 3251,
+  "p95Ms": 4111,
+  "maxMs": 4111,
+  "health": "liveness/readiness 200 with database and redis UP",
+  "reloadWorld": "one transient 502 observed; reset flow remained 204",
+  "requestIds": ["e5f9ab00", "c93b6ede", "ef083cff", "302aae13", "73fff5aa", "530e7fb4", "63b802a1", "aabd3f3c", "384647c0", "7b27a481"]
+}

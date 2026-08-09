@@ -1,0 +1,12 @@
+{
+  "environment": "local real Redis",
+  "samples": 20,
+  "samplesMs": [3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5],
+  "p50Ms": 4,
+  "p95Ms": 5,
+  "maxMs": 5,
+  "discoveryConcurrency": 8,
+  "maxBatchSize": 100,
+  "destructiveOrder": "children then career root",
+  "suite": {"tests": 2633, "failures": 0, "errors": 0, "skipped": 4}
+}

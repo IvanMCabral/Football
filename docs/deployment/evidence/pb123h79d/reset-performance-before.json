@@ -1,0 +1,10 @@
+{
+  "source": "retained PB1.2.3H7.9D public N=5",
+  "samplesMs": [8160, 8185, 8207, 8121, 8143],
+  "p50Ms": 8160,
+  "p95Ms": 8207,
+  "maxMs": 8207,
+  "http204": 5,
+  "http503": 0,
+  "stageProfile": "not exported by the previous deployment; source inspection identified sequential SCAN and per-family destructive round trips"
+}
