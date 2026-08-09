@@ -1,0 +1,16 @@
+{
+  "result": "NOT_VERIFIABLE",
+  "rootHead": "728f8e115660c3aca51c5c1765b3a6aee9514117",
+  "runtimeCommit": "8d9e91ed",
+  "renderLiveSha": null,
+  "instanceCount": null,
+  "chromeTabsInspected": 3,
+  "providerTabsPresent": {
+    "render": false,
+    "neon": false,
+    "upstash": false
+  },
+  "remoteMutations": false,
+  "accountsCreated": 0,
+  "redisCommands": 0
+}
