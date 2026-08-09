@@ -21,6 +21,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +30,8 @@ import java.util.Map;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private static final String GENERIC_UNEXPECTED_MESSAGE = "Ocurrió un error inesperado.";
     private static final String INVALID_REQUEST_MESSAGE = "La solicitud no es válida.";
@@ -120,6 +124,9 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<Map<String, Object>>> handleIllegalArgument(
             IllegalArgumentException ex,
             ServerWebExchange exchange) {
+        log.warn("Public request validation failure: path={}, exception={}",
+                exchange.getRequest().getPath().pathWithinApplication().value(),
+                ex.getClass().getName());
         return validationError(ex, exchange);
     }
 
@@ -170,6 +177,11 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<Map<String, Object>>> handleServerWebInput(
             ServerWebInputException ex,
             ServerWebExchange exchange) {
+        Throwable cause = ex.getCause();
+        log.warn("Public request decoding failure: path={}, exception={}, cause={}",
+                exchange.getRequest().getPath().pathWithinApplication().value(),
+                ex.getClass().getName(),
+                cause == null ? "none" : cause.getClass().getName());
         return validationError(ex, exchange);
     }
 
