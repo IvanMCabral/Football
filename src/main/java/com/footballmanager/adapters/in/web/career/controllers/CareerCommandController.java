@@ -148,7 +148,13 @@ public class CareerCommandController {
                                     err.getClass().getSimpleName()))
                             .onErrorResume(err -> Mono.empty());
                 }))
-                .then();
+                .then()
+                .doOnSuccess(ignored -> {
+                    response.getHeaders().set("X-Reset-Career-Ms",
+                            Long.toString(careerNanos.get() / 1_000_000L));
+                    response.getHeaders().set("X-Reset-Game-Ms",
+                            Long.toString(gameNanos.get() / 1_000_000L));
+                });
     }
 
     /**
