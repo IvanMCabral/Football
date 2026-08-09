@@ -6,10 +6,12 @@ import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -21,6 +23,21 @@ public final class CareerOwnershipTouchService implements CareerOwnershipPort {
     private static final Duration OWNERSHIP_TTL = Duration.ofDays(31);
     private static final Duration OPERATION_TIMEOUT = Duration.ofSeconds(5);
     private static final int MAX_INDEX_SIZE = 256;
+    private static final int MAX_MANIFEST_ENTRIES = 1_024;
+    private static final Duration MANIFEST_TTL = Duration.ofDays(31);
+    private static final String MANIFEST_PREFIX = "career-cleanup-members:";
+    private static final String MANIFEST_VERSION_PREFIX = "career-cleanup-manifest-version:";
+    private static final String MANIFEST_VERSION = "1";
+    private static final RedisScript<Long> REGISTER_MANIFEST_KEY = RedisScript.of(
+            "if redis.call('get', KEYS[2]) ~= ARGV[1] then return 0 end; "
+                    + "if redis.call('get', KEYS[3]) ~= ARGV[2] then return -1 end; "
+                    + "if redis.call('get', KEYS[4]) ~= ARGV[3] then return -2 end; "
+                    + "if redis.call('exists', KEYS[5]) == 1 then return -4 end; "
+                    + "if redis.call('sismember', KEYS[1], ARGV[4]) == 1 then "
+                    + "redis.call('expire', KEYS[1], ARGV[5]); return 1 end; "
+                    + "if redis.call('scard', KEYS[1]) >= tonumber(ARGV[6]) then return -3 end; "
+                    + "redis.call('sadd', KEYS[1], ARGV[4]); redis.call('expire', KEYS[1], ARGV[5]); return 1",
+            Long.class);
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final CareerLifecycleCoordinator lifecycleCoordinator;
@@ -95,6 +112,74 @@ public final class CareerOwnershipTouchService implements CareerOwnershipPort {
         }
         return touchBeforeWrite(context.careerId(), context.expectedGeneration(),
                 context.ownerId(), write);
+    }
+
+    /**
+     * Fenced write for a lifecycle-owned Redis key.  The exact key is added
+     * to the bounded cleanup manifest while the same career coordinator
+     * section is held, so a stale callback cannot register or persist data.
+     */
+    public <T> Mono<T> touchBeforeWrite(CareerWriteContext context, String ownedKey,
+                                        Supplier<Mono<T>> write) {
+        if (ownedKey == null || ownedKey.isBlank()) {
+            return Mono.error(new IllegalArgumentException("owned Redis key is required"));
+        }
+        return touchBeforeWrite(context,
+                () -> registerManifestKey(context, ownedKey)
+                        .then(Mono.defer(write))
+                        .onErrorResume(error -> unregisterManifestKey(context, ownedKey)
+                                .onErrorResume(ignored -> Mono.empty())
+                                .then(Mono.error(error))));
+    }
+
+    private Mono<Void> registerManifestKey(CareerWriteContext context, String ownedKey) {
+        List<String> keys = java.util.List.of(
+                manifestKey(context.careerId()),
+                manifestVersionKey(context.careerId()),
+                mappingKey(context.careerId()),
+                generationKey(context.careerId()),
+                tombstoneKey(context.careerId()));
+        Mono<Long> result = redisTemplate.execute(
+                REGISTER_MANIFEST_KEY,
+                keys,
+                MANIFEST_VERSION,
+                context.ownerId().toString(),
+                context.expectedGeneration(),
+                ownedKey,
+                Long.toString(MANIFEST_TTL.getSeconds()),
+                Integer.toString(MAX_MANIFEST_ENTRIES))
+                .singleOrEmpty();
+        if (result == null) {
+            return Mono.error(new IllegalStateException("cleanup manifest registration unavailable"));
+        }
+        return result.flatMap(code -> switch (code.intValue()) {
+            case 0 -> Mono.empty(); // legacy career: write remains compatible
+            case 1 -> Mono.empty();
+            case -1, -2, -4 -> Mono.error(new IllegalStateException("career lifecycle fence rejected"));
+            case -3 -> Mono.error(new IllegalStateException("career cleanup manifest cardinality exceeded"));
+            default -> Mono.error(new IllegalStateException("cleanup manifest registration failed"));
+        });
+    }
+
+    private Mono<Void> unregisterManifestKey(CareerWriteContext context, String ownedKey) {
+        var operations = redisTemplate.opsForSet();
+        if (operations == null) {
+            return Mono.empty();
+        }
+        Mono<Long> removed = operations.remove(manifestKey(context.careerId()), ownedKey);
+        return removed == null ? Mono.empty() : removed.then();
+    }
+
+    public static String manifestKey(String careerId) {
+        return MANIFEST_PREFIX + careerId;
+    }
+
+    public static String manifestVersionKey(String careerId) {
+        return MANIFEST_VERSION_PREFIX + careerId;
+    }
+
+    public static String manifestVersion() {
+        return MANIFEST_VERSION;
     }
 
     private <T> Mono<T> touchBeforeWrite(String careerId, String expectedGeneration,

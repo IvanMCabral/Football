@@ -86,6 +86,34 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
     }
 
     @Test
+    void modernCareerWritersRegisterExactKeysInBoundedManifest() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-modern-manifest-" + owner;
+        CareerSave career = career(owner, careerId);
+        careerRepository.createInitialCareer(career).block(Duration.ofSeconds(5));
+
+        CareerWriteContext context = ownershipTouchService.capture(owner, careerId)
+                .block(Duration.ofSeconds(5));
+        String matchId = "manifest-match";
+        RuntimeMatch runtime = new RuntimeMatch(matchId, careerId, "home", "away", 1,
+                context.expectedGeneration());
+        runtimeMatchRepository.save(owner, runtime, context).block(Duration.ofSeconds(5));
+
+        String manifest = CareerOwnershipTouchService.manifestKey(careerId);
+        assertEquals("1", reactiveRedisTemplate.opsForValue()
+                .get(CareerOwnershipTouchService.manifestVersionKey(careerId))
+                .block(Duration.ofSeconds(5)));
+        assertTrue(Boolean.TRUE.equals(reactiveRedisTemplate.opsForSet()
+                .isMember(manifest, "runtime:match:" + owner + ":" + matchId)
+                .block(Duration.ofSeconds(5))));
+
+        cleanupRepository.deleteOwnedData(owner, careerId).block(Duration.ofSeconds(10));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(manifest).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(
+                "runtime:match:" + owner + ":" + matchId).block()));
+    }
+
+    @Test
     void tokenlessCareerStateAndRuntimeWritersFailClosedAgainstRealRedis() {
         UUID owner = UUID.randomUUID();
         CareerSave career = career(owner, "career-tokenless");

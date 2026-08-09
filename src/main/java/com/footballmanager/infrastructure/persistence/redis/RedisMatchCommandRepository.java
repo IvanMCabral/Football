@@ -84,7 +84,7 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                 ? operation
                 : context == null
                         ? Mono.error(new IllegalStateException("command writer requires active career context"))
-                        : ownershipTouchService.touchBeforeWrite(context, () -> operation);
+                        : ownershipTouchService.touchBeforeWrite(context, key, () -> operation);
         return coordinated
                 .onErrorMap(e -> e instanceof RedisStateAccessException ? e
                         : new RedisStateAccessException(
@@ -140,7 +140,7 @@ public class RedisMatchCommandRepository implements MatchCommandRepository {
                         "Failed to delete pending match commands for matchId=" + matchId, e));
         return ownershipTouchService == null || context == null
                 ? operation
-                : ownershipTouchService.touchBeforeWrite(context, () -> operation);
+                : ownershipTouchService.touchBeforeWrite(context, key, () -> operation);
     }
 
     private String buildKey(UUID userId, UUID matchId) {

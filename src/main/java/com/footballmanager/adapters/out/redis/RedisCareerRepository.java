@@ -35,6 +35,8 @@ public class RedisCareerRepository implements CareerRepository {
     private static final String KEY_PREFIX = "career:";
     private static final String CAREER_INDEX_SUFFIX = ":career-ids";
     private static final String CAREER_OWNER_PREFIX = "career-owner:";
+    private static final String CLEANUP_MANIFEST_VERSION_PREFIX = "career-cleanup-manifest-version:";
+    private static final String CLEANUP_MANIFEST_VERSION = "1";
     private static final Duration CACHE_TTL = Duration.ofDays(30); // 30 días de inactividad
     private static final Duration CAREER_INDEX_TTL = Duration.ofDays(31);
     private static final int MAX_CAREER_INDEX_SIZE = 256;
@@ -131,6 +133,7 @@ public class RedisCareerRepository implements CareerRepository {
                             .doOnNext(generationMapping -> careerSave.setLifecycleGeneration(generationMapping.generation()))
                             .flatMap(generationMapping -> redisTemplate.opsForValue().set(key, json, CACHE_TTL)
                                     .then(indexCareer(careerSave))
+                                    .then(markCleanupManifestModern(careerSave.getCareerId()))
                                     .onErrorResume(error -> compensateFailedSave(
                                             generationMapping.mapping(), generationMapping.generation(), key, false, error)))
                     : saveExistingAtomically(context, careerSave, json);
@@ -421,6 +424,14 @@ public class RedisCareerRepository implements CareerRepository {
 
     private String mappingTokenKey(String careerId) {
         return "career-mapping-token:" + careerId;
+    }
+
+    private Mono<Void> markCleanupManifestModern(String careerId) {
+        Mono<Boolean> marker = redisTemplate.opsForValue().set(
+                CLEANUP_MANIFEST_VERSION_PREFIX + careerId,
+                CLEANUP_MANIFEST_VERSION,
+                CAREER_INDEX_TTL);
+        return marker == null ? Mono.empty() : marker.then();
     }
 
 }

@@ -114,20 +114,8 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     accumulator.setCareerCount(ownedCareerIds, careerId);
                     List<PatternSpec> specs = patterns(userId, careerId, ownedCareerIds, preserveWorld);
                     specs.forEach(accumulator::patternEvaluated);
-
-                    // Discovery is read-only. Running independent SCANs in a
-                    // bounded merge removes the deterministic provider RTT
-                    // multiplied by every empty family while leaving all
-                    // destructive operations ordered below.
-                    return Flux.range(0, specs.size())
-                            .flatMap(index -> discoverKeys(specs.get(index))
-                                    .map(keys -> new Discovery(index, specs.get(index), keys)),
-                                    DISCOVERY_CONCURRENCY)
-                            .collectList()
-                            .flatMapMany(discoveries -> {
-                                discoveries.sort(java.util.Comparator.comparingInt(Discovery::order));
-                                return deleteDiscoveries(discoveries, accumulator);
-                            });
+                    return discoverForReset(userId, careerId, ownedCareerIds, specs, preserveWorld)
+                            .flatMapMany(discoveries -> deleteDiscoveries(discoveries, accumulator));
                 })
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
                 .flatMap(result -> clearTombstone(userId).thenReturn(result))
@@ -145,6 +133,94 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     accumulator.fail(accumulator.failureReasonFor(error));
                     return new CareerDataCleanupException(accumulator.result(true, accumulator.failedFamily()), error);
                 });
+    }
+
+    /**
+     * Uses the exact lifecycle manifest for careers created after manifest
+     * support was enabled.  The user projection remains a single legacy scan
+     * because those keys are shared by older adapters and are not career-ID
+     * derivable.  Careers without the explicit marker retain the complete
+     * twelve-family fallback and are never treated as modern accidentally.
+     */
+    private Mono<List<Discovery>> discoverForReset(UUID userId, String careerId,
+                                                    List<String> ownedCareerIds,
+                                                    List<PatternSpec> legacySpecs,
+                                                    boolean preserveWorld) {
+        if (careerId == null || careerId.isBlank() || ownedCareerIds.size() != 1
+                || !ownedCareerIds.contains(careerId)) {
+            return discoverLegacy(legacySpecs);
+        }
+        return manifestVersion(careerId)
+                .filter(RedisCareerDataCleanupRepository::isModernManifest)
+                .flatMap(ignored -> discoverModern(userId, careerId, preserveWorld))
+                .switchIfEmpty(discoverLegacy(legacySpecs));
+    }
+
+    private Mono<List<Discovery>> discoverModern(UUID userId, String careerId, boolean preserveWorld) {
+        List<Discovery> discoveries = new ArrayList<>();
+        PatternSpec projection = new PatternSpec("user-projection", "user:" + userId + ":*");
+        return discoverKeys(projection).flatMap(projectionKeys -> {
+            int order = 0;
+            discoveries.add(new Discovery(order++, projection, projectionKeys));
+            if (!preserveWorld) {
+                discoveries.add(new Discovery(order++, new PatternSpec("world", "world:" + userId),
+                        List.of("world:" + userId)));
+            }
+            discoveries.add(new Discovery(order++, new PatternSpec("career-index", indexKey(userId)),
+                    List.of(indexKey(userId))));
+            int nextOrder = order;
+            return manifestMembers(careerId).map(members -> {
+            List<String> exact = new ArrayList<>(members);
+            exact.add(RedisCareerOwnershipKeys.manifestKey(careerId));
+            exact.add(RedisCareerOwnershipKeys.manifestVersionKey(careerId));
+            int orderInManifest = nextOrder;
+            discoveries.add(new Discovery(orderInManifest++, new PatternSpec("cleanup-manifest",
+                    RedisCareerOwnershipKeys.manifestKey(careerId)), exact));
+            discoveries.add(new Discovery(orderInManifest++, new PatternSpec("career-owner-mapping",
+                    "career-owner:" + careerId), List.of("career-owner:" + careerId)));
+            discoveries.add(new Discovery(orderInManifest++, new PatternSpec("career-generation",
+                    "career-generation:" + careerId), List.of("career-generation:" + careerId)));
+            discoveries.add(new Discovery(orderInManifest++, new PatternSpec("career-mapping-token",
+                    "career-mapping-token:" + careerId), List.of("career-mapping-token:" + careerId)));
+            discoveries.add(new Discovery(orderInManifest, new PatternSpec("career-root", "career:" + userId),
+                    List.of("career:" + userId)));
+            return discoveries;
+            });
+        });
+    }
+
+    private Mono<List<Discovery>> discoverLegacy(List<PatternSpec> specs) {
+        return Flux.range(0, specs.size())
+                .flatMap(index -> discoverKeys(specs.get(index))
+                                .map(keys -> new Discovery(index, specs.get(index), keys)),
+                        DISCOVERY_CONCURRENCY)
+                .collectList()
+                .map(discoveries -> {
+                    discoveries.sort(java.util.Comparator.comparingInt(Discovery::order));
+                    return discoveries;
+                });
+    }
+
+    private Mono<String> manifestVersion(String careerId) {
+        var operations = redisTemplate.opsForValue();
+        if (operations == null) {
+            return Mono.empty();
+        }
+        Mono<String> value = operations.get(RedisCareerOwnershipKeys.manifestVersionKey(careerId));
+        return value == null ? Mono.empty() : value.timeout(indexTimeout);
+    }
+
+    private Mono<List<String>> manifestMembers(String careerId) {
+        var operations = redisTemplate.opsForSet();
+        if (operations == null) {
+            return Mono.just(List.of());
+        }
+        Flux<String> members = operations.members(RedisCareerOwnershipKeys.manifestKey(careerId));
+        return members == null ? Mono.just(List.of()) : members.collectList().timeout(indexTimeout);
+    }
+
+    private static boolean isModernManifest(String version) {
+        return RedisCareerOwnershipKeys.MANIFEST_VERSION.equals(version);
     }
 
     private Mono<List<String>> validateOwnership(UUID userId, String explicitCareerId,
@@ -294,6 +370,18 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
 
     private String mappingTokenKey(String careerId) {
         return "career-mapping-token:" + careerId;
+    }
+
+    private static final class RedisCareerOwnershipKeys {
+        private static final String MANIFEST_VERSION = "1";
+
+        static String manifestKey(String careerId) {
+            return "career-cleanup-members:" + careerId;
+        }
+
+        static String manifestVersionKey(String careerId) {
+            return "career-cleanup-manifest-version:" + careerId;
+        }
     }
 
     private Mono<Void> writeTombstone(UUID userId, String careerId) {

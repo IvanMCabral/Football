@@ -71,7 +71,7 @@ public class RedisMatchRuntimeRepository implements MatchRuntimeRepository {
                 .thenReturn(runtimeMatch);
         return ownershipTouchService == null
                 ? Mono.error(new IllegalStateException("career ownership service is required"))
-                : ownershipTouchService.touchBeforeWrite(context, () -> persist);
+                : ownershipTouchService.touchBeforeWrite(context, key, () -> persist);
     }
 
     @Override

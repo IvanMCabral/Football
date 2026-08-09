@@ -87,7 +87,7 @@ public class RedisMatchStateRepository implements MatchStateRepository {
                     .thenReturn(matchState);
             return ownershipTouchService == null
                     ? Mono.error(new IllegalStateException("career ownership service is required"))
-                    : ownershipTouchService.touchBeforeWrite(context, () -> persist);
+                    : ownershipTouchService.touchBeforeWrite(context, key, () -> persist);
         } catch (Exception e) {
             return Mono.error(e);
         }

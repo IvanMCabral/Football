@@ -77,6 +77,39 @@ class RedisCareerDataCleanupRepositoryTest {
     }
 
     @Test
+    void modernManifestDeletesExactCareerKeysAndLeavesOnlyProjectionFallbackScan() {
+        String manifest = "career-cleanup-members:career-a";
+        String marker = "career-cleanup-manifest-version:career-a";
+        when(valueOperations.get(marker)).thenReturn(Mono.just("1"));
+        when(setOperations.members(manifest)).thenReturn(Flux.just(
+                "career:career-a:match-detail:m1",
+                "career:career-a:match-baseline:m1",
+                "runtime:match:" + ownerA + ":m1",
+                "match:state:" + ownerA + ":m1",
+                "match:commands:" + ownerA + ":m1"));
+        when(redisTemplate.scan(any(ScanOptions.class))).thenAnswer(invocation -> {
+            String pattern = invocation.<ScanOptions>getArgument(0).getPattern();
+            if (pattern.equals("user:" + ownerA + ":*")) {
+                return Flux.just("user:" + ownerA + ":projection:1");
+            }
+            fail("modern manifest unexpectedly scanned " + pattern);
+            return Flux.empty();
+        });
+
+        CareerDataCleanupResult result = repository.deleteOwnedData(ownerA, "career-a").block();
+
+        assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+        verify(redisTemplate, times(1)).scan(argThat(options ->
+                options.getPattern().equals("user:" + ownerA + ":*")));
+        verify(redisTemplate, never()).scan(argThat(options ->
+                options.getPattern().contains("match-detail")
+                        || options.getPattern().contains("match-baseline")
+                        || options.getPattern().contains("runtime:match")
+                        || options.getPattern().contains("match:state")
+                        || options.getPattern().contains("match:commands")));
+    }
+
+    @Test
     void duplicateDiscoveryIsDeletedOnceAndBatchesNeverExceedOneHundred() {
         List<String> projections = new ArrayList<>();
         for (int i = 0; i < 205; i++) {

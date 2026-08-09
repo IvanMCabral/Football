@@ -170,7 +170,7 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
                 .then();
         return ownershipTouchService == null
                 ? persist
-                : ownershipTouchService.touchBeforeWrite(context, () -> persist);
+                : ownershipTouchService.touchBeforeWrite(context, key, () -> persist);
     }
 
     @Override

@@ -72,7 +72,7 @@ public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
                             .then();
                     return ownershipTouchService == null
                             ? persist
-                            : ownershipTouchService.touchBeforeWrite(context, () -> persist);
+                            : ownershipTouchService.touchBeforeWrite(context, key, () -> persist);
                 }));
     }
 
