@@ -53,6 +53,27 @@ public class RedisCareerRepository implements CareerRepository {
                     + "redis.call('del', KEYS[1], KEYS[2]); redis.call('srem', KEYS[3], ARGV[2]); return 1; "
                     + "else return 0 end",
             Long.class);
+    /**
+     * Existing-career writes are fenced and persisted atomically. Keeping the
+     * generation/owner validation, mapping-token rotation, root write and
+     * index refresh in one Redis script removes the sequential network
+     * round-trips that dominated warm lineup mutations.
+     */
+    private static final RedisScript<Long> SAVE_EXISTING_ATOMIC = RedisScript.of(
+            "local generation = redis.call('get', KEYS[1]); "
+                    + "if generation ~= ARGV[1] then return -1 end; "
+                    + "local owner = redis.call('get', KEYS[2]); "
+                    + "if owner ~= ARGV[2] then return -2 end; "
+                    + "local members = redis.call('scard', KEYS[5]); "
+                    + "local indexed = redis.call('sismember', KEYS[5], ARGV[7]); "
+                    + "if indexed == 0 and members >= tonumber(ARGV[8]) then return -3 end; "
+                    + "redis.call('set', KEYS[3], ARGV[3], 'EX', ARGV[6]); "
+                    + "redis.call('expire', KEYS[2], ARGV[6]); "
+                    + "redis.call('set', KEYS[4], ARGV[4], 'EX', ARGV[5]); "
+                    + "if indexed == 0 then redis.call('sadd', KEYS[5], ARGV[7]) end; "
+                    + "redis.call('expire', KEYS[5], ARGV[6]); "
+                    + "return 1",
+            Long.class);
 
     @org.springframework.beans.factory.annotation.Autowired
     public RedisCareerRepository(@Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
@@ -105,24 +126,14 @@ public class RedisCareerRepository implements CareerRepository {
             String json = objectMapper.writeValueAsString(careerSave);
             int palmaresSize = careerSave.getSeasonManager().getPalmares() != null ? careerSave.getSeasonManager().getPalmares().size() : 0;
             log.info("[REDIS-SAVE] career state persisted, palmaresSize={}", palmaresSize);
-            Mono<Void> operation = (initial
+            Mono<Void> operation = initial
                     ? createGenerationAndMapping(careerSave)
-                    : requireGeneration(careerSave.getCareerId(), context.expectedGeneration())
-                            .flatMap(generation -> requireOwnerMapping(careerSave.getCareerId(), careerSave.getUserId())
-                                    .map(mapping -> new GenerationMapping(generation, mapping))))
-                    .doOnNext(generationMapping -> careerSave.setLifecycleGeneration(generationMapping.generation()))
-                    .flatMap(generationMapping -> {
-                        // createGenerationAndMapping already rejects an
-                        // existing root. For an existing career, generation +
-                        // owner mapping validation proves the root is present;
-                        // the extra hasKey round trip only fed compensation.
-                        boolean rootExisted = !initial;
-                        MappingState mapping = generationMapping.mapping();
-                        return redisTemplate.opsForValue().set(key, json, CACHE_TTL)
+                            .doOnNext(generationMapping -> careerSave.setLifecycleGeneration(generationMapping.generation()))
+                            .flatMap(generationMapping -> redisTemplate.opsForValue().set(key, json, CACHE_TTL)
                                     .then(indexCareer(careerSave))
                                     .onErrorResume(error -> compensateFailedSave(
-                                            mapping, generationMapping.generation(), key, rootExisted, error));
-                    });
+                                            generationMapping.mapping(), generationMapping.generation(), key, false, error)))
+                    : saveExistingAtomically(context, careerSave, json);
             Mono<Void> coordinated = lifecycleCoordinator == null ? operation
                     : lifecycleCoordinator.serializeCareer(careerSave.getCareerId(), operation);
             return RuntimeOperationMetrics.measure("redis.career.save",
@@ -158,6 +169,40 @@ public class RedisCareerRepository implements CareerRepository {
                 .flatMap(career -> career.isEmpty()
                         ? Mono.just(career)
                         : serializeSave(career.get().getUserId(), ensureCareerIndex(career))));
+    }
+
+    private Mono<Void> saveExistingAtomically(CareerWriteContext context,
+                                              CareerSave careerSave,
+                                              String json) {
+        String careerId = careerSave.getCareerId();
+        String ownerId = careerSave.getUserId().toString();
+        String operationToken = UUID.randomUUID().toString();
+        List<String> keys = List.of(
+                generationKey(careerId),
+                ownerMappingKey(careerId),
+                mappingTokenKey(careerId),
+                getKey(ownerId),
+                indexKey(careerSave.getUserId()));
+        return redisTemplate.execute(
+                        SAVE_EXISTING_ATOMIC,
+                        keys,
+                        context.expectedGeneration(),
+                        ownerId,
+                        operationToken,
+                        json,
+                        Long.toString(CACHE_TTL.getSeconds()),
+                        Long.toString(CAREER_INDEX_TTL.getSeconds()),
+                        careerId,
+                        Integer.toString(MAX_CAREER_INDEX_SIZE))
+                .singleOrEmpty()
+                .switchIfEmpty(Mono.error(new IllegalStateException("career save returned no result")))
+                .flatMap(result -> switch (result.intValue()) {
+                    case 1 -> Mono.empty();
+                    case -1 -> Mono.error(new IllegalStateException("career lifecycle generation is stale"));
+                    case -2 -> Mono.error(new IllegalStateException("career ownership mapping is stale"));
+                    case -3 -> Mono.error(new CareerIndexLimitException());
+                    default -> Mono.error(new IllegalStateException("career save rejected by lifecycle fence"));
+                });
     }
 
     private Mono<GenerationMapping> createGenerationAndMapping(CareerSave career) {

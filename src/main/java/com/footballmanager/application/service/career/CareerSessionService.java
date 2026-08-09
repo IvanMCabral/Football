@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 /**
  * CareerSessionService - Facade para gestión de sesión Career.
@@ -33,6 +34,8 @@ public class CareerSessionService {
     private final CareerLifecycleCoordinator lifecycleCoordinator;
 
     private final Map<String, CareerSave> careerCache = new ConcurrentHashMap<>();
+    private final Map<String, CareerSave> lastPersistedSnapshot = new ConcurrentHashMap<>();
+    private final Set<String> dirtyOwners = ConcurrentHashMap.newKeySet();
 
     @Autowired
     public CareerSessionService(CareerRepository careerRepository,
@@ -85,6 +88,8 @@ public class CareerSessionService {
 
     public void invalidateCache(UUID userId) {
         careerCache.remove(userId.toString());
+        lastPersistedSnapshot.remove(userId.toString());
+        dirtyOwners.remove(userId.toString());
     }
 
     public void clearCache() {
@@ -124,14 +129,29 @@ public class CareerSessionService {
                     "career update requires captured lifecycle generation"));
         }
         String key = career.getUserId().toString();
+        CareerSave persisted = lastPersistedSnapshot.get(key);
+        if (persisted == career && !dirtyOwners.contains(key)) {
+            return Mono.just(career);
+        }
         CareerWriteContext context = new CareerWriteContext(
                 career.getUserId(), career.getCareerId(), career.getLifecycleGeneration());
         return lifecycleCoordinator.serialize(career.getUserId(), careerRepository.saveExistingCareer(context, career))
-            .doOnSuccess(saved -> careerCache.put(key, career))
+            .doOnSuccess(saved -> {
+                careerCache.put(key, career);
+                lastPersistedSnapshot.put(key, career);
+                dirtyOwners.remove(key);
+            })
             .doOnError(error -> {
                 // Log error silently
             })
             .thenReturn(career);
+    }
+
+    /** Marks a cached career as changed before a mutating command persists it. */
+    public void markDirty(UUID userId) {
+        if (userId != null) {
+            dirtyOwners.add(userId.toString());
+        }
     }
 
     public Mono<Void> deleteCareer(UUID userId) {

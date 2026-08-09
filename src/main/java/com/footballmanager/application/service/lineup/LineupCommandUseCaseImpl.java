@@ -56,6 +56,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                 List<String> lineupIds = lineup.stream()
                     .map(SessionPlayer::getSessionPlayerId)
                     .toList();
+                careerSessionService.markDirty(userId);
                 career.getTeamStarting11().put(userTeamId, lineupIds);
                 Map<String, LineupSlot> slotMap = new LineupDtoAssembler(formationService, lineupHelper).buildAutoSelectSlotMap(formation, lineup, true);
                 if (slotMap.size() != LineupRules.TARGET_LINEUP_PLAYERS) {
@@ -123,6 +124,7 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                     warnings.add(LineupWarning.shortHanded(selectedPlayers.size()));
                 }
 
+                careerSessionService.markDirty(userId);
                 career.getTeamStarting11().put(userTeamId, playerIds);
                 career.getTeamStarting11Formation().put(userTeamId, formation.getCode());
                 syncSessionTeamFormation(career, userTeamId, formation.getCode());
@@ -193,8 +195,10 @@ public class LineupCommandUseCaseImpl implements LineupCommandUseCase {
                         + LineupRules.MAX_LINEUP_PLAYERS + " allowed."));
                 }
 
-                return RuntimeOperationMetrics.measure("lineup.confirm.save",
-                    careerSessionService.saveCareer(career)).then();
+                // Keep the public persistence hook for compatibility. The
+                // session service recognizes an unchanged snapshot and turns
+                // this into a local no-op, avoiding a duplicate Redis write.
+                return careerSessionService.saveCareer(career).then();
             }));
     }
 
