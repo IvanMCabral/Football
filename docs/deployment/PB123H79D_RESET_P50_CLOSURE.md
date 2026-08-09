@@ -57,7 +57,8 @@ marker.
 - registration with a valid JSON request: HTTP 200;
 - authenticated bootstrap: 3/3 disposable accounts completed
   register -> me -> reload-world -> leagues -> teams -> career/start -> squad
-  -> auto-select -> lineup/current -> confirm, followed by HTTP 200 reset;
+  -> auto-select -> lineup/current -> confirm, followed by a successful
+  lifecycle reset;
 - the historical 422 (`LINEUP_VALIDATION_ERROR`, request id
   `9e150668-7068-4ec7-8db3-0bf7fb8829ff`) occurred at
   `POST /api/v1/career/start` after the probe selected `league.id` and
