@@ -92,14 +92,23 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         // The tombstone must be durable before any destructive operation, but
         // it does not depend on the read-only owner index. Start both in the
         // same subscription to remove one provider round-trip from reset.
-        return Mono.when(writeTombstone(userId, careerId), indexedCareerIds)
-                .then(indexedCareerIds)
-                .flatMap(indexedIds -> {
-                    if (indexedIds.size() > MAX_INDEX_CARDINALITY) {
-                        accumulator.fail("CAREER_INDEX_CARDINALITY_EXCEEDED");
-                        return Mono.error(new IllegalStateException("career index cardinality exceeded"));
-                    }
-                    return validateOwnership(userId, careerId, indexedIds, accumulator);
+        Mono<List<String>> ownershipReady;
+        if (careerId != null && !careerId.isBlank()) {
+            Mono<List<String>> validated = validateOwnership(userId, careerId, List.of(careerId), accumulator).cache();
+            ownershipReady = Mono.when(writeTombstone(userId, careerId), validated).then(validated);
+        } else {
+            ownershipReady = Mono.when(writeTombstone(userId, careerId), indexedCareerIds)
+                    .then(indexedCareerIds)
+                    .flatMap(indexedIds -> {
+                        if (indexedIds.size() > MAX_INDEX_CARDINALITY) {
+                            accumulator.fail("CAREER_INDEX_CARDINALITY_EXCEEDED");
+                            return Mono.error(new IllegalStateException("career index cardinality exceeded"));
+                        }
+                        return validateOwnership(userId, careerId, indexedIds, accumulator);
+                    });
+        }
+        return ownershipReady.flatMap(ownedIds -> {
+                    return Mono.just(ownedIds);
                 })
                 .flatMapMany(ownedCareerIds -> {
                     accumulator.setCareerCount(ownedCareerIds, careerId);
