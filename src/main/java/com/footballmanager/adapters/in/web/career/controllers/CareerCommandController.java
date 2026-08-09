@@ -90,7 +90,10 @@ public class CareerCommandController {
                 // (the cache would otherwise still hold the stale CareerSave from
                 // the prior /career/start call). Mirror pattern used by
                 // TestHarnessUseCaseImpl / ContinueSeasonUseCaseImpl / StartRoundUseCaseImpl.
-                .doOnNext(sessionService::cacheCareer)
+                .doOnNext(started -> {
+                    sessionService.invalidateCache(userId);
+                    sessionService.cacheCareer(started);
+                })
                 // career is initialized, also persist a Game entity that
                 // shares the career's UUID. Best-effort â€” if Redis fails,
                 // we log warn and return success anyway so the live match
