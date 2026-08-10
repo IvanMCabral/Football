@@ -61,7 +61,8 @@ public class DashboardController {
         ReloadWorldTiming timing = new ReloadWorldTiming();
         return RuntimeOperationMetrics.measure("http.dashboard.reloadWorld",
             worldSnapshotService.reloadFromDatabase(userId, timing)
-                .then(timing.measure("statusQueryMs", worldStatusQueryService.getWorldStatus(userId)))
+                .flatMap(snapshot -> timing.measure("statusQueryMs",
+                        worldStatusQueryService.getWorldStatus(userId, snapshot)))
                 .map(summary -> {
                     long started = System.nanoTime();
                     WorldStatusResponse dto = DashboardController.toDto(summary);

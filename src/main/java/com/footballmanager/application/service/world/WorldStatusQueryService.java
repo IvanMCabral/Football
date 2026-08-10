@@ -2,6 +2,7 @@ package com.footballmanager.application.service.world;
 
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -50,6 +51,23 @@ public class WorldStatusQueryService {
                         tuple.getT2()
                 ))
                 .switchIfEmpty(Mono.just(new WorldStatusSummary(0, 0, 0)));
+    }
+
+    /**
+     * Builds status from a snapshot that the caller has just materialized.
+     * Reload-world must not write a complete snapshot and immediately read
+     * the same multi-megabyte value back from Redis just to build its DTO.
+     */
+    public Mono<WorldStatusSummary> getWorldStatus(UUID userId, WorldSnapshot snapshot) {
+        Mono<Integer> matchesMono = RuntimeOperationMetrics.measure("dashboard.loadCareer",
+                careerSessionService.getCareerFromCache(userId))
+                .map(this::countPlayedFixtures)
+                .defaultIfEmpty(0);
+        int clubs = snapshot != null && snapshot.getWorldTeams() != null
+                ? snapshot.getWorldTeams().size() : 0;
+        int players = snapshot != null && snapshot.getWorldPlayers() != null
+                ? snapshot.getWorldPlayers().size() : 0;
+        return matchesMono.map(matches -> new WorldStatusSummary(clubs, players, matches));
     }
 
     /**
