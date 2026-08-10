@@ -1,0 +1,40 @@
+{
+  "schema": "pb123h79e-global-keyspace-family-counts-v1",
+  "observedAt": "2026-08-10T17:31:53-03:00",
+  "scan": {
+    "command": "SCAN cursor COUNT 100",
+    "countHint": 100,
+    "concurrentScans": 0,
+    "completed": true,
+    "iterations": 97,
+    "keysEnumerated": 9638,
+    "uniqueKeys": 9638,
+    "duplicatesRemoved": 0,
+    "providerDBSIZE": 9638,
+    "reconciled": true
+  },
+  "families": {
+    "user-projection": 8955,
+    "game/index": 262,
+    "baseline": 126,
+    "match-detail": 120,
+    "world": 102,
+    "career-root": 21,
+    "career-generation": 11,
+    "career-mapping-token": 11,
+    "career-owner": 11,
+    "career-index": 11,
+    "manifest-version": 7,
+    "manifest-members": 1
+  },
+  "globalOrUnknown": {
+    "globalNonOwnerKeys": 0,
+    "unknownPrefixKeys": 0,
+    "classifiedKeys": 9638,
+    "unknownKeys": 0,
+    "classifiedPlusUnknown": 9638
+  },
+  "readOnly": true,
+  "payloadsExported": false,
+  "mutations": 0
+}

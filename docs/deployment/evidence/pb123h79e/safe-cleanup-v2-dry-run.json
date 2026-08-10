@@ -1,0 +1,16 @@
+{
+  "schema": "pb123h79e-safe-cleanup-v2-dry-run-v1",
+  "observedAt": "2026-08-10T17:31:53-03:00",
+  "safeCandidateKeys": 0,
+  "potentialOrphanKeysExcluded": 9638,
+  "plannedUNLINKRequests": 0,
+  "foreignOwnerKeys": 0,
+  "unknownOwnerKeys": 0,
+  "reconciliation": "PASS_ZERO_SAFE_KEYS",
+  "current": {"dbsize":9638,"storage":"256 MB / 256 MB","storageBytesExact":null},
+  "projectedAfter": {"dbsize":9638,"storage":"256 MB / 256 MB","freedBytes":0},
+  "below200MB": false,
+  "preferred160To180MB": false,
+  "actualDeletions": 0,
+  "cleanupAuthorized": false
+}

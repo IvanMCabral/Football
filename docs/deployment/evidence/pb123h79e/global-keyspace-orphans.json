@@ -1,0 +1,25 @@
+{
+  "schema": "pb123h79e-global-keyspace-orphans-v1",
+  "observedAt": "2026-08-10T17:31:53-03:00",
+  "ownerNamespaces": {
+    "redisOwners": 144,
+    "postgresPresent": 0,
+    "postgresAbsent": 144,
+    "potentialOrphanOwnerKeys": 9478,
+    "proof": "exact UUID in key name plus absence from SELECT-only users table"
+  },
+  "careerNamespaces": {
+    "careerIds": 22,
+    "validMappings": 11,
+    "missingMappings": 11,
+    "potentialOrphanCareerKeys": 160,
+    "contradictoryMappings": 0
+  },
+  "globalUnknown": {
+    "globalNonOwnerKeys": 0,
+    "unknownPrefixKeys": 0
+  },
+  "classification": "POTENTIAL_ORPHAN",
+  "deletionStatus": "NOT_AUTHORIZED",
+  "caution": "PostgreSQL absence does not by itself prove disposable test ownership; provider/database snapshot mismatch remains possible."
+}

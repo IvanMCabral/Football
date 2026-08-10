@@ -1,0 +1,17 @@
+{
+  "schema": "pb123h79e-safe-candidate-set-v2",
+  "observedAt": "2026-08-10T17:31:53-03:00",
+  "safeDeletionEligibleKeys": 0,
+  "potentialOrphanKeys": 9638,
+  "provenDisposableTestOwnerKeys": 0,
+  "postgresAbsentOrphanKeysUnderReview": 9638,
+  "foreignOwnerKeys": 0,
+  "unknownOwnerKeys": 0,
+  "ambiguousOwnerKeys": 0,
+  "candidateMeasuredBytes": 0,
+  "candidateUnknownBytes": 0,
+  "classification": "SAFE_CANDIDATE_SET_INSUFFICIENT",
+  "reason": "Every Redis owner is absent from the current PostgreSQL users table, but absence does not prove disposable ownership. Missing career mappings are also retained as potential orphans only.",
+  "actualDeletions": 0,
+  "cleanupAuthorized": false
+}

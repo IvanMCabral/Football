@@ -1,0 +1,39 @@
+{
+  "schema": "pb123h79e-global-keyspace-owner-attribution-v1",
+  "observedAt": "2026-08-10T17:31:53-03:00",
+  "ownerCounts": {
+    "redisOwnersDiscovered": 144,
+    "postgresPresentOwners": 0,
+    "postgresAbsentOwners": 144,
+    "protectedOwnersWithRedis": 0,
+    "provenDisposableTestOwnersWithRedis": 0,
+    "likelyTestButUnproven": 0,
+    "realOrProtectedOwners": 0,
+    "orphanOwnerNamespaces": 144,
+    "ownerScopedKeys": 9478,
+    "potentialOrphanOwnerKeys": 9478
+  },
+  "distribution": {
+    "minKeysPerOwner": 1,
+    "medianKeysPerOwner": 77,
+    "maxKeysPerOwner": 128,
+    "remainingOwnersNotListed": 134
+  },
+  "topOwnersByKeyCount": [
+    {"ownerHash":"f995b6a3","postgres":"POSTGRES_USER_ABSENT","keyCount":128,"sampledBytes":3464165},
+    {"ownerHash":"6cadbd31","postgres":"POSTGRES_USER_ABSENT","keyCount":126,"sampledBytes":3478833},
+    {"ownerHash":"96f6fdd1","postgres":"POSTGRES_USER_ABSENT","keyCount":98,"sampledBytes":492},
+    {"ownerHash":"0e21107b","postgres":"POSTGRES_USER_ABSENT","keyCount":91,"sampledBytes":3403843},
+    {"ownerHash":"c39302fa","postgres":"POSTGRES_USER_ABSENT","keyCount":91,"sampledBytes":492},
+    {"ownerHash":"a40a1065","postgres":"POSTGRES_USER_ABSENT","keyCount":91,"sampledBytes":492},
+    {"ownerHash":"606a4303","postgres":"POSTGRES_USER_ABSENT","keyCount":87,"sampledBytes":492},
+    {"ownerHash":"b7213a34","postgres":"POSTGRES_USER_ABSENT","keyCount":81,"sampledBytes":3395889},
+    {"ownerHash":"be773734","postgres":"POSTGRES_USER_ABSENT","keyCount":81,"sampledBytes":3395892},
+    {"ownerHash":"979d5f9f","postgres":"POSTGRES_USER_ABSENT","keyCount":79,"sampledBytes":3391925}
+  ],
+  "join": {
+    "postgresqlQuery": "SELECT-only users/games ownership join",
+    "personalFieldsExported": false,
+    "ownerIdsExported": false
+  }
+}

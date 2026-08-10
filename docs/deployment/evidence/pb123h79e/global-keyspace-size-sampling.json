@@ -1,0 +1,22 @@
+{
+  "schema": "pb123h79e-global-keyspace-size-sampling-v1",
+  "observedAt": "2026-08-10T17:31:53-03:00",
+  "sample": {
+    "keysMeasured": 100,
+    "method": "MEMORY USAGE on exact keys",
+    "exactMeasuredBytes": 41388164,
+    "sampledBytes": 41388164,
+    "unmeasuredKeys": 9538,
+    "unknownBytes": true
+  },
+  "familySampleBytes": {
+    "world": {"keys":12,"exactBytes":29801916},
+    "career-root": {"keys":11,"exactBytes":10161646},
+    "baseline": {"keys":19,"exactBytes":800356},
+    "match-detail": {"keys":20,"exactBytes":615000},
+    "user-projection": {"keys":19,"exactBytes":4750},
+    "game/index": {"keys":19,"exactBytes":4496}
+  },
+  "topMeasuredFamilies": ["world","career-root","baseline","match-detail","user-projection","game/index"],
+  "extrapolation": "Not performed; sample values are not totals."
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "pb123h79e-global-keyspace-ttl-census-v1",
+  "observedAt": "2026-08-10T17:31:53-03:00",
+  "sample": {
+    "keys": 100,
+    "typeCommands": 12,
+    "pttlCommands": 100,
+    "memoryUsageCommands": 100,
+    "typeResults": {
+      "string": 11,
+      "set": 2
+    },
+    "ttlResults": {
+      "TTL_ACTIVE": 33,
+      "NO_TTL": 67,
+      "EXPIRED_BUT_PRESENT": 0,
+      "UNKNOWN": 0
+    }
+  },
+  "byFamilySample": {
+    "career-root": {"sample":11,"active":11,"noTtl":0},
+    "world": {"sample":12,"active":1,"noTtl":11},
+    "user-projection": {"sample":19,"active":0,"noTtl":19},
+    "game/index": {"sample":19,"active":0,"noTtl":19},
+    "match-detail": {"sample":20,"active":2,"noTtl":18},
+    "baseline": {"sample":19,"active":19,"noTtl":0}
+  },
+  "contractComparison": {
+    "careerRoot": "30d observed active in sample",
+    "world": "30d configured; no-TTL legacy/old-writer samples observed",
+    "careerIndexMappingGeneration": "31d configured",
+    "detail": "30d configured; no-TTL legacy/old-writer samples observed",
+    "baseline": "7d observed active in sample",
+    "runtime": "2h configured; no key observed",
+    "state": "24h configured; no key observed",
+    "commands": "24h configured; no key observed",
+    "tombstone": "15m configured; no key observed"
+  },
+  "coverage": "Sampling only; TTL totals for the remaining 9,538 keys are UNKNOWN."
+}
