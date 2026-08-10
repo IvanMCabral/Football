@@ -143,6 +143,34 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
     }
 
     @Test
+    void modernManifestBoundaryMatrixKeepsDeletesBoundedAndRootLast() {
+        for (int entries : List.of(1, 10, 100, 101, 500, 1024)) {
+            UUID owner = UUID.randomUUID();
+            String careerId = "career-modern-boundary-" + entries + "-" + owner;
+            seedOwnership(owner, careerId, "generation-boundary-" + entries);
+            String manifest = CareerOwnershipTouchService.manifestKey(careerId);
+            reactiveRedisTemplate.opsForValue()
+                    .set(CareerOwnershipTouchService.manifestVersionKey(careerId), "1")
+                    .block(Duration.ofSeconds(5));
+            for (int i = 0; i < entries; i++) {
+                String key = "runtime:match:" + owner + ":boundary-" + entries + "-" + i;
+                reactiveRedisTemplate.opsForValue().set(key, "runtime").
+                        then(reactiveRedisTemplate.opsForSet().add(manifest, key))
+                        .block(Duration.ofSeconds(5));
+            }
+
+            CareerDataCleanupResult result = cleanupRepository.deleteOwnedData(owner, careerId)
+                    .block(Duration.ofSeconds(20));
+
+            assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+            assertEquals(entries, Integer.parseInt(result.diagnostic("manifestEntries")));
+            assertEquals((entries + 1 + 99) / 100, Integer.parseInt(result.diagnostic("childDeleteCommands")));
+            assertTrue(result.maxBatchSize() <= 100);
+            assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career:" + owner).block()));
+        }
+    }
+
+    @Test
     void tokenlessCareerStateAndRuntimeWritersFailClosedAgainstRealRedis() {
         UUID owner = UUID.randomUUID();
         CareerSave career = career(owner, "career-tokenless");
