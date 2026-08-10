@@ -42,9 +42,8 @@ public class LeagueTeamSyncService {
         // reload-world already has to read the canonical league catalog. For
         // this path, avoid user-scoped Redis catalog reads and refresh the
         // relation indexes from the canonical SQL catalog.
-        return leagueRepository.findAllCanonical()
-                .flatMap(league -> leagueTeamSourceRepository.findByLeagueId(league.getId().getValue())
-                        .map(link -> Map.entry(link.teamId(), league.getId().getValue())))
+        return leagueTeamSourceRepository.findAll()
+                .map(link -> Map.entry(link.teamId(), link.leagueId()))
                 .collectList()
                 .flatMap(entries -> {
                     Map<UUID, UUID> map = entries.stream()

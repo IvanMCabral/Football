@@ -20,4 +20,10 @@ public class LeagueTeamSourceRepositoryAdapter implements LeagueTeamSourceReposi
         return repository.findByLeagueId(leagueId)
             .map(entity -> new LeagueTeamLink(entity.getLeagueId(), entity.getTeamId()));
     }
+
+    @Override
+    public Flux<LeagueTeamLink> findAll() {
+        return repository.findAll()
+                .map(entity -> new LeagueTeamLink(entity.getLeagueId(), entity.getTeamId()));
+    }
 }
