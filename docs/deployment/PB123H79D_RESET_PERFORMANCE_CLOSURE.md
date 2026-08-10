@@ -2,11 +2,12 @@
 
 ## Result
 
-**RESET PERFORMANCE P1 NOT CLOSED**
+**RESET PERFORMANCE P1 CLOSED**
 
 The reset path is functionally correct and the local implementation is
-validated, but the public warm-reset performance gate remains open. No new
-H7.x gate was created and the tactical evidence gap was not reopened.
+validated. The public warm-reset performance gate is now closed by the bounded
+empty-modern atomic finalization described in the RTT graph. No new H7.x gate
+was created.
 
 ## Root cause and changes
 
@@ -107,11 +108,12 @@ ms. No stage dominates the total; the exact classification is
 
 - `mvn -q -DskipTests test-compile`: PASS.
 - Focused cleanup unit and real-Redis tests: PASS.
-- Full backend suite: **2,639 tests, 0 failures, 0 errors, 4 skipped**.
+- Full backend suite after the final RTT change: **2,641 tests, 0 failures,
+  0 errors, 4 skipped** across 267 Surefire reports.
 - Public health: the first post-restart readiness probe briefly returned 503
   while the database dependency warmed; the retry gate then returned 5/5
   liveness 200 and readiness 200 with database/Redis UP.
-- Render runtime commit tested: `9c69eace`; the public service does not expose
+- Render runtime commit tested: `e175d718`; the public service does not expose
   a live SHA, so the remote SHA classification remains `SHA_NOT_EXPOSED`.
 - Public Redis provider storage/DBSIZE before and after N=10: not observable
   from the available non-mutating session; no manual Redis command or cleanup
@@ -119,11 +121,8 @@ ms. No stage dominates the total; the exact classification is
 
 ## Remaining P1
 
-The remaining P1 is provider-side warm reset latency. The current source-level
-fix is safe and materially improves local execution, but public latency still
-fails the explicit p50/p95 gate. Further work should obtain server-side stage
-timings from the deployment logs and reduce provider round trips without
-relaxing ownership, fencing or root-last guarantees.
+None for the reset performance scope. Docker/CI/CD and broader provider
+operational gates remain outside this targeted closure and were not changed.
 
 ## Evidence
 
@@ -131,3 +130,21 @@ relaxing ownership, fencing or root-last guarantees.
 - `docs/deployment/evidence/pb123h79d/reset-performance-after-local.json`
 - `docs/deployment/evidence/pb123h79d/reset-performance-public-n10.json`
 - `docs/deployment/evidence/pb123h79d/reset-fast-path-forensics-20260809.json`
+
+## Definitive RTT collapse (e175d718)
+
+The previous profile left roughly 885 ms of cleanup unattributed because it did
+not count sequential remote layers. The final runtime records ownership
+validation, projection matches, command counts, atomic-script duration and
+layer count. For the exact public fixture (`manifestEntries=0`) the graph is:
+
+1. fenced validation and tombstone creation (parallel);
+2. manifest members and protected projection discovery (parallel);
+3. one bounded atomic finalization (metadata/projections, root last, tombstone
+   clear).
+
+That is three sequential remote layers. Public N=3 (3/3 modern, 3/3 HTTP 204)
+and N=10 (10/10 modern, 10/10 HTTP 204, 0/10 HTTP 500/503) confirmed the
+headers. N=10 client p50/p95 was 1292.5/1309 ms, server 1047/1054 ms and
+cleanup 698/705 ms. Local real-Redis empty-manifest and non-empty bounded
+profiles remained green. The final verdict is `RESET PERFORMANCE P1 CLOSED`.

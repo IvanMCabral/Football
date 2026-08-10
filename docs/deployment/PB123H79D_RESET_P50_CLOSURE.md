@@ -2,8 +2,9 @@
 
 ## Current status
 
-`RESET PERFORMANCE P1 NOT CLOSED`. The local fast path is implemented and
-validated, and the public runtime now exposes sanitized forensic telemetry.
+`RESET PERFORMANCE P1 CLOSED`. The empty modern fast path is implemented and
+validated, and the public runtime now exposes complete sanitized forensic
+telemetry.
 The previously reported registration 422 was reproduced as a probe-contract
 failure, not as a production registration failure. A valid public flow now
 registers and completes the bootstrap, but the public N=10 latency gate
@@ -97,3 +98,21 @@ deployment creates modern careers and a new public N=10 is measured.
 - [N=10 provider evidence](evidence/pb123h79d/provider-diagnosis-n10.json)
 - [corrected public bootstrap and reset evidence](evidence/pb123h79d/public-bootstrap-n10-20260809.json)
 - [final reset fast-path forensics](evidence/pb123h79d/reset-fast-path-forensics-20260809.json)
+
+## Final RTT-collapse evidence (e175d718)
+
+The exact pushed runtime exposes the previously unattributed layers. The
+empty-manifest path now validates mapping, generation, marker and tombstone,
+discovers the protected projection, then executes one bounded atomic
+finalization with root-last semantics. Public N=3 and N=10 used fresh
+disposable accounts and all returned `204`, `MODERN_MANIFEST`, marker version
+`1`, `manifestEntries=0`, `projectionMatches=1`, `scanCount=1`,
+`sequentialRemoteLayers=3`, `atomicScriptCommands=1`,
+`childDeleteCommands=0`, `metadataDeleteCommands=1`, and
+`rootDeleteCommands=1`.
+
+N=3 measured client p50/p95 **1338/1476 ms**, server **1058/1141 ms**, and
+cleanup **709/792 ms**. N=10 measured client **1292.5/1309 ms**, server
+**1047/1054 ms**, and cleanup **698/705 ms**. There were zero HTTP 500/503
+responses. The explicit gate (`client p50 <=1500 ms`, `p95 <=3000 ms`) and the
+desired cleanup/server targets are now met.

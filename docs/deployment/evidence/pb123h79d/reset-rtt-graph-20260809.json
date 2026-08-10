@@ -1,0 +1,98 @@
+{
+  "runtimeCommit": "e175d718",
+  "sourceChange": "empty modern manifest atomic finalization and complete RTT counters",
+  "publicBaseline": {
+    "runtimeCommit": "9c69eace",
+    "cleanupP50Ms": 2106,
+    "clientP50Ms": 2669,
+    "clientP95Ms": 2718,
+    "http204": 10,
+    "http500": 0,
+    "http503": 0,
+    "modern": 10,
+    "legacy": 0,
+    "instrumentedStageSumMs": 1221,
+    "unattributedCleanupMs": 885
+  },
+  "physicalLayers": [
+    {"sequence": 1, "name": "validation-and-tombstone", "parallel": true, "commands": ["MGET", "SET"], "mustWaitForPrevious": false},
+    {"sequence": 2, "name": "manifest-and-projection-discovery", "parallel": true, "commands": ["SMEMBERS", "SCAN"], "mustWaitForPrevious": true},
+    {"sequence": 3, "name": "empty-modern-atomic-finalization", "parallel": false, "commands": ["EVAL", "UNLINK", "DEL"], "mustWaitForPrevious": true, "rootLast": true}
+  ],
+  "emptyModernLocalRealRedis": {
+    "marker": "1",
+    "manifestEntries": 0,
+    "projectionScanMatches": 1,
+    "scanCount": 1,
+    "childDeleteCommands": 0,
+    "metadataDeleteCommands": 1,
+    "rootDeleteCommands": 1,
+    "atomicScriptCommands": 1,
+    "sequentialRemoteLayers": 3,
+    "ownerIsolation": "PASS",
+    "staleGeneration": "FAIL_CLOSED",
+    "rootLast": "PASS",
+    "tombstoneRetryAnchor": "PASS",
+    "batchMax": 100,
+    "status": "PASS"
+  },
+  "nonEmptyLocalRealRedis": {
+    "profile": "existing RedisCareerDataCleanupRepositoryRealIntegrationTest",
+    "samples": 20,
+    "batchMax": 100,
+    "status": "PASS"
+  },
+  "backendSuite": {
+    "testCompile": "PASS",
+    "reports": 267,
+    "tests": 2641,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 4,
+    "focusedCleanupUnit": "PASS",
+    "focusedCleanupRealRedis": "PASS"
+  },
+  "publicAfterDeployment": {
+    "runtimeCommit": "e175d718",
+    "liveShaClassification": "SHA_NOT_EXPOSED",
+    "health": {"liveness": "8/8 HTTP 200", "readiness": "8/8 HTTP 200", "database": "UP", "redis": "UP"},
+    "n3": {
+      "accounts": 3,
+      "modern": 3,
+      "legacy": 0,
+      "http204": 3,
+      "http500": 0,
+      "http503": 0,
+      "clientMs": [1338, 1476, 1298],
+      "serverMs": [1058, 1141, 1047],
+      "cleanupMs": [709, 792, 699],
+      "clientP50Ms": 1338,
+      "clientP95Ms": 1476,
+      "serverP50Ms": 1058,
+      "serverP95Ms": 1141,
+      "cleanupP50Ms": 709,
+      "cleanupP95Ms": 792,
+      "headers": {"manifestEntries": 0, "projectionMatches": 1, "scanCount": 1, "sequentialLayers": 3, "atomicScriptCommands": 1, "childDeleteCommands": 0, "metadataDeleteCommands": 1, "rootDeleteCommands": 1}
+    },
+    "n10": {
+      "accounts": 10,
+      "modern": 10,
+      "legacy": 0,
+      "http204": 10,
+      "http500": 0,
+      "http503": 0,
+      "clientMs": [1289, 1297, 1309, 1252, 1297, 1253, 1270, 1248, 1296, 1300],
+      "serverMs": [1047, 1047, 1054, 1047, 1046, 1046, 1047, 1046, 1047, 1047],
+      "cleanupMs": [698, 699, 705, 698, 698, 698, 699, 698, 698, 698],
+      "clientP50Ms": 1292.5,
+      "clientP95Ms": 1309,
+      "serverP50Ms": 1047,
+      "serverP95Ms": 1054,
+      "cleanupP50Ms": 698,
+      "cleanupP95Ms": 705,
+      "headers": {"manifestEntries": 0, "projectionMatches": 1, "scanCount": 1, "sequentialLayers": 3, "atomicScriptCommands": 1, "childDeleteCommands": 0, "metadataDeleteCommands": 1, "rootDeleteCommands": 1}
+    },
+    "status": "PASS"
+  },
+  "verdict": "RESET PERFORMANCE P1 CLOSED"
+}
