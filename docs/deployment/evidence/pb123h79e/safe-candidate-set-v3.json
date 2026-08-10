@@ -1,0 +1,18 @@
+{
+  "schema": "pb123h79e-safe-candidate-set-v3",
+  "candidateOwners": 0,
+  "candidateCareers": 0,
+  "candidateKeys": 0,
+  "familyCounts": {},
+  "deduplicatedKeys": 0,
+  "foreignOwnerKeys": 0,
+  "protectedExcludedKeys": 9638,
+  "unknownPrefixKeys": 0,
+  "candidateMeasuredBytes": 0,
+  "candidateUnknownBytes": 0,
+  "minimumProvableFreedBytes": 0,
+  "candidateListHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "below200Mb": false,
+  "preferred160To180Mb": false,
+  "deletionAuthorized": false
+}

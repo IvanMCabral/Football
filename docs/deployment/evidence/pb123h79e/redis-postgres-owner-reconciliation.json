@@ -1,0 +1,12 @@
+{
+  "schema": "pb123h79e-redis-postgres-owner-reconciliation-v1",
+  "redisOwners": 144,
+  "ownerScopedKeys": 9478,
+  "retainedPostgresUsers": 73,
+  "retainedJoin": {"present": 0, "absent": 144},
+  "knownPb123AuditOwners": 21,
+  "knownPb123AuditOwnerRedisKeys": 0,
+  "currentCanonicalStatus": "INCONCLUSIVE",
+  "classification": "POTENTIAL_ORPHAN_NOT_PROVEN",
+  "deletionAuthorized": false
+}

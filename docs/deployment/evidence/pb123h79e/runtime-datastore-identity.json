@@ -1,0 +1,41 @@
+{
+  "schema": "pb123h79e-runtime-datastore-identity-v1",
+  "observedAt": "2026-08-10",
+  "render": {
+    "service": "manager-staging-api",
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "liveSha": "bf316f01f3d044fea6391a99364d1c87a24fca15",
+    "deploymentStatus": "LIVE",
+    "plan": "Free",
+    "region": "oregon",
+    "manualInstances": 1,
+    "autoscaling": "OFF"
+  },
+  "postgres": {
+    "dependencyClassification": "EXACT_RUNTIME_DEPENDENCY",
+    "hostSha256": "6117fb00c0db26a545797814525876f6f1e170f1c28121c23cb88b6ffeb2a0f3",
+    "database": "neondb",
+    "schema": "public",
+    "server": "PostgreSQL 18.4",
+    "flywayVersion": "1",
+    "freshCanonicalAuthority": "NOT_VERIFIABLE",
+    "reason": "Neon console session is currently unauthenticated; local .env identifies a different database."
+  },
+  "redis": {
+    "dependencyClassification": "EXACT_RUNTIME_DEPENDENCY",
+    "hostSha256": "3cdf2db0b5e1ef0d740da18ce1329f9e9b9c442257cbb9dcf111cb5fa6050e64",
+    "port": 6379,
+    "provider": "Upstash",
+    "database": "Manager",
+    "region": "AWS sa-east-1",
+    "tls": true,
+    "ping": "PONG",
+    "dbsize": 9638,
+    "storage": "256 MB / 256 MB"
+  },
+  "health": {
+    "liveness": {"samples": 3, "http200": 3},
+    "readiness": {"samples": 3, "http200": 0, "http503": 3, "database": "UP", "redis": "DOWN"}
+  },
+  "mutations": {"redis": false, "postgres": false, "infrastructure": false}
+}

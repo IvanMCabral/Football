@@ -1,0 +1,15 @@
+{
+  "schema": "pb123h79e-orphan-cleanup-plan-v1",
+  "status": "ORPHAN_CLEANUP_BLOCKED",
+  "plannedBatches": 0,
+  "maxBatch": 100,
+  "rootLast": true,
+  "plannedKeys": 0,
+  "actualDeletions": 0,
+  "redisMutations": 0,
+  "postgresMutations": 0,
+  "broadPatterns": false,
+  "flushDb": false,
+  "flushAll": false,
+  "reason": "Canonical PostgreSQL authority, branch/snapshot identity and complete owner-reference search are not freshly verifiable."
+}

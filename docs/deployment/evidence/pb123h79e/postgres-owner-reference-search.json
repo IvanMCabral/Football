@@ -1,0 +1,13 @@
+{
+  "schema": "pb123h79e-postgres-owner-reference-search-v1",
+  "status": "BLOCKED_BEFORE_FRESH_QUERY",
+  "canonicalDatabase": "neondb",
+  "canonicalSchema": "public",
+  "columnsToSearch": ["user_id", "owner_id", "career_id", "created_by", "account_id"],
+  "tablesSearchedFresh": 0,
+  "redisOwnersCompared": 0,
+  "ownersFoundAnywhere": null,
+  "ownersAbsentFromCompleteSchema": null,
+  "retainedUsersJoin": {"users": 73, "redisOwnersPresent": 0, "redisOwnersAbsent": 144},
+  "reason": "A fresh SELECT-only connection to the exact Render Neon database was unavailable."
+}

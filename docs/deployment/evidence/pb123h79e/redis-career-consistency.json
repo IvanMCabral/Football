@@ -1,0 +1,11 @@
+{
+  "schema": "pb123h79e-redis-career-consistency-v1",
+  "careerIds": 22,
+  "validOwnerMappings": 11,
+  "missingOwnerMappings": 11,
+  "contradictoryMappings": 0,
+  "careerKeysWithValidMappings": 127,
+  "careerKeysWithoutMapping": 160,
+  "payloadsRead": false,
+  "classification": "INCONCLUSIVE_PENDING_CANONICAL_AUTHORITY"
+}

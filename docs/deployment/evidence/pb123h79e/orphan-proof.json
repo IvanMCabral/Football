@@ -1,0 +1,16 @@
+{
+  "schema": "pb123h79e-orphan-proof-v1",
+  "worldKeys": 102,
+  "provenOrphanWorld": 0,
+  "protectedWorld": 102,
+  "careerRoots": 21,
+  "provenOrphanCareerRoots": 0,
+  "protectedCareerRoots": 21,
+  "userProjectionKeys": 8955,
+  "provenOrphanProjections": 0,
+  "protectedProjections": 8955,
+  "careerOnlyOrphanKeys": 0,
+  "unknownPrefixKeys": 0,
+  "overall": "ORPHAN_PROOF_INCOMPLETE",
+  "blockingGate": "Fresh canonical PostgreSQL authority and complete reference search unavailable."
+}

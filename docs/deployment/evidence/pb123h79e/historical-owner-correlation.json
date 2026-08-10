@@ -1,0 +1,10 @@
+{
+  "schema": "pb123h79e-historical-owner-correlation-v1",
+  "redisOwners": 144,
+  "knownHistoricalTestOwnersCorrelated": 0,
+  "knownHistoricalPublicTestOwnersCorrelated": 0,
+  "unknownHistoricalOwners": 144,
+  "currentPb123OwnersWithRedisKeys": 0,
+  "method": "Exact UUID/hash evidence only; usernames alone were not used.",
+  "classification": "NO_PROVEN_HISTORICAL_OWNER_MATCH"
+}

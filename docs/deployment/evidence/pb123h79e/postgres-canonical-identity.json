@@ -1,0 +1,20 @@
+{
+  "schema": "pb123h79e-postgres-canonical-identity-v1",
+  "source": "Render startup logs plus retained Neon SELECT-only inventory",
+  "renderConfigured": {
+    "database": "neondb",
+    "schema": "public",
+    "server": "PostgreSQL 18.4",
+    "flywayVersion": 1
+  },
+  "retainedNeonInventory": {
+    "project": "manager-staging",
+    "users": 73,
+    "games": 0,
+    "minUserCreatedAt": "2026-07-29T15:14:25.364519",
+    "maxUserCreatedAt": "2026-07-31T13:12:55.986812",
+    "sourceReadOnly": true
+  },
+  "freshFullSchemaSelect": "NOT_EXECUTED",
+  "reason": "Current Neon browser session requires authentication; local .env is not the Render database."
+}
