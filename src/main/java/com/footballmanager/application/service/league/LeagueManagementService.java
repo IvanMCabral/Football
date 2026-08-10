@@ -8,6 +8,7 @@ import com.footballmanager.domain.model.valueobject.TeamId;
 import com.footballmanager.domain.port.in.league.LeagueManagementUseCase;
 import com.footballmanager.domain.ports.out.league.LeagueRepository;
 import com.footballmanager.domain.ports.out.league.LeagueTeamRepository;
+import com.footballmanager.domain.ports.out.league.LeagueTeamSourceRepository;
 import com.footballmanager.domain.ports.out.team.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class LeagueManagementService implements LeagueManagementUseCase {
     private final LeagueRepository leagueRepository;
     private final TeamRepository teamRepository;
     private final LeagueTeamRepository leagueTeamRepository;
+    private final LeagueTeamSourceRepository leagueTeamSourceRepository;
     private final WorldService worldService;
 
     @Override
@@ -44,6 +46,7 @@ public class LeagueManagementService implements LeagueManagementUseCase {
 
     private Mono<League> enrichLeagueWithTeamIds(UUID userId, League league) {
         return leagueTeamRepository.findByLeagueId(userId, league.getId().getValue())
+                .switchIfEmpty(leagueTeamSourceRepository.findByLeagueId(league.getId().getValue()))
                 .map(link -> TeamId.of(link.teamId()))
                 .collectList()
                 .map(teamIds -> {
@@ -95,6 +98,7 @@ public class LeagueManagementService implements LeagueManagementUseCase {
     @Override
     public Flux<Team> getTeamsInLeague(UUID userId, UUID leagueId) {
         return leagueTeamRepository.findByLeagueId(userId, leagueId)
+                .switchIfEmpty(leagueTeamSourceRepository.findByLeagueId(leagueId))
                 .map(link -> link.teamId())
                 .collectList()
                 .flatMapMany(teamIds -> {
