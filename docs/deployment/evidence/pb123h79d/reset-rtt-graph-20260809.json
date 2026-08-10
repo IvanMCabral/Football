@@ -40,12 +40,15 @@
     "profile": "existing RedisCareerDataCleanupRepositoryRealIntegrationTest",
     "samples": 20,
     "batchMax": 100,
+    "manifestBoundaryEntries": [1, 10, 100, 101, 500, 1024],
+    "childDeleteCommands": [1, 1, 2, 2, 6, 11],
+    "boundaryStatus": "PASS",
     "status": "PASS"
   },
   "backendSuite": {
     "testCompile": "PASS",
     "reports": 267,
-    "tests": 2641,
+    "tests": 2642,
     "failures": 0,
     "errors": 0,
     "skipped": 4,

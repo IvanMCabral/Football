@@ -70,7 +70,10 @@ Against ephemeral real Redis, the empty modern integration scenario passed with
 one atomic script, zero child-delete commands, root-last deletion, mapping and
 generation removal, and no remaining owner tombstone. Existing non-empty
 profiles remain bounded to batches of at most 100 keys and preserve owner-B
-isolation. The focused cleanup unit and real-Redis suites are green.
+isolation. The real-Redis boundary matrix passed for manifest sizes 1, 10,
+100, 101, 500 and 1,024; child batches were respectively 1, 1, 2, 2, 6 and
+11 (the additional key in each case is the protected owner projection index).
+The focused cleanup unit and real-Redis suites are green.
 
 ## Public gate
 
