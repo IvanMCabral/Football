@@ -1,0 +1,8 @@
+{
+  "phase": "local-before",
+  "status": "NOT_MEASURED",
+  "reason": "No local Redis listener was available; the local PostgreSQL listener alone is insufficient to run the reactive application with its required dependencies.",
+  "sampleCount": 0,
+  "databaseChanged": false,
+  "redisChanged": false
+}

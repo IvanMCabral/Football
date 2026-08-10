@@ -1,0 +1,28 @@
+{
+  "phase": "public-before-instrumentation",
+  "runtime": "eb3f5de7bd8e58d2252d664dc6dba3775659072b",
+  "endpoint": "POST /api/v1/dashboard/reload-world",
+  "sampleCount": 10,
+  "accounts": "fresh, usernames and emails not retained",
+  "samples": [
+    {"index":0,"register":200,"me":200,"status":500,"clientMs":17418,"requestIdSuffix":"5178843b","code":"INTERNAL_ERROR"},
+    {"index":1,"register":200,"me":200,"status":500,"clientMs":10251,"requestIdSuffix":"f9bd165b","code":"INTERNAL_ERROR"},
+    {"index":2,"register":200,"me":200,"status":200,"clientMs":28096,"requestIdSuffix":"bf261593"},
+    {"index":3,"register":200,"me":200,"status":200,"clientMs":12131,"requestIdSuffix":"8a8dcdaa"},
+    {"index":4,"register":200,"me":200,"status":200,"clientMs":10747,"requestIdSuffix":"26c64c6f"},
+    {"index":5,"register":200,"me":200,"status":200,"clientMs":9048,"requestIdSuffix":"ee1c4b9f"},
+    {"index":6,"register":200,"me":200,"status":500,"clientMs":10273,"requestIdSuffix":"d17d7800","code":"INTERNAL_ERROR"},
+    {"index":7,"register":200,"me":200,"status":500,"clientMs":10352,"requestIdSuffix":"2f8978ea","code":"INTERNAL_ERROR"},
+    {"index":8,"register":200,"me":200,"status":200,"clientMs":11539,"requestIdSuffix":"319bb513"},
+    {"index":9,"register":200,"me":200,"status":200,"clientMs":12085,"requestIdSuffix":"48a4cd39"}
+  ],
+  "summary": {
+    "http200": 6,
+    "http500": 4,
+    "http503": 0,
+    "clientMs": {"p50": 11143,"p95": 28096,"max": 28096},
+    "serverHeaders": "not available before instrumentation",
+    "stageHeaders": "not available before instrumentation"
+  },
+  "note": "This is a real public warm-path baseline. The four controlled INTERNAL_ERROR responses are retained as evidence and are not treated as a passing baseline. No passwords, tokens, complete identities or payloads are stored."
+}

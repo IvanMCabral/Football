@@ -1,0 +1,6 @@
+{
+  "phase": "public-bootstrap-ux",
+  "status": "NOT_MEASURED",
+  "reason": "Bootstrap was not started because public Redis readiness was DOWN; browser pixel timings would not represent a healthy application.",
+  "frontendChanged": false
+}

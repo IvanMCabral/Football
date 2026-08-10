@@ -1,0 +1,9 @@
+{
+  "phase": "local-after-instrumentation",
+  "status": "NOT_MEASURED",
+  "reason": "Local Redis was unavailable; a local PostgreSQL listener alone cannot reproduce the required reactive runtime.",
+  "sampleCount": 0,
+  "testCompile": "PASS",
+  "focusedTests": "PASS",
+  "fullSuite": {"tests": 2645, "failures": 0, "errors": 0, "skipped": 4}
+}

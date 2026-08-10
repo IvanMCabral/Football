@@ -1,0 +1,11 @@
+{
+  "phase": "public-after-instrumentation-diagnostic",
+  "status": "NOT_EXECUTED_AS_FORMAL_GATE",
+  "reason": "Readiness returned HTTP 503 with database UP and redis DOWN before a stable post-change N=3 gate.",
+  "observedSamples": [
+    {"status": 500, "clientMs": 18514, "serverMs": 18005, "canonicalMs": 17900, "leagueTeamMs": 17799},
+    {"status": 500, "clientMs": 10433, "serverMs": 10195, "canonicalMs": 10101, "leagueTeamMs": 10101},
+    {"status": 200, "clientMs": 25564, "serverMs": 25293, "canonicalMs": 14404, "leagueTeamMs": 4119, "leaguesMs": 479, "playersMs": 10281, "serializeMs": 1931, "ownershipMs": 5224, "redisMs": 2525, "statusMs": 5570, "leagueCount": 3, "teamCount": 70, "playerCount": 1680, "serializedBytes": 2483461}
+  ],
+  "note": "Samples span deployment transitions and are diagnostic only; no request IDs, identities, credentials, or payloads are retained."
+}
