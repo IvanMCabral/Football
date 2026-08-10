@@ -1,7 +1,7 @@
 {
   "phase": "redis-growth",
   "status": "NOT_MEASURED",
-  "reason": "No provider dashboard or manual Redis inspection was performed in this phase. Public readiness observed Redis DOWN.",
+  "reason": "No provider dashboard or manual Redis inspection was performed in this phase. Public readiness did not complete successfully.",
   "dbsize": "NOT_MEASURED",
   "storageBytes": "NOT_MEASURED",
   "manualCleanup": false,

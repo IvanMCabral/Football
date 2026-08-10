@@ -1,0 +1,14 @@
+{
+  "phase": "provider-health-gate",
+  "status": "BLOCKED_PROVIDER_REDIS",
+  "endpoint": "https://manager-staging-api.onrender.com",
+  "samples": [
+    {"index": 1, "liveness": 200, "livenessBody": "{\"status\":\"UP\"}", "readiness": "TIMEOUT", "elapsedMs": 13845},
+    {"index": 2, "liveness": 200, "livenessBody": "{\"status\":\"UP\"}", "readiness": "TIMEOUT", "elapsedMs": 1277},
+    {"index": 3, "liveness": 200, "livenessBody": "{\"status\":\"UP\"}", "readiness": "TIMEOUT", "elapsedMs": 764}
+  ],
+  "separationSeconds": 2,
+  "accountsCreated": 0,
+  "redisModified": false,
+  "note": "Readiness did not produce HTTP 200; N3/N20 were not started."
+}

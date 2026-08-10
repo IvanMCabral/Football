@@ -1,0 +1,12 @@
+{
+  "branch": "feat/v25d99.20.3.1-runtime-fixes",
+  "rootHead": "d196a3797d5d7dfa16192efd648c49c9eecb9e2d",
+  "runtimeSource": "240784bf008409f94440ea8f6055f46f0995bead",
+  "upstreamHead": "d196a3797d5d7dfa16192efd648c49c9eecb9e2d",
+  "postRuntimeCommits": [{"sha": "d196a379", "classification": "DOCUMENTATION_ONLY"}],
+  "renderLiveSha": "NOT_VERIFIABLE",
+  "runtimeClassification": "RUNTIME_EQUIVALENT_BY_SOURCE_LINEAGE",
+  "instanceCount": 1,
+  "autoscaling": "OFF (last authenticated observation)",
+  "note": "Public Render live SHA was not exposed by the available health probes. No SHA was invented."
+}

@@ -29,9 +29,10 @@
 
 ## Open gate
 
-Public readiness was HTTP 503 with Redis DOWN. No manual Redis or provider
-operation was allowed. Fresh healthy-provider N=3 and N=20, bootstrap UX, and
-Redis growth measurements remain unexecuted. No approval is claimed.
+The fresh health gate returned liveness 3/3 HTTP 200, but readiness timed out in
+all three separated probes. No manual Redis or provider operation was allowed.
+Fresh healthy-provider N=3 and N=20, bootstrap UX, idempotency, and Redis growth
+measurements remain unexecuted. No approval is claimed.
 
 No gameplay, frontend, database, manual Redis, infrastructure, billing, or
 provider-plan changes were made.
