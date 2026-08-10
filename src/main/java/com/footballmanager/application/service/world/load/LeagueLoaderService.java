@@ -17,7 +17,6 @@ import java.util.UUID;
 public class LeagueLoaderService {
 
     private final LeagueRepository leagueRepository;
-    private volatile Mono<java.util.List<WorldLeague>> canonicalLeagueCache;
 
     /**
      * Carga todas las leagues para un usuario.
@@ -34,16 +33,10 @@ public class LeagueLoaderService {
     }
 
     public Mono<java.util.List<WorldLeague>> loadLeagues(UUID userId, ReloadWorldTiming timing) {
-        Mono<java.util.List<WorldLeague>> cached = canonicalLeagueCache;
-        if (cached != null) return cached;
-        Mono<java.util.List<WorldLeague>> created = leagueRepository.findAllCanonical()
+        return leagueRepository.findAllCanonical()
                 .map(league -> WorldLeague.fromRealLeague(
                         league.getId().getValue(), league.getName(), league.getCountry(),
                         league.getSeasonId() != 0 ? league.getSeasonId() : 1))
-                .collectList()
-                .doOnError(ignored -> canonicalLeagueCache = null)
-                .cache(java.time.Duration.ofMinutes(5));
-        canonicalLeagueCache = created;
-        return created;
+                .collectList();
     }
 }

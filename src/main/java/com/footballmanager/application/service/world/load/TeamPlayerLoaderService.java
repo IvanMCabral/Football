@@ -25,7 +25,6 @@ public class TeamPlayerLoaderService {
 
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
-    private volatile Mono<TeamsAndPlayersResult> canonicalTeamPlayerCache;
 
     /**
      * Resultado de cargar teams y players.
@@ -93,13 +92,7 @@ public class TeamPlayerLoaderService {
     public Mono<TeamsAndPlayersResult> loadTeamsAndPlayers(UUID userId,
                                                             Map<UUID, UUID> leagueTeamsMap,
                                                             ReloadWorldTiming timing) {
-        Mono<TeamsAndPlayersResult> cached = canonicalTeamPlayerCache;
-        if (cached != null) return cached;
-        Mono<TeamsAndPlayersResult> created = loadTeamsAndPlayers(userId, leagueTeamsMap)
-                .doOnError(ignored -> canonicalTeamPlayerCache = null)
-                .cache(java.time.Duration.ofMinutes(5));
-        canonicalTeamPlayerCache = created;
-        return created;
+        return loadTeamsAndPlayers(userId, leagueTeamsMap);
     }
 
     private WorldPlayer mapPlayerToWorldPlayer(Player player, String worldTeamId) {

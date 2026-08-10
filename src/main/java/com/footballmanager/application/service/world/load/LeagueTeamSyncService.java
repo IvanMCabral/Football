@@ -23,7 +23,6 @@ public class LeagueTeamSyncService {
     private final LeagueRepository leagueRepository;
     private final LeagueTeamRepository leagueTeamRepository;
     private final LeagueTeamSourceRepository leagueTeamSourceRepository;
-    private volatile Mono<Map<UUID, UUID>> canonicalRelationCache;
 
     /**
      * Carga el map de league-team, sincronizando desde SQL si es necesario.
@@ -44,21 +43,11 @@ public class LeagueTeamSyncService {
         // relation sets are a rebuildable cache, so this path returns the
         // canonical map without paying a remote write per owner. Mutations
         // still update Redis through the command services.
-        return canonicalRelations();
-    }
-
-    private Mono<Map<UUID, UUID>> canonicalRelations() {
-        Mono<Map<UUID, UUID>> cached = canonicalRelationCache;
-        if (cached != null) return cached;
-        Mono<Map<UUID, UUID>> created = leagueTeamSourceRepository.findAll()
+        return leagueTeamSourceRepository.findAll()
                 .map(link -> Map.entry(link.teamId(), link.leagueId()))
                 .collectList()
                 .map(entries -> entries.stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-                .doOnError(ignored -> canonicalRelationCache = null)
-                .cache(java.time.Duration.ofMinutes(5));
-        canonicalRelationCache = created;
-        return created;
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     /**
