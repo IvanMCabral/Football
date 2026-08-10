@@ -21,4 +21,7 @@ public interface LeagueTeamR2dbcRepository extends ReactiveCrudRepository<League
 
     @Query("SELECT * FROM league_teams WHERE league_id = :leagueId")
     Flux<LeagueTeamEntity> findAllByLeagueId(UUID leagueId);
+
+    @Query("SELECT league_id, team_id FROM league_teams")
+    Flux<LeagueTeamEntity> findAllRelations();
 }
