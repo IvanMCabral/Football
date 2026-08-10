@@ -108,7 +108,7 @@ ms. No stage dominates the total; the exact classification is
 
 - `mvn -q -DskipTests test-compile`: PASS.
 - Focused cleanup unit and real-Redis tests: PASS.
-- Full backend suite after the final RTT change: **2,642 tests, 0 failures,
+- Full backend suite after the final RTT change: **2,643 tests, 0 failures,
   0 errors, 4 skipped** across 267 Surefire reports.
 - Public health: the first post-restart readiness probe briefly returned 503
   while the database dependency warmed; the retry gate then returned 5/5

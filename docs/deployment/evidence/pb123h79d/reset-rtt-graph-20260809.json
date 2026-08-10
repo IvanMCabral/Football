@@ -29,6 +29,7 @@
     "rootDeleteCommands": 1,
     "atomicScriptCommands": 1,
     "sequentialRemoteLayers": 3,
+    "n20": {"samples": 20, "p50Ms": 2, "p95Ms": 7, "maxMs": 27},
     "ownerIsolation": "PASS",
     "staleGeneration": "FAIL_CLOSED",
     "rootLast": "PASS",
@@ -48,7 +49,7 @@
   "backendSuite": {
     "testCompile": "PASS",
     "reports": 267,
-    "tests": 2642,
+    "tests": 2643,
     "failures": 0,
     "errors": 0,
     "skipped": 4,
