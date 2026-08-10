@@ -1,0 +1,19 @@
+{
+  "schema": "pb123h79e-quota-cleanup-dry-run-v1",
+  "observedAt": "2026-08-10T17:02:08-03:00",
+  "candidateDiscovered": 0,
+  "candidateUnique": 0,
+  "plannedUNLINKRequested": 0,
+  "reconciliation": "PASS_ZERO_KEYS",
+  "plannedBatches": [],
+  "projected": {
+    "dbsize": 9638,
+    "storageDisplay": "256 MB / 256 MB",
+    "storageBytesExact": null,
+    "expectedFreedBytes": 0,
+    "below200MB": false,
+    "preferred160To180MB": false
+  },
+  "actualDeletions": 0,
+  "authorization": "NO"
+}

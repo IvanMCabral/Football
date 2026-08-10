@@ -1,0 +1,56 @@
+{
+  "schema": "pb123h79e-quota-owner-inventory-v1",
+  "observedAt": "2026-08-10T17:02:08-03:00",
+  "postgresql": {
+    "source": "Neon manager-staging; SELECT only",
+    "usersInspected": 73,
+    "gamesInspected": 0,
+    "provenTestOwners": 21,
+    "protectedOwners": 52,
+    "ambiguousOwners": 0,
+    "candidateGames": 0,
+    "candidateCreatedAtWindow": "2026-07-31T10:46:34Z/2026-07-31T12:34:03Z",
+    "candidateEvidence": [
+      "controlled audit username forms (audit or audit_<12 hex>)",
+      "test-only manager.local/example.com address forms",
+      "tight audit-time creation burst",
+      "USER role and zero PostgreSQL game ownership",
+      "corroborated by the repository's PB123 controlled-audit identity convention"
+    ]
+  },
+  "owners": [
+    {"idHash":"80918dc2","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"287b9527","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"35bab186","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"810faa6a","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"5f51d02f","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"5a4c93d4","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"7e20903d","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"bd85634a","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"8f898b88","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"2be3dd89","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"b641d888","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"9462e3d1","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"57b975a3","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"481308c8","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"fb05fd7c","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"e20d752e","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"65c866e8","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"79a2c981","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"823985fe","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"cbf6ba24","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0},
+    {"idHash":"1276eb9e","activity":"ABANDONED_TEST","careerIds":0,"exactOwnerKeys":0}
+  ],
+  "redisOwnerScopedChecks": {
+    "exactExistenceChecksPerOwner": 4,
+    "ownerScopedScans": 84,
+    "familiesScanned": ["user-projection","runtime","state","commands"],
+    "nonEmptyScans": 0,
+    "ownerIndexEntries": 0,
+    "careerMappingsValidated": 0,
+    "foreignOwnerKeys": 0,
+    "unknownOwnerKeys": 0,
+    "ambiguousOwnerKeys": 0
+  },
+  "protectedOwnerPolicy": "All 52 non-candidate users remain protected; no namespace discovery was attempted for them."
+}

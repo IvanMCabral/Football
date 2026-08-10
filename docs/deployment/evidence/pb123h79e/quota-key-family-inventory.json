@@ -1,0 +1,34 @@
+{
+  "schema": "pb123h79e-quota-key-family-inventory-v1",
+  "observedAt": "2026-08-10T17:02:08-03:00",
+  "scope": "21 proven audit owners only; no global scan",
+  "families": {
+    "career-root": {"template":"career:{ownerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "world": {"template":"world:{ownerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "user-projections": {"template":"user:{ownerId}:*","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "career-index": {"template":"user:{ownerId}:career-ids","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "runtime": {"template":"runtime:match:{ownerId}:*","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "state": {"template":"match:state:{ownerId}:*","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "commands": {"template":"match:commands:{ownerId}:*","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "career-owner": {"template":"career-owner:{careerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "career-generation": {"template":"career-generation:{careerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "career-mapping-token": {"template":"career-mapping-token:{careerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "manifest": {"template":"career-cleanup-members:{careerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "manifest-version": {"template":"career-cleanup-manifest-version:{careerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "match-detail": {"template":"career:{careerId}:match-detail:*","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "match-baseline": {"template":"career:{careerId}:match-baseline:*","keys":0,"bytes":"UNKNOWN_NO_KEYS"},
+    "cleanup-tombstone": {"template":"career-cleanup:{ownerId}","keys":0,"bytes":"UNKNOWN_NO_KEYS"}
+  },
+  "totals": {
+    "discoveredKeys": 0,
+    "uniqueKeys": 0,
+    "duplicatesRemoved": 0,
+    "candidateExactBytes": 0,
+    "candidateSampledBytes": 0,
+    "candidateUnknownBytes": 0,
+    "memoryUsageCommands": 0,
+    "typeCommands": 0,
+    "ttlCommands": 0
+  },
+  "measurementNote": "No candidate key existed, so per-key TYPE/TTL/MEMORY USAGE had no safe target. Protected owners were not scanned."
+}

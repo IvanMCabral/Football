@@ -1,0 +1,23 @@
+{
+  "schema": "pb123h79e-quota-retention-audit-v1",
+  "observedAt": "2026-08-10T17:02:08-03:00",
+  "source": "current source inspection; no candidate-key mutation",
+  "families": [
+    {"family":"career root","configuredTTL":"30d","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"world","configuredTTL":"30d (application-prod.yml)","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"user career index","configuredTTL":"31d","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"career owner/generation/mapping metadata","configuredTTL":"31d","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"manifest and manifest version","configuredTTL":"31d","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"match detail","configuredTTL":"30d (application-prod.yml)","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"match baseline","configuredTTL":"7d","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"runtime match","configuredTTL":"2h","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"match state","configuredTTL":"24h","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"match commands","configuredTTL":"24h","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"},
+    {"family":"cleanup tombstone","configuredTTL":"15m","observedTTL":"NOT_SAMPLED_NO_KEYS","classification":"UNKNOWN"}
+  ],
+  "healthy": 0,
+  "missing": 0,
+  "logicallyExpired": 0,
+  "unknown": 11,
+  "note": "Observed TTL cannot be claimed for protected owners without violating the owner-scoped/no-global-scan rule."
+}

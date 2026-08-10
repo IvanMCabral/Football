@@ -1,0 +1,30 @@
+{
+  "schema": "pb123h79e-quota-cleanup-before-v1",
+  "observedAt": "2026-08-10T17:02:08-03:00",
+  "source": "Upstash Manager console and read-only CLI",
+  "provider": {
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "AWS sa-east-1",
+    "storageDisplay": "256 MB / 256 MB",
+    "quotaBytes": 268435456,
+    "storageBytesExact": null,
+    "commandsDisplay": "131K / 500K per month",
+    "bandwidthDisplay": "0 B / 50 GB",
+    "costDisplay": "USD 0.00"
+  },
+  "redis": {
+    "ping": "PONG",
+    "dbsize": 9638,
+    "destructiveCommandsExecuted": 0,
+    "globalScanExecuted": false,
+    "evalExecuted": false,
+    "memoryStatsExecuted": false
+  },
+  "safety": {
+    "postgresqlMutations": 0,
+    "redisMutations": 0,
+    "manualCleanup": false,
+    "secretsCaptured": false
+  }
+}

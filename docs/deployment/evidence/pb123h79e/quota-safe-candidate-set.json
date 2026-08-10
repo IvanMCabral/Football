@@ -1,0 +1,16 @@
+{
+  "schema": "pb123h79e-quota-safe-candidate-set-v1",
+  "observedAt": "2026-08-10T17:02:08-03:00",
+  "candidateOwners": 21,
+  "candidateKeys": [],
+  "candidateUnique": 0,
+  "foreignOwnerKeys": 0,
+  "unknownOwnerKeys": 0,
+  "ambiguousOwnerKeys": 0,
+  "exactBytes": 0,
+  "sampledBytes": 0,
+  "unknownBytes": 0,
+  "enoughSafeCandidates": false,
+  "classification": "SAFE_CANDIDATE_SET_INSUFFICIENT",
+  "reason": "All proven audit owners have zero current owner-scoped Redis keys. No protected owner was considered."
+}
