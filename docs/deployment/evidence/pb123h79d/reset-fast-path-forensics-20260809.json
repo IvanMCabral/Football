@@ -1,0 +1,85 @@
+{
+  "runtimeCommit": "9c69eace",
+  "renderLiveCommit": "SHA_NOT_EXPOSED",
+  "classification": "L_PROVIDER_GENERAL_LATENCY",
+  "modernMarker": {
+    "path": "MODERN_MANIFEST",
+    "version": "1",
+    "present": true,
+    "entries": 0,
+    "scanCount": 1
+  },
+  "publicN3": {
+    "accounts": 3,
+    "passed": 3,
+    "http204": 3,
+    "http500": 0,
+    "http503": 0,
+    "allModernManifest": true,
+    "samplesMs": [
+      {"client": 2841, "server": 2566, "cleanup": 2211},
+      {"client": 2853, "server": 2570, "cleanup": 2220},
+      {"client": 2667, "server": 2453, "cleanup": 2103}
+    ]
+  },
+  "publicN10": {
+    "accounts": 10,
+    "passed": 10,
+    "http204": 10,
+    "http500": 0,
+    "http503": 0,
+    "legacyCount": 0,
+    "modernCount": 10,
+    "clientMs": [2674, 2701, 2669, 2659, 2705, 2652, 2718, 2660, 2647, 2651],
+    "serverMs": [2466, 2450, 2457, 2452, 2446, 2445, 2480, 2455, 2444, 2444],
+    "cleanupMs": [2116, 2100, 2108, 2103, 2097, 2096, 2130, 2106, 2095, 2096],
+    "clientP50Ms": 2669,
+    "clientP95Ms": 2718,
+    "serverP50Ms": 2455,
+    "serverP95Ms": 2480,
+    "cleanupP50Ms": 2106,
+    "cleanupP95Ms": 2130,
+    "stageRepresentativeMs": {
+      "discovery": 175,
+      "manifestRead": 175,
+      "projectionScan": 174,
+      "childUnlink": 174,
+      "metadata": 175,
+      "rootUnlink": 174,
+      "tombstone": 174,
+      "gameCleanup": 0
+    }
+  },
+  "interpretation": {
+    "projectionScanDominant": false,
+    "manifestReadDominant": false,
+    "childUnlinkDominant": false,
+    "metadataDominant": false,
+    "rootUnlinkDominant": false,
+    "tombstoneDominant": false,
+    "gameCleanupDominant": false,
+    "reason": "Provider round-trip latency is distributed across the sequential cleanup graph; no single measured stage dominates."
+  },
+  "localRealRedis": {
+    "focusedTests": "PASS",
+    "cleanupN20P50Ms": 3,
+    "cleanupN20P95Ms": 3,
+    "cleanupN20MaxMs": 3,
+    "latencyModelsMs": [25, 50, 75]
+  },
+  "health": {
+    "liveness": "3/3 HTTP 200",
+    "readiness": "3/3 HTTP 200",
+    "database": "UP",
+    "redis": "UP"
+  },
+  "mutations": {
+    "gameplay": false,
+    "frontend": false,
+    "database": false,
+    "manualRedis": false,
+    "infrastructure": false,
+    "billing": false
+  },
+  "verdict": "RESET PERFORMANCE P1 NOT CLOSED"
+}

@@ -56,7 +56,7 @@ The local stage profile showed bounded discovery in roughly 0–2 ms per family
 and one coalesced child batch plus the final root batch. No destructive
 operation runs concurrently with another destructive operation.
 
-### After (public warm N=10, final deployment)
+### After (public warm N=10, superseded deployment)
 
 Reset timings in milliseconds: **3559, 3087, 4111, 3907, 3248, 3254, 3033,
 3396, 3064, 3130**.
@@ -78,6 +78,18 @@ creation, auto-select and lineup confirmation for every successful sample.
 One reload-world request returned a transient 502 during the batch; the
 account flow and reset still completed with 204 and no reset 5xx response.
 
+### Final forensic deployment (runtime `9c69eace`)
+
+The public marker and headers now prove the intended path: N=3 was 3/3
+`MODERN_MANIFEST`, version `1`, scan count `1`, and N=10 was 10/10
+`MODERN_MANIFEST`, 204, with no 500 or 503 responses. Final client timings
+were 2,647–2,718 ms (p50 2,669 ms, p95 2,718 ms), server p50/p95
+2,455/2,480 ms, and cleanup p50/p95 2,106/2,130 ms. Representative stage
+headers were discovery 175 ms, manifest read 175 ms, projection scan 174 ms,
+child unlink 174 ms, metadata 175 ms, root unlink 174 ms, and tombstone 174
+ms. No stage dominates the total; the exact classification is
+`L_PROVIDER_GENERAL_LATENCY`.
+
 ## Invariants
 
 - Owner B isolation: preserved by the existing owner/generation validation and
@@ -95,12 +107,12 @@ account flow and reset still completed with 204 and no reset 5xx response.
 
 - `mvn -q -DskipTests test-compile`: PASS.
 - Focused cleanup unit and real-Redis tests: PASS.
-- Full backend suite: **2,633 tests, 0 failures, 0 errors, 4 skipped**.
+- Full backend suite: **2,639 tests, 0 failures, 0 errors, 4 skipped**.
 - Public health: the first post-restart readiness probe briefly returned 503
   while the database dependency warmed; the retry gate then returned 5/5
   liveness 200 and readiness 200 with database/Redis UP.
-- Render deployment commits: `077e7cb0`, `deaf8713`, `40fa1295`, `fb99976f`,
-  `a59ecc11`, `3eba339e` (latest pushed head `3eba339e`).
+- Render runtime commit tested: `9c69eace`; the public service does not expose
+  a live SHA, so the remote SHA classification remains `SHA_NOT_EXPOSED`.
 - Public Redis provider storage/DBSIZE before and after N=10: not observable
   from the available non-mutating session; no manual Redis command or cleanup
   was executed.
@@ -118,3 +130,4 @@ relaxing ownership, fencing or root-last guarantees.
 - `docs/deployment/evidence/pb123h79d/reset-performance-before.json`
 - `docs/deployment/evidence/pb123h79d/reset-performance-after-local.json`
 - `docs/deployment/evidence/pb123h79d/reset-performance-public-n10.json`
+- `docs/deployment/evidence/pb123h79d/reset-fast-path-forensics-20260809.json`

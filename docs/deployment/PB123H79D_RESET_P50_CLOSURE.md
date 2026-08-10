@@ -3,11 +3,12 @@
 ## Current status
 
 `RESET PERFORMANCE P1 NOT CLOSED`. The local fast path is implemented and
-validated. The previously reported registration 422 was reproduced as a
-probe-contract failure, not as a production registration failure. A valid
-public flow now registers and completes the bootstrap, but the public N=10
-latency gate remains open: all ten resets returned 204 while the measured
-client p50/p95 were above the target.
+validated, and the public runtime now exposes sanitized forensic telemetry.
+The previously reported registration 422 was reproduced as a probe-contract
+failure, not as a production registration failure. A valid public flow now
+registers and completes the bootstrap, but the public N=10 latency gate
+remains open: all ten resets returned 204 while client p50 remains above the
+1,500 ms target.
 
 ## Design
 
@@ -48,9 +49,8 @@ marker.
 ## Public rollout evidence
 
 - Render service: `manager-staging-api`;
-- live commit: not exposed by the public service; the tested backend branch
-  revision was `0aa54436` (the documentation-only evidence commit followed
-  afterward);
+- runtime commit tested: `9c69eace`; Render's public response does not expose
+  the live SHA, so the live SHA remains `SHA_NOT_EXPOSED`;
 - Render deployment: live after the manual rollout;
 - liveness: 3/3 HTTP 200;
 - readiness: 3/3 HTTP 200 (`database=UP`, `redis=UP`);
@@ -65,16 +65,24 @@ marker.
   `team.id`, fields that are not present in the public catalog response. The
   public contract uses `realLeagueId`, `worldTeamId`, and requires the
   authenticated `userId` query parameter for catalog reads;
-- public reset N=10: 10/10 HTTP 204, 0 HTTP 500, 0 HTTP 503;
-- reset client timings (ms): 2972, 2974, 3021, 3022, 3023, 3030, 3033,
-  3035, 3053, 3073; p50 3026.5 ms, p95 3073 ms;
-- reset server timings (ms): 2761, 2761, 2762, 2762, 2762, 2764, 2765,
-  2768, 2768, 2866; p50 2763 ms, p95 2866 ms;
-- reset cleanup timings (ms): 2416, 2416, 2417, 2417, 2417, 2418, 2420,
-  2423, 2423, 2521; p50 2417.5 ms, p95 2521 ms;
-- the public reset response exposes timing headers only; it does not expose
-  `fastPathUsed`, `legacyFallback`, scan count, or manifest cardinality, so
-  those fields are not claimed as independently measured public evidence;
+- public reset N=3 after the final runtime commit: 3/3 HTTP 204, 0 HTTP 500,
+  0 HTTP 503, all `MODERN_MANIFEST`, version `1`, scan count `1`;
+- public reset N=10 after the final runtime commit: 10/10 HTTP 204, 0 HTTP
+  500, 0 HTTP 503, `MODERN_MANIFEST` count 10, legacy count 0;
+- reset client timings (ms): 2674, 2701, 2669, 2659, 2705, 2652, 2718,
+  2660, 2647, 2651; p50 2669 ms, p95 2718 ms;
+- reset server timings (ms): 2466, 2450, 2457, 2452, 2446, 2445, 2480,
+  2455, 2444, 2444; p50 2455 ms, p95 2480 ms;
+- reset cleanup timings (ms): 2116, 2100, 2108, 2103, 2097, 2096, 2130,
+  2106, 2095, 2096; p50 2106 ms, p95 2130 ms;
+- representative public telemetry: discovery 175 ms, manifest read 175 ms,
+  projection scan 174 ms, child unlink 174 ms, metadata 175 ms, root unlink
+  174 ms, tombstone 174 ms, game cleanup 0 ms;
+- all measured layers are comparable provider round trips; projection scan is
+  not dominant and was retained for the documented compatibility fallback;
+- the exact classification is `L_PROVIDER_GENERAL_LATENCY`: latency is
+  distributed across the sequential cleanup graph and no single stage
+  dominates;
 - the latency gate is not met (`client p50 <= 1500 ms` and `p95 <= 3000 ms`).
 - public remote services were not otherwise modified.
 
@@ -88,3 +96,4 @@ deployment creates modern careers and a new public N=10 is measured.
 - [provider-side diagnosis](PB123H79D_PROVIDER_SIDE_DIAGNOSIS.md)
 - [N=10 provider evidence](evidence/pb123h79d/provider-diagnosis-n10.json)
 - [corrected public bootstrap and reset evidence](evidence/pb123h79d/public-bootstrap-n10-20260809.json)
+- [final reset fast-path forensics](evidence/pb123h79d/reset-fast-path-forensics-20260809.json)
