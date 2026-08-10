@@ -47,7 +47,7 @@ marker.
 - bounded storage budget test: PASS;
 - local real Redis cleanup profile remains within the existing gate.
 
-## Public rollout evidence
+## Public rollout evidence (historical 9c69eace; superseded below)
 
 - Render service: `manager-staging-api`;
 - runtime commit tested: `9c69eace`; Render's public response does not expose

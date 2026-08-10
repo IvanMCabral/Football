@@ -79,7 +79,7 @@ creation, auto-select and lineup confirmation for every successful sample.
 One reload-world request returned a transient 502 during the batch; the
 account flow and reset still completed with 204 and no reset 5xx response.
 
-### Final forensic deployment (runtime `9c69eace`)
+### Final forensic deployment (historical runtime `9c69eace`; superseded below)
 
 The public marker and headers now prove the intended path: N=3 was 3/3
 `MODERN_MANIFEST`, version `1`, scan count `1`, and N=10 was 10/10
