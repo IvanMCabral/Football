@@ -171,6 +171,8 @@ public class CareerCommandController {
         response.getHeaders().set("X-Reset-Tombstone-Commands", timing.diagnostic("tombstoneCommands"));
         response.getHeaders().set("X-Reset-Exists-Commands", timing.diagnostic("existsCommands"));
         response.getHeaders().set("X-Reset-Exists-Ms", timing.diagnostic("existsMs"));
+        response.getHeaders().set("X-Reset-Atomic-Cleanup-Ms", timing.diagnostic("atomicCleanupMs"));
+        response.getHeaders().set("X-Reset-Atomic-Script-Commands", timing.diagnostic("atomicScriptCommands"));
         response.getHeaders().set("X-Reset-Ownership-Validation-Ms", timing.diagnostic("ownershipValidationMs"));
         response.getHeaders().set("X-Reset-Discovery-Ms", timing.diagnostic("discoveryMs"));
         response.getHeaders().set("X-Reset-Manifest-Read-Ms", timing.diagnostic("manifestReadMs"));

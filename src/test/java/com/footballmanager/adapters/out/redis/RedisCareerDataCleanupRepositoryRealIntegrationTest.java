@@ -114,6 +114,35 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
     }
 
     @Test
+    void modernEmptyManifestUsesOneFencedFinalizationCommand() {
+        UUID owner = UUID.randomUUID();
+        String careerId = "career-modern-empty-" + owner;
+        seedOwnership(owner, careerId, "generation-empty");
+        reactiveRedisTemplate.opsForValue()
+                .set(CareerOwnershipTouchService.manifestVersionKey(careerId), "1")
+                .then(reactiveRedisTemplate.opsForValue().set("world:" + owner, "world"))
+                .block(Duration.ofSeconds(5));
+
+        CareerDataCleanupResult result = cleanupRepository.deleteOwnedData(owner, careerId)
+                .block(Duration.ofSeconds(10));
+
+        assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+        assertEquals("MODERN_MANIFEST", result.diagnostic("path"));
+        assertEquals("0", result.diagnostic("manifestEntries"));
+        assertEquals("1", result.diagnostic("projectionScanMatches"));
+        assertEquals("0", result.diagnostic("childDeleteCommands"));
+        assertEquals("1", result.diagnostic("atomicScriptCommands"));
+        assertEquals("3", result.diagnostic("sequentialRemoteLayers"));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career:" + owner).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career-cleanup:" + owner).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("world:" + owner).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career-owner:" + careerId).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey("career-generation:" + careerId).block()));
+        assertFalse(Boolean.TRUE.equals(reactiveRedisTemplate.opsForSet()
+                .isMember("user:" + owner + ":career-ids", careerId).block()));
+    }
+
+    @Test
     void tokenlessCareerStateAndRuntimeWritersFailClosedAgainstRealRedis() {
         UUID owner = UUID.randomUUID();
         CareerSave career = career(owner, "career-tokenless");
