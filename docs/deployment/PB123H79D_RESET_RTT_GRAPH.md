@@ -73,6 +73,7 @@ profiles remain bounded to batches of at most 100 keys and preserve owner-B
 isolation. The real-Redis boundary matrix passed for manifest sizes 1, 10,
 100, 101, 500 and 1,024; child batches were respectively 1, 1, 2, 2, 6 and
 11 (the additional key in each case is the protected owner projection index).
+The dedicated empty-manifest N=20 profile measured p50/p95/max **2/7/27 ms**.
 The focused cleanup unit and real-Redis suites are green.
 
 ## Public gate
