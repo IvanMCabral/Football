@@ -25,7 +25,6 @@ public class LoadBaseDataService {
     private final LeagueTeamSyncService leagueTeamSyncService;
     private final LeagueLoaderService leagueLoaderService;
     private final TeamPlayerLoaderService teamPlayerLoaderService;
-    private volatile Mono<CanonicalBaseData> canonicalBaseDataCache;
 
     /**
      * Carga todos los datos base para un usuario.
@@ -55,30 +54,21 @@ public class LoadBaseDataService {
         return Mono.defer(() -> {
             Mono<Map<UUID, UUID>> leagueTeams = timing.measure(
                     "leagueTeamSyncMs", leagueTeamSyncService.loadLeagueTeamsMap(userId, timing));
+            Mono<List<WorldLeague>> leagues = timing.measure(
+                    "leagueLoadMs", leagueLoaderService.loadLeagues(userId, timing));
             return leagueTeams.flatMap(leagueTeamsMap ->
-                    timing.measure("canonicalLoadMs", canonicalBaseData(userId, leagueTeamsMap, timing))
-                            .map(data -> new BaseDataResult(data.leagues(), data.teams(), data.players(), leagueTeamsMap)));
-        });
+                    Mono.zip(
+                            Mono.just(leagueTeamsMap),
+                            leagues,
+                            timing.measure("teamPlayerLoadMs",
+                                    teamPlayerLoaderService.loadTeamsAndPlayers(userId, leagueTeamsMap, timing)))
+                            .map(tuple -> new BaseDataResult(
+                                    tuple.getT2(),
+                                    tuple.getT3().teams(),
+                                    tuple.getT3().players(),
+                                    tuple.getT1())));
+        }).transform(publisher -> timing.measure("canonicalLoadMs", publisher));
     }
-
-    private Mono<CanonicalBaseData> canonicalBaseData(UUID userId,
-                                                       Map<UUID, UUID> leagueTeamsMap,
-                                                       ReloadWorldTiming timing) {
-        Mono<CanonicalBaseData> cached = canonicalBaseDataCache;
-        if (cached != null) return cached;
-        Mono<CanonicalBaseData> created = Mono.zip(
-                        leagueLoaderService.loadLeagues(userId, timing),
-                        teamPlayerLoaderService.loadTeamsAndPlayers(userId, leagueTeamsMap, timing))
-                .map(tuple -> new CanonicalBaseData(
-                        tuple.getT1(), tuple.getT2().teams(), tuple.getT2().players()))
-                .cache(java.time.Duration.ofMinutes(5));
-        canonicalBaseDataCache = created;
-        return created;
-    }
-
-    private record CanonicalBaseData(List<WorldLeague> leagues,
-                                     List<com.footballmanager.domain.model.entity.WorldTeam> teams,
-                                     List<com.footballmanager.domain.model.entity.WorldPlayer> players) {}
 
     public record BaseDataResult(
             List<WorldLeague> leagues,
