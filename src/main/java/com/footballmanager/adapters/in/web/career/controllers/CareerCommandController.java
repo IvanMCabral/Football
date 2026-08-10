@@ -122,15 +122,7 @@ public class CareerCommandController {
         AtomicLong careerNanos = new AtomicLong();
         AtomicLong gameNanos = new AtomicLong();
         response.beforeCommit(() -> {
-            response.getHeaders().set("X-Reset-Server-Ms",
-                    Long.toString((System.nanoTime() - startedNanos) / 1_000_000L));
-            response.getHeaders().set("X-Reset-Career-Ms",
-                    Long.toString(careerNanos.get() / 1_000_000L));
-            response.getHeaders().set("X-Reset-Game-Ms",
-                    Long.toString(gameNanos.get() / 1_000_000L));
-            response.getHeaders().set("X-Reset-Lookup-Ms", Long.toString(timing.careerLookupMs()));
-            response.getHeaders().set("X-Reset-Registry-Ms", Long.toString(timing.registryMs()));
-            response.getHeaders().set("X-Reset-Cleanup-Ms", Long.toString(timing.cleanupMs()));
+            setResetTelemetry(response, timing, careerNanos, gameNanos, startedNanos);
             return Mono.empty();
         });
         long careerStarted = System.nanoTime();
@@ -158,14 +150,34 @@ public class CareerCommandController {
                 }))
                 .then()
                 .doOnSuccess(ignored -> {
-                    response.getHeaders().set("X-Reset-Career-Ms",
-                            Long.toString(careerNanos.get() / 1_000_000L));
-                    response.getHeaders().set("X-Reset-Game-Ms",
-                            Long.toString(gameNanos.get() / 1_000_000L));
-                    response.getHeaders().set("X-Reset-Lookup-Ms", Long.toString(timing.careerLookupMs()));
-                    response.getHeaders().set("X-Reset-Registry-Ms", Long.toString(timing.registryMs()));
-                    response.getHeaders().set("X-Reset-Cleanup-Ms", Long.toString(timing.cleanupMs()));
+                    setResetTelemetry(response, timing, careerNanos, gameNanos, startedNanos);
                 });
+    }
+
+    private static void setResetTelemetry(ServerHttpResponse response,
+                                          ResetTiming timing,
+                                          AtomicLong careerNanos,
+                                          AtomicLong gameNanos,
+                                          long startedNanos) {
+        response.getHeaders().set("X-Reset-Path", timing.diagnostic("path"));
+        response.getHeaders().set("X-Reset-Manifest-Version", timing.diagnostic("manifestVersion"));
+        response.getHeaders().set("X-Reset-Manifest-Entries", timing.diagnostic("manifestEntries"));
+        response.getHeaders().set("X-Reset-Scan-Count", timing.diagnostic("scanCount"));
+        response.getHeaders().set("X-Reset-Discovery-Ms", timing.diagnostic("discoveryMs"));
+        response.getHeaders().set("X-Reset-Manifest-Read-Ms", timing.diagnostic("manifestReadMs"));
+        response.getHeaders().set("X-Reset-Projection-Scan-Ms", timing.diagnostic("projectionScanMs"));
+        response.getHeaders().set("X-Reset-Child-Unlink-Ms", timing.diagnostic("childUnlinkMs"));
+        response.getHeaders().set("X-Reset-Metadata-Ms", timing.diagnostic("metadataMs"));
+        response.getHeaders().set("X-Reset-Root-Unlink-Ms", timing.diagnostic("rootUnlinkMs"));
+        response.getHeaders().set("X-Reset-Tombstone-Ms", timing.diagnostic("tombstoneMs"));
+        response.getHeaders().set("X-Reset-Game-Cleanup-Ms", Long.toString(gameNanos.get() / 1_000_000L));
+        response.getHeaders().set("X-Reset-Career-Ms", Long.toString(careerNanos.get() / 1_000_000L));
+        response.getHeaders().set("X-Reset-Game-Ms", Long.toString(gameNanos.get() / 1_000_000L));
+        response.getHeaders().set("X-Reset-Lookup-Ms", Long.toString(timing.careerLookupMs()));
+        response.getHeaders().set("X-Reset-Registry-Ms", Long.toString(timing.registryMs()));
+        response.getHeaders().set("X-Reset-Cleanup-Ms", Long.toString(timing.cleanupMs()));
+        response.getHeaders().set("X-Reset-Server-Ms",
+                Long.toString((System.nanoTime() - startedNanos) / 1_000_000L));
     }
 
     /**

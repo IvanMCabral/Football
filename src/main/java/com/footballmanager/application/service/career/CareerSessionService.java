@@ -199,6 +199,7 @@ public class CareerSessionService {
                             cleanup = lifecycleCoordinator.serializeCareer(careerId, cleanup);
                         }
                         return cleanup
+                                .doOnNext(result -> { if (timing != null) timing.diagnostics(result); })
                                 .doFinally(signal -> { if (timing != null) timing.cleanup(System.nanoTime() - cleanupStarted); })
                                 .doOnNext(result -> log.info(
                                         "[CAREER-CLEANUP] ownerHash={} careers={} discovered={} unique={} requested={} deleted={} batches={} maxBatch={} partialFailure={}",

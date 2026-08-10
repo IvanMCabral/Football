@@ -93,11 +93,12 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         // it does not depend on the read-only owner index. Start both in the
         // same subscription to remove one provider round-trip from reset.
         Mono<List<String>> ownershipReady;
+        long metadataStarted = System.nanoTime();
         if (careerId != null && !careerId.isBlank()) {
             Mono<List<String>> validated = validateOwnership(userId, careerId, List.of(careerId), accumulator).cache();
-            ownershipReady = Mono.when(writeTombstone(userId, careerId), validated).then(validated);
+            ownershipReady = Mono.when(timedTombstone(userId, careerId, accumulator), validated).then(validated);
         } else {
-            ownershipReady = Mono.when(writeTombstone(userId, careerId), indexedCareerIds)
+            ownershipReady = Mono.when(timedTombstone(userId, careerId, accumulator), indexedCareerIds)
                     .then(indexedCareerIds)
                     .flatMap(indexedIds -> {
                         if (indexedIds.size() > MAX_INDEX_CARDINALITY) {
@@ -107,6 +108,8 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                         return validateOwnership(userId, careerId, indexedIds, accumulator);
                     });
         }
+        ownershipReady = ownershipReady.doOnSuccess(ignored ->
+                accumulator.metadata(System.nanoTime() - metadataStarted));
         return ownershipReady.flatMap(ownedIds -> {
                     return Mono.just(ownedIds);
                 })
@@ -114,7 +117,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     accumulator.setCareerCount(ownedCareerIds, careerId);
                     List<PatternSpec> specs = patterns(userId, careerId, ownedCareerIds, preserveWorld);
                     specs.forEach(accumulator::patternEvaluated);
-                    return discoverForReset(userId, careerId, ownedCareerIds, specs, preserveWorld)
+                    return discoverForReset(userId, careerId, ownedCareerIds, specs, preserveWorld, accumulator)
                             .flatMapMany(discoveries -> deleteDiscoveries(discoveries, accumulator));
                 })
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
@@ -145,21 +148,41 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private Mono<List<Discovery>> discoverForReset(UUID userId, String careerId,
                                                     List<String> ownedCareerIds,
                                                     List<PatternSpec> legacySpecs,
-                                                    boolean preserveWorld) {
+                                                    boolean preserveWorld,
+                                                    CleanupAccumulator accumulator) {
         if (careerId == null || careerId.isBlank() || ownedCareerIds.size() != 1
                 || !ownedCareerIds.contains(careerId)) {
-            return discoverLegacy(legacySpecs);
+            accumulator.pathLegacy();
+            return discoverLegacy(legacySpecs, accumulator);
         }
+        long started = System.nanoTime();
         return manifestVersion(careerId)
-                .filter(RedisCareerDataCleanupRepository::isModernManifest)
-                .flatMap(ignored -> discoverModern(userId, careerId, preserveWorld))
-                .switchIfEmpty(discoverLegacy(legacySpecs));
+                .doOnNext(version -> {
+                    accumulator.manifestRead(System.nanoTime() - started);
+                    accumulator.manifestVersion(version);
+                })
+                .flatMap(version -> {
+                    if (!isModernManifest(version)) {
+                        accumulator.pathLegacy();
+                        return discoverLegacy(legacySpecs, accumulator);
+                    }
+                    accumulator.pathModern();
+                    return discoverModern(userId, careerId, preserveWorld, accumulator);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    accumulator.manifestRead(System.nanoTime() - started);
+                    accumulator.pathLegacy();
+                    return discoverLegacy(legacySpecs, accumulator);
+                }));
     }
 
-    private Mono<List<Discovery>> discoverModern(UUID userId, String careerId, boolean preserveWorld) {
+    private Mono<List<Discovery>> discoverModern(UUID userId, String careerId, boolean preserveWorld,
+                                                 CleanupAccumulator accumulator) {
         List<Discovery> discoveries = new ArrayList<>();
         PatternSpec projection = new PatternSpec("user-projection", "user:" + userId + ":*");
-        return discoverKeys(projection).flatMap(projectionKeys -> {
+        long projectionStarted = System.nanoTime();
+        return discoverKeys(projection, accumulator).doOnNext(ignored ->
+                accumulator.projectionScan(System.nanoTime() - projectionStarted)).flatMap(projectionKeys -> {
             int order = 0;
             discoveries.add(new Discovery(order++, projection, projectionKeys));
             if (!preserveWorld) {
@@ -169,7 +192,11 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             discoveries.add(new Discovery(order++, new PatternSpec("career-index", indexKey(userId)),
                     List.of(indexKey(userId))));
             int nextOrder = order;
-            return manifestMembers(careerId).map(members -> {
+            long manifestStarted = System.nanoTime();
+            return manifestMembers(careerId).doOnNext(members -> {
+                accumulator.manifestEntries(members.size());
+                accumulator.manifestRead(System.nanoTime() - manifestStarted);
+            }).map(members -> {
             List<String> exact = new ArrayList<>(members);
             exact.add(RedisCareerOwnershipKeys.manifestKey(careerId));
             exact.add(RedisCareerOwnershipKeys.manifestVersionKey(careerId));
@@ -189,9 +216,9 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         });
     }
 
-    private Mono<List<Discovery>> discoverLegacy(List<PatternSpec> specs) {
+    private Mono<List<Discovery>> discoverLegacy(List<PatternSpec> specs, CleanupAccumulator accumulator) {
         return Flux.range(0, specs.size())
-                .flatMap(index -> discoverKeys(specs.get(index))
+                .flatMap(index -> discoverKeys(specs.get(index), accumulator)
                                 .map(keys -> new Discovery(index, specs.get(index), keys)),
                         DISCOVERY_CONCURRENCY)
                 .collectList()
@@ -305,6 +332,11 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 scanKeys(spec).collectList());
     }
 
+    private Mono<List<String>> discoverKeys(PatternSpec spec, CleanupAccumulator accumulator) {
+        accumulator.scanStarted(spec.family());
+        return discoverKeys(spec).doOnNext(ignored -> accumulator.scanCompleted(spec.family()));
+    }
+
     private Flux<Long> deleteDiscoveries(List<Discovery> discoveries, CleanupAccumulator accumulator) {
         List<KeyHit> children = new ArrayList<>();
         List<KeyHit> roots = new ArrayList<>();
@@ -324,11 +356,11 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         // Child deletion is safe to coalesce because ownership and generation
         // were validated before discovery. The root remains a separate final
         // batch so root-last and retry-anchor semantics are unchanged.
-        return deleteBatches(children, accumulator)
-                .concatWith(deleteBatches(roots, accumulator));
+        return deleteBatches(children, accumulator, false)
+                .concatWith(deleteBatches(roots, accumulator, true));
     }
 
-    private Flux<Long> deleteBatches(List<KeyHit> hits, CleanupAccumulator accumulator) {
+    private Flux<Long> deleteBatches(List<KeyHit> hits, CleanupAccumulator accumulator, boolean rootBatch) {
         List<List<KeyHit>> batches = new ArrayList<>();
         List<KeyHit> current = new ArrayList<>(MAX_BATCH_SIZE);
         for (KeyHit hit : hits) {
@@ -349,10 +381,14 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     accumulator.activeFamily(batch.get(0).family());
                     accumulator.batchRequested(batch);
                     List<String> keys = batch.stream().map(KeyHit::key).toList();
+                    long unlinkStarted = System.nanoTime();
                     return RuntimeOperationMetrics.measure(
                             "career.cleanup.unlink.batch",
                             redisTemplate.unlink(Flux.fromIterable(keys)).timeout(unlinkTimeout))
-                            .flatMap(deleted -> accumulator.batchDeleted(redisTemplate, batch, deleted));
+                            .flatMap(deleted -> {
+                                accumulator.unlinkDuration(rootBatch, System.nanoTime() - unlinkStarted);
+                                return accumulator.batchDeleted(redisTemplate, batch, deleted);
+                            });
                 });
     }
 
@@ -393,6 +429,12 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         return write == null ? Mono.empty() : write.then();
     }
 
+    private Mono<Void> timedTombstone(UUID userId, String careerId, CleanupAccumulator accumulator) {
+        long started = System.nanoTime();
+        return writeTombstone(userId, careerId)
+                .doFinally(signal -> accumulator.tombstone(System.nanoTime() - started));
+    }
+
     private Mono<Void> clearTombstone(UUID userId) {
         Mono<Long> delete = redisTemplate.delete("career-cleanup:" + userId);
         return delete == null ? Mono.empty() : delete.then();
@@ -425,6 +467,17 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         private String activeFamily = "unknown";
         private CareerDataCleanupResult.Status status = CareerDataCleanupResult.Status.IN_PROGRESS;
         private String failureReason = "";
+        private String path = "";
+        private String manifestVersion = "";
+        private int manifestEntries;
+        private long scanCount;
+        private long discoveryNanos;
+        private long manifestReadNanos;
+        private long projectionScanNanos;
+        private long childUnlinkNanos;
+        private long rootUnlinkNanos;
+        private long metadataNanos;
+        private long tombstoneNanos;
 
         private CleanupAccumulator(UUID userId, String careerId) {
             this.ownerId = userId;
@@ -470,6 +523,22 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             families.computeIfAbsent(spec.family(), ignored -> new MutableFamily());
             activeFamily = spec.family();
         }
+
+        void pathModern() { path = "MODERN_MANIFEST"; }
+        void pathLegacy() { path = "LEGACY_SCAN"; }
+        void manifestVersion(String value) { manifestVersion = value == null ? "" : value; }
+        void manifestEntries(int value) { manifestEntries = Math.max(manifestEntries, value); }
+        void scanStarted(String family) { scanCount++; }
+        void scanCompleted(String family) { }
+        void manifestRead(long nanos) { manifestReadNanos += nanos; }
+        void projectionScan(long nanos) { projectionScanNanos += nanos; }
+        void discovery(long nanos) { discoveryNanos += nanos; }
+        void unlinkDuration(boolean root, long nanos) {
+            if (root) rootUnlinkNanos += nanos;
+            else childUnlinkNanos += nanos;
+        }
+        void metadata(long nanos) { metadataNanos += nanos; }
+        void tombstone(long nanos) { tombstoneNanos += nanos; }
 
         void activeFamily(String family) {
             activeFamily = family;
@@ -570,10 +639,22 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             CareerDataCleanupResult.Status resultStatus = partialFailure
                     ? status
                     : CareerDataCleanupResult.Status.COMPLETED;
+            Map<String, String> diagnostics = new LinkedHashMap<>();
+            diagnostics.put("path", path);
+            diagnostics.put("manifestVersion", manifestVersion);
+            diagnostics.put("manifestEntries", Integer.toString(manifestEntries));
+            diagnostics.put("scanCount", Long.toString(scanCount));
+            diagnostics.put("discoveryMs", Long.toString(discoveryNanos / 1_000_000L));
+            diagnostics.put("manifestReadMs", Long.toString(manifestReadNanos / 1_000_000L));
+            diagnostics.put("projectionScanMs", Long.toString(projectionScanNanos / 1_000_000L));
+            diagnostics.put("childUnlinkMs", Long.toString(childUnlinkNanos / 1_000_000L));
+            diagnostics.put("rootUnlinkMs", Long.toString(rootUnlinkNanos / 1_000_000L));
+            diagnostics.put("metadataMs", Long.toString(metadataNanos / 1_000_000L));
+            diagnostics.put("tombstoneMs", Long.toString(tombstoneNanos / 1_000_000L));
             return new CareerDataCleanupResult(patterns, discovered, uniqueKeyFamilies.size(), requested, deleted,
                     missingAtDelete, unexplainedShortfall, batches, maxBatch, ownerHash, careerCount,
                     ownershipMismatchCount, counts, partialFailure, failedFamily, failureReason, resultStatus,
-                    java.time.Duration.between(started, Instant.now()).toMillis());
+                    java.time.Duration.between(started, Instant.now()).toMillis(), diagnostics);
         }
 
         private static final class MutableFamily {

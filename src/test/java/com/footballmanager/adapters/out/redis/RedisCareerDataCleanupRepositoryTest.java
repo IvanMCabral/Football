@@ -70,6 +70,7 @@ class RedisCareerDataCleanupRepositoryTest {
         CareerDataCleanupResult result = repository.deleteOwnedData(ownerA, null).block();
 
         assertEquals(2, result.uniqueKeys());
+        assertEquals("LEGACY_SCAN", result.diagnostic("path"));
         assertEquals(2, result.keysActuallyDeleted());
         assertEquals(1, result.careerCount());
         assertEquals(0, result.keysDiscovered() - result.uniqueKeys());
@@ -99,6 +100,10 @@ class RedisCareerDataCleanupRepositoryTest {
         CareerDataCleanupResult result = repository.deleteOwnedData(ownerA, "career-a").block();
 
         assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+        assertEquals("MODERN_MANIFEST", result.diagnostic("path"));
+        assertEquals("1", result.diagnostic("manifestVersion"));
+        assertEquals("5", result.diagnostic("manifestEntries"));
+        assertEquals("1", result.diagnostic("scanCount"));
         verify(redisTemplate, times(1)).scan(argThat(options ->
                 options.getPattern().equals("user:" + ownerA + ":*")));
         verify(redisTemplate, never()).scan(argThat(options ->
