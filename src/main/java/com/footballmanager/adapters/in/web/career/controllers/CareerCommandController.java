@@ -163,6 +163,15 @@ public class CareerCommandController {
         response.getHeaders().set("X-Reset-Manifest-Version", timing.diagnostic("manifestVersion"));
         response.getHeaders().set("X-Reset-Manifest-Entries", timing.diagnostic("manifestEntries"));
         response.getHeaders().set("X-Reset-Scan-Count", timing.diagnostic("scanCount"));
+        response.getHeaders().set("X-Reset-Projection-Matches", timing.diagnostic("projectionScanMatches"));
+        response.getHeaders().set("X-Reset-Sequential-Layers", timing.diagnostic("sequentialRemoteLayers"));
+        response.getHeaders().set("X-Reset-Child-Delete-Commands", timing.diagnostic("childDeleteCommands"));
+        response.getHeaders().set("X-Reset-Metadata-Delete-Commands", timing.diagnostic("metadataDeleteCommands"));
+        response.getHeaders().set("X-Reset-Root-Delete-Commands", timing.diagnostic("rootDeleteCommands"));
+        response.getHeaders().set("X-Reset-Tombstone-Commands", timing.diagnostic("tombstoneCommands"));
+        response.getHeaders().set("X-Reset-Exists-Commands", timing.diagnostic("existsCommands"));
+        response.getHeaders().set("X-Reset-Exists-Ms", timing.diagnostic("existsMs"));
+        response.getHeaders().set("X-Reset-Ownership-Validation-Ms", timing.diagnostic("ownershipValidationMs"));
         response.getHeaders().set("X-Reset-Discovery-Ms", timing.diagnostic("discoveryMs"));
         response.getHeaders().set("X-Reset-Manifest-Read-Ms", timing.diagnostic("manifestReadMs"));
         response.getHeaders().set("X-Reset-Projection-Scan-Ms", timing.diagnostic("projectionScanMs"));

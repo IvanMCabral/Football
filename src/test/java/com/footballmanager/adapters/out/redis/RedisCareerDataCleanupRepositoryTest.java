@@ -104,6 +104,10 @@ class RedisCareerDataCleanupRepositoryTest {
         assertEquals("1", result.diagnostic("manifestVersion"));
         assertEquals("5", result.diagnostic("manifestEntries"));
         assertEquals("1", result.diagnostic("scanCount"));
+        assertEquals("1", result.diagnostic("projectionScanMatches"));
+        assertEquals("1", result.diagnostic("childDeleteCommands"));
+        assertEquals("1", result.diagnostic("metadataDeleteCommands"));
+        assertEquals("1", result.diagnostic("rootDeleteCommands"));
         verify(redisTemplate, times(1)).scan(argThat(options ->
                 options.getPattern().equals("user:" + ownerA + ":*")));
         verify(redisTemplate, never()).scan(argThat(options ->
@@ -112,6 +116,26 @@ class RedisCareerDataCleanupRepositoryTest {
                         || options.getPattern().contains("runtime:match")
                         || options.getPattern().contains("match:state")
                         || options.getPattern().contains("match:commands")));
+    }
+
+    @Test
+    void modernEmptyManifestSkipsChildDeleteRoundTrip() {
+        when(valueOperations.get("career-cleanup-manifest-version:career-a"))
+                .thenReturn(Mono.just("1"));
+        when(setOperations.members("career-cleanup-members:career-a"))
+                .thenReturn(Flux.empty());
+        when(redisTemplate.scan(any(ScanOptions.class))).thenReturn(Flux.empty());
+
+        CareerDataCleanupResult result = repository.deleteOwnedData(ownerA, "career-a").block();
+
+        assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+        assertEquals("MODERN_MANIFEST", result.diagnostic("path"));
+        assertEquals("0", result.diagnostic("manifestEntries"));
+        assertEquals("0", result.diagnostic("projectionScanMatches"));
+        assertEquals("0", result.diagnostic("childDeleteCommands"));
+        assertEquals("1", result.diagnostic("metadataDeleteCommands"));
+        assertEquals("1", result.diagnostic("rootDeleteCommands"));
+        verify(redisTemplate, times(2)).unlink(any(Publisher.class));
     }
 
     @Test

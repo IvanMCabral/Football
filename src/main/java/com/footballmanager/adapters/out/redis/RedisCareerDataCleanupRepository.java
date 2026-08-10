@@ -7,6 +7,7 @@ import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -37,6 +38,11 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private static final Duration EXISTS_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration TOTAL_TIMEOUT = Duration.ofSeconds(90);
     private static final Duration TOMBSTONE_TTL = Duration.ofMinutes(15);
+    private static final RedisScript<Long> COUNT_EXISTING_KEYS = RedisScript.of(
+            "local count = 0; "
+                    + "for i = 1, #KEYS do count = count + redis.call('exists', KEYS[i]) end; "
+                    + "return count",
+            Long.class);
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final Duration indexTimeout;
     private final Duration scanTimeout;
@@ -110,7 +116,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     });
         }
         ownershipReady = ownershipReady.doOnSuccess(ignored ->
-                accumulator.metadata(System.nanoTime() - metadataStarted));
+                accumulator.ownershipValidation(System.nanoTime() - metadataStarted));
         return ownershipReady.flatMap(ownedIds -> {
                     return Mono.just(ownedIds);
                 })
@@ -126,12 +132,12 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                             .flatMapMany(discoveries -> deleteDiscoveries(discoveries, accumulator));
                 })
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
-                .flatMap(result -> clearTombstone(userId).thenReturn(result))
+                .flatMap(result -> clearTombstone(userId, accumulator).thenReturn(result))
                 .timeout(totalTimeout)
                 .onErrorResume(error -> accumulator.restoreDiscovery(redisTemplate)
                         .onErrorResume(ignored -> Mono.empty())
                         .then(accumulator.isOwnershipRejected()
-                                ? clearTombstone(userId)
+                                ? clearTombstone(userId, accumulator)
                                 : Mono.empty())
                         .then(Mono.error(error)))
                 .onErrorMap(error -> {
@@ -210,8 +216,10 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         PatternSpec projection = new PatternSpec("user-projection", "user:" + userId + ":*");
         long projectionStarted = System.nanoTime();
         long manifestStarted = System.nanoTime();
-        Mono<List<String>> projectionKeys = discoverKeys(projection, accumulator).doOnNext(ignored ->
-                accumulator.projectionScan(System.nanoTime() - projectionStarted));
+        Mono<List<String>> projectionKeys = discoverKeys(projection, accumulator).doOnNext(keys -> {
+            accumulator.projectionMatches(keys.size());
+            accumulator.projectionScan(System.nanoTime() - projectionStarted);
+        });
         Mono<List<String>> manifestKeys = manifestMembers(careerId).doOnNext(members -> {
             accumulator.manifestEntries(members.size());
             accumulator.manifestRead(System.nanoTime() - manifestStarted);
@@ -227,12 +235,13 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     List.of(indexKey(userId))));
             int nextOrder = order;
             List<String> members = values.getT2();
-            List<String> exact = new ArrayList<>(members);
-            exact.add(RedisCareerOwnershipKeys.manifestKey(careerId));
-            exact.add(RedisCareerOwnershipKeys.manifestVersionKey(careerId));
             int orderInManifest = nextOrder;
             discoveries.add(new Discovery(orderInManifest++, new PatternSpec("cleanup-manifest",
-                    RedisCareerOwnershipKeys.manifestKey(careerId)), exact));
+                    RedisCareerOwnershipKeys.manifestKey(careerId)), new ArrayList<>(members)));
+            discoveries.add(new Discovery(orderInManifest++, new PatternSpec("cleanup-manifest-metadata",
+                    RedisCareerOwnershipKeys.manifestKey(careerId)), List.of(
+                            RedisCareerOwnershipKeys.manifestKey(careerId),
+                            RedisCareerOwnershipKeys.manifestVersionKey(careerId))));
             discoveries.add(new Discovery(orderInManifest++, new PatternSpec("career-owner-mapping",
                     "career-owner:" + careerId), List.of("career-owner:" + careerId)));
             discoveries.add(new Discovery(orderInManifest++, new PatternSpec("career-generation",
@@ -405,6 +414,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
 
     private Flux<Long> deleteDiscoveries(List<Discovery> discoveries, CleanupAccumulator accumulator) {
         List<KeyHit> children = new ArrayList<>();
+        List<KeyHit> metadata = new ArrayList<>();
         List<KeyHit> roots = new ArrayList<>();
         for (Discovery discovery : discoveries) {
             String family = discovery.spec().family();
@@ -414,19 +424,22 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 accumulator.discovered(hit);
                 if ("career-root".equals(family)) {
                     roots.add(hit);
-                } else {
+                } else if ("cleanup-manifest".equals(family) || "user-projection".equals(family)) {
                     children.add(hit);
+                } else {
+                    metadata.add(hit);
                 }
             }
         }
         // Child deletion is safe to coalesce because ownership and generation
         // were validated before discovery. The root remains a separate final
         // batch so root-last and retry-anchor semantics are unchanged.
-        return deleteBatches(children, accumulator, false)
-                .concatWith(deleteBatches(roots, accumulator, true));
+        return deleteBatches(children, accumulator, DeleteKind.CHILD)
+                .concatWith(deleteBatches(metadata, accumulator, DeleteKind.METADATA))
+                .concatWith(deleteBatches(roots, accumulator, DeleteKind.ROOT));
     }
 
-    private Flux<Long> deleteBatches(List<KeyHit> hits, CleanupAccumulator accumulator, boolean rootBatch) {
+    private Flux<Long> deleteBatches(List<KeyHit> hits, CleanupAccumulator accumulator, DeleteKind kind) {
         List<List<KeyHit>> batches = new ArrayList<>();
         List<KeyHit> current = new ArrayList<>(MAX_BATCH_SIZE);
         for (KeyHit hit : hits) {
@@ -452,7 +465,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                             "career.cleanup.unlink.batch",
                             redisTemplate.unlink(Flux.fromIterable(keys)).timeout(unlinkTimeout))
                             .flatMap(deleted -> {
-                                accumulator.unlinkDuration(rootBatch, System.nanoTime() - unlinkStarted);
+                                accumulator.unlinkDuration(kind, System.nanoTime() - unlinkStarted);
                                 return accumulator.batchDeleted(redisTemplate, batch, deleted);
                             });
                 });
@@ -498,10 +511,12 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private Mono<Void> timedTombstone(UUID userId, String careerId, CleanupAccumulator accumulator) {
         long started = System.nanoTime();
         return writeTombstone(userId, careerId)
+                .doOnSubscribe(ignored -> accumulator.tombstoneCommand())
                 .doFinally(signal -> accumulator.tombstone(System.nanoTime() - started));
     }
 
-    private Mono<Void> clearTombstone(UUID userId) {
+    private Mono<Void> clearTombstone(UUID userId, CleanupAccumulator accumulator) {
+        accumulator.tombstoneClearCommand();
         Mono<Long> delete = redisTemplate.delete("career-cleanup:" + userId);
         return delete == null ? Mono.empty() : delete.then();
     }
@@ -512,6 +527,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private record PatternSpec(String family, String pattern) { }
     private record Discovery(int order, PatternSpec spec, List<String> keys) { }
     private record KeyHit(String family, String key) { }
+    private enum DeleteKind { CHILD, METADATA, ROOT }
     private record OwnershipValidation(List<String> careerIds, String manifestVersion) { }
 
     private static final class CleanupAccumulator {
@@ -544,7 +560,16 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         private long childUnlinkNanos;
         private long rootUnlinkNanos;
         private long metadataNanos;
+        private long ownershipValidationNanos;
+        private long existsNanos;
         private long tombstoneNanos;
+        private long projectionMatches;
+        private int childDeleteCommands;
+        private int metadataDeleteCommands;
+        private int rootDeleteCommands;
+        private int tombstoneCommands;
+        private int tombstoneClearCommands;
+        private int existsCommands;
 
         private CleanupAccumulator(UUID userId, String careerId) {
             this.ownerId = userId;
@@ -600,12 +625,19 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         void manifestRead(long nanos) { manifestReadNanos += nanos; }
         void projectionScan(long nanos) { projectionScanNanos += nanos; }
         void discovery(long nanos) { discoveryNanos += nanos; }
-        void unlinkDuration(boolean root, long nanos) {
-            if (root) rootUnlinkNanos += nanos;
-            else childUnlinkNanos += nanos;
+        void unlinkDuration(DeleteKind kind, long nanos) {
+            switch (kind) {
+                case CHILD -> { childUnlinkNanos += nanos; childDeleteCommands++; }
+                case METADATA -> { metadataNanos += nanos; metadataDeleteCommands++; }
+                case ROOT -> { rootUnlinkNanos += nanos; rootDeleteCommands++; }
+            }
         }
-        void metadata(long nanos) { metadataNanos += nanos; }
+        void ownershipValidation(long nanos) { ownershipValidationNanos += nanos; }
+        void exists(long nanos) { existsNanos += nanos; }
         void tombstone(long nanos) { tombstoneNanos += nanos; }
+        void tombstoneCommand() { tombstoneCommands++; }
+        void tombstoneClearCommand() { tombstoneClearCommands++; }
+        void projectionMatches(long count) { projectionMatches += count; }
 
         void activeFamily(String family) {
             activeFamily = family;
@@ -638,10 +670,13 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                 batch.forEach(hit -> recordDeleted(hit.family(), 1));
                 return Mono.just(count);
             }
-            return Flux.fromIterable(batch)
-                    .concatMap(hit -> redis.hasKey(hit.key()).timeout(EXISTS_TIMEOUT))
-                    .filter(Boolean::booleanValue)
-                    .count()
+            long existsStarted = System.nanoTime();
+            Mono<Long> existing = countExistingKeys(redis, batch);
+            return existing
+                    .doOnSubscribe(ignored -> existsCommands++)
+                    .doFinally(signal -> {
+                        existsNanos += System.nanoTime() - existsStarted;
+                    })
                     .flatMap(stillPresent -> {
                         missingAtDelete += shortfall - stillPresent;
                         if (stillPresent > 0) {
@@ -652,6 +687,19 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                         batch.stream().limit((int) count).forEach(hit -> recordDeleted(hit.family(), 1));
                         return Mono.just(count);
                     });
+        }
+
+        private Mono<Long> countExistingKeys(ReactiveRedisTemplate<String, String> redis,
+                                              List<KeyHit> batch) {
+            List<String> keys = batch.stream().map(KeyHit::key).toList();
+            Flux<Long> scriptResult = redis.execute(COUNT_EXISTING_KEYS, keys);
+            if (scriptResult != null) {
+                return scriptResult.singleOrEmpty().timeout(EXISTS_TIMEOUT);
+            }
+            return Flux.fromIterable(batch)
+                    .concatMap(hit -> redis.hasKey(hit.key()).timeout(EXISTS_TIMEOUT))
+                    .filter(Boolean::booleanValue)
+                    .count();
         }
 
         private void recordDeleted(String familyName, long count) {
@@ -711,13 +759,28 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             diagnostics.put("manifestVersion", manifestVersion);
             diagnostics.put("manifestEntries", Integer.toString(manifestEntries));
             diagnostics.put("scanCount", Long.toString(scanCount));
+            diagnostics.put("projectionScanMatches", Long.toString(projectionMatches));
             diagnostics.put("discoveryMs", Long.toString(discoveryNanos / 1_000_000L));
             diagnostics.put("manifestReadMs", Long.toString(manifestReadNanos / 1_000_000L));
             diagnostics.put("projectionScanMs", Long.toString(projectionScanNanos / 1_000_000L));
             diagnostics.put("childUnlinkMs", Long.toString(childUnlinkNanos / 1_000_000L));
             diagnostics.put("rootUnlinkMs", Long.toString(rootUnlinkNanos / 1_000_000L));
             diagnostics.put("metadataMs", Long.toString(metadataNanos / 1_000_000L));
+            diagnostics.put("ownershipValidationMs", Long.toString(ownershipValidationNanos / 1_000_000L));
+            diagnostics.put("existsMs", Long.toString(existsNanos / 1_000_000L));
             diagnostics.put("tombstoneMs", Long.toString(tombstoneNanos / 1_000_000L));
+            diagnostics.put("childDeleteCommands", Integer.toString(childDeleteCommands));
+            diagnostics.put("metadataDeleteCommands", Integer.toString(metadataDeleteCommands));
+            diagnostics.put("rootDeleteCommands", Integer.toString(rootDeleteCommands));
+            diagnostics.put("existsCommands", Integer.toString(existsCommands));
+            diagnostics.put("tombstoneCommands", Integer.toString(tombstoneCommands + tombstoneClearCommands));
+            int sequentialLayers = "MODERN_MANIFEST".equals(path)
+                    ? 2 + (childDeleteCommands > 0 ? 1 : 0)
+                    + (metadataDeleteCommands > 0 ? 1 : 0)
+                    + (rootDeleteCommands > 0 ? 1 : 0)
+                    + (tombstoneClearCommands > 0 ? 1 : 0)
+                    : 0;
+            diagnostics.put("sequentialRemoteLayers", Integer.toString(sequentialLayers));
             return new CareerDataCleanupResult(patterns, discovered, uniqueKeyFamilies.size(), requested, deleted,
                     missingAtDelete, unexplainedShortfall, batches, maxBatch, ownerHash, careerCount,
                     ownershipMismatchCount, counts, partialFailure, failedFamily, failureReason, resultStatus,
