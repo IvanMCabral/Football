@@ -67,6 +67,15 @@
     "cleanupN20MaxMs": 3,
     "latencyModelsMs": [25, 50, 75]
   },
+  "backendSuite": {
+    "testCompile": "PASS",
+    "reports": 267,
+    "tests": 2639,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 4,
+    "shotCoordinateAttachmentRuns": "3/3 PASS"
+  },
   "health": {
     "liveness": "3/3 HTTP 200",
     "readiness": "3/3 HTTP 200",
