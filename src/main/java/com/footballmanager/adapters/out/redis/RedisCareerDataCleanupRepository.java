@@ -117,7 +117,9 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     accumulator.setCareerCount(ownedCareerIds, careerId);
                     List<PatternSpec> specs = patterns(userId, careerId, ownedCareerIds, preserveWorld);
                     specs.forEach(accumulator::patternEvaluated);
+                    long discoveryStarted = System.nanoTime();
                     return discoverForReset(userId, careerId, ownedCareerIds, specs, preserveWorld, accumulator)
+                            .doOnNext(ignored -> accumulator.discovery(System.nanoTime() - discoveryStarted))
                             .flatMapMany(discoveries -> deleteDiscoveries(discoveries, accumulator));
                 })
                 .then(Mono.fromSupplier(() -> accumulator.result(false, "")))
@@ -181,10 +183,16 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         List<Discovery> discoveries = new ArrayList<>();
         PatternSpec projection = new PatternSpec("user-projection", "user:" + userId + ":*");
         long projectionStarted = System.nanoTime();
-        return discoverKeys(projection, accumulator).doOnNext(ignored ->
-                accumulator.projectionScan(System.nanoTime() - projectionStarted)).flatMap(projectionKeys -> {
+        long manifestStarted = System.nanoTime();
+        Mono<List<String>> projectionKeys = discoverKeys(projection, accumulator).doOnNext(ignored ->
+                accumulator.projectionScan(System.nanoTime() - projectionStarted));
+        Mono<List<String>> manifestKeys = manifestMembers(careerId).doOnNext(members -> {
+            accumulator.manifestEntries(members.size());
+            accumulator.manifestRead(System.nanoTime() - manifestStarted);
+        });
+        return Mono.zip(projectionKeys, manifestKeys).map(values -> {
             int order = 0;
-            discoveries.add(new Discovery(order++, projection, projectionKeys));
+            discoveries.add(new Discovery(order++, projection, values.getT1()));
             if (!preserveWorld) {
                 discoveries.add(new Discovery(order++, new PatternSpec("world", "world:" + userId),
                         List.of("world:" + userId)));
@@ -192,11 +200,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             discoveries.add(new Discovery(order++, new PatternSpec("career-index", indexKey(userId)),
                     List.of(indexKey(userId))));
             int nextOrder = order;
-            long manifestStarted = System.nanoTime();
-            return manifestMembers(careerId).doOnNext(members -> {
-                accumulator.manifestEntries(members.size());
-                accumulator.manifestRead(System.nanoTime() - manifestStarted);
-            }).map(members -> {
+            List<String> members = values.getT2();
             List<String> exact = new ArrayList<>(members);
             exact.add(RedisCareerOwnershipKeys.manifestKey(careerId));
             exact.add(RedisCareerOwnershipKeys.manifestVersionKey(careerId));
@@ -212,7 +216,6 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
             discoveries.add(new Discovery(orderInManifest, new PatternSpec("career-root", "career:" + userId),
                     List.of("career:" + userId)));
             return discoveries;
-            });
         });
     }
 

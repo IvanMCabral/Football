@@ -274,21 +274,22 @@ public final class CareerOwnershipTouchService implements CareerOwnershipPort {
     }
 
     private Mono<Void> renew(UUID owner, String careerId, String index) {
-        return redisTemplate.expire(mappingKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT)
-                .then(redisTemplate.expire(generationKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT))
-                .then(redisTemplate.expire(index, OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT))
-                .then(redisTemplate.expire(rootKey(owner), ROOT_TTL).timeout(OPERATION_TIMEOUT))
+        return Mono.when(
+                redisTemplate.expire(mappingKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT),
+                redisTemplate.expire(generationKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT),
+                redisTemplate.expire(index, OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT),
+                redisTemplate.expire(rootKey(owner), ROOT_TTL).timeout(OPERATION_TIMEOUT))
                 .then();
     }
 
     private Mono<Void> renewOwner(UUID owner, java.util.List<String> careerIds, String index) {
         return Flux.fromIterable(careerIds)
-                .concatMap(careerId -> redisTemplate.expire(mappingKey(careerId), OWNERSHIP_TTL)
-                        .then(redisTemplate.expire(generationKey(careerId), OWNERSHIP_TTL)
-                        .timeout(OPERATION_TIMEOUT))
-                        )
-                .then(redisTemplate.expire(index, OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT))
-                .then(redisTemplate.expire(rootKey(owner), ROOT_TTL).timeout(OPERATION_TIMEOUT))
+                .flatMap(careerId -> Mono.when(
+                        redisTemplate.expire(mappingKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT),
+                        redisTemplate.expire(generationKey(careerId), OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT)))
+                .then(Mono.when(
+                        redisTemplate.expire(index, OWNERSHIP_TTL).timeout(OPERATION_TIMEOUT),
+                        redisTemplate.expire(rootKey(owner), ROOT_TTL).timeout(OPERATION_TIMEOUT)))
                 .then();
     }
 
