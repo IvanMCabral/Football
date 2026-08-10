@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
 import java.util.UUID;
+import java.util.Collection;
 
 @Component
 @RequiredArgsConstructor
@@ -61,6 +62,15 @@ public class LeagueTeamRepositoryAdapter implements LeagueTeamRepository {
     @Override
     public Mono<Void> removeTeamFromLeague(UUID userId, UUID leagueId, UUID teamId) {
         return redisRepository.removeTeamFromLeague(userId, leagueId, teamId)
+                .then();
+    }
+
+    @Override
+    public Mono<Void> addTeamsToLeague(UUID userId, UUID leagueId, Collection<UUID> teamIds) {
+        return redisRepository.addTeamsToLeague(userId, leagueId, teamIds)
+                .thenMany(reactor.core.publisher.Flux.fromIterable(teamIds)
+                        .flatMap(teamId -> redisRepository.addLeaguesToTeam(
+                                userId, teamId, java.util.List.of(leagueId)), 32))
                 .then();
     }
 

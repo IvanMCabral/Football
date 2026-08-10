@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+import java.util.Collection;
 
 /**
  * Repositorio Redis para relación Liga-Equipo con scope de usuario.
@@ -33,6 +34,20 @@ public class LeagueTeamRedisRepository {
         return redisTemplate.opsForSet().add(teamsKey, teamId.toString())
                 .then(redisTemplate.opsForSet().add(leaguesKey, leagueId.toString()))
                 .then();
+    }
+
+    public Mono<Void> addTeamsToLeague(UUID userId, UUID leagueId, Collection<UUID> teamIds) {
+        if (teamIds == null || teamIds.isEmpty()) return Mono.empty();
+        String teamsKey = getTeamsKey(userId, leagueId);
+        String[] values = teamIds.stream().map(UUID::toString).toArray(String[]::new);
+        return redisTemplate.opsForSet().add(teamsKey, values).then();
+    }
+
+    public Mono<Void> addLeaguesToTeam(UUID userId, UUID teamId, Collection<UUID> leagueIds) {
+        if (leagueIds == null || leagueIds.isEmpty()) return Mono.empty();
+        String leaguesKey = getLeaguesKey(userId, teamId);
+        String[] values = leagueIds.stream().map(UUID::toString).toArray(String[]::new);
+        return redisTemplate.opsForSet().add(leaguesKey, values).then();
     }
 
     public Mono<Void> removeTeamFromLeague(UUID userId, UUID leagueId, UUID teamId) {

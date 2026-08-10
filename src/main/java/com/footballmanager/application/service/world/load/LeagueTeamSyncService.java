@@ -79,16 +79,15 @@ public class LeagueTeamSyncService {
      * Sincroniza las asociaciones a Redis.
      */
     private Mono<Void> syncToRedis(UUID userId, Map<UUID, UUID> leagueTeamsMap) {
-        List<Mono<Void>> operations = leagueTeamsMap.entrySet().stream()
-                .map(entry -> leagueTeamRepository.addTeamToLeague(userId, entry.getValue(), entry.getKey()))
-                .toList();
+        Map<UUID, List<UUID>> teamsByLeague = leagueTeamsMap.entrySet().stream()
+                .collect(Collectors.groupingBy(Map.Entry::getValue,
+                        Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
 
-        // Redis is the per-user cache for the relationship, but serializing
-        // every team write made first-world bootstrap needlessly slow on a
-        // remote managed Redis. The operations are independent; bounded
-        // concurrency preserves back-pressure without blocking the event loop.
-        return Flux.fromIterable(operations)
-                .flatMap(operation -> operation, 16)
+        // Redis is a per-user cache. Populate each league set in one SADD
+        // instead of one round trip per relation; SQL remains canonical.
+        return Flux.fromIterable(teamsByLeague.entrySet())
+                .flatMap(entry -> leagueTeamRepository.addTeamsToLeague(
+                        userId, entry.getKey(), entry.getValue()), 8)
                 .then();
     }
 }
