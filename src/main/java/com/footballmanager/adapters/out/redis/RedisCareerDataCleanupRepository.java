@@ -92,10 +92,10 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         // The tombstone must be durable before any destructive operation, but
         // it does not depend on the read-only owner index. Start both in the
         // same subscription to remove one provider round-trip from reset.
-        Mono<List<String>> ownershipReady;
+        Mono<OwnershipValidation> ownershipReady;
         long metadataStarted = System.nanoTime();
         if (careerId != null && !careerId.isBlank()) {
-            Mono<List<String>> validated = validateOwnership(userId, careerId, List.of(careerId), accumulator).cache();
+            Mono<OwnershipValidation> validated = validateOwnershipAndManifest(userId, careerId, accumulator).cache();
             ownershipReady = Mono.when(timedTombstone(userId, careerId, accumulator), validated).then(validated);
         } else {
             ownershipReady = Mono.when(timedTombstone(userId, careerId, accumulator), indexedCareerIds)
@@ -105,7 +105,8 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                             accumulator.fail("CAREER_INDEX_CARDINALITY_EXCEEDED");
                             return Mono.error(new IllegalStateException("career index cardinality exceeded"));
                         }
-                        return validateOwnership(userId, careerId, indexedIds, accumulator);
+                        return validateOwnership(userId, careerId, indexedIds, accumulator)
+                                .map(ids -> new OwnershipValidation(ids, null));
                     });
         }
         ownershipReady = ownershipReady.doOnSuccess(ignored ->
@@ -113,12 +114,14 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
         return ownershipReady.flatMap(ownedIds -> {
                     return Mono.just(ownedIds);
                 })
-                .flatMapMany(ownedCareerIds -> {
+                .flatMapMany(validation -> {
+                    List<String> ownedCareerIds = validation.careerIds();
                     accumulator.setCareerCount(ownedCareerIds, careerId);
                     List<PatternSpec> specs = patterns(userId, careerId, ownedCareerIds, preserveWorld);
                     specs.forEach(accumulator::patternEvaluated);
                     long discoveryStarted = System.nanoTime();
-                    return discoverForReset(userId, careerId, ownedCareerIds, specs, preserveWorld, accumulator)
+                    return discoverForReset(userId, careerId, ownedCareerIds, specs, preserveWorld, accumulator,
+                            validation.manifestVersion())
                             .doOnNext(ignored -> accumulator.discovery(System.nanoTime() - discoveryStarted))
                             .flatMapMany(discoveries -> deleteDiscoveries(discoveries, accumulator));
                 })
@@ -151,11 +154,17 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                                                     List<String> ownedCareerIds,
                                                     List<PatternSpec> legacySpecs,
                                                     boolean preserveWorld,
-                                                    CleanupAccumulator accumulator) {
+                                                    CleanupAccumulator accumulator,
+                                                    String knownManifestVersion) {
         if (careerId == null || careerId.isBlank() || ownedCareerIds.size() != 1
                 || !ownedCareerIds.contains(careerId)) {
             accumulator.pathLegacy();
             return discoverLegacy(legacySpecs, accumulator);
+        }
+        if (knownManifestVersion != null) {
+            accumulator.manifestVersion(knownManifestVersion);
+            return selectDiscoveryPath(userId, careerId, legacySpecs, preserveWorld, accumulator,
+                    knownManifestVersion);
         }
         long started = System.nanoTime();
         return manifestVersion(careerId)
@@ -163,8 +172,26 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     accumulator.manifestRead(System.nanoTime() - started);
                     accumulator.manifestVersion(version);
                 })
-                .flatMap(version -> {
-                    if (!isModernManifest(version)) {
+                .flatMap(version -> selectDiscoveryPath(userId, careerId, legacySpecs, preserveWorld,
+                        accumulator, version))
+                .switchIfEmpty(Mono.defer(() -> {
+                    accumulator.manifestRead(System.nanoTime() - started);
+                    accumulator.pathLegacy();
+                    return discoverLegacy(legacySpecs, accumulator);
+                }));
+    }
+
+    private Mono<List<Discovery>> selectDiscoveryPath(UUID userId, String careerId,
+                                                       List<PatternSpec> legacySpecs,
+                                                       boolean preserveWorld,
+                                                       CleanupAccumulator accumulator,
+                                                       String version) {
+        if (version != null) {
+            accumulator.manifestVersion(version);
+        }
+        return Mono.justOrEmpty(version)
+                .flatMap(marker -> {
+                    if (!isModernManifest(marker)) {
                         accumulator.pathLegacy();
                         return discoverLegacy(legacySpecs, accumulator);
                     }
@@ -172,7 +199,6 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                     return discoverModern(userId, careerId, preserveWorld, accumulator);
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    accumulator.manifestRead(System.nanoTime() - started);
                     accumulator.pathLegacy();
                     return discoverLegacy(legacySpecs, accumulator);
                 }));
@@ -282,6 +308,43 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
                                     return Mono.error(new OwnershipRejectedException());
                                 })))
                 .collectList();
+    }
+
+    /**
+     * Explicit-career reset validation reads the owner mapping and lifecycle
+     * marker together.  This removes one sequential provider round trip while
+     * keeping the mapping check fail-closed; the marker is only a discovery
+     * hint and never an ownership decision.
+     */
+    private Mono<OwnershipValidation> validateOwnershipAndManifest(UUID userId,
+                                                                     String careerId,
+                                                                     CleanupAccumulator accumulator) {
+        var operations = redisTemplate.opsForValue();
+        if (operations == null) {
+            return validateOwnership(userId, careerId, List.of(careerId), accumulator)
+                    .map(ids -> new OwnershipValidation(ids, null));
+        }
+        Mono<List<String>> values = operations.multiGet(List.of(
+                ownerMappingKey(careerId),
+                RedisCareerOwnershipKeys.manifestVersionKey(careerId)));
+        if (values == null) {
+            return validateOwnership(userId, careerId, List.of(careerId), accumulator)
+                    .map(ids -> new OwnershipValidation(ids, null));
+        }
+        return values.timeout(indexTimeout)
+                .flatMap(items -> {
+                    String mappedOwner = items != null && !items.isEmpty() ? items.get(0) : null;
+                    if (mappedOwner == null || mappedOwner.isBlank()) {
+                        accumulator.rejectOwnership("OWNER_MAPPING_MISSING");
+                        return Mono.error(new OwnershipRejectedException());
+                    }
+                    if (!mappedOwner.equals(userId.toString())) {
+                        accumulator.rejectOwnership("OWNER_MAPPING_MISMATCH");
+                        return Mono.error(new OwnershipRejectedException());
+                    }
+                    String version = items.size() > 1 ? items.get(1) : null;
+                    return Mono.just(new OwnershipValidation(List.of(careerId), version));
+                });
     }
 
     private List<PatternSpec> patterns(UUID userId, String careerId, List<String> indexedCareerIds, boolean preserveWorld) {
@@ -449,6 +512,7 @@ public class RedisCareerDataCleanupRepository implements CareerDataCleanupReposi
     private record PatternSpec(String family, String pattern) { }
     private record Discovery(int order, PatternSpec spec, List<String> keys) { }
     private record KeyHit(String family, String key) { }
+    private record OwnershipValidation(List<String> careerIds, String manifestVersion) { }
 
     private static final class CleanupAccumulator {
         private final Instant started = Instant.now();
