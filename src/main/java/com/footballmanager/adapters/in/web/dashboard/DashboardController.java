@@ -66,13 +66,10 @@ public class DashboardController {
                     long started = System.nanoTime();
                     WorldStatusResponse dto = DashboardController.toDto(summary);
                     timing.record("responseBuildMs", started);
+                    timing.writeHeaders(response);
                     return dto;
                 })
-                .doOnEach(signal -> {
-                    if (signal.isOnComplete() || signal.isOnError()) {
-                        timing.writeHeaders(response);
-                    }
-                })
+                .doOnError(ignored -> timing.writeHeaders(response))
                 .contextWrite(context -> context.put(ReloadWorldTiming.CONTEXT_KEY, timing)));
     }
 
