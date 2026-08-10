@@ -12,6 +12,7 @@ public interface LeagueRepository {
     Mono<League> findById(UUID userId, LeagueId id);
     Flux<League> findByCountry(UUID userId, String country);
     Flux<League> findAll(UUID userId);
+    Flux<League> findAllCanonical();
     Mono<Boolean> existsById(UUID userId, LeagueId id);
     Mono<Void> deleteById(UUID userId, LeagueId id);
 }

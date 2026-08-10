@@ -40,10 +40,17 @@ public class LeagueTeamSyncService {
 
     public Mono<Map<UUID, UUID>> loadLeagueTeamsMap(UUID userId, ReloadWorldTiming timing) {
         // reload-world already has to read the canonical league catalog. For
-        // this path, reading three Redis relation sets first only adds remote
-        // round trips and cannot change the canonical result. Rebuild the map
-        // from SQL, then refresh both Redis indexes atomically.
-        return syncFromSql(userId);
+        // this path, avoid user-scoped Redis catalog reads and refresh the
+        // relation indexes from the canonical SQL catalog.
+        return leagueRepository.findAllCanonical()
+                .flatMap(league -> leagueTeamSourceRepository.findByLeagueId(league.getId().getValue())
+                        .map(link -> Map.entry(link.teamId(), league.getId().getValue())))
+                .collectList()
+                .flatMap(entries -> {
+                    Map<UUID, UUID> map = entries.stream()
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    return syncToRedis(userId, map).thenReturn(map);
+                });
     }
 
     /**
