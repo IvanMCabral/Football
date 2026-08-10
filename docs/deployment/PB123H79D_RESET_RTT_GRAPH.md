@@ -77,7 +77,10 @@ The focused cleanup unit and real-Redis suites are green.
 
 ## Public gate
 
-The public deployment must be rebuilt from the commit containing these counters
-before a new N=3/N=10 can be classified. Until the response exposes the new
-headers, the live SHA is `SHA_NOT_EXPOSED` and the performance P1 remains open;
-no public latency claim is inferred from local Redis timings.
+The exact runtime `e175d718` was deployed and the response exposed the new
+headers. Fresh public N=3 and N=10 runs were 100% `MODERN_MANIFEST`, HTTP 204,
+with zero 500/503 responses. N=10 client p50/p95 was 1292.5/1309 ms and the
+cleanup p50/p95 was 698/705 ms, so the explicit performance gate is closed.
+Render does not expose its live SHA through the public API; its classification
+therefore remains `SHA_NOT_EXPOSED`. Later commits in this branch only update
+documentation and tests; they do not alter the deployed reset code.
