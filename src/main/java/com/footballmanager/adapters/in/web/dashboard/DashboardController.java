@@ -68,7 +68,11 @@ public class DashboardController {
                     timing.record("responseBuildMs", started);
                     return dto;
                 })
-                .doOnSuccess(ignored -> timing.writeHeaders(response))
+                .doOnEach(signal -> {
+                    if (signal.isOnComplete() || signal.isOnError()) {
+                        timing.writeHeaders(response);
+                    }
+                })
                 .contextWrite(context -> context.put(ReloadWorldTiming.CONTEXT_KEY, timing)));
     }
 
