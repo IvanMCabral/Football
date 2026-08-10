@@ -143,6 +143,34 @@ class RedisCareerDataCleanupRepositoryRealIntegrationTest extends AbstractIntegr
     }
 
     @Test
+    void modernEmptyManifestRealRedisPerformanceTwentySamples() {
+        List<Long> durations = new ArrayList<>();
+        for (int sample = 0; sample < 20; sample++) {
+            UUID owner = UUID.randomUUID();
+            String careerId = "career-modern-empty-perf-" + sample + "-" + owner;
+            seedOwnership(owner, careerId, "generation-empty-perf-" + sample);
+            reactiveRedisTemplate.opsForValue()
+                    .set(CareerOwnershipTouchService.manifestVersionKey(careerId), "1")
+                    .block(Duration.ofSeconds(5));
+            long started = System.nanoTime();
+            CareerDataCleanupResult result = cleanupRepository.deleteOwnedData(owner, careerId)
+                    .block(Duration.ofSeconds(10));
+            durations.add((System.nanoTime() - started) / 1_000_000L);
+            assertEquals(CareerDataCleanupResult.Status.COMPLETED, result.status());
+            assertEquals("1", result.diagnostic("atomicScriptCommands"));
+            assertEquals("0", result.diagnostic("childDeleteCommands"));
+        }
+        List<Long> sorted = durations.stream().sorted().toList();
+        long p50 = sorted.get(sorted.size() / 2);
+        long p95 = sorted.get((int) Math.ceil(sorted.size() * .95) - 1);
+        long max = sorted.get(sorted.size() - 1);
+        System.out.printf("[EMPTY-CLEANUP-PERF] n=20 p50Ms=%d p95Ms=%d maxMs=%d samples=%s%n",
+                p50, p95, max, sorted);
+        assertTrue(p50 <= 1500);
+        assertTrue(p95 <= 3000);
+    }
+
+    @Test
     void modernManifestBoundaryMatrixKeepsDeletesBoundedAndRootLast() {
         for (int entries : List.of(1, 10, 100, 101, 500, 1024)) {
             UUID owner = UUID.randomUUID();
