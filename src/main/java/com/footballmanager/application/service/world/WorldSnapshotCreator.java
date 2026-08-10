@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.world;
 
 import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
@@ -31,6 +32,11 @@ public class WorldSnapshotCreator {
                 .flatMap(base -> buildAndSaveSnapshot(userId, base));
     }
 
+    public Mono<WorldSnapshot> create(UUID userId, ReloadWorldTiming timing) {
+        return loadBaseDataService.load(userId, timing)
+                .flatMap(base -> buildAndSaveSnapshot(userId, base, timing));
+    }
+
     private Mono<WorldSnapshot> buildAndSaveSnapshot(UUID userId, LoadBaseDataService.BaseDataResult base) {
         WorldSnapshot snapshot = new WorldSnapshot();
         snapshot.setUserId(userId);
@@ -50,6 +56,24 @@ public class WorldSnapshotCreator {
         }
         snapshot.setWorldPlayers(playersMap);
 
+        return WorldSnapshotRepository.saveInitial(snapshot);
+    }
+
+    private Mono<WorldSnapshot> buildAndSaveSnapshot(UUID userId,
+                                                      LoadBaseDataService.BaseDataResult base,
+                                                      ReloadWorldTiming timing) {
+        long started = System.nanoTime();
+        WorldSnapshot snapshot = new WorldSnapshot();
+        snapshot.setUserId(userId);
+        snapshot.setLeagues(base.leagues());
+        Map<String, WorldTeam> teamsMap = new HashMap<>();
+        for (WorldTeam team : base.teams()) teamsMap.put(team.getWorldTeamId(), team);
+        snapshot.setWorldTeams(teamsMap);
+        Map<String, WorldPlayer> playersMap = new HashMap<>();
+        for (WorldPlayer player : base.players()) playersMap.put(player.getWorldPlayerId(), player);
+        snapshot.setWorldPlayers(playersMap);
+        timing.countWorld(base.leagues().size(), teamsMap.size(), playersMap.size());
+        timing.record("assemblyMs", started);
         return WorldSnapshotRepository.saveInitial(snapshot);
     }
 }

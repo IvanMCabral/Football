@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.world;
 
 import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,10 @@ public class WorldSnapshotService {
      */
     public Mono<WorldSnapshot> reloadFromDatabase(UUID userId) {
         return snapshotCreator.create(userId);
+    }
+
+    public Mono<WorldSnapshot> reloadFromDatabase(UUID userId, ReloadWorldTiming timing) {
+        return snapshotCreator.create(userId, timing);
     }
 
     /**

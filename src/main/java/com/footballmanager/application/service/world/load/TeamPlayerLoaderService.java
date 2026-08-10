@@ -8,6 +8,7 @@ import com.footballmanager.domain.model.entity.Player;
 import com.footballmanager.domain.model.aggregate.Team;
 import com.footballmanager.domain.model.valueobject.Division;
 import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -86,6 +87,12 @@ public class TeamPlayerLoaderService {
                                     List.of()))));
                     return players;
                 });
+    }
+
+    public Mono<TeamsAndPlayersResult> loadTeamsAndPlayers(UUID userId,
+                                                            Map<UUID, UUID> leagueTeamsMap,
+                                                            ReloadWorldTiming timing) {
+        return loadTeamsAndPlayers(userId, leagueTeamsMap);
     }
 
     private WorldPlayer mapPlayerToWorldPlayer(Player player, String worldTeamId) {

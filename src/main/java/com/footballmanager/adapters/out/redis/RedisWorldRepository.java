@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,18 +67,35 @@ public class RedisWorldRepository implements WorldSnapshotRepository {
     @Override
     public Mono<WorldSnapshot> saveInitial(WorldSnapshot snapshot) {
         String key = generateKey(snapshot.getUserId());
-
-        Mono<WorldSnapshot> persist = Mono.fromCallable(() -> objectMapper.writeValueAsString(snapshot))
-                .flatMap(json -> worldTtl == null
+        return Mono.deferContextual(context -> {
+            ReloadWorldTiming timing = context.getOrDefault(ReloadWorldTiming.CONTEXT_KEY, null);
+            Mono<String> serialize = Mono.defer(() -> {
+                long started = System.nanoTime();
+                return Mono.fromCallable(() -> objectMapper.writeValueAsString(snapshot))
+                        .doOnSuccess(json -> {
+                            if (timing != null) {
+                                timing.serializedBytes(json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length);
+                                timing.record("serializationMs", started);
+                            }
+                        });
+            });
+            Mono<WorldSnapshot> persist = serialize.flatMap(json -> {
+                long started = System.nanoTime();
+                Mono<Boolean> write = worldTtl == null
                         ? redisTemplate.opsForValue().set(key, json)
-                        : redisTemplate.opsForValue().set(key, json, worldTtl))
-                .thenReturn(snapshot)
-                .onErrorResume(e -> {
-                    return Mono.error(e);
-                });
-        return ownershipTouchService == null
-                ? persist
-                : ownershipTouchService.initializeWorld(snapshot.getUserId(), () -> persist);
+                        : redisTemplate.opsForValue().set(key, json, worldTtl);
+                return write.doOnSuccess(ignored -> {
+                            if (timing != null) timing.record("redisSaveMs", started);
+                        })
+                        .thenReturn(snapshot);
+            });
+            if (ownershipTouchService == null) return persist;
+            long ownershipStarted = System.nanoTime();
+            return ownershipTouchService.initializeWorld(snapshot.getUserId(), () -> persist)
+                    .doOnSuccess(ignored -> {
+                        if (timing != null) timing.record("ownershipInitMs", ownershipStarted);
+                    });
+        });
     }
 
     /** Career-derived world update. It cannot degrade to first-time initialization. */

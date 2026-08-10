@@ -4,6 +4,7 @@ import com.footballmanager.application.service.world.load.*;
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -47,6 +48,26 @@ public class LoadBaseDataService {
                             map
                     ));
                 });
+    }
+
+    public Mono<BaseDataResult> load(UUID userId, ReloadWorldTiming timing) {
+        return Mono.defer(() -> {
+            Mono<Map<UUID, UUID>> leagueTeams = timing.measure(
+                    "leagueTeamSyncMs", leagueTeamSyncService.loadLeagueTeamsMap(userId, timing));
+            Mono<List<WorldLeague>> leagues = timing.measure(
+                    "leagueLoadMs", leagueLoaderService.loadLeagues(userId, timing));
+            return leagueTeams.flatMap(leagueTeamsMap ->
+                    Mono.zip(
+                            Mono.just(leagueTeamsMap),
+                            leagues,
+                            timing.measure("teamPlayerLoadMs",
+                                    teamPlayerLoaderService.loadTeamsAndPlayers(userId, leagueTeamsMap, timing)))
+                            .map(tuple -> new BaseDataResult(
+                                    tuple.getT2(),
+                                    tuple.getT3().teams(),
+                                    tuple.getT3().players(),
+                                    tuple.getT1())));
+        }).transform(publisher -> timing.measure("canonicalLoadMs", publisher));
     }
 
     public record BaseDataResult(

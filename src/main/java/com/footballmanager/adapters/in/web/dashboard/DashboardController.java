@@ -9,8 +9,10 @@ import com.footballmanager.application.service.world.WorldSnapshotService;
 import com.footballmanager.application.service.world.WorldStatusQueryService;
 import com.footballmanager.application.service.world.WorldStatusSummary;
 import com.footballmanager.application.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,12 +55,21 @@ public class DashboardController {
      * {@link WorldStatusQueryService} so both endpoints stay consistent.
      */
     @PostMapping("/reload-world")
-    public Mono<WorldStatusResponse> reloadWorldSnapshot(Authentication authentication) {
+    public Mono<WorldStatusResponse> reloadWorldSnapshot(Authentication authentication,
+                                                         ServerHttpResponse response) {
         UUID userId = controllerHelper.getUserId(authentication);
+        ReloadWorldTiming timing = new ReloadWorldTiming();
         return RuntimeOperationMetrics.measure("http.dashboard.reloadWorld",
-            worldSnapshotService.reloadFromDatabase(userId)
-                .then(worldStatusQueryService.getWorldStatus(userId))
-                .map(DashboardController::toDto));
+            worldSnapshotService.reloadFromDatabase(userId, timing)
+                .then(timing.measure("statusQueryMs", worldStatusQueryService.getWorldStatus(userId)))
+                .map(summary -> {
+                    long started = System.nanoTime();
+                    WorldStatusResponse dto = DashboardController.toDto(summary);
+                    timing.record("responseBuildMs", started);
+                    return dto;
+                })
+                .doOnSuccess(ignored -> timing.writeHeaders(response))
+                .contextWrite(context -> context.put(ReloadWorldTiming.CONTEXT_KEY, timing)));
     }
 
     private static UserStatsResponse toDto(UserStatsSummary summary) {

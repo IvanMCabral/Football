@@ -3,6 +3,7 @@ package com.footballmanager.application.service.world.load;
 import com.footballmanager.domain.ports.out.league.LeagueRepository;
 import com.footballmanager.domain.ports.out.league.LeagueTeamRepository;
 import com.footballmanager.domain.ports.out.league.LeagueTeamSourceRepository;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -34,6 +35,14 @@ public class LeagueTeamSyncService {
                     }
                     return syncFromSql(userId);
                 })
+                .switchIfEmpty(syncFromSql(userId));
+    }
+
+    public Mono<Map<UUID, UUID>> loadLeagueTeamsMap(UUID userId, ReloadWorldTiming timing) {
+        return loadFromRedis(userId)
+                .flatMap(redisMap -> redisMap != null && !redisMap.isEmpty()
+                        ? Mono.just(redisMap)
+                        : syncFromSql(userId))
                 .switchIfEmpty(syncFromSql(userId));
     }
 

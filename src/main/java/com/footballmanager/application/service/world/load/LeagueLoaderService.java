@@ -2,6 +2,7 @@ package com.footballmanager.application.service.world.load;
 
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.ports.out.league.LeagueRepository;
+import com.footballmanager.application.observability.ReloadWorldTiming;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -29,5 +30,9 @@ public class LeagueLoaderService {
                         league.getSeasonId() != 0 ? league.getSeasonId() : 1
                 )))
                 .collectList();
+    }
+
+    public Mono<java.util.List<WorldLeague>> loadLeagues(UUID userId, ReloadWorldTiming timing) {
+        return loadLeagues(userId);
     }
 }
