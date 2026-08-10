@@ -29,13 +29,13 @@
 
 ## Open gate
 
-The fresh health gate returned liveness 5/5 HTTP 200. Three separated readiness
-probes returned HTTP 503 with database UP and redis DOWN. Render is deployed at
-the expected runtime SHA, and visible startup logs confirm Neon/Flyway access;
-the Upstash console still requires authentication. No manual Redis or provider
-operation was allowed.
+The fresh health gate returned liveness 5/5 HTTP 200. Upstash read-only access
+confirmed Free Tier storage exactly at 256 MB / 256 MB, PING=PONG, and DBSIZE
+9,638. Render is deployed at the expected runtime SHA, and visible startup logs
+confirm Neon/Flyway access. No manual Redis or provider operation was allowed.
 Fresh healthy-provider N=3 and N=20, bootstrap UX, idempotency, and Redis growth
-measurements remain unexecuted. No approval is claimed.
+measurements remain unexecuted. The acceptance is blocked by the exhausted
+provider quota; no approval is claimed.
 
 No gameplay, frontend, database, manual Redis, infrastructure, billing, or
 provider-plan changes were made.

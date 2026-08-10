@@ -1,9 +1,12 @@
 {
   "phase": "redis-growth",
-  "status": "NOT_MEASURED",
-  "reason": "Public readiness directly reported redis DOWN. No provider dashboard or manual Redis inspection was performed in this phase.",
-  "dbsize": "NOT_MEASURED",
-  "storageBytes": "NOT_MEASURED",
+  "status": "QUOTA_EXCEEDED",
+  "reason": "Read-only Upstash dashboard and CLI confirmed the free-tier storage ceiling.",
+  "dbsize": 9638,
+  "storageBytes": "256 MB (UI precision)",
+  "quotaBytes": "256 MB (UI precision)",
+  "storagePercentage": 100,
+  "ping": "PONG",
   "manualCleanup": false,
   "providerChanged": false
 }

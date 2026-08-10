@@ -1,11 +1,15 @@
 {
-  "status": "AUTH_REQUIRED",
-  "reason": "The existing Upstash tab opened the Log in to Upstash screen; no authenticated session was available.",
-  "database": "NOT_VERIFIABLE",
-  "ping": "NOT_EXECUTED",
-  "dbsize": "NOT_EXECUTED",
-  "storage": "NOT_MEASURED",
-  "commands": [],
+  "status": "QUOTA_EXCEEDED",
+  "database": "Manager",
+  "plan": "Free Tier",
+  "region": "AWS sa-east-1 (Sao Paulo, Brazil)",
+  "storage": "256 MB",
+  "quota": "256 MB",
+  "storagePercentage": 100,
+  "commands": "131K / 500K per month",
+  "bandwidth": "0 B / 50 GB",
+  "ping": "PONG",
+  "dbsize": 9638,
   "manualMutation": false,
-  "loginScreenObserved": true
+  "commandsExecuted": ["PING", "DBSIZE"]
 }

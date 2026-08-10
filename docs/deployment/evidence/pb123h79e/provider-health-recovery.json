@@ -1,12 +1,13 @@
 {
-  "result": "BLOCKED_AUTH_ACCESS",
+  "result": "BLOCKED_UPSTASH_QUOTA",
   "liveness": "5/5 HTTP 200",
-  "readiness": "3/3 HTTP 503",
-  "readinessBody": "database=UP, redis=DOWN",
+  "readiness": "3/3 TIMEOUT_OR_ERROR after quota confirmation",
+  "readinessBody": "previous direct evidence: database=UP, redis=DOWN",
+  "upstash": {"ping": "PONG", "dbsize": 9638, "storage": "256 MB / 256 MB", "storagePercentage": 100},
   "accountsCreated": 0,
   "n3Started": false,
   "n20Started": false,
   "recoveryAction": "none",
   "manualRedisChange": false,
-  "note": "Public runtime reports Redis DOWN; provider cause cannot be distinguished between quota/service/auth without the Upstash read-only console."
+  "note": "Free-tier storage quota is exactly exhausted. No deletion or cleanup was performed; safe owner-scoped cleanup authorization is required."
 }

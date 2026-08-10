@@ -1,5 +1,5 @@
 {
   "status": "NOT_EXECUTED",
-  "reason": "Bootstrap N3 is conditional on a healthy provider and passing reload-world N3.",
+  "reason": "Bootstrap N3 is conditional on a healthy provider; Upstash storage quota is exhausted.",
   "accounts": 0
 }

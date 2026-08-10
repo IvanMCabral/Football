@@ -2,9 +2,10 @@
 
 ## Verdict
 
-`REDIS_DOWN` — provider readiness is blocked by Redis, not PostgreSQL. The
-underlying Upstash quota-versus-service cause remains unresolved because the
-Upstash console requires authentication in the connected browser.
+`FREE_TIER_STORAGE_LIMIT` — Upstash Manager is at exactly 256 MB / 256 MB.
+Redis CLI returned `PING=PONG` and `DBSIZE=9638`; PostgreSQL remains UP. The
+application readiness failure is therefore caused by the exhausted provider
+storage ceiling, not by PostgreSQL or an unbounded readiness publisher.
 
 ## Direct evidence
 
@@ -28,16 +29,14 @@ classified as the primary fault in this gate.
 
 ## Provider access
 
-The authenticated Chrome session exposed Render, but Upstash showed its login
-screen and Neon console authentication was unavailable. Render logs confirmed
-the deployed SHA, production profile, successful Neon/Flyway connection, and a
-running process; the visible log window contained no Redis driver exception.
-Upstash PING/DBSIZE were therefore not executed. No credentials, Redis
-commands, or database operations were used.
+The authenticated Chrome session exposed Render and Upstash. Upstash showed
+Free Tier, AWS sa-east-1, storage 256 MB / 256 MB, 131K / 500K commands, 0 B /
+50 GB bandwidth, PING=PONG, and DBSIZE=9638. Render logs confirmed the deployed
+SHA, production profile, successful Neon/Flyway connection, and a running
+process; the visible log window contained no Redis driver exception.
 
 ## Recovery decision
 
-No code, Redis, database, plan, billing, or infrastructure change is authorized
-by this phase. The required recovery is provider-side Redis availability; after
-readiness returns 200 with both dependencies UP, resume the existing H7.9E N3
-then N20 gate.
+No code, Redis, database, plan, billing, or infrastructure change was made. The
+next operation requires explicit owner-scoped cleanup authorization under the
+approved H7 lifecycle; until then, stop with `BLOCKED_UPSTASH_QUOTA`.

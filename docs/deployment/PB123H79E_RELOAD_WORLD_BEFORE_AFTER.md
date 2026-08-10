@@ -16,5 +16,6 @@ provider N=20.
 
 The current acceptance attempt stopped at the health gate: liveness was 5/5
 HTTP 200, while three readiness probes returned HTTP 503 with database UP and
-redis DOWN. No public accounts were created and no reload-world benchmark was
-started.
+redis DOWN. Read-only Upstash inspection then confirmed storage at 256 MB / 256
+MB and DBSIZE 9,638. No public accounts were created and no reload-world
+benchmark was started.
