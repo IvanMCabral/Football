@@ -1,0 +1,10 @@
+{
+  "status": "NOT_VERIFIABLE",
+  "reason": "No authenticated Upstash console tab was available in the existing browser session.",
+  "database": "NOT_VERIFIABLE",
+  "ping": "NOT_EXECUTED",
+  "dbsize": "NOT_EXECUTED",
+  "storage": "NOT_MEASURED",
+  "commands": [],
+  "manualMutation": false
+}

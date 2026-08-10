@@ -1,0 +1,6 @@
+{
+  "status": "NOT_VERIFIABLE",
+  "reason": "No authenticated Neon console tab was available in the existing browser session.",
+  "selects": [],
+  "writes": false
+}

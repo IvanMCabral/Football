@@ -1,0 +1,7 @@
+{
+  "status": "NOT_VERIFIABLE",
+  "reason": "No authenticated Render log tab was available; public probes provide health-body evidence only.",
+  "requestIds": [],
+  "logsInspected": false,
+  "secretsPrinted": false
+}

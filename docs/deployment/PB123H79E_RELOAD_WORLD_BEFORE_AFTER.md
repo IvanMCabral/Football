@@ -14,6 +14,7 @@ Partial post-instrumentation samples are retained separately and were captured
 during deploy/restart transitions; they cannot replace the required healthy
 provider N=20.
 
-The current acceptance attempt stopped at the health gate: liveness was 3/3
-HTTP 200, while all three readiness probes timed out. No public accounts were
-created and no reload-world benchmark was started.
+The current acceptance attempt stopped at the health gate: liveness was 5/5
+HTTP 200, while three readiness probes returned HTTP 503 with database UP and
+redis DOWN. No public accounts were created and no reload-world benchmark was
+started.

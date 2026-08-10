@@ -1,7 +1,7 @@
 {
   "phase": "public-after-instrumentation-diagnostic",
   "status": "NOT_EXECUTED_AS_FORMAL_GATE",
-  "reason": "Three health probes returned liveness 200 but readiness timed out; the provider gate therefore failed before a stable post-change N=3 gate.",
+  "reason": "Three readiness probes returned HTTP 503 with database UP and redis DOWN; the provider gate therefore failed before a stable post-change N=3 gate.",
   "accountsCreated": 0,
   "observedSamples": [
     {"status": 500, "clientMs": 18514, "serverMs": 18005, "canonicalMs": 17900, "leagueTeamMs": 17799},

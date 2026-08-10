@@ -1,14 +1,21 @@
 {
   "phase": "provider-health-gate",
-  "status": "BLOCKED_PROVIDER_REDIS",
+  "status": "REDIS_DOWN",
   "endpoint": "https://manager-staging-api.onrender.com",
-  "samples": [
-    {"index": 1, "liveness": 200, "livenessBody": "{\"status\":\"UP\"}", "readiness": "TIMEOUT", "elapsedMs": 13845},
-    {"index": 2, "liveness": 200, "livenessBody": "{\"status\":\"UP\"}", "readiness": "TIMEOUT", "elapsedMs": 1277},
-    {"index": 3, "liveness": 200, "livenessBody": "{\"status\":\"UP\"}", "readiness": "TIMEOUT", "elapsedMs": 764}
+  "livenessSamples": [
+    {"index": 1, "status": 200, "body": "{\"status\":\"UP\"}", "elapsedMs": 281},
+    {"index": 2, "status": 200, "body": "{\"status\":\"UP\"}", "elapsedMs": 209},
+    {"index": 3, "status": 200, "body": "{\"status\":\"UP\"}", "elapsedMs": 205},
+    {"index": 4, "status": 200, "body": "{\"status\":\"UP\"}", "elapsedMs": 215},
+    {"index": 5, "status": 200, "body": "{\"status\":\"UP\"}", "elapsedMs": 209}
   ],
-  "separationSeconds": 2,
+  "readinessSamples": [
+    {"index": 1, "status": 503, "body": "{\"status\":\"DOWN\",\"database\":\"UP\",\"redis\":\"DOWN\"}", "elapsedMs": 650},
+    {"index": 2, "status": 503, "body": "{\"status\":\"DOWN\",\"database\":\"UP\",\"redis\":\"DOWN\"}", "elapsedMs": 573},
+    {"index": 3, "status": 503, "body": "{\"status\":\"DOWN\",\"database\":\"UP\",\"redis\":\"DOWN\"}", "elapsedMs": 554}
+  ],
+  "separationSeconds": 3,
   "accountsCreated": 0,
   "redisModified": false,
-  "note": "Readiness did not produce HTTP 200; N3/N20 were not started."
+  "note": "Readiness directly reported database UP and redis DOWN; N3/N20 were not started."
 }

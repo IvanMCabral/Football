@@ -1,7 +1,7 @@
 {
   "phase": "public-after-instrumentation-formal-n20",
   "status": "NOT_EXECUTED",
-  "reason": "Provider readiness did not return HTTP 200 (three readiness probes timed out). The task forbids manual provider cleanup or creating replacement resources.",
+  "reason": "Provider readiness returned HTTP 503 with database UP and redis DOWN in three probes. The task forbids manual provider cleanup or creating replacement resources.",
   "sampleCount": 0,
   "gate": {"http200": "NOT_MEASURED", "http500": "NOT_MEASURED", "http503": "NOT_MEASURED", "clientP50Ms": "NOT_MEASURED", "clientP95Ms": "NOT_MEASURED"}
 }
