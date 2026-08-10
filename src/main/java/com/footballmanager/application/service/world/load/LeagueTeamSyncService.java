@@ -23,6 +23,7 @@ public class LeagueTeamSyncService {
     private final LeagueRepository leagueRepository;
     private final LeagueTeamRepository leagueTeamRepository;
     private final LeagueTeamSourceRepository leagueTeamSourceRepository;
+    private volatile Mono<Map<UUID, UUID>> canonicalMapCache;
 
     /**
      * Carga el map de league-team, sincronizando desde SQL si es necesario.
@@ -41,9 +42,23 @@ public class LeagueTeamSyncService {
     public Mono<Map<UUID, UUID>> loadLeagueTeamsMap(UUID userId, ReloadWorldTiming timing) {
         // reload-world already has to read the canonical league catalog. For
         // this path, reading three Redis relation sets first only adds remote
-        // round trips and cannot change the canonical result. Rebuild the map
-        // from SQL, then refresh both Redis indexes atomically.
-        return syncFromSql(userId);
+        // round trips and cannot change the canonical result. Reuse a bounded
+        // immutable SQL-derived map, then refresh both Redis indexes for this
+        // owner atomically.
+        return canonicalMap().flatMap(map -> syncToRedis(userId, map).thenReturn(map));
+    }
+
+    private Mono<Map<UUID, UUID>> canonicalMap() {
+        Mono<Map<UUID, UUID>> cached = canonicalMapCache;
+        if (cached != null) return cached;
+        Mono<Map<UUID, UUID>> created = leagueRepository.findAllCanonical()
+                .flatMap(league -> leagueTeamSourceRepository.findByLeagueId(league.getId().getValue())
+                        .map(link -> Map.entry(link.teamId(), league.getId().getValue())))
+                .collectList()
+                .map(entries -> entries.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+                .cache(java.time.Duration.ofMinutes(5));
+        canonicalMapCache = created;
+        return created;
     }
 
     /**
