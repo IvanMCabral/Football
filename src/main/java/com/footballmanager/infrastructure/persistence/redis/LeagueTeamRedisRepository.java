@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Repositorio Redis para relación Liga-Equipo con scope de usuario.
@@ -18,6 +19,17 @@ import java.util.Collection;
 @Repository
 @RequiredArgsConstructor
 public class LeagueTeamRedisRepository {
+    private static final org.springframework.data.redis.core.script.RedisScript<Long> SYNC_RELATIONS =
+            org.springframework.data.redis.core.script.RedisScript.of("""
+                    local user = ARGV[1]
+                    for i = 2, #ARGV, 2 do
+                      local league = ARGV[i]
+                      local team = ARGV[i + 1]
+                      redis.call('SADD', 'user:' .. user .. ':league:' .. league .. ':teams', team)
+                      redis.call('SADD', 'user:' .. user .. ':team:' .. team .. ':leagues', league)
+                    end
+                    return (#ARGV - 1) / 2
+                    """, Long.class);
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     private String getTeamsKey(UUID userId, UUID leagueId) {
@@ -56,6 +68,17 @@ public class LeagueTeamRedisRepository {
         return redisTemplate.opsForSet().remove(teamsKey, teamId.toString())
                 .then(redisTemplate.opsForSet().remove(leaguesKey, leagueId.toString()))
                 .then();
+    }
+
+    public Mono<Void> syncRelations(UUID userId, Map<UUID, UUID> teamToLeague) {
+        if (teamToLeague == null || teamToLeague.isEmpty()) return Mono.empty();
+        java.util.List<String> args = new java.util.ArrayList<>(1 + teamToLeague.size() * 2);
+        args.add(userId.toString());
+        teamToLeague.forEach((team, league) -> {
+            args.add(league.toString());
+            args.add(team.toString());
+        });
+        return redisTemplate.execute(SYNC_RELATIONS, java.util.List.of(), args).then();
     }
 
     public Flux<UUID> findTeamIdsByLeagueId(UUID userId, UUID leagueId) {

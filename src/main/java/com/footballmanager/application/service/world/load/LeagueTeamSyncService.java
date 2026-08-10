@@ -79,15 +79,8 @@ public class LeagueTeamSyncService {
      * Sincroniza las asociaciones a Redis.
      */
     private Mono<Void> syncToRedis(UUID userId, Map<UUID, UUID> leagueTeamsMap) {
-        Map<UUID, List<UUID>> teamsByLeague = leagueTeamsMap.entrySet().stream()
-                .collect(Collectors.groupingBy(Map.Entry::getValue,
-                        Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
-
-        // Redis is a per-user cache. Populate each league set in one SADD
-        // instead of one round trip per relation; SQL remains canonical.
-        return Flux.fromIterable(teamsByLeague.entrySet())
-                .flatMap(entry -> leagueTeamRepository.addTeamsToLeague(
-                        userId, entry.getKey(), entry.getValue()), 8)
-                .then();
+        // Redis is a per-user cache. Populate both relation indexes with one
+        // atomic script instead of one network round trip per relation.
+        return leagueTeamRepository.syncRelations(userId, leagueTeamsMap);
     }
 }

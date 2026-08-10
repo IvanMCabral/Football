@@ -4,6 +4,7 @@ import com.footballmanager.domain.model.valueobject.TeamId;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 public interface LeagueTeamRepository {
@@ -17,6 +18,11 @@ public interface LeagueTeamRepository {
     default Mono<Void> addTeamsToLeague(UUID userId, UUID leagueId, Collection<UUID> teamIds) {
         return Flux.fromIterable(teamIds)
                 .flatMap(teamId -> addTeamToLeague(userId, leagueId, teamId), 16)
+                .then();
+    }
+    default Mono<Void> syncRelations(UUID userId, Map<UUID, UUID> teamToLeague) {
+        return Flux.fromIterable(teamToLeague.entrySet())
+                .flatMap(entry -> addTeamToLeague(userId, entry.getValue(), entry.getKey()), 16)
                 .then();
     }
     Mono<Void> removeTeamFromLeague(UUID userId, UUID leagueId, UUID teamId);

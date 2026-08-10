@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 import java.util.Collection;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -72,6 +73,11 @@ public class LeagueTeamRepositoryAdapter implements LeagueTeamRepository {
                         .flatMap(teamId -> redisRepository.addLeaguesToTeam(
                                 userId, teamId, java.util.List.of(leagueId)), 32))
                 .then();
+    }
+
+    @Override
+    public Mono<Void> syncRelations(UUID userId, Map<UUID, UUID> teamToLeague) {
+        return redisRepository.syncRelations(userId, teamToLeague);
     }
 
     private LeagueTeamLink toDomain(LeagueTeamEntity entity) {
