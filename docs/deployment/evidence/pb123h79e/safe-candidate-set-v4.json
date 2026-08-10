@@ -1,0 +1,16 @@
+{
+  "schema": "pb123h79e-safe-candidate-set-v4",
+  "candidateOwners": 0,
+  "candidateCareers": 0,
+  "candidateKeys": 0,
+  "familyCounts": {},
+  "foreignOwnerCandidates": 0,
+  "currentOwnerCollisions": 0,
+  "contradictoryMappings": 0,
+  "unknownPrefixes": 0,
+  "candidateExactMeasuredBytes": 0,
+  "candidateSampledBytes": 0,
+  "candidateUnknownBytes": 0,
+  "candidateListSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "deletionAuthorized": false
+}

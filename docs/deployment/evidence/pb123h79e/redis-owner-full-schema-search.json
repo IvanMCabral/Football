@@ -1,0 +1,12 @@
+{
+  "schema": "pb123h79e-redis-owner-full-schema-search-v4",
+  "redisOwners": 144,
+  "foundInUsers": 0,
+  "foundInGames": 0,
+  "foundInOtherCanonicalTables": null,
+  "foundAnywhere": null,
+  "absentEverywhere": null,
+  "retainedUsersOnlyJoin": "0 present / 144 absent",
+  "freshSearch": "NOT_EXECUTED",
+  "classification": "INCONCLUSIVE"
+}

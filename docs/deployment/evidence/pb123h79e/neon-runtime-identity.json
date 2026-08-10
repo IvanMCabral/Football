@@ -1,0 +1,20 @@
+{
+  "schema": "pb123h79e-neon-runtime-identity-v4",
+  "observedAt": "2026-08-10",
+  "render": {
+    "service": "manager-staging-api",
+    "database": "neondb",
+    "schema": "public",
+    "postgresVersion": "18.4",
+    "flywayVersion": 1,
+    "hostSha256": "6117fb00c0db26a545797814525876f6f1e170f1c28121c23cb88b6ffeb2a0f3"
+  },
+  "neon": {
+    "project": "manager-staging",
+    "browserAuthenticated": false,
+    "branch": "NOT_VERIFIABLE",
+    "databaseFingerprintQuery": "NOT_EXECUTED"
+  },
+  "classification": "NOT_VERIFIABLE",
+  "mutations": false
+}

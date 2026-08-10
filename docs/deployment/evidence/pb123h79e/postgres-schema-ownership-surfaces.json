@@ -1,0 +1,9 @@
+{
+  "schema": "pb123h79e-postgres-schema-ownership-surfaces-v4",
+  "freshQueryStatus": "BLOCKED_BEFORE_QUERY",
+  "tablesInspected": 0,
+  "ownerReferenceColumns": [],
+  "careerReferenceColumns": [],
+  "inconclusiveUuidColumns": [],
+  "reason": "Exact Render Neon session is unauthenticated; local .env is a different database."
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "pb123h79e-orphan-proof-v4",
+  "redisKeys": 9638,
+  "provenOrphanOwners": 0,
+  "provenOrphanCareers": 0,
+  "provenOrphanKeys": 0,
+  "protectedKeys": 0,
+  "inconclusiveKeys": 9638,
+  "unknownPrefixKeys": 0,
+  "sumReconciles": true,
+  "status": "ORPHAN_CLEANUP_BLOCKED"
+}

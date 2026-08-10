@@ -1,0 +1,15 @@
+{
+  "schema": "pb123h79e-cleanup-v4-dry-run",
+  "plannedBatches": 0,
+  "maxBatch": 100,
+  "rootLast": true,
+  "plannedKeys": 0,
+  "actualRedisDeletions": 0,
+  "actualPostgresMutations": 0,
+  "redisWrites": 0,
+  "broadPatternDelete": false,
+  "flushDb": false,
+  "flushAll": false,
+  "status": "NOT_EXECUTED",
+  "reason": "Canonical PostgreSQL authority and branch remain not verifiable."
+}

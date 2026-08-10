@@ -1,0 +1,9 @@
+{
+  "schema": "pb123h79e-postgres-current-owner-redis-crosscheck-v4",
+  "currentPostgresUsersRetained": 73,
+  "currentPgUsersWithRedisNamespaceRetained": 0,
+  "freshExactRuntimeUsersQuery": "NOT_EXECUTED",
+  "redisOwnerNamespaces": 144,
+  "knownPb123OwnersWithRedisKeys": 0,
+  "classification": "INCONCLUSIVE_PENDING_EXACT_RUNTIME_QUERY"
+}

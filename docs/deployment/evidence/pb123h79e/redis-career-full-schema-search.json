@@ -1,0 +1,11 @@
+{
+  "schema": "pb123h79e-redis-career-full-schema-search-v4",
+  "redisCareers": 22,
+  "foundCanonically": null,
+  "absentCanonically": null,
+  "validRedisMappings": 11,
+  "missingRedisMappings": 11,
+  "contradictoryRedisMappings": 0,
+  "freshSearch": "NOT_EXECUTED",
+  "classification": "INCONCLUSIVE"
+}
