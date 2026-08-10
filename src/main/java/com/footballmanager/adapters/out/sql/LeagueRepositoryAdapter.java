@@ -59,11 +59,6 @@ public class LeagueRepositoryAdapter implements LeagueRepository {
     }
 
     @Override
-    public Flux<League> findAllCanonical() {
-        return leagueR2dbcRepository.findAll().map(LeagueEntity::toDomain);
-    }
-
-    @Override
     public Mono<Boolean> existsById(UUID userId, LeagueId id) {
         return redisRepository.findById(userId, id.getValue())
             .hasElement();

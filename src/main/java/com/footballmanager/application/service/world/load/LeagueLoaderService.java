@@ -33,10 +33,6 @@ public class LeagueLoaderService {
     }
 
     public Mono<java.util.List<WorldLeague>> loadLeagues(UUID userId, ReloadWorldTiming timing) {
-        return leagueRepository.findAllCanonical()
-                .map(league -> WorldLeague.fromRealLeague(
-                        league.getId().getValue(), league.getName(), league.getCountry(),
-                        league.getSeasonId() != 0 ? league.getSeasonId() : 1))
-                .collectList();
+        return loadLeagues(userId);
     }
 }
