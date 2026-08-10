@@ -2,7 +2,9 @@
 
 ## Verdict
 
-`REDIS_DOWN` — provider readiness is blocked by Redis, not PostgreSQL.
+`REDIS_DOWN` — provider readiness is blocked by Redis, not PostgreSQL. The
+underlying Upstash quota-versus-service cause remains unresolved because the
+Upstash console requires authentication in the connected browser.
 
 ## Direct evidence
 
@@ -26,10 +28,12 @@ classified as the primary fault in this gate.
 
 ## Provider access
 
-The authenticated Chrome session exposed no usable tabs during this run, so
-Render logs, Upstash read-only console metrics, and Neon console state are
-`NOT_VERIFIABLE`. No credentials, dashboards, Redis commands, or database
-operations were used.
+The authenticated Chrome session exposed Render, but Upstash showed its login
+screen and Neon console authentication was unavailable. Render logs confirmed
+the deployed SHA, production profile, successful Neon/Flyway connection, and a
+running process; the visible log window contained no Redis driver exception.
+Upstash PING/DBSIZE were therefore not executed. No credentials, Redis
+commands, or database operations were used.
 
 ## Recovery decision
 

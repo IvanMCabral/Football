@@ -1,7 +1,14 @@
 {
-  "status": "NOT_VERIFIABLE",
-  "reason": "No authenticated Render log tab was available; public probes provide health-body evidence only.",
+  "status": "PARTIAL",
+  "reason": "Render service and recent deployment logs were available; no Redis driver error appeared in the visible recent log window.",
   "requestIds": [],
-  "logsInspected": false,
+  "logsInspected": true,
+  "service": "manager-staging-api",
+  "liveSha": "520297825dae3dec92865713446a21ed5c998b99",
+  "branch": "feat/v25d99.20.3.1-runtime-fixes",
+  "deploymentStatus": "Deployed",
+  "startup": {"profile": "prod", "startedInSeconds": 102.696, "port": 10000},
+  "databaseEvidence": "Flyway connected to PostgreSQL and schema was up to date",
+  "redisErrorEvidence": "not present in visible recent logs",
   "secretsPrinted": false
 }

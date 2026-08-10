@@ -1,0 +1,12 @@
+{
+  "result": "BLOCKED_AUTH_ACCESS",
+  "liveness": "5/5 HTTP 200",
+  "readiness": "3/3 HTTP 503",
+  "readinessBody": "database=UP, redis=DOWN",
+  "accountsCreated": 0,
+  "n3Started": false,
+  "n20Started": false,
+  "recoveryAction": "none",
+  "manualRedisChange": false,
+  "note": "Public runtime reports Redis DOWN; provider cause cannot be distinguished between quota/service/auth without the Upstash read-only console."
+}

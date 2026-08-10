@@ -1,6 +1,7 @@
 {
-  "status": "NOT_VERIFIABLE",
-  "reason": "No authenticated Neon console tab was available in the existing browser session.",
+  "status": "REACHABLE_FROM_RENDER_NOT_CONSOLE_VERIFIED",
+  "reason": "Render logs show successful Flyway connection and migration validation against Neon; no authenticated Neon console tab was available.",
+  "renderEvidence": "PostgreSQL 18.4 connection, migration validated, schema up to date",
   "selects": [],
   "writes": false
 }
