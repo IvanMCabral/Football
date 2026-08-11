@@ -1,0 +1,11 @@
+{
+  "date": "2026-08-11",
+  "baseline": "49eab87263bd961475f190a04d2ddb16916ea95c",
+  "result": "WORLD V2 FINAL AUDIT CLOSURE COMPLETE — READY FOR INDEPENDENT RE-AUDIT",
+  "prior_findings": { "p0": 1, "p1": 6, "p2": 4, "p3": 1 },
+  "remaining": { "p0": 0, "p1": 0, "p2": 0, "p3": 1 },
+  "provider_accounting": "UNVERIFIED",
+  "public_migration_authorized": false,
+  "public_cleanup_authorized": false,
+  "remote_mutations": 0
+}

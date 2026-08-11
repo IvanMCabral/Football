@@ -1,0 +1,22 @@
+{
+  "quota_bytes": 268435456,
+  "provider_margin_bytes": 32768,
+  "local_uncertainty_margin_bytes": 65536,
+  "representative": {
+    "legacy_serialized": 501901,
+    "legacy_memory_usage": 501992,
+    "prepared_serialized": 90688,
+    "prepared_memory_usage": 90790,
+    "catalog_serialized": 501847,
+    "catalog_memory_usage": 502031,
+    "committed_serialized": 94515,
+    "committed_memory_usage": 94604,
+    "planned_peak": 268232274,
+    "actual_physical_peak": 268231944,
+    "physical_minus_planned": -330
+  },
+  "fuzz": { "seed": 127803430, "cases": 500, "admitted": 400, "blocked": 100, "unsafe_admissions": 0, "max_physical_minus_planned": -388 },
+  "worst_admitted": { "scale": 35, "players": 35, "aliases": 35, "custom_players": 35, "custom_teams": 8, "leagues": 35, "traits_per_player": 32, "skills_per_player": 10, "text_characters": 512, "unicode": true, "removals": true, "relations": true, "planned_peak": 268336742, "physical_peak": 268336352, "headroom": 98714 },
+  "first_blocked": { "scale": 36 },
+  "provider_accounting": "UNVERIFIED"
+}

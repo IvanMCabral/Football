@@ -1,0 +1,6 @@
+{
+  "process_a": { "fresh_jvm": true, "action": "write exact PREPARED envelope", "exit": 0 },
+  "process_b": { "fresh_jvm": true, "shared_spring_context": false, "shared_statics": false, "shared_object_instances": false, "action": "productive repository recovery, commit, reload, compare", "exit": 0 },
+  "shared_state": "ephemeral Redis only",
+  "result": "PASS"
+}

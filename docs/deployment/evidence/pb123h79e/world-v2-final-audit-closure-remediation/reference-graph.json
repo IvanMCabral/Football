@@ -1,0 +1,11 @@
+{
+  "roots": 8,
+  "models": 45,
+  "fields": 347,
+  "containers": 70,
+  "reference_paths": 25,
+  "unresolved_generic_paths": 0,
+  "uncovered_paths": 0,
+  "self_destruction_shapes": ["direct", "list", "set", "map_key", "map_value", "nested_collection", "removed_players_map"],
+  "self_destruction_detected": 7
+}

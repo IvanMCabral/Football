@@ -1,0 +1,8 @@
+{
+  "pipeline": ["LEGACY", "orchestrator", "PREPARED", "COMMITTED", "fresh_repository", "redis_reload", "semantic_comparator"],
+  "overlay_fields": { "team": 7, "player": 14, "league": 3, "total": 24, "passed": 24 },
+  "nullable_fields": { "snapshot": 2, "team": 7, "player": 12, "league": 3, "total": 24, "passed": 24 },
+  "additional_null_empty_cases": 6,
+  "comparator_mutations": { "snapshot": 7, "team": 10, "player": 17, "league": 4, "total": 38, "detected": 38, "false_negatives": 0 },
+  "alias_graph_attacks": { "extra": true, "missing": true, "wrong_target": true, "self_alias": true, "cycle": true, "foreign_target": true, "collapse": true }
+}
