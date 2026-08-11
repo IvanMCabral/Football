@@ -32,7 +32,7 @@ This remediation addresses only the open findings in `PB123H79E_WORLD_V2_SEMANTI
 - Alias graph physical attacks: 7/7 detected.
 - Capacity fuzz: seed 127803430, 500 cases, 400 admitted, 100 blocked, unsafe admissions 0.
 - Separate-JVM PREPARED recovery: PASS.
-- Backend full suite: 291 reports, 2,881 tests, 0 failures, 0 errors, 4 skipped; Surefire 580.815 seconds.
+- Backend full suite: 291 reports, 2,881 tests, 0 failures, 0 errors, 4 skipped; Surefire 528.291 seconds.
 - `ShotCoordinateAttachmentTest`: 3/3 PASS (9.800 s, 10.112 s, 9.792 s wall time).
 
 ## Scope integrity
