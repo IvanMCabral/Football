@@ -144,6 +144,15 @@ class LaLigaSeedControllerE2ETest extends AbstractIntegrationTest {
         // user's Postgres state had previous teams (snapshotCreator creates a fresh snapshot
         // from ALL teams in Postgres, then seed adds LaLiga). So we assert presence >= 20.
         JsonNode root = objectMapper.readTree(json);
+        if (root.has("storageVersion")) {
+            assertThat(root.get("storageVersion").asInt())
+                .as("V2 world envelope must advertise its storage version")
+                .isEqualTo(2);
+            String catalogKey = root.get("catalogKey").asText();
+            json = redisTemplate.opsForValue().get(catalogKey).block();
+            assertThat(json).as("V2 catalog JSON must be present").isNotBlank();
+            root = objectMapper.readTree(json);
+        }
         JsonNode worldTeams = root.get("worldTeams");
         JsonNode worldPlayers = root.get("worldPlayers");
         assertThat(worldTeams)

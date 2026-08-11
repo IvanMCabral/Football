@@ -156,6 +156,15 @@ class ProductionStartupValidationTest {
     }
 
     @Test
+    void prodProfileRejectsImmortalWorldCatalogRetention() {
+        MockEnvironment environment = completeProdEnvironment()
+            .withProperty("REDIS_WORLD_CATALOG_TTL", "0s");
+        environment.setActiveProfiles("prod");
+
+        assertThrows(IllegalStateException.class, validation(environment)::validate);
+    }
+
+    @Test
     void nonProdProfileDoesNotRequireProductionSecrets() {
         MockEnvironment environment = new MockEnvironment();
         environment.setActiveProfiles("local");
