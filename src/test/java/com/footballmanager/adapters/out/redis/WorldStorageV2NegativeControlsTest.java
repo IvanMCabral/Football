@@ -102,7 +102,7 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
             case MISSING_LEGACY_ALIAS -> missingLegacyAliasIsDetected();
             case LINEUP_UNRESOLVED -> unresolvedLineupIsDiscoveredFromCareer();
             case CATALOG_HASH_MISMATCH -> catalogHashMismatchIsPhysicallyRejected();
-            case CANONICAL_SOURCE_CHANGED -> materialHashChangeDiffers();
+            case CANONICAL_SOURCE_CHANGED -> canonicalSourceChangeCreatesDistinctPhysicalCatalog();
             case MISSING_CATALOG -> missingCatalogFailsClosed(false);
             case CORRUPT_OVERLAY -> corruptOverlayChecksumFailsClosed();
             case INVALID_STORAGE_VERSION -> invalidOverlayIsRejected();
@@ -366,11 +366,20 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private boolean ownerMismatchIsBlocked() {
-        WorldSnapshot a = new WorldSnapshot();
-        a.setUserId(UUID.randomUUID());
-        WorldSnapshot b = new WorldSnapshot();
-        b.setUserId(UUID.randomUUID());
-        return !planner.plan(a, b).ready();
+        try {
+            UUID sourceOwner = UUID.randomUUID();
+            UUID requestedOwner = UUID.randomUUID();
+            WorldSnapshot foreign = canonicalWorld(sourceOwner);
+            String raw = mapper.writeValueAsString(foreign);
+            reactiveRedisTemplate.opsForValue().set("world:" + requestedOwner, raw, Duration.ofMinutes(5)).block();
+            var outcome = WorldStorageMigrationTestDriver.migrate(repository(),
+                    ignored -> reactor.core.publisher.Mono.just(canonicalWorld(requestedOwner)), requestedOwner,
+                    1_000_000, 4_000_000, 32_768, 65_536);
+            return outcome.status() == WorldStorageMigrationOrchestrator.Status.INVALID_LEGACY
+                    && raw.equals(reactiveRedisTemplate.opsForValue().get("world:" + requestedOwner).block());
+        } catch (Exception error) {
+            return false;
+        }
     }
 
     private boolean missingCustomTeamIsDetected() {
@@ -488,15 +497,58 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
         return !fingerprint.fingerprint(a).equals(fingerprint.fingerprint(b));
     }
 
-    private boolean invalidOverlayIsRejected() {
-        WorldSnapshotOverlay overlay = new WorldSnapshotOverlay();
-        overlay.setOwnerId(UUID.randomUUID());
-        overlay.setStorageVersion(999);
+    private boolean canonicalSourceChangeCreatesDistinctPhysicalCatalog() {
         try {
-            overlay.applyTo(new WorldSnapshot());
+            UUID owner = UUID.randomUUID();
+            UUID real = UUID.randomUUID();
+            WorldSnapshot first = canonicalWorldCopy(owner, real, 70);
+            String worldKey = "world:" + owner;
+            reactiveRedisTemplate.opsForValue().set(worldKey, mapper.writeValueAsString(first),
+                    Duration.ofMinutes(5)).block();
+            var firstOutcome = WorldStorageMigrationTestDriver.migrate(repository(),
+                    ignored -> reactor.core.publisher.Mono.just(first), owner,
+                    1_000_000, 4_000_000, 32_768, 65_536);
+            String firstCatalog = mapper.readTree(reactiveRedisTemplate.opsForValue().get(worldKey).block())
+                    .path("catalogKey").asText();
+
+            WorldSnapshot changed = canonicalWorldCopy(owner, real, 71);
+            reactiveRedisTemplate.opsForValue().set(worldKey, mapper.writeValueAsString(changed),
+                    Duration.ofMinutes(5)).block();
+            var secondOutcome = WorldStorageMigrationTestDriver.migrate(repository(),
+                    ignored -> reactor.core.publisher.Mono.just(changed), owner,
+                    1_000_000, 4_000_000, 32_768, 65_536);
+            String secondCatalog = mapper.readTree(reactiveRedisTemplate.opsForValue().get(worldKey).block())
+                    .path("catalogKey").asText();
+            return firstOutcome.status() == WorldStorageMigrationOrchestrator.Status.MIGRATED
+                    && secondOutcome.status() == WorldStorageMigrationOrchestrator.Status.MIGRATED
+                    && !firstCatalog.equals(secondCatalog)
+                    && Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(firstCatalog).block())
+                    && Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(secondCatalog).block());
+        } catch (Exception error) {
             return false;
-        } catch (IllegalStateException expected) {
-            return true;
+        }
+    }
+
+    private boolean invalidOverlayIsRejected() {
+        try {
+            UUID owner = UUID.randomUUID();
+            WorldSnapshot canonical = canonicalWorld(owner);
+            String hash = fingerprint.fingerprint(canonical);
+            String catalogKey = "world-catalog:v2:" + hash;
+            WorldSnapshotOverlay overlay = new WorldSnapshotOverlay();
+            overlay.setOwnerId(owner);
+            overlay.setStorageVersion(999);
+            var envelope = new RedisWorldRepository.WorldStorageEnvelope(2, "COMMITTED", owner,
+                    catalogKey, hash, sha(mapper.writeValueAsString(overlay)), overlay);
+            reactiveRedisTemplate.opsForValue().set(catalogKey, mapper.writeValueAsString(canonical),
+                    Duration.ofMinutes(5)).block();
+            reactiveRedisTemplate.opsForValue().set("world:" + owner, mapper.writeValueAsString(envelope),
+                    Duration.ofMinutes(5)).block();
+            repository().findByUserId(owner).block(Duration.ofSeconds(5));
+            return false;
+        } catch (Exception expected) {
+            return hasCause(expected, RedisWorldRepository.WorldStorageFormatException.class)
+                    || hasCause(expected, IllegalStateException.class);
         }
     }
 
