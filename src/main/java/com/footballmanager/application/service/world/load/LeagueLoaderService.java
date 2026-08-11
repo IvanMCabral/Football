@@ -33,6 +33,11 @@ public class LeagueLoaderService {
     }
 
     public Mono<java.util.List<WorldLeague>> loadLeagues(UUID userId, ReloadWorldTiming timing) {
+        return loadCanonicalLeagues();
+    }
+
+    /** Reads only the durable canonical league catalog. */
+    public Mono<java.util.List<WorldLeague>> loadCanonicalLeagues() {
         return leagueRepository.findAllCanonical()
                 .map(league -> WorldLeague.fromRealLeague(
                         league.getId().getValue(), league.getName(), league.getCountry(),

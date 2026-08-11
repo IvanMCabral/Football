@@ -43,6 +43,11 @@ public class LeagueTeamSyncService {
         // relation sets are a rebuildable cache, so this path returns the
         // canonical map without paying a remote write per owner. Mutations
         // still update Redis through the command services.
+        return loadCanonicalLeagueTeamsMap();
+    }
+
+    /** Reads the durable canonical relation set without consulting or mutating an owner's Redis cache. */
+    public Mono<Map<UUID, UUID>> loadCanonicalLeagueTeamsMap() {
         return leagueTeamSourceRepository.findAll()
                 .map(link -> Map.entry(link.teamId(), link.leagueId()))
                 .collectList()

@@ -4,6 +4,7 @@ import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.application.observability.ReloadWorldTiming;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
+import com.footballmanager.domain.model.entity.WorldSnapshotOverlay;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -28,16 +30,25 @@ public class WorldSnapshotCreator {
      * Crea el WorldSnapshot desde cero.
      */
     public Mono<WorldSnapshot> create(UUID userId) {
-        return loadBaseDataService.load(userId)
-                .flatMap(base -> buildAndSaveSnapshot(userId, base));
+        return existingSnapshot(userId)
+                .flatMap(existing -> loadBaseDataService.load(userId)
+                        .flatMap(base -> buildAndSaveSnapshot(userId, base, existing.orElse(null))));
     }
 
     public Mono<WorldSnapshot> create(UUID userId, ReloadWorldTiming timing) {
-        return loadBaseDataService.load(userId, timing)
-                .flatMap(base -> buildAndSaveSnapshot(userId, base, timing));
+        return existingSnapshot(userId)
+                .flatMap(existing -> loadBaseDataService.load(userId, timing)
+                        .flatMap(base -> buildAndSaveSnapshot(userId, base, existing.orElse(null), timing)));
     }
 
-    private Mono<WorldSnapshot> buildAndSaveSnapshot(UUID userId, LoadBaseDataService.BaseDataResult base) {
+    private Mono<Optional<WorldSnapshot>> existingSnapshot(UUID userId) {
+        return WorldSnapshotRepository.findByUserId(userId)
+                .map(Optional::of)
+                .defaultIfEmpty(Optional.empty());
+    }
+
+    private Mono<WorldSnapshot> buildAndSaveSnapshot(UUID userId, LoadBaseDataService.BaseDataResult base,
+                                                      WorldSnapshot existing) {
         WorldSnapshot snapshot = new WorldSnapshot();
         snapshot.setUserId(userId);
         snapshot.setLeagues(base.leagues());
@@ -55,12 +66,14 @@ public class WorldSnapshotCreator {
             playersMap.put(player.getWorldPlayerId(), player);
         }
         snapshot.setWorldPlayers(playersMap);
+        restoreOwnerState(existing, snapshot);
 
         return WorldSnapshotRepository.saveInitial(snapshot);
     }
 
     private Mono<WorldSnapshot> buildAndSaveSnapshot(UUID userId,
                                                       LoadBaseDataService.BaseDataResult base,
+                                                      WorldSnapshot existing,
                                                       ReloadWorldTiming timing) {
         long started = System.nanoTime();
         WorldSnapshot snapshot = new WorldSnapshot();
@@ -72,9 +85,15 @@ public class WorldSnapshotCreator {
         Map<String, WorldPlayer> playersMap = new HashMap<>();
         for (WorldPlayer player : base.players()) playersMap.put(player.getWorldPlayerId(), player);
         snapshot.setWorldPlayers(playersMap);
+        restoreOwnerState(existing, snapshot);
         timing.countWorld(base.leagues().size(), teamsMap.size(), playersMap.size());
         timing.record("assemblyMs", started);
         return WorldSnapshotRepository.saveInitial(snapshot);
+    }
+
+    private void restoreOwnerState(WorldSnapshot existing, WorldSnapshot rebuilt) {
+        if (existing == null) return;
+        WorldSnapshotOverlay.fromSnapshot(existing, rebuilt).applyTo(rebuilt);
     }
 }
 

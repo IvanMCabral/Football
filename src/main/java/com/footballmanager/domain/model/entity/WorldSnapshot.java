@@ -1,5 +1,7 @@
 package com.footballmanager.domain.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.Instant;
 import java.util.*;
 
@@ -16,6 +18,8 @@ public class WorldSnapshot {
     private List<WorldLeague> leagues;
     private Map<String, WorldTeam> worldTeams;        // key: worldTeamId
     private Map<String, WorldPlayer> worldPlayers;    // key: worldPlayerId
+    /** Legacy worldPlayerId -> canonical worldPlayerId, owner-scoped in V2 overlays. */
+    private Map<String, String> worldPlayerAliases;
     private Instant createdAt;
     private Instant lastUpdated;
     
@@ -23,6 +27,7 @@ public class WorldSnapshot {
         this.leagues = new ArrayList<>();
         this.worldTeams = new HashMap<>();
         this.worldPlayers = new HashMap<>();
+        this.worldPlayerAliases = new HashMap<>();
         this.createdAt = Instant.now();
         this.lastUpdated = Instant.now();
     }
@@ -74,12 +79,16 @@ public class WorldSnapshot {
      * Obtiene un WorldPlayer por ID
      */
     public WorldPlayer getWorldPlayer(String worldPlayerId) {
-        return worldPlayers.get(worldPlayerId);
+        WorldPlayer direct = worldPlayers.get(worldPlayerId);
+        if (direct != null) return direct;
+        String canonicalId = worldPlayerAliases == null ? null : worldPlayerAliases.get(worldPlayerId);
+        return canonicalId == null ? null : worldPlayers.get(canonicalId);
     }
     
     /**
      * Obtiene todos los WorldTeams
      */
+    @JsonIgnore
     public List<WorldTeam> getAllWorldTeams() {
         return new ArrayList<>(worldTeams.values());
     }
@@ -87,6 +96,7 @@ public class WorldSnapshot {
     /**
      * Obtiene todos los WorldPlayers
      */
+    @JsonIgnore
     public List<WorldPlayer> getAllWorldPlayers() {
         return new ArrayList<>(worldPlayers.values());
     }
@@ -123,6 +133,14 @@ public class WorldSnapshot {
 
     public void setWorldPlayers(Map<String, WorldPlayer> worldPlayers) {
         this.worldPlayers = worldPlayers;
+    }
+
+    public Map<String, String> getWorldPlayerAliases() {
+        return worldPlayerAliases == null ? Collections.emptyMap() : Collections.unmodifiableMap(worldPlayerAliases);
+    }
+
+    public void setWorldPlayerAliases(Map<String, String> aliases) {
+        this.worldPlayerAliases = aliases == null ? new HashMap<>() : new HashMap<>(aliases);
     }
 
     public Instant getCreatedAt() {

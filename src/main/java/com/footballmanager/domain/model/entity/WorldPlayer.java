@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -24,6 +25,10 @@ import java.util.UUID;
  * propagara estos campos al engine.
  */
 public class WorldPlayer {
+
+    /** Stable namespace for canonical world-player identities. */
+    private static final UUID CANONICAL_ID_NAMESPACE =
+            UUID.fromString("4a0f4e5d-8c65-4d51-9f4a-8c56a5b3c8d4");
     
     private String worldPlayerId;        // ID único en WorldSnapshot
     private UUID realPlayerId;           // ref a PostgreSQL players_table (null si es custom)
@@ -79,6 +84,46 @@ public class WorldPlayer {
         player.baseMarketValue = marketValue;
         player.origin = WorldPlayerOrigin.REAL;
         return player;
+    }
+
+    /** Creates a canonical player with a stable catalog identity. */
+    public static WorldPlayer fromCanonicalPlayer(UUID ownerId, UUID realPlayerId,
+                                                   String worldTeamId, String name, Integer age,
+                                                   String position, Integer attack, Integer defense,
+                                                   Integer technique, Integer speed, Integer stamina,
+                                                   Integer mentality, BigDecimal marketValue) {
+        Objects.requireNonNull(ownerId, "ownerId cannot be null");
+        Objects.requireNonNull(realPlayerId, "realPlayerId cannot be null");
+        WorldPlayer player = new WorldPlayer();
+        player.worldPlayerId = stableCanonicalWorldPlayerId(ownerId, realPlayerId);
+        player.realPlayerId = realPlayerId;
+        player.worldTeamId = worldTeamId;
+        player.name = name;
+        player.age = age;
+        player.position = position;
+        player.baseAttack = attack;
+        player.baseDefense = defense;
+        player.baseTechnique = technique;
+        player.baseSpeed = speed;
+        player.baseStamina = stamina;
+        player.baseMentality = mentality;
+        player.baseMarketValue = marketValue;
+        player.origin = WorldPlayerOrigin.REAL;
+        return player;
+    }
+
+    /**
+     * Exact UUIDv5-compatible identity contract used by canonical rebuilds.
+     * The real-player UUID is the canonical catalog identity. The owner
+     * argument remains part of the factory contract for call-site validation,
+     * but is deliberately not encoded so one catalog can be shared safely.
+     */
+    public static String stableCanonicalWorldPlayerId(UUID ownerId, UUID realPlayerId) {
+        Objects.requireNonNull(ownerId, "ownerId cannot be null");
+        Objects.requireNonNull(realPlayerId, "realPlayerId cannot be null");
+        String name = realPlayerId.toString().toLowerCase(java.util.Locale.ROOT);
+        return UUID.nameUUIDFromBytes((CANONICAL_ID_NAMESPACE + ":" + name)
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
     }
     
     /**

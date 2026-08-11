@@ -62,6 +62,7 @@ public class ProductionStartupValidation {
         validatePositiveInt("REDIS_PORT");
         validateLifecycleCoordinationMode();
         validateRedisTtl("REDIS_WORLD_TTL", "app.redis.world-ttl", Duration.ofHours(1), Duration.ofDays(90));
+        validateRedisTtl("REDIS_WORLD_CATALOG_TTL", "app.redis.world-catalog-ttl", Duration.ofDays(1), Duration.ofDays(365));
         validateRedisTtl("REDIS_MATCH_DETAIL_TTL", "app.redis.match-detail-ttl", Duration.ofDays(1), Duration.ofDays(90));
     }
 

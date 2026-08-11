@@ -70,6 +70,22 @@ public class LoadBaseDataService {
         }).transform(publisher -> timing.measure("canonicalLoadMs", publisher));
     }
 
+    /**
+     * Rebuilds the shared canonical catalog from durable sources only. This path
+     * never reads or initializes an owner's Redis relation cache.
+     */
+    public Mono<BaseDataResult> loadCanonical(UUID ownerId) {
+        return leagueTeamSyncService.loadCanonicalLeagueTeamsMap()
+                .flatMap(leagueTeamsMap -> Mono.zip(
+                        leagueLoaderService.loadCanonicalLeagues(),
+                        teamPlayerLoaderService.loadTeamsAndPlayers(ownerId, leagueTeamsMap))
+                        .map(tuple -> new BaseDataResult(
+                                tuple.getT1(),
+                                tuple.getT2().teams(),
+                                tuple.getT2().players(),
+                                leagueTeamsMap)));
+    }
+
     public record BaseDataResult(
             List<WorldLeague> leagues,
             List<WorldTeam> teams,

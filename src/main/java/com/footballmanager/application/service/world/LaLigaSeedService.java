@@ -92,7 +92,7 @@ public class LaLigaSeedService {
         Map<String, WorldTeam> teamsByName = ensureTeams(snapshot, seed, realLeagueId);
 
         // UPSERT players: agrupar por team-name para asignar worldTeamId
-        List<WorldPlayer> createdOrUpdated = ensurePlayers(snapshot, seed, teamsByName, attributesGenerator);
+        List<WorldPlayer> createdOrUpdated = ensurePlayers(userId, snapshot, seed, teamsByName, attributesGenerator);
 
         // Java so the Redis snapshot stores correct PRIMERA/SEGUNDA/TERCERA
         // before both Redis and Postgres are updated.
@@ -113,6 +113,8 @@ public class LaLigaSeedService {
         // el estado canónico. La persistencia en Postgres (Capa 3 arriba) sigue siendo
         // defensa-en-profundidad para rebuilds por TTL o restart.
         return snapshotService.saveSnapshot(snapshot)
+                .contextWrite(context -> context.put(
+                        WorldSnapshotRepository.CANONICAL_BOOTSTRAP_CONTEXT_KEY, true))
                 .doOnSuccess(s -> log.info("[LA-LIGA-SEED] snapshot persisted for userId={} ({} worldTeams, {} worldPlayers)",
                         userId, snapshot.getWorldTeams() == null ? 0 : snapshot.getWorldTeams().size(),
                         snapshot.getWorldPlayers() == null ? 0 : snapshot.getWorldPlayers().size()))
@@ -249,7 +251,7 @@ public class LaLigaSeedService {
 
     // ========== Players ==========
 
-    private List<WorldPlayer> ensurePlayers(WorldSnapshot snapshot, LaLigaSeedData seed,
+    private List<WorldPlayer> ensurePlayers(UUID ownerId, WorldSnapshot snapshot, LaLigaSeedData seed,
                                             Map<String, WorldTeam> teamsByName,
                                             PlayerAttributesGenerator attributesGenerator) {
         if (snapshot.getWorldPlayers() == null) {
@@ -274,7 +276,7 @@ public class LaLigaSeedService {
                 updatePlayerFromDto(existing, dto, team, attributesGenerator);
                 affected.add(existing);
             } else {
-                WorldPlayer created = createPlayerFromDto(dto, team, attributesGenerator);
+                WorldPlayer created = createPlayerFromDto(ownerId, dto, team, attributesGenerator);
                 snapshot.getWorldPlayers().put(created.getWorldPlayerId(), created);
                 affected.add(created);
             }
@@ -292,7 +294,7 @@ public class LaLigaSeedService {
         return map;
     }
 
-    private WorldPlayer createPlayerFromDto(LaLigaSeedData.PlayerDto dto, WorldTeam team,
+    private WorldPlayer createPlayerFromDto(UUID ownerId, LaLigaSeedData.PlayerDto dto, WorldTeam team,
                                          PlayerAttributesGenerator attributesGenerator) {
         // realPlayerId determinístico basado en team+name
         UUID realPlayerId = UUID.nameUUIDFromBytes(
@@ -300,8 +302,8 @@ public class LaLigaSeedService {
         BigDecimal marketValue = calculateMarketValue(
                 dto.baseAttack(), dto.baseDefense(), dto.baseTechnique(),
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), dto.age());
-        WorldPlayer player = WorldPlayer.fromRealPlayer(
-                realPlayerId, team.getWorldTeamId(), dto.name(), dto.age(), dto.position(),
+        WorldPlayer player = WorldPlayer.fromCanonicalPlayer(
+                ownerId, realPlayerId, team.getWorldTeamId(), dto.name(), dto.age(), dto.position(),
                 dto.baseAttack(), dto.baseDefense(), dto.baseTechnique(),
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), marketValue);
         // generamos un height aleatorio con seed fijo (para los 386 no-top-20).

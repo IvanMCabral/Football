@@ -48,6 +48,8 @@ logging:
 app:
   redis:
     world-ttl: ${REDIS_WORLD_TTL:30d}
+    world-catalog-ttl: ${REDIS_WORLD_CATALOG_TTL:365d}
+    world-storage-version: ${REDIS_WORLD_STORAGE_VERSION:2}
     match-detail-ttl: ${REDIS_MATCH_DETAIL_TTL:30d}
     lifecycle-coordination-timeout: ${REDIS_LIFECYCLE_COORDINATION_TIMEOUT:30s}
     lifecycle-mode: ${APP_REDIS_LIFECYCLE_MODE:single-instance}

@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface WorldSnapshotRepository {
 
+    String CANONICAL_BOOTSTRAP_CONTEXT_KEY = WorldSnapshotRepository.class.getName() + ".canonicalBootstrap";
+
     Mono<WorldSnapshot> save(WorldSnapshot snapshot);
 
     default Mono<WorldSnapshot> saveInitial(WorldSnapshot snapshot) {

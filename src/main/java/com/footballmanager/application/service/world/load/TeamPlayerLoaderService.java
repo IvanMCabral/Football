@@ -60,7 +60,7 @@ public class TeamPlayerLoaderService {
 
                     List<WorldPlayer> worldPlayers = teams.stream()
                             .flatMap(team -> playersByTeam.getOrDefault(team.getId().getValue(), List.of()).stream()
-                                    .map(player -> mapPlayerToWorldPlayer(player,
+                                    .map(player -> mapPlayerToWorldPlayer(userId, player,
                                             worldTeamsById.get(team.getId().getValue()).getWorldTeamId())))
                             .collect(Collectors.toCollection(ArrayList::new));
 
@@ -95,9 +95,10 @@ public class TeamPlayerLoaderService {
         return loadTeamsAndPlayers(userId, leagueTeamsMap);
     }
 
-    private WorldPlayer mapPlayerToWorldPlayer(Player player, String worldTeamId) {
+    private WorldPlayer mapPlayerToWorldPlayer(UUID ownerId, Player player, String worldTeamId) {
         var attrs = player.getAttributes();
-        return WorldPlayer.fromRealPlayer(
+        return WorldPlayer.fromCanonicalPlayer(
+                ownerId,
                 player.getId().getValue(),
                 worldTeamId,
                 player.getName(),

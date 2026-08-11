@@ -40,10 +40,11 @@ public class WorldTeamPostgresWriter implements WorldSeedTeamWriter {
 
             try {
                 databaseClient.sql("""
-                    INSERT INTO teams (id, manager_id, name, country, formation, league_id, budget, created_at, updated_at)
-                    VALUES (:id, :managerId, :name, :country, :formation, :leagueId, :budget, :createdAt, :updatedAt)
+                    INSERT INTO teams (id, manager_id, name, country, formation, league_id, budget, division, created_at, updated_at)
+                    VALUES (:id, :managerId, :name, :country, :formation, :leagueId, :budget, :division, :createdAt, :updatedAt)
                     ON CONFLICT (id) DO UPDATE SET
                         league_id = EXCLUDED.league_id,
+                        division = EXCLUDED.division,
                         updated_at = EXCLUDED.updated_at
                     """)
                     .bind("id", teamId)
@@ -55,6 +56,7 @@ public class WorldTeamPostgresWriter implements WorldSeedTeamWriter {
                     .bind("budget", team.getBaseBudget() == null
                             ? java.math.BigDecimal.valueOf(10_000_000L)
                             : team.getBaseBudget())
+                    .bind("division", team.getDivision().name())
                     .bind("createdAt", now)
                     .bind("updatedAt", now)
                     .fetch()

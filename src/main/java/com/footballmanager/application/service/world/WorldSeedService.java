@@ -53,6 +53,7 @@ public class WorldSeedService {
     private final WorldSeedPlayerWriter batchWriter;
     private final WorldSeedTeamWriter teamWriter;
     private final SeedResourceLoader seedResourceLoader;
+    private final WorldSeedCompletenessChecker completenessChecker;
 
     /**
      * Seeds a single league. Delegates La Liga to the existing service
@@ -93,21 +94,58 @@ public class WorldSeedService {
      */
     public Mono<AllSeedResult> seedAllLeagues(UUID userId) {
         log.info("[WORLD-SEED-ALL] starting for userId={}", userId);
+        return Mono.zip(snapshotService.getSnapshot(userId), loadAllSeedData())
+                .flatMap(tuple -> completenessChecker.isComplete(tuple.getT1(), tuple.getT2())
+                        ? Mono.just(alreadyComplete(tuple.getT2()))
+                        : seedAllLeaguesFromSource(userId));
+    }
+
+    private Mono<AllSeedResult> seedAllLeaguesFromSource(UUID userId) {
         List<SeedResult> results = new ArrayList<>();
-        // Use concatMap (not flatMap) so each seedLeague waits for the previous
-        // one to finish its saveSnapshot. flatMap runs in parallel by default
-        // (concurrency=256), which causes race conditions: multiple parallel
-        // calls all read the same empty snapshot, each adds its league, the last
-        // saveSnapshot overwrites the others, and only 1 league survives.
+        // Persist La Liga once, then accumulate the remaining canonical seeds
+        // in one snapshot and publish one final world envelope. Rewriting a
+        // growing multi-megabyte catalog after every league made seed-all pay
+        // quadratic serialization/Redis cost.
+        return seedLeague(LeagueType.LALIGA, userId)
+                .doOnNext(results::add)
+                .then(snapshotService.getSnapshot(userId))
+                .flatMap(snapshot -> Flux.fromArray(LeagueType.values())
+                        .filter(type -> type != LeagueType.LALIGA)
+                        .concatMap(type -> applySeedWithoutSnapshotWrite(type, userId, snapshot)
+                                .doOnNext(results::add)
+                                .onErrorResume(error -> {
+                                    log.warn("[WORLD-SEED-ALL] league {} failed: {}",
+                                            type.slug(), error.getMessage());
+                                    return Mono.empty();
+                                }))
+                        .then(snapshotService.saveSnapshot(snapshot)
+                                .contextWrite(context -> context.put(
+                                        WorldSnapshotRepository.CANONICAL_BOOTSTRAP_CONTEXT_KEY, true)))
+                        .thenReturn(new AllSeedResult(results)));
+    }
+
+    private Mono<List<LaLigaSeedData>> loadAllSeedData() {
         return Flux.fromArray(LeagueType.values())
-                .concatMap(lt -> seedLeague(lt, userId)
-                        .doOnNext(results::add)
-                        .onErrorResume(e -> {
-                            log.warn("[WORLD-SEED-ALL] league {} failed: {}", lt.slug(), e.getMessage());
-                            return Mono.empty();
-                        }))
-                .collectList()
-                .map(seedResults -> new AllSeedResult(results));
+                .concatMap(type -> loadSeedData(type.resourcePath()))
+                .collectList();
+    }
+
+    private AllSeedResult alreadyComplete(List<LaLigaSeedData> seeds) {
+        List<SeedResult> results = seeds.stream()
+                .map(seed -> new SeedResult(seed.league().name(), seed.teams().size(), seed.players().size(), 0))
+                .toList();
+        log.info("[WORLD-SEED-ALL] complete snapshot detected; skipped {} idempotent persistence passes",
+                results.size());
+        return new AllSeedResult(results);
+    }
+
+    private Mono<SeedResult> applySeedWithoutSnapshotWrite(LeagueType leagueType, UUID userId,
+                                                            WorldSnapshot snapshot) {
+        long start = System.currentTimeMillis();
+        String logPrefix = "[" + leagueType.slug().toUpperCase() + "-SEED]";
+        PlayerAttributesGenerator generator = new PlayerAttributesGenerator();
+        return loadSeedData(leagueType.resourcePath())
+                .map(seed -> applySeedData(userId, snapshot, seed, generator, logPrefix, start));
     }
 
     // ========== Loading ==========
@@ -126,9 +164,20 @@ public class WorldSeedService {
                                        LaLigaSeedData seed,
                                        PlayerAttributesGenerator gen,
                                        String logPrefix, long start) {
+        SeedResult result = applySeedData(userId, snapshot, seed, gen, logPrefix, start);
+        return snapshotService.saveSnapshot(snapshot)
+                .contextWrite(context -> context.put(
+                        WorldSnapshotRepository.CANONICAL_BOOTSTRAP_CONTEXT_KEY, true))
+                .thenReturn(result);
+    }
+
+    private SeedResult applySeedData(UUID userId, WorldSnapshot snapshot,
+                                     LaLigaSeedData seed,
+                                     PlayerAttributesGenerator gen,
+                                     String logPrefix, long start) {
         UUID leagueId = ensureLeague(snapshot, seed);
         Map<String, WorldTeam> teamsByName = ensureTeams(snapshot, seed, leagueId);
-        List<WorldPlayer> players = ensurePlayers(snapshot, seed, teamsByName, gen);
+        List<WorldPlayer> players = ensurePlayers(userId, snapshot, seed, teamsByName, gen);
         // Java so the Redis snapshot stores correct PRIMERA/SEGUNDA/TERCERA.
         // would redistribute), the read path returns the Redis snapshot
         // verbatim — without this step the response would still show all
@@ -138,15 +187,10 @@ public class WorldSeedService {
         // synthetic teams that have no real user manager.
         teamWriter.upsertTeams(new ArrayList<>(teamsByName.values()), leagueId, logPrefix);
         persistPlayerNamesInPostgres(userId, players, logPrefix);
-
-        return snapshotService.saveSnapshot(snapshot)
-                .map(saved -> {
-                    long dur = System.currentTimeMillis() - start;
-                    log.info("{} done: teams={} players={} durationMs={}",
-                            logPrefix, teamsByName.size(), players.size(), dur);
-                    return new SeedResult(seed.league().name(),
-                            teamsByName.size(), players.size(), dur);
-                });
+        long duration = System.currentTimeMillis() - start;
+        log.info("{} prepared: teams={} players={} durationMs={}",
+                logPrefix, teamsByName.size(), players.size(), duration);
+        return new SeedResult(seed.league().name(), teamsByName.size(), players.size(), duration);
     }
 
     private UUID ensureLeague(WorldSnapshot snapshot, LaLigaSeedData seed) {
@@ -225,7 +269,7 @@ public class WorldSeedService {
         if (leagueId != null) team.setRealLeagueId(leagueId);
     }
 
-    private List<WorldPlayer> ensurePlayers(WorldSnapshot snapshot, LaLigaSeedData seed,
+    private List<WorldPlayer> ensurePlayers(UUID ownerId, WorldSnapshot snapshot, LaLigaSeedData seed,
                                             Map<String, WorldTeam> teamsByName,
                                             PlayerAttributesGenerator gen) {
         if (snapshot.getWorldPlayers() == null) snapshot.setWorldPlayers(new HashMap<>());
@@ -244,7 +288,7 @@ public class WorldSeedService {
                 updatePlayerFromDto(wp, dto, team, gen);
                 affected.add(wp);
             } else {
-                wp = createPlayerFromDto(dto, team, gen);
+                wp = createPlayerFromDto(ownerId, dto, team, gen);
                 snapshot.getWorldPlayers().put(wp.getWorldPlayerId(), wp);
                 affected.add(wp);
             }
@@ -262,15 +306,15 @@ public class WorldSeedService {
         return map;
     }
 
-    private WorldPlayer createPlayerFromDto(LaLigaSeedData.PlayerDto dto, WorldTeam team,
+    private WorldPlayer createPlayerFromDto(UUID ownerId, LaLigaSeedData.PlayerDto dto, WorldTeam team,
                                            PlayerAttributesGenerator gen) {
         UUID pid = UUID.nameUUIDFromBytes(
                 ("player|" + team.getName() + "|" + dto.name()).getBytes());
         BigDecimal mv = calculateMarketValue(
                 dto.baseAttack(), dto.baseDefense(), dto.baseTechnique(),
                 dto.baseSpeed(), dto.baseStamina(), dto.baseMentality(), dto.age());
-        WorldPlayer wp = WorldPlayer.fromRealPlayer(
-                pid, team.getWorldTeamId(),
+        WorldPlayer wp = WorldPlayer.fromCanonicalPlayer(
+                ownerId, pid, team.getWorldTeamId(),
                 dto.name(), dto.age(),
                 dto.position() == null ? "MID" : dto.position(),
                 dto.baseAttack(), dto.baseDefense(),
