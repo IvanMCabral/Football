@@ -1,0 +1,15 @@
+{
+  "beforeCurrentGuard": "PASS_BAD_STATE",
+  "afterNewGuard": "REJECT_BAD_STATE",
+  "controls": {
+    "inheritedReference": "REJECTED",
+    "externalPersistedHolder": "REJECTED",
+    "unresolvedGeneric": "REJECTED",
+    "unclassifiedMapValue": "REJECTED",
+    "validatorRemoved": "REJECTED",
+    "registryOnlyPath": "REJECTED",
+    "emptyDiscovery": "REJECTED",
+    "staleClassification": "REJECTED"
+  },
+  "falsePasses": 0
+}

@@ -1,0 +1,17 @@
+{
+  "authorityVersion": 4,
+  "models": 33,
+  "fields": 238,
+  "productionInheritedFields": 0,
+  "containers": 82,
+  "identityLeaves": 126,
+  "classifiedIdentityPaths": 126,
+  "referencePaths": 57,
+  "validators": 57,
+  "unresolvedGenerics": 0,
+  "ambiguousIdentityPaths": 0,
+  "unclassifiedDurablePaths": 0,
+  "unvalidatedReferences": 0,
+  "extraValidators": 0,
+  "requireComplete": "PASS"
+}

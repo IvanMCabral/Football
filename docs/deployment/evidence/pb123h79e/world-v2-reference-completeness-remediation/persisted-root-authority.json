@@ -1,0 +1,16 @@
+{
+  "measuredAt": "2026-08-11",
+  "discovery": "productive @WorldPersistedWriter declarations",
+  "writersDiscovered": 19,
+  "writersClassified": 19,
+  "unclassifiedWriters": 0,
+  "manualOnlyRoots": 0,
+  "graphRoots": [
+    "CareerSave",
+    "PreparedWorldMigrationEnvelope",
+    "WorldSnapshot",
+    "WorldStorageEnvelope"
+  ],
+  "graphRootCount": 4,
+  "nonWorldWriterCount": 15
+}

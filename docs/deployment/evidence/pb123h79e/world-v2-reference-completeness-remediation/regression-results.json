@@ -1,0 +1,38 @@
+{
+  "focused": {
+    "tests": 226,
+    "failures": 0,
+    "errors": 0
+  },
+  "backend": {
+    "reports": 291,
+    "tests": 2889,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 4,
+    "durationSeconds": 670.133
+  },
+  "capacityFuzz": {
+    "seed": 127803430,
+    "cases": 500,
+    "admitted": 400,
+    "blocked": 100,
+    "unsafeAdmissions": 0,
+    "maxPhysicalMinusPlanned": -388,
+    "blockedMutationCount": 0,
+    "invalidCatalogCredit": 0
+  },
+  "preparedSeparateJvm": {
+    "jvmA": 12976,
+    "jvmB": 31048,
+    "productPath": true,
+    "recovery": true
+  },
+  "seed": {
+    "isolated": "5/5",
+    "fullClass": "3/3",
+    "postHeavy": "PASS"
+  },
+  "rng": "3/3",
+  "providerMutations": 0
+}

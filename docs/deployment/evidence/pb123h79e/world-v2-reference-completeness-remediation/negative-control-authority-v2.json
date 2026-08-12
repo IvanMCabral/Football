@@ -1,0 +1,11 @@
+{
+  "canonicalControls": 33,
+  "uniqueInvariants": 33,
+  "redisPhysical": 27,
+  "sourceProven": 6,
+  "duplicates": 0,
+  "materialProxies": 0,
+  "falsePasses": 0,
+  "actual": "REJECT_BAD_STATE for every canonical control",
+  "traceAuthority": "WorldV2NegativeControlAuthorityV2"
+}
