@@ -1,0 +1,14 @@
+{
+  "canonicalControls":33,
+  "uniqueInvariants":33,
+  "redisPhysical":26,
+  "jvmProcessPhysical":0,
+  "buildDiscoveryPhysical":0,
+  "preWriteGuard":1,
+  "sourceProven":6,
+  "duplicates":0,
+  "materialProxies":0,
+  "falseModeLabels":0,
+  "falsePasses":0,
+  "metaTests":"PASS"
+}

@@ -1,0 +1,7 @@
+{
+  "processA":{"pid":4044,"productPath":true,"preparedPhysicallyConfirmed":true,"exited":true,"aliveBeforeB":false},
+  "processB":{"pid":30728,"freshConstruction":true,"recovery":true,"semanticReload":true},
+  "semanticStatePassed":false,
+  "allowedCoordinationFields":["host","port","database","owner","test-redis-credential"],
+  "forbiddenSemanticPayloadsPassed":false
+}

@@ -1,0 +1,15 @@
+{
+  "directoryBoundaries":36,
+  "jarBoundaries":36,
+  "redis":20,
+  "postgresqlR2dbc":16,
+  "unclassified":0,
+  "unknownWriter":"PASS_FAIL_CLOSED",
+  "unexpectedPackage":"PASS_FAIL_CLOSED",
+  "uninstantiated":"PASS_FAIL_CLOSED",
+  "annotationRemoval":"PASS_FAIL_CLOSED",
+  "hashSetListZsetScript":"PASS_FAIL_CLOSED",
+  "r2dbc":"PASS_FAIL_CLOSED",
+  "scannerError":"PASS_PROPAGATED",
+  "jarDirectoryEquivalent":true
+}

@@ -1,0 +1,7 @@
+{
+  "packagedArtifact":"target/football-manager-1.0.0.jar",
+  "applicationOwnedPackageRoots":["com.footballmanager"],
+  "applicationOwnedClassFiles":968,
+  "durableCandidatesOutsideScannerScope":0,
+  "result":"PASS"
+}

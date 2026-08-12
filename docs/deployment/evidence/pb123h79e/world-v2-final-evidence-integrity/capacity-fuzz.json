@@ -1,0 +1,14 @@
+{
+  "seed":2562823066121781444,
+  "cases":1000,
+  "admitted":750,
+  "blocked":250,
+  "nearBoundarySamples":500,
+  "unsafeAdmissions":0,
+  "maxPhysicalMinusPlanned":-388,
+  "worstAdmittedPlanned":63113162,
+  "worstAdmittedPhysical":63112774,
+  "blockedMutations":0,
+  "measurement":"Redis MEMORY USAGE for legacy, prepared, catalog and committed keys",
+  "replay":"mvn -q -Dworld.capacity.seed=2562823066121781444 -Dtest=WorldStorageV2CapacityFuzzIntegrationTest#freshPhysicalCapacityFuzzUsesNewSeedWithAdmittedBlockedAndBoundaryCases test"
+}

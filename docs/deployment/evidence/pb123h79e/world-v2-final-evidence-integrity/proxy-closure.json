@@ -1,0 +1,10 @@
+{
+  "controls": [
+    {"controlId":"MISSING_CUSTOM_TEAM","previousMode":"IN_MEMORY_PROXY","currentMode":"REDIS_PHYSICAL","redisMutationConfirmed":true,"freshProductGraph":true,"rejection":"World overlay player references missing team","closed":true},
+    {"controlId":"MISSING_CUSTOM_PLAYER","previousMode":"IN_MEMORY_PROXY","currentMode":"REDIS_PHYSICAL","redisMutationConfirmed":true,"freshProductGraph":true,"rejection":"World overlay legacy alias target is invalid","closed":true},
+    {"controlId":"LOST_LEAGUE_RELATION","previousMode":"IN_MEMORY_PROXY","currentMode":"REDIS_PHYSICAL","redisMutationConfirmed":true,"freshProductGraph":true,"rejection":"World overlay team references missing league","closed":true},
+    {"controlId":"MISSING_LEGACY_ALIAS","previousMode":"IN_MEMORY_PROXY","currentMode":"REDIS_PHYSICAL","redisMutationConfirmed":true,"freshProductGraph":true,"rejection":"World overlay legacy alias declaration is missing","closed":true}
+  ],
+  "physicalMutationEvidence": "docs/deployment/evidence/pb123h79e/world-v2-final-evidence-integrity/physical-fault-evidence.ndjson",
+  "payloadValuesOmitted": true
+}
