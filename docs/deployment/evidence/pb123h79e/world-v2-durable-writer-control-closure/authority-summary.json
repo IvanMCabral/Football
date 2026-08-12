@@ -1,0 +1,40 @@
+{
+  "scope": "local",
+  "discovery": {
+    "mechanism": "complete compiled product classpath bytecode and hierarchy inspection",
+    "annotationUsedAsDiscoveryFilter": false,
+    "memberHelpersExcludedByDefault": true,
+    "unclassifiedBoundariesFailClosed": true,
+    "conflictingClassificationsFailClosed": true
+  },
+  "referenceAuthority": {
+    "writers": 19,
+    "graphRoots": 4,
+    "models": 33,
+    "fields": 238,
+    "containers": 82,
+    "identityLeaves": 126,
+    "references": 57,
+    "validators": 57,
+    "unresolved": 0,
+    "unclassifiedWriters": 0
+  },
+  "negativeControls": {
+    "uniqueInvariants": 33,
+    "redisPhysical": 27,
+    "sourceProven": 6,
+    "duplicates": 0,
+    "proxyCredit": 0,
+    "falsePasses": 0,
+    "missingTtlUsesRealRepositoryGuard": true,
+    "referenceRegistryUsesDefaultDiscoveryAuthority": true
+  },
+  "capacityAuthority": {
+    "seed": 2044885477,
+    "cases": 1000,
+    "unsafe": 0,
+    "maxSlackBytes": 0
+  },
+  "externalStateChanged": false,
+  "cleanupExecuted": false
+}
