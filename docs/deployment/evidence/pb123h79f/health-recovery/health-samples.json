@@ -1,0 +1,36 @@
+{
+  "endpoint": "https://manager-staging-api.onrender.com",
+  "diagnostic": {
+    "curl": {"httpStatus": 0, "elapsedMs": 60045, "result": "TIMEOUT_ZERO_BYTES"},
+    "powershell": {"httpStatus": 0, "elapsedMs": 60089, "result": "TIMEOUT"}
+  },
+  "boundedRecovery": [
+    {"sample": 1, "httpStatus": 0, "elapsedMs": 10068, "result": "TIMEOUT"},
+    {"sample": 2, "httpStatus": 200, "elapsedMs": 966, "body": {"status": "UP"}},
+    {"sample": 3, "httpStatus": 200, "elapsedMs": 675, "body": {"status": "UP"}},
+    {"sample": 4, "httpStatus": 200, "elapsedMs": 238, "body": {"status": "UP"}},
+    {"sample": 5, "httpStatus": 200, "elapsedMs": 216, "body": {"status": "UP"}},
+    {"sample": 6, "httpStatus": 200, "elapsedMs": 215, "body": {"status": "UP"}}
+  ],
+  "stableLiveness": [
+    {"sample": 1, "httpStatus": 200, "elapsedMs": 327, "body": {"status": "UP"}},
+    {"sample": 2, "httpStatus": 200, "elapsedMs": 214, "body": {"status": "UP"}},
+    {"sample": 3, "httpStatus": 200, "elapsedMs": 220, "body": {"status": "UP"}},
+    {"sample": 4, "httpStatus": 200, "elapsedMs": 215, "body": {"status": "UP"}},
+    {"sample": 5, "httpStatus": 200, "elapsedMs": 218, "body": {"status": "UP"}}
+  ],
+  "stableReadiness": [
+    {"sample": 1, "httpStatus": 200, "elapsedMs": 11883, "body": {"status": "UP", "database": "UP", "redis": "UP"}},
+    {"sample": 2, "httpStatus": 200, "elapsedMs": 899, "body": {"status": "UP", "database": "UP", "redis": "UP"}},
+    {"sample": 3, "httpStatus": 200, "elapsedMs": 890, "body": {"status": "UP", "database": "UP", "redis": "UP"}},
+    {"sample": 4, "httpStatus": 200, "elapsedMs": 888, "body": {"status": "UP", "database": "UP", "redis": "UP"}},
+    {"sample": 5, "httpStatus": 200, "elapsedMs": 757, "body": {"status": "UP", "database": "UP", "redis": "UP"}}
+  ],
+  "liveness200": 5,
+  "readiness200": 5,
+  "database": "UP",
+  "redis": "UP",
+  "directRedisWrites": 0,
+  "directRedisDeletes": 0,
+  "postgresWrites": 0
+}

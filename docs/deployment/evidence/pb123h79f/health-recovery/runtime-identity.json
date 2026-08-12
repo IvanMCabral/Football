@@ -1,0 +1,15 @@
+{
+  "renderService": "manager-staging-api",
+  "publicEndpoint": "https://manager-staging-api.onrender.com",
+  "dashboardUrl": "https://dashboard.render.com/login",
+  "dashboardAuthenticated": false,
+  "liveSha": null,
+  "branch": null,
+  "deploymentStatus": null,
+  "deploymentTimestamp": null,
+  "instanceCount": null,
+  "autoscaling": null,
+  "runtimeClassification": "BLOCKED_RENDER_RUNTIME",
+  "providerChanges": 0,
+  "billingChanges": 0
+}
