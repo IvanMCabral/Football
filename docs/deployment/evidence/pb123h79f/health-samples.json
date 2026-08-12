@@ -1,0 +1,23 @@
+{
+  "endpoint": "https://manager-staging-api.onrender.com",
+  "timeoutSeconds": 20,
+  "liveness": [
+    {"sample": 1, "httpStatus": 0, "elapsedMs": 20128, "result": "TIMEOUT"},
+    {"sample": 2, "httpStatus": 0, "elapsedMs": 20005, "result": "TIMEOUT"},
+    {"sample": 3, "httpStatus": 0, "elapsedMs": 19999, "result": "TIMEOUT"},
+    {"sample": 4, "httpStatus": 0, "elapsedMs": 20014, "result": "TIMEOUT"},
+    {"sample": 5, "httpStatus": 0, "elapsedMs": 20007, "result": "TIMEOUT"}
+  ],
+  "readiness": [
+    {"sample": 1, "httpStatus": 0, "elapsedMs": 20007, "result": "TIMEOUT"},
+    {"sample": 2, "httpStatus": 0, "elapsedMs": 20002, "result": "TIMEOUT"},
+    {"sample": 3, "httpStatus": 0, "elapsedMs": 20013, "result": "TIMEOUT"},
+    {"sample": 4, "httpStatus": 0, "elapsedMs": 9689, "result": "NO_VALID_200"},
+    {"sample": 5, "httpStatus": 0, "elapsedMs": 744, "result": "NO_VALID_200"}
+  ],
+  "liveness200": 0,
+  "readiness200": 0,
+  "database": "NOT_VERIFIABLE",
+  "redis": "NOT_VERIFIABLE",
+  "providerWrites": 0
+}
