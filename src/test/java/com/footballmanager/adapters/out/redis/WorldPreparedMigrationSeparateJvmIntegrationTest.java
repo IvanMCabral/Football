@@ -33,13 +33,19 @@ class WorldPreparedMigrationSeparateJvmIntegrationTest extends AbstractIntegrati
                 configuration.getDatabase(), owner, credential);
         assertEquals(0, processA.exitCode(), processA.safeOutput());
         assertTrue(processA.safeOutput().contains("PREPARED_WRITTEN_BY_PRODUCT_ORCHESTRATOR"));
+        assertTrue(processA.exited());
+        boolean pidAAliveBeforeB = ProcessHandle.of(processA.pid())
+                .map(ProcessHandle::isAlive).orElse(false);
+        assertTrue(!pidAAliveBeforeB, "JVM A must be dead before JVM B starts");
 
         ProcessResult processB = run("recover", configuration.getHostName(), configuration.getPort(),
                 configuration.getDatabase(), owner, credential);
         assertEquals(0, processB.exitCode(), processB.safeOutput());
         assertTrue(processB.safeOutput().contains("RECOVERY_OK"));
-        System.out.printf("[WORLD-PREPARED-TWO-JVM] processA=%d productPath=true processB=%d recovery=true%n",
-                processA.pid(), processB.pid());
+        System.out.printf("[WORLD-PREPARED-TWO-JVM] processA=%d productPath=true processAExited=true "
+                        + "pidAAliveBeforeB=%s processB=%d semanticStatePassed=false "
+                        + "coordinationFields=host,port,database,owner recovery=true%n",
+                processA.pid(), pidAAliveBeforeB, processB.pid());
     }
 
     private ProcessResult run(String mode, String host, int port, int database, UUID owner, String password)
@@ -59,7 +65,7 @@ class WorldPreparedMigrationSeparateJvmIntegrationTest extends AbstractIntegrati
             throw new IllegalStateException("separate JVM migration harness timed out");
         }
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        return new ProcessResult(pid, process.exitValue(), sanitize(output));
+        return new ProcessResult(pid, process.exitValue(), sanitize(output), true);
     }
 
     private static String sanitize(String output) {
@@ -72,5 +78,5 @@ class WorldPreparedMigrationSeparateJvmIntegrationTest extends AbstractIntegrati
                 .reduce("", (left, right) -> left + right + System.lineSeparator());
     }
 
-    private record ProcessResult(long pid, int exitCode, String safeOutput) { }
+    private record ProcessResult(long pid, int exitCode, String safeOutput, boolean exited) { }
 }

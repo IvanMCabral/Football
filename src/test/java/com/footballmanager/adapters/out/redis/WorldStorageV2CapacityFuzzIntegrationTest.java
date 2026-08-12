@@ -111,6 +111,63 @@ class WorldStorageV2CapacityFuzzIntegrationTest extends AbstractIntegrationTest 
     }
 
     @Test
+    void freshPhysicalCapacityFuzzUsesNewSeedWithAdmittedBlockedAndBoundaryCases() throws Exception {
+        long seed = Long.getLong("world.capacity.seed", new Random().nextLong());
+        Random random = new Random(seed);
+        int admitted = 0;
+        int blocked = 0;
+        int nearBoundary = 0;
+        long blockedMutations = 0;
+        long maxPhysicalMinusPlanned = Long.MIN_VALUE;
+        long worstPlanned = Long.MIN_VALUE;
+        long worstPhysical = Long.MIN_VALUE;
+        for (int index = 0; index < 1_000; index++) {
+            UUID owner = UUID.nameUUIDFromBytes(("capacity-independent-" + seed + "-" + index)
+                    .getBytes(StandardCharsets.UTF_8));
+            Pair pair = fuzzPair(owner, index, random);
+            String legacyRaw = objectMapper.writeValueAsString(pair.legacy());
+            String worldKey = "world:" + owner;
+            reactiveRedisTemplate.opsForValue().set(worldKey, legacyRaw, Duration.ofMinutes(5)).block();
+            long legacyMemory = memoryUsage(worldKey);
+            long baseline = index < 250 ? QUOTA - 64_000L
+                    : index < 500 ? QUOTA - 4_000_000L : 10_000_000L;
+            if (index < 500) nearBoundary++;
+            var outcome = WorldStorageMigrationTestDriver.migrate(repository(),
+                    ignored -> Mono.just(copy(pair.canonical())), owner,
+                    baseline, QUOTA, PROVIDER_MARGIN, LOCAL_MARGIN);
+            assertNotNull(outcome);
+            if (outcome.status() == WorldStorageMigrationOrchestrator.Status.BLOCKED_CAPACITY) {
+                blocked++;
+                assertEquals(legacyRaw, reactiveRedisTemplate.opsForValue().get(worldKey).block());
+                assertEquals(0, reactiveRedisTemplate.keys("world-audit-prepared:" + owner).count().block());
+            } else {
+                assertEquals(WorldStorageMigrationOrchestrator.Status.MIGRATED, outcome.status(), outcome.reason());
+                admitted++;
+                Physical actual = physicalState(owner, legacyRaw, legacyMemory, baseline);
+                long delta = actual.peak() - outcome.plannedPeakBytes();
+                maxPhysicalMinusPlanned = Math.max(maxPhysicalMinusPlanned, delta);
+                worstPlanned = Math.max(worstPlanned, outcome.plannedPeakBytes());
+                worstPhysical = Math.max(worstPhysical, actual.peak());
+                assertTrue(delta <= 0, "physical peak exceeds planned peak index=" + index);
+                assertTrue(actual.peak() + PROVIDER_MARGIN + LOCAL_MARGIN <= QUOTA,
+                        "physical peak violates guarded quota index=" + index);
+                reactiveRedisTemplate.delete(actual.catalogKey(), actual.preparedProbe()).block();
+            }
+            reactiveRedisTemplate.delete(worldKey).block();
+        }
+        assertTrue(admitted > 0, "admitted=" + admitted);
+        assertTrue(blocked > 0, "blocked=" + blocked);
+        assertTrue(nearBoundary >= 200, "nearBoundary=" + nearBoundary);
+        assertEquals(0, blockedMutations);
+        assertTrue(maxPhysicalMinusPlanned <= 0);
+        System.out.printf("[WORLD-CAPACITY-PHYSICAL-INDEPENDENT] seed=%d cases=1000 admitted=%d blocked=%d "
+                        + "nearBoundary=%d unsafe=0 maxPhysicalMinusPlanned=%d worstPlanned=%d "
+                        + "worstPhysical=%d blockedMutations=0%n",
+                seed, admitted, blocked, nearBoundary, maxPhysicalMinusPlanned,
+                worstPlanned, worstPhysical);
+    }
+
+    @Test
     void multidimensionalStressSearchFindsConservativeAdmittedAndBlockedFixtures() throws Exception {
         long baseline = 268_320_000L;
         long quota = 268_435_456L;

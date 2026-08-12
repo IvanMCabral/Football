@@ -699,6 +699,13 @@ if (-not $SkipBuild) {
 }
 
 $jar = Get-ChildItem -Path (Join-Path $root 'target') -Filter '*.jar' |
+    Where-Object {
+        # Test fixtures and class-only audit artifacts are not executable
+        # application packages.  Selecting by recency made the smoke runner
+        # nondeterministic when a preceding test refreshed one of them.
+        $_.Name -notin @('audit-fixtures.jar', 'audit-product-classes.jar') -and
+        $_.Name -like 'football-manager-*.jar'
+    } |
     Sort-Object LastWriteTime -Descending |
     Select-Object -First 1
 if (-not $jar) {
