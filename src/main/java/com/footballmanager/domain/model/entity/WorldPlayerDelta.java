@@ -2,6 +2,8 @@ package com.footballmanager.domain.model.entity;
 
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -33,11 +35,15 @@ public final class WorldPlayerDelta {
         SPECIAL_TRAITS
     }
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_PLAYER)
     private UUID realPlayerId;
     private Set<Field> changedFields = EnumSet.noneOf(Field.class);
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM, nullable = true)
     private String worldTeamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String name;
     private Integer age;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String position;
     private Integer baseAttack;
     private Integer baseDefense;

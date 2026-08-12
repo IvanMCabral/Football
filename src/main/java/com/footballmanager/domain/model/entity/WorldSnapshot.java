@@ -1,6 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import java.time.Instant;
 import java.util.*;
@@ -14,11 +16,16 @@ import java.util.*;
  */
 public class WorldSnapshot {
     
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private UUID userId;
     private List<WorldLeague> leagues;
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM, route = "MAP_KEY")
     private Map<String, WorldTeam> worldTeams;        // key: worldTeamId
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "MAP_KEY")
     private Map<String, WorldPlayer> worldPlayers;    // key: worldPlayerId
     /** Legacy worldPlayerId -> canonical worldPlayerId, owner-scoped in V2 overlays. */
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "MAP_VALUE")
     private Map<String, String> worldPlayerAliases;
     private Instant createdAt;
     private Instant lastUpdated;

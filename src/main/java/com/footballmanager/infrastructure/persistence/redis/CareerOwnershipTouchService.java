@@ -1,5 +1,7 @@
 package com.footballmanager.infrastructure.persistence.redis;
 
+import com.footballmanager.application.service.world.WorldPersistedWriter;
+
 import com.footballmanager.application.service.career.CareerLifecycleCoordinator;
 import com.footballmanager.application.port.out.CareerOwnershipPort;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
@@ -17,6 +19,9 @@ import java.util.function.Supplier;
 
 /** Renews the ownership discovery keys before writing career-derived data. */
 @Component
+@WorldPersistedWriter(root = String.class, writeMethod = "touch/validate",
+        storageFamily = "owner/career lifecycle metadata",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public final class CareerOwnershipTouchService implements CareerOwnershipPort {
 
     private static final Duration ROOT_TTL = Duration.ofDays(30);

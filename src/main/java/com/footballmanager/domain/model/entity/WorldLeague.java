@@ -1,5 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import java.util.UUID;
 
 /**
@@ -8,8 +11,11 @@ import java.util.UUID;
  */
 public class WorldLeague {
     
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private UUID realLeagueId;      // ref a PostgreSQL leagues_table
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String name;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String country;
     private Integer tier;           // 1 = primera división, 2 = segunda, etc.
     

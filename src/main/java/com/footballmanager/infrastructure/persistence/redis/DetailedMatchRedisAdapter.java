@@ -2,6 +2,7 @@ package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchStoragePort;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,6 +17,9 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
+@WorldPersistedWriter(root = DetailedMatchData.class, writeMethod = "saveInternal",
+        storageFamily = "career:*:match-detail:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class DetailedMatchRedisAdapter implements DetailedMatchStoragePort {
 
     private static final String KEY_PREFIX = "career:";

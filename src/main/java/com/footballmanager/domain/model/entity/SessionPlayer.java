@@ -1,5 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.footballmanager.domain.model.valueobject.OverallCalculator;
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
@@ -21,13 +24,18 @@ import java.util.UUID;
 public class SessionPlayer {
 
     // Identity
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_PLAYER)
     private String sessionPlayerId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_PLAYER, nullable = true)
     private UUID basePlayerId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER)
     private String worldPlayerId;
 
     // Core info
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String name;
     private Integer age;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String position;
 
     // Attributes
@@ -43,6 +51,7 @@ public class SessionPlayer {
     private Integer energy;
     private Integer form;
     private Boolean injured;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String injuryType;
     private Integer injuryRemainingMatches;
     private Integer matchesPlayedInRow;

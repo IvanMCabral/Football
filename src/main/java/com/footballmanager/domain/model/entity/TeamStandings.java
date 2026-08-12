@@ -1,6 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 /**
  * TeamStandings - Posiciones de un equipo en la tabla.
@@ -8,7 +10,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TeamStandings {
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM)
     private String teamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String teamName;
     private Integer played = 0;
     private Integer won = 0;

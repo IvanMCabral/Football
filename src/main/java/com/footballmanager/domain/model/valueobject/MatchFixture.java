@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -16,8 +18,11 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MatchFixture {
     
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private final String matchId;           // UUID único del partido
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM)
     private final String homeTeamId;        // sessionTeamId del equipo local
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM)
     private final String awayTeamId;        // sessionTeamId del equipo visitante
     private final int round;                // Número de ronda/fecha
     private MatchStatus status;             // Estado del partido

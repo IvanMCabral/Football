@@ -6,6 +6,7 @@ import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.ports.out.match.MatchCommandRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,9 @@ import java.util.UUID;
  * Reactive Redis implementation for pending match commands.
  */
 @Repository
+@WorldPersistedWriter(root = MatchCommand.class, writeMethod = "saveCommandInternal",
+        storageFamily = "match:commands:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class RedisMatchCommandRepository implements MatchCommandRepository {
 
     private static final String KEY_PREFIX = "match:commands:";

@@ -1,5 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import com.footballmanager.domain.model.valueobject.Division;
 
 import java.math.BigDecimal;
@@ -14,13 +17,20 @@ import java.util.UUID;
  */
 public class WorldTeam {
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM)
     private String worldTeamId;          // ID único en WorldSnapshot
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_TEAM, nullable = true)
     private UUID realTeamId;             // ref a PostgreSQL teams_table (null si es custom)
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID, nullable = true)
     private UUID realLeagueId;           // liga a la que pertenece (null si es custom)
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String name;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String country;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String city;
     private BigDecimal baseBudget;       // presupuesto base (inmutable)
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String baseFormation;        // formación base (inmutable)
     private WorldTeamOrigin origin;      // REAL o CUSTOM
     /**

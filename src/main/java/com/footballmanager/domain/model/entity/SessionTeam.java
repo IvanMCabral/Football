@@ -1,5 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
@@ -16,14 +19,20 @@ import java.util.UUID;
 public class SessionTeam {
 
     // Identity
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM)
     private String sessionTeamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_TEAM, nullable = true)
     private UUID baseTeamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM)
     private String worldTeamId;
 
     // Core info
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String name;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String country;
     private BigDecimal budget;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String formation;
 
     // so the detailed match engine can read it via MatchContextFactory.build() when the
@@ -31,6 +40,7 @@ public class SessionTeam {
     private TeamStyle style;
 
     @JsonAlias("coachName")
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String managerName;
 
     // Dynamic state

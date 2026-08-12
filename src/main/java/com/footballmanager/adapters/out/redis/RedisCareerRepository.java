@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
 import com.footballmanager.application.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -30,6 +31,8 @@ import com.footballmanager.application.service.career.CareerLifecycleCoordinator
  */
 @Slf4j
 @Repository
+@WorldPersistedWriter(root = CareerSave.class, writeMethod = "saveInternal",
+        storageFamily = "career:*", role = WorldPersistedWriter.DurabilityRole.WORLD_REFERENCE_GRAPH)
 public class RedisCareerRepository implements CareerRepository {
 
     private static final String KEY_PREFIX = "career:";

@@ -2,6 +2,8 @@ package com.footballmanager.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -15,9 +17,12 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Division {
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private String divisionId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String name;
     private int divisionNumber;
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "ELEMENT")
     private List<String> teamIds;
     private Instant createdAt;
 

@@ -3,6 +3,8 @@ package com.footballmanager.domain.model.entity.career;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -17,7 +19,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CareerTeamManager {
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "ELEMENT/MAP_KEY")
     private final AtomicReference<Map<String, SessionTeam>> sessionTeamsRef;
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "ELEMENT/MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_PLAYER, route = "ELEMENT/MAP_VALUE/ELEMENT")
     private final AtomicReference<Map<String, List<String>>> teamSquadsRef;
 
     public CareerTeamManager() {

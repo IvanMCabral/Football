@@ -1,5 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
@@ -10,9 +13,12 @@ public final class WorldLeagueDelta {
 
     public enum Field { NAME, COUNTRY, TIER }
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private UUID realLeagueId;
     private Set<Field> changedFields = EnumSet.noneOf(Field.class);
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String name;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String country;
     private Integer tier;
 

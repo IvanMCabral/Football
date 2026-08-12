@@ -2,6 +2,8 @@ package com.footballmanager.domain.model.entity.career;
 
 import com.footballmanager.domain.model.entity.Division;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import java.util.List;
 public class DivisionManager {
 
     private List<Division> divisions = new ArrayList<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "ELEMENT")
     private List<String> freeTeams = new ArrayList<>();
 
     public DivisionManager() {

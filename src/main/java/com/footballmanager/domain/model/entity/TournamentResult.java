@@ -1,13 +1,21 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import java.time.Instant;
 
 public class TournamentResult {
     private int season;
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID, nullable = true)
     private String divisionId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String divisionName;
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM)
     private String championTeamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String championTeamName;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String championCoachName;
     private Instant createdAt;
 

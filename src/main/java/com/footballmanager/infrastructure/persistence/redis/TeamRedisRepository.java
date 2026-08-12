@@ -1,6 +1,7 @@
 package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.infrastructure.persistence.entity.TeamEntity;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,8 @@ import java.util.UUID;
  * Keys: user:{userId}:team:{teamId}
  */
 @Repository
+@WorldPersistedWriter(root = TeamEntity.class, writeMethod = "save", storageFamily = "user:*:team:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class TeamRedisRepository {
     private final ReactiveRedisTemplate<String, TeamEntity> redisTemplate;
 

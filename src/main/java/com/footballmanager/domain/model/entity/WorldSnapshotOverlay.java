@@ -1,5 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,24 +29,41 @@ public class WorldSnapshotOverlay {
     public enum SnapshotField { CREATED_AT, LAST_UPDATED }
 
     private int storageVersion = STORAGE_VERSION;
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private UUID ownerId;
     private Set<SnapshotField> changedSnapshotFields = java.util.EnumSet.noneOf(SnapshotField.class);
     private Instant createdAt;
     private Instant lastUpdated;
     private List<WorldLeague> leagues = new ArrayList<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM, route = "MAP_KEY")
     private Map<String, WorldTeam> customTeams = new LinkedHashMap<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "MAP_KEY")
     private Map<String, WorldPlayer> customPlayers = new LinkedHashMap<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_PLAYER, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "MAP_VALUE")
     private Map<UUID, String> canonicalPlayerIds = new LinkedHashMap<>();
     /** Legacy/random real-player ID -> deterministic canonical player ID. */
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "MAP_VALUE")
     private Map<String, String> legacyPlayerAliases = new LinkedHashMap<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_PLAYER, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM, route = "MAP_VALUE", nullable = true)
     private Map<UUID, String> canonicalPlayerTeamIds = new LinkedHashMap<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_TEAM, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID, route = "MAP_VALUE", nullable = true)
     private Map<UUID, UUID> teamLeagueAssignments = new LinkedHashMap<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID, route = "MAP_KEY")
     private Map<UUID, WorldLeagueDelta> realLeagueDeltas = new LinkedHashMap<>();
     private List<WorldLeague> additionalLeagues = new ArrayList<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID, route = "ELEMENT")
     private Set<UUID> removedCanonicalLeagueIds = new LinkedHashSet<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_TEAM, route = "MAP_KEY")
     private Map<UUID, WorldTeamDelta> realTeamDeltas = new LinkedHashMap<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_TEAM, route = "ELEMENT")
     private Set<UUID> removedCanonicalTeamIds = new LinkedHashSet<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_PLAYER, route = "MAP_KEY")
     private Map<UUID, WorldPlayerDelta> realPlayerDeltas = new LinkedHashMap<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_PLAYER, route = "ELEMENT")
     private Set<UUID> removedCanonicalPlayerIds = new LinkedHashSet<>();
 
     public static WorldSnapshotOverlay fromSnapshot(WorldSnapshot snapshot) {

@@ -3,6 +3,8 @@ package com.footballmanager.domain.model.entity.career;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.footballmanager.domain.model.entity.SessionPlayer;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -18,8 +20,12 @@ import java.util.function.BiConsumer;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CareerPlayerManager {
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_PLAYER, route = "ELEMENT/MAP_KEY")
     private final AtomicReference<Map<String, SessionPlayer>> sessionPlayersRef;
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_PLAYER, route = "ELEMENT/ELEMENT")
     private final AtomicReference<List<String>> freePlayersRef;
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM, route = "ELEMENT/MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER, route = "ELEMENT/MAP_VALUE/ELEMENT")
     private final AtomicReference<Map<String, Set<String>>> removedPlayersRef;
 
     public CareerPlayerManager() {

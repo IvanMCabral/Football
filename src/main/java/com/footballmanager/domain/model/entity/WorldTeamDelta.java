@@ -1,6 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
 import com.footballmanager.domain.model.valueobject.Division;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -21,13 +23,19 @@ public final class WorldTeamDelta {
         DIVISION
     }
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_TEAM)
     private UUID realTeamId;
     private Set<Field> changedFields = EnumSet.noneOf(Field.class);
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID, nullable = true)
     private UUID realLeagueId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String name;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String country;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String city;
     private BigDecimal baseBudget;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, nullable = true)
     private String baseFormation;
     private Division division;
 

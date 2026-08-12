@@ -12,8 +12,12 @@ import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouch
 import com.footballmanager.application.observability.ReloadWorldTiming;
 import com.footballmanager.application.service.world.WorldMigrationAdmission;
 import com.footballmanager.application.service.world.WorldStorageMigrationExecutor;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
+import com.footballmanager.application.service.world.WorldMigrationTransitionObserver;
 import com.footballmanager.application.service.world.WorldStoragePhysicalCapacityModel;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +48,13 @@ import java.util.UUID;
  * Los catálogos canónicos compartidos usan un TTL independiente y renovable.
  */
 @Repository
+@WorldPersistedWriter(root = WorldSnapshot.class, writeMethod = "saveInitial/persistV2",
+        storageFamily = "world:* / world-catalog:v2:*",
+        role = WorldPersistedWriter.DurabilityRole.WORLD_REFERENCE_GRAPH)
+@WorldPersistedWriter(root = RedisWorldRepository.WorldStorageEnvelope.class, writeMethod = "persistV2/execute",
+        storageFamily = "world:*", role = WorldPersistedWriter.DurabilityRole.WORLD_REFERENCE_GRAPH)
+@WorldPersistedWriter(root = RedisWorldRepository.PreparedWorldMigrationEnvelope.class, writeMethod = "execute",
+        storageFamily = "world:*", role = WorldPersistedWriter.DurabilityRole.WORLD_REFERENCE_GRAPH)
 public class RedisWorldRepository implements WorldSnapshotRepository, WorldStorageMigrationExecutor {
 
     private static final Logger log = LoggerFactory.getLogger(RedisWorldRepository.class);
@@ -65,6 +76,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     private final CanonicalWorldCatalogSource canonicalCatalogSource;
     private final WorldStoragePhysicalCapacityModel physicalCapacityModel =
             new WorldStoragePhysicalCapacityModel();
+    private final WorldMigrationTransitionObserver transitionObserver;
     @Value("${app.redis.world-ttl:30d}")
     private Duration worldTtl;
     @Value("${app.redis.world-catalog-ttl:365d}")
@@ -77,17 +89,29 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                                 ObjectMapper objectMapper,
                                 CareerOwnershipTouchService ownershipTouchService,
                                 CanonicalWorldCatalogFingerprint catalogFingerprint,
-                                CanonicalWorldCatalogSource canonicalCatalogSource) {
+                                CanonicalWorldCatalogSource canonicalCatalogSource,
+                                WorldMigrationTransitionObserver transitionObserver) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
         this.ownershipTouchService = ownershipTouchService;
         this.catalogFingerprint = catalogFingerprint;
         this.canonicalCatalogSource = canonicalCatalogSource;
+        this.transitionObserver = transitionObserver;
+    }
+
+    public RedisWorldRepository(ReactiveRedisTemplate<String, String> redisTemplate,
+                                ObjectMapper objectMapper,
+                                CareerOwnershipTouchService ownershipTouchService,
+                                CanonicalWorldCatalogFingerprint catalogFingerprint,
+                                CanonicalWorldCatalogSource canonicalCatalogSource) {
+        this(redisTemplate, objectMapper, ownershipTouchService, catalogFingerprint,
+                canonicalCatalogSource, WorldMigrationTransitionObserver.noOp());
     }
 
     public RedisWorldRepository(@Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
                                 ObjectMapper objectMapper) {
-        this(redisTemplate, objectMapper, null, new CanonicalWorldCatalogFingerprint(objectMapper), null);
+        this(redisTemplate, objectMapper, null, new CanonicalWorldCatalogFingerprint(objectMapper), null,
+                WorldMigrationTransitionObserver.noOp());
     }
 
     /**
@@ -471,7 +495,13 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                             return compareAndReplace(generateKey(admission.ownerId()), legacyRaw,
                                     material.preparedJson(), requireWorldTtl())
                                     .flatMap(replaced -> replaced
-                                            ? completePrepared(admission, material.preparedJson(), material.prepared(), plan)
+                                            ? transitionObserver.afterPrepared(admission.ownerId())
+                                                    .flatMap(decision -> decision
+                                                            == WorldMigrationTransitionObserver.Decision.PAUSE
+                                                            ? Mono.just(result(Status.RETRYABLE_PARTIAL,
+                                                                    "Migration paused after durable prepare"))
+                                                            : completePrepared(admission, material.preparedJson(),
+                                                                    material.prepared(), plan))
                                             : Mono.just(result(Status.SOURCE_CHANGED,
                                                     "Migration source changed during prepare")));
                         }));
@@ -715,14 +745,23 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
         return catalogTtl;
     }
 
-    public record WorldStorageEnvelope(int storageVersion, String state, UUID ownerId,
-                                       String catalogKey, String catalogFingerprint,
-                                       String overlayChecksum, WorldSnapshotOverlay overlay) {}
+    public record WorldStorageEnvelope(
+            int storageVersion,
+            @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT) String state,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID) UUID ownerId,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OPAQUE_VALUE) String catalogKey,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OPAQUE_VALUE) String catalogFingerprint,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OPAQUE_VALUE) String overlayChecksum,
+            WorldSnapshotOverlay overlay) {}
 
-    public record PreparedWorldMigrationEnvelope(int storageVersion, String migrationState,
-                                                  UUID ownerId, String catalogKey,
-                                                  String catalogFingerprint, String compressedLegacy,
-                                                  String legacyChecksum) {}
+    public record PreparedWorldMigrationEnvelope(
+            int storageVersion,
+            @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT) String migrationState,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID) UUID ownerId,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OPAQUE_VALUE) String catalogKey,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OPAQUE_VALUE) String catalogFingerprint,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OPAQUE_VALUE) String compressedLegacy,
+            @WorldIdentityReference(domain = WorldIdentityDomain.OPAQUE_VALUE) String legacyChecksum) {}
 
     private record PreparedMaterial(PreparedWorldMigrationEnvelope prepared,
                                     String preparedJson, String catalogJson, String committedJson) {}

@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.RuntimeMatch;
 import com.footballmanager.domain.ports.out.match.MatchRuntimeRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -23,6 +24,9 @@ import java.util.UUID;
  * - Expiración automática si no se finaliza
  */
 @Repository
+@WorldPersistedWriter(root = RuntimeMatch.class, writeMethod = "saveInternal",
+        storageFamily = "runtime:match:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class RedisMatchRuntimeRepository implements MatchRuntimeRepository {
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;

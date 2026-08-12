@@ -3,6 +3,7 @@ package com.footballmanager.adapters.out.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.domain.model.entity.Standing;
 import com.footballmanager.domain.ports.out.standing.StandingRepository;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,9 @@ import java.util.UUID;
  * Keys: user:{userId}:standing:{seasonKey}:{teamId}
  */
 @Repository
+@WorldPersistedWriter(root = Standing.class, writeMethod = "save",
+        storageFamily = "user:*:standing:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class RedisStandingRepository implements StandingRepository {
 
     private static final String KEY_PREFIX = "user:";

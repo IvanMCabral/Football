@@ -1,5 +1,8 @@
 package com.footballmanager.domain.model.entity;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 
@@ -30,11 +33,16 @@ public class WorldPlayer {
     private static final UUID CANONICAL_ID_NAMESPACE =
             UUID.fromString("4a0f4e5d-8c65-4d51-9f4a-8c56a5b3c8d4");
     
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER)
     private String worldPlayerId;        // ID único en WorldSnapshot
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_PLAYER, nullable = true)
     private UUID realPlayerId;           // ref a PostgreSQL players_table (null si es custom)
+    @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_TEAM, nullable = true)
     private String worldTeamId;          // equipo al que pertenece en WorldSnapshot (puede ser null = free agent)
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String name;
     private Integer age;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String position;             // GK, DEF, MID, WINGER, ATT
     
     // Atributos base (inmutables)

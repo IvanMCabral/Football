@@ -8,6 +8,8 @@ import com.footballmanager.domain.model.entity.career.CareerPlayerManager;
 import com.footballmanager.domain.model.entity.career.CareerSeasonManager;
 import com.footballmanager.domain.model.entity.career.CareerTeamManager;
 import com.footballmanager.domain.service.SessionTeamRankingPolicy;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import java.time.Instant;
 import java.util.*;
@@ -33,6 +35,8 @@ public class CareerSave {
     private CareerTeamManager teamManager = new CareerTeamManager();
     private CareerPlayerManager playerManager = new CareerPlayerManager();
     private CareerSeasonManager seasonManager = new CareerSeasonManager();
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_PLAYER, route = "MAP_VALUE/ELEMENT")
     private Map<String, List<String>> teamStarting11 = new HashMap<>();
     /**
      * MVP1-lineup-cancha-1: subdivisionId por jugador (mapa interno:
@@ -54,6 +58,9 @@ public class CareerSave {
      * LineupSlot records) into the same field. Conversion to
      * LineupSlot happens lazily in the typed getter / on write.
      */
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, route = "MAP_VALUE/MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_PLAYER, route = "MAP_VALUE/MAP_VALUE")
     private Map<String, Map<String, Object>> teamStarting11Subdivision = new HashMap<>();
     /**
      * MVP1-lineup-cancha-1.6: formation code persistido por team
@@ -64,6 +71,8 @@ public class CareerSave {
      * vacío o ausente para un team (saves de sprint 1.5 o anteriores), se
      * hace fallback a {@code lineupHelper.inferFormation(lineup)} en read path.
      */
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "MAP_KEY")
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT, route = "MAP_VALUE")
     private Map<String, String> teamStarting11Formation = new HashMap<>();
     private TournamentState tournamentState = new TournamentState();
 

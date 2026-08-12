@@ -1,15 +1,24 @@
 package com.footballmanager.domain.model.entity.career;
 
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
+
 /**
  * Representa una promoción o descenso de equipo entre divisiones.
  */
 public class Promotion {
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM)
     private String teamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String teamName;
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private String fromDivisionId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String fromDivisionName;
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private String toDivisionId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String toDivisionName;
     private PromotionType type;
     private int fromPosition;

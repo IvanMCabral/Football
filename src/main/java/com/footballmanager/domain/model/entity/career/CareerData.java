@@ -1,6 +1,8 @@
 package com.footballmanager.domain.model.entity.career;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,11 +14,17 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CareerData {
 
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private String careerId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID)
     private UUID userId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.REAL_TEAM)
     private UUID userTeamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM)
     private String userSessionTeamId;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String difficulty;
+    @WorldIdentityReference(domain = WorldIdentityDomain.NON_ID_TEXT)
     private String gameSpeed;
     private Instant createdAt;
     private Instant lastUpdated;

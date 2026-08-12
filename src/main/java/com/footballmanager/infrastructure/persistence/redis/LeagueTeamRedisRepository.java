@@ -1,6 +1,7 @@
 package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.infrastructure.persistence.entity.LeagueTeamEntity;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,9 @@ import java.util.Map;
  */
 @Repository
 @RequiredArgsConstructor
+@WorldPersistedWriter(root = LeagueTeamEntity.class, writeMethod = "add/sync",
+        storageFamily = "user:*:league/team relations",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class LeagueTeamRedisRepository {
     private static final org.springframework.data.redis.core.script.RedisScript<Long> SYNC_RELATIONS =
             org.springframework.data.redis.core.script.RedisScript.of("""

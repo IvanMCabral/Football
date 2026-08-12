@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.ports.out.match.MatchStateRepository;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -18,6 +19,9 @@ import java.util.UUID;
  * Implementación reactiva del repositorio de estados de partido usando Redis.
  */
 @Repository
+@WorldPersistedWriter(root = MatchState.class, writeMethod = "saveInternal",
+        storageFamily = "match:state:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class RedisMatchStateRepository implements MatchStateRepository {
 
     private static final String KEY_PREFIX = "match:state:";

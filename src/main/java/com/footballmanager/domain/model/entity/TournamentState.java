@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.footballmanager.domain.model.valueobject.MatchEvent;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,12 +20,15 @@ public class TournamentState {
     private Integer currentRound = 1;
     private Integer totalRounds = 0;
     private Boolean finished = false;
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, nullable = true)
     private String championTeamId;
     private CareerPhase careerPhase = CareerPhase.PRE_MATCH;
 
     private List<MatchFixture> fixtures = new ArrayList<>();
+    @WorldIdentityReference(domain = WorldIdentityDomain.SESSION_TEAM, route = "MAP_KEY")
     private Map<String, TeamStandings> standings = new HashMap<>();
     // Final standings stored per division after tournament finishes
+    @WorldIdentityReference(domain = WorldIdentityDomain.OTHER_ID, route = "MAP_KEY")
     private Map<String, List<TeamStandings>> divisionFinalStandings = new HashMap<>();
 
     public TournamentState() {}

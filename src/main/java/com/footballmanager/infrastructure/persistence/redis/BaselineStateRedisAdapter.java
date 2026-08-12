@@ -3,6 +3,7 @@ package com.footballmanager.infrastructure.persistence.redis;
 import com.footballmanager.application.service.simulation.detailed.BaselinePersistenceException;
 import com.footballmanager.application.service.simulation.detailed.BaselineState;
 import com.footballmanager.application.service.simulation.detailed.BaselineStateStoragePort;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import com.footballmanager.domain.model.valueobject.CareerWriteContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -58,6 +59,9 @@ import java.util.concurrent.TimeoutException;
  */
 @Slf4j
 @Repository
+@WorldPersistedWriter(root = BaselineState.class, writeMethod = "saveInternal",
+        storageFamily = "career:*:match-baseline:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
 
     private static final String KEY_PREFIX = "career:";

@@ -1,6 +1,7 @@
 package com.footballmanager.infrastructure.persistence.redis;
 
 import com.footballmanager.infrastructure.persistence.entity.GameEntity;
+import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -16,6 +17,8 @@ import java.util.UUID;
  * Keys: user:{userId}:game:{gameId}
  */
 @Repository
+@WorldPersistedWriter(root = GameEntity.class, writeMethod = "save", storageFamily = "user:*:game:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class GameRedisRepository {
     private static final String GAME_INDEX_SUFFIX = ":game-ids";
     private final ReactiveRedisTemplate<String, GameEntity> redisTemplate;

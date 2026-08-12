@@ -1,5 +1,7 @@
 package com.footballmanager.adapters.out.redis;
 
+import com.footballmanager.application.service.world.WorldPersistedWriter;
+
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
@@ -25,6 +27,9 @@ import java.util.UUID;
 
 /** Reactive, exact-owner cleanup for all career Redis projections. */
 @Repository
+@WorldPersistedWriter(root = String.class, writeMethod = "writeCleanupMarker",
+        storageFamily = "career-cleanup:*",
+        role = WorldPersistedWriter.DurabilityRole.EXPLICITLY_NON_WORLD_REFERENCE)
 public class RedisCareerDataCleanupRepository implements CareerDataCleanupRepository {
 
     private static final int MAX_BATCH_SIZE = 100;
