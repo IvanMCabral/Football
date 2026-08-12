@@ -3,6 +3,8 @@ package com.footballmanager.adapters.out.sql;
 import com.footballmanager.domain.ports.out.league.LeagueTeamLink;
 import com.footballmanager.domain.ports.out.league.LeagueTeamSourceRepository;
 import com.footballmanager.infrastructure.persistence.repository.LeagueTeamR2dbcRepository;
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -11,6 +13,8 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_CANONICAL_SOURCE,
+        reason = "League-team source adapter persists canonical PostgreSQL catalog data")
 public class LeagueTeamSourceRepositoryAdapter implements LeagueTeamSourceRepository {
 
     private final LeagueTeamR2dbcRepository repository;

@@ -1,8 +1,5 @@
 package com.footballmanager.application.service.world;
 
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.TypeFilter;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -10,47 +7,44 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Discovers durable roots from persistence-writer declarations. The source of
- * roots is the adapter boundary, not a migration-owned root list.
+ * Derives World V2 roots only after an independent durable-boundary discovery.
+ * {@link WorldPersistedWriter} is classification metadata, never discovery
+ * metadata. An unannotated boundary therefore remains visible and fails the
+ * authority gate instead of disappearing from it.
  */
 public final class WorldMigrationPersistedRootAuthority {
 
-    private static final String PRODUCT_BASE_PACKAGE = "com.footballmanager";
-
     public Authority discover() {
-        Set<Class<?>> adapterTypes = new LinkedHashSet<>();
-        ClassPathScanningCandidateComponentProvider scanner =
-                new ClassPathScanningCandidateComponentProvider(false);
-        TypeFilter everyType = (metadata, factory) -> true;
-        scanner.addIncludeFilter(everyType);
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        scanner.findCandidateComponents(PRODUCT_BASE_PACKAGE).forEach(candidate -> {
-            try {
-                Class<?> type = Class.forName(candidate.getBeanClassName(), false, loader);
-                if (isProductClass(type)
-                        && type.getAnnotationsByType(WorldPersistedWriter.class).length > 0) {
-                    adapterTypes.add(type);
-                }
-            } catch (ClassNotFoundException error) {
-                throw new IllegalStateException("Cannot inspect persisted writer "
-                        + candidate.getBeanClassName(), error);
-            }
-        });
-        return inspect(adapterTypes);
-    }
-
-    private static boolean isProductClass(Class<?> type) {
-        var source = type.getProtectionDomain().getCodeSource();
-        if (source == null || source.getLocation() == null) return true;
-        return !source.getLocation().toExternalForm().replace('\\', '/').contains("/test-classes/");
+        return fromDiscovery(new DurablePersistenceBoundaryDiscovery().discover());
     }
 
     public Authority inspect(Set<Class<?>> adapterTypes) {
+        DurablePersistenceBoundaryDiscovery.Discovery discovery =
+                new DurablePersistenceBoundaryDiscovery().inspect(adapterTypes);
+        if (discovery.boundaries().isEmpty()) {
+            throw new IllegalStateException("Persisted writer discovery returned no declarations");
+        }
+        if (discovery.boundaries().stream().noneMatch(value -> !value.declarations().isEmpty())) {
+            throw new IllegalStateException("Persisted writer discovery returned no declarations");
+        }
+        return fromDiscovery(discovery);
+    }
+
+    private Authority fromDiscovery(DurablePersistenceBoundaryDiscovery.Discovery discovery) {
         List<WriterRoot> writers = new ArrayList<>();
-        for (Class<?> adapter : adapterTypes) {
-            for (WorldPersistedWriter declaration : adapter.getAnnotationsByType(WorldPersistedWriter.class)) {
-                writers.add(new WriterRoot(adapter, declaration.writeMethod(), declaration.root(),
-                        declaration.storageFamily(), declaration.role()));
+        for (DurablePersistenceBoundary boundary : discovery.boundaries()) {
+            for (DurablePersistenceBoundary.Declaration declaration : boundary.declarations()) {
+                if (declaration.persistedType() == Object.class) continue;
+                WorldPersistedWriter[] metadata = boundary.boundaryType()
+                        .getAnnotationsByType(WorldPersistedWriter.class);
+                WorldPersistedWriter matching = java.util.Arrays.stream(metadata)
+                        .filter(value -> value.writeMethod().equals(declaration.method())
+                                && value.root().equals(declaration.persistedType()))
+                        .findFirst().orElse(null);
+                if (matching != null) {
+                    writers.add(new WriterRoot(boundary.boundaryType(), matching.writeMethod(),
+                            matching.root(), matching.storageFamily(), matching.role()));
+                }
             }
         }
         writers.sort(Comparator.comparing((WriterRoot value) -> value.adapter().getName())
@@ -67,15 +61,40 @@ public final class WorldMigrationPersistedRootAuthority {
         if (graphRoots.isEmpty()) {
             throw new IllegalStateException("Persisted writer discovery returned no world-reference roots");
         }
-        return new Authority(List.copyOf(writers), Set.copyOf(graphRoots));
+        List<UnclassifiedWriter> unclassified = discovery.unclassified().stream()
+                .map(value -> new UnclassifiedWriter(value.boundaryType(), value.technology(),
+                        value.operationType(), value.persistedTypes(), value.exclusionReason()))
+                .toList();
+        return new Authority(List.copyOf(writers), Set.copyOf(graphRoots),
+                discovery.boundaries(), unclassified);
     }
 
     public record WriterRoot(Class<?> adapter, String writeMethod, Class<?> root,
                              String storageFamily, WorldPersistedWriter.DurabilityRole role) { }
 
-    public record Authority(List<WriterRoot> writers, Set<Class<?>> graphRoots) {
-        public List<WriterRoot> unclassifiedWriters() {
-            return List.of();
+    public record UnclassifiedWriter(Class<?> adapter,
+                                     DurablePersistenceBoundary.StorageTechnology technology,
+                                     DurablePersistenceBoundary.OperationType operationType,
+                                     Set<Class<?>> persistedTypes,
+                                     String reason) { }
+
+    public record Authority(List<WriterRoot> writers, Set<Class<?>> graphRoots,
+                            List<DurablePersistenceBoundary> boundaries,
+                            List<UnclassifiedWriter> unclassifiedWriters) {
+        public Authority(List<WriterRoot> writers, Set<Class<?>> graphRoots) {
+            this(writers, graphRoots, List.of(), List.of());
+        }
+
+        public List<DurablePersistenceBoundary> classifiedBoundaries() {
+            return boundaries.stream().filter(DurablePersistenceBoundary::isClassified).toList();
+        }
+
+        public void requireComplete() {
+            if (!unclassifiedWriters.isEmpty()) {
+                String names = unclassifiedWriters.stream().map(value -> value.adapter().getName())
+                        .sorted().collect(java.util.stream.Collectors.joining(", "));
+                throw new IllegalStateException("Unclassified durable persistence boundaries: " + names);
+            }
         }
     }
 }

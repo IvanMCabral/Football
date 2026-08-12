@@ -8,6 +8,8 @@ import com.footballmanager.infrastructure.persistence.repository.TeamR2dbcReposi
 import com.footballmanager.domain.model.aggregate.*;
 import com.footballmanager.domain.model.valueobject.*;
 import com.footballmanager.domain.ports.out.team.TeamRepository;
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,8 @@ import java.util.UUID;
 @Component
 @Primary
 @RequiredArgsConstructor
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_CANONICAL_SOURCE,
+        reason = "Team adapter persists canonical PostgreSQL catalog data")
 public class TeamRepositoryAdapter implements TeamRepository {
 
     private final TeamRedisRepository teamRedisRepository;

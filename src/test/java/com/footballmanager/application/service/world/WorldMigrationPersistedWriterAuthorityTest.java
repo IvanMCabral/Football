@@ -52,6 +52,18 @@ class WorldMigrationPersistedWriterAuthorityTest {
         assertEquals(Set.of(ExternalHolder.class), authority.graphRoots());
     }
 
+    @Test
+    void unannotatedBoundaryIsVisibleBesideKnownWriterAndFailsClosed() {
+        WorldMigrationPersistedRootAuthority.Authority authority =
+                new WorldMigrationPersistedRootAuthority().inspect(
+                        Set.of(ClassifiedWriter.class, UnclassifiedDurableWriter.class));
+
+        assertEquals(Set.of(UnclassifiedDurableWriter.class), authority.unclassifiedWriters().stream()
+                .map(WorldMigrationPersistedRootAuthority.UnclassifiedWriter::adapter).collect(java.util.stream.Collectors.toSet()));
+        IllegalStateException error = assertThrows(IllegalStateException.class, authority::requireComplete);
+        assertTrue(error.getMessage().contains(UnclassifiedDurableWriter.class.getName()));
+    }
+
     private static Set<Class<?>> redisWriterClassesFromSource() throws Exception {
         Set<Class<?>> result = new LinkedHashSet<>();
         try (var paths = Files.walk(Path.of("src/main/java/com/footballmanager"))) {
@@ -82,6 +94,11 @@ class WorldMigrationPersistedWriterAuthorityTest {
     }
 
     private static final class UnclassifiedWriter { }
+
+    private static final class UnclassifiedDurableWriter {
+        private final org.springframework.data.redis.core.ReactiveRedisTemplate<String, String> redis = null;
+        void save(String key, String value) { redis.opsForValue().set(key, value); }
+    }
 
     @WorldPersistedWriter(root = ExternalHolder.class, writeMethod = "save",
             storageFamily = "test", role = WorldPersistedWriter.DurabilityRole.WORLD_REFERENCE_GRAPH)

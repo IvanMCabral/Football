@@ -1,5 +1,8 @@
 package com.footballmanager.infrastructure.world.legacyseed;
 
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -9,6 +12,8 @@ import java.time.Duration;
 
 @Slf4j
 @Component
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_WITH_EXPLICIT_REASON,
+        reason = "legacy seed database guard authorizes writes but does not own a persisted root")
 public class LegacySeedPrincipalDatabaseGuard {
 
     private static final Duration CHECK_TIMEOUT = Duration.ofSeconds(10);

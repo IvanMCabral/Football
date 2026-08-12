@@ -87,6 +87,30 @@ class WorldStorageV2CapacityFuzzIntegrationTest extends AbstractIntegrationTest 
     }
 
     @Test
+    void independentCapacityAuthoritySeedCoversOneThousandCases() {
+        Random random = new Random(0x79E279E5L);
+        var model = new com.footballmanager.application.service.world.WorldStoragePhysicalCapacityModel();
+        long maximumSlack = Long.MIN_VALUE;
+        for (int index = 0; index < 1_000; index++) {
+            long current = 1_000_000L + random.nextInt(20_000_000);
+            long legacy = 10_000L + random.nextInt(500_000);
+            long prepared = 20_000L + random.nextInt(700_000);
+            long committed = 20_000L + random.nextInt(700_000);
+            long catalog = 20_000L + random.nextInt(700_000);
+            var estimate = model.estimate(current, legacy, prepared, committed, catalog,
+                    index % 2 == 0);
+            long upperBound = estimate.compactedBaselinePhysicalBytes()
+                    + Math.max(estimate.preparedPhysicalBytes(), estimate.committedPhysicalBytes())
+                    + estimate.catalogPhysicalBytes();
+            assertEquals(estimate.physicalPeakBytes(), upperBound);
+            maximumSlack = Math.max(maximumSlack, upperBound - estimate.physicalPeakBytes());
+        }
+        assertTrue(maximumSlack >= 0);
+        System.out.printf("[WORLD-CAPACITY-AUTHORITY] seed=%d cases=1000 unsafe=0 maxSlack=%d%n",
+                0x79E279E5L, maximumSlack);
+    }
+
+    @Test
     void multidimensionalStressSearchFindsConservativeAdmittedAndBlockedFixtures() throws Exception {
         long baseline = 268_320_000L;
         long quota = 268_435_456L;

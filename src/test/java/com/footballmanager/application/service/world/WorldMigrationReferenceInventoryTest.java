@@ -36,6 +36,9 @@ class WorldMigrationReferenceInventoryTest {
 
         var authority = registry.rootAuthority();
         var graph = registry.persistedGraph();
+        assertTrue(authority.boundaries().stream().anyMatch(value ->
+                value.technology() == DurablePersistenceBoundary.StorageTechnology.POSTGRESQL));
+        assertTrue(authority.boundaries().stream().allMatch(DurablePersistenceBoundary::isClassified));
         System.out.printf("[WORLD-REFERENCE-AUTHORITY-V4] writers=%d roots=%d models=%d fields=%d "
                         + "inherited=%d containers=%d identityLeaves=%d references=%d validators=%d "
                         + "unresolved=%d unclassifiedWriters=%d unvalidated=%d extraValidators=%d%n",

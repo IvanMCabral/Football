@@ -27,7 +27,6 @@ import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -611,9 +610,8 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private boolean invalidTtlIsRejectedByRepositoryGuardContract() {
-        RedisWorldRepository repository = repository();
-        ReflectionTestUtils.setField(repository, "storageVersion", 1);
-        ReflectionTestUtils.setField(repository, "worldTtl", Duration.ZERO);
+        RedisWorldRepository repository = new RedisWorldRepository(reactiveRedisTemplate, mapper,
+                Duration.ZERO, Duration.ofMinutes(5), 1);
         WorldSnapshot world = new WorldSnapshot();
         world.setUserId(UUID.randomUUID());
         try {
@@ -794,11 +792,8 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private RedisWorldRepository repository() {
-        RedisWorldRepository repository = new RedisWorldRepository(reactiveRedisTemplate, mapper);
-        ReflectionTestUtils.setField(repository, "worldTtl", Duration.ofDays(30));
-        ReflectionTestUtils.setField(repository, "catalogTtl", Duration.ofDays(365));
-        ReflectionTestUtils.setField(repository, "storageVersion", 2);
-        return repository;
+        return new RedisWorldRepository(reactiveRedisTemplate, mapper,
+                Duration.ofDays(30), Duration.ofDays(365), 2);
     }
 
     private static boolean hasCause(Throwable error, Class<? extends Throwable> type) {

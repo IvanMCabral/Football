@@ -4,6 +4,8 @@ import com.footballmanager.infrastructure.persistence.entity.*;
 
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -11,6 +13,8 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Repository
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_CANONICAL_SOURCE,
+        reason = "R2DBC player repository is the canonical PostgreSQL catalog source")
 public interface PlayerR2dbcRepository extends R2dbcRepository<PlayerEntity, UUID> {
     @Query("""
             SELECT p.* FROM players p

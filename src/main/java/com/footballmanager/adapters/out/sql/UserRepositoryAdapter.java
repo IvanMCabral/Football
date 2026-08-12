@@ -5,12 +5,16 @@ import com.footballmanager.infrastructure.persistence.repository.*;
 
 import com.footballmanager.domain.model.aggregate.User;
 import com.footballmanager.domain.ports.out.user.UserRepository;
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import java.util.UUID;
 
 @Component
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_NON_WORLD_IDENTITY,
+        reason = "User adapter persists canonical user identity in PostgreSQL, not World V2 state")
 public class UserRepositoryAdapter implements UserRepository {
     private final UserR2dbcRepository r2dbcRepository;
 

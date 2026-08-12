@@ -1,5 +1,8 @@
 package com.footballmanager.adapters.in.web.health;
 
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
+
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
@@ -10,6 +13,8 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Component
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_WITH_EXPLICIT_REASON,
+        reason = "Redis health probe uses an ephemeral probe key and does not persist a World V2 root")
 public class RedisHealthProbe {
 
     private static final Logger log = LoggerFactory.getLogger(RedisHealthProbe.class);

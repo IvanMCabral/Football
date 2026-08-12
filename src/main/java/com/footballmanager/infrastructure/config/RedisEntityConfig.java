@@ -2,6 +2,8 @@ package com.footballmanager.infrastructure.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
 import com.footballmanager.infrastructure.persistence.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @RequiredArgsConstructor
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_NON_WORLD_IDENTITY,
+        reason = "Redis serializers/templates for canonical entity support are outside World V2 reference migration")
 public class RedisEntityConfig {
 
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;

@@ -6,6 +6,8 @@ import com.footballmanager.domain.ports.out.league.LeagueRepository;
 import com.footballmanager.infrastructure.persistence.entity.LeagueEntity;
 import com.footballmanager.infrastructure.persistence.redis.LeagueRedisRepository;
 import com.footballmanager.infrastructure.persistence.repository.LeagueR2dbcRepository;
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,8 @@ import java.util.UUID;
 @Component
 @Primary
 @RequiredArgsConstructor
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_CANONICAL_SOURCE,
+        reason = "League adapter persists canonical PostgreSQL catalog data, not owner-scoped World V2 state")
 public class LeagueRepositoryAdapter implements LeagueRepository {
 
     private final LeagueRedisRepository redisRepository;

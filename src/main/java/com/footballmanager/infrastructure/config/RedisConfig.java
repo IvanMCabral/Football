@@ -1,6 +1,9 @@
 
 package com.footballmanager.infrastructure.config;
 
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
+
 import io.lettuce.core.ClientOptions;
 import org.springframework.boot.convert.DurationStyle;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +29,8 @@ import java.time.Duration;
  * - Compresión de datos habilitada
  */
 @Configuration
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_WITH_EXPLICIT_REASON,
+        reason = "Redis connection/template configuration is infrastructure, not a persisted domain boundary")
 public class RedisConfig {
 
     // Timeouts en milisegundos

@@ -1,5 +1,8 @@
 package com.footballmanager.infrastructure.world.legacyseed;
 
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
+
 import com.footballmanager.application.service.world.WorldSeedTeamWriter;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,8 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_CANONICAL_SOURCE,
+        reason = "legacy seed writer persists canonical PostgreSQL catalog/source data")
 public class WorldTeamPostgresWriter implements WorldSeedTeamWriter {
 
     private static final Duration BLOCK_TIMEOUT = Duration.ofSeconds(120);

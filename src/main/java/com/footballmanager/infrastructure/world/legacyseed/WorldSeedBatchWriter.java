@@ -1,5 +1,8 @@
 package com.footballmanager.infrastructure.world.legacyseed;
 
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.application.service.world.WorldSeedPlayerWriter;
@@ -45,6 +48,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_CANONICAL_SOURCE,
+        reason = "legacy seed batch writes canonical PostgreSQL source data, not per-owner World V2 state")
 public class WorldSeedBatchWriter implements WorldSeedPlayerWriter {
 
     /** Default batch size — tuned for Postgres parameter limits. */

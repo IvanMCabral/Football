@@ -6,11 +6,15 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.Modifying;
+import com.footballmanager.application.service.world.DurableBoundaryClassification;
+import com.footballmanager.application.service.world.DurablePersistenceBoundary;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Repository
+@DurableBoundaryClassification(value = DurablePersistenceBoundary.Classification.OUT_OF_SCOPE_CANONICAL_SOURCE,
+        reason = "R2DBC league repository is the canonical PostgreSQL catalog source")
 public interface LeagueR2dbcRepository extends R2dbcRepository<LeagueEntity, UUID> {
     Flux<LeagueEntity> findByCountry(String country);
 

@@ -114,6 +114,16 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                 WorldMigrationTransitionObserver.noOp());
     }
 
+    /** Explicit TTL policy constructor for integration callers and probes. */
+    public RedisWorldRepository(ReactiveRedisTemplate<String, String> redisTemplate,
+                                ObjectMapper objectMapper, Duration worldTtl,
+                                Duration catalogTtl, int storageVersion) {
+        this(redisTemplate, objectMapper);
+        this.worldTtl = worldTtl;
+        this.catalogTtl = catalogTtl;
+        this.storageVersion = storageVersion;
+    }
+
     /**
      * Genera la key de Redis para el WorldSnapshot de un usuario
      */

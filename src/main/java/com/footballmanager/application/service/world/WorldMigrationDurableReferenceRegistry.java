@@ -53,6 +53,7 @@ public final class WorldMigrationDurableReferenceRegistry {
     }
 
     public void requireComplete() {
+        rootAuthority.requireComplete();
         List<String> uncovered = uncoveredModelFields();
         if (!uncovered.isEmpty()) {
             throw new IllegalStateException("Incomplete durable world-reference authority: "
