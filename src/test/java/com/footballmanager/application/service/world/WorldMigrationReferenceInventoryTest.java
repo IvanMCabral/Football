@@ -31,8 +31,19 @@ class WorldMigrationReferenceInventoryTest {
         assertTrue(registry.uncoveredModelFields().isEmpty());
         assertEquals(registry.referencePaths(), inventory.declaredIdFields());
         assertTrue(inventory.coverage().keySet().containsAll(registry.referencePaths()));
-        assertTrue(registry.referencePaths().contains("WorldSnapshot.worldPlayerAliases.values(worldPlayerId)"));
-        assertTrue(registry.referencePaths().contains("CareerSave.lineupSlots.values(sessionPlayerId)"));
+        assertTrue(registry.referencePaths().contains("WorldSnapshot.worldPlayerAliases@MAP_VALUE"));
+        assertTrue(registry.referencePaths().contains("CareerSave.teamStarting11Subdivision@MAP_VALUE/MAP_VALUE"));
+
+        var authority = registry.rootAuthority();
+        var graph = registry.persistedGraph();
+        System.out.printf("[WORLD-REFERENCE-AUTHORITY-V4] writers=%d roots=%d models=%d fields=%d "
+                        + "inherited=%d containers=%d identityLeaves=%d references=%d validators=%d "
+                        + "unresolved=%d unclassifiedWriters=%d unvalidated=%d extraValidators=%d%n",
+                authority.writers().size(), graph.roots().size(), graph.models().size(), graph.fields().size(),
+                graph.inheritedFields().size(), graph.containers().size(), graph.identityLeaves().size(),
+                registry.referencePaths().size(), registry.validators().size(), graph.unresolvedGenericPaths().size(),
+                authority.unclassifiedWriters().size(), registry.unvalidatedReferences().size(),
+                registry.extraValidators().size());
     }
 
     @Test

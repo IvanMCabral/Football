@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.application.service.world.WorldSemanticComparator;
 import com.footballmanager.application.service.world.WorldStorageMigrationOrchestrator;
 import com.footballmanager.application.service.world.WorldStorageMigrationTestDriver;
+import com.footballmanager.application.service.world.WorldMigrationTransitionObserver;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldSnapshot;
 import org.springframework.context.support.GenericApplicationContext;
@@ -13,16 +14,12 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.UUID;
-import java.util.zip.GZIPOutputStream;
 
 /** Separate-process harness: process A writes PREPARED; process B resumes through production code. */
 public final class WorldPreparedMigrationProcessHarness {
@@ -34,14 +31,14 @@ public final class WorldPreparedMigrationProcessHarness {
         String password = System.getenv("MANAGER_SEPARATE_JVM_REDIS_PASSWORD");
         if (password == null || password.isBlank()) throw new IllegalStateException("Redis credential is unavailable");
         UUID owner = UUID.fromString(args[4]);
-        try (GenericApplicationContext context = context(args[1], Integer.parseInt(args[2]),
+        try (GenericApplicationContext context = context(args[0], args[1], Integer.parseInt(args[2]),
                 Integer.parseInt(args[3]), password)) {
             ReactiveStringRedisTemplate redis = context.getBean(ReactiveStringRedisTemplate.class);
             ObjectMapper mapper = context.getBean(ObjectMapper.class);
             RedisWorldRepository repository = context.getBean(RedisWorldRepository.class);
             if ("prepare".equals(args[0])) {
-                writePrepared(redis, mapper, owner);
-                System.out.println("PREPARED_WRITTEN");
+                prepareThroughProductOrchestrator(redis, mapper, repository, owner);
+                System.out.println("PREPARED_WRITTEN_BY_PRODUCT_ORCHESTRATOR");
             } else if ("recover".equals(args[0])) {
                 recover(repository, owner);
                 System.out.println("RECOVERY_OK");
@@ -51,7 +48,8 @@ public final class WorldPreparedMigrationProcessHarness {
         }
     }
 
-    private static GenericApplicationContext context(String host, int port, int database, String password) {
+    private static GenericApplicationContext context(String mode, String host, int port, int database,
+                                                     String password) {
         GenericApplicationContext context = new GenericApplicationContext();
         context.registerBean(ObjectMapper.class, () -> new ObjectMapper().findAndRegisterModules());
         context.registerBean(LettuceConnectionFactory.class, () -> {
@@ -63,8 +61,13 @@ public final class WorldPreparedMigrationProcessHarness {
         context.registerBean(ReactiveStringRedisTemplate.class,
                 () -> new ReactiveStringRedisTemplate(context.getBean(LettuceConnectionFactory.class)));
         context.registerBean(RedisWorldRepository.class, () -> {
+            WorldMigrationTransitionObserver observer = "prepare".equals(mode)
+                    ? ignored -> reactor.core.publisher.Mono.just(
+                            WorldMigrationTransitionObserver.Decision.PAUSE)
+                    : WorldMigrationTransitionObserver.noOp();
             RedisWorldRepository repository = new RedisWorldRepository(
-                    context.getBean(ReactiveStringRedisTemplate.class), context.getBean(ObjectMapper.class));
+                    context.getBean(ReactiveStringRedisTemplate.class), context.getBean(ObjectMapper.class),
+                    null, new CanonicalWorldCatalogFingerprint(context.getBean(ObjectMapper.class)), null, observer);
             ReflectionTestUtils.setField(repository, "worldTtl", Duration.ofDays(30));
             ReflectionTestUtils.setField(repository, "catalogTtl", Duration.ofDays(365));
             ReflectionTestUtils.setField(repository, "storageVersion", 2);
@@ -74,19 +77,24 @@ public final class WorldPreparedMigrationProcessHarness {
         return context;
     }
 
-    private static void writePrepared(ReactiveStringRedisTemplate redis, ObjectMapper mapper, UUID owner)
+    private static void prepareThroughProductOrchestrator(ReactiveStringRedisTemplate redis, ObjectMapper mapper,
+                                                          RedisWorldRepository repository, UUID owner)
             throws Exception {
         WorldSnapshot legacy = legacy(owner);
-        WorldSnapshot catalog = catalog(owner);
         String legacyJson = mapper.writeValueAsString(legacy);
-        String fingerprint = new CanonicalWorldCatalogFingerprint(mapper).fingerprint(catalog);
-        RedisWorldRepository.PreparedWorldMigrationEnvelope prepared =
-                new RedisWorldRepository.PreparedWorldMigrationEnvelope(2, "PREPARED", owner,
-                        "world-catalog:v2:" + fingerprint, fingerprint,
-                        compress(legacyJson), sha256(legacyJson));
-        Boolean stored = redis.opsForValue().set("world:" + owner, mapper.writeValueAsString(prepared),
+        Boolean stored = redis.opsForValue().set("world:" + owner, legacyJson,
                 Duration.ofMinutes(10)).block(Duration.ofSeconds(5));
-        if (!Boolean.TRUE.equals(stored)) throw new IllegalStateException("PREPARED state was not stored");
+        if (!Boolean.TRUE.equals(stored)) throw new IllegalStateException("Legacy state was not stored");
+        WorldStorageMigrationOrchestrator.Outcome outcome = WorldStorageMigrationTestDriver.migrate(repository,
+                ignored -> reactor.core.publisher.Mono.just(canonical(owner)), owner,
+                1_000_000, 8_000_000, 32_768, 65_536);
+        if (outcome == null || outcome.status() != WorldStorageMigrationOrchestrator.Status.RETRYABLE_PARTIAL) {
+            throw new IllegalStateException("Product orchestrator did not stop after PREPARED");
+        }
+        String preparedRaw = redis.opsForValue().get("world:" + owner).block(Duration.ofSeconds(5));
+        if (preparedRaw == null || !"PREPARED".equals(mapper.readTree(preparedRaw).path("migrationState").asText())) {
+            throw new IllegalStateException("Product orchestrator did not persist PREPARED");
+        }
     }
 
     private static void recover(RedisWorldRepository repository, UUID owner) {
@@ -113,14 +121,6 @@ public final class WorldPreparedMigrationProcessHarness {
         return snapshot;
     }
 
-    private static WorldSnapshot catalog(UUID owner) {
-        WorldSnapshot snapshot = canonical(owner);
-        snapshot.setUserId(null);
-        snapshot.setCreatedAt(Instant.EPOCH);
-        snapshot.setLastUpdated(Instant.EPOCH);
-        return snapshot;
-    }
-
     private static WorldSnapshot legacy(UUID owner) {
         WorldSnapshot snapshot = canonical(owner);
         snapshot.setCreatedAt(null);
@@ -130,16 +130,4 @@ public final class WorldPreparedMigrationProcessHarness {
         return snapshot;
     }
 
-    private static String compress(String value) throws Exception {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzip = new GZIPOutputStream(output)) {
-            gzip.write(value.getBytes(StandardCharsets.UTF_8));
-        }
-        return Base64.getEncoder().encodeToString(output.toByteArray());
-    }
-
-    private static String sha256(String value) throws Exception {
-        return java.util.HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                .digest(value.getBytes(StandardCharsets.UTF_8)));
-    }
 }

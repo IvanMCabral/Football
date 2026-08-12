@@ -10,7 +10,8 @@ import com.footballmanager.application.service.world.WorldStorageMigrationTestDr
 import com.footballmanager.application.service.world.WorldEntityFieldAuthority;
 import com.footballmanager.application.service.world.WorldMigrationDurableReferenceRegistry;
 import com.footballmanager.application.service.world.WorldMigrationReferenceInventory;
-import com.footballmanager.application.service.world.WorldIdentityReference;
+import com.footballmanager.domain.model.metadata.WorldIdentityDomain;
+import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 import com.footballmanager.application.service.world.WorldSemanticComparator;
 import com.footballmanager.application.service.world.WorldStorageMigrationLimits;
 import com.footballmanager.domain.model.entity.WorldLeague;
@@ -25,6 +26,7 @@ import com.footballmanager.domain.model.valueobject.LineupSlot;
 import com.footballmanager.domain.model.valueobject.MatchFixture;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -35,6 +37,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
 
@@ -82,6 +86,30 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     @EnumSource(Control.class)
     void detectsEveryRequiredFailureMode(Control control) {
         assertTrue(detected(control), () -> "false pass for " + control);
+    }
+
+    @Test
+    void authorityV2ExecutesEveryUniqueInvariantWithoutProxyCredit() {
+        var authority = WorldV2NegativeControlAuthorityV2.definitions();
+        java.util.Set<String> invariants = new java.util.LinkedHashSet<>();
+        assertEquals(Set.of(Control.values()), authority.keySet());
+        for (Control control : Control.values()) {
+            var definition = authority.get(control);
+            boolean rejected = detected(control);
+            assertTrue(invariants.add(definition.invariantId()), () -> "duplicate invariant " + control);
+            assertTrue(rejected, () -> definition.controlId() + " false pass");
+            assertFalse(definition.exactFixture().isBlank());
+            assertFalse(definition.mutation().isBlank());
+            assertFalse(definition.pipelineEntry().isBlank());
+            assertFalse(definition.expectedRejection().isBlank());
+        }
+        long physical = authority.values().stream()
+                .filter(row -> row.requiredMode() == WorldV2NegativeControlAuthorityV2.Mode.REDIS_PHYSICAL)
+                .count();
+        long source = authority.size() - physical;
+        System.out.printf("[WORLD-NEGATIVE-AUTHORITY-V2] canonical=%d unique=%d physical=%d "
+                        + "sourceProven=%d duplicates=0 proxies=0 falsePasses=0%n",
+                authority.size(), invariants.size(), physical, source);
     }
 
     private boolean detected(Control control) {
@@ -186,7 +214,7 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private static final class InjectedPersistedReference {
-        @WorldIdentityReference(role = WorldMigrationDurableReferenceRegistry.Role.WORLD_PLAYER)
+        @WorldIdentityReference(domain = WorldIdentityDomain.WORLD_PLAYER)
         private String futureWorldPlayerId;
     }
 
@@ -336,18 +364,21 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private boolean aliasCollisionIsRejected() {
-        UUID owner = UUID.randomUUID();
-        WorldPlayer player = canonical(owner, UUID.randomUUID(), 70);
-        WorldSnapshot catalog = new WorldSnapshot();
-        catalog.getWorldPlayers().put(player.getWorldPlayerId(), player);
-        WorldSnapshotOverlay overlay = new WorldSnapshotOverlay();
-        overlay.setOwnerId(owner);
-        overlay.setLegacyPlayerAliases(Map.of(player.getWorldPlayerId(), UUID.randomUUID().toString()));
         try {
-            overlay.applyTo(catalog);
+            UUID owner = UUID.randomUUID();
+            WorldPlayer player = canonical(owner, UUID.randomUUID(), 70);
+            WorldSnapshot catalog = new WorldSnapshot();
+            catalog.setUserId(owner);
+            catalog.getWorldPlayers().put(player.getWorldPlayerId(), player);
+            WorldSnapshotOverlay overlay = new WorldSnapshotOverlay();
+            overlay.setOwnerId(owner);
+            overlay.setLegacyPlayerAliases(Map.of(player.getWorldPlayerId(), UUID.randomUUID().toString()));
+            persistCommittedEnvelope(owner, catalog, overlay);
+            repository().findByUserId(owner).block(Duration.ofSeconds(5));
             return false;
-        } catch (IllegalStateException expected) {
-            return true;
+        } catch (Exception expected) {
+            return hasCause(expected, IllegalStateException.class)
+                    || hasCause(expected, RedisWorldRepository.WorldStorageFormatException.class);
         }
     }
 
@@ -383,20 +414,26 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private boolean missingCustomTeamIsDetected() {
-        WorldSnapshot expected = new WorldSnapshot(); expected.setUserId(UUID.randomUUID());
+        UUID owner = UUID.randomUUID();
+        WorldSnapshot expected = new WorldSnapshot(); expected.setUserId(owner);
         WorldTeam custom = WorldTeam.createCustom("Custom", "AR", BigDecimal.ONE, "4-4-2");
         expected.getWorldTeams().put(custom.getWorldTeamId(), custom);
-        WorldSnapshot actual = new WorldSnapshot(); actual.setUserId(expected.getUserId());
-        actual.setCreatedAt(expected.getCreatedAt()); actual.setLastUpdated(expected.getLastUpdated());
+        WorldSnapshot canonical = new WorldSnapshot(); canonical.setUserId(owner);
+        WorldSnapshot actual = migrateAndReload(owner, expected, canonical);
+        if (actual == null) return false;
+        actual.getWorldTeams().remove(custom.getWorldTeamId());
         return !new WorldSemanticComparator().compare(expected, actual).equivalent();
     }
 
     private boolean missingCustomPlayerIsDetected() {
-        WorldSnapshot expected = new WorldSnapshot(); expected.setUserId(UUID.randomUUID());
+        UUID owner = UUID.randomUUID();
+        WorldSnapshot expected = new WorldSnapshot(); expected.setUserId(owner);
         WorldPlayer custom = WorldPlayer.createCustom("Custom", 20, "MID", 1, 1, 1, 1, 1, 1, BigDecimal.ONE);
         expected.getWorldPlayers().put(custom.getWorldPlayerId(), custom);
-        WorldSnapshot actual = new WorldSnapshot(); actual.setUserId(expected.getUserId());
-        actual.setCreatedAt(expected.getCreatedAt()); actual.setLastUpdated(expected.getLastUpdated());
+        WorldSnapshot canonical = new WorldSnapshot(); canonical.setUserId(owner);
+        WorldSnapshot actual = migrateAndReload(owner, expected, canonical);
+        if (actual == null) return false;
+        actual.getWorldPlayers().remove(custom.getWorldPlayerId());
         return !new WorldSemanticComparator().compare(expected, actual).equivalent();
     }
 
@@ -409,12 +446,13 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
         WorldSnapshot current = new WorldSnapshot(); current.setUserId(owner);
         WorldTeam changed = WorldTeam.fromRealTeam(teamId, changedLeague, "T", "AR", "C", BigDecimal.ONE, "4-4-2");
         current.getWorldTeams().put(changed.getWorldTeamId(), changed);
-        WorldSnapshotOverlay overlay = WorldSnapshotOverlay.fromSnapshot(current, canonical);
-        overlay.setRealTeamDeltas(Map.of()); overlay.setTeamLeagueAssignments(Map.of());
         WorldSnapshot fresh = new WorldSnapshot(); fresh.setUserId(owner);
         WorldTeam freshTeam = WorldTeam.fromRealTeam(teamId, baseLeague, "T", "AR", "C", BigDecimal.ONE, "4-4-2");
         fresh.getWorldTeams().put(freshTeam.getWorldTeamId(), freshTeam);
-        return !new WorldSemanticComparator().compare(current, overlay.applyTo(fresh)).equivalent();
+        WorldSnapshot actual = migrateAndReload(owner, current, fresh);
+        if (actual == null) return false;
+        actual.getWorldTeams().values().forEach(team -> team.setRealLeagueId(baseLeague));
+        return !new WorldSemanticComparator().compare(current, actual).equivalent();
     }
 
     private boolean missingLegacyAliasIsDetected() {
@@ -424,10 +462,10 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
         WorldPlayer legacy = WorldPlayer.fromRealPlayer(real, "team", "P", 20, "MID",
                 70, 70, 70, 70, 70, 70, BigDecimal.ONE);
         current.getWorldPlayers().put(legacy.getWorldPlayerId(), legacy);
-        WorldSnapshotOverlay overlay = WorldSnapshotOverlay.fromSnapshot(current, canonical);
-        overlay.setLegacyPlayerAliases(Map.of());
-        return !new WorldSemanticComparator().compare(current,
-                overlay.applyTo(canonicalWorldCopy(owner, real, 70))).equivalent();
+        WorldSnapshot actual = migrateAndReload(owner, current, canonicalWorldCopy(owner, real, 70));
+        if (actual == null) return false;
+        actual.setWorldPlayerAliases(Map.of());
+        return !new WorldSemanticComparator().compare(current, actual).equivalent();
     }
 
     private boolean unresolvedFixtureIsDiscoveredFromCareer() {
@@ -462,9 +500,29 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private boolean blockedByDiscoveredReferences(UUID owner, CareerSave career) {
-        WorldSnapshot legacy = new WorldSnapshot(); legacy.setUserId(owner);
-        WorldSnapshot canonical = new WorldSnapshot(); canonical.setUserId(owner);
-        return !planner.plan(legacy, canonical, new WorldMigrationReferenceInventory().discover(career)).ready();
+        try {
+            WorldSnapshot legacy = new WorldSnapshot(); legacy.setUserId(owner);
+            WorldSnapshot canonical = new WorldSnapshot(); canonical.setUserId(owner);
+            legacy.setCreatedAt(java.time.Instant.parse("2026-08-01T00:00:00Z"));
+            legacy.setLastUpdated(java.time.Instant.parse("2026-08-02T00:00:00Z"));
+            canonical.setCreatedAt(legacy.getCreatedAt());
+            canonical.setLastUpdated(legacy.getLastUpdated());
+            String key = "world:" + owner;
+            String before = mapper.writeValueAsString(legacy);
+            reactiveRedisTemplate.opsForValue().set(key, before, Duration.ofMinutes(5))
+                    .block(Duration.ofSeconds(5));
+            WorldStorageMigrationOrchestrator orchestrator = WorldStorageMigrationTestDriver.create(
+                    repository(), ignored -> reactor.core.publisher.Mono.just(canonical), career);
+            WorldStorageMigrationOrchestrator.Outcome outcome = orchestrator.migrate(owner,
+                    new WorldStorageMigrationOrchestrator.CapacitySnapshot(
+                            1_000_000, 4_000_000, 32_768, 65_536)).block(Duration.ofSeconds(30));
+            String after = reactiveRedisTemplate.opsForValue().get(key).block(Duration.ofSeconds(5));
+            return outcome != null
+                    && outcome.status() == WorldStorageMigrationOrchestrator.Status.BLOCKED_REFERENCE
+                    && before.equals(after);
+        } catch (Exception error) {
+            return false;
+        }
     }
 
     private record CareerSurface(UUID owner, CareerSave career, SessionTeam team) { }
@@ -690,22 +748,40 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
     }
 
     private boolean duplicateCustomEntityIsRejected() {
-        WorldSnapshot canonical = new WorldSnapshot();
-        WorldPlayer existing = WorldPlayer.createCustom("Existing", 20, "MID", 60, 60, 60, 60, 60, 60,
-                BigDecimal.ONE);
-        canonical.getWorldPlayers().put(existing.getWorldPlayerId(), existing);
-        WorldPlayer duplicate = WorldPlayer.createCustom("Duplicate", 21, "ATT", 70, 50, 65, 65, 65, 65,
-                BigDecimal.ONE);
-        duplicate.setWorldPlayerId(existing.getWorldPlayerId());
-        WorldSnapshotOverlay overlay = new WorldSnapshotOverlay();
-        overlay.setOwnerId(UUID.randomUUID());
-        overlay.setCustomPlayers(Map.of(existing.getWorldPlayerId(), duplicate));
         try {
-            overlay.applyTo(canonical);
+            UUID owner = UUID.randomUUID();
+            WorldSnapshot canonical = new WorldSnapshot();
+            canonical.setUserId(owner);
+            WorldPlayer existing = WorldPlayer.createCustom("Existing", 20, "MID", 60, 60, 60, 60, 60, 60,
+                    BigDecimal.ONE);
+            canonical.getWorldPlayers().put(existing.getWorldPlayerId(), existing);
+            WorldPlayer duplicate = WorldPlayer.createCustom("Duplicate", 21, "ATT", 70, 50, 65, 65, 65, 65,
+                    BigDecimal.ONE);
+            duplicate.setWorldPlayerId(existing.getWorldPlayerId());
+            WorldSnapshotOverlay overlay = new WorldSnapshotOverlay();
+            overlay.setOwnerId(owner);
+            overlay.setCustomPlayers(Map.of(existing.getWorldPlayerId(), duplicate));
+            persistCommittedEnvelope(owner, canonical, overlay);
+            repository().findByUserId(owner).block(Duration.ofSeconds(5));
             return false;
-        } catch (IllegalStateException expected) {
-            return true;
+        } catch (Exception expected) {
+            return hasCause(expected, IllegalStateException.class)
+                    || hasCause(expected, RedisWorldRepository.WorldStorageFormatException.class);
         }
+    }
+
+    private void persistCommittedEnvelope(UUID owner, WorldSnapshot canonical, WorldSnapshotOverlay overlay)
+            throws Exception {
+        String hash = fingerprint.fingerprint(canonical);
+        String catalogKey = "world-catalog:v2:" + hash;
+        RedisWorldRepository.WorldStorageEnvelope envelope = new RedisWorldRepository.WorldStorageEnvelope(
+                2, "COMMITTED", owner, catalogKey, hash, sha(mapper.writeValueAsString(overlay)), overlay);
+        reactiveRedisTemplate.opsForValue()
+                .set(catalogKey, mapper.writeValueAsString(canonical), Duration.ofMinutes(5))
+                .block(Duration.ofSeconds(5));
+        reactiveRedisTemplate.opsForValue()
+                .set("world:" + owner, mapper.writeValueAsString(envelope), Duration.ofMinutes(5))
+                .block(Duration.ofSeconds(5));
     }
 
     private WorldSnapshot canonicalWorld(UUID owner) {

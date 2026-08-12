@@ -32,12 +32,14 @@ class WorldPreparedMigrationSeparateJvmIntegrationTest extends AbstractIntegrati
         ProcessResult processA = run("prepare", configuration.getHostName(), configuration.getPort(),
                 configuration.getDatabase(), owner, credential);
         assertEquals(0, processA.exitCode(), processA.safeOutput());
-        assertTrue(processA.safeOutput().contains("PREPARED_WRITTEN"));
+        assertTrue(processA.safeOutput().contains("PREPARED_WRITTEN_BY_PRODUCT_ORCHESTRATOR"));
 
         ProcessResult processB = run("recover", configuration.getHostName(), configuration.getPort(),
                 configuration.getDatabase(), owner, credential);
         assertEquals(0, processB.exitCode(), processB.safeOutput());
         assertTrue(processB.safeOutput().contains("RECOVERY_OK"));
+        System.out.printf("[WORLD-PREPARED-TWO-JVM] processA=%d productPath=true processB=%d recovery=true%n",
+                processA.pid(), processB.pid());
     }
 
     private ProcessResult run(String mode, String host, int port, int database, UUID owner, String password)
@@ -50,23 +52,25 @@ class WorldPreparedMigrationSeparateJvmIntegrationTest extends AbstractIntegrati
         ProcessBuilder builder = new ProcessBuilder(command).redirectErrorStream(true);
         builder.environment().put("MANAGER_SEPARATE_JVM_REDIS_PASSWORD", password);
         Process process = builder.start();
+        long pid = process.pid();
         boolean exited = process.waitFor(Duration.ofSeconds(45).toMillis(), TimeUnit.MILLISECONDS);
         if (!exited) {
             process.destroyForcibly();
             throw new IllegalStateException("separate JVM migration harness timed out");
         }
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        return new ProcessResult(process.exitValue(), sanitize(output));
+        return new ProcessResult(pid, process.exitValue(), sanitize(output));
     }
 
     private static String sanitize(String output) {
         if (output == null) return "";
         return output.lines()
-                .filter(line -> line.contains("PREPARED_WRITTEN") || line.contains("RECOVERY_OK")
+                .filter(line -> line.contains("PREPARED_WRITTEN_BY_PRODUCT_ORCHESTRATOR")
+                        || line.contains("RECOVERY_OK")
                         || line.startsWith("Exception") || line.startsWith("Caused by")
                         || line.startsWith("\tat "))
                 .reduce("", (left, right) -> left + right + System.lineSeparator());
     }
 
-    private record ProcessResult(int exitCode, String safeOutput) { }
+    private record ProcessResult(long pid, int exitCode, String safeOutput) { }
 }
