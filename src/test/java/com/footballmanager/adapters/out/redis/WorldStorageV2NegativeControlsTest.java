@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -89,7 +90,7 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
 
     @Test
     void authorityV2ExecutesEveryUniqueInvariantWithoutProxyCredit() {
-        var authority = WorldV2NegativeControlAuthorityV2.definitions();
+        var authority = WorldV2NegativeControlAuthorityV4.definitions();
         java.util.Set<String> invariants = new java.util.LinkedHashSet<>();
         assertEquals(Set.of(Control.values()), authority.keySet());
         for (Control control : Control.values()) {
@@ -103,12 +104,20 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
             assertFalse(definition.expectedRejection().isBlank());
         }
         long physical = authority.values().stream()
-                .filter(row -> row.requiredMode() == WorldV2NegativeControlAuthorityV2.Mode.REDIS_PHYSICAL)
+                .filter(row -> row.requiredMode() == WorldV2NegativeControlAuthorityV4.Mode.REDIS_PHYSICAL)
                 .count();
-        long source = authority.size() - physical;
-        System.out.printf("[WORLD-NEGATIVE-AUTHORITY-V2] canonical=%d unique=%d physical=%d "
-                        + "sourceProven=%d duplicates=0 proxies=0 falsePasses=0%n",
-                authority.size(), invariants.size(), physical, source);
+        long preWrite = authority.values().stream()
+                .filter(row -> row.requiredMode() == WorldV2NegativeControlAuthorityV4.Mode.PRE_WRITE_GUARD)
+                .count();
+        long source = authority.values().stream()
+                .filter(row -> row.requiredMode() == WorldV2NegativeControlAuthorityV4.Mode.SOURCE_PROVEN)
+                .count();
+        assertEquals(26, physical);
+        assertEquals(1, preWrite);
+        assertEquals(6, source);
+        System.out.printf("[WORLD-NEGATIVE-AUTHORITY-V4] canonical=%d unique=%d physical=%d "
+                        + "preWrite=%d sourceProven=%d duplicates=0 proxies=0 falseModeLabels=0 falsePasses=0%n",
+                authority.size(), invariants.size(), physical, preWrite, source);
     }
 
     private boolean detected(Control control) {
@@ -416,42 +425,72 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
         UUID owner = UUID.randomUUID();
         WorldSnapshot expected = new WorldSnapshot(); expected.setUserId(owner);
         WorldTeam custom = WorldTeam.createCustom("Custom", "AR", BigDecimal.ONE, "4-4-2");
+        WorldPlayer customPlayer = WorldPlayer.createCustom("Custom player", 20, "MID",
+                70, 70, 70, 70, 70, 70, BigDecimal.ONE);
+        customPlayer.setWorldTeamId(custom.getWorldTeamId());
         expected.getWorldTeams().put(custom.getWorldTeamId(), custom);
+        expected.getWorldPlayers().put(customPlayer.getWorldPlayerId(), customPlayer);
         WorldSnapshot canonical = new WorldSnapshot(); canonical.setUserId(owner);
-        WorldSnapshot actual = migrateAndReload(owner, expected, canonical);
-        if (actual == null) return false;
-        actual.getWorldTeams().remove(custom.getWorldTeamId());
-        return !new WorldSemanticComparator().compare(expected, actual).equivalent();
+        if (migrateAndReload(owner, expected, canonical) == null) return false;
+        var evidence = WorldV2PhysicalFaultInjection.mutateCommittedEnvelope(
+                reactiveRedisTemplate, mapper, owner, "remove-custom-team",
+                overlay -> ((com.fasterxml.jackson.databind.node.ObjectNode) overlay.get("customTeams"))
+                        .remove(custom.getWorldTeamId()));
+        try {
+            repository().findByUserId(owner).block(Duration.ofSeconds(5));
+            return false;
+        } catch (RuntimeException expectedFailure) {
+            return evidence.redisTouched() && evidence.malformedPersistedState()
+                    && !evidence.inMemoryOnlyMutation() && hasCause(expectedFailure, IllegalStateException.class);
+        }
     }
 
     private boolean missingCustomPlayerIsDetected() {
         UUID owner = UUID.randomUUID();
         WorldSnapshot expected = new WorldSnapshot(); expected.setUserId(owner);
         WorldPlayer custom = WorldPlayer.createCustom("Custom", 20, "MID", 1, 1, 1, 1, 1, 1, BigDecimal.ONE);
+        String alias = "legacy-custom-" + custom.getWorldPlayerId();
         expected.getWorldPlayers().put(custom.getWorldPlayerId(), custom);
+        expected.setWorldPlayerAliases(Map.of(alias, custom.getWorldPlayerId()));
         WorldSnapshot canonical = new WorldSnapshot(); canonical.setUserId(owner);
-        WorldSnapshot actual = migrateAndReload(owner, expected, canonical);
-        if (actual == null) return false;
-        actual.getWorldPlayers().remove(custom.getWorldPlayerId());
-        return !new WorldSemanticComparator().compare(expected, actual).equivalent();
+        if (migrateAndReload(owner, expected, canonical) == null) return false;
+        var evidence = WorldV2PhysicalFaultInjection.mutateCommittedEnvelope(
+                reactiveRedisTemplate, mapper, owner, "remove-custom-player",
+                overlay -> ((com.fasterxml.jackson.databind.node.ObjectNode) overlay.get("customPlayers"))
+                        .remove(custom.getWorldPlayerId()));
+        try {
+            repository().findByUserId(owner).block(Duration.ofSeconds(5));
+            return false;
+        } catch (RuntimeException expectedFailure) {
+            return evidence.redisTouched() && evidence.malformedPersistedState()
+                    && !evidence.inMemoryOnlyMutation() && hasCause(expectedFailure, IllegalStateException.class);
+        }
     }
 
     private boolean lostLeagueRelationIsDetected() {
         UUID owner = UUID.randomUUID(); UUID teamId = UUID.randomUUID();
         UUID baseLeague = UUID.randomUUID(); UUID changedLeague = UUID.randomUUID();
         WorldSnapshot canonical = new WorldSnapshot(); canonical.setUserId(owner);
+        canonical.setLeagues(List.of(new WorldLeague(baseLeague, "Base", "AR", 1),
+                new WorldLeague(changedLeague, "Changed", "AR", 2)));
         WorldTeam base = WorldTeam.fromRealTeam(teamId, baseLeague, "T", "AR", "C", BigDecimal.ONE, "4-4-2");
         canonical.getWorldTeams().put(base.getWorldTeamId(), base);
         WorldSnapshot current = new WorldSnapshot(); current.setUserId(owner);
         WorldTeam changed = WorldTeam.fromRealTeam(teamId, changedLeague, "T", "AR", "C", BigDecimal.ONE, "4-4-2");
+        current.setLeagues(canonical.getLeagues());
         current.getWorldTeams().put(changed.getWorldTeamId(), changed);
-        WorldSnapshot fresh = new WorldSnapshot(); fresh.setUserId(owner);
-        WorldTeam freshTeam = WorldTeam.fromRealTeam(teamId, baseLeague, "T", "AR", "C", BigDecimal.ONE, "4-4-2");
-        fresh.getWorldTeams().put(freshTeam.getWorldTeamId(), freshTeam);
-        WorldSnapshot actual = migrateAndReload(owner, current, fresh);
-        if (actual == null) return false;
-        actual.getWorldTeams().values().forEach(team -> team.setRealLeagueId(baseLeague));
-        return !new WorldSemanticComparator().compare(current, actual).equivalent();
+        if (migrateAndReload(owner, current, canonical) == null) return false;
+        var evidence = WorldV2PhysicalFaultInjection.mutateCommittedEnvelope(
+                reactiveRedisTemplate, mapper, owner, "remove-team-league-relation",
+                overlay -> ((com.fasterxml.jackson.databind.node.ArrayNode) overlay.get("removedCanonicalLeagueIds"))
+                        .add(changedLeague.toString()));
+        try {
+            repository().findByUserId(owner).block(Duration.ofSeconds(5));
+            return false;
+        } catch (RuntimeException expectedFailure) {
+            return evidence.redisTouched() && evidence.malformedPersistedState()
+                    && !evidence.inMemoryOnlyMutation() && hasCause(expectedFailure, IllegalStateException.class);
+        }
     }
 
     private boolean missingLegacyAliasIsDetected() {
@@ -461,10 +500,18 @@ class WorldStorageV2NegativeControlsTest extends AbstractIntegrationTest {
         WorldPlayer legacy = WorldPlayer.fromRealPlayer(real, "team", "P", 20, "MID",
                 70, 70, 70, 70, 70, 70, BigDecimal.ONE);
         current.getWorldPlayers().put(legacy.getWorldPlayerId(), legacy);
-        WorldSnapshot actual = migrateAndReload(owner, current, canonicalWorldCopy(owner, real, 70));
-        if (actual == null) return false;
-        actual.setWorldPlayerAliases(Map.of());
-        return !new WorldSemanticComparator().compare(current, actual).equivalent();
+        if (migrateAndReload(owner, current, canonical) == null) return false;
+        var evidence = WorldV2PhysicalFaultInjection.mutateCommittedEnvelope(
+                reactiveRedisTemplate, mapper, owner, "remove-required-legacy-alias",
+                overlay -> ((com.fasterxml.jackson.databind.node.ObjectNode) overlay.get("legacyPlayerAliases"))
+                        .remove(legacy.getWorldPlayerId()));
+        try {
+            repository().findByUserId(owner).block(Duration.ofSeconds(5));
+            return false;
+        } catch (RuntimeException expectedFailure) {
+            return evidence.redisTouched() && evidence.malformedPersistedState()
+                    && !evidence.inMemoryOnlyMutation() && hasCause(expectedFailure, IllegalStateException.class);
+        }
     }
 
     private boolean unresolvedFixtureIsDiscoveredFromCareer() {

@@ -134,6 +134,7 @@ public class WorldSnapshotOverlay {
                         return;
                     }
                     if (!Objects.equals(canonicalId, id)) {
+                        overlay.canonicalPlayerIds.put(player.getRealPlayerId(), id);
                         overlay.putLegacyAlias(id, canonicalId);
                     }
                     WorldPlayerDelta delta = WorldPlayerDelta.between(player, canonicalPlayer);
@@ -263,6 +264,7 @@ public class WorldSnapshotOverlay {
                 }
             });
         }
+        validateTeamLeagueReferences();
         canonical.setWorldTeams(teams);
 
         Map<String, WorldPlayer> players = new LinkedHashMap<>();
@@ -291,7 +293,9 @@ public class WorldSnapshotOverlay {
                 throw new IllegalStateException("World overlay player identity collision");
             }
         });
+        validatePlayerTeamReferences(players, teams);
         canonical.setWorldPlayers(players);
+        validateDeclaredLegacyAliases(players);
         Map<String, String> aliases = new LinkedHashMap<>();
         canonicalPlayerIds.forEach((realId, legacyId) -> {
             String canonicalId = stableCanonicalId(ownerId, realId);
@@ -302,6 +306,34 @@ public class WorldSnapshotOverlay {
                         resolveLegacyTarget(canonicalId, legacyPlayerAliases)));
         canonical.setWorldPlayerAliases(aliases);
         return canonical;
+    }
+
+    private void validateTeamLeagueReferences() {
+        teamLeagueAssignments.values().stream().filter(Objects::nonNull)
+                .filter(removedCanonicalLeagueIds::contains)
+                .findFirst()
+                .ifPresent(id -> { throw new IllegalStateException("World overlay team references missing league"); });
+    }
+
+    private void validatePlayerTeamReferences(Map<String, WorldPlayer> players, Map<String, WorldTeam> teams) {
+        players.values().stream().filter(Objects::nonNull)
+                .filter(player -> player.getOrigin() == WorldPlayer.WorldPlayerOrigin.CUSTOM)
+                .map(WorldPlayer::getWorldTeamId).filter(Objects::nonNull)
+                .filter(id -> !teams.containsKey(id))
+                .findFirst()
+                .ifPresent(id -> { throw new IllegalStateException("World overlay player references missing team"); });
+    }
+
+    private void validateDeclaredLegacyAliases(Map<String, WorldPlayer> players) {
+        canonicalPlayerIds.forEach((realId, legacyId) -> {
+            if (realId == null || legacyId == null) {
+                throw new IllegalStateException("World overlay legacy alias declaration is incomplete");
+            }
+            String expected = stableCanonicalId(ownerId, realId);
+            if (!Objects.equals(expected, legacyPlayerAliases.get(legacyId)) || !players.containsKey(expected)) {
+                throw new IllegalStateException("World overlay legacy alias declaration is missing");
+            }
+        });
     }
 
     private void putLegacyAlias(String legacyId, String canonicalId) {
