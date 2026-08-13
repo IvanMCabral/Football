@@ -106,3 +106,16 @@ liveness `2/2` HTTP 200 and readiness `2/2` HTTP 200 with `database=UP` and
 User interaction remains required: provide the already-created Management API
 key through a secure runtime channel (never chat, Markdown, JSON or Git). No
 new key should be created, rotated or deleted.
+
+## Secure runtime handoff recheck (2026-08-13)
+
+The execution environment was checked without reading or printing values. The
+required `UPSTASH_EMAIL` and `UPSTASH_API_KEY` variables were both absent, and
+the repository `.env` contains neither name. Therefore the Basic-authenticated
+stats request could not be attempted safely. This is an accounting access
+blocker, not evidence that the provider quota is available or exceeded.
+
+The required read-only health recheck nevertheless passed: liveness `2/2`
+HTTP 200 and readiness `2/2` HTTP 200, both reporting `database=UP` and
+`redis=UP`. No Redis, PostgreSQL, catalog, deployment, billing or credential
+mutation was performed.
