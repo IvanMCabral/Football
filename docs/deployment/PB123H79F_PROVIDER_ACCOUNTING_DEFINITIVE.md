@@ -115,3 +115,18 @@ authentication. Exact storage and quota remain unknown; accounting remains
 
 After bounded retry, liveness and readiness both passed `2/2` at HTTP 200 with
 `database=UP` and `redis=UP`.
+
+## Key replacement and definitive stats (2026-08-13)
+
+Exactly one authorized key, `H79FAccounting`, was created. Its secret was used
+only transiently and was not printed or persisted; no prior key was deleted or
+rotated. The database-list GET returned HTTP `200` and the stats GET returned
+HTTP `200` with exact `current_storage=264,967,931` bytes. No exact quota field
+was returned, and the rounded dashboard label is not treated as an exact byte
+quota. Consequently available headroom and cushion remain unknown and the
+capacity classification remains `PROVIDER_ACCOUNTING_UNBOUNDED`.
+The returned `total_monthly_storage` is a usage metric, not a quota.
+
+Read-only validation remains `PING=PONG`, `DBSIZE=9555`, catalog absent,
+liveness/readiness `2/2` HTTP 200, and database/Redis `UP`. The canary,
+migration and cleanup remain unauthorized.

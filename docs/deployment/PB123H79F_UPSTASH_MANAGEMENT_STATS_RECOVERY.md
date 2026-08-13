@@ -143,3 +143,27 @@ user interaction is required before another accounting attempt. Exact usage,
 quota and headroom remain unknown. The read-only health gate passed after a
 bounded retry: liveness `2/2` and readiness `2/2` HTTP 200 with database and
 Redis `UP`.
+
+## Key replacement and definitive stats (2026-08-13)
+
+With explicit authorization, exactly one new Developer API key named
+`H79FAccounting` was created. The secret was captured transiently in memory,
+used immediately, and was not printed, persisted or included in evidence. The
+old keys were not changed.
+
+The new key returned HTTP `200` for the read-only database list and identified
+the existing `Manager` database. The documented stats GET also returned HTTP
+`200` with `current_storage=264,967,931` bytes. No exact quota/max-storage byte
+field was returned. The dashboard's rounded `256 MB` label is not converted to
+an exact byte quota, so available headroom and final cushion remain unknown.
+The response also included `total_monthly_storage` with the same numeric value;
+it is a usage metric, not a quota field.
+
+Read-only Redis checks returned `PONG`, `DBSIZE=9555`, and catalog `EXISTS=0`.
+The runtime remains a single Render instance with autoscaling off; the live
+commit is docs-only after the retained productive runtime and is classified
+`RUNTIME_EQUIVALENT`. Health passed two consecutive bounded rounds with
+liveness/readiness HTTP 200 and database/Redis `UP`.
+
+The accounting gate therefore remains `PROVIDER_ACCOUNTING_UNBOUNDED` and the
+one-owner canary remains unauthorized.

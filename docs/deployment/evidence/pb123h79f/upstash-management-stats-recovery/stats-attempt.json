@@ -1,13 +1,15 @@
 {
   "schema": "pb123h79f-management-stats-attempt-v1",
-  "observedAt": "2026-08-13T20:30:00Z",
+  "observedAt": "2026-08-13T21:00:00Z",
   "endpoint": "GET /v2/redis/stats/{databaseId}",
   "endpointCalled": true,
-  "httpStatus": 401,
-  "reason": "Provider rejected the Basic-authenticated GET; authenticated browser cross-origin request was blocked by client",
-  "currentStorageReturned": false,
-  "currentStorage": null,
-  "unit": null,
+  "httpStatus": 200,
+  "reason": "New authorized key validated against database-list and stats GET",
+  "currentStorageReturned": true,
+  "currentStorage": 264967931,
+  "unit": "bytes",
+  "returnedStorageRelatedFields": ["current_storage", "total_monthly_storage"],
+  "totalMonthlyStorage": 264967931,
   "quotaExactReturned": false,
   "quotaExactBytes": null,
   "credentialsPrinted": false,
@@ -15,6 +17,8 @@
   "secureRuntimeVariablesPresent": true,
   "dotEnvVariableNamesPresent": false,
   "browserSessionStatsAttempt": "ERR_BLOCKED_BY_CLIENT",
-  "authClassification": "UNKNOWN_AUTH_FAILURE",
-  "userInteractionRequired": true
+  "authClassification": "NEW_KEY_VALIDATED",
+  "userInteractionRequired": false,
+  "databaseListHttpStatus": 200,
+  "quotaSource": "UNKNOWN; dashboard rounded label is not an exact byte quota"
 }

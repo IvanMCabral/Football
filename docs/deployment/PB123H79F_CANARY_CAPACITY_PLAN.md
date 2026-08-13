@@ -162,3 +162,17 @@ client, so no alternate session authentication exists for this endpoint.
 Exact usage, quota and headroom remain unknown; canary, migration and cleanup
 remain unauthorized. Health passed after bounded retry: liveness `2/2` and
 readiness `2/2` HTTP 200, database and Redis `UP`.
+
+## Key replacement and definitive stats (2026-08-13)
+
+Exactly one authorized Developer API key named `H79FAccounting` was created;
+its secret was never recorded. Database list and stats GETs returned HTTP 200.
+The stats response reported exact `current_storage=264,967,931` bytes and no
+exact quota/max-storage byte field. The dashboard `256 MB` display is rounded
+and is not converted; `total_monthly_storage` is usage, not a quota, leaving
+headroom and final cushion unknown.
+
+The Manager database remains healthy (`PING=PONG`, `DBSIZE=9555`, catalog
+absent), and two consecutive liveness/readiness health rounds are HTTP 200
+with database and Redis `UP`. Accounting remains unbounded; no canary,
+migration or cleanup is authorized.
