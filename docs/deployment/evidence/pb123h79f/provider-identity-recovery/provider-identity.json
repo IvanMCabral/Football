@@ -1,0 +1,65 @@
+{
+  "gate": "PB1.2.3H7.9F",
+  "result": "PB1.2.3H7.9F BLOCKED_PROVIDER_IDENTITY",
+  "local": {
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "head": "928ce7c86de2cb97e4429ddac025c5c327959945",
+    "upstream": "origin/feat/v25d99.20.3.1-runtime-fixes",
+    "ahead": 0,
+    "behind": 0,
+    "diffCheck": "clean"
+  },
+  "render": {
+    "authenticated": true,
+    "inspectedProject": "My project",
+    "serviceObserved": "Football",
+    "expectedService": "manager-staging-api",
+    "serviceStatus": "Failed deploy",
+    "region": "oregon",
+    "liveSha": null,
+    "expectedSha": "928ce7c86de2cb97e4429ddac025c5c327959945",
+    "shaClassification": "SHA_NOT_EXPOSED",
+    "instanceCount": null,
+    "instanceClassification": "INSTANCE_COUNT_NOT_EXPOSED",
+    "autoscaling": null,
+    "healthProbes": [
+      {"endpoint": "liveness", "httpStatus": 0, "result": "timeout", "timeoutSeconds": 15},
+      {"endpoint": "readiness", "httpStatus": 0, "result": "timeout", "timeoutSeconds": 15}
+    ]
+  },
+  "upstash": {
+    "authenticated": true,
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "AWS sa-east-1",
+    "tls": "Enabled",
+    "storageDisplayed": "253 MB / 256 MB",
+    "storagePercentageDisplayed": "~98.8%",
+    "exactBytesExposed": false,
+    "accountingClassification": "PROVIDER_ACCOUNTING_COARSE",
+    "commandsDisplayed": "150K / 500K per month",
+    "bandwidthDisplayed": "0 B / 50 GB",
+    "ping": "NOT_EXECUTED",
+    "dbsize": "NOT_EXECUTED"
+  },
+  "candidate": {
+    "owner": "NOT_INSPECTED",
+    "world": "NOT_INSPECTED",
+    "sourceChecksum": "NOT_READ",
+    "planner": "NOT_RUN",
+    "canaryPlan": "NOT_PRODUCED"
+  },
+  "mutations": {
+    "code": 0,
+    "frontend": 0,
+    "gameplay": 0,
+    "redisWrites": 0,
+    "redisDeletes": 0,
+    "postgresWrites": 0,
+    "renderMutations": 0,
+    "infrastructure": 0,
+    "billing": 0,
+    "redeploy": 0,
+    "restart": 0
+  }
+}
